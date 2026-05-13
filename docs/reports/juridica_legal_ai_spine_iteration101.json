@@ -1,0 +1,33 @@
+{
+  "round": 101,
+  "title": "espinha juridica estruturada dentro da ia",
+  "filesAdded": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/ai/legal/spine/LegalAiStructuredOutputDescriptor.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/ai/legal/spine/LegalAiTraceDescriptor.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/ai/legal/spine/LegalAiApprovalDescriptor.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/ai/legal/spine/LegalAiSpineProfileResponse.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/spine/JuridicaSpineLabels.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/spine/JuridicaPolicyVariableService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/spine/JuridicaToolRoutingService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/spine/JuridicaStructuredOutputProfileService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/spine/JuridicaTraceApprovalService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/spine/JuridicaLegalAiSpineService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/api/JuridicaLegalAiSpineController.java"
+  ],
+  "filesUpdated": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/policy/JuridicaAdaptiveMeshGovernanceService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/v1/IAJuridicaV1.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/v2/IAJuridicaV2.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/v3/IAJuridicaV3.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/legal/skills/api/v58/LegalSkillsControllerV58.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/surface/LegalAiSurfaceFacadeService.java",
+    "README.md"
+  ],
+  "validation": {
+    "runtimeConcurrencyGuard": "passed",
+    "targetedJavac": "passed",
+    "globalMaven": "not-claimed",
+    "globalPjbApiCompile": "not-claimed",
+    "dockerStable": "not-claimed"
+  }
+}

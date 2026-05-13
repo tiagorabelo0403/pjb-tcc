@@ -1,0 +1,270 @@
+{
+  "PJB_NARRATIVA_INVESTIGATIVA": {
+    "displayName": "Narrativa Investigativa Nativa",
+    "toolLane": "NARRATIVA_ESTRUTURADA",
+    "scope": [
+      "delegado",
+      "escrivao",
+      "cartorio_policial",
+      "ministerio_publico"
+    ],
+    "requiredFunctions": [
+      "EDITOR_NATIVO_TEXTO_AUDIO_VIDEO_IMAGEM",
+      "PAGINA_ESTREITA_EVIDENCIAS",
+      "ANCORAGEM_DE_MIDIA_INLINE",
+      "BLOCO_POS_NARRATIVA_DE_DOCUMENTOS",
+      "SNAPSHOT_PROTOCOLOR_CANONICO"
+    ],
+    "workflowBackbone": [
+      "redacao_estruturada",
+      "ancoragem_narrativa",
+      "validacao_inline",
+      "snapshot_canonico"
+    ],
+    "securityBackbone": [
+      "sem_blob_relacional",
+      "hash_deterministico_de_bloco",
+      "versao_canonica_imutavel"
+    ],
+    "evidenceSupport": [
+      "IMAGEM",
+      "AUDIO",
+      "VIDEO"
+    ],
+    "pjbSovereignCapabilities": [
+      "narrativa_nato_digital",
+      "protocolo_canonico_da_peca",
+      "workspace_de_pagina_estreita"
+    ]
+  },
+  "PJB_EVIDENCE_STUDIO": {
+    "displayName": "Evidence Studio Nativo",
+    "toolLane": "EVIDENCIA_E_PERICIA",
+    "scope": [
+      "delegado",
+      "perito",
+      "cartorio_policial"
+    ],
+    "requiredFunctions": [
+      "TRANSCRICAO_AUDIO_VIDEO",
+      "KEYFRAMES_COM_HASH",
+      "WAVEFORM_AUDIO",
+      "ROTULO_PROBATORIO",
+      "PACOTE_DE_EVIDENCIA_COM_DERIVADOS"
+    ],
+    "workflowBackbone": [
+      "quarentena_tripla",
+      "canonicalizacao_assincrona",
+      "derivados_para_leitura",
+      "trilha_pericial"
+    ],
+    "securityBackbone": [
+      "quarentena_antes_publicacao",
+      "original_imutavel",
+      "derivados_segros_para_preview"
+    ],
+    "evidenceSupport": [
+      "IMAGEM",
+      "AUDIO",
+      "VIDEO",
+      "DOCUMENTO"
+    ],
+    "pjbSovereignCapabilities": [
+      "studio_multimidia_nativo",
+      "pericia_preliminar_assistida",
+      "cadeia_de_custodia_multimidia"
+    ]
+  },
+  "PJB_CUSTODIA_GUARD": {
+    "displayName": "Custódia Guard",
+    "toolLane": "CADEIA_CUSTODIA",
+    "scope": [
+      "delegado",
+      "perito",
+      "ministerio_publico",
+      "judiciario"
+    ],
+    "requiredFunctions": [
+      "HASH_ORIGINAL_E_DERIVADO",
+      "TRILHA_DE_ACESSO",
+      "SELO_DE_AUTENTICIDADE_PUBLICA",
+      "REGISTRO_DE_QUEM_VIU_BORRADO_OU_DESBORRADO",
+      "CUSTODIA_DE_ANEXO"
+    ],
+    "workflowBackbone": [
+      "ingestao",
+      "custodia",
+      "publicacao_controlada",
+      "auditoria"
+    ],
+    "securityBackbone": [
+      "evidencia_original_intocavel",
+      "hash_a_cada_etapa",
+      "auditoria_de_visualizacao"
+    ],
+    "evidenceSupport": [
+      "IMAGEM",
+      "AUDIO",
+      "VIDEO",
+      "DOCUMENTO"
+    ],
+    "pjbSovereignCapabilities": [
+      "verificador_publico_de_autenticidade",
+      "cadeia_de_custodia_nacional",
+      "blocos_sigilosos_com_trilha"
+    ]
+  },
+  "PJB_DILIGENCE_BOARD": {
+    "displayName": "Painel de Diligências",
+    "toolLane": "DILIGENCIAS_E_PRAZOS",
+    "scope": [
+      "delegado",
+      "escrivao",
+      "cartorio_policial",
+      "ministerio_publico"
+    ],
+    "requiredFunctions": [
+      "ORDEM_DE_DILIGENCIA",
+      "COTA_CARTORARIA",
+      "PRAZO_INVESTIGATIVO",
+      "CHECKPOINT_DE_CAMPO",
+      "ALERTA_DE_PENDENCIA_CRITICA"
+    ],
+    "workflowBackbone": [
+      "abertura_de_diligencia",
+      "execucao",
+      "retorno_de_campo",
+      "replanejamento"
+    ],
+    "securityBackbone": [
+      "fila_isolada_para_bulk",
+      "orçamento_por_lane",
+      "assinatura_de_ordem"
+    ],
+    "evidenceSupport": [
+      "TEXTO",
+      "IMAGEM",
+      "AUDIO",
+      "VIDEO"
+    ],
+    "pjbSovereignCapabilities": [
+      "painel_operacional_nativo",
+      "radar_de_prazos",
+      "agenda_de_mandados_e_diligencias"
+    ]
+  },
+  "PJB_CAUTELAR_FLOW": {
+    "displayName": "Fluxo Cautelar e Protetivo",
+    "toolLane": "CAUTELARES_E_REPRESENTACOES",
+    "scope": [
+      "delegado",
+      "ministerio_publico",
+      "judiciario"
+    ],
+    "requiredFunctions": [
+      "REPRESENTACAO_POLICIAL_ESTRUTURADA",
+      "PEDIDO_MEDIDA_CAUTELAR",
+      "MEDIDA_PROTETIVA",
+      "COMUNICACAO_FLAGRANTE",
+      "CHECKLIST_DE_INSTRUCAO"
+    ],
+    "workflowBackbone": [
+      "preflight_cautelar",
+      "assinatura",
+      "remessa",
+      "retorno_e_ciencia"
+    ],
+    "securityBackbone": [
+      "regras_de_sigilo_por_linha",
+      "controle_de_urgencia",
+      "retentativa_contingenciada"
+    ],
+    "evidenceSupport": [
+      "PDF",
+      "IMAGEM",
+      "AUDIO",
+      "VIDEO"
+    ],
+    "pjbSovereignCapabilities": [
+      "motor_nativo_de_cautelares",
+      "checklist_de_remessa",
+      "timeline_de_decisao"
+    ]
+  },
+  "PJB_CARTORIO_POLICIAL": {
+    "displayName": "Cartório Policial Nativo",
+    "toolLane": "CARTORIO",
+    "scope": [
+      "delegado",
+      "escrivao",
+      "cartorio_policial"
+    ],
+    "requiredFunctions": [
+      "AUTUACAO_NATIVA",
+      "PORTARIA_E_DESPACHO",
+      "JUNTADA_ORIENTADA",
+      "NUMERACAO_LOGICA_DE_PECAS",
+      "REMESSA_COM_CONTROLE_DE_FASE"
+    ],
+    "workflowBackbone": [
+      "instauracao",
+      "cartorio",
+      "juntada",
+      "fechamento"
+    ],
+    "securityBackbone": [
+      "bloqueio_de_documento_inline",
+      "storage_shield",
+      "snapshot_de_fechamento"
+    ],
+    "evidenceSupport": [
+      "DOCUMENTO",
+      "IMAGEM",
+      "AUDIO",
+      "VIDEO"
+    ],
+    "pjbSovereignCapabilities": [
+      "cartorio_policial_nato_digital",
+      "gestao_de_fases_investigativas",
+      "controle_de_anexos_pos_narrativa"
+    ]
+  },
+  "PJB_INTEROP_HUB": {
+    "displayName": "Interop Hub Soberano",
+    "toolLane": "INTEROPERABILIDADE_E_CONTINGENCIA",
+    "scope": [
+      "delegado",
+      "ministerio_publico",
+      "judiciario",
+      "cartorio_policial"
+    ],
+    "requiredFunctions": [
+      "PRECHECK_DE_REMESSA",
+      "FILA_DE_CONTINGENCIA",
+      "RETRY_AUDITAVEL",
+      "SNAPSHOT_PROCESSUAL_SOBERANO",
+      "SYNC_DE_EVENTOS_E_INTIMACOES"
+    ],
+    "workflowBackbone": [
+      "preflight",
+      "submissao_ou_contingencia",
+      "polling_eventos",
+      "reconciliacao"
+    ],
+    "securityBackbone": [
+      "preferencia_nativo_primeiro",
+      "fallback_controlado_por_parceiro",
+      "auditoria_de_remessa"
+    ],
+    "evidenceSupport": [
+      "METADADOS",
+      "PROTOCOLOS",
+      "ANEXOS_REFERENCIADOS"
+    ],
+    "pjbSovereignCapabilities": [
+      "hub_soberano_de_remessa",
+      "snapshot_local_de_contingencia",
+      "observabilidade_de_parceiro"
+    ]
+  }
+}

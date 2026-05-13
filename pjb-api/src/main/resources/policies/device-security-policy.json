@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "issuedAt": "2026-03-02T00:00:00Z",
+  "actionRules": [],
+  "actionPolicies": {
+    "SIGN_DOCUMENT": {
+      "stepUpRequired": true,
+      "strongAuthMaxAgeSeconds": 300,
+      "bindStrongAuthToDevice": true,
+      "oneTimeStepUp": true,
+      "dualApprovalRequired": true,
+      "dualApprovalTtlSeconds": 900,
+      "auditRequired": true,
+      "justificativaRequired": true
+    },
+    "ADMIN": {
+      "stepUpRequired": true,
+      "strongAuthMaxAgeSeconds": 300,
+      "bindStrongAuthToDevice": true,
+      "oneTimeStepUp": true,
+      "dualApprovalRequired": true,
+      "dualApprovalTtlSeconds": 900,
+      "auditRequired": true,
+      "justificativaRequired": true
+    }
+  },
+  "signature": null
+}

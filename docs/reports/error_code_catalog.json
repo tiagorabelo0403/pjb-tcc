@@ -1,0 +1,90 @@
+[
+  {
+    "httpStatus": 400,
+    "code": "VALIDATION_ERROR",
+    "category": "validation",
+    "retryable": false,
+    "handler": "ApiExceptionHandler",
+    "message": "Dados inválidos."
+  },
+  {
+    "httpStatus": 400,
+    "code": "CONSTRAINT_VIOLATION",
+    "category": "validation",
+    "retryable": false,
+    "handler": "ApiExceptionHandler",
+    "message": "Violação de restrição de entrada."
+  },
+  {
+    "httpStatus": 401,
+    "code": "UNAUTHORIZED",
+    "category": "auth",
+    "retryable": false,
+    "handler": "SecurityFilterChain",
+    "message": "Autenticação obrigatória."
+  },
+  {
+    "httpStatus": 403,
+    "code": "FORBIDDEN",
+    "category": "auth",
+    "retryable": false,
+    "handler": "ApiExceptionHandler",
+    "message": "Acesso negado."
+  },
+  {
+    "httpStatus": 409,
+    "code": "IDEMPOTENCY_IN_PROGRESS",
+    "category": "idempotency",
+    "retryable": true,
+    "handler": "ApiExceptionHandler",
+    "message": "Requisição idêntica em processamento."
+  },
+  {
+    "httpStatus": 409,
+    "code": "CONFLICT",
+    "category": "conflict",
+    "retryable": true,
+    "handler": "ApiExceptionHandler",
+    "message": "Conflito de operação."
+  },
+  {
+    "httpStatus": 422,
+    "code": "BUSINESS_RULE",
+    "category": "business",
+    "retryable": false,
+    "handler": "ApiExceptionHandler",
+    "message": "Regra de negócio impedindo a operação."
+  },
+  {
+    "httpStatus": 422,
+    "code": "UNSUPPORTED_DOMAIN",
+    "category": "business",
+    "retryable": false,
+    "handler": "ApiExceptionHandler",
+    "message": "Domínio não suportado para a operação."
+  },
+  {
+    "httpStatus": 429,
+    "code": "RATE_LIMIT_EXCEEDED",
+    "category": "throttling",
+    "retryable": true,
+    "handler": "ApiExceptionHandler",
+    "message": "Limite de requisições excedido."
+  },
+  {
+    "httpStatus": 500,
+    "code": "INTERNAL_ERROR",
+    "category": "system",
+    "retryable": true,
+    "handler": "ApiExceptionHandler",
+    "message": "Erro interno."
+  },
+  {
+    "httpStatus": 503,
+    "code": "EXTERNAL_INTEGRATION_UNAVAILABLE",
+    "category": "integration",
+    "retryable": true,
+    "handler": "ApiExceptionHandler",
+    "message": "Integração externa indisponível."
+  }
+]

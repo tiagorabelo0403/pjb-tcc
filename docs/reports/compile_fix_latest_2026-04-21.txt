@@ -1,0 +1,14 @@
+Correção aplicada sobre o snapshot de /mnt/data/pjb_proactive_compile_hardening.zip
+
+Erro alvo corrigido:
+- LegalKnowledgeCorpusRegistryService.java
+- helper estático firstNonBlank(String... values) chamava trim(value), que é método de instância
+- ajuste realizado: normalização local no próprio helper estático com value.trim() e filtro de blank
+
+Passada preventiva adicional:
+- varredura por padrão literal "String trimmed = trim(value);" no snapshot
+- ocorrências restantes localizadas apenas em JudicialConnectorCertificateInventoryService, sem evidência de helper estático quebrado no mesmo padrão
+
+Ponto honesto:
+- não houve build Maven global executado neste ambiente após a correção
+- a correção foi feita exatamente sobre o erro de compilação informado no log do usuário

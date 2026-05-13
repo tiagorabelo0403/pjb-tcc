@@ -1,0 +1,35 @@
+{
+  "round": 128,
+  "scope": "legal_ai_evidence_registry",
+  "status": "completed_with_honest_local_validation",
+  "artifacts": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/ai/legal/conversation/LegalAiConversationEvidenceDescriptor.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/conversation/security/LegalEvidenceSovereignRegistryService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/conversation/LegalAiConversationEvidenceProvenanceService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/ai/legal/conversation/LegalAiConversationEvidenceProvenanceSnapshot.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/conversation/security/LegalToolScopePolicy.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/ai/legal/surface/LegalAiStructuredSurfaceGovernanceSnapshot.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/surface/LegalAiSurfaceFacadeService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/conversation/LegalAiConversationResponseComposerService.java"
+  ],
+  "tests": [
+    "pjb-api/src/test/java/com/tcc/pjb/backend/ai/juridica/conversation/security/LegalEvidenceSovereignRegistryServiceTest.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/ai/juridica/conversation/LegalAiConversationEvidenceProvenanceServiceTest.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/service/intelligence/surface/LegalAiStructuredSurfaceGovernanceServiceTest.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/ai/juridica/conversation/JuridicaLegalAiSurfaceRound128ArchitectureTest.java"
+  ],
+  "validation": {
+    "runtime_concurrency_guard": "passed",
+    "architecture_hygiene_guard": "passed",
+    "constructor_injection_guard": "passed",
+    "config_taxonomy_guard": "passed",
+    "transactional_hotspot_guard_fail_on_missing_budgets": "passed",
+    "repository_layout_guard": "passed",
+    "directed_javac_main": "passed_with_local_stubs",
+    "directed_javac_tests": "passed_with_local_stubs",
+    "maven_global": "not_claimed",
+    "pjb_api_full_compile": "not_claimed",
+    "docker_stable": "not_claimed",
+    "git_validation": "not_available_without_dot_git"
+  }
+}

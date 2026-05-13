@@ -1,0 +1,28 @@
+{
+  "round": 104,
+  "title": "Legal AI Spine: research dossier and validation envelopes",
+  "newFiles": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/ai/legal/LegalResearchDossierRequest.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/ai/legal/LegalResearchDossierResponse.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/ai/legal/LegalValidationRequest.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/ai/legal/LegalValidationResponse.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/spine/JuridicaResearchDossierService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/spine/JuridicaValidationEnvelopeService.java"
+  ],
+  "updatedFiles": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/spine/JuridicaSpineLabels.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/api/LegalAiController.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/surface/LegalAiSurfaceFacadeService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/v1/IAJuridicaV1.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/v2/IAJuridicaV2.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/v3/IAJuridicaV3.java"
+  ],
+  "validation": {
+    "compileDirected": true,
+    "runtimeConcurrencyGuard": true,
+    "globalMavenBuild": false,
+    "globalPjbApiCompile": false,
+    "dockerStable": false,
+    "gitValidation": false
+  }
+}

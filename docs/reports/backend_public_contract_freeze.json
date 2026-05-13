@@ -1,0 +1,15 @@
+{
+  "surface": "/api/v1/admin/frontend-readiness/public-contract",
+  "endpoints": [
+    "/summary",
+    "/routes",
+    "/dtos",
+    "/freeze"
+  ],
+  "purpose": [
+    "freeze do contrato publico para frontend",
+    "catalogo de rotas publicas e autenticadas",
+    "catalogo de DTOs estaveis",
+    "pacote consolidado de auth, erros, rotas e DTOs"
+  ]
+}

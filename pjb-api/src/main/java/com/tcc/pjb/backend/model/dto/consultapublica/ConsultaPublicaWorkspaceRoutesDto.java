@@ -1,0 +1,38 @@
+package com.tcc.pjb.backend.model.dto.consultapublica;
+
+public record ConsultaPublicaWorkspaceRoutesDto(
+        String workspace,
+        String search,
+        String processPublicDetail,
+        String myProcesses,
+        String personalCockpit,
+        String personalOverview,
+        String deadlines,
+        String publicPageResolve,
+        String personCandidates,
+        String personCandidateProcesses,
+        String cpfPublicProcesses,
+        String calendarWorkspace,
+        String calendarPanel,
+        String processRealDeadline,
+        String judicialCalculatorWorkspace,
+        String judicialCalculatorDomainHelp,
+        String processChatHistory,
+        String processNotes,
+        String workspaceTags,
+        String processTags,
+        String professionalPanelWorkspace,
+        String professionalPanelSearch,
+        String professionalInstitutionalOverview,
+        String professionalOrganDashboard,
+        String professionalClient360,
+        String professionalProcessDetail,
+        String professionalGrantWorkspace,
+        String professionalGrantProcessTimeline,
+        String professionalGrantGovernanceDashboard,
+        String professionalGrantBatchRequests,
+        String professionalGrantOperationalDashboard,
+        String professionalGrantTemplateCatalog,
+        String professionalGrantTemplateBatchRequests
+) {
+}

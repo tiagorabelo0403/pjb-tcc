@@ -1,0 +1,38 @@
+package com.tcc.pjb.backend.model.dto.ui;
+
+
+public enum UiToken {
+  
+  URGENTE,
+  ATRASADO,
+  PENDENTE,
+  EM_EXECUCAO,
+  CONCLUIDO,
+
+  
+  ENCERRADO,
+  PROCEDENTE,
+  IMPROCEDENTE,
+  PARCIAL,
+
+  
+  RECURSO,
+  AUDIENCIA,
+  PERICIA,
+  CITACAO_INTIMACAO,
+  CALCULO,
+  DECISAO,
+  DOCUMENTO,
+
+  
+  BLOQUEANTE,
+  SIGILOSO,
+
+  
+  NOTIFICADO,
+
+  
+  INFO,
+  ASSUNTO,
+  NEUTRO
+}

@@ -1,0 +1,146 @@
+services:
+  pgbouncer-rw:
+    profiles: ["ha"]
+    build:
+      context: ./infra/docker/pgbouncer
+      dockerfile: Dockerfile
+    environment:
+      PJB_DB_NAME: ${PJB_DB_NAME:-pjb}
+      PJB_PGBOUNCER_DB_HOST: postgres
+      PJB_PGBOUNCER_DB_PORT: 5432
+      PJB_PGBOUNCER_DB_USER: ${PJB_DB_USER:-pjb}
+      PJB_PGBOUNCER_DB_PASS: ${PJB_DB_PASS:-pjb}
+      PJB_PGBOUNCER_PORT: 6432
+      PJB_PGBOUNCER_POOL_MODE: ${PJB_PGBOUNCER_RW_POOL_MODE:transaction}
+      PJB_PGBOUNCER_MAX_CLIENT_CONN: ${PJB_PGBOUNCER_RW_MAX_CLIENT_CONN:6000}
+      PJB_PGBOUNCER_DEFAULT_POOL_SIZE: ${PJB_PGBOUNCER_RW_DEFAULT_POOL_SIZE:160}
+      PJB_PGBOUNCER_RESERVE_POOL_SIZE: ${PJB_PGBOUNCER_RW_RESERVE_POOL_SIZE:32}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 6432 -U ${PJB_DB_USER:-pjb} -d ${PJB_DB_NAME:-pjb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  pgbouncer-ro:
+    profiles: ["ha"]
+    build:
+      context: ./infra/docker/pgbouncer
+      dockerfile: Dockerfile
+    environment:
+      PJB_DB_NAME: ${PJB_DB_NAME:-pjb}
+      PJB_PGBOUNCER_DB_HOST: ${PJB_PGBOUNCER_RO_DB_HOST:-postgres}
+      PJB_PGBOUNCER_DB_PORT: 5432
+      PJB_PGBOUNCER_DB_USER: ${PJB_DB_USER:-pjb}
+      PJB_PGBOUNCER_DB_PASS: ${PJB_DB_PASS:-pjb}
+      PJB_PGBOUNCER_PORT: 6432
+      PJB_PGBOUNCER_POOL_MODE: ${PJB_PGBOUNCER_RO_POOL_MODE:transaction}
+      PJB_PGBOUNCER_MAX_CLIENT_CONN: ${PJB_PGBOUNCER_RO_MAX_CLIENT_CONN:6000}
+      PJB_PGBOUNCER_DEFAULT_POOL_SIZE: ${PJB_PGBOUNCER_RO_DEFAULT_POOL_SIZE:160}
+      PJB_PGBOUNCER_RESERVE_POOL_SIZE: ${PJB_PGBOUNCER_RO_RESERVE_POOL_SIZE:32}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 6432 -U ${PJB_DB_USER:-pjb} -d ${PJB_DB_NAME:-pjb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  db-edge:
+    profiles: ["ha"]
+    image: haproxy:3.0-alpine
+    depends_on:
+      pgbouncer-rw:
+        condition: service_healthy
+      pgbouncer-ro:
+        condition: service_healthy
+    volumes:
+      - ./infra/docker/haproxy/db-edge.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    healthcheck:
+      test: ["CMD-SHELL", "haproxy -c -f /usr/local/etc/haproxy/haproxy.cfg"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-edge:6432/${PJB_DB_NAME:-pjb}
+      PJB_DB_READ_URL: jdbc:postgresql://db-edge:6433/${PJB_DB_NAME:-pjb}
+      PJB_DB_LOAD_BALANCER_MODE: DB_EDGE_TCP
+      PJB_DB_READ_ROUTING_ENABLED: "true"
+      PJB_DB_READ_ROUTING_STRICT: "true"
+      PJB_DB_WRITE_FAILOVER_ENABLED: ${PJB_DB_WRITE_FAILOVER_ENABLED:-false}
+      PJB_DB_WRITE_FAILOVER_STRICT: ${PJB_DB_WRITE_FAILOVER_STRICT:-false}
+      PJB_API_DB_PRESSURE_SHIELD_ENABLED: "true"
+      PJB_LIVE_CLUSTER_NODE_ID: backend-a
+    depends_on:
+      db-edge:
+        condition: service_healthy
+    ports: []
+
+  backend-b:
+    profiles: ["app"]
+    image: pjb-backend:local
+    init: true
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-edge:6432/${PJB_DB_NAME:-pjb}
+      SPRING_DATASOURCE_USERNAME: ${PJB_DB_USER:-pjb}
+      SPRING_DATASOURCE_PASSWORD: ${PJB_DB_PASS:-pjb}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      PJB_DB_USER: ${PJB_DB_USER:-pjb}
+      PJB_DB_PASS: ${PJB_DB_PASS:-pjb}
+      PJB_DB_READ_ROUTING_ENABLED: "true"
+      PJB_DB_READ_URL: jdbc:postgresql://db-edge:6433/${PJB_DB_NAME:-pjb}
+      PJB_DB_READ_USER: ${PJB_DB_USER:-pjb}
+      PJB_DB_READ_PASS: ${PJB_DB_PASS:-pjb}
+      PJB_DB_READ_ROUTING_STRICT: "true"
+      PJB_API_DB_PRESSURE_SHIELD_ENABLED: "true"
+      PJB_MASTER_KEY_BASE64: ${PJB_MASTER_KEY_BASE64:-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
+      PJB_DB_LOAD_BALANCER_MODE: DB_EDGE_TCP
+      PJB_LIVE_CLUSTER_NODE_ID: backend-b
+      JAVA_OPTS: ${PJB_JAVA_OPTS:-Dfile.encoding=UTF-8 -XX:+UseG1GC -XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=40 -Djava.security.egd=file:/dev/urandom}
+    depends_on:
+      db-edge:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/readyz | grep -q UP || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+    restart: unless-stopped
+
+  api-edge:
+    profiles: ["app"]
+    image: nginx:1.27-alpine
+    depends_on:
+      backend:
+        condition: service_healthy
+      backend-b:
+        condition: service_healthy
+    ports:
+      - "${PJB_HTTP_PORT:-8080}:8080"
+    volumes:
+      - ./infra/docker/nginx/api-ha.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/readyz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped

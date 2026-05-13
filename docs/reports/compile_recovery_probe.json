@@ -1,0 +1,535 @@
+{
+  "status": "executed",
+  "javaVersionProbe": [
+    "openjdk version \"21.0.10\" 2026-01-20"
+  ],
+  "mainSourceFiles": 6821,
+  "allJavaFilesScanned": 7847,
+  "externalImportCount": 598,
+  "generatedStubFiles": 619,
+  "stubCompile": {
+    "lineCount": 7,
+    "errorCount": 2,
+    "bucketCounts": {
+      "other": 2
+    },
+    "missingPackages": {},
+    "touchedFiles": {
+      "/tmp/pjb-compile-recovery-hi_vp6mq/stubs/org/apache/pdfbox/pdmodel/PDPageContentStream/AppendMode.java": 1,
+      "/tmp/pjb-compile-recovery-hi_vp6mq/stubs/org/apache/pdfbox/pdmodel/PDPageContentStream.java": 1
+    },
+    "samples": [
+      {
+        "file": "/tmp/pjb-compile-recovery-hi_vp6mq/stubs/org/apache/pdfbox/pdmodel/PDPageContentStream/AppendMode.java",
+        "line": 1,
+        "message": "package org.apache.pdfbox.pdmodel.PDPageContentStream clashes with class of same name",
+        "bucket": "other",
+        "context": [
+          "package org.apache.pdfbox.pdmodel.PDPageContentStream; public class AppendMode {}",
+          "^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb-compile-recovery-hi_vp6mq/stubs/org/apache/pdfbox/pdmodel/PDPageContentStream.java",
+        "line": 1,
+        "message": "class PDPageContentStream clashes with package of same name",
+        "bucket": "other",
+        "context": [
+          "package org.apache.pdfbox.pdmodel; public class PDPageContentStream { public static enum AppendMode { APPEND; } }",
+          "                                          ^",
+          "2 errors"
+        ]
+      }
+    ]
+  },
+  "mainCompile": {
+    "lineCount": 896,
+    "errorCount": 250,
+    "bucketCounts": {
+      "missing-package": 140,
+      "missing-symbol": 110
+    },
+    "missingPackages": {
+      "jakarta.persistence": 24,
+      "org.springframework.stereotype": 23,
+      "lombok": 21,
+      "com.fasterxml.jackson.annotation": 7,
+      "jakarta.validation.constraints": 6,
+      "org.hibernate.annotations": 5,
+      "org.springframework.data.domain": 5,
+      "org.slf4j": 4,
+      "org.springframework.data.annotation": 4,
+      "org.springframework.beans.factory.annotation": 4,
+      "org.springframework.web.socket": 3,
+      "org.springframework.data.jpa.domain.support": 3,
+      "org.springframework.scheduling.annotation": 2,
+      "org.springframework.context.annotation": 2,
+      "org.springframework.boot.autoconfigure.condition": 2,
+      "com.fasterxml.jackson.databind": 2,
+      "org.springframework.boot": 1,
+      "org.springframework.boot.autoconfigure": 1,
+      "org.springframework.boot.context.properties": 1,
+      "org.springframework.cache.annotation": 1,
+      "org.springframework.context": 1,
+      "org.springframework.kafka.core": 1,
+      "org.springframework.web.socket.handler": 1,
+      "org.springframework.web.socket.config.annotation": 1,
+      "io.camunda.zeebe.client.api.response": 1
+    },
+    "touchedFiles": {
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Processo.java": 31,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java": 22,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/worker/PJeSubmissionWorker.java": 14,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java": 14,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/JurisdictionEngine.java": 12,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/jurisprudencia/Precedente.java": 12,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Usuario.java": 10,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/service/jurisprudencia/search/JurisprudenceSearchEngine.java": 10,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/BackendApplication.java": 9,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/model/repository/PrecedenteRepository.java": 9,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/ai/agentic/api/AgenticController.java": 9,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/strategies/config/WebSocketConfig.java": 8,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Equipe.java": 8,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/ai/audit/AiAuditLedger.java": 8,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAndamentoResponse.java": 6,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/MembroEquipe.java": 6,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/factory/PJeAdapterFactory.java": 4,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAutenticacaoResponse.java": 4,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeSubmissaoResponse.java": 4,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/platform/runtime/execution/PjbExecutionOrchestrator.java": 3,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/platform/runtime/PjbBoundedExecutorProvider.java": 3,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/ai/academy/CurriculumKnowledgeService.java": 2,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/enums/RamoDireito.java": 2,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/ai/agentic/core/AgenticRunRequest.java": 2,
+      "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/ai/agentic/core/AgenticDomain.java": 2
+    },
+    "samples": [
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/BackendApplication.java",
+        "line": 3,
+        "message": "package org.springframework.boot does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.boot.SpringApplication;",
+          "                               ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/BackendApplication.java",
+        "line": 4,
+        "message": "package org.springframework.boot.autoconfigure does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.boot.autoconfigure.SpringBootApplication;",
+          "                                             ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/BackendApplication.java",
+        "line": 5,
+        "message": "package org.springframework.boot.context.properties does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.boot.context.properties.ConfigurationPropertiesScan;",
+          "                                                  ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/BackendApplication.java",
+        "line": 6,
+        "message": "package org.springframework.cache.annotation does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.cache.annotation.EnableCaching;",
+          "                                           ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/BackendApplication.java",
+        "line": 7,
+        "message": "package org.springframework.scheduling.annotation does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.scheduling.annotation.EnableAsync;",
+          "                                                ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/BackendApplication.java",
+        "line": 9,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@EnableAsync",
+          " ^",
+          "  symbol: class EnableAsync"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/BackendApplication.java",
+        "line": 10,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@EnableCaching",
+          " ^",
+          "  symbol: class EnableCaching"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/BackendApplication.java",
+        "line": 11,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@ConfigurationPropertiesScan",
+          " ^",
+          "  symbol: class ConfigurationPropertiesScan"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/BackendApplication.java",
+        "line": 12,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@SpringBootApplication",
+          " ^",
+          "  symbol: class SpringBootApplication"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/factory/PJeAdapterFactory.java",
+        "line": 6,
+        "message": "package org.springframework.context does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.context.ApplicationContext;",
+          "                                  ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/factory/PJeAdapterFactory.java",
+        "line": 7,
+        "message": "package org.springframework.stereotype does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.stereotype.Component;",
+          "                                     ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/factory/PJeAdapterFactory.java",
+        "line": 10,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@Component",
+          " ^",
+          "  symbol: class Component"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/factory/PJeAdapterFactory.java",
+        "line": 15,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    public PJeAdapterFactory(ApplicationContext context) {",
+          "                             ^",
+          "  symbol:   class ApplicationContext",
+          "  location: class PJeAdapterFactory"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAutenticacaoResponse.java",
+        "line": 5,
+        "message": "package lombok does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import lombok.Builder;",
+          "             ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAutenticacaoResponse.java",
+        "line": 6,
+        "message": "package lombok does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import lombok.Getter;",
+          "             ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAutenticacaoResponse.java",
+        "line": 8,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@Getter",
+          " ^",
+          "  symbol: class Getter"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAutenticacaoResponse.java",
+        "line": 9,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@Builder",
+          " ^",
+          "  symbol: class Builder"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeSubmissaoResponse.java",
+        "line": 5,
+        "message": "package lombok does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import lombok.Builder;",
+          "             ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeSubmissaoResponse.java",
+        "line": 6,
+        "message": "package lombok does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import lombok.Getter;",
+          "             ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeSubmissaoResponse.java",
+        "line": 8,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@Getter",
+          " ^",
+          "  symbol: class Getter"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeSubmissaoResponse.java",
+        "line": 9,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@Builder",
+          " ^",
+          "  symbol: class Builder"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAndamentoResponse.java",
+        "line": 6,
+        "message": "package lombok does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import lombok.Builder;",
+          "             ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAndamentoResponse.java",
+        "line": 7,
+        "message": "package lombok does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import lombok.Getter;",
+          "             ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAndamentoResponse.java",
+        "line": 9,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@Getter",
+          " ^",
+          "  symbol: class Getter"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAndamentoResponse.java",
+        "line": 10,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@Builder",
+          " ^",
+          "  symbol: class Builder"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAndamentoResponse.java",
+        "line": 20,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    @Getter",
+          "     ^",
+          "  symbol:   class Getter",
+          "  location: class PJeAndamentoResponse"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAndamentoResponse.java",
+        "line": 21,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    @Builder",
+          "     ^",
+          "  symbol:   class Builder",
+          "  location: class PJeAndamentoResponse"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/strategies/config/WebSocketConfig.java",
+        "line": 3,
+        "message": "package org.springframework.context.annotation does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.context.annotation.Configuration;",
+          "                                             ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/strategies/config/WebSocketConfig.java",
+        "line": 6,
+        "message": "package lombok does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import lombok.RequiredArgsConstructor;",
+          "             ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/strategies/config/WebSocketConfig.java",
+        "line": 11,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "public class WebSocketConfig implements WebSocketConfigurer {",
+          "                                        ^",
+          "  symbol: class WebSocketConfigurer"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/strategies/config/WebSocketConfig.java",
+        "line": 8,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@Configuration",
+          " ^",
+          "  symbol: class Configuration"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/strategies/config/WebSocketConfig.java",
+        "line": 9,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@EnableWebSocket",
+          " ^",
+          "  symbol: class EnableWebSocket"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/strategies/config/WebSocketConfig.java",
+        "line": 10,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "@RequiredArgsConstructor",
+          " ^",
+          "  symbol: class RequiredArgsConstructor"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java",
+        "line": 7,
+        "message": "package org.springframework.boot.autoconfigure.condition does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;",
+          "                                                       ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java",
+        "line": 8,
+        "message": "package org.springframework.kafka.core does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.kafka.core.KafkaTemplate;",
+          "                                     ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java",
+        "line": 9,
+        "message": "package org.springframework.stereotype does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.stereotype.Component;",
+          "                                     ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java",
+        "line": 10,
+        "message": "package org.springframework.web.socket does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.web.socket.CloseStatus;",
+          "                                     ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java",
+        "line": 11,
+        "message": "package org.springframework.web.socket does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.web.socket.TextMessage;",
+          "                                     ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java",
+        "line": 12,
+        "message": "package org.springframework.web.socket does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.web.socket.WebSocketSession;",
+          "                                     ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb07/pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java",
+        "line": 13,
+        "message": "package org.springframework.web.socket.handler does not exist",
+        "bucket": "missing-package",
+        "context": [
+          "import org.springframework.web.socket.handler.TextWebSocketHandler;",
+          "                                             ^"
+        ]
+      }
+    ]
+  },
+  "notes": [
+    "Probe heurística usada para recuperação quando o Maven Wrapper não consegue baixar o Maven no ambiente.",
+    "Os stubs são transitórios e existem apenas durante a execução da probe.",
+    "O objetivo é separar bloqueio de classpath externo de possível drift interno do repositório."
+  ]
+}

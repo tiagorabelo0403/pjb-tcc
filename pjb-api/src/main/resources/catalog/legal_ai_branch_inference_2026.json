@@ -1,0 +1,178 @@
+{
+  "defaultBranches": [
+    "CONSTITUCIONAL",
+    "CIVIL"
+  ],
+  "rules": [
+    {
+      "branchCode": "CONSTITUCIONAL",
+      "keywords": [
+        "constituicao",
+        "constitucional",
+        "controle concentrado",
+        "controle difuso",
+        "repercussao geral",
+        "stf",
+        "direito fundamental"
+      ]
+    },
+    {
+      "branchCode": "CIVIL",
+      "keywords": [
+        "civil",
+        "cpc",
+        "contrato",
+        "indenizacao",
+        "responsabilidade civil",
+        "cumprimento de sentenca",
+        "obrigacao",
+        "execucao de titulo"
+      ]
+    },
+    {
+      "branchCode": "PENAL",
+      "keywords": [
+        "penal",
+        "cpp",
+        "crime",
+        "prisao",
+        "habeas corpus",
+        "acusacao",
+        "denuncia",
+        "tribunal do juri"
+      ]
+    },
+    {
+      "branchCode": "TRABALHISTA",
+      "keywords": [
+        "trabalhista",
+        "trabalho",
+        "clt",
+        "reclamacao trabalhista",
+        "rescisao",
+        "horas extras",
+        "tst"
+      ]
+    },
+    {
+      "branchCode": "TRIBUTARIO",
+      "keywords": [
+        "tributario",
+        "fiscal",
+        "icms",
+        "pis cofins",
+        "ctn",
+        "execucao fiscal",
+        "credito tributario"
+      ]
+    },
+    {
+      "branchCode": "PREVIDENCIARIO",
+      "keywords": [
+        "previdenciario",
+        "inss",
+        "aposentadoria",
+        "beneficio",
+        "bpc",
+        "auxilio por incapacidade"
+      ]
+    },
+    {
+      "branchCode": "ADMINISTRATIVO",
+      "keywords": [
+        "administrativo",
+        "improbidade",
+        "licitacao",
+        "servidor publico",
+        "pad",
+        "ato administrativo"
+      ]
+    },
+    {
+      "branchCode": "ELEITORAL",
+      "keywords": [
+        "eleitoral",
+        "tse",
+        "inelegibilidade",
+        "registro de candidatura",
+        "prestacao de contas",
+        "abuso de poder"
+      ]
+    },
+    {
+      "branchCode": "EMPRESARIAL",
+      "keywords": [
+        "empresarial",
+        "societario",
+        "falencia",
+        "recuperacao judicial",
+        "holding",
+        "sociedade empresaria"
+      ]
+    },
+    {
+      "branchCode": "CONSUMIDOR",
+      "keywords": [
+        "consumidor",
+        "cdc",
+        "fornecedor",
+        "produto",
+        "servico",
+        "negativacao indevida"
+      ]
+    },
+    {
+      "branchCode": "AMBIENTAL",
+      "keywords": [
+        "ambiental",
+        "licenciamento",
+        "ibama",
+        "dano ambiental",
+        "reserva legal",
+        "unidade de conservacao"
+      ]
+    },
+    {
+      "branchCode": "FAMILIA",
+      "keywords": [
+        "familia",
+        "alimentos",
+        "guarda",
+        "divorcio",
+        "uniao estavel",
+        "convivencia"
+      ]
+    },
+    {
+      "branchCode": "JUIZADOS",
+      "keywords": [
+        "juizado",
+        "jec",
+        "jef",
+        "jecrim",
+        "rito sumarissimo"
+      ]
+    },
+    {
+      "branchCode": "EXECUCAO_PENAL",
+      "keywords": [
+        "execucao penal",
+        "lep",
+        "regime prisional",
+        "progressao de regime",
+        "remicao"
+      ]
+    },
+    {
+      "branchCode": "INFANCIA_E_JUVENTUDE",
+      "keywords": [
+        "eca",
+        "infancia",
+        "juventude",
+        "ato infracional",
+        "medida socioeducativa",
+        "guarda de menor"
+      ]
+    }
+  ]
+}

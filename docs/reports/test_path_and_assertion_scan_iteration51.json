@@ -1,0 +1,16 @@
+{
+  "round": "51",
+  "focus": "test_path_and_assertion_hardening",
+  "pathChecks": {
+    "testsScanned": 1050,
+    "missingReferencedJavaPaths": 0
+  },
+  "assertionImportChecks": {
+    "filesMissingJUnitAssertionsStaticImport": 0
+  },
+  "notes": [
+    "Normalized module-local test file references from pjb-api/src/main/java/... to src/main/java/... when tests run under the pjb-api module.",
+    "Updated moved path references for juizado procedural files, institutional communication DTOs, and FederalismoRedistribuicaoService.",
+    "Added missing JUnit Assertions static imports in tests that invoked assertTrue/assertFalse/assertEquals without qualification."
+  ]
+}

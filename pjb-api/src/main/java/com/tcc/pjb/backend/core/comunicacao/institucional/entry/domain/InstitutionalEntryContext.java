@@ -1,0 +1,39 @@
+package com.tcc.pjb.backend.core.comunicacao.institucional.entry.domain;
+
+import com.tcc.pjb.backend.model.entity.enums.CapacidadeCaixaInstitucional;
+import com.tcc.pjb.backend.model.entity.enums.DestinatarioInstitucionalKind;
+import com.tcc.pjb.backend.model.entity.enums.FuncaoOperacionalInstitucional;
+import com.tcc.pjb.backend.model.entity.enums.OrganizacaoExtraJudicialKind;
+import java.util.List;
+import java.util.Set;
+
+public record InstitutionalEntryContext(
+        String contextId,
+        DestinatarioInstitucionalKind destinatarioKind,
+        OrganizacaoExtraJudicialKind organizacaoKind,
+        String orgaoSigla,
+        String orgaoNome,
+        String unidadeCodigo,
+        String unidadeNome,
+        String nucleo,
+        String uf,
+        String comarca,
+        String caixaCodigo,
+        String caixaNome,
+        InstitutionalProcessProfile processProfile,
+        FuncaoOperacionalInstitucional funcaoOperacional,
+        Set<CapacidadeCaixaInstitucional> capacidades,
+        boolean delegacaoAtiva,
+        boolean substituicaoAtiva,
+        boolean coberturaAtiva,
+        boolean plantaoAtivo,
+        long totalPendencias,
+        long totalSemLeitura,
+        long totalUrgentes,
+        long totalAtribuidasAoUsuario,
+        InstitutionalEntryLandingPanel landingPanel,
+        String landingPath,
+        String accentColor,
+        int prioridade,
+        List<String> fundamentosEntrada
+) {}

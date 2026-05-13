@@ -1,0 +1,142 @@
+{
+  "version": "2026.1",
+  "requiredResources": [
+    {
+      "path": "catalog/legal_ai_knowledge_sources_2026.json",
+      "topLevel": "ARRAY",
+      "requiredFields": [
+        "sourceId",
+        "title",
+        "sourceKind",
+        "authorityLevel",
+        "institution",
+        "storageLane",
+        "baseUrl"
+      ]
+    },
+    {
+      "path": "catalog/legal_ai_branch_inference_2026.json",
+      "topLevel": "OBJECT",
+      "requiredFields": [
+        "defaultBranches",
+        "rules"
+      ]
+    },
+    {
+      "path": "catalog/legal_ai_ingestion_policy_2026.json",
+      "topLevel": "OBJECT",
+      "requiredFields": [
+        "priorityOrder",
+        "ingestionPolicies",
+        "selectionReasons",
+        "doctrinePolicy"
+      ]
+    },
+    {
+      "path": "catalog/legal_ai_surface_text_2026.json",
+      "topLevel": "OBJECT",
+      "requiredFields": [
+        "coverage",
+        "catalog"
+      ]
+    },
+    {
+      "path": "catalog/legal_ai_commentary_text_2026.json",
+      "topLevel": "OBJECT",
+      "requiredFields": [
+        "evidence",
+        "manifest"
+      ]
+    },
+    {
+      "path": "ritos/rito_pack_2026.json",
+      "topLevel": "OBJECT",
+      "requiredFields": [
+        "definitions"
+      ]
+    },
+    {
+      "path": "jurisprudencia/seed_precedentes_2026.json",
+      "topLevel": "ARRAY",
+      "requiredFields": [
+        "fonte",
+        "identificador",
+        "titulo"
+      ]
+    },
+    {
+      "path": "material/material_pack_2026.json",
+      "topLevel": "OBJECT",
+      "requiredFields": [
+        "byRamo",
+        "byRito"
+      ]
+    },
+    {
+      "path": "constituicao/constitution_pack_2026.json",
+      "topLevel": "ARRAY",
+      "requiredFields": [
+        "tema",
+        "titulo",
+        "branchCode",
+        "summary"
+      ]
+    },
+    {
+      "path": "sumulas/sumula_pack_2026.json",
+      "topLevel": "ARRAY",
+      "requiredFields": [
+        "tribunal",
+        "identificador",
+        "tipo",
+        "branchCode",
+        "summary"
+      ]
+    },
+    {
+      "path": "doutrina/doctrine_catalog_2026.json",
+      "topLevel": "ARRAY",
+      "requiredFields": [
+        "catalogId",
+        "title",
+        "branchCode",
+        "artifactType",
+        "licensingModel"
+      ]
+    },
+    {
+      "path": "leis-especiais/special_law_pack_2026.json",
+      "topLevel": "ARRAY",
+      "requiredFields": [
+        "lawId",
+        "title",
+        "branchCode",
+        "artifactType",
+        "sourceUrl"
+      ]
+    },
+    {
+      "path": "precedentes/qualified_precedent_pack_2026.json",
+      "topLevel": "ARRAY",
+      "requiredFields": [
+        "tribunal",
+        "trackType",
+        "identifier",
+        "title",
+        "branchCode",
+        "officialUrl"
+      ]
+    },
+    {
+      "path": "governanca/governance_act_pack_2026.json",
+      "topLevel": "ARRAY",
+      "requiredFields": [
+        "actId",
+        "title",
+        "branchCode",
+        "artifactType",
+        "sourceUrl"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+ALTER TABLE tb_processo_note
+  ADD COLUMN IF NOT EXISTS tags_json TEXT NOT NULL DEFAULT '[]';

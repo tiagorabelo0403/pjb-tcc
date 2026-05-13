@@ -1,0 +1,14 @@
+Correção aplicada no snapshot atual.
+
+Erro de compile corrigido:
+- PjbSubstituicaoFederativaCutoverMatrixApplicationService.java
+- switch expression não exaustivo em mapRamoNacional(RamoDireito)
+
+Ajuste realizado:
+- substituído switch direto sobre o enum por mapeamento via verticalPrincipal()
+- adicionados caminhos explícitos para ELEITORAL, TRABALHISTA, FAZENDA, PENAL, DIFUSO e CIVEL
+- fallback defensivo mantido para evitar nova quebra silenciosa em caso de expansão futura da enumeração
+
+Observação honesta:
+- não houve confirmação de build Maven global dentro deste ambiente
+- a correção foi aplicada no projeto empacotado para novo teste no ambiente do usuário

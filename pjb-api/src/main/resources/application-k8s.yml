@@ -1,0 +1,79 @@
+spring:
+  config:
+    activate:
+      on-profile: k8s
+  lifecycle:
+    timeout-per-shutdown-phase: 45s
+
+server:
+  shutdown: graceful
+  forward-headers-strategy: framework
+  tomcat:
+    redirect-context-root: false
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+        add-additional-paths: true
+      show-details: never
+      group:
+        readiness:
+          include: readinessState,pjbRuntimePressure
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  metrics:
+    tags:
+      application: pjb-backend-core
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+pjb:
+  scheduling:
+    enabled: ${PJB_SCHEDULING_ENABLED:true}
+  security:
+    policy:
+      version: ${PJB_SECURITY_POLICY_VERSION:v1}
+      descriptor-resource: ${PJB_SECURITY_POLICY_DESCRIPTOR_RESOURCE:classpath:policies/security/pjb-access-policy.json}
+    hardening:
+      enabled: ${PJB_SECURITY_HARDENING_ENABLED:true}
+      reject-trace: ${PJB_SECURITY_HARDENING_REJECT_TRACE:true}
+      reject-track: ${PJB_SECURITY_HARDENING_REJECT_TRACK:true}
+      reject-connect: ${PJB_SECURITY_HARDENING_REJECT_CONNECT:true}
+      reject-method-override-headers: ${PJB_SECURITY_HARDENING_REJECT_METHOD_OVERRIDE:true}
+      add-browser-hardening-headers: ${PJB_SECURITY_HARDENING_BROWSER_HEADERS:true}
+      no-store-sensitive-responses: ${PJB_SECURITY_HARDENING_NOSTORE_SENSITIVE:true}
+    perimeter:
+      trust-proxy-headers: ${PJB_SECURITY_PERIMETER_TRUST_PROXY_HEADERS:true}
+      proxy:
+        reject-untrusted-forwarded-headers: ${PJB_SECURITY_PERIMETER_PROXY_REJECT_UNTRUSTED_HEADERS:true}
+        max-forwarded-for-hops: ${PJB_SECURITY_PERIMETER_PROXY_MAX_FORWARDED_FOR_HOPS:8}
+        trusted-cidrs:
+          - 10.0.0.0/8
+          - 172.16.0.0/12
+          - 192.168.0.0/16
+          - 100.64.0.0/10
+          - 127.0.0.0/8
+          - ::1/128
+          - fc00::/7
+          - fe80::/10
+      blocklist:
+        store: ${PJB_SECURITY_BLOCKLIST_STORE:redis}
+      ratelimit:
+        store: ${PJB_SECURITY_RATELIMIT_STORE:redis}
+      origin-governance:
+        enabled: ${PJB_SECURITY_PERIMETER_ORIGIN_GOVERNANCE_ENABLED:true}
+    capability-ratelimit:
+      enabled: ${PJB_SECURITY_CAPABILITY_RATELIMIT_ENABLED:true}
+      store: ${PJB_SECURITY_CAPABILITY_RATELIMIT_STORE:redis}

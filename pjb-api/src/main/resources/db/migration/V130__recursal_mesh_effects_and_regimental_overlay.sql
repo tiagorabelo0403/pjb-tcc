@@ -1,0 +1,4 @@
+ALTER TABLE tb_recursal_mesh_aggregate
+    ADD COLUMN IF NOT EXISTS efeito_suspensivo_ativo BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS efeito_ativo_concedido BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS conhecimento_parcial BOOLEAN NOT NULL DEFAULT FALSE;

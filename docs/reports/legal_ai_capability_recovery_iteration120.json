@@ -1,0 +1,19 @@
+{
+  "round": 120,
+  "theme": "legal_ai_capability_recovery_lane",
+  "artifacts": [
+    "LegalAiConversationCapabilityRecoverySnapshot",
+    "LegalAiConversationCapabilityRecoveryService"
+  ],
+  "integrations": [
+    "LegalAiConversationOrchestrator",
+    "LegalToolScopePolicy",
+    "LegalSensitiveActionApprovalService",
+    "LegalAiConversationResponseComposerService"
+  ],
+  "statuses": [
+    "DENIED",
+    "PENDING",
+    "RECOVERED"
+  ]
+}

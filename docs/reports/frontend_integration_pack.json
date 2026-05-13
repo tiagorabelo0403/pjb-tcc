@@ -1,0 +1,23 @@
+{
+  "surface": "/api/v1/admin/frontend-readiness/integration-pack",
+  "openApiExports": [
+    "docs/openapi/public-api.yaml",
+    "docs/openapi/admin-api.yaml"
+  ],
+  "postman": [
+    "docs/postman/PJB_Frontend_Integration.postman_collection.json",
+    "docs/postman/PJB_Frontend_Environment.postman_environment.json"
+  ],
+  "errorCatalog": [
+    "docs/ERROR_CODES.md",
+    "docs/reports/error_code_catalog.json"
+  ],
+  "frontendDevProfile": "src/main/resources/application-frontend-dev.yml",
+  "seedPack": [
+    "src/main/resources/frontend-dev/seed-users.json",
+    "src/main/resources/frontend-dev/seed-processos.json",
+    "src/main/resources/frontend-dev/seed-custas.json",
+    "src/main/resources/frontend-dev/seed-integrations.json"
+  ],
+  "smokePack": "src/test/java/com/tcc/pjb/backend/smoke/FrontendPrimaryFlowsSmokeTest.java"
+}

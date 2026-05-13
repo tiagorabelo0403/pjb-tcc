@@ -1,0 +1,129 @@
+{
+  "byRamo": {
+    "CIVIL": {
+      "requiredDocuments": [
+        "Documentos pessoais das partes (RG/CPF/CNPJ, endereço)",
+        "Prova mínima do fato constitutivo (contrato, conversas, recibos, prints com metadados quando possível)",
+        "Procuração e documentos de representação (se aplicável)"
+      ],
+      "proofChecklist": [
+        "Cronologia dos fatos (data -> evento -> prova)",
+        "Cálculo do valor pretendido (planilha/critério)",
+        "Risco de prescrição/decadência (marcos temporais)"
+      ],
+      "legalBases": [
+        "CPC/2015 (princípios, petição inicial, tutela provisória)",
+        "CC/2002 (regras gerais de responsabilidade e obrigações)"
+      ],
+      "warnings": [
+        "Este kit é um checklist: estratégia e adequação final dependem de análise humana.",
+        "Evitar anexar dados sensíveis desnecessários (LGPD)."
+      ]
+    },
+    "PENAL": {
+      "requiredDocuments": [
+        "Boletim de ocorrência / peças do inquérito (quando disponíveis)",
+        "Provas materiais (laudos, fotos, vídeos, perícias) e cadeia de custódia quando cabível",
+        "Rol de testemunhas e endereços (se aplicável)"
+      ],
+      "proofChecklist": [
+        "Tipificação inicial (hipótese) + elementos objetivos/subjetivos", 
+        "Análise de competência e rito (Lei especial x CPP)",
+        "Medidas cautelares (necessidade/adequação/proporcionalidade)"
+      ],
+      "legalBases": [
+        "CPP (cautelares, instrução, provas)",
+        "CP (tipo penal e dosimetria, quando aplicável)"
+      ],
+      "warnings": [
+        "Não confundir checklist com diagnóstico jurídico final.",
+        "Para medidas urgentes, verificar plantão e requisitos locais."
+      ]
+    },
+    "TRABALHISTA": {
+      "requiredDocuments": [
+        "CTPS e contrato (ou comprovação do vínculo)",
+        "Holerites/contracheques e comprovantes de pagamento",
+        "Registro de jornada (ponto), escalas, mensagens e ordens"
+      ],
+      "proofChecklist": [
+        "Linha do tempo do vínculo (admissão -> fatos -> dispensa)",
+        "Apuração de verbas (planilha por rubrica)",
+        "Tentativas prévias/negociação (quando houver)"
+      ],
+      "legalBases": [
+        "CLT (direitos e procedimento)",
+        "CF/88 (direitos sociais e princípios)"
+      ],
+      "warnings": [
+        "Checar ritos e prazos específicos conforme TRT/vara competente."
+      ]
+    },
+    "PREVIDENCIARIO": {
+      "requiredDocuments": [
+        "Documentos pessoais e comprovante de residência",
+        "CNIS e histórico contributivo",
+        "Laudos/atestados médicos (quando incapacidade)"
+      ],
+      "proofChecklist": [
+        "Requerimento administrativo e indeferimento (quando aplicável)",
+        "Qualidade de segurado e carência",
+        "Perícia: quesitos e documentos de apoio"
+      ],
+      "legalBases": [
+        "Lei 8.213/91 (benefícios)",
+        "Decreto 3.048/99 (regulamento)"
+      ],
+      "warnings": [
+        "Verificar necessidade de prévio requerimento e exceções conforme entendimento jurisprudencial aplicável."
+      ]
+    },
+    "TRIBUTARIO": {
+      "requiredDocuments": [
+        "Notificações, autos de infração e CDA (se houver)",
+        "Comprovantes de recolhimento/declarações",
+        "Procuração e atos constitutivos da empresa (se aplicável)"
+      ],
+      "proofChecklist": [
+        "Identificar tributo, competência e período",
+        "Cálculo do débito/crédito com memória de cálculo",
+        "Análise de prescrição/decadência e suspensão da exigibilidade"
+      ],
+      "legalBases": [
+        "CTN (decadência, prescrição, crédito tributário)",
+        "Lei 6.830/80 (execução fiscal, quando aplicável)"
+      ],
+      "warnings": [
+        "Checar necessidade de garantia/depósito conforme estratégia e caso concreto."
+      ]
+    }
+  },
+  "byRito": {
+    "EXECUCAO_FISCAL": {
+      "requiredDocuments": [
+        "CDA e demonstrativo do débito",
+        "Provas de pagamento/suspensão (se houver)",
+        "Documentos para nomeação de bens/garantia (quando estratégia exigir)"
+      ],
+      "proofChecklist": [
+        "Exceção de pré-executividade (cabimento) ou embargos (garantia)",
+        "Nulidades formais da CDA",
+        "Linha do tempo para prescrição intercorrente"
+      ],
+      "legalBases": [
+        "Lei 6.830/80",
+        "CTN"
+      ],
+      "warnings": [
+        "Prazo e cabimento variam conforme garantia e atos processuais."
+      ]
+    },
+    "TRIBUNAL_JURI": {
+      "proofChecklist": [
+        "Analisar fase do judicium accusationis vs judicium causae",
+        "Estratégia: desclassificação/absolvição sumária/pronúncia",
+        "Roteiro de quesitação e provas principais"
+      ]
+    }
+  }
+}

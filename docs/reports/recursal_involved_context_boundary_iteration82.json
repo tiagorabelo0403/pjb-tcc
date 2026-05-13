@@ -1,0 +1,10 @@
+{
+  "round": 82,
+  "title": "fronteira entre envolvimento real e busca neutra",
+  "artifacts": [
+    "RecursalInvolvedContextBoundaryBlueprint",
+    "RecursalInvolvedContextBoundaryTrackFactory"
+  ],
+  "playbookStep": "LIMITAR_COMUTACAO_A_ENVOLVIDOS_E_PRESERVAR_BUSCA_NEUTRA",
+  "workspaceTrack": "FRONTEIRA_ENVOLVIMENTO_E_BUSCA_NEUTRA"
+}

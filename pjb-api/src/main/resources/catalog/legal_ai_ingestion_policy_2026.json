@@ -1,0 +1,51 @@
+{
+  "priorityOrder": [
+    "CONSTITUTION_AND_CODES",
+    "OFFICIAL_NORMATIVE_TEXT",
+    "BINDING_PRECEDENTS_AND_THEMES",
+    "SUMULAS_AND_OJS",
+    "OFFICIAL_JURISPRUDENCE",
+    "GOVERNANCE_ACTS_AND_ENUNCIADOS",
+    "LICENSED_DOCTRINE_AND_INTERNAL_MANUALS"
+  ],
+  "ingestionPolicies": [
+    "Constituição, códigos, leis complementares e leis ordinárias devem entrar por fonte oficial consolidada.",
+    "Precedentes vinculantes, temas repetitivos, súmulas e orientações jurisprudenciais devem entrar por fonte oficial do tribunal competente.",
+    "Atos administrativos de governança judicial devem ser segregados de legislação material e de precedentes.",
+    "Doutrina e livros só podem entrar por licença, propriedade comprovada, acervo institucional ou upload controlado.",
+    "Promoção para grounding permanente exige metadados de origem, versão, data de coleta, hash do conteúdo e política de retenção.",
+    "Reindexação incremental deve ocorrer por fonte, ramo, tribunal e tipo de artefato, sem rebuild integral desnecessário."
+  ],
+  "selectionReasons": {
+    "officialOnly": [
+      "Cobertura oficial priorizada por ramo inferido na conversa.",
+      "Ordem de fundamentação preserva hierarquia normativa e precedencial antes de material doutrinário.",
+      "Sem doutrina licenciada aplicável no recorte atual; usar apenas se houver licença, upload controlado ou acervo institucional válido."
+    ],
+    "officialPlusDoctrine": [
+      "Cobertura oficial priorizada por ramo inferido na conversa.",
+      "Ordem de fundamentação preserva hierarquia normativa e precedencial antes de material doutrinário.",
+      "Há lane específica para doutrina licenciada e acervo interno controlado, com peso inferior à fonte oficial em caso de conflito."
+    ]
+  },
+  "doctrinePolicy": {
+    "allowOfficialPublicSources": true,
+    "allowLicensedDoctrine": true,
+    "allowInternalManuals": true,
+    "allowUserOwnedUploads": true,
+    "allowCopyrightedBulkScraping": false,
+    "doctrinePromotionRequiresLicenseEvidence": true,
+    "minimumMetadata": [
+      "title",
+      "author",
+      "editionOrVersion",
+      "sourceInstitution",
+      "licenseOrOwnershipEvidence",
+      "branchCoverage",
+      "artifactType"
+    ],
+    "rankingMode": "OFFICIAL_FIRST_DOCTRINE_SECOND",
+    "conflictResolutionMode": "OFFICIAL_SOURCE_PREVAILS",
+    "retentionMode": "VERSIONED_WITH_HASH"
+  }
+}

@@ -1,0 +1,298 @@
+{
+  "consumer": {
+    "name": "PjbConsultaPublicaConsumer"
+  },
+  "provider": {
+    "name": "PjbConsultaPublicaProvider"
+  },
+  "interactions": [
+    {
+      "description": "load public consultation workspace",
+      "providerStates": [
+        {
+          "name": "public consultation workspace can be loaded"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/public/consultas-publicas/workspace"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "etag": "W/\"consulta-publica-2026-01\"",
+          "generatedAt": "2026-04-16T11:00:00",
+          "mode": "PUBLIC_ONLY",
+          "headline": "Consulta processual clara, rápida e governada",
+          "summary": "Busca pública orientada para terceiros sem expor superfícies autenticadas.",
+          "search": {
+            "minQueryLength": 3,
+            "defaultPageSize": 20,
+            "maxPageSize": 50,
+            "tiposJustica": [
+              {
+                "code": "ESTADUAL",
+                "label": "Justiça Estadual",
+                "category": "TIPO_JUSTICA"
+              }
+            ],
+            "ramosDireito": [
+              {
+                "code": "CIVIL",
+                "label": "Cível",
+                "category": "RAMO_DIREITO"
+              }
+            ],
+            "supportedKeys": [
+              "q",
+              "tipoJustica",
+              "ramoDireito"
+            ],
+            "placeholder": "Busque por número, nome ou assunto",
+            "defaultSort": "RELEVANCE"
+          },
+          "routes": {
+            "workspace": "/api/v1/public/consultas-publicas/workspace",
+            "search": "/api/v1/public/consultas-publicas/search",
+            "processPublicDetail": "/api/v1/public/consultas-publicas/processos/{numero}",
+            "myProcesses": "/api/v1/processos/pessoais/meus-processos",
+            "personalCockpit": "/api/v1/processos/pessoais/cockpit",
+            "personalOverview": "/api/v1/processos/pessoais/{processoId}/overview",
+            "deadlines": "/api/v1/calendar/workspace?from={from}&to={to}",
+            "publicPageResolve": "/api/v1/public/consultas-publicas/pages/{pageId}",
+            "personCandidates": "/api/v1/public/persons/candidates",
+            "personCandidateProcesses": "/api/v1/public/persons/candidates/{candidateId}/processos",
+            "cpfPublicProcesses": "/api/v1/public/cpf/{cpf}/processos",
+            "calendarWorkspace": "/api/v1/calendar/workspace",
+            "calendarPanel": "/api/v1/calendar/panel",
+            "processRealDeadline": "/api/v1/processos/{processoId}/prazo-real",
+            "judicialCalculatorWorkspace": "/api/v1/processual/calculos/workspace",
+            "judicialCalculatorDomainHelp": "/api/v1/processual/calculos/domain-help",
+            "processChatHistory": "/api/v1/chat/processo/{processoId}",
+            "processNotes": "/api/v1/processos/{processoId}/notes",
+            "workspaceTags": "/api/v1/workspace/tags",
+            "processTags": "/api/v1/processos/{processoId}/tags",
+            "professionalPanelWorkspace": "/api/v1/professional/forensic-panel/workspace",
+            "professionalPanelSearch": "/api/v1/professional/forensic-panel/search",
+            "professionalInstitutionalOverview": "/api/v1/professional/institutional/overview",
+            "professionalOrganDashboard": "/api/v1/professional/organization/dashboard",
+            "professionalClient360": "/api/v1/professional/client-360/{clienteId}",
+            "professionalProcessDetail": "/api/v1/professional/processos/{processoId}",
+            "professionalGrantWorkspace": "/api/v1/professional/grants/workspace",
+            "professionalGrantProcessTimeline": "/api/v1/professional/grants/processos/{processoId}/timeline",
+            "professionalGrantGovernanceDashboard": "/api/v1/professional/grants/governance/dashboard",
+            "professionalGrantBatchRequests": "/api/v1/professional/grants/batch-requests",
+            "professionalGrantOperationalDashboard": "/api/v1/professional/grants/operational/dashboard",
+            "professionalGrantTemplateCatalog": "/api/v1/professional/grants/template-catalog",
+            "professionalGrantTemplateBatchRequests": "/api/v1/professional/grants/template-batch-requests"
+          },
+          "accessibility": {
+            "standard": "WCAG_2_2_AA",
+            "principles": [
+              "contraste reforçado",
+              "navegação por teclado"
+            ],
+            "assistiveFeatures": [
+              "atalhos de foco",
+              "descrição semântica"
+            ],
+            "uiLegendRoute": "/api/v1/ui/legend",
+            "uiPresentationBundleRoute": "/api/v1/ui/presentation-bundle",
+            "uiAccessibilityPreferenceRoute": "/api/v1/ui/accessibility/preferences"
+          },
+          "datasets": {
+            "personalAvailable": true,
+            "personalProcessCount": 0,
+            "searchCacheTtlSeconds": 15,
+            "detailCacheTtlSeconds": 25,
+            "workspaceRefreshAfterSeconds": 20,
+            "publicSearchRequiresAuthentication": false,
+            "publicSearchExposesDocuments": false,
+            "regionalDisambiguationEnabled": true,
+            "cpfDirectLookupEnabled": true,
+            "publicActResolveEnabled": true,
+            "sourcePolicy": "TERCEIROS_APENAS_RESUMO_PUBLICO;ATOS_PUBLICOS_LIMITADOS"
+          },
+          "journeys": [],
+          "publicActs": [
+            {
+              "code": "ACORDAO",
+              "label": "Acórdão público",
+              "description": "Leitura textual governada",
+              "routeTemplate": "/api/v1/public/consultas-publicas/pages/{pageId}",
+              "textualPreviewEnabled": true
+            }
+          ],
+          "sections": [
+            {
+              "code": "BUSCA_PUBLICA",
+              "title": "Busca pública",
+              "description": "Busca orientada para terceiros",
+              "tone": "PRIMARY",
+              "route": "/api/v1/public/consultas-publicas/search",
+              "enabled": true
+            }
+          ],
+          "personalHub": null,
+          "meusProcessos": [],
+          "warnings": [
+            "A trilha pública não expõe documentos integrais nem metadados sensíveis."
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "search public consultation by person and branch",
+      "providerStates": [
+        {
+          "name": "public consultation search can be executed"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/public/consultas-publicas/search",
+        "query": "q=Jo%C3%A3o%20Pereira&tipoJustica=ESTADUAL&ramoDireito=CIVIL&page=0&size=20"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "query": "João Pereira",
+          "page": 0,
+          "size": 20,
+          "total": 1,
+          "hits": [
+            {
+              "processoId": 9001,
+              "numeroUnificado": "0001234-56.2026.8.06.0001",
+              "tipoJustica": "ESTADUAL",
+              "ramoDireito": "CIVIL",
+              "classeProcessual": "Cumprimento de sentença",
+              "assunto": "Cobrança contratual",
+              "documentoId": "11111111-1111-1111-1111-111111111111",
+              "documentoTitulo": "Acórdão público",
+              "pageId": "ato-2026-0001",
+              "pageNumber": 3,
+              "snippet": "Partes públicas: João Pereira x Município de Quixadá",
+              "score": 0.98
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "load public process detail",
+      "providerStates": [
+        {
+          "name": "public process detail can be loaded"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/public/consultas-publicas/processos/0001234-56.2026.8.06.0001"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "etag": "W/\"processo-publico-2026-01\"",
+          "generatedAt": "2026-04-16T11:05:00",
+          "refreshAfterSeconds": 25,
+          "resumo": {
+            "processoId": 9001,
+            "numero": "0001234-56.2026.8.06.0001",
+            "tribunal": "TJCE",
+            "uf": "CE",
+            "comarca": "Quixadá",
+            "forum": "Fórum Des. Avelar Rocha",
+            "tipoJustica": "ESTADUAL",
+            "ramoDireito": "CIVIL",
+            "classeProcessual": "Cumprimento de sentença",
+            "assunto": "Cobrança contratual",
+            "dataDistribuicao": "2026-04-15T09:00:00",
+            "dataUltimaMovimentacao": "2026-04-16T10:00:00",
+            "sigilo": {
+              "sigiloso": false,
+              "nivel": 0,
+              "label": "Público",
+              "icon": "lock-open",
+              "color": "green",
+              "mensagemPublica": "Processo público"
+            },
+            "acessoRestrito": false,
+            "resumoPublico": "Resumo público institucional do processo.",
+            "ultimasMovimentacoes": [
+              {
+                "id": 1,
+                "data": "2026-04-16T10:00:00",
+                "faseDe": "CONHECIMENTO",
+                "fasePara": "INSTRUTORIA",
+                "descricao": "Despacho de impulso"
+              }
+            ],
+            "orientacaoAcesso": null
+          },
+          "accessibility": {
+            "standard": "WCAG_2_2_AA",
+            "principles": [
+              "contraste reforçado"
+            ],
+            "assistiveFeatures": [
+              "navegação por teclado"
+            ],
+            "uiLegendRoute": "/api/v1/ui/legend",
+            "uiPresentationBundleRoute": "/api/v1/ui/presentation-bundle",
+            "uiAccessibilityPreferenceRoute": "/api/v1/ui/accessibility/preferences"
+          },
+          "actions": [
+            {
+              "code": "NOVA_BUSCA",
+              "label": "Nova busca pública",
+              "route": "/api/v1/public/consultas-publicas/search",
+              "tone": "NEUTRAL"
+            }
+          ],
+          "warnings": [
+            "A trilha pública não expõe documentos integrais nem metadados sensíveis."
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "resolve public page by identifier",
+      "providerStates": [
+        {
+          "name": "public page can be resolved"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/public/consultas-publicas/pages/ato-2026-0001"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "pageId": "ato-2026-0001",
+          "documentoId": "11111111-1111-1111-1111-111111111111",
+          "documentoTitulo": "Acórdão público",
+          "publicActKind": "ACORDAO",
+          "processoId": 9001,
+          "numeroUnificado": "0001234-56.2026.8.06.0001",
+          "pageNumber": 3,
+          "fingerprint": "sha256:abc123",
+          "texto": "trecho publico consolidado"
+        }
+      },
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "4.0"
+    },
+    "pact-jvm": {
+      "version": "4.6.14"
+    }
+  }
+}

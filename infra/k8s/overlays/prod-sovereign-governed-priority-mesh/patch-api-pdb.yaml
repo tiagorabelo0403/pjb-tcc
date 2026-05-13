@@ -1,0 +1,7 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pjb-api
+spec:
+  minAvailable: 3
+  unhealthyPodEvictionPolicy: AlwaysAllow

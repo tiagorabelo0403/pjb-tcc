@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pjb-api
+spec:
+  template:
+    metadata:
+      labels:
+        pjb.qos/profile: protected-burstable
+    spec:
+      containers:
+        - name: backend
+          resources:
+            requests:
+              cpu: "500m"
+              memory: 1Gi
+              ephemeral-storage: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+              ephemeral-storage: 1Gi

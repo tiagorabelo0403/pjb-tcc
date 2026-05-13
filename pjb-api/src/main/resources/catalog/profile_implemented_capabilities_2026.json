@@ -1,0 +1,802 @@
+{
+  "CIDADAO": [
+    {
+      "role": "CIDADAO",
+      "capabilityCode": "TRADUTOR_JURIDICO_IA",
+      "title": "Tradutor jurídico em linguagem simples",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/legal-translator",
+      "summary": "Converte texto processual e movimentações em síntese clara e operacional.",
+      "tags": [
+        "cidadao",
+        "linguagem-simples",
+        "acessibilidade"
+      ]
+    },
+    {
+      "role": "CIDADAO",
+      "capabilityCode": "IDENTIDADE_GOVBR_FEDERADA",
+      "title": "Escudo de identidade Gov.br",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/govbr/posture",
+      "summary": "Exibe o estado do vínculo federado, confiança operacional e step-up sugerido.",
+      "tags": [
+        "govbr",
+        "sso",
+        "seguranca"
+      ]
+    }
+  ],
+  "ADVOGADO": [
+    {
+      "role": "ADVOGADO",
+      "capabilityCode": "TRADUTOR_JURIDICO_IA",
+      "title": "Tradutor jurídico com apoio operacional",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/legal-translator",
+      "summary": "Traduz andamentos processuais e indica próximos passos com foco prático.",
+      "tags": [
+        "advocacia",
+        "triagem",
+        "prazo"
+      ]
+    },
+    {
+      "role": "ADVOGADO",
+      "capabilityCode": "CONTROLE_PRAZOS_FATAIS",
+      "title": "Controle de prazos fatais",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/deadlines/fatal",
+      "summary": "Monitora itens com risco fatal, crítico e alto para atuação tempestiva.",
+      "tags": [
+        "advocacia",
+        "workflow",
+        "deadline"
+      ]
+    }
+  ],
+  "JUIZ": [
+    {
+      "role": "JUIZ",
+      "capabilityCode": "TRADUTOR_JURIDICO_IA",
+      "title": "Resumo jurisdicional em linguagem clara",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/legal-translator",
+      "summary": "Entrega explicação clara do caso, preservando a rastreabilidade processual.",
+      "tags": [
+        "magistratura",
+        "gabinete",
+        "sintese"
+      ]
+    },
+    {
+      "role": "JUIZ",
+      "capabilityCode": "CONTROLE_PRAZOS_FATAIS",
+      "title": "Radar decisório de prazos fatais",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/deadlines/fatal",
+      "summary": "Consolida urgências operacionais por usuário e território.",
+      "tags": [
+        "magistratura",
+        "prazo",
+        "governanca"
+      ]
+    },
+    {
+      "role": "JUIZ",
+      "capabilityCode": "IDENTIDADE_GOVBR_FEDERADA",
+      "title": "Postura de identidade e step-up Gov.br",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/govbr/posture",
+      "summary": "Monitora vinculação federada e recomenda reforço para operações sensíveis.",
+      "tags": [
+        "magistratura",
+        "govbr",
+        "step-up"
+      ]
+    }
+  ],
+  "ASSESSOR_JUDICIAL": [
+    {
+      "role": "ASSESSOR_JUDICIAL",
+      "capabilityCode": "TRADUTOR_JURIDICO_IA",
+      "title": "Leitura técnica assistida",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/legal-translator",
+      "summary": "Suporte para leitura veloz de movimentações, conclusões e atos processuais.",
+      "tags": [
+        "gabinete",
+        "assessoria",
+        "produtividade"
+      ]
+    },
+    {
+      "role": "ASSESSOR_JUDICIAL",
+      "capabilityCode": "CONTROLE_PRAZOS_FATAIS",
+      "title": "Priorização de minutas por risco de prazo",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/deadlines/fatal",
+      "summary": "Sinaliza o acervo sensível de gabinete para redistribuição interna.",
+      "tags": [
+        "gabinete",
+        "fila",
+        "prazo"
+      ]
+    }
+  ],
+  "MEMBRO_MINISTERIO_PUBLICO": [
+    {
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "capabilityCode": "CONTROLE_PRAZOS_FATAIS",
+      "title": "Painel fatal de manifestações",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/deadlines/fatal",
+      "summary": "Monitora manifestações urgentes e reclassifica prioridades operacionais.",
+      "tags": [
+        "mp",
+        "manifestacao",
+        "deadline"
+      ]
+    }
+  ],
+  "DEFENSOR_PUBLICO": [
+    {
+      "role": "DEFENSOR_PUBLICO",
+      "capabilityCode": "TRADUTOR_JURIDICO_IA",
+      "title": "Explicação clara para atendimento assistido",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/legal-translator",
+      "summary": "Traduz o conteúdo processual para orientação humanizada ao assistido.",
+      "tags": [
+        "defensoria",
+        "atendimento",
+        "linguagem-simples"
+      ]
+    },
+    {
+      "role": "DEFENSOR_PUBLICO",
+      "capabilityCode": "CONTROLE_PRAZOS_FATAIS",
+      "title": "Painel fatal de urgências defensivas",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/deadlines/fatal",
+      "summary": "Prioriza habeas corpus, custódia e manifestações com risco temporal extremo.",
+      "tags": [
+        "defensoria",
+        "urgencia",
+        "prazo"
+      ]
+    }
+  ],
+  "DELEGADO_POLICIA": [
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "ROTEIRIZACAO_OTIMIZADA_DILIGENCIAS",
+      "title": "Roteirização operacional de diligências",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/rota-otimizada",
+      "summary": "Organiza diligências considerando distância, prioridade e prazo fatal.",
+      "tags": [
+        "delegado",
+        "diligencia",
+        "otimizacao"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "CADEIA_CUSTODIA_DIGITAL",
+      "title": "Selagem digital de cadeia de custódia",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/provas/custodia/selar",
+      "summary": "Sela evidências com hash SHA-256, lote e metadados canonizados.",
+      "tags": [
+        "delegado",
+        "prova",
+        "custodia"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "CONTROLE_PRAZOS_FATAIS",
+      "title": "Controle fatal de inquéritos e mandados",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/deadlines/fatal",
+      "summary": "Monitora contagem crítica de diligências, custódia e atos urgentes.",
+      "tags": [
+        "delegado",
+        "workflow",
+        "prazo"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "TELEMETRIA_OPERACIONAL_DILIGENCIAS",
+      "title": "Telemetria operacional de diligências",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/telemetria",
+      "summary": "Registra posição do operador e reaproveita origem recente para roteirização segura.",
+      "tags": [
+        "delegado",
+        "telemetria",
+        "mobilidade"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "LEDGER_CADEIA_CUSTODIA_IMUTAVEL",
+      "title": "Ledger imutável de cadeia de custódia",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/provas/custodia/{chaveCustodia}/ledger",
+      "summary": "Expõe a trilha encadeada de hashes da custódia digital para auditoria operacional.",
+      "tags": [
+        "delegado",
+        "custodia",
+        "ledger"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "CHECKPOINT_CHEGADA_GEOFENCE",
+      "title": "Confirmação de chegada por cerca geográfica",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/checkpoints/chegada",
+      "summary": "Confirma a chegada operacional em diligências com reaproveitamento de telemetria recente e distância auditável.",
+      "tags": [
+        "delegado",
+        "geofence",
+        "diligencia"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "SINCRONIZACAO_OFFLINE_FIRST_DILIGENCIAS",
+      "title": "Sincronização offline-first de telemetria",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/telemetria/sync",
+      "summary": "Recebe lotes de telemetria do dispositivo e consolida o histórico operacional para uso em campo.",
+      "tags": [
+        "delegado",
+        "offline-first",
+        "mobilidade"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "MALHA_CUSTODIA_INTERINSTITUCIONAL",
+      "title": "Exportação e replay de custódia interinstitucional",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/provas/custodia/{chaveCustodia}/sync/export",
+      "summary": "Exporta bundles assinados da cadeia de custódia e audita replays verificados para cooperação institucional.",
+      "tags": [
+        "delegado",
+        "custodia",
+        "mesh"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "VINCULO_DIRETO_CHECKPOINT_DILIGENCIA",
+      "title": "Vínculo operacional checkpoint ↔ diligência",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/vinculo-operacional",
+      "summary": "Resolve a diligência real vinculada ao checkpoint e expõe o contexto processual operativo.",
+      "tags": [
+        "diligencia",
+        "checkpoint",
+        "workitem",
+        "investigacao"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "CERTIDAO_AUTOMATICA_GEOTAGGEADA",
+      "title": "Certidão automática investigativa georreferenciada",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/certidoes/auto",
+      "summary": "Gera certidão assinada com checkpoint, geofence, trilha de tentativas e custódia de evidência.",
+      "tags": [
+        "certidao",
+        "geo",
+        "investigacao",
+        "assinatura"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "FORMALIZACAO_PROCESSUAL_AUDITAVEL",
+      "title": "Formalização processual investigativa",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/formalizacao-processual",
+      "summary": "Converte a diligência encerrada em movimentação processual e lastro auditável com custódia referenciada.",
+      "tags": [
+        "delegado",
+        "formalizacao",
+        "auditoria"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "MINUTA_OPERACIONAL_ASSINADA",
+      "title": "Minuta investigativa institucional",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/formalizacao-processual",
+      "summary": "Gera PDF institucional com narrativa operacional, evidências referenciadas e integridade verificável.",
+      "tags": [
+        "delegado",
+        "minuta",
+        "pdf"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "EVENT_STORE_PROCESSUAL_INTEGRADO",
+      "title": "Event store processual integrado",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/formalizacoes-processuais",
+      "summary": "Encadeia eventos de formalização ao histórico do processo para consulta e governança operacional.",
+      "tags": [
+        "delegado",
+        "event-store",
+        "governanca"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "JUNTADA_AUTOMATICA_PROCESSUAL",
+      "title": "Juntada automática processual",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/juntadas-automaticas",
+      "summary": "Gera pacote formal de juntada com certidão, minuta, referências probatórias e bundle auditável.",
+      "tags": [
+        "delegado",
+        "juntada",
+        "formalizacao"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "TIMELINE_OPERACIONAL_UNIFICADA",
+      "title": "Timeline operacional unificada",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/timeline-operacional",
+      "summary": "Consolida telemetria, checkpoints, certidões, encerramentos, formalizações e eventos processuais recentes.",
+      "tags": [
+        "delegado",
+        "timeline",
+        "auditoria"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "ANEXACAO_INSTITUCIONAL_INTEROPERAVEL",
+      "title": "Anexação institucional interoperável",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/anexacoes-institucionais",
+      "summary": "Confirma a remessa do pacote processual gerado pela diligência para a malha institucional com ack, digest e externalização auditável.",
+      "tags": [
+        "delegado",
+        "anexacao",
+        "interoperabilidade"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "ANALYTICS_OPERACIONAIS_POR_PROCESSO",
+      "title": "Analytics operacionais por diligência/processo",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/analytics-operacionais",
+      "summary": "Expõe indicadores da trilha de campo, formalização, juntada, anexação institucional e cobertura da unidade investigativa.",
+      "tags": [
+        "delegado",
+        "analytics",
+        "processo"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "OUTBOX_TRANSACIONAL_MALHA_INSTITUCIONAL",
+      "title": "Expedição transacional para malha institucional",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/malha-institucional/expedicoes",
+      "summary": "Encaminha a juntada interoperável para a malha externa via outbox transacional com rastreio e protocolo de entrega.",
+      "tags": [
+        "delegado",
+        "outbox",
+        "malha"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "REPLAY_CONTROLADO_MALHA_INSTITUCIONAL",
+      "title": "Replay controlado de expedição institucional",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/malha-institucional/replay",
+      "summary": "Reemite a expedição institucional com chave de idempotência, trilha encadeada e reaproveitamento seguro do pacote original.",
+      "tags": [
+        "delegado",
+        "replay",
+        "idempotencia"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "ACK_EXTERNO_AUDITAVEL_MALHA",
+      "title": "ACK auditável de malha institucional",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/diligencias/{diligenciaId}/malha-institucional/expedicoes/{dispatchId}/ack",
+      "summary": "Registra a confirmação externa da malha com protocolo, referência e estágio definitivo de recebimento.",
+      "tags": [
+        "delegado",
+        "ack",
+        "auditoria"
+      ]
+    },
+    {
+      "role": "DELEGADO_POLICIA",
+      "capabilityCode": "PAINEL_COMANDO_OPERACIONAL_MULTIUNIDADE",
+      "title": "Painel de comando operacional multiunidade",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/delegado/painel/comando-operacional",
+      "summary": "Agrega backlog de expedições, acknowledgements, órgãos e unidades em um centro de comando para a trilha investigativa.",
+      "tags": [
+        "delegado",
+        "painel",
+        "comando"
+      ]
+    }
+  ],
+  "OFICIAL_JUSTICA": [
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "ROTEIRIZACAO_OTIMIZADA_DILIGENCIAS",
+      "title": "Rota diária otimizada",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/rota/otimizada",
+      "summary": "Calcula a melhor sequência de mandados e diligências com foco em produtividade e tempestividade.",
+      "tags": [
+        "oficial",
+        "rota",
+        "mandado"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "CADEIA_CUSTODIA_DIGITAL",
+      "title": "Prova fotográfica selada",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/custody/seal",
+      "summary": "Gera selagem criptográfica do conjunto probatório coletado em diligência.",
+      "tags": [
+        "oficial",
+        "prova",
+        "geotag"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "TELEMETRIA_OPERACIONAL_DILIGENCIAS",
+      "title": "Telemetria de rota do oficial",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/rota/telemetria",
+      "summary": "Mantém origem operacional recente do dispositivo para otimização diária dos mandados.",
+      "tags": [
+        "oficial",
+        "telemetria",
+        "rota"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "CHECKPOINT_CHEGADA_GEOFENCE",
+      "title": "Chegada confirmada por geofence",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/checkpoints/chegada",
+      "summary": "Confirma a chegada no endereço do mandado por telemetria recente ou coordenada informada, com distância auditável.",
+      "tags": [
+        "oficial",
+        "geofence",
+        "mandado"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "SINCRONIZACAO_OFFLINE_FIRST_DILIGENCIAS",
+      "title": "Sincronização offline-first do dispositivo",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/rota/telemetria/sync",
+      "summary": "Sincroniza em lote a trilha de campo capturada sem conexão e reforça a base para roteirização diária.",
+      "tags": [
+        "oficial",
+        "offline-first",
+        "campo"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "MALHA_CUSTODIA_INTERINSTITUCIONAL",
+      "title": "Exportação federada de custódia",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/custodia/{chaveCustodia}/sync/export",
+      "summary": "Empacota evidências seladas em bundle assinado para circulação controlada na malha institucional.",
+      "tags": [
+        "oficial",
+        "custodia",
+        "federacao"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "VINCULO_DIRETO_CHECKPOINT_MANDADO",
+      "title": "Vínculo operacional checkpoint ↔ mandado",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/vinculo-operacional",
+      "summary": "Resolve o mandado real da fila operacional e exibe processo, prazo, tipo e atribuição ativa.",
+      "tags": [
+        "mandado",
+        "checkpoint",
+        "workitem",
+        "operacional"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "CERTIDAO_AUTOMATICA_GEOTAGGEADA",
+      "title": "Certidão automática georreferenciada",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/certidoes/auto",
+      "summary": "Gera certidão assinada com trilha de tentativa, checkpoint, geofence e digest operacional.",
+      "tags": [
+        "certidao",
+        "geo",
+        "mandado",
+        "assinatura"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "FORMALIZACAO_PROCESSUAL_AUDITAVEL",
+      "title": "Formalização processual auditável",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/formalizacao-processual",
+      "summary": "Transforma encerramento operacional em movimentação processual formal, evento encadeado e histórico auditável.",
+      "tags": [
+        "oficial",
+        "movimentacao",
+        "auditoria"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "MINUTA_OPERACIONAL_ASSINADA",
+      "title": "Minuta operacional assinada",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/formalizacao-processual",
+      "summary": "Gera documento PDF institucional da certidão com georreferenciamento, hashes e documentos referenciados.",
+      "tags": [
+        "oficial",
+        "minuta",
+        "pdf"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "EVENT_STORE_PROCESSUAL_INTEGRADO",
+      "title": "Integração com event store processual",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/formalizacoes-processuais",
+      "summary": "Persiste sequências de eventos processuais para rastreabilidade e replay controlado da formalização.",
+      "tags": [
+        "oficial",
+        "event-store",
+        "historico"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "JUNTADA_AUTOMATICA_PROCESSUAL",
+      "title": "Juntada automática processual",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/juntadas-automaticas",
+      "summary": "Gera pacote formal de juntada com certidão, minuta, referências probatórias e bundle auditável.",
+      "tags": [
+        "oficial",
+        "juntada",
+        "formalizacao"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "TIMELINE_OPERACIONAL_UNIFICADA",
+      "title": "Timeline operacional unificada",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/timeline-operacional",
+      "summary": "Consolida telemetria, checkpoints, certidões, encerramentos, formalizações e eventos processuais recentes.",
+      "tags": [
+        "oficial",
+        "timeline",
+        "auditoria"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "ANEXACAO_INSTITUCIONAL_INTEROPERAVEL",
+      "title": "Anexação institucional interoperável",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/anexacoes-institucionais",
+      "summary": "Confirma a remessa do pacote de juntada para a malha institucional com ack, digest, idempotência cruzada e externalização do documento.",
+      "tags": [
+        "oficial",
+        "anexacao",
+        "interoperabilidade"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "ANALYTICS_OPERACIONAIS_POR_PROCESSO",
+      "title": "Analytics operacionais por mandado/processo",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/analytics-operacionais",
+      "summary": "Expõe indicadores da trilha operacional, taxa de checkpoint, anexação externa e cobertura documental por mandado e processo.",
+      "tags": [
+        "oficial",
+        "analytics",
+        "processo"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "OUTBOX_TRANSACIONAL_MALHA_INSTITUCIONAL",
+      "title": "Expedição transacional de mandado para malha institucional",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/malha-institucional/expedicoes",
+      "summary": "Encaminha o pacote de juntada e anexação por outbox transacional com rastreio, assinatura e replay seguro.",
+      "tags": [
+        "oficial",
+        "outbox",
+        "malha"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "REPLAY_CONTROLADO_MALHA_INSTITUCIONAL",
+      "title": "Replay controlado da expedição institucional",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/malha-institucional/replay",
+      "summary": "Reemite a expedição do mandado para a malha externa reaproveitando o pacote formal e a trilha de idempotência.",
+      "tags": [
+        "oficial",
+        "replay",
+        "idempotencia"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "ACK_EXTERNO_AUDITAVEL_MALHA",
+      "title": "ACK auditável de remessa institucional",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/mandados/{mandadoId}/malha-institucional/expedicoes/{dispatchId}/ack",
+      "summary": "Registra a confirmação institucional de recebimento com protocolo, referência externa e estágio definitivo do ciclo.",
+      "tags": [
+        "oficial",
+        "ack",
+        "auditoria"
+      ]
+    },
+    {
+      "role": "OFICIAL_JUSTICA",
+      "capabilityCode": "PAINEL_COMANDO_OPERACIONAL_MULTIUNIDADE",
+      "title": "Painel de comando operacional multiunidade",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/oficial-justica/painel/comando-operacional",
+      "summary": "Consolida processos, unidades, órgãos e backlog de expedições institucionais em um centro de comando operacional.",
+      "tags": [
+        "oficial",
+        "painel",
+        "comando"
+      ]
+    }
+  ],
+  "PERITO": [
+    {
+      "role": "PERITO",
+      "capabilityCode": "CADEIA_CUSTODIA_DIGITAL",
+      "title": "Selagem de evidência pericial",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/custody/seal",
+      "summary": "Protege a integridade do acervo pericial antes da juntada ao processo.",
+      "tags": [
+        "pericia",
+        "integridade",
+        "hash"
+      ]
+    },
+    {
+      "role": "PERITO",
+      "capabilityCode": "LEDGER_CADEIA_CUSTODIA_IMUTAVEL",
+      "title": "Ledger auditável de custódia pericial",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/custody/ledger",
+      "summary": "Disponibiliza a prova encadeada com hashes, metadados canonizados e verificação de integridade.",
+      "tags": [
+        "pericia",
+        "ledger",
+        "integridade"
+      ]
+    }
+  ],
+  "CONCILIADOR_CEJUSC": [
+    {
+      "role": "CONCILIADOR_CEJUSC",
+      "capabilityCode": "TRADUTOR_JURIDICO_IA",
+      "title": "Mediação com linguagem simplificada",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/legal-translator",
+      "summary": "Facilita a explicação do conflito e dos atos do processo para as partes.",
+      "tags": [
+        "conciliacao",
+        "mediacao",
+        "clareza"
+      ]
+    }
+  ],
+  "SERVIDOR": [
+    {
+      "role": "SERVIDOR",
+      "capabilityCode": "CONTROLE_PRAZOS_FATAIS",
+      "title": "Fila priorizada por risco fatal",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/deadlines/fatal",
+      "summary": "Reclassifica a fila operacional por risco temporal e urgência institucional.",
+      "tags": [
+        "servidor",
+        "fila",
+        "triagem"
+      ]
+    }
+  ],
+  "PROCURADORIA_ESTADUAL": [
+    {
+      "role": "PROCURADORIA_ESTADUAL",
+      "capabilityCode": "CONTROLE_PRAZOS_FATAIS",
+      "title": "Monitoramento crítico da carteira pública",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/deadlines/fatal",
+      "summary": "Consolida prazos relevantes da atuação fazendária e contenciosa.",
+      "tags": [
+        "procuradoria",
+        "fazenda-publica",
+        "prazo"
+      ]
+    }
+  ],
+  "ADMINISTRADOR": [
+    {
+      "role": "ADMINISTRADOR",
+      "capabilityCode": "IDENTIDADE_GOVBR_FEDERADA",
+      "title": "Postura sistêmica de identidade federada",
+      "status": "ATIVO",
+      "activationPath": "/api/v1/profile/innovation/govbr/posture",
+      "summary": "Inspeciona o estado do vínculo Gov.br e do reforço transacional do perfil crítico.",
+      "tags": [
+        "admin",
+        "seguranca",
+        "governanca"
+      ]
+    }
+  ],
+  "profiles": {
+    "oficial_justica": {
+      "capabilities": [
+        "ENCERRAMENTO_OPERACIONAL_IDEMPOTENTE",
+        "VINCULO_DOCUMENTAL_CERTIDAO",
+        "TEMPLATE_INSTITUCIONAL_CERTIDAO_V2"
+      ]
+    },
+    "delegado": {
+      "capabilities": [
+        "ENCERRAMENTO_OPERACIONAL_IDEMPOTENTE",
+        "VINCULO_DOCUMENTAL_CERTIDAO",
+        "TEMPLATE_INSTITUCIONAL_CERTIDAO_V2"
+      ]
+    }
+  }
+}

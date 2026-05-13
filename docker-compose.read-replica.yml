@@ -1,0 +1,77 @@
+services:
+  postgres:
+    environment:
+      PJB_REPL_USER: ${PJB_REPL_USER:-pjb_replicator}
+      PJB_REPL_PASS: ${PJB_REPL_PASS:-pjb_replicator_pass}
+      PJB_DB_USER: ${PJB_DB_USER:-pjb}
+    volumes:
+      - pjb_pg_data:/var/lib/postgresql/data
+      - ./infra/docker/postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./infra/docker/postgres/read-replica/primary/init/01-replication-user.sh:/docker-entrypoint-initdb.d/01-replication-user.sh:ro
+      - ./infra/docker/postgres/postgresql-pjb.conf:/etc/postgresql/postgresql-pjb.conf:ro
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql-pjb.conf
+      - -c
+      - wal_level=replica
+      - -c
+      - max_wal_senders=10
+      - -c
+      - max_replication_slots=10
+      - -c
+      - hot_standby=on
+      - -c
+      - listen_addresses=*
+
+  postgres-replica:
+    profiles: ["replica"]
+    image: postgres:18
+    environment:
+      POSTGRES_USER: ${PJB_DB_USER:-pjb}
+      POSTGRES_PASSWORD: ${PJB_DB_PASS:-pjb}
+      POSTGRES_DB: ${PJB_DB_NAME:-pjb}
+      PJB_REPL_USER: ${PJB_REPL_USER:-pjb_replicator}
+      PJB_REPL_PASS: ${PJB_REPL_PASS:-pjb_replicator_pass}
+      PJB_DB_PRIMARY_HOST: postgres
+      PJB_DB_PRIMARY_PORT: 5432
+      PGDATA: /var/lib/postgresql/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["bash", "/usr/local/bin/pjb-replica-entrypoint.sh"]
+    volumes:
+      - pjb_pg_replica_data:/var/lib/postgresql/data
+      - ./infra/docker/postgres/read-replica/replica/entrypoint.sh:/usr/local/bin/pjb-replica-entrypoint.sh:ro
+      - ./infra/docker/postgres/postgresql-pjb.conf:/etc/postgresql/postgresql-pjb.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PJB_DB_USER:-pjb} -d ${PJB_DB_NAME:-pjb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${PJB_DB_NAME:-pjb}
+      PJB_DB_READ_ROUTING_ENABLED: "true"
+      PJB_DB_READ_URL: jdbc:postgresql://postgres-replica:5432/${PJB_DB_NAME:-pjb}
+      PJB_DB_READ_USER: ${PJB_DB_USER:-pjb}
+      PJB_DB_READ_PASS: ${PJB_DB_PASS:-pjb}
+      PJB_DB_READ_ROUTING_STRICT: "true"
+      PJB_DB_READ_VERIFY_TOPOLOGY_ON_STARTUP: "true"
+      PJB_DB_READ_PROPAGATION_SECURE_COOKIE: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-replica:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
+volumes:
+  pjb_pg_replica_data:

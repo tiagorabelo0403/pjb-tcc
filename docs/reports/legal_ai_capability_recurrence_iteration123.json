@@ -1,0 +1,23 @@
+{
+  "round": 123,
+  "scope": "legal-ai-conversation-capability-recurrence-registry",
+  "artifacts": [
+    "LegalAiConversationCapabilityRecurrenceService",
+    "LegalAiConversationCapabilityRecurrenceSnapshot"
+  ],
+  "integrations": [
+    "LegalAiConversationOrchestrator",
+    "LegalToolScopePolicy",
+    "LegalSensitiveActionApprovalService",
+    "LegalAiConversationResponseComposerService"
+  ],
+  "validation": {
+    "runtimeConcurrencyGuard": "passed",
+    "architectureHygieneGuard": "passed",
+    "constructorInjectionGuard": "passed",
+    "configTaxonomyGuard": "passed",
+    "transactionalHotspotGuard": "passed",
+    "repositoryLayoutGuard": "passed",
+    "directedJavac": "passed"
+  }
+}

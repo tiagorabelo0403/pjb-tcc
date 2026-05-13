@@ -1,0 +1,24 @@
+{
+  "round": 122,
+  "title": "capability rehabilitation stability window",
+  "artifacts": [
+    "LegalAiConversationCapabilityRehabilitationSnapshot",
+    "LegalAiConversationCapabilityRehabilitationService"
+  ],
+  "integrations": [
+    "LegalAiConversationOrchestrator",
+    "LegalToolScopePolicy",
+    "LegalSensitiveActionApprovalService",
+    "LegalAiConversationResponseComposerService"
+  ],
+  "validation": {
+    "runtime_concurrency_guard": "passed",
+    "architecture_hygiene_guard": "passed",
+    "constructor_injection_guard": "passed",
+    "config_taxonomy_guard": "passed",
+    "transactional_hotspot_guard": "passed",
+    "repository_layout_guard": "passed",
+    "javac_main": "passed",
+    "javac_tests": "passed"
+  }
+}

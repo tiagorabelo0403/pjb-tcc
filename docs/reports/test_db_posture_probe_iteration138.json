@@ -1,0 +1,21 @@
+{
+  "mainImportFindings": 0,
+  "testImportFindings": 0,
+  "configChecks": [
+    {
+      "file": "pjb-api/src/main/resources/application.yml",
+      "ok": true,
+      "missingFragments": []
+    },
+    {
+      "file": "pjb-api/src/main/resources/application-docker.yml",
+      "ok": true,
+      "missingFragments": []
+    },
+    {
+      "file": "pjb-api/src/main/resources/application-prod.yml",
+      "ok": true,
+      "missingFragments": []
+    }
+  ]
+}

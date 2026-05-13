@@ -1,0 +1,33 @@
+spring:
+  data:
+    redis:
+      repositories:
+        enabled: false
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=1m
+  main:
+    allow-bean-definition-overriding: true
+camunda:
+  client:
+    enabled: false
+zeebe:
+  client:
+    enabled: false
+pjb:
+  icp:
+    enabled: false
+  mni:
+    enabled: false
+  datajud:
+    feed:
+      enabled: false
+  dje:
+    enabled: false
+  integrations:
+    pje:
+      mock-enabled: true
+  jobs:
+    pg-listen:
+      enabled: false

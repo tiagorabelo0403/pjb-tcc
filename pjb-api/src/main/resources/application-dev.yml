@@ -1,0 +1,105 @@
+spring:
+  threads:
+    virtual:
+      enabled: true
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pjb
+    username: ${PJB_DB_USER:pjb}
+    password: ${PJB_DB_PASS:pjb}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${PJB_DB_POOL_MAX:16}
+      minimum-idle: ${PJB_DB_POOL_MIN:4}
+      data-source-properties:
+        preparedStatementCacheQueries: ${PJB_DB_PREPARED_CACHE_QUERIES:256}
+        preparedStatementCacheSizeMiB: ${PJB_DB_PREPARED_CACHE_MIB:8}
+        reWriteBatchedInserts: ${PJB_DB_REWRITE_BATCHED_INSERTS:true}
+        binaryTransfer: ${PJB_DB_BINARY_TRANSFER:true}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: ${PJB_JPA_BATCH_SIZE:48}
+          fetch_size: ${PJB_JPA_FETCH_SIZE:100}
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: ${PJB_JPA_DEFAULT_BATCH_FETCH_SIZE:48}
+  cache:
+    type: ${PJB_CACHE_TYPE:caffeine}
+    caffeine:
+      spec: ${PJB_CACHE_CAFFEINE_SPEC:maximumSize=20000,expireAfterWrite=10m,recordStats}
+
+server:
+  http2:
+    enabled: true
+  compression:
+    enabled: true
+    min-response-size: 2048
+
+pjb:
+  runtime:
+    acceleration:
+      async:
+        concurrency-limit: ${PJB_RUNTIME_ASYNC_CONCURRENCY:192}
+        reject-when-saturated: ${PJB_RUNTIME_ASYNC_REJECT:false}
+        termination-timeout: ${PJB_RUNTIME_ASYNC_TERMINATION:30s}
+        thread-name-prefix: ${PJB_RUNTIME_ASYNC_PREFIX:pjb-async-}
+      io:
+        concurrency-limit: ${PJB_RUNTIME_IO_CONCURRENCY:384}
+        reject-when-saturated: ${PJB_RUNTIME_IO_REJECT:false}
+        termination-timeout: ${PJB_RUNTIME_IO_TERMINATION:30s}
+        thread-name-prefix: ${PJB_RUNTIME_IO_PREFIX:pjb-io-}
+      burst:
+        concurrency-limit: ${PJB_RUNTIME_BURST_CONCURRENCY:768}
+        reject-when-saturated: ${PJB_RUNTIME_BURST_REJECT:true}
+        termination-timeout: ${PJB_RUNTIME_BURST_TERMINATION:20s}
+        thread-name-prefix: ${PJB_RUNTIME_BURST_PREFIX:pjb-burst-}
+      external-io:
+        concurrency-limit: ${PJB_RUNTIME_EXTERNAL_IO_CONCURRENCY:128}
+        reject-when-saturated: ${PJB_RUNTIME_EXTERNAL_IO_REJECT:true}
+        termination-timeout: ${PJB_RUNTIME_EXTERNAL_IO_TERMINATION:30s}
+        thread-name-prefix: ${PJB_RUNTIME_EXTERNAL_IO_PREFIX:pjb-http-}
+      live:
+        concurrency-limit: ${PJB_RUNTIME_LIVE_CONCURRENCY:192}
+        reject-when-saturated: ${PJB_RUNTIME_LIVE_REJECT:true}
+        termination-timeout: ${PJB_RUNTIME_LIVE_TERMINATION:20s}
+        thread-name-prefix: ${PJB_RUNTIME_LIVE_PREFIX:pjb-live-}
+      job:
+        concurrency-limit: ${PJB_RUNTIME_JOB_CONCURRENCY:640}
+        reject-when-saturated: ${PJB_RUNTIME_JOB_REJECT:true}
+        termination-timeout: ${PJB_RUNTIME_JOB_TERMINATION:20s}
+        thread-name-prefix: ${PJB_RUNTIME_JOB_PREFIX:pjb-job-}
+      http:
+        connect-timeout: ${PJB_RUNTIME_HTTP_CONNECT_TIMEOUT:5s}
+        request-timeout: ${PJB_RUNTIME_HTTP_REQUEST_TIMEOUT:20s}
+        prefer-http2: ${PJB_RUNTIME_HTTP_PREFER_HTTP2:true}
+  atendimento:
+    attachments:
+      enabled: true
+      maxBytes: 10485760
+      maxPerMessage: 3
+      maxTotalBytesPerMessage: 20971520
+  kafka:
+    enabled: false
+    scale:
+      listener-concurrency: ${PJB_KAFKA_LISTENER_CONCURRENCY:3}
+      poll-timeout: ${PJB_KAFKA_POLL_TIMEOUT:2s}
+      idle-between-polls: ${PJB_KAFKA_IDLE_BETWEEN_POLLS:100ms}
+      retry-backoff: ${PJB_KAFKA_RETRY_BACKOFF:1s}
+      retry-attempts: ${PJB_KAFKA_RETRY_ATTEMPTS:3}
+      observation-enabled: ${PJB_KAFKA_OBSERVATION_ENABLED:true}
+  search:
+    enabled: false
+  gov:
+    vital-monitor:
+      enabled: false
+  security:
+    master-key: ${PJB_MASTER_KEY_BASE64:}

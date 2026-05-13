@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "defaultDecision": {
+    "enabled": true,
+    "minScoreToSuggest": 320,
+    "allowFlagsMask": 0,
+    "denyFlagsMask": 0
+  },
+  "rules": [
+    {
+      "name": "public-default",
+      "match": {
+        "uf": "*",
+        "tipoUsuario": "*",
+        "enteFederativo": "*"
+      },
+      "decision": {
+        "enabled": true,
+        "minScoreToSuggest": 320,
+        "allowFlagsMask": 0,
+        "denyFlagsMask": 0
+      }
+    }
+  ]
+}

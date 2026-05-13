@@ -1,0 +1,11 @@
+package com.tcc.pjb.backend.model.dto.profile.operational;
+
+import java.time.Instant;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+public record ConciliacaoAgendamentoSessaoRequest(
+        @NotNull Instant dataHora,
+        @NotBlank String sala,
+        @NotBlank String modalidade
+) {}

@@ -1,0 +1,20 @@
+package com.tcc.pjb.backend.platform.security.rbac;
+
+public enum RbacRoleGroup {
+    MAGISTRATURA,
+    ASSESSORIA,
+    MINISTERIO_PUBLICO,
+    DEFENSORIA,
+    PROCURADORIA,
+    SEGURANCA_PUBLICA,
+    PERICIA,
+    OFICIALATO,
+    CONCILIACAO_MEDIACAO,
+    AUXILIARES_JUSTICA,
+    CARTORIO_EXTRAJUDICIAL,
+    ADVOCACIA,
+    SIGILO_ELEVADO,
+    ADMINISTRACAO,
+    CIDADANIA,
+    SERVIDORIA
+}

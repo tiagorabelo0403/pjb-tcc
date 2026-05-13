@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pjb-api
+  namespace: pjb
+spec:
+  template:
+    metadata:
+      annotations:
+        pjb.security/edge-policy: opa-ext-authz
+    spec:
+      containers:
+        - name: api
+          env:
+            - name: PJB_EDGE_AUTHZ_MODE
+              value: OPA_ENVOY_EXT_AUTHZ
+            - name: PJB_EDGE_AUTHZ_DRY_RUN
+              value: "true"
+        - name: opa-envoy
+          image: openpolicyagent/opa:latest-envoy
+          args:
+            - run
+            - --server
+            - --addr=localhost:8181
+            - --diagnostic-addr=0.0.0.0:8282
+            - --set=plugins.envoy_ext_authz_grpc.addr=:9191
+            - --set=plugins.envoy_ext_authz_grpc.path=envoy/authz/allow
+            - /policy/policy.rego
+          ports:
+            - containerPort: 9191
+              name: ext-authz
+          volumeMounts:
+            - name: opa-policy
+              mountPath: /policy
+      volumes:
+        - name: opa-policy
+          configMap:
+            name: pjb-opa-ext-authz-policy

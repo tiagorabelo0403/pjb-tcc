@@ -1,0 +1,5033 @@
+{
+  "CIDADAO": [
+    {
+      "id": "CIDADAO-001",
+      "role": "CIDADAO",
+      "title": "Meu Caso em 1 Página",
+      "description": "Resumo do processo com pedido, fase, próximos passos e prazos em linguagem simples.",
+      "tags": [
+        "ux",
+        "transparencia",
+        "linha_do_tempo"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "CIDADAO-002",
+      "role": "CIDADAO",
+      "title": "Linha do Tempo Explicada",
+      "description": "Cada movimentação com tradução para português comum e links para documentos relevantes.",
+      "tags": [
+        "ux",
+        "linha_do_tempo"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "CIDADAO-003",
+      "role": "CIDADAO",
+      "title": "Notificações por Canal",
+      "description": "Escolha receber alertas por e-mail, WhatsApp (via integração), app ou SMS.",
+      "tags": [
+        "notificacoes",
+        "integracao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-004",
+      "role": "CIDADAO",
+      "title": "Checklist de Documentos",
+      "description": "Lista guiada do que falta enviar por tipo de ação/rito, com exemplos de documentos.",
+      "tags": [
+        "documentos",
+        "rito",
+        "onboarding"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "CIDADAO-005",
+      "role": "CIDADAO",
+      "title": "Upload com Validação",
+      "description": "Valida formato, legibilidade, duplicidade e campos mínimos (ex.: CPF) antes de aceitar.",
+      "tags": [
+        "documentos",
+        "qualidade"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "CIDADAO-006",
+      "role": "CIDADAO",
+      "title": "Acessibilidade Total",
+      "description": "Leitor de tela, alto contraste, fontes grandes e modo simplificado para baixa escolaridade digital.",
+      "tags": [
+        "ux",
+        "acessibilidade"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "CIDADAO-007",
+      "role": "CIDADAO",
+      "title": "Modo Internet Fraca",
+      "description": "Interface leve, cache e envio em lote de anexos quando voltar sinal.",
+      "tags": [
+        "ux",
+        "offline"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-008",
+      "role": "CIDADAO",
+      "title": "Central de Custas/Gratuidade",
+      "description": "Explica custas, guia e possibilidade de gratuidade com checklist e comprovantes.",
+      "tags": [
+        "custas",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-009",
+      "role": "CIDADAO",
+      "title": "Simulador de Prazos",
+      "description": "Mostra contagem em dias úteis, feriados locais e suspensões com prova do cálculo.",
+      "tags": [
+        "prazos",
+        "auditoria"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "CIDADAO-010",
+      "role": "CIDADAO",
+      "title": "Painel de Risco de Prazo",
+      "description": "Alerta quando houver risco real de prazo fatal por ausência de documento/manifestação.",
+      "tags": [
+        "prazos",
+        "alerta"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "CIDADAO-011",
+      "role": "CIDADAO",
+      "title": "Chat Controlado com Advogado",
+      "description": "Canal de dúvidas com limites, registro e categorias (documentos, audiência, prazos).",
+      "tags": [
+        "comunicacao",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-012",
+      "role": "CIDADAO",
+      "title": "Glossário do Processo",
+      "description": "Dicionário contextual (ex.: 'concluso', 'intimação', 'juntada') dentro da tela.",
+      "tags": [
+        "ux",
+        "educacao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "CIDADAO-013",
+      "role": "CIDADAO",
+      "title": "Extrato de Audiências",
+      "description": "Agenda com local, link, documentos necessários e 'o que levar' para cada audiência.",
+      "tags": [
+        "audiencia",
+        "ux"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "CIDADAO-014",
+      "role": "CIDADAO",
+      "title": "Guia de Comparecimento",
+      "description": "Orientações de conduta, documentos e como chegar (mapa) quando presencial.",
+      "tags": [
+        "audiencia",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-015",
+      "role": "CIDADAO",
+      "title": "Prova de Recebimento",
+      "description": "Histórico de notificações recebidas/lidas, com carimbo de data/hora.",
+      "tags": [
+        "auditoria",
+        "notificacoes"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-017",
+      "role": "CIDADAO",
+      "title": "Relatórios para INSS",
+      "description": "Gerar pacote de documentos e linha do tempo para uso em benefício (quando aplicável).",
+      "tags": [
+        "documentos",
+        "integracao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CIDADAO-018",
+      "role": "CIDADAO",
+      "title": "Conciliação Assistida",
+      "description": "Explica propostas de acordo em termos simples e mostra impactos.",
+      "tags": [
+        "acordo",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-019",
+      "role": "CIDADAO",
+      "title": "Calculadora de Acordo",
+      "description": "Simula cenários (parcelas, correção, juros) para entender proposta.",
+      "tags": [
+        "acordo",
+        "financeiro"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CIDADAO-020",
+      "role": "CIDADAO",
+      "title": "Status de Petições",
+      "description": "Mostra o que o advogado protocolou e o que ainda está em rascunho/pendente.",
+      "tags": [
+        "transparencia",
+        "documentos"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-021",
+      "role": "CIDADAO",
+      "title": "Histórico de Documentos",
+      "description": "Versões e substituições com motivo (ex.: 'documento ilegível').",
+      "tags": [
+        "documentos",
+        "auditoria"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-022",
+      "role": "CIDADAO",
+      "title": "Solicitação de Atualização",
+      "description": "Botão para solicitar atualização ao advogado com registro e SLA.",
+      "tags": [
+        "comunicacao",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-023",
+      "role": "CIDADAO",
+      "title": "Alertas de Fraude/Phishing",
+      "description": "Educa e avisa se alguém tentar se passar por 'servidor' pedindo dinheiro.",
+      "tags": [
+        "seguranca",
+        "educacao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "CIDADAO-024",
+      "role": "CIDADAO",
+      "title": "Canal de Ouvidoria",
+      "description": "Encaminhar reclamação geral (não OAB) com protocolo e acompanhamento.",
+      "tags": [
+        "institucional",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CIDADAO-025",
+      "role": "CIDADAO",
+      "title": "Assinatura Simples",
+      "description": "Assinar ciência/termo com autenticação forte e trilha de auditoria.",
+      "tags": [
+        "assinatura",
+        "seguranca"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-026",
+      "role": "CIDADAO",
+      "title": "Gestão de Dependentes",
+      "description": "Permitir acompanhar processo de parente com autorização e logs.",
+      "tags": [
+        "permissoes",
+        "familia"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CIDADAO-027",
+      "role": "CIDADAO",
+      "title": "Anexos com OCR opcional",
+      "description": "Extrai texto para busca interna e acessibilidade (sem alterar o original).",
+      "tags": [
+        "documentos",
+        "busca"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CIDADAO-028",
+      "role": "CIDADAO",
+      "title": "Busca Inteligente de Documentos",
+      "description": "Encontrar 'laudo', 'receita', 'procuração' por palavra-chave.",
+      "tags": [
+        "busca",
+        "documentos"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-029",
+      "role": "CIDADAO",
+      "title": "Mapa de Provas",
+      "description": "Organiza provas por tema e mostra 'o que falta provar'.",
+      "tags": [
+        "provas",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CIDADAO-030",
+      "role": "CIDADAO",
+      "title": "Tradução de Decisões",
+      "description": "Resumo fiel em linguagem simples + link para o inteiro teor.",
+      "tags": [
+        "ux",
+        "transparencia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-031",
+      "role": "CIDADAO",
+      "title": "Confirmação de Dados",
+      "description": "Tela para revisar nome, CPF, endereço e corrigir erros com histórico.",
+      "tags": [
+        "dados",
+        "auditoria"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-034",
+      "role": "CIDADAO",
+      "title": "Alertas de Audiência",
+      "description": "Lembretes progressivos (7d/1d/2h) com confirmação.",
+      "tags": [
+        "audiencia",
+        "notificacoes"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-035",
+      "role": "CIDADAO",
+      "title": "Reembolso/Deslocamento",
+      "description": "Registro de gastos e documentos (quando aplicável) para pedido.",
+      "tags": [
+        "financeiro",
+        "documentos"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CIDADAO-036",
+      "role": "CIDADAO",
+      "title": "FAQ do Caso",
+      "description": "Perguntas frequentes geradas a partir do rito e fase atual.",
+      "tags": [
+        "ux",
+        "educacao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-037",
+      "role": "CIDADAO",
+      "title": "Painel de Responsáveis",
+      "description": "Quem é o advogado, defensor, promotor, vara, e como contatar (quando permitido).",
+      "tags": [
+        "transparencia",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-038",
+      "role": "CIDADAO",
+      "title": "Controle de Privacidade",
+      "description": "Escolha quem pode ver quais documentos (ex.: sigilo médico).",
+      "tags": [
+        "sigilo",
+        "permissoes"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "CIDADAO-039",
+      "role": "CIDADAO",
+      "title": "Download do Dossiê",
+      "description": "Exportar tudo em PDF/ZIP com índice e hash para comprovação.",
+      "tags": [
+        "documentos",
+        "auditoria"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-040",
+      "role": "CIDADAO",
+      "title": "QR Code do Processo",
+      "description": "Acesso rápido ao resumo (com autenticação) em audiência ou atendimento.",
+      "tags": [
+        "ux",
+        "seguranca"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CIDADAO-041",
+      "role": "CIDADAO",
+      "title": "Painel de Sentenças",
+      "description": "Guarda sentenças e explica próximos recursos possíveis (sem aconselhar fora do caso).",
+      "tags": [
+        "transparencia",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CIDADAO-042",
+      "role": "CIDADAO",
+      "title": "Histórico de Prazos",
+      "description": "Lista de prazos já cumpridos e por quem, com prova do cálculo.",
+      "tags": [
+        "prazos",
+        "auditoria"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-043",
+      "role": "CIDADAO",
+      "title": "Alertas de Suspensão",
+      "description": "Quando prazo suspender/retomar, notifica automaticamente.",
+      "tags": [
+        "prazos",
+        "notificacoes"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-044",
+      "role": "CIDADAO",
+      "title": "Agendamento de Atendimento",
+      "description": "Agenda com o advogado/escritório/defensoria via slots e registro.",
+      "tags": [
+        "ux",
+        "comunicacao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CIDADAO-045",
+      "role": "CIDADAO",
+      "title": "Preferência de Linguagem",
+      "description": "Selecionar 'bem simples', 'intermediário' ou 'técnico' nos resumos.",
+      "tags": [
+        "ux",
+        "personalizacao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CIDADAO-046",
+      "role": "CIDADAO",
+      "title": "Protocolo de Atendimento",
+      "description": "Registro de atendimentos e orientações recebidas com data/hora.",
+      "tags": [
+        "auditoria",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CIDADAO-047",
+      "role": "CIDADAO",
+      "title": "Central de Procurações",
+      "description": "Gerencia procuração e substabelecimento com validade e histórico.",
+      "tags": [
+        "documentos",
+        "seguranca"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-049",
+      "role": "CIDADAO",
+      "title": "Validador de Endereço",
+      "description": "Sugere correção de CEP/bairro e detecta endereço incompleto para evitar diligência frustrada.",
+      "tags": [
+        "dados",
+        "integracao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CIDADAO-050",
+      "role": "CIDADAO",
+      "title": "Histórico de Acessos",
+      "description": "Mostra dispositivos e últimos acessos para o cidadão detectar uso indevido.",
+      "tags": [
+        "seguranca",
+        "auditoria"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "CID-051",
+      "role": "CIDADAO",
+      "title": "Linha do tempo explicada por IA",
+      "description": "Timeline do processo com explicações simples, termos traduzidos e por que cada etapa aconteceu (com trilha auditável).",
+      "tags": [
+        "transparencia",
+        "acessibilidade",
+        "educacao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CID-052",
+      "role": "CIDADAO",
+      "title": "Checklist de documentos por rito",
+      "description": "Checklist dinâmico (por rito/assunto) do que falta anexar, com validação automática de formato e legibilidade.",
+      "tags": [
+        "documentos",
+        "rito",
+        "validacao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "CID-053",
+      "role": "CIDADAO",
+      "title": "Notificações contextuais (WhatsApp/Email)",
+      "description": "Alertas que não são só 'houve movimentação': trazem resumo, o que muda para a parte e qual o próximo passo.",
+      "tags": [
+        "notificacoes",
+        "comunicacao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CID-054",
+      "role": "CIDADAO",
+      "title": "Central de acordo e conciliação",
+      "description": "Propostas de acordo guiadas por parâmetros do caso, com registro de aceite/contraproposta e termos padronizados.",
+      "tags": [
+        "acordo",
+        "conciliacao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CID-055",
+      "role": "CIDADAO",
+      "title": "Acessibilidade total",
+      "description": "Leitura por voz, alto contraste, linguagem simples, e versão 'modo idoso' para acompanhamento de processos.",
+      "tags": [
+        "acessibilidade",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "CID-056",
+      "role": "CIDADAO",
+      "title": "Guia de comparecimento ao fórum",
+      "description": "Mapa, documentos para levar, tempo estimado, regras do prédio e canal de dúvidas, por audiência/intimação.",
+      "tags": [
+        "forum",
+        "audiencia"
+      ],
+      "priority": "P3"
+    },
+    {
+      "id": "CID-057",
+      "role": "CIDADAO",
+      "title": "Simulador de prazos e custos",
+      "description": "Estimador (com transparência) de prazos típicos e custos prováveis, considerando rito e comarca.",
+      "tags": [
+        "prazos",
+        "custos"
+      ],
+      "priority": "P3"
+    },
+    {
+      "id": "CID-059",
+      "role": "CIDADAO",
+      "title": "Carteira digital de processos (QR)",
+      "description": "Carteira com QR Code para acesso rápido ao processo, documentos e comprovação de comparecimento.",
+      "tags": [
+        "qr",
+        "identidade"
+      ],
+      "priority": "P3"
+    },
+    {
+      "id": "CID-060",
+      "role": "CIDADAO",
+      "title": "Anexos com autenticidade",
+      "description": "Upload com hash, verificação de assinatura digital e detecção de adulteração/duplicidade.",
+      "tags": [
+        "seguranca",
+        "documentos"
+      ],
+      "priority": "P2"
+    }
+  ],
+  "ADVOGADO": [
+    {
+      "id": "ADVOGADO-001",
+      "role": "ADVOGADO",
+      "title": "Inbox unificada de intimações",
+      "description": "Deduplicação por processo/ato e agrupamento por prazo.",
+      "tags": [
+        "inbox",
+        "prazos"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-002",
+      "role": "ADVOGADO",
+      "title": "Contagem de prazo com prova",
+      "description": "Dias úteis, feriados locais e export da memória de cálculo.",
+      "tags": [
+        "prazos",
+        "auditoria"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-003",
+      "role": "ADVOGADO",
+      "title": "Checklist por rito",
+      "description": "Checklists dinâmicos por CPC/CPP/JEC/Execução e tribunal.",
+      "tags": [
+        "rito",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-004",
+      "role": "ADVOGADO",
+      "title": "Validador de petição",
+      "description": "Campos, competência, pedidos e anexos obrigatórios antes do protocolo.",
+      "tags": [
+        "documentos",
+        "qualidade"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-005",
+      "role": "ADVOGADO",
+      "title": "Templates versionados",
+      "description": "Biblioteca de peças com versionamento, tags e aprovação.",
+      "tags": [
+        "templates",
+        "governanca"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-006",
+      "role": "ADVOGADO",
+      "title": "Assistente de fundamentação",
+      "description": "Sugere estrutura e pontos de direito com fonte citada.",
+      "tags": [
+        "ia",
+        "juridico"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-007",
+      "role": "ADVOGADO",
+      "title": "Detector de contradições",
+      "description": "Aponta inconsistências (datas, valores, pedidos vs anexos).",
+      "tags": [
+        "qualidade",
+        "ia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-008",
+      "role": "ADVOGADO",
+      "title": "Organizador de provas",
+      "description": "Classifica provas por tese e gera índice automático.",
+      "tags": [
+        "provas",
+        "documentos"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-009",
+      "role": "ADVOGADO",
+      "title": "Mapa de teses",
+      "description": "Quadro tese→prova→risco→precedentes, por processo.",
+      "tags": [
+        "estrategia",
+        "juridico"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-010",
+      "role": "ADVOGADO",
+      "title": "Pré-protocolo seguro",
+      "description": "Checklist final + hash do pacote + trilha de auditoria.",
+      "tags": [
+        "seguranca",
+        "auditoria"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-011",
+      "role": "ADVOGADO",
+      "title": "Controle de procurações",
+      "description": "Validade, poderes, substabelecimento e alertas.",
+      "tags": [
+        "documentos",
+        "seguranca"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-012",
+      "role": "ADVOGADO",
+      "title": "Portal do cliente",
+      "description": "Compartilhamento controlado de status/documentos com logs.",
+      "tags": [
+        "cliente",
+        "permissoes"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-013",
+      "role": "ADVOGADO",
+      "title": "Agenda de audiências",
+      "description": "Integra calendário, local/link, documentos e lembretes.",
+      "tags": [
+        "audiencia",
+        "integracao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-014",
+      "role": "ADVOGADO",
+      "title": "Roteiro de audiência",
+      "description": "Modelos por tipo (conciliação/instrução) e anotações.",
+      "tags": [
+        "audiencia",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-015",
+      "role": "ADVOGADO",
+      "title": "Delegação de prazos",
+      "description": "Atribuir tarefas, SLA e escalonamento interno.",
+      "tags": [
+        "prazos",
+        "gestao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-016",
+      "role": "ADVOGADO",
+      "title": "Auditoria de equipe",
+      "description": "Quem fez o quê, quando, e por que (justificativa).",
+      "tags": [
+        "auditoria",
+        "compliance"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-017",
+      "role": "ADVOGADO",
+      "title": "Biblioteca de jurisprudência",
+      "description": "Coleção com tags, notas do escritório e alerta de superação.",
+      "tags": [
+        "jurisprudencia",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-018",
+      "role": "ADVOGADO",
+      "title": "Detecção de casos repetitivos",
+      "description": "Agrupa casos semelhantes para estratégia de massa.",
+      "tags": [
+        "massa",
+        "analytics"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-019",
+      "role": "ADVOGADO",
+      "title": "Comparador de versões",
+      "description": "Diff de peças e revisão colaborativa.",
+      "tags": [
+        "qualidade",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-020",
+      "role": "ADVOGADO",
+      "title": "Motor de ritos integrado",
+      "description": "Indica próximo ato e bloqueia avanço fora do rito.",
+      "tags": [
+        "rito",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-021",
+      "role": "ADVOGADO",
+      "title": "Checklist de recursos",
+      "description": "Tempestividade, preparo, peças e requisitos por tipo.",
+      "tags": [
+        "recursos",
+        "rito"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-022",
+      "role": "ADVOGADO",
+      "title": "Conectores PJe/e-SAJ/eproc",
+      "description": "Normalização de eventos e documentos em modelo canônico.",
+      "tags": [
+        "integracao",
+        "unificacao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-023",
+      "role": "ADVOGADO",
+      "title": "Monitor de instabilidade",
+      "description": "Registro de falhas de sistema para justificar prazos.",
+      "tags": [
+        "integracao",
+        "auditoria"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-024",
+      "role": "ADVOGADO",
+      "title": "Notificações inteligentes",
+      "description": "Agrupa alertas e destaca prazo fatal e urgência.",
+      "tags": [
+        "notificacoes",
+        "prazos"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-025",
+      "role": "ADVOGADO",
+      "title": "Painel por tribunal/vara",
+      "description": "Filtros e métricas por órgão, classe e assunto.",
+      "tags": [
+        "analytics",
+        "organizacao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-026",
+      "role": "ADVOGADO",
+      "title": "Gerador de dossiê",
+      "description": "Exporta PDF/ZIP com índice, hash e separação por tema.",
+      "tags": [
+        "documentos",
+        "auditoria"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-027",
+      "role": "ADVOGADO",
+      "title": "Busca interna avançada",
+      "description": "Busca por palavras-chave e filtros em anexos e peças.",
+      "tags": [
+        "busca",
+        "documentos"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-028",
+      "role": "ADVOGADO",
+      "title": "Linha do tempo do caso",
+      "description": "Timeline pronta para petição e sustentação oral.",
+      "tags": [
+        "provas",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-029",
+      "role": "ADVOGADO",
+      "title": "Simulador de acordo",
+      "description": "Cenários de parcelamento e cláusulas padrão.",
+      "tags": [
+        "acordo",
+        "financeiro"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "ADVOGADO-030",
+      "role": "ADVOGADO",
+      "title": "Gestão de honorários",
+      "description": "Contratos, gatilhos, repasses e alertas.",
+      "tags": [
+        "financeiro",
+        "crm"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "ADVOGADO-031",
+      "role": "ADVOGADO",
+      "title": "Timesheet jurídico",
+      "description": "Tempo por tarefa/processo para cobrança e gestão.",
+      "tags": [
+        "financeiro",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "ADVOGADO-032",
+      "role": "ADVOGADO",
+      "title": "Controle de sigilo",
+      "description": "Camadas de sigilo por documento (médico, família, penal).",
+      "tags": [
+        "sigilo",
+        "permissoes"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-033",
+      "role": "ADVOGADO",
+      "title": "Alertas de prescrição/decadência",
+      "description": "Marca prazos materiais com justificativa e referências.",
+      "tags": [
+        "prazos",
+        "risco"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-034",
+      "role": "ADVOGADO",
+      "title": "Cumprimento de sentença guiado",
+      "description": "Checklist de execução, cálculos, penhora e bloqueios.",
+      "tags": [
+        "execucao",
+        "rito"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-035",
+      "role": "ADVOGADO",
+      "title": "Gerador de cálculos",
+      "description": "Modelos de liquidação/correção/juros com fonte configurável.",
+      "tags": [
+        "calculos",
+        "financeiro"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "ADVOGADO-036",
+      "role": "ADVOGADO",
+      "title": "Gestão de audiências online",
+      "description": "Links, testes de áudio/vídeo e plano B documentado.",
+      "tags": [
+        "audiencia",
+        "qualidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-037",
+      "role": "ADVOGADO",
+      "title": "Anotações de audiência com prova",
+      "description": "Ata interna com anexos e carimbo de tempo.",
+      "tags": [
+        "auditoria",
+        "audiencia"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "ADVOGADO-038",
+      "role": "ADVOGADO",
+      "title": "Acompanhamento de cliente",
+      "description": "Pedir documentos faltantes com prazo e lembretes.",
+      "tags": [
+        "documentos",
+        "cliente"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-039",
+      "role": "ADVOGADO",
+      "title": "Checklist de inicial",
+      "description": "Checklist de 'petição inicial perfeita' por classe.",
+      "tags": [
+        "templates",
+        "qualidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-040",
+      "role": "ADVOGADO",
+      "title": "Checklist de penal",
+      "description": "Peças e prazos críticos quando houver réu preso.",
+      "tags": [
+        "penal",
+        "prazos"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-042",
+      "role": "ADVOGADO",
+      "title": "Botão de prerrogativas",
+      "description": "Abre solicitação OAB/UF com anexos e histórico do ocorrido.",
+      "tags": [
+        "oab",
+        "institucional"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-043",
+      "role": "ADVOGADO",
+      "title": "Registro de incidentes",
+      "description": "Log de cerceamento, abuso, atrasos e diligências frustradas.",
+      "tags": [
+        "auditoria",
+        "compliance"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-044",
+      "role": "ADVOGADO",
+      "title": "Plano de trabalho do caso",
+      "description": "Estratégia, metas, responsáveis e próximos passos.",
+      "tags": [
+        "gestao",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADVOGADO-045",
+      "role": "ADVOGADO",
+      "title": "Métricas de desempenho",
+      "description": "Tempo médio por ato, taxa de êxito, gargalos e fila.",
+      "tags": [
+        "analytics",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "ADVOGADO-046",
+      "role": "ADVOGADO",
+      "title": "Gestão de protocolos",
+      "description": "Controle do que foi protocolado e comprovantes organizados.",
+      "tags": [
+        "documentos",
+        "auditoria"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-047",
+      "role": "ADVOGADO",
+      "title": "Modelo de comunicação ao cliente",
+      "description": "Atualizações automáticas em linguagem simples, aprovadas pelo escritório.",
+      "tags": [
+        "cliente",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "ADVOGADO-048",
+      "role": "ADVOGADO",
+      "title": "Gestão de substabelecimentos",
+      "description": "Fluxo de aprovação e comunicação ao cliente.",
+      "tags": [
+        "documentos",
+        "governanca"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "ADVOGADO-049",
+      "role": "ADVOGADO",
+      "title": "Controle de autenticação forte",
+      "description": "MFA e políticas por risco (acesso fora do padrão).",
+      "tags": [
+        "seguranca"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "ADVOGADO-050",
+      "role": "ADVOGADO",
+      "title": "Integração com GovBR",
+      "description": "Login e validação de dados quando permitido/necessário.",
+      "tags": [
+        "integracao",
+        "seguranca"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "ADV-052",
+      "role": "ADVOGADO",
+      "title": "Gerador de peças guiado por rito",
+      "description": "Assistente que sugere estrutura de peças por rito, pontos obrigatórios e checklist de anexos.",
+      "tags": [
+        "pecas",
+        "rito",
+        "checklist"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADV-053",
+      "role": "ADVOGADO",
+      "title": "Incidente de abuso/erro com protocolo",
+      "description": "Fluxo para registrar incidente (erro material, abuso, nulidade) com evidências e rastreio; integra com OAB/Corregedoria quando habilitado.",
+      "tags": [
+        "oab",
+        "corregedoria",
+        "compliance"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADV-054",
+      "role": "ADVOGADO",
+      "title": "Agenda de prazos com feriados locais",
+      "description": "Calendário de prazos com feriados nacionais/locais e suspensão de prazos (por tribunal), com auditoria.",
+      "tags": [
+        "prazos",
+        "calendario"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADV-055",
+      "role": "ADVOGADO",
+      "title": "Gestão de procurações e substabelecimentos",
+      "description": "Controle de poderes, validade, revogação, substabelecimentos e alertas de regularização.",
+      "tags": [
+        "procuracao",
+        "documentos"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "ADV-056",
+      "role": "ADVOGADO",
+      "title": "Comparador de teses e precedentes",
+      "description": "Comparação automática de teses do caso com precedentes (STF/STJ/TST) e alertas de divergência.",
+      "tags": [
+        "jurisprudencia",
+        "precedentes"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "ADV-057",
+      "role": "ADVOGADO",
+      "title": "Acordos: cálculo e negociação assistida",
+      "description": "Ferramentas para simular cenários (valores, parcelas, risco), gerar termo e coletar aceite.",
+      "tags": [
+        "acordo",
+        "calculo"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "ADV-058",
+      "role": "ADVOGADO",
+      "title": "Integração MNI / PJe / eproc",
+      "description": "Conectores via padrões (MNI) e importação de andamentos/documentos, evitando retrabalho.",
+      "tags": [
+        "integracao",
+        "mni",
+        "pje"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "ADV-059",
+      "role": "ADVOGADO",
+      "title": "Gestão financeira do escritório",
+      "description": "Honorariómetro por etapa, contratos, reembolsos, custas, e relatórios por cliente/processo.",
+      "tags": [
+        "financeiro",
+        "gestao"
+      ],
+      "priority": "P3"
+    },
+    {
+      "id": "ADV-060",
+      "role": "ADVOGADO",
+      "title": "Controle de audiências e presença",
+      "description": "Painel de audiências (presencial/telepresencial), lembretes, check-in e registro de ata/ocorrências.",
+      "tags": [
+        "audiencia",
+        "agenda"
+      ],
+      "priority": "P2"
+    }
+  ],
+  "JUIZ": [
+    {
+      "id": "JUIZ-002",
+      "role": "JUIZ",
+      "title": "Triagem por rito",
+      "description": "Classifica automaticamente o rito aplicável e sugere o próximo ato correto.",
+      "tags": [
+        "rito",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-003",
+      "role": "JUIZ",
+      "title": "Saneamento inteligente",
+      "description": "Checklist de saneamento (pontos controvertidos, provas, ônus) com sugestão.",
+      "tags": [
+        "cpc",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-004",
+      "role": "JUIZ",
+      "title": "Gestão de audiência",
+      "description": "Agenda com tempo estimado por ato e 'buffer' automático para atrasos.",
+      "tags": [
+        "audiencia",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-005",
+      "role": "JUIZ",
+      "title": "Painel de audiência do dia",
+      "description": "Uma tela: partes, pedidos, provas chave, pendências e roteiro.",
+      "tags": [
+        "audiencia",
+        "ux"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-006",
+      "role": "JUIZ",
+      "title": "Minuta assistida",
+      "description": "Gera minuta de despacho/decisão com base em templates e fatos do processo.",
+      "tags": [
+        "ia",
+        "decisao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-007",
+      "role": "JUIZ",
+      "title": "Verificador de consistência",
+      "description": "Aponta riscos de nulidade (citação, intimação, competência) antes de decidir.",
+      "tags": [
+        "qualidade",
+        "cautela"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-008",
+      "role": "JUIZ",
+      "title": "Controle de prazos internos",
+      "description": "SLA de gabinete por classe e alerta de acúmulo.",
+      "tags": [
+        "gestao",
+        "analytics"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-009",
+      "role": "JUIZ",
+      "title": "Distribuição equilibrada",
+      "description": "Métrica de carga por assessor/servidor e redistribuição sugerida.",
+      "tags": [
+        "gestao",
+        "equipe"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUIZ-010",
+      "role": "JUIZ",
+      "title": "Agenda de conclusos",
+      "description": "Fila de conclusos com prioridade e justificativa de ordenação.",
+      "tags": [
+        "workflow",
+        "gestao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-011",
+      "role": "JUIZ",
+      "title": "Risco de prescrição",
+      "description": "Alerta de prescrição/prazos materiais em penal/administrativo.",
+      "tags": [
+        "risco",
+        "penal"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-012",
+      "role": "JUIZ",
+      "title": "Mapa de precedentes",
+      "description": "Sugere precedentes vinculantes e verifica superação/distinção.",
+      "tags": [
+        "precedentes",
+        "ia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-013",
+      "role": "JUIZ",
+      "title": "Checagem de jurisprudência atual",
+      "description": "Alerta se precedente foi alterado recentemente (STF/STJ/TST).",
+      "tags": [
+        "precedentes",
+        "atualizacao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-014",
+      "role": "JUIZ",
+      "title": "Controle de repetitivos",
+      "description": "Detecta temas repetitivos e sugere afetação/gestão de lotes.",
+      "tags": [
+        "repetitivos",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUIZ-015",
+      "role": "JUIZ",
+      "title": "Decisão explicável",
+      "description": "Checklist de fundamentação: fatos, provas, norma, precedentes, dispositivo.",
+      "tags": [
+        "qualidade",
+        "fundamentacao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-016",
+      "role": "JUIZ",
+      "title": "Gerador de ementa",
+      "description": "Ementa padronizada com campos essenciais e revisão final.",
+      "tags": [
+        "padrao",
+        "decisao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUIZ-017",
+      "role": "JUIZ",
+      "title": "Controle de sigilo",
+      "description": "Sugere grau de sigilo e mascara dados sensíveis automaticamente.",
+      "tags": [
+        "sigilo",
+        "lgpd"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-019",
+      "role": "JUIZ",
+      "title": "Integração com secretarias",
+      "description": "Ordem de serviço digital para cumprimento e conferência.",
+      "tags": [
+        "secretaria",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-020",
+      "role": "JUIZ",
+      "title": "Painel de diligências",
+      "description": "Acompanha mandados e diligências externas com georreferência opcional.",
+      "tags": [
+        "diligencias",
+        "oficial_justica"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-021",
+      "role": "JUIZ",
+      "title": "Controle de intimações",
+      "description": "Garante que intimações essenciais foram expedidas e certificadas.",
+      "tags": [
+        "intimacoes",
+        "qualidade"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-022",
+      "role": "JUIZ",
+      "title": "Timeline probatória",
+      "description": "Resumo de provas com peso e contraprova por tese.",
+      "tags": [
+        "provas",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-024",
+      "role": "JUIZ",
+      "title": "Checklist de tutela",
+      "description": "Requisitos de urgência, reversibilidade e prova mínima.",
+      "tags": [
+        "tutela",
+        "cpc"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-025",
+      "role": "JUIZ",
+      "title": "Comunicação com peritos",
+      "description": "Agenda pericial, quesitos, prazos e entrega do laudo.",
+      "tags": [
+        "pericia",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-026",
+      "role": "JUIZ",
+      "title": "Quesitos inteligentes",
+      "description": "Sugere quesitos por tipo de perícia e caso (com edição).",
+      "tags": [
+        "pericia",
+        "ia"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUIZ-027",
+      "role": "JUIZ",
+      "title": "Detector de litigância de má-fé",
+      "description": "Sinaliza padrões (múltiplas ações idênticas, falsos documentos).",
+      "tags": [
+        "risco",
+        "analytics"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUIZ-028",
+      "role": "JUIZ",
+      "title": "Painel de conciliações",
+      "description": "Ranqueia processos com maior chance de acordo e agenda lotes.",
+      "tags": [
+        "conciliacao",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUIZ-029",
+      "role": "JUIZ",
+      "title": "Ata digital padronizada",
+      "description": "Ata de audiência com campos e anexos, assinaturas e logs.",
+      "tags": [
+        "audiencia",
+        "assinatura"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-030",
+      "role": "JUIZ",
+      "title": "Revisão de sentença",
+      "description": "Checklist final: competência, relatório, fundamentação, dispositivo, custas.",
+      "tags": [
+        "qualidade",
+        "sentenca"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-031",
+      "role": "JUIZ",
+      "title": "Gestão de recursos",
+      "description": "Mapa de recursos pendentes e prazos de contrarrazões.",
+      "tags": [
+        "recursos",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-032",
+      "role": "JUIZ",
+      "title": "Remessa automática",
+      "description": "Pacotes para instância superior com conferência e índice.",
+      "tags": [
+        "integracao",
+        "recursos"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-033",
+      "role": "JUIZ",
+      "title": "Citações e intimações digitais",
+      "description": "Preferência por meios eletrônicos e fallback rastreável.",
+      "tags": [
+        "intimacao",
+        "integracao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-034",
+      "role": "JUIZ",
+      "title": "Ferramenta de voto",
+      "description": "Para desembargador/ministro: estrutura de voto com pontos controvertidos.",
+      "tags": [
+        "voto",
+        "decisao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-035",
+      "role": "JUIZ",
+      "title": "Controle de sessão",
+      "description": "Agenda de sessão, destaque, pedidos de vista e prazos.",
+      "tags": [
+        "sessao",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUIZ-036",
+      "role": "JUIZ",
+      "title": "Monitor de abuso processual",
+      "description": "Sinaliza excesso de petições repetidas e litigância predatória.",
+      "tags": [
+        "risco",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUIZ-037",
+      "role": "JUIZ",
+      "title": "Trilha de auditoria da IA",
+      "description": "Toda sugestão da IA fica registrada (entrada, saída, versão).",
+      "tags": [
+        "ia",
+        "auditoria"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-038",
+      "role": "JUIZ",
+      "title": "Modo 'sem IA'",
+      "description": "Desliga assistências por processo (sigilo/complexidade) sem perder funcionalidades.",
+      "tags": [
+        "governanca",
+        "ia"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-039",
+      "role": "JUIZ",
+      "title": "Painel LGPD",
+      "description": "Logs de acesso a documentos sensíveis e justificativas.",
+      "tags": [
+        "lgpd",
+        "auditoria"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-040",
+      "role": "JUIZ",
+      "title": "Despachos em lote",
+      "description": "Despachos padronizados para atos simples com revisão rápida.",
+      "tags": [
+        "automacao",
+        "produtividade"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUIZ-041",
+      "role": "JUIZ",
+      "title": "Sistema de tarefas do gabinete",
+      "description": "Kanban por processo, responsável e prazo interno.",
+      "tags": [
+        "gestao",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-042",
+      "role": "JUIZ",
+      "title": "Distribuição de minutas",
+      "description": "Assessor cria minuta, juiz revisa com comentários e aprovação.",
+      "tags": [
+        "workflow",
+        "equipe"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-043",
+      "role": "JUIZ",
+      "title": "Indicadores do acervo",
+      "description": "Backlog, tempo médio por fase, taxa de congestionamento.",
+      "tags": [
+        "analytics",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-045",
+      "role": "JUIZ",
+      "title": "Priorização fundamentada",
+      "description": "Prioriza urgências e grupos vulneráveis com motivo registrado.",
+      "tags": [
+        "urgencia",
+        "auditoria"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-046",
+      "role": "JUIZ",
+      "title": "Comunicação institucional",
+      "description": "Canal formal com MP/Defensoria/OAB com protocolo e histórico.",
+      "tags": [
+        "institucional",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-047",
+      "role": "JUIZ",
+      "title": "Painel de conflito de agenda",
+      "description": "Evita marcar audiências em choque com férias/licenças e feriados.",
+      "tags": [
+        "audiencia",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUIZ-048",
+      "role": "JUIZ",
+      "title": "Detecção de nulidades formais",
+      "description": "Checklist para evitar decisões sem intimação/citação válida.",
+      "tags": [
+        "qualidade"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "JUIZ-050",
+      "role": "JUIZ",
+      "title": "Memorial e sustentação",
+      "description": "Recebe memoriais com organização e alerta de documentos novos.",
+      "tags": [
+        "sessao",
+        "documentos"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUI-051",
+      "role": "JUIZ",
+      "title": "Gabinete: minutas em lote",
+      "description": "Fila do gabinete com minutas sugeridas, assinatura em lote e justificativas padronizadas por tema.",
+      "tags": [
+        "gabinete",
+        "produtividade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUI-053",
+      "role": "JUIZ",
+      "title": "Painel de precedentes vinculantes por rito",
+      "description": "Para cada rito/assunto, exibe precedentes vinculantes e alertas de divergência antes de decidir.",
+      "tags": [
+        "precedentes",
+        "qualidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUI-054",
+      "role": "JUIZ",
+      "title": "Checklist de saneamento (CPC) e nulidades",
+      "description": "Checklist de pontos essenciais (competência, citação, contraditório, prova) antes de avançar fase.",
+      "tags": [
+        "checklist",
+        "nulidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUI-055",
+      "role": "JUIZ",
+      "title": "Controle de qualidade do cartório",
+      "description": "Dashboard com gargalos, tarefas devolvidas, erros de cadastro (classe/assunto) e metas por unidade.",
+      "tags": [
+        "cartorio",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUI-056",
+      "role": "JUIZ",
+      "title": "Gestão avançada de pauta",
+      "description": "Planejamento de pauta por tipo de audiência, tempo médio, número de partes e prioridade legal.",
+      "tags": [
+        "audiencia",
+        "pauta"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUI-057",
+      "role": "JUIZ",
+      "title": "Detecção de litigância predatória",
+      "description": "Sinais de litigância repetitiva, fraude processual e massificação, com encaminhamentos sugeridos.",
+      "tags": [
+        "fraude",
+        "ia"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUI-058",
+      "role": "JUIZ",
+      "title": "Decisões consistentes (trilha auditável)",
+      "description": "Gerador de decisões com trilha do porquê (fundamentos, precedentes, fatos) e checagem de coerência.",
+      "tags": [
+        "decisao",
+        "auditabilidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "JUI-059",
+      "role": "JUIZ",
+      "title": "Audiências telepresenciais seguras",
+      "description": "Sala com verificação de identidade, registro de presença, captura de depoimento e anexos com hash.",
+      "tags": [
+        "telepresencial",
+        "seguranca"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "JUI-060",
+      "role": "JUIZ",
+      "title": "Alertas de execução e efetividade",
+      "description": "Painel de execução com taxa de satisfação, efetividade de medidas e sugestões proporcionais.",
+      "tags": [
+        "execucao",
+        "efetividade"
+      ],
+      "priority": "P2"
+    }
+  ],
+  "MEMBRO_MINISTERIO_PUBLICO": [
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-001",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Painel de notícias criminais",
+      "description": "Fila por flagrante, prisão, medidas urgentes e vítimas vulneráveis.",
+      "tags": [
+        "penal",
+        "urgencia"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-002",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Gestão de denúncias",
+      "description": "Checklist de denúncia: tipicidade, provas mínimas, qualificação e pedidos.",
+      "tags": [
+        "penal",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-003",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Controle de prazos do MP",
+      "description": "Prazos internos e externos com escalonamento automático.",
+      "tags": [
+        "prazos",
+        "gestao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-004",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Acompanhamento de audiências",
+      "description": "Agenda, roteiros de perguntas e provas-chave por caso.",
+      "tags": [
+        "audiencia",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-005",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Monitor de réu preso",
+      "description": "Prioriza atos com réu preso e alerta de excesso de prazo.",
+      "tags": [
+        "urgencia",
+        "penal"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-006",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Gestão de TAC",
+      "description": "Fluxo de TAC: minuta, assinaturas, obrigações e monitoramento.",
+      "tags": [
+        "tac",
+        "civel"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-007",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Painel de improbidade",
+      "description": "Checklist por rito e requisitos para ações de improbidade/ACP.",
+      "tags": [
+        "civel",
+        "rito"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-008",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Motor de provas",
+      "description": "Organiza prova por tese e indica lacunas probatórias.",
+      "tags": [
+        "provas",
+        "ia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-009",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Análise de consistência",
+      "description": "Detecta contradições entre depoimentos, laudos e documentos.",
+      "tags": [
+        "ia",
+        "qualidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-010",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Petições padronizadas",
+      "description": "Templates do MP por tema, com revisão e governança.",
+      "tags": [
+        "templates",
+        "governanca"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-011",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Controle de diligências",
+      "description": "Solicitações à polícia com prazo, retorno e justificativa.",
+      "tags": [
+        "diligencias",
+        "policia"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-012",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Integração com inquérito",
+      "description": "Associa peças do inquérito ao processo e normaliza eventos.",
+      "tags": [
+        "integracao",
+        "policia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-013",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Painel de violência doméstica",
+      "description": "Medidas protetivas, prazos e acompanhamento de descumprimento.",
+      "tags": [
+        "vulneraveis",
+        "urgencia"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-014",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Painel da infância",
+      "description": "Prioriza atos com crianças/adolescentes e equipes técnicas.",
+      "tags": [
+        "vulneraveis",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-015",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Triagem de representações",
+      "description": "Classifica e sugere encaminhamento (arquivar, investigar, ACP).",
+      "tags": [
+        "triagem",
+        "ia"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-016",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Gestão de recomendações",
+      "description": "Recomendações e ofícios com prazos e confirmação de recebimento.",
+      "tags": [
+        "oficios",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-017",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Controle de prova pericial",
+      "description": "Acompanha perícias, quesitos e prazos de laudo.",
+      "tags": [
+        "pericia",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-018",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Quesitos do MP",
+      "description": "Biblioteca de quesitos por tipo de perícia (balística, medicina, contábil).",
+      "tags": [
+        "pericia",
+        "templates"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-019",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Análise de cadeia de custódia",
+      "description": "Checklist para evitar nulidades e registrar lacunas.",
+      "tags": [
+        "penal",
+        "qualidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-020",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Painel de acordos penais",
+      "description": "ANPP e transação: requisitos, prazos e monitoramento.",
+      "tags": [
+        "penal",
+        "acordo"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-021",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Monitor de cumprimento",
+      "description": "Monitora condições de acordo e dispara ação em descumprimento.",
+      "tags": [
+        "acordo",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-022",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Relatórios gerenciais",
+      "description": "Métricas de acervo por comarca, tema e tempo de tramitação.",
+      "tags": [
+        "analytics",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-023",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Detecção de litigância predatória",
+      "description": "Sinaliza padrões de fraude em massa para atuação coordenada.",
+      "tags": [
+        "risco",
+        "analytics"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-024",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Painel ambiental",
+      "description": "ACP/TAC ambiental com mapas e documentos técnicos.",
+      "tags": [
+        "ambiental",
+        "civel"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-026",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Biblioteca de precedentes",
+      "description": "Precedentes relevantes para MP com alerta de mudança.",
+      "tags": [
+        "precedentes",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-027",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Sugestão de tese",
+      "description": "Sugere teses e contra-teses com fontes e revisão humana.",
+      "tags": [
+        "ia",
+        "juridico"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-028",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Controle de sigilo",
+      "description": "Níveis de sigilo e rastreio de acesso a autos sensíveis.",
+      "tags": [
+        "sigilo",
+        "lgpd"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-029",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Interoperabilidade CNJ",
+      "description": "Conectores e normalização (PJe/eproc/e-SAJ) para visão única.",
+      "tags": [
+        "integracao",
+        "unificacao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-030",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Painel de intimações",
+      "description": "Unifica intimações e prioriza as de prazo fatal.",
+      "tags": [
+        "inbox",
+        "prazos"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-031",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Modelo de manifestação",
+      "description": "Assistente para manifestações curtas em lote com revisão.",
+      "tags": [
+        "automacao",
+        "workflow"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-032",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Controle de prazos de vista",
+      "description": "Quando MP toma vista, registra e alerta retorno.",
+      "tags": [
+        "prazos",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-034",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Integração com rede de apoio",
+      "description": "Encaminhamentos (CREAS, conselho tutelar) com protocolo.",
+      "tags": [
+        "integracao",
+        "vulneraveis"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-035",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Controle de audiência virtual",
+      "description": "Links, testes e plano B documentado.",
+      "tags": [
+        "audiencia",
+        "qualidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-036",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Ferramenta de sustentação",
+      "description": "Checklist de pontos e precedentes para sessão.",
+      "tags": [
+        "sessao",
+        "workflow"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-037",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Trilha de auditoria",
+      "description": "Toda ação do MP no sistema com logs e justificativas.",
+      "tags": [
+        "auditoria",
+        "compliance"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-038",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Gestão de equipe",
+      "description": "Tarefas, responsáveis e SLA de gabinete do MP.",
+      "tags": [
+        "gestao",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-039",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Alertas de nulidade",
+      "description": "Checklist de nulidades frequentes (citação, intimação, prova ilícita).",
+      "tags": [
+        "qualidade"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-040",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Gestão de arquivamentos",
+      "description": "Fluxo de arquivamento com motivo, anexos e revisão.",
+      "tags": [
+        "workflow",
+        "compliance"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-041",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Painel de atendimento a vítimas",
+      "description": "Registro de contato e orientações com privacidade.",
+      "tags": [
+        "vulneraveis",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-042",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Monitor de reincidência",
+      "description": "Sinaliza histórico e conexões entre casos (sem substituir análise).",
+      "tags": [
+        "analytics",
+        "penal"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-043",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Integração com audiência de custódia",
+      "description": "Fluxo rápido de peças e relatórios para custódia.",
+      "tags": [
+        "urgencia",
+        "penal"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-044",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Controle de prazos de investigação",
+      "description": "Acompanha prazos de inquérito e prorrogações.",
+      "tags": [
+        "policia",
+        "prazos"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-045",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Painel de recursos",
+      "description": "Acompanha recursos e prazos de contrarrazões.",
+      "tags": [
+        "recursos",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-046",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Padronização de linguagem",
+      "description": "Revisão automática para clareza e padronização institucional.",
+      "tags": [
+        "qualidade",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-047",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Gestão de provas digitais",
+      "description": "Coleta e preservação de mídias com hash e metadados.",
+      "tags": [
+        "provas",
+        "seguranca"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-048",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Monitor de cumprimento de decisões",
+      "description": "Acompanha se decisões (ex.: medidas protetivas) estão sendo cumpridas.",
+      "tags": [
+        "cumprimento",
+        "urgencia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-049",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Painel de ações coletivas",
+      "description": "Gestão de ACPs por tema com cronograma e evidências agregadas.",
+      "tags": [
+        "coletivo",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MEMBRO_MINISTERIO_PUBLICO-050",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Canal institucional com OAB/Defensoria",
+      "description": "Protocolo de comunicações formais e histórico para cooperação.",
+      "tags": [
+        "institucional",
+        "workflow"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MP-052",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Gestão de TAC e acordos",
+      "description": "Modelos e controle de TAC, cumprimento, indicadores e alertas de descumprimento.",
+      "tags": [
+        "tac",
+        "acordo"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MP-053",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Painel de diligências para polícia",
+      "description": "Pedidos do MP em fila, com SLA e retorno de diligências, anexando evidências.",
+      "tags": [
+        "diligencias",
+        "policia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MP-054",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Integração com denúncias e notícias de fato",
+      "description": "Registro/triagem de denúncias e notícias de fato com roteamento, duplicidade e prioridade.",
+      "tags": [
+        "triagem",
+        "denuncias"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MP-055",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Controle de prazos e audiências",
+      "description": "Calendário de prazos e audiências com lembretes e preparação automática de pauta.",
+      "tags": [
+        "prazos",
+        "audiencia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MP-057",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Banco de peças do MP",
+      "description": "Peças padronizadas com variações por tema/rito, versionamento e assinatura.",
+      "tags": [
+        "pecas",
+        "padroes"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MP-058",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Painel de precedentes STF/STJ/TST",
+      "description": "Sugere precedentes e temas relevantes por caso e alerta de mudança de entendimento.",
+      "tags": [
+        "precedentes",
+        "stf",
+        "stj"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MP-059",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Risco de prescrição e nulidades",
+      "description": "Alertas automáticos de prescrição (penal/cível) e nulidades por falta de atos essenciais.",
+      "tags": [
+        "prescricao",
+        "nulidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MP-060",
+      "role": "MEMBRO_MINISTERIO_PUBLICO",
+      "title": "Comunicação com vítimas/testemunhas",
+      "description": "Fluxo protegido de comunicação, orientação e agendamento, preservando sigilo e integridade.",
+      "tags": [
+        "vitimas",
+        "sigilo"
+      ],
+      "priority": "P3"
+    }
+  ],
+  "DELEGADO_POLICIA": [
+    {
+      "id": "DELEGADO_POLICIA-001",
+      "role": "DELEGADO_POLICIA",
+      "title": "Painel de inquéritos",
+      "description": "Fila por prioridade (flagrante, vítima vulnerável, risco de fuga).",
+      "tags": [
+        "inquerito",
+        "urgencia"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "DELEGADO_POLICIA-002",
+      "role": "DELEGADO_POLICIA",
+      "title": "Checklist de instauração",
+      "description": "Campos mínimos, tipificação inicial, equipe e plano de diligências.",
+      "tags": [
+        "workflow",
+        "penal"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "DELEGADO_POLICIA-003",
+      "role": "DELEGADO_POLICIA",
+      "title": "Controle de prazos do inquérito",
+      "description": "Alertas e prorrogações com justificativa e auditoria.",
+      "tags": [
+        "prazos",
+        "auditoria"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "DELEGADO_POLICIA-004",
+      "role": "DELEGADO_POLICIA",
+      "title": "Gestão de diligências",
+      "description": "Ordens internas por responsável, prazo e evidências a coletar.",
+      "tags": [
+        "diligencias",
+        "gestao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "DELEGADO_POLICIA-005",
+      "role": "DELEGADO_POLICIA",
+      "title": "Pedidos ao Judiciário",
+      "description": "Templates de representação (busca, prisão, sigilo) com checklist.",
+      "tags": [
+        "judiciario",
+        "templates"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-006",
+      "role": "DELEGADO_POLICIA",
+      "title": "Integração MP",
+      "description": "Envio de peças ao MP com protocolo e confirmação.",
+      "tags": [
+        "integracao",
+        "mp"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-007",
+      "role": "DELEGADO_POLICIA",
+      "title": "Cadeia de custódia digital",
+      "description": "Registro de coleta, lacre, transporte e armazenamento com hash.",
+      "tags": [
+        "provas",
+        "seguranca"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "DELEGADO_POLICIA-008",
+      "role": "DELEGADO_POLICIA",
+      "title": "Gestão de mídias",
+      "description": "Upload seguro de vídeos/áudios com metadados e permissões.",
+      "tags": [
+        "provas",
+        "seguranca"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-009",
+      "role": "DELEGADO_POLICIA",
+      "title": "Validador de depoimentos",
+      "description": "Padroniza campos e detecta lacunas (tempo, local, identificação).",
+      "tags": [
+        "qualidade",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-010",
+      "role": "DELEGADO_POLICIA",
+      "title": "Banco de modelos",
+      "description": "Modelos de portaria, despacho, termo de declaração e relatório final.",
+      "tags": [
+        "templates",
+        "padrao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-011",
+      "role": "DELEGADO_POLICIA",
+      "title": "Relatório final guiado",
+      "description": "Checklist para relatório conclusivo (fatos, autoria, materialidade).",
+      "tags": [
+        "workflow",
+        "penal"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "DELEGADO_POLICIA-012",
+      "role": "DELEGADO_POLICIA",
+      "title": "Gerador de cronologia",
+      "description": "Linha do tempo automática do caso a partir de eventos registrados.",
+      "tags": [
+        "ux",
+        "provas"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-013",
+      "role": "DELEGADO_POLICIA",
+      "title": "Mapa de vínculos",
+      "description": "Grafo de pessoas, veículos, locais e eventos (com justificativas).",
+      "tags": [
+        "analytics",
+        "investigacao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-014",
+      "role": "DELEGADO_POLICIA",
+      "title": "Gestão de mandados",
+      "description": "Acompanha mandados recebidos e cumprimento com evidências.",
+      "tags": [
+        "mandados",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-015",
+      "role": "DELEGADO_POLICIA",
+      "title": "Painel de flagrante",
+      "description": "Fluxo acelerado: peças, comunicações e audiência de custódia.",
+      "tags": [
+        "urgencia",
+        "penal"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "DELEGADO_POLICIA-016",
+      "role": "DELEGADO_POLICIA",
+      "title": "Controle de presos",
+      "description": "Registro de custódia, transferências e comunicações obrigatórias.",
+      "tags": [
+        "penal",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-017",
+      "role": "DELEGADO_POLICIA",
+      "title": "Integração perícia oficial",
+      "description": "Solicita perícia, acompanha prazos e recebe laudos.",
+      "tags": [
+        "pericia",
+        "integracao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-018",
+      "role": "DELEGADO_POLICIA",
+      "title": "Checklist de perícia",
+      "description": "Campos essenciais por tipo (balística, informática, medicina).",
+      "tags": [
+        "pericia",
+        "qualidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-019",
+      "role": "DELEGADO_POLICIA",
+      "title": "Proteção de vítimas",
+      "description": "Fluxo para medidas urgentes e rede de apoio (CREAS, etc.).",
+      "tags": [
+        "vulneraveis",
+        "urgencia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-020",
+      "role": "DELEGADO_POLICIA",
+      "title": "Violência doméstica",
+      "description": "Checklist de urgência e encaminhamento de medidas protetivas.",
+      "tags": [
+        "vulneraveis",
+        "urgencia"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "DELEGADO_POLICIA-021",
+      "role": "DELEGADO_POLICIA",
+      "title": "Crimes digitais",
+      "description": "Registro de evidência digital, preservação e solicitações a provedores.",
+      "tags": [
+        "ciber",
+        "provas"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-022",
+      "role": "DELEGADO_POLICIA",
+      "title": "Solicitações a provedores",
+      "description": "Templates e trilha de auditoria para pedidos de dados.",
+      "tags": [
+        "ciber",
+        "workflow"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-023",
+      "role": "DELEGADO_POLICIA",
+      "title": "Controle de sigilo",
+      "description": "Níveis de sigilo e logs de acesso a dados sensíveis.",
+      "tags": [
+        "sigilo",
+        "lgpd"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "DELEGADO_POLICIA-024",
+      "role": "DELEGADO_POLICIA",
+      "title": "Termos com assinatura",
+      "description": "Assinatura digital em termos e recibos com trilha de auditoria.",
+      "tags": [
+        "assinatura",
+        "auditoria"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-025",
+      "role": "DELEGADO_POLICIA",
+      "title": "Agenda de oitivas",
+      "description": "Convocações, lembretes e registro de comparecimento.",
+      "tags": [
+        "audiencia",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-026",
+      "role": "DELEGADO_POLICIA",
+      "title": "Gestão de intimações policiais",
+      "description": "Controle de notificações e retornos de AR/e-mail.",
+      "tags": [
+        "notificacoes",
+        "workflow"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-027",
+      "role": "DELEGADO_POLICIA",
+      "title": "Painel de bens apreendidos",
+      "description": "Inventário, custódia e destinação com fotos e documentos.",
+      "tags": [
+        "provas",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-028",
+      "role": "DELEGADO_POLICIA",
+      "title": "Controle de veículos",
+      "description": "Registro e consulta de veículos associados a ocorrências.",
+      "tags": [
+        "analytics",
+        "investigacao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-029",
+      "role": "DELEGADO_POLICIA",
+      "title": "Check de legalidade",
+      "description": "Checklist para evitar nulidades (mandado, consentimento, formalidades).",
+      "tags": [
+        "qualidade",
+        "compliance"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "DELEGADO_POLICIA-030",
+      "role": "DELEGADO_POLICIA",
+      "title": "Relatórios para juiz/MP",
+      "description": "Pacotes de documentos e resumo para decisões urgentes.",
+      "tags": [
+        "integracao",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-031",
+      "role": "DELEGADO_POLICIA",
+      "title": "Fila de solicitações externas",
+      "description": "Recebe pedidos de MP/Judiciário e prioriza com SLA.",
+      "tags": [
+        "gestao",
+        "integracao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-032",
+      "role": "DELEGADO_POLICIA",
+      "title": "Gestão de equipe",
+      "description": "Tarefas, responsáveis, plantões e métricas de produtividade.",
+      "tags": [
+        "gestao",
+        "analytics"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-033",
+      "role": "DELEGADO_POLICIA",
+      "title": "Ocorrências correlatas",
+      "description": "Sugere conexão com BOs/inquéritos semelhantes por padrão.",
+      "tags": [
+        "analytics"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-034",
+      "role": "DELEGADO_POLICIA",
+      "title": "Controle de custas/perícias",
+      "description": "Controle de taxas e requisições (quando aplicável).",
+      "tags": [
+        "financeiro"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-035",
+      "role": "DELEGADO_POLICIA",
+      "title": "Dashboard por área",
+      "description": "Indicadores por tipo de crime, tempo de investigação e backlog.",
+      "tags": [
+        "analytics",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-036",
+      "role": "DELEGADO_POLICIA",
+      "title": "Interoperabilidade CNJ",
+      "description": "Normaliza IDs e eventos para integrar com PJe/eproc.",
+      "tags": [
+        "integracao",
+        "unificacao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-037",
+      "role": "DELEGADO_POLICIA",
+      "title": "Export legal",
+      "description": "Exporta dossiê com índice e hash para envio oficial.",
+      "tags": [
+        "documentos",
+        "auditoria"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-038",
+      "role": "DELEGADO_POLICIA",
+      "title": "Registro de entrevistas",
+      "description": "Armazena entrevistas com consentimento e metadados.",
+      "tags": [
+        "provas",
+        "lgpd"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-040",
+      "role": "DELEGADO_POLICIA",
+      "title": "Controle de custódia de armas",
+      "description": "Registro de armas/munições com numeração e fotos.",
+      "tags": [
+        "provas",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-041",
+      "role": "DELEGADO_POLICIA",
+      "title": "Gestão de pedidos de prisão",
+      "description": "Checklist de requisitos e evidências para representação.",
+      "tags": [
+        "judiciario",
+        "penal"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-042",
+      "role": "DELEGADO_POLICIA",
+      "title": "Painel de buscas",
+      "description": "Checklist e relatórios de busca e apreensão com inventário.",
+      "tags": [
+        "mandados",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-043",
+      "role": "DELEGADO_POLICIA",
+      "title": "Controle de interceptações",
+      "description": "Registro de autorizações, prazos e relatórios (sem expor conteúdo indevido).",
+      "tags": [
+        "sigilo",
+        "compliance"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-044",
+      "role": "DELEGADO_POLICIA",
+      "title": "Logs e auditoria",
+      "description": "Trilha completa de ações e acessos, pronta para corregedoria.",
+      "tags": [
+        "auditoria",
+        "compliance"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "DELEGADO_POLICIA-045",
+      "role": "DELEGADO_POLICIA",
+      "title": "Gestão de documentos pessoais",
+      "description": "Mascaramento de dados em cópias e acesso mínimo necessário.",
+      "tags": [
+        "lgpd",
+        "seguranca"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "DELEGADO_POLICIA-046",
+      "role": "DELEGADO_POLICIA",
+      "title": "Roteiro de entrevista investigativa",
+      "description": "Guias por tipo de crime e perguntas essenciais (editável).",
+      "tags": [
+        "workflow",
+        "templates"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-047",
+      "role": "DELEGADO_POLICIA",
+      "title": "Indicador de risco",
+      "description": "Score explicável para priorizar casos com risco de fuga/reincidência.",
+      "tags": [
+        "analytics",
+        "urgencia"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DELEGADO_POLICIA-048",
+      "role": "DELEGADO_POLICIA",
+      "title": "Painel de comunicações obrigatórias",
+      "description": "Checklist do que deve ser comunicado e quando (custódia, MP, juiz).",
+      "tags": [
+        "workflow",
+        "compliance"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-049",
+      "role": "DELEGADO_POLICIA",
+      "title": "Testemunhas protegidas",
+      "description": "Camada extra de sigilo, pseudonimização e acesso por necessidade.",
+      "tags": [
+        "sigilo",
+        "vulneraveis"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DELEGADO_POLICIA-050",
+      "role": "DELEGADO_POLICIA",
+      "title": "Provas laboratoriais",
+      "description": "Acompanha exames laboratoriais (toxicológico, DNA) com prazos e recebimento.",
+      "tags": [
+        "pericia",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DEL-051",
+      "role": "DELEGADO_POLICIA",
+      "title": "Gestão de inquéritos por prazo e prioridade",
+      "description": "Painel de inquéritos com prazos, diligências pendentes, e prioridade por gravidade/risco.",
+      "tags": [
+        "inquerito",
+        "prazos"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DEL-052",
+      "role": "DELEGADO_POLICIA",
+      "title": "Cadeia de custódia digital",
+      "description": "Registro de custódia (quem/onde/quando), anexos com hash e trilha completa de movimentação de evidências.",
+      "tags": [
+        "cadeia_de_custodia",
+        "provas"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DEL-053",
+      "role": "DELEGADO_POLICIA",
+      "title": "Fila de requisições do MP e Judiciário",
+      "description": "Pedidos em fila com SLA e retorno estruturado, reduzindo retrabalho e perda de prazo.",
+      "tags": [
+        "mp",
+        "judiciario",
+        "sla"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DEL-054",
+      "role": "DELEGADO_POLICIA",
+      "title": "Relatórios automáticos e padronizados",
+      "description": "Geração de relatórios com campos obrigatórios, sumário executivo e anexos validados.",
+      "tags": [
+        "relatorios",
+        "padroes"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DEL-055",
+      "role": "DELEGADO_POLICIA",
+      "title": "Integração com perícias",
+      "description": "Solicitação e acompanhamento de laudos periciais, com prazos e validação de consistência.",
+      "tags": [
+        "pericia",
+        "integracao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DEL-056",
+      "role": "DELEGADO_POLICIA",
+      "title": "Mapa de ocorrências e hot spots",
+      "description": "Geoanálise para apoiar investigação e alocação de efetivo, com filtros por tipo e período.",
+      "tags": [
+        "geoint",
+        "analise"
+      ],
+      "priority": "P3"
+    },
+    {
+      "id": "DEL-057",
+      "role": "DELEGADO_POLICIA",
+      "title": "Medidas protetivas e urgências",
+      "description": "Fluxo de medidas protetivas com checklist, monitoramento de descumprimento e alertas.",
+      "tags": [
+        "protecao",
+        "urgencia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "DEL-058",
+      "role": "DELEGADO_POLICIA",
+      "title": "Controle de mandados (captura/busca)",
+      "description": "Fila de mandados com status, tentativas, justificativas e evidências anexadas.",
+      "tags": [
+        "mandados",
+        "execucao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DEL-059",
+      "role": "DELEGADO_POLICIA",
+      "title": "Checklist para audiência de custódia",
+      "description": "Checklist do que precisa constar para custódia (documentos, justificativas, prova), reduzindo nulidades.",
+      "tags": [
+        "custodia",
+        "checklist"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "DEL-060",
+      "role": "DELEGADO_POLICIA",
+      "title": "Cooperação interestadual",
+      "description": "Módulo de cooperação com outras unidades, ofícios digitais e acompanhamento de respostas.",
+      "tags": [
+        "cooperacao",
+        "oficios"
+      ],
+      "priority": "P3"
+    }
+  ],
+  "MINISTRO": [
+    {
+      "id": "MINISTRO-001",
+      "role": "MINISTRO",
+      "title": "Painel de pauta da sessão",
+      "description": "Organiza processos por tempo estimado, urgência e tema.",
+      "tags": [
+        "sessao",
+        "gestao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MINISTRO-002",
+      "role": "MINISTRO",
+      "title": "Gestão de votos",
+      "description": "Estrutura de voto com pontos controvertidos, precedentes e dispositivo.",
+      "tags": [
+        "voto",
+        "decisao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MINISTRO-003",
+      "role": "MINISTRO",
+      "title": "Controle de pedidos de vista",
+      "description": "Registro, prazos e alertas automáticos.",
+      "tags": [
+        "sessao",
+        "prazos"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-004",
+      "role": "MINISTRO",
+      "title": "Destaque e preferência",
+      "description": "Marcar destaque/preferência com justificativa e histórico.",
+      "tags": [
+        "sessao",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-005",
+      "role": "MINISTRO",
+      "title": "Memoriais organizados",
+      "description": "Recebe memoriais e classifica por tema e processo.",
+      "tags": [
+        "documentos",
+        "sessao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-006",
+      "role": "MINISTRO",
+      "title": "Sustentação oral",
+      "description": "Agenda, links e check de requisitos de sustentação.",
+      "tags": [
+        "sessao",
+        "audiencia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-007",
+      "role": "MINISTRO",
+      "title": "Mapa de precedentes vinculantes",
+      "description": "Sugere súmulas, repetitivos, repercussão geral e IRDR aplicáveis.",
+      "tags": [
+        "precedentes",
+        "ia"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MINISTRO-008",
+      "role": "MINISTRO",
+      "title": "Alerta de superação",
+      "description": "Notifica quando precedente usado foi superado/mitigado.",
+      "tags": [
+        "precedentes",
+        "atualizacao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MINISTRO-009",
+      "role": "MINISTRO",
+      "title": "Distinção guiada",
+      "description": "Checklist para distinguir caso concreto de precedente.",
+      "tags": [
+        "precedentes",
+        "qualidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-010",
+      "role": "MINISTRO",
+      "title": "Ementa padronizada",
+      "description": "Gera ementa com campos essenciais e revisão final.",
+      "tags": [
+        "padrao",
+        "decisao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-011",
+      "role": "MINISTRO",
+      "title": "Gestão de temas",
+      "description": "Catálogo de temas repetitivos e clusterização de casos.",
+      "tags": [
+        "repetitivos",
+        "analytics"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-012",
+      "role": "MINISTRO",
+      "title": "Julgamento por lotes",
+      "description": "Ferramenta para julgar casos idênticos com parâmetros e ressalvas.",
+      "tags": [
+        "repetitivos",
+        "produtividade"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-013",
+      "role": "MINISTRO",
+      "title": "Painel de repercussão geral",
+      "description": "Controle de temas, afetações e sobrestamentos.",
+      "tags": [
+        "stf",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-014",
+      "role": "MINISTRO",
+      "title": "Trilha de revisão",
+      "description": "Assessor cria minuta, ministro revisa com comentários e aprovação.",
+      "tags": [
+        "workflow",
+        "equipe"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-015",
+      "role": "MINISTRO",
+      "title": "Auditoria do gabinete",
+      "description": "Logs de edição, consulta e anexos, com justificativas.",
+      "tags": [
+        "auditoria",
+        "compliance"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MINISTRO-016",
+      "role": "MINISTRO",
+      "title": "Controle de sigilo",
+      "description": "Camadas de sigilo e máscara de dados sensíveis automaticamente.",
+      "tags": [
+        "sigilo",
+        "lgpd"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MINISTRO-017",
+      "role": "MINISTRO",
+      "title": "Pesquisa jurisprudencial integrada",
+      "description": "Busca unificada em bases internas e públicas com filtros.",
+      "tags": [
+        "busca",
+        "jurisprudencia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-018",
+      "role": "MINISTRO",
+      "title": "Comparador de acórdãos",
+      "description": "Compara acórdãos para coerência e divergências.",
+      "tags": [
+        "qualidade",
+        "jurisprudencia"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-019",
+      "role": "MINISTRO",
+      "title": "Detector de divergência",
+      "description": "Sinaliza divergência com turma/câmara e sugere afetação.",
+      "tags": [
+        "analytics",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-020",
+      "role": "MINISTRO",
+      "title": "Controle de admissibilidade",
+      "description": "Checklist para recursos: preparo, tempestividade, cabimento.",
+      "tags": [
+        "recursos",
+        "rito"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MINISTRO-021",
+      "role": "MINISTRO",
+      "title": "Gestão de agravos",
+      "description": "Fila priorizada de agravos e medidas urgentes.",
+      "tags": [
+        "recursos",
+        "urgencia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-022",
+      "role": "MINISTRO",
+      "title": "Comunicações e ofícios",
+      "description": "Gera ofícios e comunicações pós-julgamento com rastreio.",
+      "tags": [
+        "oficios",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-023",
+      "role": "MINISTRO",
+      "title": "Publicação e intimação",
+      "description": "Workflow para publicação, correções e intimações.",
+      "tags": [
+        "workflow",
+        "intimacao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-024",
+      "role": "MINISTRO",
+      "title": "Correção de erro material",
+      "description": "Fluxo rápido para corrigir erro material com logs.",
+      "tags": [
+        "workflow",
+        "qualidade"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-025",
+      "role": "MINISTRO",
+      "title": "Painel de execução do acórdão",
+      "description": "Acompanha retorno à origem e cumprimento.",
+      "tags": [
+        "cumprimento",
+        "workflow"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-026",
+      "role": "MINISTRO",
+      "title": "Gestão de incidentes processuais",
+      "description": "IRDR/IAC/arguição com checklist e prazos.",
+      "tags": [
+        "incidentes",
+        "rito"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-027",
+      "role": "MINISTRO",
+      "title": "Controle de prazo de embargos",
+      "description": "Alertas e triagem de embargos de declaração.",
+      "tags": [
+        "prazos",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-028",
+      "role": "MINISTRO",
+      "title": "Análise de impacto institucional",
+      "description": "Em casos estruturais, checklist de efeitos e modularização.",
+      "tags": [
+        "constitucional",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-029",
+      "role": "MINISTRO",
+      "title": "Gestão de amici curiae",
+      "description": "Cadastro, prazos e organização de manifestações.",
+      "tags": [
+        "institucional",
+        "workflow"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-030",
+      "role": "MINISTRO",
+      "title": "Painel de litigância predatória",
+      "description": "Sinaliza 'massificados' suspeitos e recomenda providências.",
+      "tags": [
+        "risco",
+        "analytics"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-031",
+      "role": "MINISTRO",
+      "title": "Ferramenta de sessões virtuais",
+      "description": "Painel de votação, proclamação e registros.",
+      "tags": [
+        "sessao",
+        "tecnologia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-032",
+      "role": "MINISTRO",
+      "title": "Controle de quórum",
+      "description": "Alertas de quórum e impedimentos/suspeições.",
+      "tags": [
+        "sessao",
+        "compliance"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-033",
+      "role": "MINISTRO",
+      "title": "Gestão de impedimentos",
+      "description": "Registro e verificação de impedimento/suspeição com auditoria.",
+      "tags": [
+        "compliance",
+        "sessao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-034",
+      "role": "MINISTRO",
+      "title": "Revisão de fundamentação",
+      "description": "Checklist: fatos, prova, norma, precedentes, proporcionalidade.",
+      "tags": [
+        "qualidade",
+        "fundamentacao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MINISTRO-036",
+      "role": "MINISTRO",
+      "title": "Controle de prazos do gabinete",
+      "description": "SLA por etapa, backlog e alertas.",
+      "tags": [
+        "gestao",
+        "analytics"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-037",
+      "role": "MINISTRO",
+      "title": "Indicadores por tema",
+      "description": "Tempo médio e taxa de congestionamento por tema e relator.",
+      "tags": [
+        "analytics"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-038",
+      "role": "MINISTRO",
+      "title": "Acompanhamento de liminares",
+      "description": "Controle de liminares concedidas e necessidade de referendo.",
+      "tags": [
+        "urgencia",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-039",
+      "role": "MINISTRO",
+      "title": "Notificação de urgência",
+      "description": "Fila de urgências realimentada por metadados do processo.",
+      "tags": [
+        "urgencia",
+        "triagem"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MINISTRO-040",
+      "role": "MINISTRO",
+      "title": "Integração com tribunais de origem",
+      "description": "Pacotes de remessa/retorno com conferência.",
+      "tags": [
+        "integracao",
+        "unificacao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-041",
+      "role": "MINISTRO",
+      "title": "Controle de documentos grandes",
+      "description": "Streaming e visualização segura de autos volumosos.",
+      "tags": [
+        "ux",
+        "documentos"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-042",
+      "role": "MINISTRO",
+      "title": "Busca em autos por IA",
+      "description": "Busca semântica em autos, com citação de trechos e logs.",
+      "tags": [
+        "ia",
+        "busca"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-043",
+      "role": "MINISTRO",
+      "title": "Modo sem IA",
+      "description": "Desabilita assistências em casos sensíveis, mantendo funcionalidades.",
+      "tags": [
+        "governanca",
+        "ia"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MINISTRO-044",
+      "role": "MINISTRO",
+      "title": "Trilha de auditoria da IA",
+      "description": "Registra prompts/saídas/versões para revisão.",
+      "tags": [
+        "ia",
+        "auditoria"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MINISTRO-045",
+      "role": "MINISTRO",
+      "title": "Gerador de minutas em lote",
+      "description": "Para casos idênticos, com parâmetros e revisão obrigatória.",
+      "tags": [
+        "automacao",
+        "produtividade"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-046",
+      "role": "MINISTRO",
+      "title": "Controle de comunicação externa",
+      "description": "Canal formal com OAB/MP/Defensoria com protocolo.",
+      "tags": [
+        "institucional"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-047",
+      "role": "MINISTRO",
+      "title": "Gestão de acórdãos",
+      "description": "Biblioteca de acórdãos do gabinete com tags e notas.",
+      "tags": [
+        "gestao",
+        "jurisprudencia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MINISTRO-048",
+      "role": "MINISTRO",
+      "title": "Painel de correções pós-publicação",
+      "description": "Retificações, republicações e rastreio de versões.",
+      "tags": [
+        "workflow",
+        "qualidade"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-049",
+      "role": "MINISTRO",
+      "title": "Checklist de modulação",
+      "description": "Em temas repetitivos, guia para modular efeitos no tempo.",
+      "tags": [
+        "gestao",
+        "constitucional"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MINISTRO-050",
+      "role": "MINISTRO",
+      "title": "Controle de acessos sensíveis",
+      "description": "Logs e alertas de acesso a autos sigilosos.",
+      "tags": [
+        "seguranca",
+        "lgpd"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "MIN-051",
+      "role": "MINISTRO",
+      "title": "Painel de repercussão geral e temas repetitivos",
+      "description": "Visão por tema, processos correlatos, tese e impacto, com sugestões de afetação/gestão.",
+      "tags": [
+        "stf",
+        "stj",
+        "temas"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MIN-052",
+      "role": "MINISTRO",
+      "title": "Triagem e admissibilidade assistida",
+      "description": "Triagem de admissibilidade com explicações e flags de divergência, sem automatizar decisão final.",
+      "tags": [
+        "triagem",
+        "admissibilidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MIN-053",
+      "role": "MINISTRO",
+      "title": "Decisões monocráticas em lote",
+      "description": "Fila de decisões monocráticas com padronização, assinatura em lote e auditoria completa.",
+      "tags": [
+        "produtividade",
+        "gabinete"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MIN-054",
+      "role": "MINISTRO",
+      "title": "Governança de precedentes",
+      "description": "Ferramentas para consolidar tese, comunicar tribunais inferiores e monitorar cumprimento.",
+      "tags": [
+        "precedentes",
+        "governanca"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MIN-056",
+      "role": "MINISTRO",
+      "title": "Gestão de gabinete (tarefas e SLAs)",
+      "description": "Workitems por assessor/secretaria, prazos, prioridades e justificativas de reatribuição.",
+      "tags": [
+        "gestao",
+        "sla"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "MIN-057",
+      "role": "MINISTRO",
+      "title": "Monitoramento de descumprimento de tese",
+      "description": "Alerta quando tribunais inferiores divergem de tese firmada, com amostragem explicável.",
+      "tags": [
+        "compliance",
+        "monitoramento"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MIN-058",
+      "role": "MINISTRO",
+      "title": "Agenda de sustentações orais",
+      "description": "Painel de sessões, sustentação, documentos e registro de ocorrências.",
+      "tags": [
+        "sessoes",
+        "sustentacao"
+      ],
+      "priority": "P3"
+    },
+    {
+      "id": "MIN-059",
+      "role": "MINISTRO",
+      "title": "Relatórios de uniformização e divergência",
+      "description": "Mapeia divergências internas e externas, sugerindo afetação/overruling com transparência.",
+      "tags": [
+        "uniformizacao",
+        "analise"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "MIN-060",
+      "role": "MINISTRO",
+      "title": "Comunicação estruturada com tribunais",
+      "description": "Canal oficial para ofícios/ordens e esclarecimentos, com rastreio e SLA.",
+      "tags": [
+        "integracao",
+        "oficios"
+      ],
+      "priority": "P3"
+    }
+  ],
+  "OFICIAL_JUSTICA": [
+    {
+      "id": "OFICIAL_JUSTICA-001",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Carteira de mandados",
+      "description": "Fila por prioridade e filtros por comarca/rota.",
+      "tags": [
+        "mandados",
+        "gestao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-002",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Modo offline",
+      "description": "Baixa mandados e permite registrar diligência sem internet.",
+      "tags": [
+        "offline",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-003",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Roteirização de diligências",
+      "description": "Sugere rota e agrupa mandados por região.",
+      "tags": [
+        "rota",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-004",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Check-in de diligência",
+      "description": "Registro de chegada/saída com carimbo de tempo (quando permitido).",
+      "tags": [
+        "auditoria",
+        "diligencia"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-005",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Certidão guiada",
+      "description": "Modelos de certidão por tipo de ato com campos obrigatórios.",
+      "tags": [
+        "certidao",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-006",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Ditado de certidão",
+      "description": "Entrada por voz com revisão e campos estruturados.",
+      "tags": [
+        "ux",
+        "produtividade"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-007",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Registro de tentativa",
+      "description": "Controle de tentativas, horários e motivo do insucesso.",
+      "tags": [
+        "workflow",
+        "auditoria"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-008",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Validador de endereço",
+      "description": "Sugere correção de CEP/bairro e detecta inconsistências.",
+      "tags": [
+        "dados",
+        "integracao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-009",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Integração com mapas",
+      "description": "Navegação e rotas com aviso de áreas sem cobertura.",
+      "tags": [
+        "integracao",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-010",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Controle de prazo do mandado",
+      "description": "Alertas de vencimento e escalonamento.",
+      "tags": [
+        "prazos",
+        "gestao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-011",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Etiqueta de segurança",
+      "description": "Marcação de diligência de risco com protocolo interno.",
+      "tags": [
+        "seguranca",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-012",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Chat formal com secretaria",
+      "description": "Comunicação por mandado com histórico e anexos.",
+      "tags": [
+        "secretaria",
+        "comunicacao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-013",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Reagendamento documentado",
+      "description": "Propor reagendamento e registrar tentativa de contato.",
+      "tags": [
+        "workflow",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-014",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Checklist de citação",
+      "description": "Passos para evitar nulidade (identificação, entrega, horário).",
+      "tags": [
+        "qualidade",
+        "compliance"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-015",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Checklist de intimação",
+      "description": "Campos e confirmações para intimação válida.",
+      "tags": [
+        "qualidade",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-016",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Registro de recusa",
+      "description": "Formaliza recusa com testemunhas e anexos.",
+      "tags": [
+        "certidao",
+        "auditoria"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-017",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Entrega a terceiro",
+      "description": "Registra requisitos e identificação do recebedor.",
+      "tags": [
+        "compliance",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-018",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Mudou-se / não reside",
+      "description": "Fluxo para devolução com sugestões de pesquisa e retorno.",
+      "tags": [
+        "workflow",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-019",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Local fechado",
+      "description": "Certidão padronizada e sugestão de nova tentativa por horário.",
+      "tags": [
+        "workflow",
+        "produtividade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-020",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Endereço incompleto",
+      "description": "Solicita complementação e registra diligência frustrada.",
+      "tags": [
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-021",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Prova de entrega",
+      "description": "Gera comprovante com QR code e hash do documento entregue.",
+      "tags": [
+        "auditoria",
+        "seguranca"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-022",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Assinatura do destinatário",
+      "description": "Coleta assinatura digital e recibo (quando aplicável).",
+      "tags": [
+        "assinatura",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-023",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Foto de fachada",
+      "description": "Anexo opcional com metadados e controle de privacidade.",
+      "tags": [
+        "provas",
+        "lgpd"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-024",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Controle de sigilo",
+      "description": "Acesso mínimo necessário e logs de abertura de mandados sigilosos.",
+      "tags": [
+        "sigilo",
+        "lgpd"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-026",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Mandado de prisão",
+      "description": "Fluxo específico com restrições e registros obrigatórios.",
+      "tags": [
+        "penal",
+        "sigilo"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-027",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Mandado de busca",
+      "description": "Checklist e inventário (quando aplicável) com anexos.",
+      "tags": [
+        "penal",
+        "workflow"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-028",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Convocações e intimações múltiplas",
+      "description": "Agrupa destinatários/endereços para reduzir deslocamentos.",
+      "tags": [
+        "rota",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-029",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Painel de devoluções",
+      "description": "Motivos de devolução e indicadores para melhoria de endereços.",
+      "tags": [
+        "analytics",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-030",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Relatório diário",
+      "description": "Resumo do dia (mandados cumpridos, tentativas, pendências).",
+      "tags": [
+        "analytics",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-031",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Tarefas do dia",
+      "description": "Lista priorizada de mandados com tempo estimado.",
+      "tags": [
+        "gestao",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-032",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Lista de contatos",
+      "description": "Contatos úteis (secretaria, central de mandados) com registro de ligações.",
+      "tags": [
+        "comunicacao",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-033",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Cartas precatórias",
+      "description": "Gestão de precatórias recebidas/expedidas com rastreio.",
+      "tags": [
+        "workflow",
+        "integracao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-034",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Central de mandados",
+      "description": "Integração com distribuição interna e recebimento automático.",
+      "tags": [
+        "integracao",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-035",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Checklist de certidões",
+      "description": "Valida campos antes de enviar para evitar retrabalho.",
+      "tags": [
+        "qualidade",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-036",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Envio em lote",
+      "description": "Enviar certidões e anexos em lote no fim do dia.",
+      "tags": [
+        "produtividade"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-037",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Recibos e anexos organizados",
+      "description": "Arquiva anexos por mandado com índice.",
+      "tags": [
+        "documentos",
+        "organizacao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-038",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Busca de mandados",
+      "description": "Pesquisa por nome, endereço, número e comarca.",
+      "tags": [
+        "busca",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-039",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Histórico por destinatário",
+      "description": "Mostra tentativas anteriores para planejar nova diligência.",
+      "tags": [
+        "analytics",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-040",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Notificação de mudança de rota",
+      "description": "Alerta se mandado foi redistribuído ou cancelado.",
+      "tags": [
+        "notificacoes",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-041",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Registro de custos",
+      "description": "Registro opcional de despesas de diligência (quando exigido).",
+      "tags": [
+        "financeiro"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-042",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Suporte a QR do processo",
+      "description": "Leitura de QR para abrir mandado rapidamente.",
+      "tags": [
+        "ux",
+        "produtividade"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-043",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Padrão de linguagem",
+      "description": "Revisão automática para clareza e padronização de certidões.",
+      "tags": [
+        "qualidade",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-044",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Alertas de duplicidade",
+      "description": "Detecta mandados duplicados para o mesmo ato/destinatário.",
+      "tags": [
+        "qualidade",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-045",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Protocolo de segurança pessoal",
+      "description": "Checklists e opção de sinalizar 'em risco' para secretaria.",
+      "tags": [
+        "seguranca"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-046",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Integração com assinatura",
+      "description": "Suporte a certificados e assinatura robusta para envio de certidões.",
+      "tags": [
+        "assinatura",
+        "seguranca"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-047",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Trilha de auditoria",
+      "description": "Logs completos para corregedoria (acessos, envios, alterações).",
+      "tags": [
+        "auditoria",
+        "compliance"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-048",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Painel LGPD",
+      "description": "Mascaramento de dados sensíveis em prints e exportações.",
+      "tags": [
+        "lgpd",
+        "seguranca"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-049",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Encaminhamento à assistência social",
+      "description": "Quando houver vulnerabilidade, gera comunicação formal (quando aplicável).",
+      "tags": [
+        "vulneraveis",
+        "institucional"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OFICIAL_JUSTICA-050",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Controle de prazos internos da central",
+      "description": "SLA interno para devolução/redistribuição.",
+      "tags": [
+        "gestao",
+        "prazos"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OJ-051",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Roteirização inteligente",
+      "description": "Roteiro do dia otimizado por endereço, prioridade, janela de horário e risco, com ajuste manual.",
+      "tags": [
+        "roteiro",
+        "logistica"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OJ-052",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Coleta de assinatura/biometria",
+      "description": "Assinatura digital e confirmação segura de recebimento, com trilha e anexos.",
+      "tags": [
+        "assinatura",
+        "seguranca"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OJ-053",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Modo offline para diligências",
+      "description": "Registrar diligência sem internet, sincronizando depois com integridade (hash).",
+      "tags": [
+        "offline",
+        "campo"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OJ-054",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Fotos e anexos com metadados",
+      "description": "Anexar fotos com data/hora/geo e validação de integridade, preservando cadeia de prova.",
+      "tags": [
+        "provas",
+        "metadados"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OJ-055",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Controle de mandados devolvidos",
+      "description": "Fila de devoluções, motivos e reenvio, com alertas para cartório.",
+      "tags": [
+        "mandados",
+        "fila"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OJ-056",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Chat seguro com cartório",
+      "description": "Comunicação segura e auditável com o cartório para dúvidas e orientações em tempo real.",
+      "tags": [
+        "comunicacao",
+        "seguranca"
+      ],
+      "priority": "P3"
+    },
+    {
+      "id": "OJ-057",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Sugestão de melhor horário",
+      "description": "Histórico de sucesso por local e horário para aumentar taxa de cumprimento.",
+      "tags": [
+        "analise",
+        "eficiencia"
+      ],
+      "priority": "P3"
+    },
+    {
+      "id": "OJ-058",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Central de urgências",
+      "description": "Mandados urgentes com destaque, SLA e confirmação de ciência imediata.",
+      "tags": [
+        "urgencia",
+        "sla"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "OJ-059",
+      "role": "OFICIAL_JUSTICA",
+      "title": "Checklist de segurança em campo",
+      "description": "Checklist de risco (área, horário, apoio) e canal de apoio operacional quando necessário.",
+      "tags": [
+        "seguranca",
+        "procedimento"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "OJ-060",
+      "role": "OFICIAL_JUSTICA",
+      "title": "QR Code no mandado",
+      "description": "Mandado com QR para acessar detalhes, anexar certidão e reduzir erro de preenchimento.",
+      "tags": [
+        "qr",
+        "padronizacao"
+      ],
+      "priority": "P2"
+    }
+  ],
+  "SERVIDOR_FORUM": [
+    {
+      "id": "SERVIDOR_FORUM-001",
+      "role": "SERVIDOR_FORUM",
+      "title": "Triagem de protocolo",
+      "description": "Fila de petições por classe/urgência e validação de anexos.",
+      "tags": [
+        "triagem",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-002",
+      "role": "SERVIDOR_FORUM",
+      "title": "Validador de documentos",
+      "description": "Detecta arquivos ilegíveis, duplicados e campos faltantes.",
+      "tags": [
+        "documentos",
+        "qualidade"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-003",
+      "role": "SERVIDOR_FORUM",
+      "title": "Conferência de custas",
+      "description": "Checklist de preparo/GRU/guia e alertas de insuficiência.",
+      "tags": [
+        "custas",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-004",
+      "role": "SERVIDOR_FORUM",
+      "title": "Expedição de intimações",
+      "description": "Geração em lote com conferência e rastreio.",
+      "tags": [
+        "intimacao",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-005",
+      "role": "SERVIDOR_FORUM",
+      "title": "Controle de citações",
+      "description": "Monitor de citações pendentes e retornos (AR/mandado).",
+      "tags": [
+        "citacao",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-006",
+      "role": "SERVIDOR_FORUM",
+      "title": "Central de mandados",
+      "description": "Distribui mandados para oficiais com SLA e prioridade.",
+      "tags": [
+        "mandados",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-007",
+      "role": "SERVIDOR_FORUM",
+      "title": "Painel de devoluções de mandado",
+      "description": "Analisa motivos e sugere correções de endereço.",
+      "tags": [
+        "mandados",
+        "analytics"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-008",
+      "role": "SERVIDOR_FORUM",
+      "title": "Agenda do cartório",
+      "description": "Calendário de atos e prazos internos (publicar, certificar, juntar).",
+      "tags": [
+        "gestao",
+        "prazos"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-009",
+      "role": "SERVIDOR_FORUM",
+      "title": "Fila de juntadas",
+      "description": "Organiza juntadas e auto-indexa anexos por tipo.",
+      "tags": [
+        "documentos",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-010",
+      "role": "SERVIDOR_FORUM",
+      "title": "Indexação automática",
+      "description": "Classifica documentos (procuração, laudo, comprovante) para busca.",
+      "tags": [
+        "documentos",
+        "ia"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-011",
+      "role": "SERVIDOR_FORUM",
+      "title": "Padronização de movimentos",
+      "description": "Sugere movimentações CNJ padronizadas e evita erros.",
+      "tags": [
+        "padrao",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-012",
+      "role": "SERVIDOR_FORUM",
+      "title": "Checklist de rito",
+      "description": "Valida se próximos atos estão compatíveis com o rito.",
+      "tags": [
+        "rito",
+        "qualidade"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-013",
+      "role": "SERVIDOR_FORUM",
+      "title": "Controle de sigilo",
+      "description": "Sugere nível de sigilo e mascara dados sensíveis na publicação.",
+      "tags": [
+        "sigilo",
+        "lgpd"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-014",
+      "role": "SERVIDOR_FORUM",
+      "title": "Logs e auditoria",
+      "description": "Trilha de auditoria para corregedoria: ações, horários e usuário.",
+      "tags": [
+        "auditoria",
+        "compliance"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-015",
+      "role": "SERVIDOR_FORUM",
+      "title": "Atendimento ao público",
+      "description": "Fila de atendimento, protocolo e histórico por processo.",
+      "tags": [
+        "atendimento",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-016",
+      "role": "SERVIDOR_FORUM",
+      "title": "Guichê digital",
+      "description": "Solicitações online com triagem e respostas padronizadas.",
+      "tags": [
+        "atendimento",
+        "integracao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-017",
+      "role": "SERVIDOR_FORUM",
+      "title": "Modelos de certidões",
+      "description": "Biblioteca de certidões com campos dinâmicos e validação.",
+      "tags": [
+        "certidao",
+        "templates"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-019",
+      "role": "SERVIDOR_FORUM",
+      "title": "Publicação controlada",
+      "description": "Checklist antes de publicar: sigilo, nomes, CPF, endereços.",
+      "tags": [
+        "publicacao",
+        "qualidade"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-020",
+      "role": "SERVIDOR_FORUM",
+      "title": "Comprovantes organizados",
+      "description": "Arquiva comprovantes de intimação/citação por processo.",
+      "tags": [
+        "documentos",
+        "auditoria"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-021",
+      "role": "SERVIDOR_FORUM",
+      "title": "Controle de prazos externos",
+      "description": "Acompanha prazos para respostas de órgãos e partes.",
+      "tags": [
+        "prazos",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-022",
+      "role": "SERVIDOR_FORUM",
+      "title": "Notificações internas",
+      "description": "Alertas internos para juiz/assessores quando pendência crítica.",
+      "tags": [
+        "notificacoes",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-023",
+      "role": "SERVIDOR_FORUM",
+      "title": "Integração PJe/eproc/e-SAJ",
+      "description": "Normalização de eventos e conciliação de dados.",
+      "tags": [
+        "integracao",
+        "unificacao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-024",
+      "role": "SERVIDOR_FORUM",
+      "title": "Importação de processos antigos",
+      "description": "Migração assistida com validação e relatórios de inconsistência.",
+      "tags": [
+        "migracao",
+        "qualidade"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-025",
+      "role": "SERVIDOR_FORUM",
+      "title": "Controle de expedientes",
+      "description": "Gerencia expedientes e tarefas repetitivas com automações.",
+      "tags": [
+        "automacao",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-026",
+      "role": "SERVIDOR_FORUM",
+      "title": "Gestão de lotes",
+      "description": "Processa em lote (juntadas, intimações, conclusões) com revisão.",
+      "tags": [
+        "produtividade",
+        "workflow"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-027",
+      "role": "SERVIDOR_FORUM",
+      "title": "Fila de conclusos",
+      "description": "Encaminha conclusos ao juiz com prioridade e justificativa.",
+      "tags": [
+        "workflow",
+        "gestao"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-028",
+      "role": "SERVIDOR_FORUM",
+      "title": "Gestão de audiências",
+      "description": "Convocações, intimações e confirmação de presença.",
+      "tags": [
+        "audiencia",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-029",
+      "role": "SERVIDOR_FORUM",
+      "title": "Sala de audiência",
+      "description": "Checklist de preparo da sala/virtual e suporte técnico.",
+      "tags": [
+        "audiencia",
+        "qualidade"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-030",
+      "role": "SERVIDOR_FORUM",
+      "title": "Controle de perícias",
+      "description": "Agenda pericial, nomeação, quesitos e entrega de laudo.",
+      "tags": [
+        "pericia",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-031",
+      "role": "SERVIDOR_FORUM",
+      "title": "Gestão de peritos",
+      "description": "Cadastro, habilitação, prazos e pagamento (quando aplicável).",
+      "tags": [
+        "pericia",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-032",
+      "role": "SERVIDOR_FORUM",
+      "title": "Controle de depósitos judiciais",
+      "description": "Registro e conciliação de depósitos e alvarás.",
+      "tags": [
+        "financeiro",
+        "workflow"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-033",
+      "role": "SERVIDOR_FORUM",
+      "title": "Alvará digital",
+      "description": "Fluxo de alvará com conferência e assinatura.",
+      "tags": [
+        "financeiro",
+        "assinatura"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-035",
+      "role": "SERVIDOR_FORUM",
+      "title": "Checklist de tutela",
+      "description": "Campos e anexos mínimos para tutela/liminar (sem decidir).",
+      "tags": [
+        "tutela",
+        "workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-037",
+      "role": "SERVIDOR_FORUM",
+      "title": "Controle de acesso a autos",
+      "description": "Permissões por perfil e logs de acesso.",
+      "tags": [
+        "seguranca",
+        "lgpd"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "SERVIDOR_FORUM-038",
+      "role": "SERVIDOR_FORUM",
+      "title": "Mascaramento automático",
+      "description": "Oculta CPF/endereço em telas e PDFs para perfis não autorizados.",
+      "tags": [
+        "lgpd",
+        "seguranca"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-039",
+      "role": "SERVIDOR_FORUM",
+      "title": "Busca interna",
+      "description": "Busca por número, nome, classe, assunto e documentos.",
+      "tags": [
+        "busca",
+        "ux"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-040",
+      "role": "SERVIDOR_FORUM",
+      "title": "Painel de produtividade",
+      "description": "Tempo médio por tarefa, backlog e gargalos.",
+      "tags": [
+        "analytics",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-041",
+      "role": "SERVIDOR_FORUM",
+      "title": "Fila de retrabalho",
+      "description": "Detecta e agrupa tarefas devolvidas por erro para correção.",
+      "tags": [
+        "qualidade",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-042",
+      "role": "SERVIDOR_FORUM",
+      "title": "Monitor de prazos do gabinete",
+      "description": "Visão compartilhada com gabinete para reduzir atrasos.",
+      "tags": [
+        "prazos",
+        "integracao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-043",
+      "role": "SERVIDOR_FORUM",
+      "title": "Integração com ofício eletrônico",
+      "description": "Envio/retorno com protocolo e confirmação.",
+      "tags": [
+        "integracao",
+        "oficios"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-044",
+      "role": "SERVIDOR_FORUM",
+      "title": "Controle de comunicações",
+      "description": "Histórico completo de comunicações enviadas/recebidas.",
+      "tags": [
+        "auditoria",
+        "workflow"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-045",
+      "role": "SERVIDOR_FORUM",
+      "title": "Gestão de usuários do fórum",
+      "description": "Cadastro de servidores, perfis e permissões granulares.",
+      "tags": [
+        "seguranca",
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-046",
+      "role": "SERVIDOR_FORUM",
+      "title": "Treinamento embutido",
+      "description": "Tutoriais por tarefa e 'modo aprendizado' para novos servidores.",
+      "tags": [
+        "ux",
+        "educacao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-047",
+      "role": "SERVIDOR_FORUM",
+      "title": "Painel de compliance",
+      "description": "Checklist de conformidade (CNJ, LGPD) e relatórios.",
+      "tags": [
+        "compliance",
+        "auditoria"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-048",
+      "role": "SERVIDOR_FORUM",
+      "title": "Controle de filas por vara",
+      "description": "Separa filas por vara/secretaria com metas e SLA.",
+      "tags": [
+        "gestao"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "SERVIDOR_FORUM-049",
+      "role": "SERVIDOR_FORUM",
+      "title": "Atendimento por acessibilidade",
+      "description": "Fila preferencial, linguagem simples e acessibilidade no balcão digital.",
+      "tags": [
+        "acessibilidade",
+        "ux"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "SERVIDOR_FORUM-050",
+      "role": "SERVIDOR_FORUM",
+      "title": "Canal institucional com OAB/MP/Defensoria",
+      "description": "Protocolo de comunicações formais e resposta rastreável.",
+      "tags": [
+        "institucional",
+        "workflow"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "FOR-051",
+      "role": "SERVIDOR_FORUM",
+      "title": "Fila unificada por rito e fase",
+      "description": "Inbox do cartório organizada por rito/fase, com SLAs e travas (blocking) para evitar nulidades.",
+      "tags": [
+        "fila",
+        "rito",
+        "sla"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "FOR-052",
+      "role": "SERVIDOR_FORUM",
+      "title": "Expedição em lote",
+      "description": "Geração em lote de intimações, mandados e comunicações, com revisão e assinatura digital.",
+      "tags": [
+        "lote",
+        "expedicao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "FOR-053",
+      "role": "SERVIDOR_FORUM",
+      "title": "Qualidade de cadastro (classe/assunto)",
+      "description": "Validador automático de classe/assunto, competência e prevenção, reduzindo erros na autuação.",
+      "tags": [
+        "cadastro",
+        "qualidade"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "FOR-054",
+      "role": "SERVIDOR_FORUM",
+      "title": "Alertas de prescrição e prazo",
+      "description": "Alertas de prazo fatal e prescrição (quando aplicável), com justificativas e trilha.",
+      "tags": [
+        "prazos",
+        "alertas"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "FOR-055",
+      "role": "SERVIDOR_FORUM",
+      "title": "Painel de congestionamento e SLA",
+      "description": "Mede gargalos por tipo de tarefa, tempo médio e taxa de retorno, com metas por unidade.",
+      "tags": [
+        "sla",
+        "gestao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "FOR-056",
+      "role": "SERVIDOR_FORUM",
+      "title": "Integração via MNI",
+      "description": "Importação/exportação de andamentos por padrões (MNI), reduzindo retrabalho entre sistemas.",
+      "tags": [
+        "integracao",
+        "mni"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "FOR-057",
+      "role": "SERVIDOR_FORUM",
+      "title": "Validador de documentos",
+      "description": "Verifica assinatura, legibilidade, duplicidade e formato dos anexos antes de enviar ao juiz.",
+      "tags": [
+        "documentos",
+        "validacao"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "FOR-058",
+      "role": "SERVIDOR_FORUM",
+      "title": "Atos ordinatórios padronizados",
+      "description": "Gerador de atos ordinatórios com modelos e variáveis por rito, diminuindo inconsistência.",
+      "tags": [
+        "modelos",
+        "padroes"
+      ],
+      "priority": "P3"
+    },
+    {
+      "id": "FOR-059",
+      "role": "SERVIDOR_FORUM",
+      "title": "Gestão de pauta e salas",
+      "description": "Organiza pauta, salas, videoconferência, intimações e check-in, com alertas de conflito.",
+      "tags": [
+        "audiencia",
+        "pauta"
+      ],
+      "priority": "P2"
+    },
+    {
+      "id": "FOR-060",
+      "role": "SERVIDOR_FORUM",
+      "title": "Auditoria de alterações",
+      "description": "Trilha completa de quem alterou cadastro/movimentação, com justificativa e exportação.",
+      "tags": [
+        "auditoria",
+        "seguranca"
+      ],
+      "priority": "P1"
+    }
+  ]
+}

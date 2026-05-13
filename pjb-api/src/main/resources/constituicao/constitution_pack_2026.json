@@ -1,0 +1,47 @@
+[
+  {
+    "tema": "Direitos e garantias fundamentais",
+    "titulo": "Art. 5º e garantias processuais basilares",
+    "artigos": ["art. 5"],
+    "branchCode": "CONSTITUCIONAL",
+    "keywords": ["devido processo legal", "contraditorio", "ampla defesa", "isonomia", "acesso a justica"],
+    "summary": "Base para contraditório, ampla defesa, devido processo legal, acesso à justiça, legalidade e proteção jurisdicional efetiva.",
+    "relatedRitos": ["COMUM_ORDINARIO", "JUIZADO_ESPECIAL_CIVEL", "TRABALHISTA_ORDINARIO"]
+  },
+  {
+    "tema": "Tutela jurisdicional e função essencial da Justiça",
+    "titulo": "Arts. 92 a 126 e estrutura do Poder Judiciário",
+    "artigos": ["art. 92", "art. 93", "art. 94", "art. 95", "art. 96", "art. 97", "art. 98", "art. 99", "art. 100", "art. 101", "art. 102", "art. 103", "art. 105", "art. 108", "art. 109", "art. 114", "art. 121", "art. 125", "art. 126"],
+    "branchCode": "PROCESSUAL",
+    "keywords": ["competencia", "tribunal", "juizado especial", "justica federal", "justica do trabalho", "controle concentrado"],
+    "summary": "Mapa constitucional da estrutura judiciária, competências e bases para distribuição por ramo, grau e especialidade.",
+    "relatedRitos": ["COMUM_ORDINARIO", "JUIZADO_ESPECIAL_CIVEL", "JUIZADO_ESPECIAL_FEDERAL", "TRABALHISTA_ORDINARIO"]
+  },
+  {
+    "tema": "Ordem social e seguridade",
+    "titulo": "Arts. 194 a 204 e proteção previdenciária/assistencial",
+    "artigos": ["art. 194", "art. 195", "art. 201", "art. 203", "art. 204"],
+    "branchCode": "PREVIDENCIARIO",
+    "keywords": ["seguridade", "previdencia", "assistencia social", "beneficio", "bpc"],
+    "summary": "Fundamento constitucional para benefícios previdenciários, custeio, seguridade e assistência social.",
+    "relatedRitos": ["COMUM_ORDINARIO", "JUIZADO_ESPECIAL_FEDERAL"]
+  },
+  {
+    "tema": "Administração pública e controle",
+    "titulo": "Art. 37 e princípios da Administração Pública",
+    "artigos": ["art. 37"],
+    "branchCode": "ADMINISTRATIVO",
+    "keywords": ["legalidade", "impessoalidade", "moralidade", "publicidade", "eficiencia", "nepotismo"],
+    "summary": "Fundamento constitucional para controle da legalidade administrativa, concursos, licitações e responsabilização.",
+    "relatedRitos": ["COMUM_ORDINARIO", "MANDADO_DE_SEGURANCA"]
+  },
+  {
+    "tema": "Ordem tributária",
+    "titulo": "Arts. 145 a 156 e limitações ao poder de tributar",
+    "artigos": ["art. 145", "art. 146", "art. 150", "art. 151", "art. 152", "art. 153", "art. 155", "art. 156"],
+    "branchCode": "TRIBUTARIO",
+    "keywords": ["limitacao ao poder de tributar", "imunidade", "anterioridade", "tributo", "competencia tributaria"],
+    "summary": "Fundamentos constitucionais da competência tributária, limitações, imunidades e garantias do contribuinte.",
+    "relatedRitos": ["EXECUCAO_FISCAL", "COMUM_ORDINARIO"]
+  }
+]

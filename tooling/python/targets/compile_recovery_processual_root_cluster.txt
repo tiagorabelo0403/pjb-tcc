@@ -1,0 +1,14 @@
+pjb-api/src/main/java/com/tcc/pjb/backend/BackendApplication.java
+pjb-api/src/main/java/com/tcc/pjb/backend/controller/processual/calculo/CalculoJudicialController.java
+pjb-api/src/main/java/com/tcc/pjb/backend/controller/processual/calculo/TrabalhistaCalculoLegacyController.java
+pjb-api/src/main/java/com/tcc/pjb/backend/controller/processual/prazos/PrazoProcessualNacionalController.java
+pjb-api/src/main/java/com/tcc/pjb/backend/controller/processual/catalogo/NationalProceduralCatalogController.java
+pjb-api/src/main/java/com/tcc/pjb/backend/controller/processual/document/OfficialDocumentTemplateController.java
+pjb-api/src/main/java/com/tcc/pjb/backend/controller/processual/recursal/RecursalAdmissibilityController.java
+pjb-api/src/main/java/com/tcc/pjb/backend/controller/processual/recursal/RecursalIaConferenciaController.java
+pjb-api/src/test/java/com/tcc/pjb/backend/PjbIntegrationTestBase.java
+pjb-api/src/test/java/com/tcc/pjb/backend/PjbAjuizamentoHttpBoundaryArchitectureTest.java
+pjb-api/src/test/java/com/tcc/pjb/backend/PjbAjuizamentoCommandPathArchitectureTest.java
+pjb-api/src/test/java/com/tcc/pjb/backend/PjbConsultaPublicaSurfaceArchitectureTest.java
+pjb-api/src/test/java/com/tcc/pjb/backend/PjbNotificationSurfaceArchitectureTest.java
+pjb-api/src/test/java/com/tcc/pjb/backend/PjbProcessLifecycleCaseContinuityArchitectureTest.java

@@ -1,0 +1,30 @@
+{
+  "round": 136,
+  "title": "compile_break_fix",
+  "changedFiles": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/core/procedural/NationalProceduralActionProfile.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/core/procedural/NationalProceduralPartyProfile.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/juizado/procedural/NationalProceduralJuizadoDecisionResolver.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/juizado/procedural/NationalProceduralJuizadoDecisionContext.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/controller/processual/comunicacao/institutional/operations/NationalCommunicationInstitutionalOperationsController.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/controller/processual/comunicacao/institutional/panel/NationalCommunicationInstitutionalFinalController.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/AudienciaContexto.java"
+  ],
+  "corrections": [
+    "public_records_for_cross_package_use",
+    "explicit_internal_imports_for_juizado_decision_flow",
+    "spring_mvc_imports_restored_for_institutional_controllers",
+    "explicit_enum_imports_restored_for_audiencia_contexto"
+  ],
+  "validation": {
+    "runtime_concurrency_guard": "passed",
+    "architecture_hygiene_guard": "passed",
+    "constructor_injection_guard": "passed",
+    "config_taxonomy_guard": "passed",
+    "transactional_hotspot_guard_fail_on_missing_budgets": "passed",
+    "repository_layout_guard": "passed",
+    "maven_global_green": false,
+    "pjb_api_total_compile_claimed": false,
+    "docker_stable_claimed": false
+  }
+}

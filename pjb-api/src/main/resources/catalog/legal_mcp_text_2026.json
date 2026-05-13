@@ -1,0 +1,54 @@
+{
+  "deliberation": {
+    "checkpointPrefix": "LEGAL_DELIBERATION_",
+    "highImpactCapabilityMarkers": [
+      "PETICAO",
+      "DECISAO",
+      "DESPACHO",
+      "PARECER",
+      "VALIDATE"
+    ],
+    "mode": {
+      "inlineFastPath": "INLINE_FAST_PATH",
+      "isolatedPolicyReview": "ISOLATED_POLICY_REVIEW",
+      "signedAuthorityRecheck": "SIGNED_AUTHORITY_RECHECK",
+      "thinkToolStyleCheckpoint": "THINK_TOOL_STYLE_CHECKPOINT"
+    },
+    "reasons": {
+      "sigiloStrong": "Sigilo forte exige checkpoint deliberativo antes de consolidar evidência ou tese.",
+      "promptInjectionOrQuarantine": "Prompt injection ou quarentena documental exigem checkpoint deliberativo isolado.",
+      "highImpactTask": "Tarefa jurídica de alto impacto exige checkpoint antes de fixar a combinação final de tools.",
+      "benchmarkBelowExpected": "Benchmark do plano abaixo do esperado exige revisão deliberativa das escolhas MCP."
+    }
+  },
+  "selection": {
+    "mode": {
+      "isolatedDocumentalFence": "ISOLATED_DOCUMENTAL_FENCE",
+      "pinnedStrictTrustChain": "PINNED_STRICT_TRUST_CHAIN",
+      "discoveryThenPin": "DISCOVERY_THEN_PIN",
+      "pinnedOnly": "PINNED_ONLY"
+    },
+    "decisionReason": {
+      "capabilityPrefix": "capability=",
+      "schemaPrefix": "schema=",
+      "sigiloStrictTrustChain": "sigilo_strict_trust_chain",
+      "attachmentsPresent": "attachments_present_documental_enrichment",
+      "promptInjectionDetected": "prompt_injection_detected_reduce_surface",
+      "pinnedServersPrefix": "pinned_servers=",
+      "skillsPrefix": "skills=",
+      "toolExamplesPrefix": "tool_examples=",
+      "evidencePromotionPrefix": "evidence_promotion="
+    },
+    "safeguard": {
+      "readOnlyOnly": "READ_ONLY_ONLY",
+      "toolAnnotationsRequired": "TOOL_ANNOTATIONS_REQUIRED",
+      "signedContextRequired": "SIGNED_CONTEXT_REQUIRED",
+      "citationFirstEvidenceTrail": "CITATION_FIRST_EVIDENCE_TRAIL",
+      "documentalQuarantineFence": "DOCUMENTAL_QUARANTINE_FENCE",
+      "federatedAccessPolicy": "FEDERATED_ACCESS_POLICY",
+      "deliberationCheckpointRequired": "DELIBERATION_CHECKPOINT_REQUIRED",
+      "contextWindowCompactionRequired": "CONTEXT_WINDOW_COMPACTION_REQUIRED",
+      "mcpDoctorReviewRequired": "MCP_DOCTOR_REVIEW_REQUIRED"
+    }
+  }
+}

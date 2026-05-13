@@ -1,0 +1,50 @@
+[
+  {
+    "catalogId": "PJB-DOUT-CIVIL-001",
+    "title": "Curso estruturado de processo civil interno controlado",
+    "authors": ["Acervo Institucional PJB"],
+    "editionOrVersion": "2026.1",
+    "branchCode": "CIVIL",
+    "artifactType": "LICENSED_DOCTRINE_GUIDE",
+    "licensingModel": "INTERNAL_CURATED",
+    "summary": "Manual interno controlado para petição inicial, tutela provisória, saneamento, provas, sentença e cumprimento de sentença.",
+    "keywords": ["cpc", "peticao inicial", "tutela provisoria", "cumprimento de sentenca"],
+    "priority": 2
+  },
+  {
+    "catalogId": "PJB-DOUT-PENAL-001",
+    "title": "Guia doutrinário controlado de processo penal e cautelares",
+    "authors": ["Acervo Institucional PJB"],
+    "editionOrVersion": "2026.1",
+    "branchCode": "PENAL",
+    "artifactType": "LICENSED_DOCTRINE_GUIDE",
+    "licensingModel": "INTERNAL_CURATED",
+    "summary": "Material curado sobre inquérito, ação penal, provas, cautelares, audiência e júri.",
+    "keywords": ["cpp", "prisao preventiva", "cadeia de custodia", "tribunal do juri"],
+    "priority": 2
+  },
+  {
+    "catalogId": "PJB-DOUT-TRAB-001",
+    "title": "Manual interno de reclamação trabalhista e liquidação",
+    "authors": ["Acervo Institucional PJB"],
+    "editionOrVersion": "2026.1",
+    "branchCode": "TRABALHISTA",
+    "artifactType": "LICENSED_DOCTRINE_GUIDE",
+    "licensingModel": "INTERNAL_CURATED",
+    "summary": "Roteiros curados para rito sumaríssimo, ordinário, liquidação, execução e recursos na Justiça do Trabalho.",
+    "keywords": ["clt", "rito sumarissimo", "liquidacao", "execucao trabalhista"],
+    "priority": 2
+  },
+  {
+    "catalogId": "PJB-DOUT-PREV-001",
+    "title": "Guia institucional previdenciário controlado",
+    "authors": ["Acervo Institucional PJB"],
+    "editionOrVersion": "2026.1",
+    "branchCode": "PREVIDENCIARIO",
+    "artifactType": "LICENSED_DOCTRINE_GUIDE",
+    "licensingModel": "INTERNAL_CURATED",
+    "summary": "Checklists e notas curadas para benefícios por incapacidade, aposentadorias, BPC e exigência de requerimento administrativo.",
+    "keywords": ["inss", "aposentadoria", "beneficio por incapacidade", "bpc"],
+    "priority": 2
+  }
+]

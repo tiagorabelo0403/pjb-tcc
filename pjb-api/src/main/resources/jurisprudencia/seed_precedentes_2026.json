@@ -1,0 +1,74 @@
+[
+  {
+    "fonte": "STF",
+    "tipo": "SUMULA_VINCULANTE",
+    "identificador": "SV 13",
+    "titulo": "Nepotismo na Administração Pública (DEMO)",
+    "tese": "Vedação de nomeação de cônjuge/parentes em determinadas hipóteses — exemplo de precedente vinculante.",
+    "ementaResumo": "Registro de demonstração para o módulo de precedentes. Substituir por base oficial/curada conforme o ambiente.",
+    "urlReferencia": "",
+    "dataPublicacao": "2008-08-21",
+    "ramoSugerido": "ADMINISTRATIVO",
+    "ritoSugerido": "COMUM_ORDINARIO"
+  },
+  {
+    "fonte": "STF",
+    "tipo": "REPERCUSSAO_GERAL",
+    "identificador": "TEMA-DEMO-001",
+    "titulo": "Judicialização da Saúde — parâmetros gerais (DEMO)",
+    "tese": "Exemplo: decisão estrutural e balizas para fornecimento de tratamento/medicamento em hipóteses específicas.",
+    "ementaResumo": "Item de seed demonstrativo; ajustar para os temas efetivos que a unidade deseja monitorar.",
+    "urlReferencia": "",
+    "dataPublicacao": "2020-01-01",
+    "ramoSugerido": "CONSTITUCIONAL",
+    "ritoSugerido": "COMUM_ORDINARIO"
+  },
+  {
+    "fonte": "STJ",
+    "tipo": "TEMA_REPETITIVO",
+    "identificador": "REPETITIVO-DEMO-001",
+    "titulo": "Execução — efetividade e medidas (DEMO)",
+    "tese": "Exemplo de orientação repetitiva aplicável à execução/cumprimento.",
+    "ementaResumo": "Item de seed demonstrativo.",
+    "urlReferencia": "",
+    "dataPublicacao": "2019-01-01",
+    "ramoSugerido": "CIVIL",
+    "ritoSugerido": "EXECUCAO_TITULO_EXTRAJUDICIAL"
+  },
+  {
+    "fonte": "STJ",
+    "tipo": "SUMULA",
+    "identificador": "SUM-DEMO-001",
+    "titulo": "Juizado Especial — procedimento e recursos (DEMO)",
+    "tese": "Exemplo de súmula/entendimento sumulado relacionado a JEC.",
+    "ementaResumo": "Item de seed demonstrativo.",
+    "urlReferencia": "",
+    "dataPublicacao": "2015-01-01",
+    "ramoSugerido": "CIVIL",
+    "ritoSugerido": "JUIZADO_ESPECIAL_CIVEL"
+  },
+  {
+    "fonte": "TJ",
+    "tipo": "IRDR",
+    "identificador": "IRDR-DEMO-CE-001",
+    "titulo": "IRDR estadual (DEMO) — tese local",
+    "tese": "Exemplo de tese local aplicável a demandas repetitivas na comarca/UF.",
+    "ementaResumo": "Item de seed demonstrativo.",
+    "urlReferencia": "",
+    "dataPublicacao": "2021-01-01",
+    "ramoSugerido": "CONSUMIDOR",
+    "ritoSugerido": "COMUM_ORDINARIO"
+  },
+  {
+    "fonte": "TRT",
+    "tipo": "ORIENTACAO_JURISPRUDENCIAL",
+    "identificador": "OJ-DEMO-001",
+    "titulo": "Orientação jurisprudencial trabalhista (DEMO)",
+    "tese": "Exemplo de orientação aplicável ao rito trabalhista.",
+    "ementaResumo": "Item de seed demonstrativo.",
+    "urlReferencia": "",
+    "dataPublicacao": "2018-01-01",
+    "ramoSugerido": "TRABALHISTA",
+    "ritoSugerido": "TRABALHISTA_ORDINARIO"
+  }
+]

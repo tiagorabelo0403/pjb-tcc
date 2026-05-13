@@ -1,0 +1,1997 @@
+spring:
+  data:
+    redis:
+      repositories:
+        enabled: false
+  threads:
+    virtual:
+      enabled: true
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  mvc:
+    async:
+      request-timeout: ${PJB_WEB_ASYNC_TIMEOUT:30s}
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/pjb}
+    username: ${SPRING_DATASOURCE_USERNAME:}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: ${PJB_DB_POOL_NAME:pjb-write}
+      register-mbeans: ${PJB_DB_REGISTER_MBEANS:true}
+      maximum-pool-size: ${PJB_DB_POOL_MAX:24}
+      minimum-idle: ${PJB_DB_POOL_MIN:4}
+      connection-timeout: ${PJB_DB_CONNECTION_TIMEOUT_MS:30000}
+      validation-timeout: ${PJB_DB_VALIDATION_TIMEOUT_MS:5000}
+      max-lifetime: ${PJB_DB_MAX_LIFETIME_MS:1800000}
+      keepalive-time: ${PJB_DB_KEEPALIVE_TIME_MS:30000}
+      initialization-fail-timeout: ${PJB_DB_INITIALIZATION_FAIL_TIMEOUT_MS:1}
+      leak-detection-threshold: ${PJB_DB_LEAK_DETECTION_MS:0}
+      data-source-properties:
+        ApplicationName: ${PJB_DB_APPLICATION_NAME:pjb-backend-core}
+        assumeMinServerVersion: ${PJB_DB_ASSUME_MIN_SERVER_VERSION:15}
+        connectTimeout: ${PJB_DB_CONNECT_TIMEOUT_SECONDS:10}
+        sslmode: ${PJB_DB_SSL_MODE:prefer}
+        sslrootcert: ${PJB_DB_SSL_ROOT_CERT:}
+        targetServerType: ${PJB_DB_TARGET_SERVER_TYPE:any}
+        socketTimeout: ${PJB_DB_SOCKET_TIMEOUT_SECONDS:120}
+        preparedStatementCacheQueries: ${PJB_DB_PREPARED_CACHE_QUERIES:512}
+        preparedStatementCacheSizeMiB: ${PJB_DB_PREPARED_CACHE_MIB:16}
+        reWriteBatchedInserts: ${PJB_DB_REWRITE_BATCHED_INSERTS:true}
+        binaryTransfer: ${PJB_DB_BINARY_TRANSFER:true}
+        tcpKeepAlive: ${PJB_DB_TCP_KEEP_ALIVE:true}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: ${PJB_JPA_BATCH_SIZE:64}
+          fetch_size: ${PJB_JPA_FETCH_SIZE:100}
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: ${PJB_JPA_DEFAULT_BATCH_FETCH_SIZE:64}
+  flyway:
+    enabled: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  cache:
+    type: ${PJB_CACHE_TYPE:caffeine}
+    caffeine:
+      spec: ${PJB_CACHE_CAFFEINE_SPEC:maximumSize=50000,expireAfterWrite=10m,recordStats}
+  kafka:
+    producer:
+      properties:
+        enable.idempotence: ${PJB_KAFKA_ENABLE_IDEMPOTENCE:true}
+        acks: ${PJB_KAFKA_ACKS:all}
+        compression.type: ${PJB_KAFKA_COMPRESSION:lz4}
+        linger.ms: ${PJB_KAFKA_LINGER_MS:20}
+        batch.size: ${PJB_KAFKA_BATCH_SIZE:131072}
+        delivery.timeout.ms: ${PJB_KAFKA_DELIVERY_TIMEOUT_MS:120000}
+        request.timeout.ms: ${PJB_KAFKA_REQUEST_TIMEOUT_MS:30000}
+        max.in.flight.requests.per.connection: ${PJB_KAFKA_MAX_IN_FLIGHT:5}
+        retries: ${PJB_KAFKA_RETRIES:2147483647}
+        spring.json.add.type.headers: false
+    consumer:
+      properties:
+        isolation.level: ${PJB_KAFKA_ISOLATION_LEVEL:read_committed}
+        fetch.min.bytes: ${PJB_KAFKA_FETCH_MIN_BYTES:1}
+        fetch.max.wait.ms: ${PJB_KAFKA_FETCH_MAX_WAIT_MS:500}
+      max-poll-records: ${PJB_KAFKA_MAX_POLL_RECORDS:500}
+    listener:
+      type: single
+      ack-mode: batch
+      missing-topics-fatal: false
+
+server:
+  http2:
+    enabled: true
+  shutdown: graceful
+  compression:
+    enabled: true
+    min-response-size: 2048
+    mime-types: application/json,application/xml,text/html,text/plain,text/css,application/javascript
+  tomcat:
+    threads:
+      max: ${PJB_SERVER_THREADS_MAX:384}
+      min-spare: ${PJB_SERVER_THREADS_MIN_SPARE:24}
+    accept-count: ${PJB_SERVER_ACCEPT_COUNT:500}
+    max-connections: ${PJB_SERVER_MAX_CONNECTIONS:10000}
+    processor-cache: ${PJB_SERVER_PROCESSOR_CACHE:200}
+
+pjb:
+
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY:}
+    base-url: ${ANTHROPIC_BASE_URL:https://api.anthropic.com}
+    managed-agents-version: managed-agents-2026-04-01
+    dreaming-version: dreaming-2026-04-21
+    dreaming-model: ${ANTHROPIC_DREAMING_MODEL:claude-sonnet-4-6}
+
+  legal-ai:
+    dreaming:
+      enabled: ${PJB_LEGAL_AI_DREAMING_ENABLED:false}
+      schedule: ${PJB_LEGAL_AI_DREAMING_SCHEDULE:0 0 2 * * *}
+      max-sessions-per-dream: ${PJB_LEGAL_AI_DREAMING_MAX_SESSIONS:50}
+      polling-max-attempts: ${PJB_LEGAL_AI_DREAMING_POLLING_MAX_ATTEMPTS:30}
+      polling-initial-delay-seconds: ${PJB_LEGAL_AI_DREAMING_POLLING_INITIAL_DELAY:10}
+
+  institutional:
+    official-source:
+      connectors:
+        enabled: ${PJB_INSTITUTIONAL_OFFICIAL_SOURCE_CONNECTORS_ENABLED:true}
+        refresh-hours: ${PJB_INSTITUTIONAL_OFFICIAL_SOURCE_REFRESH_HOURS:12}
+        probe-ttl-minutes: ${PJB_INSTITUTIONAL_OFFICIAL_SOURCE_PROBE_TTL_MINUTES:30}
+        probe-timeout-millis: ${PJB_INSTITUTIONAL_OFFICIAL_SOURCE_PROBE_TIMEOUT_MILLIS:5000}
+        probe-batch-size: ${PJB_INSTITUTIONAL_OFFICIAL_SOURCE_PROBE_BATCH_SIZE:3}
+        sources:
+          CNJ_DATAJUD:
+            enabled: ${PJB_INSTITUTIONAL_CNJ_DATAJUD_ENABLED:true}
+            dry-run: ${PJB_INSTITUTIONAL_CNJ_DATAJUD_DRY_RUN:false}
+            base-url: ${PJB_INSTITUTIONAL_CNJ_DATAJUD_BASE_URL:https://api-publica.datajud.cnj.jus.br/api_publica_trf1/_search}
+            reference-url: https://www.cnj.jus.br/sistemas/datajud/api-publica/
+            api-key: ${PJB_INSTITUTIONAL_CNJ_DATAJUD_API_KEY:cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==}
+          SIORG:
+            enabled: ${PJB_INSTITUTIONAL_SIORG_ENABLED:true}
+            dry-run: ${PJB_INSTITUTIONAL_SIORG_DRY_RUN:false}
+            base-url: ${PJB_INSTITUTIONAL_SIORG_BASE_URL:https://estruturaorganizacional.dados.gov.br/doc/orgao-entidade/resumida.json?codigoPoder=1&codigoEsfera=1}
+            reference-url: https://www.gov.br/gestao/pt-br/assuntos/gestaoeinovacao/modelos-organizacionais/estruturas-organizacionais/Sistema-informatizado-siorg
+          IBGE_OU_TOPOLOGIA_CNJ:
+            enabled: ${PJB_INSTITUTIONAL_IBGE_ENABLED:true}
+            dry-run: ${PJB_INSTITUTIONAL_IBGE_DRY_RUN:false}
+            base-url: ${PJB_INSTITUTIONAL_IBGE_BASE_URL:https://servicodados.ibge.gov.br/api/v1/localidades/municipios/2304400}
+            reference-url: https://servicodados.ibge.gov.br/api/docs/localidades
+          RECEITA_CNPJ:
+            enabled: ${PJB_INSTITUTIONAL_RECEITA_CNPJ_ENABLED:true}
+            dry-run: ${PJB_INSTITUTIONAL_RECEITA_CNPJ_DRY_RUN:true}
+            reference-url: https://www.gov.br/pt-br/servicos/consultar-cadastro-nacional-de-pessoas-juridicas
+  storage:
+    upload:
+      max-batch-items: ${PJB_STORAGE_UPLOAD_MAX_BATCH_ITEMS:64}
+      max-batch-total-bytes: ${PJB_STORAGE_UPLOAD_MAX_BATCH_TOTAL_BYTES:536870912}
+      max-document-bytes: ${PJB_STORAGE_UPLOAD_MAX_DOCUMENT_BYTES:26214400}
+      max-image-bytes: ${PJB_STORAGE_UPLOAD_MAX_IMAGE_BYTES:12582912}
+      max-audio-bytes: ${PJB_STORAGE_UPLOAD_MAX_AUDIO_BYTES:33554432}
+      max-video-bytes: ${PJB_STORAGE_UPLOAD_MAX_VIDEO_BYTES:134217728}
+      max-inline-image-bytes: ${PJB_STORAGE_UPLOAD_MAX_INLINE_IMAGE_BYTES:10485760}
+      max-inline-audio-bytes: ${PJB_STORAGE_UPLOAD_MAX_INLINE_AUDIO_BYTES:25165824}
+      max-inline-video-bytes: ${PJB_STORAGE_UPLOAD_MAX_INLINE_VIDEO_BYTES:100663296}
+      max-inline-total-bytes: ${PJB_STORAGE_UPLOAD_MAX_INLINE_TOTAL_BYTES:167772160}
+      max-inline-blocks: ${PJB_STORAGE_UPLOAD_MAX_INLINE_BLOCKS:16}
+      max-post-petition-references: ${PJB_STORAGE_UPLOAD_MAX_POST_PETITION_REFERENCES:160}
+      max-audio-duration-ms: ${PJB_STORAGE_UPLOAD_MAX_AUDIO_DURATION_MS:900000}
+      max-video-duration-ms: ${PJB_STORAGE_UPLOAD_MAX_VIDEO_DURATION_MS:900000}
+      sync-preview-max-bytes: ${PJB_STORAGE_UPLOAD_SYNC_PREVIEW_MAX_BYTES:8388608}
+      deep-inspection-threshold-bytes: ${PJB_STORAGE_UPLOAD_DEEP_INSPECTION_THRESHOLD_BYTES:50331648}
+  api:
+    surface:
+      enabled: true
+      max-request-uri-length: ${PJB_API_SURFACE_MAX_URI_LENGTH:4096}
+      max-query-string-length: ${PJB_API_SURFACE_MAX_QUERY_LENGTH:4096}
+      max-header-count: ${PJB_API_SURFACE_MAX_HEADER_COUNT:120}
+      max-header-value-length: ${PJB_API_SURFACE_MAX_HEADER_VALUE_LENGTH:4096}
+      max-parameter-count: ${PJB_API_SURFACE_MAX_PARAMETER_COUNT:200}
+      max-request-id-length: ${PJB_API_SURFACE_MAX_REQUEST_ID_LENGTH:80}
+      reject-backslash-path: ${PJB_API_SURFACE_REJECT_BACKSLASH:true}
+      reject-path-traversal-tokens: ${PJB_API_SURFACE_REJECT_TRAVERSAL:true}
+      reject-double-slash-path: ${PJB_API_SURFACE_REJECT_DOUBLE_SLASH:true}
+    route-governance:
+      enabled: ${PJB_API_ROUTE_GOVERNANCE_ENABLED:true}
+      default-max-page-size: ${PJB_API_ROUTE_GOVERNANCE_DEFAULT_MAX_PAGE_SIZE:200}
+      default-max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_DEFAULT_MAX_REQUEST_BYTES:1048576}
+      default-max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_DEFAULT_MAX_PATH_SEGMENTS:24}
+      default-max-offset: ${PJB_API_ROUTE_GOVERNANCE_DEFAULT_MAX_OFFSET:10000}
+      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz"]
+      rules:
+        - name: all-api
+          paths: ["/api/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_ALL_MAX_PAGE_SIZE:200}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_ALL_MAX_REQUEST_BYTES:1048576}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_ALL_MAX_PATH_SEGMENTS:24}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_ALL_MAX_OFFSET:10000}
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_ALL_RATE_LIMIT:1200}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_ALL_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip
+        - name: admin-governance
+          paths: ["/api/admin/**", "/api/v1/admin/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          authorities: ["ROLE_ADMIN", "ROLE_ADMINISTRADOR"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_ADMIN_MAX_PAGE_SIZE:100}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_ADMIN_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_ADMIN_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_ADMIN_MAX_OFFSET:2000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded", "multipart/form-data"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_ADMIN_RATE_LIMIT:120}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_ADMIN_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: judge-delegation
+          paths: ["/api/v1/judge/delegation/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_MAGISTRADO", "ROLE_JUIZ", "ROLE_JUIZ_ESTADUAL", "ROLE_JUIZ_FEDERAL", "ROLE_JUIZ_TRABALHISTA", "ROLE_JUIZ_ELEITORAL", "ROLE_JUIZ_MILITAR", "ROLE_DESEMBARGADOR", "ROLE_DESEMBARGADOR_FEDERAL", "ROLE_MINISTRO", "ROLE_ASSESSOR_JUDICIAL", "ROLE_ASSESSOR_DESEMBARGADOR", "ROLE_ASSESSOR_MINISTRO"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_DELEGATION_MAX_PAGE_SIZE:100}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_DELEGATION_MAX_REQUEST_BYTES:262144}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_DELEGATION_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_DELEGATION_MAX_OFFSET:1000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_DELEGATION_RATE_LIMIT:180}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_DELEGATION_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: judge-legacy
+          paths: ["/api/v1/judge/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_MAGISTRADO", "ROLE_JUIZ", "ROLE_JUIZ_ESTADUAL", "ROLE_JUIZ_FEDERAL", "ROLE_JUIZ_TRABALHISTA", "ROLE_JUIZ_ELEITORAL", "ROLE_JUIZ_MILITAR", "ROLE_DESEMBARGADOR", "ROLE_DESEMBARGADOR_FEDERAL", "ROLE_MINISTRO"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_LEGACY_MAX_PAGE_SIZE:120}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_LEGACY_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_LEGACY_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_LEGACY_MAX_OFFSET:2000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_LEGACY_RATE_LIMIT:180}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_LEGACY_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: gabinete-juiz
+          paths: ["/api/v1/juiz/**", "/api/v1/magistratura/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_MAGISTRADO", "ROLE_JUIZ", "ROLE_JUIZ_ESTADUAL", "ROLE_JUIZ_FEDERAL", "ROLE_JUIZ_TRABALHISTA", "ROLE_JUIZ_ELEITORAL", "ROLE_JUIZ_MILITAR", "ROLE_DESEMBARGADOR", "ROLE_DESEMBARGADOR_FEDERAL", "ROLE_MINISTRO"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_MAX_PAGE_SIZE:120}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_MAX_OFFSET:2000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_RATE_LIMIT:240}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_JUDGE_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: gabinete-assessoria
+          paths: ["/api/v1/assessor/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_ASSESSOR_JUDICIAL", "ROLE_ASSESSOR_DESEMBARGADOR", "ROLE_ASSESSOR_MINISTRO", "ROLE_SERVIDOR", "ROLE_SERVIDOR_FORUM"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_ASSESSOR_MAX_PAGE_SIZE:150}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_ASSESSOR_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_ASSESSOR_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_ASSESSOR_MAX_OFFSET:2000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_ASSESSOR_RATE_LIMIT:240}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_ASSESSOR_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: secretaria-operacional
+          paths: ["/api/v1/secretaria/**", "/api/v1/secretariat/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_SERVIDOR_JUDICIARIO", "ROLE_SERVIDOR", "ROLE_SERVIDOR_FORUM", "ROLE_ADMINISTRADOR"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_SECRETARIA_MAX_PAGE_SIZE:200}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_SECRETARIA_MAX_REQUEST_BYTES:1048576}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_SECRETARIA_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_SECRETARIA_MAX_OFFSET:3000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded", "multipart/form-data"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_SECRETARIA_RATE_LIMIT:360}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_SECRETARIA_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: ministerio-publico
+          paths: ["/api/v1/mp/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_MEMBRO_MINISTERIO_PUBLICO", "ROLE_PROMOTOR", "ROLE_PROMOTOR_JUSTICA", "ROLE_PROCURADOR_GERAL_REPUBLICA"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_MP_MAX_PAGE_SIZE:150}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_MP_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_MP_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_MP_MAX_OFFSET:2000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_MP_RATE_LIMIT:180}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_MP_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: procuradoria
+          paths: ["/api/v1/procuradoria/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_PROCURADOR", "ROLE_PROCURADORIA_MUNICIPAL", "ROLE_PROCURADORIA_ESTADUAL", "ROLE_PROCURADORIA_FEDERAL", "ROLE_PROCURADOR_GERAL_REPUBLICA"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_PROCURADORIA_MAX_PAGE_SIZE:150}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_PROCURADORIA_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_PROCURADORIA_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_PROCURADORIA_MAX_OFFSET:2000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_PROCURADORIA_RATE_LIMIT:180}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_PROCURADORIA_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: defensoria
+          paths: ["/api/v1/defensor/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_DEFENSOR_PUBLICO", "ROLE_DEFENSOR_PUBLICO_FEDERAL"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_DEFENSORIA_MAX_PAGE_SIZE:150}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_DEFENSORIA_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_DEFENSORIA_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_DEFENSORIA_MAX_OFFSET:2000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_DEFENSORIA_RATE_LIMIT:180}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_DEFENSORIA_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: policia-judiciaria
+          paths: ["/api/v1/delegado/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_DELEGADO_POLICIA", "ROLE_DELEGADO_POLICIA_FEDERAL", "ROLE_AGENTE_POLICIAL", "ROLE_ESCRIVAO_POLICIAL"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_POLICIA_MAX_PAGE_SIZE:120}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_POLICIA_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_POLICIA_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_POLICIA_MAX_OFFSET:1500}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_POLICIA_RATE_LIMIT:180}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_POLICIA_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: oficial-justica
+          paths: ["/api/v1/oficial-justica/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_OFICIAL_JUSTICA", "ROLE_OFICIAL_JUSTICA_AVALIADOR"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_OFICIAL_MAX_PAGE_SIZE:120}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_OFICIAL_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_OFICIAL_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_OFICIAL_MAX_OFFSET:1500}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_OFICIAL_RATE_LIMIT:180}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_OFICIAL_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: colegiado-desembargador
+          paths: ["/api/v1/desembargador/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_DESEMBARGADOR", "ROLE_DESEMBARGADOR_FEDERAL"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_DESEMBARGADOR_MAX_PAGE_SIZE:120}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_DESEMBARGADOR_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_DESEMBARGADOR_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_DESEMBARGADOR_MAX_OFFSET:1500}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_DESEMBARGADOR_RATE_LIMIT:180}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_DESEMBARGADOR_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: corte-superior
+          paths: ["/api/v1/ministro/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_MINISTRO"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_MINISTRO_MAX_PAGE_SIZE:100}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_MINISTRO_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_MINISTRO_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_MINISTRO_MAX_OFFSET:1000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_MINISTRO_RATE_LIMIT:120}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_MINISTRO_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: cidadao-self-service
+          paths: ["/api/v1/cidadao/**", "/api/v1/calendar/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          authorities: ["ROLE_CIDADAO", "ROLE_ADVOGADO"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_CIDADAO_MAX_PAGE_SIZE:100}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_CIDADAO_MAX_REQUEST_BYTES:262144}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_CIDADAO_MAX_PATH_SEGMENTS:18}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_CIDADAO_MAX_OFFSET:1000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_CIDADAO_RATE_LIMIT:120}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_CIDADAO_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: upload-direct-stream
+          paths: ["/api/v1/uploads/direct/**"]
+          methods: ["PUT"]
+          max-page-size: 0
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_UPLOAD_DIRECT_MAX_REQUEST_BYTES:134217728}
+          max-path-segments: 16
+          max-offset: 0
+          allowed-content-types: ["application/octet-stream"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_UPLOAD_DIRECT_RATE_LIMIT:60}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_UPLOAD_DIRECT_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: pasta-digital-upload
+          paths: ["/api/v1/processos/**", "/api/processos/**", "/api/v1/documentos/**", "/api/v1/uploads/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_PROCESSOS_MAX_PAGE_SIZE:100}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_PROCESSOS_MAX_REQUEST_BYTES:20971520}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_PROCESSOS_MAX_PATH_SEGMENTS:24}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_PROCESSOS_MAX_OFFSET:5000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded", "multipart/form-data", "application/octet-stream"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_PROCESSOS_RATE_LIMIT:90}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_PROCESSOS_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: documentos-sensiveis
+          paths: ["/api/v1/documentos/**", "/api/v1/pasta-digital/**", "/api/v1/processo-pessoal-access/**"]
+          methods: ["GET"]
+          max-page-size: 20
+          max-request-bytes: 1048576
+          max-path-segments: 14
+          max-offset: 200
+          max-requests-per-window: 90
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: processo-ajuizamento
+          paths: ["/api/v1/processos/ajuizar"]
+          methods: ["POST"]
+          allowed-content-types: ["multipart/form-data"]
+          max-request-bytes: 52428800
+          max-path-segments: 8
+          max-offset: 0
+          max-requests-per-window: 30
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: usuario-admin
+          paths: ["/api/v1/usuarios/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          authorities: ["ROLE_ADMIN", "ROLE_ADMINISTRADOR"]
+          allowed-content-types: ["application/json", "application/merge-patch+json"]
+          max-page-size: 100
+          max-request-bytes: 1048576
+          max-path-segments: 12
+          max-offset: 1000
+          max-requests-per-window: 120
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: admin-atlas-sensitive
+          paths: ["/api/v1/admin/atlas/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          authorities: ["ROLE_ADMIN", "ROLE_ADMINISTRADOR"]
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded", "multipart/form-data"]
+          max-page-size: 40
+          max-request-bytes: 524288
+          max-path-segments: 16
+          max-offset: 200
+          max-requests-per-window: 60
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: admin-federalismo-sensitive
+          paths: ["/api/v1/admin/federalismo/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          authorities: ["ROLE_ADMIN", "ROLE_ADMINISTRADOR"]
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-page-size: 80
+          max-request-bytes: 524288
+          max-path-segments: 18
+          max-offset: 500
+          max-requests-per-window: 90
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: security-device-sensitive
+          paths: ["/api/v1/security/devices/**", "/api/v1/security/approvals/**", "/api/v1/security/panic/**", "/api/v1/security/challenges/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          authorities: ["ROLE_ADMIN", "ROLE_ADMINISTRADOR", "ROLE_CIDADAO", "ROLE_ADVOGADO", "ROLE_SERVIDOR", "ROLE_SERVIDOR_FORUM", "ROLE_SERVIDOR_JUDICIARIO", "ROLE_MAGISTRADO", "ROLE_JUIZ", "ROLE_DESEMBARGADOR", "ROLE_MINISTRO"]
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-page-size: 20
+          max-request-bytes: 262144
+          max-path-segments: 16
+          max-offset: 100
+          max-requests-per-window: 45
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: process-twin-sensitive
+          paths: ["/api/v1/processos/**/twin"]
+          methods: ["GET"]
+          authorities: ["ROLE_ADMIN", "ROLE_ADMINISTRADOR", "ROLE_CIDADAO", "ROLE_ADVOGADO", "ROLE_SERVIDOR", "ROLE_SERVIDOR_FORUM", "ROLE_SERVIDOR_JUDICIARIO", "ROLE_MAGISTRADO", "ROLE_JUIZ", "ROLE_DESEMBARGADOR", "ROLE_MINISTRO", "ROLE_DEFENSOR_PUBLICO", "ROLE_DEFENSOR_PUBLICO_FEDERAL", "ROLE_PROCURADOR", "ROLE_PROCURADORIA_MUNICIPAL", "ROLE_PROCURADORIA_ESTADUAL", "ROLE_PROCURADORIA_FEDERAL", "ROLE_MEMBRO_MINISTERIO_PUBLICO", "ROLE_PROMOTOR", "ROLE_PROMOTOR_JUSTICA"]
+          max-page-size: 10
+          max-request-bytes: 131072
+          max-path-segments: 18
+          max-offset: 20
+          max-requests-per-window: 120
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: admin-metrics-sensitive
+          paths: ["/api/v1/admin/metrics/**"]
+          methods: ["GET"]
+          authorities: ["ROLE_ADMIN", "ROLE_ADMINISTRADOR", "ROLE_SERVIDOR_JUDICIARIO", "ROLE_MAGISTRADO", "ROLE_JUIZ"]
+          max-page-size: 40
+          max-request-bytes: 131072
+          max-path-segments: 14
+          max-offset: 200
+          max-requests-per-window: 60
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: cidadao-profile-sensitive
+          paths: ["/api/v1/cidadao/perfil/**"]
+          methods: ["GET", "POST"]
+          authorities: ["ROLE_CIDADAO"]
+          allowed-content-types: ["application/json", "multipart/form-data"]
+          max-page-size: 10
+          max-request-bytes: 5242880
+          max-path-segments: 14
+          max-offset: 20
+          max-requests-per-window: 60
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: forum-operacional
+          paths: ["/api/v1/forum/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          authorities: ["ROLE_SERVIDOR_JUDICIARIO", "ROLE_SERVIDOR_FORUM", "ROLE_ADMIN", "ROLE_ADMINISTRADOR"]
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-page-size: 100
+          max-request-bytes: 262144
+          max-path-segments: 16
+          max-offset: 1000
+          max-requests-per-window: 120
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: auth-security
+          paths: ["/api/v1/auth/**", "/api/v1/security/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_AUTH_MAX_PAGE_SIZE:40}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_AUTH_MAX_REQUEST_BYTES:131072}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_AUTH_MAX_PATH_SEGMENTS:16}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_AUTH_MAX_OFFSET:200}
+          allowed-content-types: ["application/json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_AUTH_RATE_LIMIT:30}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_AUTH_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip
+          no-store-response: true
+        - name: internal-audit-sensitive
+          paths: ["/api/internal/audit/**"]
+          methods: ["GET"]
+          authorities: ["ROLE_ADMIN", "ROLE_ADMINISTRADOR"]
+          max-page-size: 80
+          max-request-bytes: 65536
+          max-path-segments: 18
+          max-offset: 500
+          max-requests-per-window: 60
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: notification-tracking-public
+          paths: ["/api/v1/notificacoes/track/**"]
+          methods: ["GET", "POST"]
+          max-page-size: 10
+          max-request-bytes: 65536
+          max-path-segments: 14
+          max-offset: 20
+          allowed-content-types: ["application/json"]
+          max-requests-per-window: 120
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip
+          no-store-response: true
+        - name: integration-signed-ingress
+          paths: ["/api/v1/integrations/n8n/workitems/generate"]
+          methods: ["POST"]
+          max-page-size: 5
+          max-request-bytes: 1048576
+          max-path-segments: 16
+          max-offset: 10
+          allowed-content-types: ["application/json"]
+          max-requests-per-window: 90
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip
+          no-store-response: true
+        - name: legacy-public-forward
+          paths: ["/com/tcc/pjb/backend/api/modulos/advocacia/clientes/**"]
+          methods: ["GET", "POST"]
+          max-page-size: 5
+          max-request-bytes: 32768
+          max-path-segments: 16
+          max-offset: 10
+          max-requests-per-window: 120
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip
+          no-store-response: true
+        - name: jurisprudencia-index-admin
+          paths: ["/api/v1/jurisprudencia/index/**"]
+          methods: ["GET", "POST"]
+          authorities: ["ROLE_ADMIN", "ROLE_ADMINISTRADOR"]
+          allowed-content-types: ["application/json", "application/merge-patch+json"]
+          max-page-size: 40
+          max-request-bytes: 262144
+          max-path-segments: 16
+          max-offset: 200
+          max-requests-per-window: 60
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: chat-operational
+          paths: ["/api/v1/chat/**"]
+          methods: ["GET", "POST"]
+          allowed-content-types: ["application/json", "application/merge-patch+json"]
+          max-page-size: 120
+          max-request-bytes: 262144
+          max-path-segments: 16
+          max-offset: 600
+          max-requests-per-window: 180
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: public-readonly
+          paths: ["/api/v1/public/**", "/api/v1/publico/**", "/api/v1/consultas-rapidas/**", "/api/v1/jurisprudencia/**"]
+          methods: ["GET", "OPTIONS"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_PUBLIC_MAX_PAGE_SIZE:60}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_PUBLIC_MAX_REQUEST_BYTES:65536}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_PUBLIC_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_PUBLIC_MAX_OFFSET:800}
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_PUBLIC_RATE_LIMIT:240}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_PUBLIC_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip
+        - name: public-catalog-ui-readonly
+          paths: ["/api/v1/catalog/**", "/api/v1/ui/**", "/api/v1/tribunal/perfil/**", "/api/v1/orgaos-judiciarios/**"]
+          methods: ["GET", "OPTIONS"]
+          max-page-size: 80
+          max-request-bytes: 65536
+          max-path-segments: 20
+          max-offset: 1000
+          max-requests-per-window: 300
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip
+        - name: prontuario-sensitive
+          paths: ["/api/v1/prontuarios/**"]
+          methods: ["GET"]
+          authorities: ["ROLE_CIDADAO", "ROLE_ADVOGADO", "ROLE_PROCURADOR", "ROLE_PROCURADORIA_MUNICIPAL", "ROLE_PROCURADORIA_ESTADUAL", "ROLE_PROCURADORIA_FEDERAL", "ROLE_DEFENSOR_PUBLICO", "ROLE_DEFENSOR_PUBLICO_FEDERAL", "ROLE_MAGISTRADO", "ROLE_JUIZ", "ROLE_DESEMBARGADOR", "ROLE_MINISTRO", "ROLE_MEMBRO_MINISTERIO_PUBLICO", "ROLE_PROMOTOR_ELEITORAL", "ROLE_PROMOTOR_TRABALHISTA", "ROLE_PROCURADOR_GERAL_REPUBLICA", "ROLE_ADMIN", "ROLE_ADMINISTRADOR", "ROLE_SERVIDOR", "ROLE_SERVIDOR_FORUM", "ROLE_SERVIDOR_JUDICIARIO"]
+          max-page-size: 40
+          max-request-bytes: 65536
+          max-path-segments: 18
+          max-offset: 400
+          max-requests-per-window: 90
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: marketplace-institutional
+          paths: ["/api/marketplace/v1/**"]
+          methods: ["POST"]
+          allowed-content-types: ["application/json"]
+          max-page-size: 20
+          max-request-bytes: 2097152
+          max-path-segments: 18
+          max-offset: 100
+          max-requests-per-window: 120
+          rate-window-seconds: 60
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: advogado-operacional
+          paths: ["/api/v1/advogado/**", "/api/v1/oab/**", "/api/v1/peticionamento/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          authorities: ["ROLE_ADVOGADO", "ROLE_PROCURADOR", "ROLE_DEFENSOR_PUBLICO", "ROLE_DEFENSOR_PUBLICO_FEDERAL"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_ADVOGADO_MAX_PAGE_SIZE:120}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_ADVOGADO_MAX_REQUEST_BYTES:1048576}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_ADVOGADO_MAX_PATH_SEGMENTS:22}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_ADVOGADO_MAX_OFFSET:1500}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded", "multipart/form-data"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_ADVOGADO_RATE_LIMIT:180}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_ADVOGADO_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: processual-core
+          paths: ["/api/v1/processual/**", "/api/v1/processos/**", "/api/v1/processo/**", "/api/processos/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_PROCESSUAL_MAX_PAGE_SIZE:120}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_PROCESSUAL_MAX_REQUEST_BYTES:20971520}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_PROCESSUAL_MAX_PATH_SEGMENTS:24}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_PROCESSUAL_MAX_OFFSET:3000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded", "multipart/form-data", "application/octet-stream"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_PROCESSUAL_RATE_LIMIT:240}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_PROCESSUAL_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: institutional-governance-sensitive
+          paths: ["/api/v1/institucional/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_INSTITUTIONAL_MAX_PAGE_SIZE:120}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_INSTITUTIONAL_MAX_REQUEST_BYTES:1048576}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_INSTITUTIONAL_MAX_PATH_SEGMENTS:22}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_INSTITUTIONAL_MAX_OFFSET:1200}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_INSTITUTIONAL_RATE_LIMIT:120}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_INSTITUTIONAL_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: legal-ai-governed-surfaces
+          paths: ["/api/ai/legal/minuta", "/api/ai/legal/grounding/check", "/api/ai/legal/conversation"]
+          methods: ["POST"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_LEGAL_AI_SURFACE_MAX_PAGE_SIZE:20}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_LEGAL_AI_SURFACE_MAX_REQUEST_BYTES:262144}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_LEGAL_AI_SURFACE_MAX_PATH_SEGMENTS:8}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_LEGAL_AI_SURFACE_MAX_OFFSET:0}
+          allowed-content-types: ["application/json"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_LEGAL_AI_SURFACE_RATE_LIMIT:30}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_LEGAL_AI_SURFACE_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: intelligence-heavy
+          paths: ["/api/v1/intelligence/**", "/api/ai/**", "/api/v1/ia/**", "/api/v1/triad/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_INTELLIGENCE_MAX_PAGE_SIZE:80}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_INTELLIGENCE_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_INTELLIGENCE_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_INTELLIGENCE_MAX_OFFSET:800}
+          allowed-content-types: ["application/json", "application/merge-patch+json"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_INTELLIGENCE_RATE_LIMIT:90}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_INTELLIGENCE_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: workspace-operational
+          paths: ["/api/v1/workspace/**", "/api/v1/workitems/**", "/api/v1/notificacoes/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_WORKSPACE_MAX_PAGE_SIZE:150}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_WORKSPACE_MAX_REQUEST_BYTES:262144}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_WORKSPACE_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_WORKSPACE_MAX_OFFSET:1500}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_WORKSPACE_RATE_LIMIT:240}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_WORKSPACE_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: apoio-tecnico
+          paths: ["/api/v1/perito/**", "/api/v1/psicossocial/**", "/api/v1/conciliacao/**", "/api/v1/extrajudicial/**"]
+          methods: ["GET", "POST", "PUT", "PATCH"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_APOIO_MAX_PAGE_SIZE:120}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_APOIO_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_APOIO_MAX_PATH_SEGMENTS:20}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_APOIO_MAX_OFFSET:1200}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded", "multipart/form-data"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_APOIO_RATE_LIMIT:120}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_APOIO_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: laiane-mesh
+          paths: ["/api/v1/laiane/**", "/api/v1/modulos/**", "/api/v1/jobs/**", "/api/v1/integrations/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_LAIANE_MAX_PAGE_SIZE:120}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_LAIANE_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_LAIANE_MAX_PATH_SEGMENTS:22}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_LAIANE_MAX_OFFSET:1200}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_LAIANE_RATE_LIMIT:120}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_LAIANE_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+        - name: sigilo-transito-comunicacao
+          paths: ["/api/v1/transito/**", "/api/v1/lgpd/**", "/api/v1/sigilo/**", "/api/v1/comunicacao-judicial/**", "/api/v1/comunicacoes/**", "/api/v1/interceptacao-ativa/**"]
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_SIGILO_MAX_PAGE_SIZE:100}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_SIGILO_MAX_REQUEST_BYTES:524288}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_SIGILO_MAX_PATH_SEGMENTS:22}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_SIGILO_MAX_OFFSET:1000}
+          allowed-content-types: ["application/json", "application/merge-patch+json", "application/x-www-form-urlencoded", "multipart/form-data"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_SIGILO_RATE_LIMIT:90}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_SIGILO_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
+    load-shedding:
+      enabled: ${PJB_API_LOAD_SHEDDING_ENABLED:true}
+      global-max-in-flight: ${PJB_API_LOAD_SHEDDING_GLOBAL_MAX_IN_FLIGHT:640}
+      global-acquire-timeout: ${PJB_API_LOAD_SHEDDING_GLOBAL_TIMEOUT:15ms}
+      emit-debug-headers: ${PJB_API_LOAD_SHEDDING_DEBUG_HEADERS:true}
+      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz"]
+      rules:
+        - name: frontdoor-critical
+          prefixes: ["/api/v1/peticionamento/inicial/sessao", "/api/v1/transito", "/api/v1/sigilo", "/api/v1/comunicacao-judicial", "/api/v1/comunicacoes"]
+          max-in-flight: ${PJB_API_LOAD_SHEDDING_CRITICAL_MAX_IN_FLIGHT:192}
+          acquire-timeout: ${PJB_API_LOAD_SHEDDING_CRITICAL_TIMEOUT:10ms}
+          rejection-status: ${PJB_API_LOAD_SHEDDING_CRITICAL_STATUS:503}
+          rejection-code: LOAD_SHED_CRITICAL
+        - name: petition-heavy
+          prefixes: ["/api/v1/peticionamento", "/api/v1/laiane", "/api/v1/processual/routing/diagnostico"]
+          max-in-flight: ${PJB_API_LOAD_SHEDDING_PETITION_MAX_IN_FLIGHT:128}
+          acquire-timeout: ${PJB_API_LOAD_SHEDDING_PETITION_TIMEOUT:25ms}
+          rejection-status: ${PJB_API_LOAD_SHEDDING_PETITION_STATUS:503}
+          rejection-code: LOAD_SHED_PETITION
+        - name: institutional-bulk
+          prefixes: ["/api/v1/integrations/n8n", "/api/v1/jobs", "/api/v1/work-items", "/api/v1/secretariat"]
+          max-in-flight: ${PJB_API_LOAD_SHEDDING_BULK_MAX_IN_FLIGHT:96}
+          acquire-timeout: ${PJB_API_LOAD_SHEDDING_BULK_TIMEOUT:20ms}
+          rejection-status: ${PJB_API_LOAD_SHEDDING_BULK_STATUS:503}
+          rejection-code: LOAD_SHED_BULK
+    crisis-control:
+      enabled: ${PJB_API_CRISIS_CONTROL_ENABLED:false}
+      mode: ${PJB_API_CRISIS_CONTROL_MODE:NORMAL}
+      rejection-status: ${PJB_API_CRISIS_CONTROL_STATUS:503}
+      emit-debug-headers: ${PJB_API_CRISIS_CONTROL_DEBUG_HEADERS:true}
+      rejection-code: ${PJB_API_CRISIS_CONTROL_CODE:CRISIS_CONTAINMENT}
+      rejection-detail: ${PJB_API_CRISIS_CONTROL_DETAIL:A plataforma entrou em contenção operacional temporária para preservar as trilhas críticas.}
+      blocked-prefixes:
+        - /api/v1/integrations/n8n
+        - /api/v1/jobs
+        - /api/v1/admin/scale-architecture/processual-read-models/recomposition
+        - /api/v1/jurisprudencia/sync
+      lane-directives:
+        - name: frontdoor-critical
+          max-in-flight-override: ${PJB_API_CRISIS_CONTROL_CRITICAL_MAX_IN_FLIGHT:224}
+          acquire-timeout-override: ${PJB_API_CRISIS_CONTROL_CRITICAL_TIMEOUT:8ms}
+          rejection-code: CRISIS_CRITICAL_GUARD
+        - name: petition-heavy
+          max-in-flight-override: ${PJB_API_CRISIS_CONTROL_PETITION_MAX_IN_FLIGHT:96}
+          acquire-timeout-override: ${PJB_API_CRISIS_CONTROL_PETITION_TIMEOUT:12ms}
+          rejection-code: CRISIS_PETITION_GUARD
+        - name: institutional-bulk
+          max-in-flight-override: ${PJB_API_CRISIS_CONTROL_BULK_MAX_IN_FLIGHT:16}
+          acquire-timeout-override: ${PJB_API_CRISIS_CONTROL_BULK_TIMEOUT:2ms}
+          reject-all: ${PJB_API_CRISIS_CONTROL_REJECT_BULK:true}
+          rejection-code: CRISIS_BULK_CONTAINMENT
+    db-pressure-shield:
+      enabled: ${PJB_API_DB_PRESSURE_SHIELD_ENABLED:true}
+      write-active-ratio-threshold: ${PJB_API_DB_PRESSURE_WRITE_RATIO:0.92}
+      read-active-ratio-threshold: ${PJB_API_DB_PRESSURE_READ_RATIO:0.95}
+      write-threads-awaiting-threshold: ${PJB_API_DB_PRESSURE_WRITE_AWAITING:24}
+      read-threads-awaiting-threshold: ${PJB_API_DB_PRESSURE_READ_AWAITING:48}
+      min-decision-ttl: ${PJB_API_DB_PRESSURE_TTL:100ms}
+      rejection-status: ${PJB_API_DB_PRESSURE_STATUS:503}
+      rejection-code: ${PJB_API_DB_PRESSURE_CODE:DB_PRESSURE_SHIELD}
+      emit-debug-headers: ${PJB_API_DB_PRESSURE_DEBUG_HEADERS:false}
+      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz"]
+      guarded-prefixes: ["/api/v1/peticionamento", "/api/v1/laiane", "/api/v1/processual", "/api/v1/work-items", "/api/v1/secretariat", "/api/v1/juiz"]
+    functional-availability:
+      enabled: ${PJB_API_FUNCTIONAL_AVAILABILITY_ENABLED:true}
+      rejection-status: ${PJB_API_FUNCTIONAL_AVAILABILITY_STATUS:503}
+      emit-debug-headers: ${PJB_API_FUNCTIONAL_AVAILABILITY_DEBUG_HEADERS:false}
+      domains:
+        PETICIONAMENTO: ${PJB_API_DOMAIN_PETICIONAMENTO_ENABLED:true}
+        CONSULTA: ${PJB_API_DOMAIN_CONSULTA_ENABLED:true}
+        OPERACAO_INTERNA: ${PJB_API_DOMAIN_OPERACAO_INTERNA_ENABLED:true}
+        COMUNICACAO: ${PJB_API_DOMAIN_COMUNICACAO_ENABLED:true}
+        INTEGRACOES: ${PJB_API_DOMAIN_INTEGRACOES_ENABLED:true}
+        CORE: ${PJB_API_DOMAIN_CORE_ENABLED:true}
+  live:
+    cluster:
+      enabled: ${PJB_LIVE_CLUSTER_ENABLED:false}
+      channel-prefix: ${PJB_LIVE_CLUSTER_CHANNEL_PREFIX:pjb:live:}
+      node-id: ${PJB_LIVE_CLUSTER_NODE_ID:${HOSTNAME:}}
+      key-prefix: ${PJB_LIVE_CLUSTER_KEY_PREFIX:pjb:live:cluster:}
+      replay-ttl-seconds: ${PJB_LIVE_CLUSTER_REPLAY_TTL_SECONDS:900}
+      subscriber-ttl-seconds: ${PJB_LIVE_CLUSTER_SUBSCRIBER_TTL_SECONDS:120}
+      subscriber-refresh-ms: ${PJB_LIVE_CLUSTER_SUBSCRIBER_REFRESH_MS:30000}
+  jobs:
+    pg-listen:
+      enabled: ${PJB_JOBS_PG_LISTEN_ENABLED:true}
+  runtime:
+    admission:
+      enabled: ${PJB_RUNTIME_ADMISSION_ENABLED:true}
+      decision-ttl: ${PJB_RUNTIME_ADMISSION_DECISION_TTL:150ms}
+      soft-pressure-score-threshold: ${PJB_RUNTIME_ADMISSION_SOFT_PRESSURE_SCORE:55}
+      hard-pressure-score-threshold: ${PJB_RUNTIME_ADMISSION_HARD_PRESSURE_SCORE:72}
+      reject-during-warmup: ${PJB_RUNTIME_ADMISSION_REJECT_DURING_WARMUP:true}
+      reject-during-drain: ${PJB_RUNTIME_ADMISSION_REJECT_DURING_DRAIN:true}
+      reject-write-on-critical-datasource-runaway: ${PJB_RUNTIME_ADMISSION_REJECT_WRITE_ON_RUNAWAY:true}
+      reject-expensive-on-scheduler-trending-up: ${PJB_RUNTIME_ADMISSION_REJECT_EXPENSIVE_ON_SCHEDULER:true}
+      reject-expensive-when-pressure-rising: ${PJB_RUNTIME_ADMISSION_REJECT_EXPENSIVE_ON_PRESSURE_RISING:true}
+      reject-on-pressure-sustained: ${PJB_RUNTIME_ADMISSION_REJECT_ON_PRESSURE_SUSTAINED:true}
+      reject-stream-on-memory-pressure: ${PJB_RUNTIME_ADMISSION_REJECT_STREAM_ON_MEMORY_PRESSURE:true}
+      reject-bulk-on-pressure-sustained: ${PJB_RUNTIME_ADMISSION_REJECT_BULK_ON_PRESSURE_SUSTAINED:true}
+      reject-export-on-pressure-rising: ${PJB_RUNTIME_ADMISSION_REJECT_EXPORT_ON_PRESSURE_RISING:true}
+      reject-expensive-on-critical-memory-runaway: ${PJB_RUNTIME_ADMISSION_REJECT_EXPENSIVE_ON_CRITICAL_MEMORY_RUNAWAY:true}
+      reject-expensive-on-critical-gc-pressure: ${PJB_RUNTIME_ADMISSION_REJECT_EXPENSIVE_ON_CRITICAL_GC_PRESSURE:true}
+      soft-rejection-status: ${PJB_RUNTIME_ADMISSION_SOFT_STATUS:429}
+      hard-rejection-status: ${PJB_RUNTIME_ADMISSION_HARD_STATUS:503}
+      retry-after-seconds: ${PJB_RUNTIME_ADMISSION_RETRY_AFTER:1}
+      decision-cache-max-entries: ${PJB_RUNTIME_ADMISSION_DECISION_CACHE_MAX_ENTRIES:512}
+      emit-debug-headers: ${PJB_RUNTIME_ADMISSION_DEBUG_HEADERS:false}
+      preserve-high-priority-read-on-soft-pressure: ${PJB_RUNTIME_ADMISSION_PRESERVE_HIGH_PRIORITY_READS:true}
+      reject-low-priority-earlier: ${PJB_RUNTIME_ADMISSION_REJECT_LOW_PRIORITY_EARLIER:true}
+      reject-low-priority-on-reserved-lane-overload: ${PJB_RUNTIME_ADMISSION_REJECT_LOW_PRIORITY_ON_RESERVED_LANE_OVERLOAD:true}
+      reject-normal-priority-on-reserved-lane-collapse: ${PJB_RUNTIME_ADMISSION_REJECT_NORMAL_PRIORITY_ON_RESERVED_LANE_COLLAPSE:true}
+      max-reserved-lane-hotspots-before-reject: ${PJB_RUNTIME_ADMISSION_MAX_RESERVED_LANE_HOTSPOTS_BEFORE_REJECT:0}
+      max-reserved-lane-hotspots-before-collapse: ${PJB_RUNTIME_ADMISSION_MAX_RESERVED_LANE_HOTSPOTS_BEFORE_COLLAPSE:1}
+      reject-low-priority-on-reserved-lane-budget-breach: ${PJB_RUNTIME_ADMISSION_REJECT_LOW_PRIORITY_ON_RESERVED_LANE_BUDGET_BREACH:true}
+      reject-normal-priority-on-preferred-lane-budget-breach: ${PJB_RUNTIME_ADMISSION_REJECT_NORMAL_PRIORITY_ON_PREFERRED_LANE_BUDGET_BREACH:true}
+      reserved-lane-average-utilization-threshold: ${PJB_RUNTIME_ADMISSION_RESERVED_LANE_AVERAGE_UTILIZATION_THRESHOLD:0.82}
+      reserved-lane-headroom-score-threshold: ${PJB_RUNTIME_ADMISSION_RESERVED_LANE_HEADROOM_SCORE_THRESHOLD:28}
+      preferred-lane-average-utilization-threshold: ${PJB_RUNTIME_ADMISSION_PREFERRED_LANE_AVERAGE_UTILIZATION_THRESHOLD:0.86}
+      preferred-lane-headroom-score-threshold: ${PJB_RUNTIME_ADMISSION_PREFERRED_LANE_HEADROOM_SCORE_THRESHOLD:20}
+      reject-event-stream-on-live-surge: ${PJB_RUNTIME_ADMISSION_REJECT_EVENT_STREAM_ON_LIVE_SURGE:true}
+      reject-write-on-kafka-backpressure: ${PJB_RUNTIME_ADMISSION_REJECT_WRITE_ON_KAFKA_BACKPRESSURE:true}
+      reject-very-large-write-on-pressure: ${PJB_RUNTIME_ADMISSION_REJECT_VERY_LARGE_WRITE_ON_PRESSURE:true}
+      reject-very-large-read-on-pressure: ${PJB_RUNTIME_ADMISSION_REJECT_VERY_LARGE_READ_ON_PRESSURE:true}
+      large-content-length-bytes: ${PJB_RUNTIME_ADMISSION_LARGE_CONTENT_LENGTH_BYTES:4194304}
+      very-large-content-length-bytes: ${PJB_RUNTIME_ADMISSION_VERY_LARGE_CONTENT_LENGTH_BYTES:16777216}
+      large-page-size-threshold: ${PJB_RUNTIME_ADMISSION_LARGE_PAGE_SIZE_THRESHOLD:500}
+      large-estimated-items-threshold: ${PJB_RUNTIME_ADMISSION_LARGE_ESTIMATED_ITEMS_THRESHOLD:10000}
+      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz", "/internal/runtime/"]
+      guarded-prefixes: ["/api/v1/peticionamento", "/api/v1/laiane", "/api/v1/processual", "/api/v1/work-items", "/api/v1/secretariat", "/api/v1/juiz", "/api/v1/oficial", "/api/v1/delegado", "/api/v1/cidadao"]
+      expensive-prefixes: ["/api/v1/peticionamento", "/api/v1/laiane", "/api/v1/work-items", "/api/v1/secretariat", "/api/v1/juiz", "/api/v1/oficial", "/api/v1/delegado"]
+      write-sensitive-prefixes: ["/api/v1/peticionamento", "/api/v1/processual", "/api/v1/secretariat", "/api/v1/juiz", "/api/v1/oficial", "/api/v1/delegado"]
+      critical-prefixes: ["/api/v1/cidadao/painel", "/api/v1/processual/consulta", "/api/v1/processual/prazos", "/api/v1/juiz/painel", "/api/v1/oficial/painel"]
+      api-high-priority-prefixes: ["/api/v1/cidadao", "/api/v1/processual", "/api/v1/juiz/painel", "/api/v1/oficial/painel"]
+      worker-high-priority-prefixes: ["/api/v1/work-items", "/api/v1/secretariat", "/api/v1/delegado"]
+      low-priority-prefixes: ["/export", "/relatorio", "/report", "/analytics", "/bulk", "/lote", "/massivo"]
+      api-reserved-lanes: ["external-io", "live", "io"]
+      worker-reserved-lanes: ["job", "io"]
+    pressure:
+      enabled: ${PJB_RUNTIME_PRESSURE_ENABLED:true}
+      snapshot-cache-ttl: ${PJB_RUNTIME_PRESSURE_SNAPSHOT_CACHE_TTL:250ms}
+      executor-utilization-threshold: ${PJB_RUNTIME_PRESSURE_EXECUTOR_UTILIZATION_THRESHOLD:0.96}
+      executor-recent-rejection-window: ${PJB_RUNTIME_PRESSURE_EXECUTOR_REJECTION_WINDOW:60s}
+      executor-consecutive-rejection-threshold: ${PJB_RUNTIME_PRESSURE_EXECUTOR_REJECTION_STREAK:2}
+      max-overloaded-executors: ${PJB_RUNTIME_PRESSURE_MAX_OVERLOADED_EXECUTORS:0}
+      datasource-usage-threshold: ${PJB_RUNTIME_PRESSURE_DATASOURCE_USAGE_THRESHOLD:0.92}
+      datasource-awaiting-threshold: ${PJB_RUNTIME_PRESSURE_DATASOURCE_AWAITING_THRESHOLD:4}
+      datasource-trend-window: ${PJB_RUNTIME_PRESSURE_DATASOURCE_TREND_WINDOW:45s}
+      datasource-awaiting-rising-fast-delta: ${PJB_RUNTIME_PRESSURE_DATASOURCE_AWAITING_RISING_FAST_DELTA:3}
+      datasource-usage-rising-fast-delta: ${PJB_RUNTIME_PRESSURE_DATASOURCE_USAGE_RISING_FAST_DELTA:0.12}
+      datasource-sustained-window: ${PJB_RUNTIME_PRESSURE_DATASOURCE_SUSTAINED_WINDOW:2m}
+      critical-datasource-headroom-threshold: ${PJB_RUNTIME_PRESSURE_CRITICAL_DATASOURCE_HEADROOM_THRESHOLD:2}
+      fail-ready-on-critical-datasource-runaway: ${PJB_RUNTIME_PRESSURE_FAIL_READY_ON_CRITICAL_DATASOURCE_RUNAWAY:true}
+      max-degraded-pools: ${PJB_RUNTIME_PRESSURE_MAX_DEGRADED_POOLS:0}
+      scheduler-queue-size-threshold: ${PJB_RUNTIME_PRESSURE_SCHEDULER_QUEUE_THRESHOLD:200}
+      scheduler-active-utilization-threshold: ${PJB_RUNTIME_PRESSURE_SCHEDULER_UTILIZATION_THRESHOLD:0.90}
+      scheduler-trend-window: ${PJB_RUNTIME_PRESSURE_SCHEDULER_TREND_WINDOW:30s}
+      scheduler-queue-rising-fast-delta: ${PJB_RUNTIME_PRESSURE_SCHEDULER_QUEUE_RISING_FAST_DELTA:40}
+      scheduler-sustained-window: ${PJB_RUNTIME_PRESSURE_SCHEDULER_SUSTAINED_WINDOW:2m}
+      heap-usage-threshold: ${PJB_RUNTIME_PRESSURE_HEAP_USAGE_THRESHOLD:0.90}
+      metaspace-usage-threshold: ${PJB_RUNTIME_PRESSURE_METASPACE_USAGE_THRESHOLD:0.90}
+      direct-buffer-usage-threshold: ${PJB_RUNTIME_PRESSURE_DIRECT_BUFFER_USAGE_THRESHOLD:0.12}
+      memory-trend-window: ${PJB_RUNTIME_PRESSURE_MEMORY_TREND_WINDOW:45s}
+      heap-rising-fast-delta-mi-b: ${PJB_RUNTIME_PRESSURE_HEAP_RISING_FAST_DELTA_MIB:192}
+      direct-buffer-rising-fast-delta-mi-b: ${PJB_RUNTIME_PRESSURE_DIRECT_BUFFER_RISING_FAST_DELTA_MIB:64}
+      memory-sustained-window: ${PJB_RUNTIME_PRESSURE_MEMORY_SUSTAINED_WINDOW:2m}
+      fail-ready-on-critical-memory-runaway: ${PJB_RUNTIME_PRESSURE_FAIL_READY_ON_CRITICAL_MEMORY_RUNAWAY:true}
+      gc-trend-window: ${PJB_RUNTIME_PRESSURE_GC_TREND_WINDOW:45s}
+      gc-sustained-window: ${PJB_RUNTIME_PRESSURE_GC_SUSTAINED_WINDOW:2m}
+      gc-pause-ratio-threshold: ${PJB_RUNTIME_PRESSURE_GC_PAUSE_RATIO_THRESHOLD:0.08}
+      gc-average-pause-millis-threshold: ${PJB_RUNTIME_PRESSURE_GC_AVERAGE_PAUSE_MILLIS_THRESHOLD:150}
+      gc-collection-time-rising-fast-millis: ${PJB_RUNTIME_PRESSURE_GC_COLLECTION_TIME_RISING_FAST_MILLIS:250}
+      fail-ready-on-critical-gc-pressure: ${PJB_RUNTIME_PRESSURE_FAIL_READY_ON_CRITICAL_GC_PRESSURE:true}
+      live-total-subscribers-threshold: ${PJB_RUNTIME_PRESSURE_LIVE_TOTAL_SUBSCRIBERS_THRESHOLD:2000}
+      live-active-topics-threshold: ${PJB_RUNTIME_PRESSURE_LIVE_ACTIVE_TOPICS_THRESHOLD:400}
+      live-subscriber-rising-fast-delta: ${PJB_RUNTIME_PRESSURE_LIVE_SUBSCRIBER_RISING_FAST_DELTA:250}
+      live-trend-window: ${PJB_RUNTIME_PRESSURE_LIVE_TREND_WINDOW:45s}
+      live-sustained-window: ${PJB_RUNTIME_PRESSURE_LIVE_SUSTAINED_WINDOW:2m}
+      fail-ready-on-critical-live-surge: ${PJB_RUNTIME_PRESSURE_FAIL_READY_ON_CRITICAL_LIVE_SURGE:false}
+      kafka-buffer-available-ratio-threshold: ${PJB_RUNTIME_PRESSURE_KAFKA_BUFFER_AVAILABLE_RATIO_THRESHOLD:0.20}
+      kafka-requests-in-flight-threshold: ${PJB_RUNTIME_PRESSURE_KAFKA_REQUESTS_IN_FLIGHT_THRESHOLD:150}
+      kafka-record-queue-time-avg-threshold-millis: ${PJB_RUNTIME_PRESSURE_KAFKA_RECORD_QUEUE_TIME_AVG_THRESHOLD_MILLIS:50}
+      kafka-record-error-rate-threshold: ${PJB_RUNTIME_PRESSURE_KAFKA_RECORD_ERROR_RATE_THRESHOLD:0.02}
+      fail-ready-on-critical-kafka-pressure: ${PJB_RUNTIME_PRESSURE_FAIL_READY_ON_CRITICAL_KAFKA_PRESSURE:false}
+    acceleration:
+      component-role: ${PJB_RUNTIME_COMPONENT_ROLE:mixed}
+      async:
+        concurrency-limit: ${PJB_RUNTIME_ASYNC_CONCURRENCY:256}
+        reject-when-saturated: ${PJB_RUNTIME_ASYNC_REJECT:false}
+        termination-timeout: ${PJB_RUNTIME_ASYNC_TERMINATION:30s}
+        saturation-acquire-timeout: ${PJB_RUNTIME_ASYNC_ACQUIRE_TIMEOUT:2s}
+        thread-name-prefix: ${PJB_RUNTIME_ASYNC_PREFIX:pjb-async-}
+      io:
+        concurrency-limit: ${PJB_RUNTIME_IO_CONCURRENCY:512}
+        reject-when-saturated: ${PJB_RUNTIME_IO_REJECT:false}
+        termination-timeout: ${PJB_RUNTIME_IO_TERMINATION:30s}
+        saturation-acquire-timeout: ${PJB_RUNTIME_IO_ACQUIRE_TIMEOUT:2s}
+        thread-name-prefix: ${PJB_RUNTIME_IO_PREFIX:pjb-io-}
+      burst:
+        concurrency-limit: ${PJB_RUNTIME_BURST_CONCURRENCY:1024}
+        reject-when-saturated: ${PJB_RUNTIME_BURST_REJECT:true}
+        termination-timeout: ${PJB_RUNTIME_BURST_TERMINATION:20s}
+        saturation-acquire-timeout: ${PJB_RUNTIME_BURST_ACQUIRE_TIMEOUT:250ms}
+        thread-name-prefix: ${PJB_RUNTIME_BURST_PREFIX:pjb-burst-}
+      external-io:
+        concurrency-limit: ${PJB_RUNTIME_EXTERNAL_IO_CONCURRENCY:192}
+        reject-when-saturated: ${PJB_RUNTIME_EXTERNAL_IO_REJECT:true}
+        termination-timeout: ${PJB_RUNTIME_EXTERNAL_IO_TERMINATION:30s}
+        saturation-acquire-timeout: ${PJB_RUNTIME_EXTERNAL_IO_ACQUIRE_TIMEOUT:500ms}
+        thread-name-prefix: ${PJB_RUNTIME_EXTERNAL_IO_PREFIX:pjb-http-}
+      live:
+        concurrency-limit: ${PJB_RUNTIME_LIVE_CONCURRENCY:256}
+        reject-when-saturated: ${PJB_RUNTIME_LIVE_REJECT:true}
+        termination-timeout: ${PJB_RUNTIME_LIVE_TERMINATION:20s}
+        saturation-acquire-timeout: ${PJB_RUNTIME_LIVE_ACQUIRE_TIMEOUT:250ms}
+        thread-name-prefix: ${PJB_RUNTIME_LIVE_PREFIX:pjb-live-}
+      job:
+        concurrency-limit: ${PJB_RUNTIME_JOB_CONCURRENCY:768}
+        reject-when-saturated: ${PJB_RUNTIME_JOB_REJECT:true}
+        termination-timeout: ${PJB_RUNTIME_JOB_TERMINATION:20s}
+        saturation-acquire-timeout: ${PJB_RUNTIME_JOB_ACQUIRE_TIMEOUT:250ms}
+        thread-name-prefix: ${PJB_RUNTIME_JOB_PREFIX:pjb-job-}
+      http:
+        connect-timeout: ${PJB_RUNTIME_HTTP_CONNECT_TIMEOUT:5s}
+        request-timeout: ${PJB_RUNTIME_HTTP_REQUEST_TIMEOUT:20s}
+        prefer-http2: ${PJB_RUNTIME_HTTP_PREFER_HTTP2:true}
+  scheduling:
+    enabled: ${PJB_SCHEDULING_ENABLED:true}
+  kafka:
+    enabled: ${PJB_KAFKA_ENABLED:false}
+    scale:
+      listener-concurrency: ${PJB_KAFKA_LISTENER_CONCURRENCY:3}
+      poll-timeout: ${PJB_KAFKA_POLL_TIMEOUT:2s}
+      idle-between-polls: ${PJB_KAFKA_IDLE_BETWEEN_POLLS:100ms}
+      retry-backoff: ${PJB_KAFKA_RETRY_BACKOFF:1s}
+      retry-attempts: ${PJB_KAFKA_RETRY_ATTEMPTS:3}
+      observation-enabled: ${PJB_KAFKA_OBSERVATION_ENABLED:true}
+  procedural:
+    bootstrap:
+      enabled: ${PJB_PROCEDURAL_BOOTSTRAP_ENABLED:true}
+      fail-fast: ${PJB_PROCEDURAL_BOOTSTRAP_FAIL_FAST:false}
+      validate-legacy-boundary: ${PJB_PROCEDURAL_BOOTSTRAP_VALIDATE_LEGACY_BOUNDARY:true}
+      max-violations: ${PJB_PROCEDURAL_BOOTSTRAP_MAX_VIOLATIONS:50}
+      fail-fast-profiles: ${PJB_PROCEDURAL_BOOTSTRAP_FAIL_FAST_PROFILES:prod}
+      source-roots: ${PJB_PROCEDURAL_BOOTSTRAP_SOURCE_ROOTS:src/main/java}
+
+  ritos:
+    governance:
+      dual-approval-min-occurrences: ${PJB_RITOS_GOV_DUAL_MIN_OCC:10}
+      critical-ramos: ${PJB_RITOS_GOV_CRITICAL_RAMOS:["PENAL","ELEITORAL","MILITAR","INFANCIA"]}
+
+  portal:
+    base-url: ${PJB_PORTAL_BASE_URL:https://portal.pjb.jus.br}
+
+  bnmp:
+    enabled: ${PJB_BNMP_ENABLED:false}
+    base-url: ${PJB_BNMP_BASE_URL:https://bnmp.cnj.jus.br/api/v1}
+    token: ${PJB_BNMP_TOKEN:}
+
+  comunicacao:
+    judicial:
+      sefaz-nfe:
+        enabled: ${PJB_COMJUD_SEFAZ_NFE_ENABLED:false}
+        strict-mode: ${PJB_COMJUD_SEFAZ_NFE_STRICT_MODE:false}
+        cache-enabled: ${PJB_COMJUD_SEFAZ_NFE_CACHE_ENABLED:true}
+        timeout: ${PJB_COMJUD_SEFAZ_NFE_TIMEOUT:4s}
+        user-agent: ${PJB_COMJUD_SEFAZ_NFE_USER_AGENT:PJB-Interceptacao-SefazNFe/1.0}
+        consulta-url-por-uf: {}
+
+  hsm:
+    enabled: ${PJB_HSM_ENABLED:false}
+    mock-enabled: ${PJB_HSM_MOCK_ENABLED:true}
+    pkcs11-config-path: ${PJB_HSM_PKCS11_CONFIG_PATH:}
+    key-alias: ${PJB_HSM_KEY_ALIAS:aliasGovPJB}
+    pin: ${PJB_HSM_PIN:}
+    trust-store-path: ${PJB_HSM_TRUST_STORE_PATH:}
+    trust-store-password: ${PJB_HSM_TRUST_STORE_PASSWORD:}
+    trust-store-type: ${PJB_HSM_TRUST_STORE_TYPE:PKCS12}
+    signature-algorithm: ${PJB_HSM_SIGNATURE_ALGORITHM:SHA256withRSA}
+    operation-timeout: ${PJB_HSM_OPERATION_TIMEOUT:5s}
+    max-concurrent-ops: ${PJB_HSM_MAX_CONCURRENT_OPS:8}
+    interceptacao-timeout-ms: ${PJB_HSM_INTERCEPTACAO_TIMEOUT_MS:8000}
+    auditar-operacoes: ${PJB_HSM_AUDITAR_OPERACOES:true}
+
+  secretariat:
+    sse:
+      bufferSize: ${PJB_SECRETARIAT_SSE_BUFFER_SIZE:400}
+      subscriberQueue: ${PJB_SECRETARIAT_SSE_SUBSCRIBER_QUEUE:256}
+      dropThreshold: ${PJB_SECRETARIAT_SSE_DROP_THRESHOLD:32}
+      replayBuffer: ${PJB_SECRETARIAT_SSE_REPLAY:300}
+      maxBatchEvents: ${PJB_SECRETARIAT_SSE_MAX_BATCH:200}
+      maxPendingCoalescedKeys: ${PJB_SECRETARIAT_SSE_MAX_PENDING_COALESCED_KEYS:2000}
+      flushMs: ${PJB_SECRETARIAT_SSE_FLUSH_MS:200}
+      heartbeatMs: ${PJB_SECRETARIAT_SSE_HEARTBEAT_MS:15000}
+      emitterTimeoutMs: ${PJB_SECRETARIAT_SSE_EMITTER_TIMEOUT_MS:1800000}
+      maxChannels: ${PJB_SECRETARIAT_SSE_MAX_CHANNELS:4096}
+      maxSubscribersPerTopic: ${PJB_SECRETARIAT_SSE_MAX_SUBS:8}
+      maxChannelsPerFlushCycle: ${PJB_SECRETARIAT_SSE_MAX_CHANNELS_PER_FLUSH:256}
+      maxChannelsPerRefreshCycle: ${PJB_SECRETARIAT_SSE_MAX_CHANNELS_PER_REFRESH:512}
+      idleChannelTtl: ${PJB_SECRETARIAT_SSE_IDLE_CHANNEL_TTL:5m}
+      createChannelOnPublish: ${PJB_SECRETARIAT_SSE_CREATE_ON_PUBLISH:false}
+
+  ui:
+    history:
+      sse:
+        replayBuffer: ${PJB_UI_HISTORY_SSE_REPLAY:300}
+        maxBatchEvents: ${PJB_UI_HISTORY_SSE_MAX_BATCH:200}
+        maxPendingBacklog: ${PJB_UI_HISTORY_SSE_MAX_PENDING:2000}
+        flushMs: ${PJB_UI_HISTORY_SSE_FLUSH_MS:250}
+        emitterTimeoutMs: ${PJB_UI_HISTORY_SSE_EMITTER_TIMEOUT_MS:1800000}
+        maxChannels: ${PJB_UI_HISTORY_SSE_MAX_CHANNELS:4096}
+        maxSubscribersPerTopic: ${PJB_UI_HISTORY_SSE_MAX_SUBS:8}
+        maxChannelsPerFlushCycle: ${PJB_UI_HISTORY_SSE_MAX_CHANNELS_PER_FLUSH:256}
+        maxChannelsPerRefreshCycle: ${PJB_UI_HISTORY_SSE_MAX_CHANNELS_PER_REFRESH:512}
+        idleChannelTtl: ${PJB_UI_HISTORY_SSE_IDLE_CHANNEL_TTL:5m}
+
+    historySse:
+      bufferSize: ${PJB_UI_HISTORY_SSE_BUFFER_SIZE:250}
+      subscriberQueue: ${PJB_UI_HISTORY_SSE_SUBSCRIBER_QUEUE:256}
+      dropThreshold: ${PJB_UI_HISTORY_SSE_DROP_THRESHOLD:32}
+      heartbeatMs: ${PJB_UI_HISTORY_SSE_HEARTBEAT_MS:15000}
+      createChannelOnPublish: ${PJB_UI_HISTORY_SSE_CREATE_ON_PUBLISH:false}
+
+    accessibility:
+      enabled: ${PJB_UI_ACCESSIBILITY_ENABLED:true}
+      useOrchestrator: ${PJB_UI_ACCESSIBILITY_USE_ORCHESTRATOR:true}
+      minScoreToSuggest: ${PJB_UI_ACCESSIBILITY_MIN_SCORE:320}
+      snoozeDuration: ${PJB_UI_ACCESSIBILITY_SNOOZE:90d}
+      reevaluateMinInterval: ${PJB_UI_ACCESSIBILITY_REEVALUATE:1d}
+      maxReasons: ${PJB_UI_ACCESSIBILITY_MAX_REASONS:6}
+      snapshotRetentionDays: ${PJB_UI_ACCESSIBILITY_SNAPSHOT_RETENTION_DAYS:180}
+      sse:
+        replayBuffer: ${PJB_UI_ACCESSIBILITY_SSE_REPLAY:200}
+        maxBatchEvents: ${PJB_UI_ACCESSIBILITY_SSE_MAX_BATCH:200}
+        maxPendingBacklog: ${PJB_UI_ACCESSIBILITY_SSE_MAX_PENDING:2000}
+        flushMs: ${PJB_UI_ACCESSIBILITY_SSE_FLUSH_MS:250}
+        emitterTimeoutMs: ${PJB_UI_ACCESSIBILITY_SSE_EMITTER_TIMEOUT_MS:1800000}
+        maxChannels: ${PJB_UI_ACCESSIBILITY_SSE_MAX_CHANNELS:4096}
+        maxSubscribersPerTopic: ${PJB_UI_ACCESSIBILITY_SSE_MAX_SUBS:8}
+        maxChannelsPerFlushCycle: ${PJB_UI_ACCESSIBILITY_SSE_MAX_CHANNELS_PER_FLUSH:256}
+        maxChannelsPerRefreshCycle: ${PJB_UI_ACCESSIBILITY_SSE_MAX_CHANNELS_PER_REFRESH:512}
+        idleChannelTtl: ${PJB_UI_ACCESSIBILITY_SSE_IDLE_CHANNEL_TTL:5m}
+
+    accessibilitySse:
+      heartbeatMs: ${PJB_UI_ACCESSIBILITY_SSE_HEARTBEAT_MS:15000}
+
+    presentation:
+      sse:
+        replayBuffer: ${PJB_UI_PRESENTATION_SSE_REPLAY:200}
+        maxBatchEvents: ${PJB_UI_PRESENTATION_SSE_MAX_BATCH:200}
+        maxPendingBacklog: ${PJB_UI_PRESENTATION_SSE_MAX_PENDING:2000}
+        flushMs: ${PJB_UI_PRESENTATION_SSE_FLUSH_MS:250}
+        emitterTimeoutMs: ${PJB_UI_PRESENTATION_SSE_EMITTER_TIMEOUT_MS:1800000}
+        maxChannels: ${PJB_UI_PRESENTATION_SSE_MAX_CHANNELS:4096}
+        maxSubscribersPerTopic: ${PJB_UI_PRESENTATION_SSE_MAX_SUBS:8}
+        maxChannelsPerFlushCycle: ${PJB_UI_PRESENTATION_SSE_MAX_CHANNELS_PER_FLUSH:256}
+        maxChannelsPerRefreshCycle: ${PJB_UI_PRESENTATION_SSE_MAX_CHANNELS_PER_REFRESH:512}
+        idleChannelTtl: ${PJB_UI_PRESENTATION_SSE_IDLE_CHANNEL_TTL:5m}
+
+    presentationSse:
+      heartbeatMs: ${PJB_UI_PRESENTATION_SSE_HEARTBEAT_MS:15000}
+
+    readingmode:
+      enabledByDefault: ${PJB_UI_READING_ENABLED_BY_DEFAULT:true}
+      defaultIntensity: ${PJB_UI_READING_DEFAULT_INTENSITY:SOFT}
+      applyToAllPages: ${PJB_UI_READING_APPLY_ALL:true}
+      soft:
+        maxWidthCh: ${PJB_UI_READING_SOFT_MAX_WIDTH_CH:74}
+        lineHeight: ${PJB_UI_READING_SOFT_LINE_HEIGHT:1.65}
+        paragraphGapRem: ${PJB_UI_READING_SOFT_PARAGRAPH_GAP_REM:0.75}
+        fontScalePercent: ${PJB_UI_READING_SOFT_FONT_SCALE_PERCENT:100}
+        letterSpacingEm: ${PJB_UI_READING_SOFT_LETTER_SPACING_EM:0.0}
+      medium:
+
+        maxWidthCh: ${PJB_UI_READING_MEDIUM_MAX_WIDTH_CH:70}
+        lineHeight: ${PJB_UI_READING_MEDIUM_LINE_HEIGHT:1.72}
+        paragraphGapRem: ${PJB_UI_READING_MEDIUM_PARAGRAPH_GAP_REM:0.9}
+        fontScalePercent: ${PJB_UI_READING_MEDIUM_FONT_SCALE_PERCENT:105}
+        letterSpacingEm: ${PJB_UI_READING_MEDIUM_LETTER_SPACING_EM:0.002}
+      strong:
+        maxWidthCh: ${PJB_UI_READING_STRONG_MAX_WIDTH_CH:66}
+        lineHeight: ${PJB_UI_READING_STRONG_LINE_HEIGHT:1.8}
+        paragraphGapRem: ${PJB_UI_READING_STRONG_PARAGRAPH_GAP_REM:1.05}
+        fontScalePercent: ${PJB_UI_READING_STRONG_FONT_SCALE_PERCENT:110}
+        letterSpacingEm: ${PJB_UI_READING_STRONG_LETTER_SPACING_EM:0.004}
+
+    branding:
+      enabled: ${PJB_UI_BRANDING_ENABLED:true}
+      object-storage-only: ${PJB_UI_BRANDING_OBJECT_STORAGE_ONLY:true}
+      database-blob-forbidden: ${PJB_UI_BRANDING_DATABASE_BLOB_FORBIDDEN:true}
+      allow-svg: ${PJB_UI_BRANDING_ALLOW_SVG:false}
+      allow-animated: ${PJB_UI_BRANDING_ALLOW_ANIMATED:false}
+      storage-prefix: ${PJB_UI_BRANDING_STORAGE_PREFIX:ui/institutional-branding}
+      delivery-base-path: ${PJB_UI_BRANDING_DELIVERY_BASE_PATH:/api/v1/ui/branding/assets}
+      cache-ttl-seconds: ${PJB_UI_BRANDING_CACHE_TTL_SECONDS:86400}
+      allowed-mime-types: ["image/png", "image/jpeg", "image/webp"]
+      banner:
+        max-bytes: ${PJB_UI_BRANDING_BANNER_MAX_BYTES:2097152}
+        max-width-px: ${PJB_UI_BRANDING_BANNER_MAX_WIDTH_PX:1920}
+        max-height-px: ${PJB_UI_BRANDING_BANNER_MAX_HEIGHT_PX:320}
+      logo:
+        max-bytes: ${PJB_UI_BRANDING_LOGO_MAX_BYTES:786432}
+        max-width-px: ${PJB_UI_BRANDING_LOGO_MAX_WIDTH_PX:512}
+        max-height-px: ${PJB_UI_BRANDING_LOGO_MAX_HEIGHT_PX:512}
+      seal:
+        max-bytes: ${PJB_UI_BRANDING_SEAL_MAX_BYTES:786432}
+        max-width-px: ${PJB_UI_BRANDING_SEAL_MAX_WIDTH_PX:512}
+        max-height-px: ${PJB_UI_BRANDING_SEAL_MAX_HEIGHT_PX:512}
+      theme:
+        max-palette-entries: ${PJB_UI_BRANDING_MAX_PALETTE_ENTRIES:3}
+        national-accent: ${PJB_UI_BRANDING_NATIONAL_ACCENT:#0B3A75}
+        neutral-surface: ${PJB_UI_BRANDING_NEUTRAL_SURFACE:#F7F9FC}
+        neutral-ink: ${PJB_UI_BRANDING_NEUTRAL_INK:#132238}
+        watermark-enabled: ${PJB_UI_BRANDING_WATERMARK_ENABLED:true}
+        panel-banner-enabled: ${PJB_UI_BRANDING_PANEL_BANNER_ENABLED:true}
+        piece-header-banner-enabled: ${PJB_UI_BRANDING_PIECE_HEADER_BANNER_ENABLED:true}
+        print-header-enabled: ${PJB_UI_BRANDING_PRINT_HEADER_ENABLED:true}
+
+  atendimento:
+    tos:
+      version: ${PJB_ATENDIMENTO_TOS_VERSION:1}
+      url: ${PJB_ATENDIMENTO_TOS_URL:https://pjb.local/termos/atendimento}
+    sse:
+      replayBuffer: ${PJB_ATENDIMENTO_SSE_REPLAY:200}
+      maxBatchEvents: ${PJB_ATENDIMENTO_SSE_MAX_BATCH:200}
+      maxPendingBacklog: ${PJB_ATENDIMENTO_SSE_MAX_PENDING:2000}
+      maxSubscribersPerTopic: ${PJB_ATENDIMENTO_SSE_MAX_SUBS:5}
+      flushMs: ${PJB_ATENDIMENTO_SSE_FLUSH_MS:200}
+      heartbeatMs: ${PJB_ATENDIMENTO_SSE_HEARTBEAT_MS:15000}
+      emitterTimeoutMs: ${PJB_ATENDIMENTO_SSE_EMITTER_TIMEOUT_MS:1800000}
+      maxChannels: ${PJB_ATENDIMENTO_SSE_MAX_CHANNELS:2048}
+      maxChannelsPerFlushCycle: ${PJB_ATENDIMENTO_SSE_MAX_CHANNELS_PER_FLUSH:256}
+      idleChannelTtl: ${PJB_ATENDIMENTO_SSE_IDLE_CHANNEL_TTL:5m}
+
+  julgamento:
+    votos:
+      sse:
+        replayBuffer: ${PJB_JULGAMENTO_VOTOS_SSE_REPLAY:300}
+        maxBatchEvents: ${PJB_JULGAMENTO_VOTOS_SSE_MAX_BATCH:200}
+        maxPendingBacklog: ${PJB_JULGAMENTO_VOTOS_SSE_MAX_PENDING:2000}
+        flushMs: ${PJB_JULGAMENTO_VOTOS_SSE_FLUSH_MS:200}
+        heartbeatMs: ${PJB_JULGAMENTO_VOTOS_SSE_HEARTBEAT_MS:15000}
+        emitterTimeoutMs: ${PJB_JULGAMENTO_VOTOS_SSE_EMITTER_TIMEOUT_MS:1800000}
+        maxChannels: ${PJB_JULGAMENTO_VOTOS_SSE_MAX_CHANNELS:4096}
+        maxSubscribersPerTopic: ${PJB_JULGAMENTO_VOTOS_SSE_MAX_SUBS:16}
+        maxChannelsPerFlushCycle: ${PJB_JULGAMENTO_VOTOS_SSE_MAX_CHANNELS_PER_FLUSH:256}
+        maxChannelsPerRefreshCycle: ${PJB_JULGAMENTO_VOTOS_SSE_MAX_CHANNELS_PER_REFRESH:512}
+        idleChannelTtl: ${PJB_JULGAMENTO_VOTOS_SSE_IDLE_CHANNEL_TTL:5m}
+
+  cluster:
+    coordination:
+      enabled: ${PJB_CLUSTER_COORD_ENABLED:true}
+      scheduler-singleton-enabled: ${PJB_CLUSTER_SCHEDULER_SINGLETON_ENABLED:true}
+      key-prefix: ${PJB_CLUSTER_COORD_KEY_PREFIX:pjb:coord:}
+      default-lock-ttl: ${PJB_CLUSTER_COORD_DEFAULT_LOCK_TTL:30s}
+
+  datasource:
+    routing:
+      enabled: ${PJB_DB_READ_ROUTING_ENABLED:false}
+      strict: ${PJB_DB_READ_ROUTING_STRICT:true}
+      verify-topology-on-startup: ${PJB_DB_READ_VERIFY_TOPOLOGY_ON_STARTUP:true}
+      read-your-writes-window: ${PJB_DB_READ_YOUR_WRITES_WINDOW:5s}
+      propagation:
+        enabled: ${PJB_DB_READ_PROPAGATION_ENABLED:true}
+        request-header-name: ${PJB_DB_READ_PROPAGATION_REQUEST_HEADER:X-PJB-Prefer-Primary-Until}
+        response-header-name: ${PJB_DB_READ_PROPAGATION_RESPONSE_HEADER:X-PJB-Primary-Read-Until}
+        cookie-name: ${PJB_DB_READ_PROPAGATION_COOKIE_NAME:PJB_RWY_PRIMARY_UNTIL}
+        cookie-path: ${PJB_DB_READ_PROPAGATION_COOKIE_PATH:/}
+        secure-cookie: ${PJB_DB_READ_PROPAGATION_SECURE_COOKIE:true}
+        http-only-cookie: ${PJB_DB_READ_PROPAGATION_HTTP_ONLY_COOKIE:true}
+        same-site: ${PJB_DB_READ_PROPAGATION_SAME_SITE:Lax}
+        cookie-clock-skew: ${PJB_DB_READ_PROPAGATION_COOKIE_CLOCK_SKEW:5s}
+      replica:
+        url: ${PJB_DB_READ_URL:}
+        username: ${PJB_DB_READ_USER:}
+        password: ${PJB_DB_READ_PASS:}
+        driver-class-name: ${PJB_DB_READ_DRIVER:}
+        fallback-to-write-on-error: ${PJB_DB_READ_FALLBACK_TO_WRITE_ON_ERROR:true}
+        failure-cooldown: ${PJB_DB_READ_FAILURE_COOLDOWN:30s}
+        hikari:
+          maximum-pool-size: ${PJB_DB_READ_POOL_MAX:16}
+          minimum-idle: ${PJB_DB_READ_POOL_MIN:2}
+          connection-timeout: ${PJB_DB_READ_CONNECTION_TIMEOUT_MS:30000}
+          validation-timeout: ${PJB_DB_READ_VALIDATION_TIMEOUT_MS:5000}
+          max-lifetime: ${PJB_DB_READ_MAX_LIFETIME_MS:1800000}
+          leak-detection-threshold: ${PJB_DB_READ_LEAK_DETECTION_MS:0}
+          read-only: ${PJB_DB_READ_ONLY:true}
+        data-source-properties:
+          ApplicationName: ${PJB_DB_READ_APPLICATION_NAME:pjb-read-replica}
+          assumeMinServerVersion: ${PJB_DB_READ_ASSUME_MIN_SERVER_VERSION:15}
+          connectTimeout: ${PJB_DB_READ_CONNECT_TIMEOUT_SECONDS:10}
+          sslmode: ${PJB_DB_READ_SSL_MODE:${PJB_DB_SSL_MODE:prefer}}
+          sslrootcert: ${PJB_DB_READ_SSL_ROOT_CERT:${PJB_DB_SSL_ROOT_CERT:}}
+          targetServerType: ${PJB_DB_READ_TARGET_SERVER_TYPE:preferSecondary}
+          loadBalanceHosts: ${PJB_DB_READ_LOAD_BALANCE_HOSTS:true}
+          socketTimeout: ${PJB_DB_READ_SOCKET_TIMEOUT_SECONDS:${PJB_DB_SOCKET_TIMEOUT_SECONDS:120}}
+          preparedStatementCacheQueries: ${PJB_DB_READ_PREPARED_CACHE_QUERIES:512}
+          preparedStatementCacheSizeMiB: ${PJB_DB_READ_PREPARED_CACHE_MIB:16}
+          reWriteBatchedInserts: ${PJB_DB_READ_REWRITE_BATCHED_INSERTS:true}
+          binaryTransfer: ${PJB_DB_READ_BINARY_TRANSFER:true}
+          tcpKeepAlive: ${PJB_DB_READ_TCP_KEEP_ALIVE:true}
+      regional-replicas:
+        norte:
+          url: ${PJB_DB_READ_NORTE_URL:}
+          username: ${PJB_DB_READ_NORTE_USER:${PJB_DB_READ_USER:}}
+          password: ${PJB_DB_READ_NORTE_PASS:${PJB_DB_READ_PASS:}}
+          driver-class-name: ${PJB_DB_READ_NORTE_DRIVER:${PJB_DB_READ_DRIVER:}}
+        nordeste:
+          url: ${PJB_DB_READ_NE_URL:}
+          username: ${PJB_DB_READ_NE_USER:${PJB_DB_READ_USER:}}
+          password: ${PJB_DB_READ_NE_PASS:${PJB_DB_READ_PASS:}}
+          driver-class-name: ${PJB_DB_READ_NE_DRIVER:${PJB_DB_READ_DRIVER:}}
+        centro-oeste:
+          url: ${PJB_DB_READ_CO_URL:}
+          username: ${PJB_DB_READ_CO_USER:${PJB_DB_READ_USER:}}
+          password: ${PJB_DB_READ_CO_PASS:${PJB_DB_READ_PASS:}}
+          driver-class-name: ${PJB_DB_READ_CO_DRIVER:${PJB_DB_READ_DRIVER:}}
+        sudeste:
+          url: ${PJB_DB_READ_SE_URL:}
+          username: ${PJB_DB_READ_SE_USER:${PJB_DB_READ_USER:}}
+          password: ${PJB_DB_READ_SE_PASS:${PJB_DB_READ_PASS:}}
+          driver-class-name: ${PJB_DB_READ_SE_DRIVER:${PJB_DB_READ_DRIVER:}}
+        sul:
+          url: ${PJB_DB_READ_SUL_URL:}
+          username: ${PJB_DB_READ_SUL_USER:${PJB_DB_READ_USER:}}
+          password: ${PJB_DB_READ_SUL_PASS:${PJB_DB_READ_PASS:}}
+          driver-class-name: ${PJB_DB_READ_SUL_DRIVER:${PJB_DB_READ_DRIVER:}}
+        superior:
+          url: ${PJB_DB_READ_SUPERIOR_URL:}
+          username: ${PJB_DB_READ_SUPERIOR_USER:${PJB_DB_READ_USER:}}
+          password: ${PJB_DB_READ_SUPERIOR_PASS:${PJB_DB_READ_PASS:}}
+          driver-class-name: ${PJB_DB_READ_SUPERIOR_DRIVER:${PJB_DB_READ_DRIVER:}}
+      regional-selection:
+        enabled: ${PJB_DB_READ_REGIONAL_SELECTION_ENABLED:true}
+        request-header-replica: ${PJB_DB_READ_REQUEST_HEADER_REPLICA:X-PJB-Read-Replica}
+        request-header-tribunal: ${PJB_DB_READ_REQUEST_HEADER_TRIBUNAL:X-PJB-Tribunal}
+        request-header-uf: ${PJB_DB_READ_REQUEST_HEADER_UF:X-PJB-UF}
+        tribunal-to-replica:
+          STJ: SUPERIOR
+          STF: SUPERIOR
+          TSE: SUPERIOR
+          TST: SUPERIOR
+          STM: SUPERIOR
+          CNJ: SUPERIOR
+        uf-to-replica:
+          AC: NORTE
+          AL: NORDESTE
+          AM: NORTE
+          AP: NORTE
+          BA: NORDESTE
+          CE: NORDESTE
+          DF: CENTRO_OESTE
+          ES: SUDESTE
+          GO: CENTRO_OESTE
+          MA: NORDESTE
+          MG: SUDESTE
+          MS: CENTRO_OESTE
+          MT: CENTRO_OESTE
+          PA: NORTE
+          PB: NORDESTE
+          PE: NORDESTE
+          PI: NORDESTE
+          PR: SUL
+          RJ: SUDESTE
+          RN: NORDESTE
+          RO: NORTE
+          RR: NORTE
+          RS: SUL
+          SC: SUL
+          SE: NORDESTE
+          SP: SUDESTE
+          TO: NORTE
+      observability:
+        refresh-ttl: ${PJB_DB_READ_OBSERVABILITY_REFRESH_TTL:5s}
+        connection-timeout: ${PJB_DB_READ_OBSERVABILITY_CONNECTION_TIMEOUT:2s}
+        statement-timeout: ${PJB_DB_READ_OBSERVABILITY_STATEMENT_TIMEOUT:2s}
+      adaptive-plane:
+        enabled: ${PJB_DB_ADAPTIVE_PLANE_ENABLED:true}
+        emit-response-headers: ${PJB_DB_ADAPTIVE_PLANE_EMIT_HEADERS:true}
+        replica-lag-tolerance: ${PJB_DB_ADAPTIVE_PLANE_REPLICA_LAG_TOLERANCE:2s}
+        degraded-replica-lag-tolerance: ${PJB_DB_ADAPTIVE_PLANE_DEGRADED_LAG_TOLERANCE:6s}
+        read-pool-active-ratio-threshold: ${PJB_DB_ADAPTIVE_PLANE_READ_ACTIVE_RATIO:0.82}
+        write-pool-active-ratio-threshold: ${PJB_DB_ADAPTIVE_PLANE_WRITE_ACTIVE_RATIO:0.90}
+        read-pool-awaiting-threshold: ${PJB_DB_ADAPTIVE_PLANE_READ_AWAITING:8}
+        write-pool-awaiting-threshold: ${PJB_DB_ADAPTIVE_PLANE_WRITE_AWAITING:16}
+        primary-critical-prefixes:
+          - /api/v1/processos
+          - /api/v1/peticionamento
+          - /api/v1/protocolos
+          - /api/v1/documentos/assinatura
+          - /api/v1/comunicacoes
+        hot-cache-prefixes:
+          - /api/v1/dashboard
+          - /api/v1/painel
+          - /api/v1/timeline
+          - /api/v1/agenda
+          - /api/v1/processos/resumo
+          - /api/v1/caixas
+        search-backed-prefixes:
+          - /api/v1/busca
+          - /api/v1/search
+          - /api/v1/elastic
+          - /api/v1/indexacao
+        async-write-prefixes:
+          - /api/v1/documentos/upload
+          - /api/v1/anexos
+          - /api/v1/reprocessamento
+          - /api/v1/eventos
+          - /api/v1/integracoes
+      sovereign-fallback:
+        enabled: ${PJB_DB_SOVEREIGN_FALLBACK_ENABLED:true}
+        force-primary-on-critical-exhaustion: ${PJB_DB_SOVEREIGN_FORCE_PRIMARY:true}
+        regional-replica-lag-tolerance: ${PJB_DB_SOVEREIGN_LAG_TOLERANCE:4s}
+        scope-to-fallback-replica:
+          NORTE: CENTRO_OESTE
+          NORDESTE: SUDESTE
+          CENTRO_OESTE: SUDESTE
+          SUL: SUDESTE
+          SUDESTE: READ
+          SUPERIOR: SUPERIOR
+      processual-read-models:
+        enabled: ${PJB_PROCESSUAL_READ_MODELS_ENABLED:true}
+        emit-response-headers: ${PJB_PROCESSUAL_READ_MODELS_EMIT_HEADERS:true}
+        persistence-enabled: ${PJB_PROCESSUAL_READ_MODELS_PERSISTENCE_ENABLED:true}
+        kafka-topic: ${PJB_PROCESSUAL_READ_MODELS_KAFKA_TOPIC:pjb.processual.read-models.v1}
+        recomposition-batch-size: ${PJB_PROCESSUAL_READ_MODELS_RECOMPOSITION_BATCH_SIZE:25}
+        recomposition-max-attempts: ${PJB_PROCESSUAL_READ_MODELS_RECOMPOSITION_MAX_ATTEMPTS:5}
+        recomposition-poll-ms: ${PJB_PROCESSUAL_READ_MODELS_RECOMPOSITION_POLL_MS:20000}
+        recomposition-retry-delay: ${PJB_PROCESSUAL_READ_MODELS_RECOMPOSITION_RETRY_DELAY:30s}
+      write-failover:
+        enabled: ${PJB_DB_WRITE_FAILOVER_ENABLED:false}
+        strict: ${PJB_DB_WRITE_FAILOVER_STRICT:false}
+        failure-cooldown: ${PJB_DB_WRITE_FAILOVER_FAILURE_COOLDOWN:10s}
+        success-stickiness: ${PJB_DB_WRITE_FAILOVER_SUCCESS_STICKINESS:20s}
+        candidates:
+          secondary-a:
+            url: ${PJB_DB_WRITE_FAILOVER_SECONDARY_A_URL:}
+            username: ${PJB_DB_WRITE_FAILOVER_SECONDARY_A_USER:${PJB_DB_USER:}}
+            password: ${PJB_DB_WRITE_FAILOVER_SECONDARY_A_PASS:${PJB_DB_PASS:}}
+            driver-class-name: ${PJB_DB_WRITE_FAILOVER_SECONDARY_A_DRIVER:org.postgresql.Driver}
+          secondary-b:
+            url: ${PJB_DB_WRITE_FAILOVER_SECONDARY_B_URL:}
+            username: ${PJB_DB_WRITE_FAILOVER_SECONDARY_B_USER:${PJB_DB_USER:}}
+            password: ${PJB_DB_WRITE_FAILOVER_SECONDARY_B_PASS:${PJB_DB_PASS:}}
+            driver-class-name: ${PJB_DB_WRITE_FAILOVER_SECONDARY_B_DRIVER:org.postgresql.Driver}
+  cache:
+    redis:
+      enabled: ${PJB_CACHE_REDIS_ENABLED:false}
+      default-ttl: ${PJB_CACHE_REDIS_DEFAULT_TTL:15m}
+    local:
+      default-ttl: ${PJB_CACHE_LOCAL_DEFAULT_TTL:15m}
+      default-maximum-size: ${PJB_CACHE_LOCAL_DEFAULT_MAXIMUM_SIZE:10000}
+    ttl:
+      cidadaoPainel: ${PJB_CACHE_TTL_CIDADAO_PAINEL:10s}
+      govHubByUf: ${PJB_CACHE_TTL_GOV_HUB:1h}
+      comJudStateByKey: ${PJB_CACHE_TTL_COMJUD_STATE_BY_KEY:45s}
+      comJudStateByDomain: ${PJB_CACHE_TTL_COMJUD_STATE_BY_DOMAIN:20s}
+      comJudStateBySecondary: ${PJB_CACHE_TTL_COMJUD_STATE_BY_SECONDARY:20s}
+      comJudStateByProcesso: ${PJB_CACHE_TTL_COMJUD_STATE_BY_PROCESSO:20s}
+      comJudStateByStatus: ${PJB_CACHE_TTL_COMJUD_STATE_BY_STATUS:20s}
+      juiz_painel: ${PJB_CACHE_TTL_JUIZ_PAINEL:2m}
+      juiz_kanban: ${PJB_CACHE_TTL_JUIZ_KANBAN:90s}
+      desembargador_painel: ${PJB_CACHE_TTL_DESEMBARGADOR_PAINEL:2m}
+      desembargador_governanca: ${PJB_CACHE_TTL_DESEMBARGADOR_GOVERNANCA:3m}
+      public_timeline: ${PJB_CACHE_TTL_PUBLIC_TIMELINE:5m}
+      consultaPublicaWorkspace: ${PJB_CACHE_TTL_CONSULTA_PUBLICA_WORKSPACE:20s}
+      consultaPublicaSearch: ${PJB_CACHE_TTL_CONSULTA_PUBLICA_SEARCH:15s}
+      consultaPublicaProcessDetail: ${PJB_CACHE_TTL_CONSULTA_PUBLICA_PROCESS_DETAIL:25s}
+      consultaPublicaPageResolve: ${PJB_CACHE_TTL_CONSULTA_PUBLICA_PAGE_RESOLVE:5m}
+      jurisprudencia_semantica: ${PJB_CACHE_TTL_JURISPRUDENCIA_SEMANTICA:6h}
+      perito_disponibilidade: ${PJB_CACHE_TTL_PERITO_DISPONIBILIDADE:15m}
+    maximum-size:
+      cidadaoPainel: ${PJB_CACHE_MAX_CIDADAO_PAINEL:5000}
+      govHubByUf: ${PJB_CACHE_MAX_GOV_HUB:256}
+      comJudStateByKey: ${PJB_CACHE_MAX_COMJUD_STATE_BY_KEY:5000}
+      comJudStateByDomain: ${PJB_CACHE_MAX_COMJUD_STATE_BY_DOMAIN:1000}
+      comJudStateBySecondary: ${PJB_CACHE_MAX_COMJUD_STATE_BY_SECONDARY:1000}
+      comJudStateByProcesso: ${PJB_CACHE_MAX_COMJUD_STATE_BY_PROCESSO:5000}
+      comJudStateByStatus: ${PJB_CACHE_MAX_COMJUD_STATE_BY_STATUS:1000}
+      juiz_painel: ${PJB_CACHE_MAX_JUIZ_PAINEL:5000}
+      juiz_kanban: ${PJB_CACHE_MAX_JUIZ_KANBAN:5000}
+      desembargador_painel: ${PJB_CACHE_MAX_DESEMBARGADOR_PAINEL:5000}
+      desembargador_governanca: ${PJB_CACHE_MAX_DESEMBARGADOR_GOVERNANCA:2000}
+      public_timeline: ${PJB_CACHE_MAX_PUBLIC_TIMELINE:10000}
+      consultaPublicaWorkspace: ${PJB_CACHE_MAX_CONSULTA_PUBLICA_WORKSPACE:5000}
+      consultaPublicaSearch: ${PJB_CACHE_MAX_CONSULTA_PUBLICA_SEARCH:15000}
+      consultaPublicaProcessDetail: ${PJB_CACHE_MAX_CONSULTA_PUBLICA_PROCESS_DETAIL:10000}
+      consultaPublicaPageResolve: ${PJB_CACHE_MAX_CONSULTA_PUBLICA_PAGE_RESOLVE:20000}
+      jurisprudencia_semantica: ${PJB_CACHE_MAX_JURISPRUDENCIA_SEMANTICA:2000}
+      perito_disponibilidade: ${PJB_CACHE_MAX_PERITO_DISPONIBILIDADE:2000}
+    enabled: ${PJB_CACHE_ENABLED:true}
+    redisson-config: ${PJB_REDISSON_CONFIG:classpath:redisson.yml}
+    redisson-config-path: ${PJB_REDISSON_CONFIG_PATH:}
+
+  processual:
+    calculo:
+      agent-mesh:
+        timeout: ${PJB_PROCESSUAL_CALCULO_AGENT_MESH_TIMEOUT:5s}
+    recursal:
+      ai-mesh:
+        timeout: ${PJB_PROCESSUAL_RECURSAL_AI_MESH_TIMEOUT:5s}
+
+  security:
+    master-key: ${PJB_MASTER_KEY_BASE64:}
+    hardening:
+      enabled: ${PJB_SECURITY_HARDENING_ENABLED:true}
+      reject-trace: ${PJB_SECURITY_HARDENING_REJECT_TRACE:true}
+      reject-track: ${PJB_SECURITY_HARDENING_REJECT_TRACK:true}
+      reject-connect: ${PJB_SECURITY_HARDENING_REJECT_CONNECT:true}
+      reject-method-override-headers: ${PJB_SECURITY_HARDENING_REJECT_METHOD_OVERRIDE:true}
+      add-browser-hardening-headers: ${PJB_SECURITY_HARDENING_BROWSER_HEADERS:true}
+      no-store-sensitive-responses: ${PJB_SECURITY_HARDENING_NOSTORE_SENSITIVE:true}
+      sensitive-paths: ${PJB_SECURITY_HARDENING_SENSITIVE_PATHS:["/api/admin/","/api/v1/admin/","/actuator/","/api/v1/security/","/api/v1/auth/"]}
+    policy:
+      version: ${PJB_SECURITY_POLICY_VERSION:v1}
+      descriptor-resource: ${PJB_SECURITY_POLICY_DESCRIPTOR_RESOURCE:classpath:policies/security/pjb-access-policy.json}
+    perimeter:
+      enabled: ${PJB_SECURITY_PERIMETER_ENABLED:true}
+      trust-proxy-headers: ${PJB_SECURITY_PERIMETER_TRUST_PROXY_HEADERS:false}
+      cors-enabled: ${PJB_SECURITY_PERIMETER_CORS_ENABLED:true}
+      cors-allowed-origins: ${PJB_SECURITY_PERIMETER_CORS_ALLOWED_ORIGINS:}
+      cors-allowed-methods: ${PJB_SECURITY_PERIMETER_CORS_ALLOWED_METHODS:GET,POST,PUT,PATCH,DELETE,OPTIONS}
+      cors-allowed-headers: ${PJB_SECURITY_PERIMETER_CORS_ALLOWED_HEADERS:Authorization,Content-Type,X-Request-Id,X-PJB-Justificativa,X-PJB-Origin-Id,X-PJB-Body-Hash,X-PJB-Signature,X-PJB-Signature-Alg,X-PJB-Timestamp}
+      cors-exposed-headers: ${PJB_SECURITY_PERIMETER_CORS_EXPOSED_HEADERS:RateLimit-Limit,RateLimit-Remaining,RateLimit-Reset,Retry-After,X-RateLimit-Limit,X-RateLimit-Remaining,X-Request-Id,X-PJB-Origin-Mode,X-PJB-Origin-Subject,X-PJB-Origin-Requirement,X-PJB-Origin-Capability}
+      cors-allow-credentials: ${PJB_SECURITY_PERIMETER_CORS_ALLOW_CREDENTIALS:false}
+      cors-max-age: ${PJB_SECURITY_PERIMETER_CORS_MAX_AGE:1h}
+      bypass-paths: ${PJB_SECURITY_PERIMETER_BYPASS_PATHS:}
+      proxy:
+        reject-untrusted-forwarded-headers: ${PJB_SECURITY_PERIMETER_PROXY_REJECT_UNTRUSTED_HEADERS:true}
+        max-forwarded-for-hops: ${PJB_SECURITY_PERIMETER_PROXY_MAX_FORWARDED_FOR_HOPS:8}
+        trusted-cidrs: ${PJB_SECURITY_PERIMETER_PROXY_TRUSTED_CIDRS:}
+      blocklist:
+        store: ${PJB_SECURITY_BLOCKLIST_STORE:memory}
+        key-prefix: ${PJB_SECURITY_BLOCKLIST_KEY_PREFIX:pjb:sec:block:}
+      ratelimit:
+        enabled: ${PJB_SECURITY_PERIMETER_RATELIMIT_ENABLED:true}
+        store: ${PJB_SECURITY_RATELIMIT_STORE:memory}
+        key-prefix: ${PJB_SECURITY_RATELIMIT_KEY_PREFIX:pjb:sec:rl:}
+        window: ${PJB_SECURITY_RATELIMIT_WINDOW:60s}
+        maxRequests: ${PJB_SECURITY_RATELIMIT_MAX_REQUESTS:600}
+        violation-window: ${PJB_SECURITY_RATELIMIT_VIOLATION_WINDOW:10m}
+        ban-after-violations: ${PJB_SECURITY_RATELIMIT_BAN_AFTER_VIOLATIONS:7}
+        ban-ttl: ${PJB_SECURITY_RATELIMIT_BAN_TTL:1h}
+        rules:
+          - name: admin-api
+            paths: ["/api/admin/**", "/api/v1/admin/**"]
+            methods: ["GET", "POST", "PUT", "DELETE"]
+            window: ${PJB_SECURITY_RATELIMIT_ADMIN_WINDOW:60s}
+            maxRequests: ${PJB_SECURITY_RATELIMIT_ADMIN_MAX_REQUESTS:120}
+            keyStrategy: ip_user
+          - name: admin-ritos-reports
+            paths: ["/api/admin/ritos/relatorios/**"]
+            methods: ["GET"]
+            window: ${PJB_SECURITY_RATELIMIT_ADMIN_REPORTS_WINDOW:60s}
+            maxRequests: ${PJB_SECURITY_RATELIMIT_ADMIN_REPORTS_MAX_REQUESTS:60}
+            keyStrategy: ip_user
+      origin-governance:
+        enabled: ${PJB_SECURITY_PERIMETER_ORIGIN_GOVERNANCE_ENABLED:false}
+        allow-referer-fallback: ${PJB_SECURITY_PERIMETER_ORIGIN_ALLOW_REFERER_FALLBACK:true}
+        require-body-hash-on-signed-json-requests: ${PJB_SECURITY_PERIMETER_ORIGIN_REQUIRE_BODY_HASH:true}
+        max-timestamp-skew: ${PJB_SECURITY_PERIMETER_ORIGIN_MAX_TIMESTAMP_SKEW:5m}
+        exempt-prefixes: ${PJB_SECURITY_PERIMETER_ORIGIN_EXEMPT_PREFIXES:["/actuator/health","/livez","/readyz","/startupz","/internal/runtime/"]}
+        governed-prefixes: ${PJB_SECURITY_PERIMETER_ORIGIN_GOVERNED_PREFIXES:["/api/v1/auth/","/api/v1/security/","/api/ai/","/api/v1/ia/","/api/v1/peticionamento/","/api/v1/processual/","/api/v1/processos/","/api/v1/institucional/","/api/v1/advogado/","/api/v1/oab/","/api/marketplace/v1/"]}
+        signed-required-prefixes: ${PJB_SECURITY_PERIMETER_ORIGIN_SIGNED_REQUIRED_PREFIXES:}
+        trusted-browser-origins: ${PJB_SECURITY_PERIMETER_TRUSTED_BROWSER_ORIGINS:}
+        selective-signed-rules:
+          - name: legal-ai-structured-surfaces
+            paths: ["/api/ai/legal/minuta", "/api/ai/legal/grounding/check"]
+          - name: legal-ai-conversation-sensitive-capabilities
+            paths: ["/api/ai/legal/conversation"]
+            capability-values: ${PJB_SECURITY_PERIMETER_ORIGIN_LEGAL_AI_SIGNED_CAPABILITIES:LEGAL_DRAFT_V2,LEGAL_GROUNDING_CHECK_V3,LEGAL_CAPABILITY_RECOVERY_V1}
+            capability-json-pointers: ["/context/requestedCapability", "/context/capability", "/context/legalCapability", "/capability", "/contexto/requestedCapability", "/contexto/capability", "/contexto/legalCapability"]
+        trusted-origins:
+          - active: ${PJB_SECURITY_PERIMETER_EDGE_APP_ACTIVE:false}
+            id: ${PJB_SECURITY_PERIMETER_EDGE_APP_ID:edge-app}
+            secret: ${PJB_SECURITY_PERIMETER_EDGE_APP_SECRET:}
+            allowed-cidrs: ${PJB_SECURITY_PERIMETER_EDGE_APP_ALLOWED_CIDRS:}
+            allowed-path-prefixes: ${PJB_SECURITY_PERIMETER_EDGE_APP_ALLOWED_PATH_PREFIXES:/api/v1/auth/,/api/v1/security/,/api/ai/,/api/v1/ia/,/api/v1/peticionamento/,/api/v1/processual/,/api/v1/processos/,/api/v1/institucional/,/api/v1/advogado/,/api/v1/oab/,/api/marketplace/v1/}
+            allowed-methods: ${PJB_SECURITY_PERIMETER_EDGE_APP_ALLOWED_METHODS:POST,PUT,PATCH,DELETE}
+            allowed-origins: ${PJB_SECURITY_PERIMETER_EDGE_APP_ALLOWED_ORIGINS:}
+    capability-ratelimit:
+      enabled: ${PJB_SECURITY_CAPABILITY_RATELIMIT_ENABLED:true}
+      store: ${PJB_SECURITY_CAPABILITY_RATELIMIT_STORE:redis}
+      key-prefix: ${PJB_SECURITY_CAPABILITY_RATELIMIT_KEY_PREFIX:pjb:caprl}
+      window-seconds: ${PJB_SECURITY_CAPABILITY_RATELIMIT_WINDOW_SECONDS:60}
+      default-limit-tokens: ${PJB_SECURITY_CAPABILITY_RATELIMIT_DEFAULT_LIMIT_TOKENS:60}
+    sandbox:
+      enabled: ${PJB_SECURITY_SANDBOX_ENABLED:true}
+      strict: ${PJB_SECURITY_SANDBOX_STRICT:true}
+      allow-localhost: ${PJB_SECURITY_SANDBOX_ALLOW_LOCALHOST:false}
+      allow-private: ${PJB_SECURITY_SANDBOX_ALLOW_PRIVATE:false}
+      allow-cidrs: ${PJB_SECURITY_SANDBOX_ALLOW_CIDRS:}
+      deny-cidrs: ${PJB_SECURITY_SANDBOX_DENY_CIDRS:0.0.0.0/0}
+      file-upload:
+        max-files: ${PJB_SECURITY_SANDBOX_UPLOAD_MAX_FILES:8}
+        allow-content-types: ${PJB_SECURITY_SANDBOX_UPLOAD_ALLOW_CT:application/pdf,image/png,image/jpeg}
+        max-bytes: ${PJB_SECURITY_SANDBOX_UPLOAD_MAX_BYTES:10485760}
+        magic-bytes-check: ${PJB_SECURITY_SANDBOX_UPLOAD_MAGIC_BYTES:true}
+    financeira:
+      capability-catalog:
+        deny-unknown: ${PJB_SECURITY_FINANCEIRA_CAPABILITY_CATALOG_DENY_UNKNOWN:true}
+        allow-if-missing: ${PJB_SECURITY_FINANCEIRA_CAPABILITY_CATALOG_ALLOW_IF_MISSING:false}
+        allow-exact: ${PJB_SECURITY_FINANCEIRA_CAPABILITY_CATALOG_ALLOW_EXACT:}
+        allow-prefix: ${PJB_SECURITY_FINANCEIRA_CAPABILITY_CATALOG_ALLOW_PREFIX:}
+        allow-contains-any: ${PJB_SECURITY_FINANCEIRA_CAPABILITY_CATALOG_ALLOW_CONTAINS_ANY:}
+    juridica:
+      capability-catalog:
+        deny-unknown: ${PJB_SECURITY_JURIDICA_CAPABILITY_CATALOG_DENY_UNKNOWN:true}
+        allow-if-missing: ${PJB_SECURITY_JURIDICA_CAPABILITY_CATALOG_ALLOW_IF_MISSING:false}
+        allow-exact: ${PJB_SECURITY_JURIDICA_CAPABILITY_CATALOG_ALLOW_EXACT:}
+        allow-prefix: ${PJB_SECURITY_JURIDICA_CAPABILITY_CATALOG_ALLOW_PREFIX:}
+        allow-contains-any: ${PJB_SECURITY_JURIDICA_CAPABILITY_CATALOG_ALLOW_CONTAINS_ANY:}
+  crypto:
+    pqc:
+      enabled: ${PJB_CRYPTO_PQC_ENABLED:false}
+      signature-algorithm: ${PJB_CRYPTO_PQC_SIGNATURE_ALGORITHM:DILITHIUM}
+
+  integrations:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+    google:
+      api-key: ${GOOGLE_API_KEY:}
+      base-url: ${GOOGLE_BASE_URL:https://generativelanguage.googleapis.com}
+    pje:
+      mock-enabled: ${PJB_INTEGRATIONS_PJE_MOCK_ENABLED:false}
+      submission:
+        mock-enabled: ${PJB_INTEGRATIONS_PJE_SUBMISSION_MOCK_ENABLED:${PJB_INTEGRATIONS_PJE_MOCK_ENABLED:false}}
+    govbr:
+      enabled: ${PJB_INTEGRATIONS_GOVBR_ENABLED:false}
+      authorize-url: ${PJB_GOVBR_AUTHORIZE_URL:https://sso.staging.acesso.gov.br/authorize}
+      token-url: ${PJB_GOVBR_TOKEN_URL:https://sso.staging.acesso.gov.br/token}
+      userinfo-url: ${PJB_GOVBR_USERINFO_URL:https://sso.staging.acesso.gov.br/userinfo/}
+      picture-url: ${PJB_GOVBR_PICTURE_URL:https://sso.staging.acesso.gov.br/userinfo/picture}
+      client-id: ${PJB_GOVBR_CLIENT_ID:}
+      client-secret: ${PJB_GOVBR_CLIENT_SECRET:}
+      redirect-uri: ${PJB_GOVBR_REDIRECT_URI:http://localhost:8080/api/v1/cidadao/govbr/link/callback}
+      redirect-uri-step-up: ${PJB_GOVBR_REDIRECT_URI_STEPUP:http://localhost:8080/api/v1/auth/govbr/stepup/callback}
+      step-up-scope: ${PJB_GOVBR_STEPUP_SCOPE:openid email profile govbr_confiabilidades}
+      jwks-url: ${PJB_GOVBR_JWKS_URL:}
+      issuer: ${PJB_GOVBR_ISSUER:}
+      mock-enabled: ${PJB_GOVBR_MOCK_ENABLED:false}
+      frontend-success-redirect: ${PJB_GOVBR_FE_SUCCESS_REDIRECT:http://localhost:3000/cidadao/perfil?govbr=ok}
+      frontend-error-redirect: ${PJB_GOVBR_FE_ERROR_REDIRECT:http://localhost:3000/cidadao/perfil?govbr=erro}
+      connect-timeout: ${PJB_GOVBR_CONNECT_TIMEOUT:4s}
+      request-timeout: ${PJB_GOVBR_REQUEST_TIMEOUT:6s}
+      state-ttl: ${PJB_GOVBR_STATE_TTL:5m}
+      cleanup-interval: ${PJB_GOVBR_CLEANUP_INTERVAL:3600000}
+
+  integration:
+    n8n:
+      enabled: ${PJB_N8N_ENABLED:false}
+      base-url: ${PJB_N8N_BASE_URL:https://n8n.local}
+      dispatch-path: ${PJB_N8N_DISPATCH_PATH:/webhook/pjb-event-bus}
+      dispatch-secret: ${PJB_N8N_DISPATCH_SECRET:}
+      inbound-secret: ${PJB_N8N_INBOUND_SECRET:}
+      tenant: ${PJB_N8N_TENANT:pjb}
+      require-https: ${PJB_N8N_REQUIRE_HTTPS:true}
+      allow-local-http: ${PJB_N8N_ALLOW_LOCAL_HTTP:true}
+      fail-on-dispatch-error: ${PJB_N8N_FAIL_ON_DISPATCH_ERROR:false}
+      request-timeout: ${PJB_N8N_REQUEST_TIMEOUT:15s}
+      max-payload-bytes: ${PJB_N8N_MAX_PAYLOAD_BYTES:262144}
+
+
+    judicial:
+      pje:
+        enabled: ${PJB_INTEGRATION_JUDICIAL_PJE_ENABLED:false}
+        base-url: ${PJB_INTEGRATION_JUDICIAL_PJE_BASE_URL:}
+        bearer-token: ${PJB_INTEGRATION_JUDICIAL_PJE_TOKEN:}
+        auth-required: ${PJB_INTEGRATION_JUDICIAL_PJE_AUTH_REQUIRED:false}
+        submit-path: ${PJB_INTEGRATION_JUDICIAL_PJE_SUBMIT_PATH:}
+        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_PJE_DRY_RUN_PATH:}
+        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_PJE_SNAPSHOT_PATH:}
+        events-path: ${PJB_INTEGRATION_JUDICIAL_PJE_EVENTS_PATH:}
+        certificate-alias: ${PJB_INTEGRATION_JUDICIAL_PJE_CERTIFICATE_ALIAS:}
+        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_PJE_OAUTH_TOKEN_URL:}
+        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_PJE_OAUTH_CLIENT_ID:}
+        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_PJE_OAUTH_CLIENT_SECRET:}
+        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_PJE_OAUTH_AUDIENCE:}
+        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_PJE_OAUTH_SCOPE:}
+        production-ready: ${PJB_INTEGRATION_JUDICIAL_PJE_PRODUCTION_READY:false}
+        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_PJE_HOMOLOGATED_TRIBUNAIS:}
+        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_PJE_BLOCKED_TRIBUNAIS:}
+      esaj:
+        enabled: ${PJB_INTEGRATION_JUDICIAL_ESAJ_ENABLED:false}
+        base-url: ${PJB_INTEGRATION_JUDICIAL_ESAJ_BASE_URL:}
+        bearer-token: ${PJB_INTEGRATION_JUDICIAL_ESAJ_TOKEN:}
+        auth-required: ${PJB_INTEGRATION_JUDICIAL_ESAJ_AUTH_REQUIRED:false}
+        submit-path: ${PJB_INTEGRATION_JUDICIAL_ESAJ_SUBMIT_PATH:}
+        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_ESAJ_DRY_RUN_PATH:}
+        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_ESAJ_SNAPSHOT_PATH:}
+        events-path: ${PJB_INTEGRATION_JUDICIAL_ESAJ_EVENTS_PATH:}
+        certificate-alias: ${PJB_INTEGRATION_JUDICIAL_ESAJ_CERTIFICATE_ALIAS:}
+        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_ESAJ_OAUTH_TOKEN_URL:}
+        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_ESAJ_OAUTH_CLIENT_ID:}
+        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_ESAJ_OAUTH_CLIENT_SECRET:}
+        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_ESAJ_OAUTH_AUDIENCE:}
+        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_ESAJ_OAUTH_SCOPE:}
+        production-ready: ${PJB_INTEGRATION_JUDICIAL_ESAJ_PRODUCTION_READY:false}
+        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_ESAJ_HOMOLOGATED_TRIBUNAIS:}
+        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_ESAJ_BLOCKED_TRIBUNAIS:}
+      projudi:
+        enabled: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_ENABLED:false}
+        base-url: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_BASE_URL:}
+        bearer-token: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_TOKEN:}
+        auth-required: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_AUTH_REQUIRED:false}
+        submit-path: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_SUBMIT_PATH:}
+        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_DRY_RUN_PATH:}
+        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_SNAPSHOT_PATH:}
+        events-path: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_EVENTS_PATH:}
+        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_OAUTH_TOKEN_URL:}
+        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_OAUTH_CLIENT_ID:}
+        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_OAUTH_CLIENT_SECRET:}
+        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_OAUTH_AUDIENCE:}
+        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_OAUTH_SCOPE:}
+        production-ready: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_PRODUCTION_READY:false}
+        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_HOMOLOGATED_TRIBUNAIS:}
+        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_BLOCKED_TRIBUNAIS:}
+      eproc:
+        enabled: ${PJB_INTEGRATION_JUDICIAL_EPROC_ENABLED:false}
+        base-url: ${PJB_INTEGRATION_JUDICIAL_EPROC_BASE_URL:}
+        bearer-token: ${PJB_INTEGRATION_JUDICIAL_EPROC_TOKEN:}
+        auth-required: ${PJB_INTEGRATION_JUDICIAL_EPROC_AUTH_REQUIRED:false}
+        submit-path: ${PJB_INTEGRATION_JUDICIAL_EPROC_SUBMIT_PATH:}
+        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_EPROC_DRY_RUN_PATH:}
+        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_EPROC_SNAPSHOT_PATH:}
+        events-path: ${PJB_INTEGRATION_JUDICIAL_EPROC_EVENTS_PATH:}
+        certificate-alias: ${PJB_INTEGRATION_JUDICIAL_EPROC_CERTIFICATE_ALIAS:}
+        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_EPROC_OAUTH_TOKEN_URL:}
+        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_EPROC_OAUTH_CLIENT_ID:}
+        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_EPROC_OAUTH_CLIENT_SECRET:}
+        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_EPROC_OAUTH_AUDIENCE:}
+        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_EPROC_OAUTH_SCOPE:}
+        production-ready: ${PJB_INTEGRATION_JUDICIAL_EPROC_PRODUCTION_READY:false}
+        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_EPROC_HOMOLOGATED_TRIBUNAIS:}
+        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_EPROC_BLOCKED_TRIBUNAIS:}
+      creta:
+        enabled: ${PJB_INTEGRATION_JUDICIAL_CRETA_ENABLED:false}
+        base-url: ${PJB_INTEGRATION_JUDICIAL_CRETA_BASE_URL:}
+        bearer-token: ${PJB_INTEGRATION_JUDICIAL_CRETA_TOKEN:}
+        auth-required: ${PJB_INTEGRATION_JUDICIAL_CRETA_AUTH_REQUIRED:false}
+        submit-path: ${PJB_INTEGRATION_JUDICIAL_CRETA_SUBMIT_PATH:}
+        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_CRETA_DRY_RUN_PATH:}
+        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_CRETA_SNAPSHOT_PATH:}
+        events-path: ${PJB_INTEGRATION_JUDICIAL_CRETA_EVENTS_PATH:}
+        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_CRETA_OAUTH_TOKEN_URL:}
+        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_CRETA_OAUTH_CLIENT_ID:}
+        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_CRETA_OAUTH_CLIENT_SECRET:}
+        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_CRETA_OAUTH_AUDIENCE:}
+        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_CRETA_OAUTH_SCOPE:}
+        production-ready: ${PJB_INTEGRATION_JUDICIAL_CRETA_PRODUCTION_READY:false}
+        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_CRETA_HOMOLOGATED_TRIBUNAIS:}
+        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_CRETA_BLOCKED_TRIBUNAIS:}
+      pdpj:
+        enabled: ${PJB_INTEGRATION_JUDICIAL_PDPJ_ENABLED:false}
+        base-url: ${PJB_INTEGRATION_JUDICIAL_PDPJ_BASE_URL:}
+        bearer-token: ${PJB_INTEGRATION_JUDICIAL_PDPJ_TOKEN:}
+        auth-required: ${PJB_INTEGRATION_JUDICIAL_PDPJ_AUTH_REQUIRED:false}
+        submit-path: ${PJB_INTEGRATION_JUDICIAL_PDPJ_SUBMIT_PATH:}
+        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_PDPJ_DRY_RUN_PATH:}
+        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_PDPJ_SNAPSHOT_PATH:}
+        events-path: ${PJB_INTEGRATION_JUDICIAL_PDPJ_EVENTS_PATH:}
+        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_PDPJ_OAUTH_TOKEN_URL:}
+        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_PDPJ_OAUTH_CLIENT_ID:}
+        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_PDPJ_OAUTH_CLIENT_SECRET:}
+        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_PDPJ_OAUTH_AUDIENCE:}
+        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_PDPJ_OAUTH_SCOPE:}
+        production-ready: ${PJB_INTEGRATION_JUDICIAL_PDPJ_PRODUCTION_READY:false}
+        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_PDPJ_HOMOLOGATED_TRIBUNAIS:}
+        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_PDPJ_BLOCKED_TRIBUNAIS:}
+      mni:
+        enabled: ${PJB_INTEGRATION_JUDICIAL_MNI_ENABLED:false}
+        base-url: ${PJB_INTEGRATION_JUDICIAL_MNI_BASE_URL:}
+        bearer-token: ${PJB_INTEGRATION_JUDICIAL_MNI_TOKEN:}
+        auth-required: ${PJB_INTEGRATION_JUDICIAL_MNI_AUTH_REQUIRED:false}
+        submit-path: ${PJB_INTEGRATION_JUDICIAL_MNI_SUBMIT_PATH:}
+        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_MNI_DRY_RUN_PATH:}
+        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_MNI_SNAPSHOT_PATH:}
+        events-path: ${PJB_INTEGRATION_JUDICIAL_MNI_EVENTS_PATH:}
+        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_MNI_OAUTH_TOKEN_URL:}
+        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_MNI_OAUTH_CLIENT_ID:}
+        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_MNI_OAUTH_CLIENT_SECRET:}
+        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_MNI_OAUTH_AUDIENCE:}
+        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_MNI_OAUTH_SCOPE:}
+        production-ready: ${PJB_INTEGRATION_JUDICIAL_MNI_PRODUCTION_READY:false}
+        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_MNI_HOMOLOGATED_TRIBUNAIS:}
+        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_MNI_BLOCKED_TRIBUNAIS:}
+      mp:
+        enabled: ${PJB_INTEGRATION_JUDICIAL_MP_ENABLED:false}
+        base-url: ${PJB_INTEGRATION_JUDICIAL_MP_BASE_URL:}
+        bearer-token: ${PJB_INTEGRATION_JUDICIAL_MP_TOKEN:}
+        auth-required: ${PJB_INTEGRATION_JUDICIAL_MP_AUTH_REQUIRED:false}
+        submit-path: ${PJB_INTEGRATION_JUDICIAL_MP_SUBMIT_PATH:}
+        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_MP_DRY_RUN_PATH:}
+        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_MP_SNAPSHOT_PATH:}
+        events-path: ${PJB_INTEGRATION_JUDICIAL_MP_EVENTS_PATH:}
+        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_MP_OAUTH_TOKEN_URL:}
+        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_MP_OAUTH_CLIENT_ID:}
+        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_MP_OAUTH_CLIENT_SECRET:}
+        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_MP_OAUTH_AUDIENCE:}
+        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_MP_OAUTH_SCOPE:}
+        production-ready: ${PJB_INTEGRATION_JUDICIAL_MP_PRODUCTION_READY:false}
+        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_MP_HOMOLOGATED_TRIBUNAIS:}
+        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_MP_BLOCKED_TRIBUNAIS:}
+      security:
+        environment-name: ${PJB_INTEGRATION_JUDICIAL_SECURITY_ENVIRONMENT:default}
+        default-protocols:
+          - TLSv1.3
+          - TLSv1.2
+        default-connect-timeout: ${PJB_INTEGRATION_JUDICIAL_SECURITY_CONNECT_TIMEOUT:10s}
+        default-read-timeout: ${PJB_INTEGRATION_JUDICIAL_SECURITY_READ_TIMEOUT:30s}
+        default-hostname-verification: ${PJB_INTEGRATION_JUDICIAL_SECURITY_HOSTNAME_VERIFICATION:true}
+        certificate-validation:
+          revocation-mode: ${PJB_INTEGRATION_JUDICIAL_SECURITY_REVOCATION_MODE:SOFT_FAIL}
+          ocsp-enabled: ${PJB_INTEGRATION_JUDICIAL_SECURITY_OCSP_ENABLED:true}
+          crl-enabled: ${PJB_INTEGRATION_JUDICIAL_SECURITY_CRL_ENABLED:false}
+          prefer-crl: ${PJB_INTEGRATION_JUDICIAL_SECURITY_PREFER_CRL:false}
+          minimum-remaining-validity: ${PJB_INTEGRATION_JUDICIAL_SECURITY_MIN_VALIDITY:30d}
+          allowed-clock-skew: ${PJB_INTEGRATION_JUDICIAL_SECURITY_ALLOWED_CLOCK_SKEW:5m}
+          require-digital-signature-key-usage: ${PJB_INTEGRATION_JUDICIAL_SECURITY_REQUIRE_DIGITAL_SIGNATURE:true}
+          require-client-auth-extended-key-usage: ${PJB_INTEGRATION_JUDICIAL_SECURITY_REQUIRE_CLIENT_AUTH:true}
+          require-trust-store-for-path-validation: ${PJB_INTEGRATION_JUDICIAL_SECURITY_REQUIRE_TRUSTSTORE:false}
+        posture:
+          initial-delay-ms: ${PJB_INTEGRATION_JUDICIAL_SECURITY_POSTURE_INITIAL_DELAY_MS:30000}
+          fixed-delay-ms: ${PJB_INTEGRATION_JUDICIAL_SECURITY_POSTURE_FIXED_DELAY_MS:900000}
+        key-stores: {}
+        trust-stores: {}
+        pkcs11-modules: {}
+        bindings: {}
+
+  cnj:
+    datajud:
+      api-key: ${CNJ_DATAJUD_API_KEY:}
+      base-url: ${CNJ_DATAJUD_BASE_URL:https://api-publica.datajud.cnj.jus.br}
+      timeout-ms: ${CNJ_DATAJUD_TIMEOUT_MS:30000}
+    tpu:
+      sync-enabled: ${CNJ_TPU_SYNC_ENABLED:true}
+      max-age-hours: ${CNJ_TPU_MAX_AGE_HOURS:24}
+
+  ai:
+    provider: ${PJB_AI_PROVIDER:openai}
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+      model: ${PJB_AI_OPENAI_MODEL:gpt-5.2-thinking}
+      temperature: ${PJB_AI_OPENAI_TEMPERATURE:0.2}
+      timeout-ms: ${PJB_AI_OPENAI_TIMEOUT_MS:60000}
+      max-tokens: ${PJB_AI_OPENAI_MAX_TOKENS:2048}
+    google:
+      api-key: ${GOOGLE_API_KEY:}
+      base-url: ${GOOGLE_BASE_URL:https://generativelanguage.googleapis.com}
+    pje:
+      mock-enabled: ${PJB_INTEGRATIONS_PJE_MOCK_ENABLED:false}
+      submission:
+        mock-enabled: ${PJB_INTEGRATIONS_PJE_SUBMISSION_MOCK_ENABLED:${PJB_INTEGRATIONS_PJE_MOCK_ENABLED:false}}
+      model: ${PJB_AI_GOOGLE_MODEL:gemini-2.5-pro}
+      timeout-ms: ${PJB_AI_GOOGLE_TIMEOUT_MS:60000}
+      max-output-tokens: ${PJB_AI_GOOGLE_MAX_OUTPUT_TOKENS:2048}
+
+
+  outbox:
+    strictTypes: ${PJB_OUTBOX_STRICT_TYPES:false}
+    ingress:
+      enabled: ${PJB_OUTBOX_INGRESS_ENABLED:true}
+      capacity: ${PJB_OUTBOX_INGRESS_CAPACITY:4096}
+      flush-batch-size: ${PJB_OUTBOX_INGRESS_FLUSH_BATCH:128}
+      flush-interval: ${PJB_OUTBOX_INGRESS_FLUSH_INTERVAL:100ms}
+      offer-timeout: ${PJB_OUTBOX_INGRESS_OFFER_TIMEOUT:25ms}
+      fallback-to-direct-persist: ${PJB_OUTBOX_INGRESS_DIRECT_FALLBACK:true}
+      fail-fast-when-saturated: ${PJB_OUTBOX_INGRESS_FAIL_FAST:false}
+      history-limit: ${PJB_OUTBOX_INGRESS_HISTORY_LIMIT:1024}
+      max-payload-bytes: ${PJB_OUTBOX_INGRESS_MAX_PAYLOAD_BYTES:524288}
+      max-headers-bytes: ${PJB_OUTBOX_INGRESS_MAX_HEADERS_BYTES:32768}
+      max-metadata-entries: ${PJB_OUTBOX_INGRESS_MAX_METADATA_ENTRIES:64}
+      max-string-length: ${PJB_OUTBOX_INGRESS_MAX_STRING_LENGTH:4096}
+      flush-burst-limit: ${PJB_OUTBOX_INGRESS_FLUSH_BURST_LIMIT:8}
+    observability:
+      enabled: ${PJB_OUTBOX_OBSERVABILITY_ENABLED:true}
+      refresh-interval: ${PJB_OUTBOX_OBSERVABILITY_REFRESH_INTERVAL:30s}
+      failed-threshold: ${PJB_OUTBOX_OBSERVABILITY_FAILED_THRESHOLD:100}
+      inflight-stale-after: ${PJB_OUTBOX_OBSERVABILITY_INFLIGHT_STALE_AFTER:5m}
+      pending-lag-after: ${PJB_OUTBOX_OBSERVABILITY_PENDING_LAG_AFTER:10m}
+
+  authz:
+    analytics:
+      refresh:
+        enabled: ${PJB_AUTHZ_ANALYTICS_REFRESH_ENABLED:true}
+        fixed-rate-ms: ${PJB_AUTHZ_ANALYTICS_REFRESH_FIXED_RATE_MS:5000}
+        processing-timeout-ms: ${PJB_AUTHZ_ANALYTICS_REFRESH_PROCESSING_TIMEOUT_MS:300000}
+        cleanup-fixed-rate-ms: ${PJB_AUTHZ_ANALYTICS_REFRESH_CLEANUP_FIXED_RATE_MS:3600000}
+        batch-size: ${PJB_AUTHZ_ANALYTICS_REFRESH_BATCH_SIZE:64}
+        max-backfill-buckets: ${PJB_AUTHZ_ANALYTICS_REFRESH_MAX_BACKFILL_BUCKETS:4096}
+        completion-retention-days: ${PJB_AUTHZ_ANALYTICS_REFRESH_COMPLETION_RETENTION_DAYS:30}
+
+  ops:
+    prune:
+      enabled: ${PJB_OPS_PRUNE_ENABLED:true}
+      retentionDays: ${PJB_OPS_PRUNE_RETENTION_DAYS:7}
+
+
+  peticionamento:
+    cep:
+      enabled: ${PJB_PETICIONAMENTO_CEP_ENABLED:true}
+      base-url: ${PJB_PETICIONAMENTO_CEP_BASE_URL:https://viacep.com.br/ws}
+      read-timeout: ${PJB_PETICIONAMENTO_CEP_READ_TIMEOUT:3s}
+
+  eleitoral:
+    tse:
+      enabled: ${PJB_ELEITORAL_TSE_ENABLED:false}
+      spca-base-url: ${PJB_ELEITORAL_SPCA_URL:https://spca.tse.jus.br/api}
+      resultado-base-url: ${PJB_ELEITORAL_RESULTADO_URL:https://resultados.tse.jus.br/oficial/api}
+      dry-run: ${PJB_ELEITORAL_TSE_DRY_RUN:true}
+      diplomacao:
+        auto-extincao-enabled: ${PJB_ELEITORAL_AUTO_EXTINCAO:true}
+        scheduler-fixed-rate-ms: ${PJB_ELEITORAL_SCHEDULER_RATE_MS:86400000}
+
+  mni:
+    enabled: ${PJB_MNI_ENABLED:false}
+    retry-max-tentativas: ${PJB_MNI_RETRY_MAX:5}
+    reconciliation-fixed-rate-ms: ${PJB_MNI_RECONCILIATION_RATE_MS:300000}
+    reconciliation-batch-size: ${PJB_MNI_RECONCILIATION_BATCH_SIZE:20}
+
+  datajud:
+    feed:
+      enabled: ${PJB_DATAJUD_FEED_ENABLED:false}
+      batch-size: ${PJB_DATAJUD_FEED_BATCH_SIZE:100}
+      scheduler-fixed-rate-ms: ${PJB_DATAJUD_FEED_SCHEDULER_RATE_MS:300000}
+      max-batches-per-run: ${PJB_DATAJUD_FEED_MAX_BATCHES_PER_RUN:3}
+      tribunais: ${PJB_DATAJUD_FEED_TRIBUNAIS:CNJ}
+
+  dje:
+    enabled: ${PJB_DJE_ENABLED:false}
+    scheduler-fixed-rate-ms: ${PJB_DJE_SCHEDULER_RATE_MS:300000}
+    max-batch-size: ${PJB_DJE_MAX_BATCH_SIZE:100}
+
+  digitalizacao:
+    enabled: ${PJB_DIGITALIZACAO_ENABLED:false}
+    confianca-minima-auto: ${PJB_DIGITALIZACAO_CONFIANCA_MINIMA:70.0}
+    idioma-default: ${PJB_DIGITALIZACAO_IDIOMA:por}
+    review-batch-size: ${PJB_DIGITALIZACAO_REVIEW_BATCH_SIZE:20}
+    stale-processing-minutes: ${PJB_DIGITALIZACAO_STALE_PROCESSING_MINUTES:60}
+    governance-fixed-rate-ms: ${PJB_DIGITALIZACAO_GOVERNANCE_RATE_MS:300000}
+
+  icp:
+    enabled: ${PJB_ICP_ENABLED:false}
+    enforce-chain-validation: ${PJB_ICP_ENFORCE_CHAIN:false}
+    accepted-ac-siglas: ${PJB_ICP_ACCEPTED_ACS:Certisign,Serpro,Valid,AC-JUS,SERASA,CertiSign}
+    ocsp-cache-key-prefix: ${PJB_ICP_OCSP_CACHE_PREFIX:pjb:icp:ocsp:}
+    ocsp-cache-ttl-seconds: ${PJB_ICP_OCSP_CACHE_TTL:3600}
+    crl-cache-ttl-seconds: ${PJB_ICP_CRL_CACHE_TTL:86400}
+    pkcs11-lib-path: ${PJB_ICP_PKCS11_LIB:}
+    recursal-key-store-ref: ${PJB_ICP_RECURSAL_KEYSTORE_REF:}
+    recursal-key-alias: ${PJB_ICP_RECURSAL_KEY_ALIAS:}
+    recursal-profile-candidate: ${PJB_ICP_RECURSAL_PROFILE_CANDIDATE:LTA}
+    recursal-require-certificate: ${PJB_ICP_RECURSAL_REQUIRE_CERTIFICATE:false}
+
+  integracoes:
+    judicial-financeiro:
+      enabled: ${PJB_JUDICIAL_FINANCEIRO_ENABLED:false}
+      dry-run: ${PJB_JUDICIAL_FINANCEIRO_DRY_RUN:true}
+      retry-max-tentativas: ${PJB_JUDICIAL_FINANCEIRO_RETRY_MAX:3}
+      reconciliation-fixed-rate-ms: ${PJB_JUDICIAL_FINANCEIRO_RECONCILIATION_RATE_MS:300000}
+      reconciliation-batch-size: ${PJB_JUDICIAL_FINANCEIRO_RECONCILIATION_BATCH_SIZE:20}
+      retry-backoff-minutes: ${PJB_JUDICIAL_FINANCEIRO_RETRY_BACKOFF_MINUTES:5}
+
+  trabalhista:
+    enabled: ${PJB_TRABALHISTA_ENABLED:true}
+    indice-atualizacao-default: ${PJB_TRABALHISTA_INDICE_DEFAULT:IPCA-E}
+    prazo-pagamento-gru-dias: ${PJB_TRABALHISTA_PRAZO_GRU_DIAS:8}
+    deposito-recursal-teto-default: ${PJB_TRABALHISTA_DEPOSITO_TETO:15000.00}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: false
+
+resilience4j:
+  retry:
+    instances:
+      mni-remessa:
+        max-attempts: ${PJB_R4J_MNI_MAX_ATTEMPTS:5}
+        wait-duration: ${PJB_R4J_MNI_WAIT:2s}
+        exponential-backoff-multiplier: 2
+      datajud-feed:
+        max-attempts: ${PJB_R4J_DATAJUD_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_DATAJUD_WAIT:3s}
+      sisbajud-bloqueio:
+        max-attempts: ${PJB_R4J_SISBAJUD_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_SISBAJUD_WAIT:5s}
+      infojud-consulta:
+        max-attempts: ${PJB_R4J_INFOJUD_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_INFOJUD_WAIT:3s}
+  circuitbreaker:
+    instances:
+      mni-remessa:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_MNI_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 3
+      sisbajud-bloqueio:
+        sliding-window-size: 5
+        failure-rate-threshold: 60
+        wait-duration-in-open-state: ${PJB_CB_SISBAJUD_WAIT:120s}
+      anthropic-memory:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_ANTHROPIC_MEMORY_WAIT:30s}
+        permitted-number-of-calls-in-half-open-state: 3
+        record-exceptions:
+          - java.lang.Exception
+      anthropic-dreaming:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_ANTHROPIC_DREAMING_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 2
+        record-exceptions:
+          - java.lang.Exception
+  bulkhead:
+    instances:
+      mni-remessa:
+        max-concurrent-calls: ${PJB_BH_MNI_MAX:20}
+        max-wait-duration: 2s
+      sisbajud-bloqueio:
+        max-concurrent-calls: ${PJB_BH_SISBAJUD_MAX:10}
+        max-wait-duration: 2s

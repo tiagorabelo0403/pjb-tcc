@@ -1,0 +1,466 @@
+{
+  "summary": {
+    "totalItems": 23,
+    "coveredItems": 23,
+    "missingItems": 0,
+    "structuralCoverageComplete": true
+  },
+  "items": [
+    {
+      "section": "Parte 1",
+      "item": "Prazo + audit trail",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/prazos/PrazosEngine.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/prazos/PrazosEngine.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/prazos/PrazoAuditTrail.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/prazos/PrazoAuditTrail.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminPrazoController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminPrazoController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 1",
+      "item": "Audiência de custódia",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/criminal/custodia/AudienciaCustodiaService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/criminal/custodia/AudienciaCustodiaService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/criminal/custodia/CustodiaApplicationService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/criminal/custodia/CustodiaApplicationService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminCustodiaController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminCustodiaController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 1",
+      "item": "Custas + GRU + PIX",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/financeiro/custas/CustaJudicialService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/financeiro/custas/CustaJudicialService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/financeiro/custas/CustasApplicationService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/financeiro/custas/CustasApplicationService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminCustasController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminCustasController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 1",
+      "item": "MNI",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/integration/mni/application/MniRemessaService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/integration/mni/application/MniRemessaService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/integration/mni/MniApplicationService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/integration/mni/MniApplicationService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminMniController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminMniController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 1",
+      "item": "DataJud",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/integration/datajud/feed/DataJudFeedService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/integration/datajud/feed/DataJudFeedService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/integration/datajud/feed/DataJudApplicationService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/integration/datajud/feed/DataJudApplicationService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminDataJudController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminDataJudController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 1",
+      "item": "ICP-Brasil",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/icp/IcpBrasilChainValidator.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/icp/IcpBrasilChainValidator.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/icp/IcpBrasilApplicationService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/icp/IcpBrasilApplicationService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminIcpController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminIcpController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 1",
+      "item": "Integrações sensíveis",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/SisbajudBloqueioService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/SisbajudBloqueioService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/RenajudApplicationService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/RenajudApplicationService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/InfojudApplicationService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/InfojudApplicationService.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 1",
+      "item": "Testcontainers reais",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/test/java/com/tcc/pjb/backend/PjbIntegrationTestBase.java",
+          "present": true,
+          "evidence": "src/test/java/com/tcc/pjb/backend/PjbIntegrationTestBase.java"
+        },
+        {
+          "candidate": "src/test/resources/application-integration-test.yml",
+          "present": true,
+          "evidence": "src/test/resources/application-integration-test.yml"
+        }
+      ]
+    },
+    {
+      "section": "Parte 1",
+      "item": "Saga Camunda",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/peticionamento/saga/PeticionamentoSagaWorker.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/peticionamento/saga/PeticionamentoSagaWorker.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/peticionamento/saga/PeticionamentoSagaApplicationService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/peticionamento/saga/PeticionamentoSagaApplicationService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminPeticionamentoSagaController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminPeticionamentoSagaController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 1",
+      "item": "Read-after-write",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/configs/datasource/ReadAfterWriteConsistencyPolicy.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/configs/datasource/ReadAfterWriteConsistencyPolicy.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminRuntimeController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminRuntimeController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 1",
+      "item": "Workflow trabalhista",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/WorkflowTrabalhistaService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/WorkflowTrabalhistaService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/TrabalhistaApplicationService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/TrabalhistaApplicationService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminTrabalhistaController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminTrabalhistaController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 2",
+      "item": "Feito eleitoral",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/eleitoral/FeitoEleitoralService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/eleitoral/FeitoEleitoralService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminEleitoralController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminEleitoralController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 2",
+      "item": "Offline conflict resolver",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/service/offline/OfflineConflictResolver.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/service/offline/OfflineConflictResolver.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminOfflineController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminOfflineController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 2",
+      "item": "DJe publicação",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/dje/DjePublicacaoService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/dje/DjePublicacaoService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminDjeController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminDjeController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 2",
+      "item": "Gov.br assurance",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/security/GovBrAssurancePolicy.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/security/GovBrAssurancePolicy.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminGovBrAssuranceController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminGovBrAssuranceController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 2",
+      "item": "Digitalização OCR",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/digitalizacao/DigitalizacaoOcrService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/digitalizacao/DigitalizacaoOcrService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminDigitalizacaoController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminDigitalizacaoController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 2",
+      "item": "Sobrestamento por tema",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/judicial/sobrestamento/SobrestamentoTemaService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/judicial/sobrestamento/SobrestamentoTemaService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/judicial/sobrestamento/SobrestamentoApplicationService.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/judicial/sobrestamento/SobrestamentoApplicationService.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminSobrestamentoController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminSobrestamentoController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 2",
+      "item": "SLO explícito",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/core/observability/PjbSloRegistry.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/core/observability/PjbSloRegistry.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminSloObservabilityController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminSloObservabilityController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 2",
+      "item": "Idempotency filter",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/platform/security/idempotency/PjbIdempotencyFilter.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/platform/security/idempotency/PjbIdempotencyFilter.java"
+        },
+        {
+          "candidate": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminIdempotencyController.java",
+          "present": true,
+          "evidence": "src/main/java/com/tcc/pjb/backend/controller/admin/AdminIdempotencyController.java"
+        }
+      ]
+    },
+    {
+      "section": "Parte 2",
+      "item": "ArchUnit + Pitest",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/test/java/com/tcc/pjb/backend/PjbArchitectureTest.java",
+          "present": true,
+          "evidence": "src/test/java/com/tcc/pjb/backend/PjbArchitectureTest.java"
+        },
+        {
+          "candidate": "pom.xml::pitest-maven",
+          "present": true,
+          "evidence": "pom.xml::pitest-maven"
+        },
+        {
+          "candidate": "pom.xml::archunit-junit5",
+          "present": true,
+          "evidence": "pom.xml::archunit-junit5"
+        }
+      ]
+    },
+    {
+      "section": "Parte 2",
+      "item": "Pact contract test",
+      "present": true,
+      "details": [
+        {
+          "candidate": "src/test/java/com/tcc/pjb/backend/core/procedural/NationalProceduralRoutingCompetenceContractTest.java",
+          "present": true,
+          "evidence": "src/test/java/com/tcc/pjb/backend/core/procedural/NationalProceduralRoutingCompetenceContractTest.java"
+        },
+        {
+          "candidate": "pom.xml::au.com.dius.pact.consumer",
+          "present": true,
+          "evidence": "pom.xml::au.com.dius.pact.consumer"
+        }
+      ]
+    },
+    {
+      "section": "Parte 2",
+      "item": "DAST pipeline",
+      "present": true,
+      "details": [
+        {
+          "candidate": ".github/workflows/dast.yml",
+          "present": true,
+          "evidence": ".github/workflows/dast.yml"
+        },
+        {
+          "candidate": ".zap/rules.tsv",
+          "present": true,
+          "evidence": ".zap/rules.tsv"
+        }
+      ]
+    },
+    {
+      "section": "Estrutural",
+      "item": "Monólito modular Fase 1",
+      "present": true,
+      "details": [
+        {
+          "candidate": "pom.xml::pjb-core",
+          "present": true,
+          "evidence": "pom.xml::pjb-core"
+        },
+        {
+          "candidate": "pjb-core/pom.xml",
+          "present": true,
+          "evidence": "pjb-core/pom.xml"
+        },
+        {
+          "candidate": "pjb-api/pom.xml",
+          "present": true,
+          "evidence": "pjb-api/pom.xml"
+        },
+        {
+          "candidate": "pom.phase1-aggregator.xml",
+          "present": true,
+          "evidence": "pom.phase1-aggregator.xml"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,264 @@
+{
+  "consumer": {
+    "name": "PjbMagistraturaActsConsumer"
+  },
+  "provider": {
+    "name": "PjbMagistraturaActsProvider"
+  },
+  "interactions": [
+    {
+      "description": "load magistratura acts workspace",
+      "providerStates": [
+        {
+          "name": "magistratura acts workspace can be loaded"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/magistratura/atos",
+        "query": "processoId=9001"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "userId": 77,
+          "tipoUsuario": "JUIZ_ESTADUAL",
+          "lane": "PRIMEIRO_GRAU",
+          "processoId": 9001,
+          "processoNumero": "0009001-11.2026.8.06.0001",
+          "acts": [
+            {
+              "code": "DESPACHO",
+              "enabled": true,
+              "verdict": "ALLOW",
+              "nativeRoute": "/api/v1/magistratura/processos/9001/atos"
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "load magistratura act preview",
+      "providerStates": [
+        {
+          "name": "magistratura act preview can be loaded"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/magistratura/processos/9001/atos/preview",
+        "query": "action=DESPACHO"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "processoId": 9001,
+          "action": "DESPACHO",
+          "allowed": true,
+          "verdict": "ALLOW",
+          "nativeRoute": "/api/v1/magistratura/processos/9001/atos",
+          "providences": [
+            {
+              "code": "PROVIDENCIAR_PUBLICACAO",
+              "automatic": true,
+              "targetQueueCode": "PUB:DESPACHO"
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "load magistratura blocked preview",
+      "providerStates": [
+        {
+          "name": "magistratura blocked preview can be loaded"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/magistratura/processos/9001/atos/preview",
+        "query": "action=SENTENCA"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "processoId": 9001,
+          "action": "SENTENCA",
+          "allowed": false,
+          "verdict": "BLOCK",
+          "nativeRoute": "/api/v1/magistratura/processos/9001/atos",
+          "warnings": [
+            "Ato bloqueado pela malha jurisdicional/material do magistrado."
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "load magistratura automation preview",
+      "providerStates": [
+        {
+          "name": "magistratura automation preview can be loaded"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/magistratura/processos/9001/atos/automation-preview",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "action": "DESPACHO",
+          "conteudo": "Intime-se.",
+          "fundamentacao": "CPC"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "processoId": 9001,
+          "action": "DESPACHO",
+          "allowed": true,
+          "verdict": "ALLOW",
+          "providences": [
+            {
+              "code": "EXPEDIR_INTIMACOES",
+              "automatic": true,
+              "targetQueueCode": "INT:DESPACHO"
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "execute magistratura act",
+      "providerStates": [
+        {
+          "name": "magistratura act can be executed"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/magistratura/processos/9001/atos",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "action": "DESPACHO",
+          "conteudo": "Intime-se.",
+          "fundamentacao": "CPC"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "action": "DESPACHO",
+          "lane": "PRIMEIRO_GRAU",
+          "status": "ASSINADO",
+          "processoId": 9001,
+          "providences": [
+            {
+              "code": "PROVIDENCIAR_PUBLICACAO",
+              "status": "DISPATCHED",
+              "targetQueueCode": "PUB:DESPACHO"
+            }
+          ],
+          "payload": {
+            "status": "ASSINADO"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "execute magistratura colegiado act",
+      "providerStates": [
+        {
+          "name": "magistratura colegiado act can be executed"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/magistratura/processos/9001/atos",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "action": "VOTO_COLEGIADO",
+          "voto": "Acompanho o relator.",
+          "fundamentacao": "fundamentacao colegiada",
+          "decisao": "NEGAR_PROVIMENTO"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "action": "VOTO_COLEGIADO",
+          "lane": "SEGUNDO_GRAU",
+          "status": "VOTO_REGISTRADO",
+          "processoId": 9001,
+          "providences": [
+            {
+              "code": "REMETER_COLEGIADO_OU_PLENARIO",
+              "status": "DISPATCHED",
+              "targetQueueCode": "COL:VOTO"
+            }
+          ],
+          "payload": {
+            "status": "VOTO_REGISTRADO"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "execute magistratura superior act",
+      "providerStates": [
+        {
+          "name": "magistratura superior act can be executed"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/magistratura/processos/9001/atos",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "action": "DECISAO_PLENARIA",
+          "votacao": "MAIORIA",
+          "ementa": "Tema constitucional fixado.",
+          "dispositivo": "Fixada a tese."
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "action": "DECISAO_PLENARIA",
+          "lane": "SUPERIOR",
+          "status": "DECISAO_PLENARIA_REGISTRADA",
+          "processoId": 9001,
+          "providences": [
+            {
+              "code": "PROVIDENCIAR_PUBLICACAO",
+              "status": "DISPATCHED",
+              "targetQueueCode": "SUP:PLENARIO"
+            }
+          ],
+          "payload": {
+            "status": "DECISAO_PLENARIA_REGISTRADA"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  }
+}

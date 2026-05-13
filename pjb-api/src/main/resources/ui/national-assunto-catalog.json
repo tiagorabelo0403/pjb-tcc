@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "id": "FAMILIA_SUCESSOES",
+      "colors": { "LIGHT": "#C2185B", "DARK": "#F48FB1" },
+      "icon": "heart",
+      "pattern": "solid",
+      "labels": {
+        "OUTRO": "Família & Sucessões",
+        "MAGISTRATURA": "Família & Sucessões",
+        "DEFENSORIA": "Família & Sucessões",
+        "ADVOCACIA": "Família & Sucessões"
+      },
+      "descriptions": {
+        "OUTRO": "Divórcio, guarda, alimentos, inventário, partilha, união estável e afins.",
+        "MAGISTRATURA": "Macrotema de família/sucessões. Útil para triagem de fluxos (audiência/estudo social/MP).",
+        "DEFENSORIA": "Priorize quando envolver crianças, violência doméstica e urgências alimentares.",
+        "ADVOCACIA": "Tema do processo (família/inventário). Ajuda a filtrar e organizar o acompanhamento."
+      },
+      "matchAny": [
+        "famil", "alimentos", "guarda", "visita", "divor", "união estável", "uniao estavel", "paternidade", "maternidade",
+        "invent", "partilha", "sucess", "curatela", "interdi", "tutela"
+      ]
+    },
+    {
+      "id": "PENAL",
+      "colors": { "LIGHT": "#6A1B9A", "DARK": "#CE93D8" },
+      "icon": "shield",
+      "pattern": "outline",
+      "labels": { "OUTRO": "Penal" },
+      "descriptions": { "OUTRO": "Inquérito, denúncia, medidas cautelares, execução penal, habeas corpus e afins." },
+      "matchAny": [
+        "penal", "inquer", "inqué", "denunc", "denún", "pris", "cautelar", "habeas", "execucao penal", "execução penal",
+        "lei maria da penha", "violencia", "violência", "flagrante", "audiencia de custodia", "audiência de custódia"
+      ]
+    },
+    {
+      "id": "CONSUMIDOR",
+      "colors": { "LIGHT": "#FF8F00", "DARK": "#FFD180" },
+      "icon": "shopping-bag",
+      "pattern": "solid",
+      "labels": { "OUTRO": "Consumidor" },
+      "descriptions": { "OUTRO": "Relações de consumo: cobrança, negativação, vício do produto, plano de saúde (consumo), etc." },
+      "matchAny": ["consum", "cdc", "negativ", "cobran", "cobrança", "produto", "servi", "serviço", "telefonia", "internet", "banco", "cartao", "cartão"]
+    },
+    {
+      "id": "EMPRESARIAL",
+      "colors": { "LIGHT": "#303F9F", "DARK": "#9FA8DA" },
+      "icon": "briefcase",
+      "pattern": "solid",
+      "labels": { "OUTRO": "Empresarial" },
+      "descriptions": { "OUTRO": "Societário, falência/recuperação, contratos empresariais, títulos de crédito, etc." },
+      "matchAny": ["empres", "societ", "falenc", "falên", "recupera", "recuperação", "contrato", "duplicata", "cheque", "nota promissoria", "nota promissória"]
+    },
+    {
+      "id": "FAZENDA_PUBLICA",
+      "colors": { "LIGHT": "#1565C0", "DARK": "#90CAF9" },
+      "icon": "landmark",
+      "pattern": "outline",
+      "labels": { "OUTRO": "Fazenda Pública" },
+      "descriptions": { "OUTRO": "Ações contra o Estado/Município, servidores, improbidade, administrativos em geral." },
+      "matchAny": ["fazenda", "estado", "municip", "municí", "servidor publico", "servidor público", "improb", "administr", "licita", "licitação"]
+    },
+    {
+      "id": "TRIBUTARIO_EXEC_FISCAL",
+      "colors": { "LIGHT": "#E64A19", "DARK": "#FFAB91" },
+      "icon": "receipt",
+      "pattern": "solid",
+      "labels": { "OUTRO": "Tributário / Execução Fiscal" },
+      "descriptions": { "OUTRO": "Dívida ativa, execução fiscal, embargos, compensação, tributos e taxas." },
+      "matchAny": ["tribut", "icms", "iptu", "ipva", "taxa", "execucao fiscal", "execução fiscal", "divida ativa", "dívida ativa", "embargos a execucao", "embargos à execução"]
+    },
+    {
+      "id": "PREVIDENCIARIO",
+      "colors": { "LIGHT": "#00796B", "DARK": "#80CBC4" },
+      "icon": "user",
+      "pattern": "solid",
+      "labels": { "OUTRO": "Previdenciário" },
+      "descriptions": { "OUTRO": "INSS, benefícios, auxílio, aposentadoria, pensão, BPC/LOAS." },
+      "matchAny": ["previd", "inss", "aposent", "pensão", "pensao", "auxilio", "auxílio", "bpc", "loas", "beneficio", "benefício"]
+    },
+    {
+      "id": "ELEITORAL",
+      "colors": { "LIGHT": "#00838F", "DARK": "#80DEEA" },
+      "icon": "vote",
+      "pattern": "outline",
+      "labels": { "OUTRO": "Eleitoral" },
+      "descriptions": { "OUTRO": "Registro de candidatura, propaganda, prestação de contas, crimes eleitorais." },
+      "matchAny": ["eleitor", "candid", "propaganda", "prestacao de contas", "prestação de contas", "tse", "tre", "zona eleitoral", "crime eleitoral"]
+    },
+    {
+      "id": "TRABALHISTA",
+      "colors": { "LIGHT": "#558B2F", "DARK": "#C5E1A5" },
+      "icon": "hammer",
+      "pattern": "solid",
+      "labels": { "OUTRO": "Trabalhista" },
+      "descriptions": { "OUTRO": "Verbas trabalhistas, rescisão, horas extras, FGTS, execução trabalhista." },
+      "matchAny": ["trabalh", "clt", "rescis", "fgts", "horas extras", "verbas", "reclamacao", "reclamação", "trt"]
+    },
+    {
+      "id": "AMBIENTAL",
+      "colors": { "LIGHT": "#43A047", "DARK": "#A5D6A7" },
+      "icon": "leaf",
+      "pattern": "solid",
+      "labels": { "OUTRO": "Ambiental" },
+      "descriptions": { "OUTRO": "Dano ambiental, licenciamento, desmatamento, multas, áreas protegidas." },
+      "matchAny": ["ambient", "desmat", "licenc", "licenç", "ibama", "multa", "polui", "poluição", "reserva", "app"]
+    },
+    {
+      "id": "INFANCIA_JUVENTUDE",
+      "colors": { "LIGHT": "#5E35B1", "DARK": "#B39DDB" },
+      "icon": "baby",
+      "pattern": "outline",
+      "labels": { "OUTRO": "Infância & Juventude" },
+      "descriptions": { "OUTRO": "Adoção, ECA, medidas protetivas, acolhimento institucional." },
+      "matchAny": ["infancia", "infância", "juvent", "eca", "adoção", "adoc", "acolh", "medida protetiva", "conselho tutelar"]
+    }
+  ]
+}

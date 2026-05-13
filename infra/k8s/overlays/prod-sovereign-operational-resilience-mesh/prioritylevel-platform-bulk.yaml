@@ -1,0 +1,16 @@
+apiVersion: flowcontrol.apiserver.k8s.io/v1
+kind: PriorityLevelConfiguration
+metadata:
+  name: pjb-platform-bulk
+spec:
+  type: Limited
+  limited:
+    nominalConcurrencyShares: 8
+    lendablePercent: 80
+    borrowingLimitPercent: 0
+    limitResponse:
+      type: Queue
+      queuing:
+        queues: 32
+        handSize: 6
+        queueLengthLimit: 20

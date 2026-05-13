@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: temurin
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+
+      - name: Build pjb-core
+        run: ./mvnw install -pl pjb-core -DskipTests -q
+
+      - name: Test pjb-api
+        run: ./mvnw test -pl pjb-api
+
+      - name: Upload Surefire reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-${{ github.run_id }}
+          path: pjb-api/target/surefire-reports/
+          retention-days: 7
+
+  guards-enforce:
+    name: Guards (enforce)
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: internal_reference_drift_guard
+        working-directory: scripts
+        run: python internal_reference_drift_guard.py
+
+      - name: transactional_hotspot_guard
+        working-directory: scripts
+        run: python transactional_hotspot_guard.py --fail-on-findings --fail-on-missing-budgets
+
+  guards-report:
+    name: Guards (report)
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: constructor_injection_guard
+        working-directory: scripts
+        run: python constructor_injection_guard.py
+
+      - name: runtime_concurrency_guard
+        working-directory: scripts
+        run: python runtime_concurrency_guard.py
+
+      - name: architecture_hygiene_guard
+        working-directory: scripts
+        run: python architecture_hygiene_guard.py
+
+      - name: Upload guard reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: guard-reports-${{ github.run_id }}
+          path: docs/reports/
+          retention-days: 30
+
+  docker-verify:
+    name: Docker Build Verify
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: pjb-backend:ci-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

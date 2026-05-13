@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pjb-backend-config
+data:
+  SPRING_DATASOURCE_URL: jdbc:postgresql://db-edge-rw.database-edge.svc.cluster.local:6432/pjb
+  PJB_DB_LOAD_BALANCER_MODE: DB_EDGE_TCP
+  PJB_DB_POOL_MAX: "24"
+  PJB_DB_POOL_MIN: "4"
+  PJB_DB_READ_ROUTING_ENABLED: "true"
+  PJB_DB_READ_ROUTING_STRICT: "true"
+  PJB_DB_READ_URL: jdbc:postgresql://db-edge-ro.database-edge.svc.cluster.local:6432/pjb
+  PJB_DB_READ_USER: pjb
+  PJB_DB_READ_POOL_MAX: "24"
+  PJB_DB_READ_POOL_MIN: "4"
+  PJB_DB_PREPARED_CACHE_QUERIES: "512"
+  PJB_DB_PREPARED_CACHE_MIB: "16"

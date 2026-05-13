@@ -1,0 +1,37 @@
+[
+  {
+    "code": "mni-mock",
+    "integration": "MNI",
+    "mode": "MOCK",
+    "enabled": true,
+    "notes": "Retorna protocolo sintético para integração com frontend-dev."
+  },
+  {
+    "code": "datajud-mock",
+    "integration": "DATAJUD",
+    "mode": "MOCK",
+    "enabled": true,
+    "notes": "Checkpoint e batch sintéticos."
+  },
+  {
+    "code": "renajud-mock",
+    "integration": "RENAJUD",
+    "mode": "MOCK",
+    "enabled": true,
+    "notes": "Consulta e restrição sem chamada externa real."
+  },
+  {
+    "code": "infojud-mock",
+    "integration": "INFOJUD",
+    "mode": "MOCK",
+    "enabled": true,
+    "notes": "Consulta fiscal sintética para homologação de UI."
+  },
+  {
+    "code": "sisbajud-mock",
+    "integration": "SISBAJUD",
+    "mode": "MOCK",
+    "enabled": true,
+    "notes": "Bloqueio e timeline sintéticos."
+  }
+]

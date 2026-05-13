@@ -1,0 +1,31 @@
+{
+  "round": 130,
+  "title": "api_edge_origin_governance",
+  "status": "completed_with_honest_validation",
+  "artifacts": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/configs/security/perimeter/ApiRequestOriginGovernanceProperties.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/configs/security/perimeter/ApiRequestOriginGovernanceMessages.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/configs/security/perimeter/ApiRequestOriginSignatureService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/configs/security/perimeter/ApiRequestOriginGovernanceFilter.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/configs/security/perimeter/ApiRequestOriginGovernanceFilterTest.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/governance/PjbOriginGovernanceWiringGuardTest.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/governance/PjbZeroTrustDataPlaneInfraGuardTest.java"
+  ],
+  "validation": {
+    "runtime_concurrency_guard": "passed",
+    "architecture_hygiene_guard": "passed",
+    "constructor_injection_guard": "passed",
+    "config_taxonomy_guard": "passed",
+    "transactional_hotspot_guard_fail_on_missing_budgets": "passed",
+    "repository_layout_guard": "passed",
+    "directed_javac_main_batch": "passed",
+    "directed_javac_test_batch": "passed",
+    "local_probe": "SIGNED_ATTESTATION|edge-app|ok"
+  },
+  "honesty": {
+    "maven_global_green": false,
+    "pjb_api_full_compile": false,
+    "docker_stable": false,
+    "git_validation": false
+  }
+}

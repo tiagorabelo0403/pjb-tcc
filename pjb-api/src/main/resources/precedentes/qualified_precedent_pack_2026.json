@@ -1,0 +1,95 @@
+[
+  {
+    "tribunal": "STF",
+    "trackType": "REPERCUSSAO_GERAL",
+    "identifier": "TEMA_69",
+    "title": "ICMS na base de cálculo do PIS/COFINS",
+    "branchCode": "TRIBUTARIO",
+    "officialUrl": "https://portal.stf.jus.br/repercussaogeral/teses.asp",
+    "keywords": [
+      "tema 69",
+      "pis",
+      "cofins",
+      "icms"
+    ],
+    "summary": "Tema qualificado do STF relevante para contencioso tributário e repetição de indébito em matéria de contribuições.",
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "tribunal": "STF",
+    "trackType": "REPERCUSSAO_GERAL",
+    "identifier": "TEMA_1127",
+    "title": "Coisa julgada e relações tributárias de trato continuado",
+    "branchCode": "TRIBUTARIO",
+    "officialUrl": "https://portal.stf.jus.br/repercussaogeral/teses.asp",
+    "keywords": [
+      "tema 1127",
+      "coisa julgada",
+      "trato continuado",
+      "tributario"
+    ],
+    "summary": "Tema qualificado do STF relevante para revisão de efeitos prospectivos e relação entre coisa julgada e alteração do estado do direito.",
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "tribunal": "STJ",
+    "trackType": "REPETITIVO",
+    "identifier": "TEMA_1007",
+    "title": "Honorários em exceção de pré-executividade",
+    "branchCode": "CIVIL",
+    "officialUrl": "https://www.stj.jus.br/sites/portalp/Precedentes/informacoes-gerais/recursos-repetitivos",
+    "keywords": [
+      "tema 1007",
+      "honorarios",
+      "excecao de pre executividade"
+    ],
+    "summary": "Tema repetitivo relevante para execução, exceção de pré-executividade e distribuição de ônus sucumbenciais.",
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "tribunal": "STJ",
+    "trackType": "REPETITIVO",
+    "identifier": "TEMA_1118",
+    "title": "Tema repetitivo previdenciário curado",
+    "branchCode": "PREVIDENCIARIO",
+    "officialUrl": "https://www.stj.jus.br/sites/portalp/Precedentes/informacoes-gerais/recursos-repetitivos",
+    "keywords": [
+      "tema repetitivo",
+      "previdenciario",
+      "stj"
+    ],
+    "summary": "Entrada de seed para precedentes previdenciários qualificados do STJ com atualização oficial por tema.",
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "tribunal": "TST",
+    "trackType": "SUMULA_OJ",
+    "identifier": "LIVRO_SUMULAS_OJS_PNS",
+    "title": "Livro de Súmulas, OJs e PNs do TST",
+    "branchCode": "TRABALHISTA",
+    "officialUrl": "https://www.tst.jus.br/livro-de-sumulas-ojs-e-pns",
+    "keywords": [
+      "tst",
+      "sumula",
+      "oj",
+      "precedente normativo"
+    ],
+    "summary": "Fonte consolidada do TST para súmulas, orientações jurisprudenciais e precedentes normativos trabalhistas.",
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "tribunal": "TSE",
+    "trackType": "SUMULA",
+    "identifier": "SUMULAS_TSE",
+    "title": "Súmulas do TSE",
+    "branchCode": "ELEITORAL",
+    "officialUrl": "https://www.tse.jus.br/legislacao/codigo-eleitoral/sumulas/sumulas-do-tse",
+    "keywords": [
+      "sumulas tse",
+      "inelegibilidade",
+      "registro de candidatura"
+    ],
+    "summary": "Fonte consolidada do TSE para entendimento sumulado em matéria eleitoral.",
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  }
+]

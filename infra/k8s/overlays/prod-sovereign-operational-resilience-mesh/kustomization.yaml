@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../prod-sovereign-governed-priority-mesh
+  - limitrange-operational-guards.yaml
+  - resourcequota-operational-storage.yaml
+  - prioritylevel-platform-critical.yaml
+  - prioritylevel-platform-workload.yaml
+  - prioritylevel-platform-bulk.yaml
+  - flowschema-pjb-service-accounts-critical.yaml
+  - flowschema-pjb-service-accounts-workload.yaml
+  - flowschema-pjb-service-accounts-bulk-events.yaml
+patches:
+  - path: patch-api-deployment.yaml
+  - path: patch-worker-deployment.yaml

@@ -1,0 +1,30 @@
+{
+  "round": 56,
+  "scope": "recursal_power_to_appeal_and_second_instance_track",
+  "newFoundationArtifacts": [
+    "RecursalPoderRecorrerEvento",
+    "RecursalPoderRecorrerBlueprint",
+    "RecursalSecondInstancePhase",
+    "RecursalSecondInstanceBlueprint"
+  ],
+  "requestFieldsAdded": [
+    "renunciaDireitoRecorrer",
+    "desistiuRecursoInterposto",
+    "aquiescenciaExpressaOuTacita",
+    "desejaSustentacaoOral"
+  ],
+  "responseFieldsAdded": [
+    "poderRecorrerBloqueado",
+    "motivoBloqueioPoderRecorrer"
+  ],
+  "workspaceTracksExpected": [
+    "PODER_RECORRER_BLOQUEADO",
+    "TRILHA_SEGUNDA_INSTANCIA_TRIBUNAL"
+  ],
+  "guards": {
+    "internal_reference_drift_guard": "OK",
+    "repository_layout_guard": "OK",
+    "runtime_concurrency_guard": "OK",
+    "config_taxonomy_guard": "OK"
+  }
+}

@@ -1,0 +1,7 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: pjb-sovereign-gateway
+spec:
+  controllerName: jus.br/pjb-sovereign-gateway
+  description: pjb soberano com trilha fapi2 e backend tls governado

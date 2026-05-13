@@ -1,0 +1,65 @@
+{
+  "consumer": {
+    "name": "PjbPeticionamentoConsumer"
+  },
+  "provider": {
+    "name": "PjbPeticionamentoProvider"
+  },
+  "interactions": [
+    {
+      "description": "open initial petition session",
+      "providerStates": [
+        {
+          "name": "initial petition session can be opened"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/peticionamento/inicial/sessao",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "modo": "INICIAL",
+          "tituloCaso": "Obrigacao de fazer",
+          "parteAutora": "Maria da Silva",
+          "parteRe": "Estado do Ceara",
+          "ramoDireito": "CIVIL",
+          "ritoProcessual": "PROCEDIMENTO_COMUM",
+          "fatos": [
+            "negativa administrativa"
+          ],
+          "pedidos": [
+            "tutela de urgencia"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "modoSolicitado": "INICIAL",
+          "modoResolvido": "INICIAL_ASSISTIDO",
+          "papelArquitetural": "PETICIONAMENTO_STUDIO",
+          "status": "READY",
+          "sessionKey": "sessao-ini-001",
+          "passosSugeridos": [
+            "validar documentos",
+            "revisar competencia"
+          ],
+          "workspace": {
+            "template": "peticao-inicial"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "4.0"
+    },
+    "pact-jvm": {
+      "version": "4.6.14"
+    }
+  }
+}

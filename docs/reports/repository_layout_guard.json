@@ -1,0 +1,34 @@
+{
+  "ok": true,
+  "violations": [],
+  "root_allowed_files": [
+    ".dockerignore",
+    ".editorconfig",
+    ".gitignore",
+    ".java-version",
+    ".sdkmanrc",
+    "Dockerfile",
+    "README.md",
+    "docker-compose.ha.yml",
+    "docker-compose.n8n.yml",
+    "docker-compose.read-replica.yml",
+    "docker-compose.yml",
+    "mvnw",
+    "mvnw.cmd",
+    "pom.phase1-aggregator.xml",
+    "pom.xml"
+  ],
+  "root_allowed_dirs": [
+    ".git",
+    ".github",
+    ".mvn",
+    ".zap",
+    "config",
+    "docs",
+    "infra",
+    "pjb-api",
+    "pjb-core",
+    "scripts",
+    "tooling"
+  ]
+}

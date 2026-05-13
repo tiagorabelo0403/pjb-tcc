@@ -1,0 +1,44 @@
+package com.tcc.pjb.backend.core.comunicacao.institucional.panel.application;
+
+import com.tcc.pjb.backend.core.comunicacao.institucional.entry.domain.InstitutionalProcessProfile;
+
+record InstitutionalOperationalDeskSnapshot(
+        InstitutionalProcessProfile processProfile,
+        String tribunal,
+        String comarca,
+        String unidadeCodigo,
+        String caixa,
+        String scope,
+        String branchAxis,
+        InstitutionalOperationalDeskUnitFingerprint fingerprint,
+        boolean legalInstitution,
+        boolean management,
+        boolean magistrateProfile,
+        boolean prisonFlow,
+        boolean sectionVisible,
+        boolean unitScopeBound,
+        boolean segregatedByTribunal,
+        boolean segregatedByComarca,
+        boolean segregatedByUnit,
+        boolean segregatedByVaraOrSpecialization,
+        boolean magistrateOverrideEnabled,
+        boolean secretariatWorkflowEnabled,
+        boolean assessorWorkflowEnabled,
+        boolean triageWorkflowEnabled,
+        boolean mandateWorkflowEnabled,
+        boolean communicationWorkflowEnabled,
+        boolean opinionWorkflowEnabled,
+        boolean calculatorWorkflowEnabled,
+        boolean batchWorkflowEnabled,
+        boolean distributionWorkflowEnabled,
+        boolean expeditionWorkflowEnabled,
+        boolean conclusionWorkflowEnabled,
+        boolean queueManagementWorkflowEnabled,
+        String judicialAxis,
+        String unitKind,
+        String organizationalScopeKey,
+        String territorialScopeKey,
+        String unitGroupingKey,
+        String assignmentBoundaryKey
+) {
+}

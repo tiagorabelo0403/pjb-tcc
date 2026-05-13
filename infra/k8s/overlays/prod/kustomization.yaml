@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+  - name: pjb-backend
+    newName: ghcr.io/pjb/pjb
+    newTag: latest
+resources:
+  - ../../base
+  - resourcequota.yaml
+  - limitrange.yaml
+  - default-deny.yaml
+  - api-network-policy.yaml
+  - worker-network-policy.yaml
+patches:
+  - path: patch-api.yaml
+  - path: patch-worker.yaml
+  - path: patch-ingress.yaml

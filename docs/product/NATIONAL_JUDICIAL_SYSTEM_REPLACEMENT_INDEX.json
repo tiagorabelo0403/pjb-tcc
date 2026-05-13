@@ -1,0 +1,88 @@
+{
+  "product": "AKASHIC-PJB OMEGA X",
+  "purpose": "National judicial system replacement capability index",
+  "legacySystems": [
+    "PJe",
+    "PJe 2.x",
+    "e-SAJ",
+    "eproc",
+    "Creta",
+    "Projudi"
+  ],
+  "existingAxes": [
+    {
+      "code": "substituicao-nacional",
+      "status": "present",
+      "primaryPath": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao",
+      "decision": "evolve existing national replacement bounded context"
+    },
+    {
+      "code": "interoperabilidade-judicial",
+      "status": "present",
+      "primaryPath": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial",
+      "decision": "extend existing connectors and capability registry"
+    },
+    {
+      "code": "mni",
+      "status": "present",
+      "primaryPath": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/mni",
+      "decision": "keep MNI as national interoperability spine"
+    },
+    {
+      "code": "secretaria",
+      "status": "present",
+      "primaryPath": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat",
+      "decision": "extend existing queue, agenda, topology and operational desk"
+    },
+    {
+      "code": "malha-recursal",
+      "status": "present",
+      "primaryPath": "pjb-api/src/main/java/com/tcc/pjb/backend/core/kernel/recursal",
+      "decision": "evolve existing state machine and workspace"
+    },
+    {
+      "code": "consulta-publica-profissional",
+      "status": "partial",
+      "primaryPath": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend",
+      "decision": "complete external journeys without adding parallel controllers"
+    },
+    {
+      "code": "chave-processo-documento",
+      "status": "present",
+      "primaryPath": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/accesskey",
+      "decision": "implement revocable audited access keys using existing security and secrecy contexts"
+    },
+    {
+      "code": "readiness-tribunal-producao",
+      "status": "present",
+      "primaryPath": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/readiness",
+      "decision": "evaluate production readiness using the existing national replacement capability catalog"
+    },
+    {
+      "code": "indisponibilidade-prazos",
+      "status": "present",
+      "primaryPath": "pjb-api/src/main/java/com/tcc/pjb/backend/core/observability/unavailability",
+      "decision": "materialize external outage impact over deadlines and certificates"
+    },
+    {
+      "code": "compatibilidade-mni",
+      "status": "present",
+      "primaryPath": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/mni/compatibility",
+      "decision": "keep MNI readiness inside the existing MNI integration spine"
+    },
+    {
+      "code": "portal-publico-capabilities",
+      "status": "present",
+      "primaryPath": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/publicaccess",
+      "decision": "declare public portal capabilities without creating parallel frontend controllers"
+    }
+  ],
+  "nonDuplicationRules": [
+    "Do not create another national replacement package outside core.plataforma.substituicao",
+    "Do not create legacy connectors outside integration.judicial or integration.mni",
+    "Do not create institutional routes outside InstitutionalApiRoutes",
+    "Do not create recursal flows outside core.kernel.recursal",
+    "Do not create secretariat flows outside service.secretariat",
+    "Do not add generated artifacts, logs, caches or build outputs to the repository"
+  ]
+}

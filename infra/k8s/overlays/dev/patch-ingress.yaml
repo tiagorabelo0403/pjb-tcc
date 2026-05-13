@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pjb-api
+spec:
+  tls:
+    - hosts:
+        - pjb.dev.local
+      secretName: pjb-api-tls
+  rules:
+    - host: pjb.dev.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: pjb-api
+                port:
+                  number: 80

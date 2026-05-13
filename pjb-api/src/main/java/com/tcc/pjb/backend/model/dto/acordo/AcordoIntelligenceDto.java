@@ -1,0 +1,54 @@
+package com.tcc.pjb.backend.model.dto.acordo;
+
+import java.util.List;
+import com.tcc.pjb.backend.core.kernel.advisory.InstitutionalGovernanceContextReport;
+import com.tcc.pjb.backend.core.kernel.advisory.KernelAdvisoryTelemetry;
+import com.tcc.pjb.backend.core.kernel.advisory.KernelOperationalGovernanceReport;
+import com.tcc.pjb.backend.core.kernel.advisory.NegotiationApprovalMatrixReport;
+import com.tcc.pjb.backend.core.kernel.advisory.NegotiationChannelGovernanceReport;
+import com.tcc.pjb.backend.core.kernel.advisory.NegotiationExplainabilityReport;
+import com.tcc.pjb.backend.core.kernel.advisory.NegotiationChatDigestReport;
+import com.tcc.pjb.backend.core.kernel.advisory.NegotiationMemoryReport;
+import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialDossierReport;
+import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialStrategyReport;
+import com.tcc.pjb.backend.core.kernel.advisory.SettlementAdvisoryReport;
+import com.tcc.pjb.backend.core.kernel.governance.InstitutionalPolicySnapshotReport;
+import com.tcc.pjb.backend.core.kernel.governance.KernelDecisionMetricsReport;
+import com.tcc.pjb.backend.core.kernel.governance.KernelRiskEscalationReport;
+import com.tcc.pjb.backend.core.kernel.governance.NegotiationMessageDecision;
+import com.tcc.pjb.backend.core.procedural.ProceduralRoutingReport;
+import com.tcc.pjb.backend.core.procedural.ProceduralSubmissionBlueprintReport;
+import com.tcc.pjb.backend.core.procedural.ProceduralConnectorExecutionReport;
+import com.tcc.pjb.backend.model.dto.intelligence.JudgeAgreementApprovalPromptResponse;
+import com.tcc.pjb.backend.model.dto.intelligence.ProcessOutcomePredictionResponse;
+import com.tcc.pjb.backend.model.dto.intelligence.QualifiedThemeAlertResponse;
+
+public record AcordoIntelligenceDto(
+        Long processoId,
+        Long propostaId,
+        String numeroUnificado,
+        String ritoName,
+        SettlementAdvisoryReport settlementAdvisory,
+        InstitutionalGovernanceContextReport institutionalGovernanceContext,
+        NegotiationMemoryReport negotiationMemory,
+        ProcessMaterialDossierReport materialDossier,
+        ProcessMaterialStrategyReport materialStrategy,
+        ProceduralRoutingReport proceduralRouting,
+        ProceduralSubmissionBlueprintReport submissionBlueprint,
+        ProceduralConnectorExecutionReport connectorExecution,
+        NegotiationExplainabilityReport negotiationExplainability,
+        KernelOperationalGovernanceReport kernelOperationalGovernance,
+        NegotiationChatDigestReport negotiationChatDigest,
+        NegotiationApprovalMatrixReport negotiationApprovalMatrix,
+        NegotiationChannelGovernanceReport negotiationChannelGovernance,
+        InstitutionalPolicySnapshotReport institutionalPolicySnapshot,
+        KernelDecisionMetricsReport kernelDecisionMetrics,
+        KernelRiskEscalationReport kernelRiskEscalation,
+        NegotiationMessageDecision governedMessageDecision,
+        KernelAdvisoryTelemetry advisoryTelemetry,
+        ProcessOutcomePredictionResponse outcomePrediction,
+        QualifiedThemeAlertResponse qualifiedThemes,
+        JudgeAgreementApprovalPromptResponse judgeAgreementApprovalPrompt,
+        List<String> strategicFocus
+) {
+}

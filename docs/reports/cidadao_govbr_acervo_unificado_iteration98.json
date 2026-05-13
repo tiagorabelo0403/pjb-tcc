@@ -1,0 +1,19 @@
+{
+  "round": 98,
+  "slug": "cidadao_govbr_acervo_unificado",
+  "status": "materializado",
+  "surface": "/api/v1/cidadao/govbr/acervo-unificado",
+  "artifacts": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/cidadao/govbr/CidadaoGovBrAcervoUnificadoResponse.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/service/cidadao/govbr/GovBrCitizenPanelLabels.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/service/cidadao/govbr/CidadaoGovBrAcervoUnificadoService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/controller/cidadao/CidadaoGovBrAcervoUnificadoController.java"
+  ],
+  "validation": {
+    "runtime_concurrency_guard": "passed",
+    "maven_global": "not_claimed",
+    "pjb_api_global_compile": "not_claimed",
+    "docker_stable": "not_claimed",
+    "git_real": "not_available"
+  }
+}

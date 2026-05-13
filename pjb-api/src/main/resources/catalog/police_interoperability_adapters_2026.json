@@ -1,0 +1,318 @@
+{
+  "PJE_MNI_OPERACIONAL": {
+    "displayName": "PJe + MNI Operacional",
+    "partnerSystem": "PJE_MNI",
+    "partnerLane": "JUDICIARIO_CNJ",
+    "scope": [
+      "judiciario",
+      "ministerio_publico",
+      "delegado",
+      "cartorio_policial"
+    ],
+    "requiredFunctions": [
+      "PROTOCOLO_PECA_INVESTIGATIVA",
+      "REMESSA_JUDICIARIO",
+      "REMESSA_MP",
+      "PEDIDO_MEDIDA_CAUTELAR",
+      "MEDIDA_PROTETIVA",
+      "COMUNICACAO_FLAGRANTE",
+      "CONSULTA_PROCESSO",
+      "SNAPSHOT_PROCESSO",
+      "EVENTOS_PROCESSUAIS",
+      "INTIMACOES_COMUNICACOES",
+      "ANEXOS_HASH_E_AUTENTICIDADE"
+    ],
+    "workflowBackbone": [
+      "preflight_protocolo",
+      "assinatura_e_integridade",
+      "submissao_remessa",
+      "polling_eventos",
+      "ack_comunicacoes",
+      "retentativa_contingencia"
+    ],
+    "evidenceSupport": [
+      "PDF",
+      "IMAGEM",
+      "AUDIO",
+      "VIDEO",
+      "XML"
+    ],
+    "securityProfile": [
+      "oauth_ou_bearer",
+      "assinatura_integridade",
+      "auditoria_protocolo",
+      "certificado_quando_exigido"
+    ],
+    "pjbAbsorptionPlan": [
+      "envio_medida_cautelar_e_protetiva",
+      "remessa_inquerito_para_judiciario",
+      "sync_andamentos_e_eventos",
+      "recebimento_de_intimacoes_e_comunicacoes"
+    ],
+    "officialSignals": [
+      {
+        "title": "Modelo Nacional de Interoperabilidade",
+        "year": 2026,
+        "sourceType": "CNJ"
+      },
+      {
+        "title": "Escritório Digital utiliza MNI para buscar intimações e comunicações",
+        "year": 2015,
+        "sourceType": "CNJ"
+      },
+      {
+        "title": "PJe permite assinatura digital e inclusão de peças processuais",
+        "year": 2021,
+        "sourceType": "CNJ"
+      }
+    ]
+  },
+  "EPROC_OPERACIONAL": {
+    "displayName": "eproc Operacional",
+    "partnerSystem": "EPROC",
+    "partnerLane": "JUDICIARIO_TRF4_E_TRIBUNAIS_ADERENTES",
+    "scope": [
+      "judiciario",
+      "delegado",
+      "ministerio_publico"
+    ],
+    "requiredFunctions": [
+      "PROTOCOLO_PECA_INVESTIGATIVA",
+      "CONSULTA_PROCESSO",
+      "SNAPSHOT_PROCESSO",
+      "EVENTOS_PROCESSUAIS",
+      "INTIMACOES_COMUNICACOES",
+      "CIENCIA_INTIMACOES",
+      "PRAZOS",
+      "DOWNLOAD_INTEGRA_AUTOS"
+    ],
+    "workflowBackbone": [
+      "protocolo_tribunal_aderente",
+      "sincronizacao_andamentos",
+      "consulta_prazos",
+      "baixa_documentos",
+      "contingencia_por_fila"
+    ],
+    "evidenceSupport": [
+      "PDF",
+      "IMAGEM",
+      "AUDIO",
+      "VIDEO"
+    ],
+    "securityProfile": [
+      "assinatura_eletronica",
+      "auditoria_download",
+      "controle_sigilo"
+    ],
+    "pjbAbsorptionPlan": [
+      "consulta_prazos_e_ciencia",
+      "integra_autos_e_download_controlado",
+      "sync_eventos_e_remessa"
+    ],
+    "officialSignals": [
+      {
+        "title": "eproc atende à tramitação policial e foi pensado para interoperabilidade",
+        "year": 2017,
+        "sourceType": "TRF4"
+      },
+      {
+        "title": "eproc app oferece consulta de processos e prazos, ciência em intimações, íntegra e baixa de documentos",
+        "year": 2024,
+        "sourceType": "TRF4"
+      }
+    ]
+  },
+  "ESAJ_OPERACIONAL": {
+    "displayName": "e-SAJ Operacional",
+    "partnerSystem": "ESAJ",
+    "partnerLane": "JUDICIARIO_SAJ",
+    "scope": [
+      "judiciario",
+      "delegado",
+      "ministerio_publico",
+      "procuradoria"
+    ],
+    "requiredFunctions": [
+      "PETICIONAMENTO_INICIAL",
+      "PETICIONAMENTO_INTERMEDIARIO",
+      "CONSULTA_PROCESSO",
+      "VISUALIZACAO_AUTOS",
+      "CAIXA_POSTAL_COMUNICACOES",
+      "INCIDENTES_APENSOS_VINCULOS",
+      "ANEXOS_HASH_E_AUTENTICIDADE"
+    ],
+    "workflowBackbone": [
+      "peticionamento_webservice",
+      "consulta_autos",
+      "sincronizacao_incidentes_vinculos",
+      "retorno_caixa_postal"
+    ],
+    "evidenceSupport": [
+      "PDF",
+      "IMAGEM",
+      "AUDIO",
+      "VIDEO"
+    ],
+    "securityProfile": [
+      "certificado_digital_quando_exigido",
+      "web_signer_quando_exigido",
+      "controle_sigilo_por_senha_e_perfil"
+    ],
+    "pjbAbsorptionPlan": [
+      "peticionamento_inicial_e_intermediario",
+      "consulta_autos_e_vinculos",
+      "retorno_notificacoes_caixa_postal"
+    ],
+    "officialSignals": [
+      {
+        "title": "Portal e-SAJ facilita a troca de informações por serviços web",
+        "year": 2026,
+        "sourceType": "TJSP"
+      },
+      {
+        "title": "Peticionamento eletrônico de iniciais e intermediárias no e-SAJ",
+        "year": 2026,
+        "sourceType": "TJSP"
+      },
+      {
+        "title": "Consulta do e-SAJ exibe visualização de autos e vínculos processuais",
+        "year": 2026,
+        "sourceType": "TJSP"
+      }
+    ]
+  },
+  "EPOL_FEDERAL_OPERACIONAL": {
+    "displayName": "ePol Federal Operacional",
+    "partnerSystem": "EPOL",
+    "partnerLane": "POLICIA_FEDERAL",
+    "scope": [
+      "delegado_federal",
+      "escrivao",
+      "cartorio_policial",
+      "judiciario",
+      "ministerio_publico"
+    ],
+    "requiredFunctions": [
+      "AUTUACAO_INQUERITO_ELETRONICO",
+      "PECAS_INVESTIGATIVAS_MULTIMIDIA",
+      "GESTAO_DILIGENCIAS",
+      "REPRESENTACOES_POLICIAIS",
+      "REMESSA_JUDICIARIO",
+      "REMESSA_MP",
+      "INTEGRACAO_BASES_EXTERNAS",
+      "ANALYTICS_INQUERITOS",
+      "CADEIA_CUSTODIA",
+      "ASSINATURA_E_AUTENTICIDADE"
+    ],
+    "workflowBackbone": [
+      "instauracao_digital",
+      "narrativa_evidencias",
+      "despacho_cartorio_policial",
+      "representacao_ou_relatorio",
+      "remessa_digital",
+      "painel_bi"
+    ],
+    "evidenceSupport": [
+      "PDF",
+      "IMAGEM",
+      "AUDIO",
+      "VIDEO"
+    ],
+    "securityProfile": [
+      "assinatura_integridade",
+      "auditabilidade",
+      "integracao_controlada_com_parceiros"
+    ],
+    "pjbAbsorptionPlan": [
+      "instauracao_e_relatorio_nato_digital",
+      "remessa_mp_judiciario",
+      "painel_bi_inqueritos",
+      "fluxo_cartorio_policial"
+    ],
+    "officialSignals": [
+      {
+        "title": "ePol implementa o inquérito policial eletrônico e integra-se a Judiciário e MP",
+        "year": 2016,
+        "sourceType": "MJSP"
+      },
+      {
+        "title": "PF passou a criar e enviar inquéritos digitais via ePol",
+        "year": 2019,
+        "sourceType": "PF"
+      },
+      {
+        "title": "Painel de BI da PF com número de inquéritos em andamento",
+        "year": 2024,
+        "sourceType": "PF"
+      }
+    ]
+  },
+  "SINESP_PPE_OPERACIONAL": {
+    "displayName": "Sinesp PPE Operacional",
+    "partnerSystem": "SINESP_PPE",
+    "partnerLane": "POLICIA_CIVIL_ECOSSISTEMA_FEDERADO",
+    "scope": [
+      "delegado",
+      "escrivao",
+      "cartorio_policial",
+      "judiciario",
+      "ministerio_publico"
+    ],
+    "requiredFunctions": [
+      "REGISTRO_BO_INTEGRADO",
+      "DESPACHO_HOMOLOGATORIO",
+      "LAVRATURA_TCO_BOC_IP_APF_AIAI_AAFAI",
+      "PECAS_PRE_PREENCHIDAS",
+      "GESTAO_ANEXOS",
+      "GEOREFERENCIAMENTO",
+      "CONSULTA_BASES_EXTERNAS",
+      "PAINEL_ALERTAS",
+      "GESTAO_CARTORARIA",
+      "COMUNICACAO_FLAGRANTE",
+      "PEDIDO_MEDIDA_CAUTELAR",
+      "MEDIDA_PROTETIVA",
+      "ASSINATURA_ELETRONICA"
+    ],
+    "workflowBackbone": [
+      "registro_integrado",
+      "aproveitamento_dados_bo",
+      "lavratura_procedimentos",
+      "envio_eletronico_ppe_x_pje",
+      "gestao_cartoraria_e_alertas"
+    ],
+    "evidenceSupport": [
+      "PDF",
+      "IMAGEM",
+      "AUDIO",
+      "VIDEO"
+    ],
+    "securityProfile": [
+      "assinatura_eletronica",
+      "compartilhamento_federado_controlado",
+      "auditoria_cartoraria"
+    ],
+    "pjbAbsorptionPlan": [
+      "registro_integrado_de_origem",
+      "preenchimento_pre_populado",
+      "georreferenciamento_e_alertas",
+      "ppe_x_pje_para_cautelares_e_flagrantes"
+    ],
+    "officialSignals": [
+      {
+        "title": "Sinesp PPE registra ocorrências e lavra TCO, BOC, IP, APF, AIAI e AAFAI",
+        "year": 2025,
+        "sourceType": "MJSP"
+      },
+      {
+        "title": "Sinesp PPE oferece peças pré-preenchidas, anexos, georreferenciamento e consultas a bases externas",
+        "year": 2025,
+        "sourceType": "MJSP"
+      },
+      {
+        "title": "Sinesp PPE envia flagrantes e pedidos cautelares/protetivos por integração PPE x PJe",
+        "year": 2025,
+        "sourceType": "MJSP"
+      }
+    ]
+  }
+}

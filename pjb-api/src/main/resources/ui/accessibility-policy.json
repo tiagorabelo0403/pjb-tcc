@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "model": {
+    "bias": -1.25,
+    "k": 1.0,
+    "minScoreToSuggest": 320,
+    "maxReasons": 6
+  },
+  "presetPriority": [
+    "HIGH_CONTRAST",
+    "SCREEN_READER_OPTIMIZED",
+    "LARGE_TEXT",
+    "REDUCED_MOTION",
+    "KEYBOARD_ONLY",
+    "DEFAULT"
+  ],
+  "signalWeights": {
+    "FORCED_COLORS": 2.40,
+    "PREFERS_REDUCED_MOTION": 1.30,
+    "SCREEN_READER_HINT": 2.70,
+    "ZOOM_FREQUENT": 1.05,
+    "HIGH_CONTRAST_TOGGLES": 0.85,
+    "FONT_SCALE_HIGH": 1.25,
+    "KEYBOARD_DOMINANT": 1.10
+  },
+  "reasonCatalog": {
+    "FORCED_COLORS": "Sistema indica forced-colors/alto contraste no SO ou navegador.",
+    "PREFERS_REDUCED_MOTION": "Preferência de redução de movimento (prefers-reduced-motion).",
+    "SCREEN_READER_HINT": "Indício de uso de leitor de tela (sinal não sensível).",
+    "ZOOM_FREQUENT": "Zoom ajustado frequentemente (eventos agregados).",
+    "HIGH_CONTRAST_TOGGLES": "Alto contraste foi acionado manualmente em ocasiões recentes.",
+    "FONT_SCALE_HIGH": "Escala de fonte acima do padrão.",
+    "KEYBOARD_DOMINANT": "Navegação predominantemente por teclado (baixo uso de mouse)."
+  }
+}

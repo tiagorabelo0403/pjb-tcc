@@ -1,0 +1,88 @@
+[
+  {
+    "actId": "CNJ_RES_121_2010",
+    "title": "Resolução CNJ nº 121/2010",
+    "branchCode": "PROCESSUAL",
+    "artifactType": "RESOLUCAO",
+    "sourceUrl": "https://atos.cnj.jus.br/atos/detalhar/92",
+    "keywords": [
+      "consulta processual",
+      "publicidade processual",
+      "dados basicos do processo"
+    ],
+    "summary": "Disciplina a disponibilização de dados básicos dos processos na internet e orienta limites de publicidade processual.",
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "actId": "CNJ_RES_335_2020",
+    "title": "Resolução CNJ nº 335/2020",
+    "branchCode": "ADMINISTRATIVO",
+    "artifactType": "RESOLUCAO",
+    "sourceUrl": "https://www.cnj.jus.br/tecnologia-da-informacao-e-comunicacao/atos-normativos-de-tic/",
+    "keywords": [
+      "pdpj",
+      "pje",
+      "governanca digital",
+      "interoperabilidade"
+    ],
+    "summary": "Institui política pública para governança e gestão do processo judicial eletrônico e integração digital do Judiciário.",
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "actId": "CNJ_RES_345_2020",
+    "title": "Resolução CNJ nº 345/2020",
+    "branchCode": "PROCESSUAL",
+    "artifactType": "RESOLUCAO",
+    "sourceUrl": "https://atos.cnj.jus.br/atos/detalhar/3512",
+    "keywords": [
+      "juizo 100 digital",
+      "ato processual eletronico",
+      "processo digital"
+    ],
+    "summary": "Regulamenta o Juízo 100% Digital e orienta a prática de atos processuais por meio eletrônico.",
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "actId": "CNJ_RES_354_2020",
+    "title": "Resolução CNJ nº 354/2020",
+    "branchCode": "PROCESSUAL",
+    "artifactType": "RESOLUCAO",
+    "sourceUrl": "https://atos.cnj.jus.br/atos/detalhar/3579",
+    "keywords": [
+      "cumprimento digital",
+      "videoconferencia",
+      "ordem judicial",
+      "ato processual"
+    ],
+    "summary": "Disciplina cumprimento digital de ato processual e ordem judicial, inclusive audiências e atos telepresenciais.",
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "actId": "CNJ_RES_455_2022",
+    "title": "Resolução CNJ nº 455/2022",
+    "branchCode": "PROCESSUAL",
+    "artifactType": "RESOLUCAO",
+    "sourceUrl": "https://atos.cnj.jus.br/atos/detalhar/4509",
+    "keywords": [
+      "portal de servicos",
+      "djen",
+      "domicilio judicial eletronico"
+    ],
+    "summary": "Institui o Portal de Serviços do Poder Judiciário e regulamenta DJEN e Domicílio Judicial Eletrônico.",
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "actId": "CNJ_RES_569_2024",
+    "title": "Resolução CNJ nº 569/2024",
+    "branchCode": "PROCESSUAL",
+    "artifactType": "RESOLUCAO",
+    "sourceUrl": "https://atos.cnj.jus.br/files/original1654112024081566be32b3134ef.pdf",
+    "keywords": [
+      "djen",
+      "domicilio judicial",
+      "comunicacao processual"
+    ],
+    "summary": "Ajusta a disciplina do Domicílio Judicial Eletrônico e do DJEN dentro da estratégia da PDPJ-Br.",
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  }
+]

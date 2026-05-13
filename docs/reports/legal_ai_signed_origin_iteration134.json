@@ -1,0 +1,41 @@
+{
+  "round": 134,
+  "scope": "legal_ai_signed_origin_boundary",
+  "artifacts": [
+    "pjb-api/src/test/java/com/tcc/pjb/backend/ai/juridica/api/LegalAiSignedOriginTestSupport.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/ai/juridica/api/LegalAiSignedOriginGovernanceIT.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/contracts/provider/LegalAiSignedOriginProviderContractTest.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/ai/juridica/conversation/JuridicaLegalAiSignedOriginRound134ArchitectureTest.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/PjbLegalAiSignedOriginContractCoverageArchitectureTest.java",
+    "pjb-api/src/test/resources/pacts/provider/PjbLegalAiSignedOriginConsumer-PjbLegalAiSignedOriginProvider.json",
+    "pjb-api/src/main/resources/application.yml"
+  ],
+  "boundaryRoutes": [
+    "/api/ai/legal/minuta",
+    "/api/ai/legal/grounding/check",
+    "/api/ai/legal/conversation"
+  ],
+  "signedAttestation": {
+    "accepted": true,
+    "trustedOriginId": "edge-app",
+    "requiredHeaders": [
+      "X-PJB-Origin-Id",
+      "X-PJB-Timestamp",
+      "X-PJB-Body-Hash",
+      "X-PJB-Signature"
+    ],
+    "optionalHeaders": [
+      "X-PJB-Signature-Alg"
+    ]
+  },
+  "rejections": [
+    "signed_origin_id_required",
+    "signed_origin_signature_invalid",
+    "signed_origin_timestamp_invalid",
+    "BODY_HASH_MISMATCH"
+  ],
+  "boundaryOrdering": {
+    "requestBodyHashFilterBeforeOriginGovernance": true,
+    "bodyHashMismatchRejectedByHashFilter": true
+  }
+}

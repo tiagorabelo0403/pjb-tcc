@@ -1,0 +1,77 @@
+{
+  "suiteLabel": "Legal MCP benchmark suite",
+  "suiteIdPrefix": "LEGAL_MCP_BENCHMARK_",
+  "templates": {
+    "baselineProcessualCore": {
+      "caseId": "MCP_BASELINE_PROCESSUAL_CORE",
+      "label": "Baseline processual core",
+      "description": "Tarefas jurídicas com plano estruturado devem manter eixo processual explícito.",
+      "selectionModeWhenPromptInjection": "ISOLATED_DOCUMENTAL_FENCE",
+      "selectionModeWhenSigilo": "PINNED_STRICT_TRUST_CHAIN",
+      "requiredPinnedServersWhenProcessual": [
+        "MCP_PROCESSUAL"
+      ],
+      "requiredSafeguards": [
+        "READ_ONLY_ONLY",
+        "TOOL_ANNOTATIONS_REQUIRED"
+      ],
+      "minEvidenceBudget": 3,
+      "maxServerBudgetWhenPromptInjection": 2
+    },
+    "attachmentDocumentalLane": {
+      "caseId": "MCP_ATTACHMENT_DOCUMENTAL_LANE",
+      "label": "Attachment documental lane",
+      "description": "Anexos exigem materialização documental com trilha de evidência segura.",
+      "requiredPinnedServers": [
+        "MCP_DOCUMENTAL"
+      ],
+      "requiredSafeguards": [
+        "CITATION_FIRST_EVIDENCE_TRAIL"
+      ],
+      "requiredSafeguardsWhenPromptInjection": [
+        "DOCUMENTAL_QUARANTINE_FENCE"
+      ],
+      "minEvidenceBudget": 4,
+      "maxServerBudgetWhenPromptInjection": 2
+    },
+    "sigiloTrustChain": {
+      "caseId": "MCP_SIGILO_TRUST_CHAIN",
+      "label": "Strict sigilo trust chain",
+      "description": "Sigilo forte exige pinagem, contexto assinado e confiança congelada.",
+      "expectedSelectionMode": "PINNED_STRICT_TRUST_CHAIN",
+      "requiredPinnedServers": [
+        "MCP_PROCESSUAL"
+      ],
+      "requiredSafeguards": [
+        "SIGNED_CONTEXT_REQUIRED"
+      ],
+      "minEvidenceBudget": 5,
+      "maxServerBudget": 3,
+      "expectedTrustMode": "SIGNED_CONTEXT_AND_AUTHORITY_FROZEN"
+    },
+    "injectionFence": {
+      "caseId": "MCP_INJECTION_SURFACE_REDUCTION",
+      "label": "Injection surface reduction",
+      "description": "Prompt injection ou contexto em quarentena exigem superfície mínima e fence documental.",
+      "expectedSelectionMode": "ISOLATED_DOCUMENTAL_FENCE",
+      "requiredPinnedServers": [
+        "MCP_DOCUMENTAL"
+      ],
+      "requiredSafeguards": [
+        "DOCUMENTAL_QUARANTINE_FENCE"
+      ],
+      "minEvidenceBudget": 2,
+      "maxServerBudget": 2
+    },
+    "authorityDiscovery": {
+      "caseId": "MCP_AUTHORITY_DISCOVERY",
+      "label": "Authority discovery",
+      "description": "Pareceres, decisões e minutas profundas precisam navegar legislação ou jurisprudência conforme o caso.",
+      "selectionModeWhenDiscoveryAllowed": "DISCOVERY_THEN_PIN",
+      "requiredSafeguards": [
+        "CITATION_FIRST_EVIDENCE_TRAIL"
+      ],
+      "minEvidenceBudget": 5
+    }
+  }
+}

@@ -1,0 +1,65 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: pjb-worker
+  annotations:
+    scaledobject.keda.sh/transfer-hpa-ownership: "true"
+spec:
+  scaleTargetRef:
+    name: pjb-worker
+  pollingInterval: 15
+  cooldownPeriod: 240
+  minReplicaCount: 2
+  maxReplicaCount: 16
+  fallback:
+    failureThreshold: 3
+    replicas: 3
+    behavior: currentReplicasIfHigher
+  advanced:
+    restoreToOriginalReplicaCount: false
+    horizontalPodAutoscalerConfig:
+      name: keda-hpa-pjb-worker
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          policies:
+            - type: Percent
+              value: 100
+              periodSeconds: 60
+            - type: Pods
+              value: 2
+              periodSeconds: 60
+          selectPolicy: Max
+        scaleDown:
+          stabilizationWindowSeconds: 600
+          policies:
+            - type: Percent
+              value: 20
+              periodSeconds: 60
+          selectPolicy: Max
+  triggers:
+    - type: prometheus
+      name: outbox-backlog
+      metricType: AverageValue
+      metadata:
+        serverAddress: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        query: sum(pjb_outbox_pending{namespace="pjb",pod=~"pjb-worker-.*"})
+        threshold: "1500"
+        activationThreshold: "250"
+        ignoreNullValues: "false"
+    - type: prometheus
+      name: workitems-pending
+      metricType: AverageValue
+      metadata:
+        serverAddress: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        query: sum(pjb_process_business_workitems_pendentes{namespace="pjb",pod=~"pjb-worker-.*"})
+        threshold: "800"
+        activationThreshold: "100"
+        ignoreNullValues: "false"
+    - type: cron
+      name: institutional-window-floor
+      metadata:
+        timezone: America/Fortaleza
+        start: 0 6 * * 1-5
+        end: 0 20 * * 1-5
+        desiredReplicas: "3"

@@ -1,0 +1,13 @@
+# Cluster de prazos e calendário para recuperação de compile.
+pjb-api/src/main/java/com/tcc/pjb/backend/core/prazos/application/PrazoApplicationService.java
+pjb-api/src/main/java/com/tcc/pjb/backend/core/prazos/calculo/PrazosEngine.java
+pjb-api/src/main/java/com/tcc/pjb/backend/core/prazos/calendario/CalendarioForenseEntry.java
+pjb-api/src/main/java/com/tcc/pjb/backend/core/prazos/calendario/CalendarioForenseRepository.java
+pjb-api/src/main/java/com/tcc/pjb/backend/core/prazos/calendario/CalendarioForenseSeeder.java
+pjb-api/src/main/java/com/tcc/pjb/backend/core/prazos/auditoria/PrazoAuditTrail.java
+pjb-api/src/main/java/com/tcc/pjb/backend/core/prazos/auditoria/PrazoAuditTrailService.java
+pjb-api/src/main/java/com/tcc/pjb/backend/core/prazos/policy/PrazoInteligenteService.java
+pjb-api/src/main/java/com/tcc/pjb/backend/core/prazos/policy/PrazoPolicyRegistry.java
+pjb-api/src/main/java/com/tcc/pjb/backend/core/prazos/policy/PrazoParser.java
+pjb-api/src/main/java/com/tcc/pjb/backend/controller/admin/AdminPrazoController.java
+pjb-api/src/main/java/com/tcc/pjb/backend/service/PrazoService.java

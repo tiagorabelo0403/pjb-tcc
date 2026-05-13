@@ -1,0 +1,155 @@
+{
+  "consumer": {
+    "name": "PjbNotificationConsumer"
+  },
+  "provider": {
+    "name": "PjbNotificationProvider"
+  },
+  "interactions": [
+    {
+      "description": "load notification preference",
+      "providerStates": [
+        {
+          "name": "notification preference can be loaded"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/notificacoes/preferencias/usuarios/77"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "usuarioId": 77,
+          "allowEmail": true,
+          "allowPush": true,
+          "allowWhatsapp": false,
+          "allowArDigital": false,
+          "allowWebhook": false,
+          "allowDigest": true,
+          "onlyHighPriority": false,
+          "antiSpamWindowMinutes": 30,
+          "pushEndpoint": "https://push.pjb.test/device/77",
+          "whatsappNumber": null,
+          "arDigitalAddress": null,
+          "webhookUrl": null
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "update notification preference",
+      "providerStates": [
+        {
+          "name": "notification preference can be updated"
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "path": "/api/v1/notificacoes/preferencias/usuarios/77",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "allowEmail": true,
+          "allowPush": false,
+          "allowWhatsapp": true,
+          "allowArDigital": false,
+          "allowWebhook": true,
+          "allowDigest": false,
+          "onlyHighPriority": true,
+          "antiSpamWindowMinutes": 45,
+          "pushEndpoint": "https://push.pjb.test/device/77",
+          "whatsappNumber": "+5585999999999",
+          "arDigitalAddress": null,
+          "webhookUrl": "https://hooks.pjb.test/intimacoes"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "usuarioId": 77,
+          "allowEmail": true,
+          "allowPush": false,
+          "allowWhatsapp": true,
+          "allowArDigital": false,
+          "allowWebhook": true,
+          "allowDigest": false,
+          "onlyHighPriority": true,
+          "antiSpamWindowMinutes": 45,
+          "pushEndpoint": "https://push.pjb.test/device/77",
+          "whatsappNumber": "+5585999999999",
+          "arDigitalAddress": null,
+          "webhookUrl": "https://hooks.pjb.test/intimacoes"
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "dispatch multichannel notification",
+      "providerStates": [
+        {
+          "name": "multichannel notification can be dispatched"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/notificacoes/multicanal/processos/501/usuarios/77",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "titulo": "Intimação para manifestação",
+          "mensagem": "Manifestar-se em cinco dias.",
+          "urlAcesso": "https://pjb.test/processos/501",
+          "prioridadeAlta": true
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "processoId": 501,
+          "usuarioId": 77,
+          "deliveredChannels": [
+            "EMAIL"
+          ],
+          "suppressedChannels": [],
+          "failedChannels": [],
+          "trackingTokens": [
+            "track-123"
+          ],
+          "status": "ENTREGA_PARCIAL_OU_TOTAL",
+          "generatedAt": "2026-04-16T15:30:00Z",
+          "rationale": [
+            "Entrega formal registrada."
+          ],
+          "documentoFormalAssinado": {
+            "template": "INTIMACAO_FORMAL",
+            "hashSha256": "abc123hash"
+          },
+          "assinaturaQualificada": {
+            "profile": "PAdES-LT"
+          },
+          "validacaoSoberana": {
+            "ledger": "ok"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "4.0"
+    }
+  }
+}

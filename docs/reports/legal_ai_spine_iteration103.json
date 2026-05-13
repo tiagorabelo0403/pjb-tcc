@@ -1,0 +1,18 @@
+{
+  "round": 103,
+  "scope": "legal-ai-spine-graph-multimodal-evaluation",
+  "artifacts": [
+    "JuridicaGraphProfileService",
+    "JuridicaMultimodalProfileService",
+    "JuridicaEvaluationProfileService",
+    "LegalAiGraphDescriptor",
+    "LegalAiMultimodalDescriptor",
+    "LegalAiEvaluationDescriptor"
+  ],
+  "validation": {
+    "directedCompile": true,
+    "runner": true,
+    "runtimeGuard": true,
+    "globalMaven": false
+  }
+}

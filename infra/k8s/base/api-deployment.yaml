@@ -1,0 +1,151 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pjb-api
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: /actuator/prometheus
+    spec:
+      serviceAccountName: pjb-backend
+      priorityClassName: pjb-api-high
+      terminationGracePeriodSeconds: 90
+      securityContext:
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/component: api
+      containers:
+        - name: backend
+          image: pjb-backend:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            readOnlyRootFilesystem: true
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: pjb-backend-config
+            - secretRef:
+                name: pjb-backend-secret
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod,k8s
+            - name: PJB_SCHEDULING_ENABLED
+              value: "false"
+            - name: PJB_KAFKA_ENABLED
+              value: "false"
+            - name: SPRING_FLYWAY_ENABLED
+              value: "false"
+            - name: SPRING_KAFKA_LISTENER_AUTO_STARTUP
+              value: "false"
+            - name: PJB_GOV_VITAL_MONITOR_ENABLED
+              value: "false"
+            - name: PJB_JVM_PROFILE
+              value: latency
+            - name: PJB_JVM_MAX_RAM_PERCENTAGE
+              value: "70"
+            - name: PJB_JVM_INITIAL_RAM_PERCENTAGE
+              value: "12"
+            - name: PJB_JVM_NATIVE_RESERVE_PERCENTAGE
+              value: "28"
+            - name: PJB_JVM_MAX_DIRECT_MEMORY_SIZE
+              value: "128m"
+            - name: PJB_DB_BUDGET_INSTANCE_ROLE
+              value: api
+            - name: PJB_RUNTIME_COMPONENT_ROLE
+              value: api
+            - name: PJB_RUNTIME_LIFECYCLE_DRAIN_QUIET_PERIOD
+              value: "20s"
+            - name: PJB_JVM_JFR_ENABLED
+              value: "true"
+            - name: PJB_JVM_JFR_MAXAGE
+              value: "30m"
+            - name: PJB_JVM_JFR_MAXSIZE
+              value: "256m"
+            - name: JAVA_OPTS
+              value: -Djava.security.egd=file:/dev/urandom
+          resources:
+            requests:
+              cpu: "500m"
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          startupProbe:
+            httpGet:
+              path: /startupz
+              port: http
+            failureThreshold: 60
+            periodSeconds: 5
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http
+            periodSeconds: 15
+            timeoutSeconds: 2
+            failureThreshold: 4
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: var-tmp
+              mountPath: /var/tmp
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - curl -fsS -X POST 'http://127.0.0.1:8080/internal/runtime/drain?reason=preStop' || true; sleep 20
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: var-tmp
+          emptyDir: {}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: api

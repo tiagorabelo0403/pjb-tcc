@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+set -eu
+
+if command -v python >/dev/null 2>&1 && python -c "import sys; raise SystemExit(0 if sys.version_info[0] == 3 else 1)" >/dev/null 2>&1; then
+  exec python scripts/git_secret_guard.py --staged
+fi
+
+if command -v py >/dev/null 2>&1 && py -3 -c "import sys; raise SystemExit(0 if sys.version_info[0] == 3 else 1)" >/dev/null 2>&1; then
+  exec py -3 scripts/git_secret_guard.py --staged
+fi
+
+if command -v pwsh >/dev/null 2>&1; then
+  exec pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/git_secret_guard.ps1 -Staged
+fi
+
+if command -v powershell.exe >/dev/null 2>&1; then
+  exec powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/git_secret_guard.ps1 -Staged
+fi
+
+if command -v powershell >/dev/null 2>&1; then
+  exec powershell -NoProfile -ExecutionPolicy Bypass -File scripts/git_secret_guard.ps1 -Staged
+fi
+
+echo "Python 3 or PowerShell is required to run the Git secret guard" >&2
+exit 1

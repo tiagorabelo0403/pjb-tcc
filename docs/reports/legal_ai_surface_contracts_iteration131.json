@@ -1,0 +1,45 @@
+{
+  "round": 131,
+  "scope": [
+    "/api/ai/legal/minuta",
+    "/api/ai/legal/grounding/check"
+  ],
+  "deliveries": {
+    "providerContractTest": "pjb-api/src/test/java/com/tcc/pjb/backend/contracts/provider/LegalAiControllerProviderContractTest.java",
+    "httpIt": "pjb-api/src/test/java/com/tcc/pjb/backend/ai/juridica/api/LegalAiControllerIT.java",
+    "pact": "pjb-api/src/test/resources/pacts/provider/PjbLegalAiConsumer-PjbLegalAiProvider.json",
+    "architectureGuard": "pjb-api/src/test/java/com/tcc/pjb/backend/ai/juridica/conversation/JuridicaLegalAiSurfaceRound131ArchitectureTest.java",
+    "coverageGuard": "pjb-api/src/test/java/com/tcc/pjb/backend/PjbLegalAiProviderContractCoverageArchitectureTest.java"
+  },
+  "states": {
+    "draft": ["PROMOTED", "STEP_UP_REQUIRED", "BLOCKED"],
+    "grounding": [
+      "ALIGNED:PROMOTED",
+      "REVIEW_REQUIRED:STEP_UP_REQUIRED",
+      "BLOCKED:BLOCKED"
+    ]
+  },
+  "routeGovernance": {
+    "ruleName": "legal-ai-governed-surfaces",
+    "paths": [
+      "/api/ai/legal/minuta",
+      "/api/ai/legal/grounding/check"
+    ],
+    "methods": ["POST"],
+    "contentTypes": ["application/json"],
+    "rateLimitStrategy": "ip_user",
+    "noStoreResponse": true
+  },
+  "validation": {
+    "runtimeConcurrencyGuard": "passed",
+    "architectureHygieneGuard": "passed",
+    "constructorInjectionGuard": "passed",
+    "configTaxonomyGuard": "passed",
+    "transactionalHotspotGuard": "passed",
+    "repositoryLayoutGuard": "passed",
+    "directedJavac": "passed",
+    "globalMaven": "not-claimed",
+    "pjbApiFullCompile": "not-claimed",
+    "dockerStable": "not-claimed"
+  }
+}

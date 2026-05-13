@@ -1,0 +1,81 @@
+package com.tcc.pjb.backend.model.dto.twin;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import com.tcc.pjb.backend.core.kernel.advisory.ContextualPrecedentAdvisoryReport;
+import com.tcc.pjb.backend.core.kernel.advisory.ExplainableDecisionTrailReport;
+import com.tcc.pjb.backend.core.kernel.advisory.InstitutionalGovernanceContextReport;
+import com.tcc.pjb.backend.core.kernel.advisory.InstitutionalMemoryReport;
+import com.tcc.pjb.backend.core.kernel.advisory.KernelAdvisoryTelemetry;
+import com.tcc.pjb.backend.core.kernel.advisory.KernelOperationalGovernanceReport;
+import com.tcc.pjb.backend.core.kernel.advisory.LegalCoherenceReport;
+import com.tcc.pjb.backend.core.kernel.advisory.NegotiationApprovalMatrixReport;
+import com.tcc.pjb.backend.core.kernel.advisory.NegotiationChannelGovernanceReport;
+import com.tcc.pjb.backend.core.kernel.advisory.NegotiationExplainabilityReport;
+import com.tcc.pjb.backend.core.kernel.advisory.NegotiationChatDigestReport;
+import com.tcc.pjb.backend.core.kernel.advisory.NegotiationMemoryReport;
+import com.tcc.pjb.backend.core.kernel.advisory.ProcessIntegrityRadarReport;
+import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialDossierReport;
+import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialStrategyReport;
+import com.tcc.pjb.backend.core.kernel.advisory.ProtocolDryRunReport;
+import com.tcc.pjb.backend.core.kernel.advisory.SettlementAdvisoryReport;
+import com.tcc.pjb.backend.core.kernel.advisory.StrategicCopilotReport;
+import com.tcc.pjb.backend.core.kernel.governance.InstitutionalPolicySnapshotReport;
+import com.tcc.pjb.backend.core.kernel.governance.KernelDecisionMetricsReport;
+import com.tcc.pjb.backend.core.kernel.governance.KernelRiskEscalationReport;
+import com.tcc.pjb.backend.core.kernel.governance.NegotiationMessageDecision;
+import com.tcc.pjb.backend.core.procedural.ProceduralRoutingReport;
+import com.tcc.pjb.backend.core.procedural.ProceduralSubmissionBlueprintReport;
+import com.tcc.pjb.backend.core.procedural.ProceduralConnectorExecutionReport;
+import com.tcc.pjb.backend.service.rito.dto.RitoPlanDto;
+
+public record ProcessTwinDto(
+        String kernelVersion,
+        Long processoId,
+        String numeroUnificado,
+        String ramoDireito,
+        String materia,
+        String rito,
+        String faseAtual,
+        String nivelSigilo,
+        String assunto,
+        String objetoProcessual,
+        String pedidoPrincipal,
+        String materialProbatorioResumo,
+        Integer materialProbatorioScore,
+        Integer potencialAcordoScore,
+        String janelaAcordoResumo,
+        Long catalogVersionId,
+        Integer eventCount,
+        LocalDateTime lastEventAt,
+        RitoPlanDto ritoPlan,
+        List<TwinRecommendationDto> recommendations,
+        List<PrecedenteEvidenceDto> evidence,
+        LegalCoherenceReport coherenceReport,
+        ProtocolDryRunReport protocolDryRun,
+        ProcessIntegrityRadarReport integrityRadar,
+        ProcessMaterialDossierReport materialDossier,
+        ProcessMaterialStrategyReport materialStrategy,
+        ProceduralRoutingReport proceduralRouting,
+        ProceduralSubmissionBlueprintReport submissionBlueprint,
+        ProceduralConnectorExecutionReport connectorExecution,
+        StrategicCopilotReport strategicCopilot,
+        SettlementAdvisoryReport settlementAdvisory,
+        InstitutionalMemoryReport institutionalMemory,
+        ContextualPrecedentAdvisoryReport precedentAdvisory,
+        ExplainableDecisionTrailReport explainableDecisionTrail,
+        InstitutionalGovernanceContextReport institutionalGovernanceContext,
+        NegotiationMemoryReport negotiationMemory,
+        NegotiationExplainabilityReport negotiationExplainability,
+        KernelOperationalGovernanceReport kernelOperationalGovernance,
+        NegotiationChatDigestReport negotiationChatDigest,
+        NegotiationApprovalMatrixReport negotiationApprovalMatrix,
+        NegotiationChannelGovernanceReport negotiationChannelGovernance,
+        InstitutionalPolicySnapshotReport institutionalPolicySnapshot,
+        KernelDecisionMetricsReport kernelDecisionMetrics,
+        KernelRiskEscalationReport kernelRiskEscalation,
+        NegotiationMessageDecision governedMessageDecision,
+        KernelAdvisoryTelemetry advisoryTelemetry,
+        List<String> riskSignals
+) {
+}

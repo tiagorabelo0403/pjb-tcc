@@ -1,0 +1,15 @@
+{
+  "summary": {
+    "filesScanned": 6743,
+    "filesFlagged": 0,
+    "findings": {
+      "rawCompletableFutureAsync": 0,
+      "rawCompletionStageAsync": 0,
+      "rawParallelStream": 0,
+      "rawExecutorFactory": 0,
+      "rawSynchronizedMethod": 0,
+      "asyncAnnotation": 0
+    }
+  },
+  "flaggedFiles": []
+}

@@ -1,0 +1,500 @@
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 45s
+  threads:
+    virtual:
+      enabled: true
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${PJB_DB_URL}
+    username: ${PJB_DB_USER}
+    password: ${PJB_DB_PASS}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${PJB_DB_POOL_MAX:24}
+      minimum-idle: ${PJB_DB_POOL_MIN:4}
+      connection-timeout: ${PJB_DB_CONNECTION_TIMEOUT_MS:30000}
+      validation-timeout: ${PJB_DB_VALIDATION_TIMEOUT_MS:5000}
+      max-lifetime: ${PJB_DB_MAX_LIFETIME_MS:1800000}
+      leak-detection-threshold: ${PJB_DB_LEAK_DETECTION_MS:0}
+      keepalive-time: ${PJB_DB_KEEPALIVE_TIME_MS:30000}
+      initialization-fail-timeout: ${PJB_DB_INITIALIZATION_FAIL_TIMEOUT_MS:1}
+      data-source-properties:
+        ApplicationName: ${PJB_DB_APPLICATION_NAME:pjb-api-prod}
+        assumeMinServerVersion: ${PJB_DB_ASSUME_MIN_SERVER_VERSION:15}
+        connectTimeout: ${PJB_DB_CONNECT_TIMEOUT_SECONDS:10}
+        sslmode: ${PJB_DB_SSL_MODE:verify-full}
+        sslrootcert: ${PJB_DB_SSL_ROOT_CERT:}
+        targetServerType: ${PJB_DB_TARGET_SERVER_TYPE:primary}
+        socketTimeout: ${PJB_DB_SOCKET_TIMEOUT_SECONDS:120}
+        preparedStatementCacheQueries: ${PJB_DB_PREPARED_CACHE_QUERIES:512}
+        preparedStatementCacheSizeMiB: ${PJB_DB_PREPARED_CACHE_MIB:16}
+        reWriteBatchedInserts: ${PJB_DB_REWRITE_BATCHED_INSERTS:true}
+        binaryTransfer: ${PJB_DB_BINARY_TRANSFER:true}
+        tcpKeepAlive: ${PJB_DB_TCP_KEEP_ALIVE:true}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: ${PJB_JPA_BATCH_SIZE:64}
+          fetch_size: ${PJB_JPA_FETCH_SIZE:100}
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: ${PJB_JPA_DEFAULT_BATCH_FETCH_SIZE:64}
+  flyway:
+    enabled: true
+    connect-retries: ${PJB_FLYWAY_CONNECT_RETRIES:15}
+  kafka:
+    bootstrap-servers: ${PJB_KAFKA_BOOTSTRAP:kafka:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+        enable.idempotence: true
+        acks: all
+        compression.type: ${PJB_KAFKA_COMPRESSION:lz4}
+        linger.ms: ${PJB_KAFKA_LINGER_MS:20}
+        batch.size: ${PJB_KAFKA_BATCH_SIZE:131072}
+        delivery.timeout.ms: 120000
+        request.timeout.ms: 30000
+        max.in.flight.requests.per.connection: 5
+        retries: 2147483647
+    consumer:
+      group-id: ${PJB_KAFKA_GROUP:pjb}
+      auto-offset-reset: ${PJB_KAFKA_AUTO_OFFSET_RESET:earliest}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.tcc.pjb.backend
+        spring.json.value.default.type: java.util.Map
+        spring.json.use.type.headers: false
+        isolation.level: read_committed
+        fetch.min.bytes: ${PJB_KAFKA_FETCH_MIN_BYTES:1}
+        fetch.max.wait.ms: ${PJB_KAFKA_FETCH_MAX_WAIT_MS:500}
+      max-poll-records: ${PJB_KAFKA_MAX_POLL_RECORDS:500}
+  elasticsearch:
+    uris: ${PJB_ES_URIS}
+  data:
+    redis:
+      host: ${PJB_REDIS_HOST:}
+      port: ${PJB_REDIS_PORT:6379}
+      password: ${PJB_REDIS_PASSWORD:}
+      timeout: ${PJB_REDIS_TIMEOUT:2s}
+      lettuce:
+        pool:
+          max-active: ${PJB_REDIS_POOL_MAX_ACTIVE:64}
+          max-idle: ${PJB_REDIS_POOL_MAX_IDLE:32}
+          min-idle: ${PJB_REDIS_POOL_MIN_IDLE:4}
+  cache:
+    type: ${PJB_CACHE_TYPE:caffeine}
+    caffeine:
+      spec: ${PJB_CACHE_CAFFEINE_SPEC:maximumSize=50000,expireAfterWrite=10m,recordStats}
+
+server:
+  http2:
+    enabled: true
+  shutdown: graceful
+  compression:
+    enabled: true
+    min-response-size: 2048
+  tomcat:
+    threads:
+      max: ${PJB_SERVER_THREADS_MAX:512}
+      min-spare: ${PJB_SERVER_THREADS_MIN_SPARE:48}
+    accept-count: ${PJB_SERVER_ACCEPT_COUNT:800}
+    max-connections: ${PJB_SERVER_MAX_CONNECTIONS:12000}
+
+pjb:
+  datasource:
+    budget:
+      enabled: ${PJB_DB_BUDGET_ENABLED:true}
+      database-max-connections: ${PJB_DB_BUDGET_DATABASE_MAX_CONNECTIONS:240}
+      reserved-connections: ${PJB_DB_BUDGET_RESERVED_CONNECTIONS:48}
+      instance-count: ${PJB_DB_BUDGET_INSTANCE_COUNT:4}
+      api-instance-count: ${PJB_DB_BUDGET_API_INSTANCE_COUNT:2}
+      worker-instance-count: ${PJB_DB_BUDGET_WORKER_INSTANCE_COUNT:2}
+      api-weight: ${PJB_DB_BUDGET_API_WEIGHT:3}
+      worker-weight: ${PJB_DB_BUDGET_WORKER_WEIGHT:5}
+      instance-role: ${PJB_DB_BUDGET_INSTANCE_ROLE:mixed}
+      pool-absolute-ceiling: ${PJB_DB_BUDGET_POOL_ABSOLUTE_CEILING:24}
+      minimum-pool-floor: ${PJB_DB_BUDGET_MINIMUM_POOL_FLOOR:4}
+      auxiliary-pool-floor: ${PJB_DB_BUDGET_AUXILIARY_POOL_FLOOR:2}
+    routing:
+      write-failover:
+        enabled: ${PJB_DB_WRITE_FAILOVER_ENABLED:false}
+        strict: ${PJB_DB_WRITE_FAILOVER_STRICT:false}
+        failure-cooldown: ${PJB_DB_WRITE_FAILOVER_FAILURE_COOLDOWN:10s}
+        success-stickiness: ${PJB_DB_WRITE_FAILOVER_SUCCESS_STICKINESS:20s}
+        candidates:
+          secondary-a:
+            url: ${PJB_DB_WRITE_FAILOVER_SECONDARY_A_URL:}
+            username: ${PJB_DB_WRITE_FAILOVER_SECONDARY_A_USER:${PJB_DB_USER}}
+            password: ${PJB_DB_WRITE_FAILOVER_SECONDARY_A_PASS:${PJB_DB_PASS}}
+            driver-class-name: ${PJB_DB_WRITE_FAILOVER_SECONDARY_A_DRIVER:org.postgresql.Driver}
+            hikari:
+              maximum-pool-size: ${PJB_DB_WRITE_FAILOVER_SECONDARY_A_POOL_MAX:${PJB_DB_POOL_MAX:30}}
+              minimum-idle: ${PJB_DB_WRITE_FAILOVER_SECONDARY_A_POOL_MIN:${PJB_DB_POOL_MIN:6}}
+          secondary-b:
+            url: ${PJB_DB_WRITE_FAILOVER_SECONDARY_B_URL:}
+            username: ${PJB_DB_WRITE_FAILOVER_SECONDARY_B_USER:${PJB_DB_USER}}
+            password: ${PJB_DB_WRITE_FAILOVER_SECONDARY_B_PASS:${PJB_DB_PASS}}
+            driver-class-name: ${PJB_DB_WRITE_FAILOVER_SECONDARY_B_DRIVER:org.postgresql.Driver}
+            hikari:
+              maximum-pool-size: ${PJB_DB_WRITE_FAILOVER_SECONDARY_B_POOL_MAX:${PJB_DB_POOL_MAX:30}}
+              minimum-idle: ${PJB_DB_WRITE_FAILOVER_SECONDARY_B_POOL_MIN:${PJB_DB_POOL_MIN:6}}
+  runtime:
+    lifecycle:
+      enabled: ${PJB_RUNTIME_LIFECYCLE_ENABLED:true}
+      publish-availability-events: ${PJB_RUNTIME_LIFECYCLE_PUBLISH_AVAILABILITY_EVENTS:true}
+      fail-ready-when-draining: ${PJB_RUNTIME_LIFECYCLE_FAIL_READY_WHEN_DRAINING:true}
+      drain-quiet-period: ${PJB_RUNTIME_LIFECYCLE_DRAIN_QUIET_PERIOD:20s}
+      shutdown-await-timeout: ${PJB_RUNTIME_LIFECYCLE_SHUTDOWN_AWAIT_TIMEOUT:30s}
+    admission:
+      enabled: ${PJB_RUNTIME_ADMISSION_ENABLED:true}
+      decision-ttl: ${PJB_RUNTIME_ADMISSION_DECISION_TTL:150ms}
+      soft-pressure-score-threshold: ${PJB_RUNTIME_ADMISSION_SOFT_PRESSURE_SCORE:55}
+      hard-pressure-score-threshold: ${PJB_RUNTIME_ADMISSION_HARD_PRESSURE_SCORE:72}
+      reject-during-warmup: ${PJB_RUNTIME_ADMISSION_REJECT_DURING_WARMUP:true}
+      reject-during-drain: ${PJB_RUNTIME_ADMISSION_REJECT_DURING_DRAIN:true}
+      reject-write-on-critical-datasource-runaway: ${PJB_RUNTIME_ADMISSION_REJECT_WRITE_ON_RUNAWAY:true}
+      reject-expensive-on-scheduler-trending-up: ${PJB_RUNTIME_ADMISSION_REJECT_EXPENSIVE_ON_SCHEDULER:true}
+      reject-expensive-when-pressure-rising: ${PJB_RUNTIME_ADMISSION_REJECT_EXPENSIVE_ON_PRESSURE_RISING:true}
+      reject-on-pressure-sustained: ${PJB_RUNTIME_ADMISSION_REJECT_ON_PRESSURE_SUSTAINED:true}
+      reject-stream-on-memory-pressure: ${PJB_RUNTIME_ADMISSION_REJECT_STREAM_ON_MEMORY_PRESSURE:true}
+      reject-bulk-on-pressure-sustained: ${PJB_RUNTIME_ADMISSION_REJECT_BULK_ON_PRESSURE_SUSTAINED:true}
+      reject-export-on-pressure-rising: ${PJB_RUNTIME_ADMISSION_REJECT_EXPORT_ON_PRESSURE_RISING:true}
+      reject-expensive-on-critical-memory-runaway: ${PJB_RUNTIME_ADMISSION_REJECT_EXPENSIVE_ON_CRITICAL_MEMORY_RUNAWAY:true}
+      reject-expensive-on-critical-gc-pressure: ${PJB_RUNTIME_ADMISSION_REJECT_EXPENSIVE_ON_CRITICAL_GC_PRESSURE:true}
+      soft-rejection-status: ${PJB_RUNTIME_ADMISSION_SOFT_STATUS:429}
+      hard-rejection-status: ${PJB_RUNTIME_ADMISSION_HARD_STATUS:503}
+      retry-after-seconds: ${PJB_RUNTIME_ADMISSION_RETRY_AFTER:1}
+      decision-cache-max-entries: ${PJB_RUNTIME_ADMISSION_DECISION_CACHE_MAX_ENTRIES:512}
+      emit-debug-headers: ${PJB_RUNTIME_ADMISSION_DEBUG_HEADERS:false}
+      preserve-high-priority-read-on-soft-pressure: ${PJB_RUNTIME_ADMISSION_PRESERVE_HIGH_PRIORITY_READS:true}
+      reject-low-priority-earlier: ${PJB_RUNTIME_ADMISSION_REJECT_LOW_PRIORITY_EARLIER:true}
+      reject-low-priority-on-reserved-lane-overload: ${PJB_RUNTIME_ADMISSION_REJECT_LOW_PRIORITY_ON_RESERVED_LANE_OVERLOAD:true}
+      reject-normal-priority-on-reserved-lane-collapse: ${PJB_RUNTIME_ADMISSION_REJECT_NORMAL_PRIORITY_ON_RESERVED_LANE_COLLAPSE:true}
+      max-reserved-lane-hotspots-before-reject: ${PJB_RUNTIME_ADMISSION_MAX_RESERVED_LANE_HOTSPOTS_BEFORE_REJECT:0}
+      max-reserved-lane-hotspots-before-collapse: ${PJB_RUNTIME_ADMISSION_MAX_RESERVED_LANE_HOTSPOTS_BEFORE_COLLAPSE:1}
+      reject-low-priority-on-reserved-lane-budget-breach: ${PJB_RUNTIME_ADMISSION_REJECT_LOW_PRIORITY_ON_RESERVED_LANE_BUDGET_BREACH:true}
+      reject-normal-priority-on-preferred-lane-budget-breach: ${PJB_RUNTIME_ADMISSION_REJECT_NORMAL_PRIORITY_ON_PREFERRED_LANE_BUDGET_BREACH:true}
+      reserved-lane-average-utilization-threshold: ${PJB_RUNTIME_ADMISSION_RESERVED_LANE_AVERAGE_UTILIZATION_THRESHOLD:0.82}
+      reserved-lane-headroom-score-threshold: ${PJB_RUNTIME_ADMISSION_RESERVED_LANE_HEADROOM_SCORE_THRESHOLD:28}
+      preferred-lane-average-utilization-threshold: ${PJB_RUNTIME_ADMISSION_PREFERRED_LANE_AVERAGE_UTILIZATION_THRESHOLD:0.86}
+      preferred-lane-headroom-score-threshold: ${PJB_RUNTIME_ADMISSION_PREFERRED_LANE_HEADROOM_SCORE_THRESHOLD:20}
+      reject-event-stream-on-live-surge: ${PJB_RUNTIME_ADMISSION_REJECT_EVENT_STREAM_ON_LIVE_SURGE:true}
+      reject-write-on-kafka-backpressure: ${PJB_RUNTIME_ADMISSION_REJECT_WRITE_ON_KAFKA_BACKPRESSURE:true}
+      reject-very-large-write-on-pressure: ${PJB_RUNTIME_ADMISSION_REJECT_VERY_LARGE_WRITE_ON_PRESSURE:true}
+      reject-very-large-read-on-pressure: ${PJB_RUNTIME_ADMISSION_REJECT_VERY_LARGE_READ_ON_PRESSURE:true}
+      large-content-length-bytes: ${PJB_RUNTIME_ADMISSION_LARGE_CONTENT_LENGTH_BYTES:4194304}
+      very-large-content-length-bytes: ${PJB_RUNTIME_ADMISSION_VERY_LARGE_CONTENT_LENGTH_BYTES:16777216}
+      large-page-size-threshold: ${PJB_RUNTIME_ADMISSION_LARGE_PAGE_SIZE_THRESHOLD:500}
+      large-estimated-items-threshold: ${PJB_RUNTIME_ADMISSION_LARGE_ESTIMATED_ITEMS_THRESHOLD:10000}
+      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz", "/internal/runtime/"]
+      guarded-prefixes: ["/api/v1/peticionamento", "/api/v1/laiane", "/api/v1/processual", "/api/v1/work-items", "/api/v1/secretariat", "/api/v1/juiz", "/api/v1/oficial", "/api/v1/delegado", "/api/v1/cidadao"]
+      expensive-prefixes: ["/api/v1/peticionamento", "/api/v1/laiane", "/api/v1/work-items", "/api/v1/secretariat", "/api/v1/juiz", "/api/v1/oficial", "/api/v1/delegado"]
+      write-sensitive-prefixes: ["/api/v1/peticionamento", "/api/v1/processual", "/api/v1/secretariat", "/api/v1/juiz", "/api/v1/oficial", "/api/v1/delegado"]
+      critical-prefixes: ["/api/v1/cidadao/painel", "/api/v1/processual/consulta", "/api/v1/processual/prazos", "/api/v1/juiz/painel", "/api/v1/oficial/painel"]
+      api-high-priority-prefixes: ["/api/v1/cidadao", "/api/v1/processual", "/api/v1/juiz/painel", "/api/v1/oficial/painel"]
+      worker-high-priority-prefixes: ["/api/v1/work-items", "/api/v1/secretariat", "/api/v1/delegado"]
+      low-priority-prefixes: ["/export", "/relatorio", "/report", "/analytics", "/bulk", "/lote", "/massivo"]
+      api-reserved-lanes: ["external-io", "live", "io"]
+      worker-reserved-lanes: ["job", "io"]
+    pressure:
+      enabled: ${PJB_RUNTIME_PRESSURE_ENABLED:true}
+      snapshot-cache-ttl: ${PJB_RUNTIME_PRESSURE_SNAPSHOT_CACHE_TTL:250ms}
+      minimum-ready-age: ${PJB_RUNTIME_PRESSURE_MINIMUM_READY_AGE:20s}
+      executor-utilization-threshold: ${PJB_RUNTIME_PRESSURE_EXECUTOR_UTILIZATION_THRESHOLD:0.96}
+      executor-acquire-wait-threshold-millis: ${PJB_RUNTIME_PRESSURE_EXECUTOR_ACQUIRE_WAIT_THRESHOLD_MS:250}
+      executor-recent-rejection-window: ${PJB_RUNTIME_PRESSURE_EXECUTOR_REJECTION_WINDOW:60s}
+      executor-consecutive-rejection-threshold: ${PJB_RUNTIME_PRESSURE_EXECUTOR_REJECTION_STREAK:2}
+      max-overloaded-executors: ${PJB_RUNTIME_PRESSURE_MAX_OVERLOADED_EXECUTORS:0}
+      fail-ready-on-critical-lane-overload: ${PJB_RUNTIME_PRESSURE_FAIL_READY_ON_CRITICAL_LANE_OVERLOAD:true}
+      max-critical-lane-overloads: ${PJB_RUNTIME_PRESSURE_MAX_CRITICAL_LANE_OVERLOADS:0}
+      critical-lanes: ${PJB_RUNTIME_PRESSURE_CRITICAL_LANES:}
+      pressure-trend-window: ${PJB_RUNTIME_PRESSURE_TREND_WINDOW:45s}
+      pressure-rising-fast-delta: ${PJB_RUNTIME_PRESSURE_RISING_FAST_DELTA:20}
+      pressure-sustained-threshold: ${PJB_RUNTIME_PRESSURE_SUSTAINED_THRESHOLD:45}
+      pressure-sustained-window: ${PJB_RUNTIME_PRESSURE_SUSTAINED_WINDOW:2m}
+      datasource-usage-threshold: ${PJB_RUNTIME_PRESSURE_DATASOURCE_USAGE_THRESHOLD:0.92}
+      datasource-awaiting-threshold: ${PJB_RUNTIME_PRESSURE_DATASOURCE_AWAITING_THRESHOLD:4}
+      max-degraded-pools: ${PJB_RUNTIME_PRESSURE_MAX_DEGRADED_POOLS:0}
+      scheduler-queue-size-threshold: ${PJB_RUNTIME_PRESSURE_SCHEDULER_QUEUE_THRESHOLD:200}
+      scheduler-active-utilization-threshold: ${PJB_RUNTIME_PRESSURE_SCHEDULER_UTILIZATION_THRESHOLD:0.90}
+      scheduler-trend-window: ${PJB_RUNTIME_PRESSURE_SCHEDULER_TREND_WINDOW:30s}
+      scheduler-queue-rising-fast-delta: ${PJB_RUNTIME_PRESSURE_SCHEDULER_QUEUE_RISING_FAST_DELTA:40}
+      scheduler-sustained-window: ${PJB_RUNTIME_PRESSURE_SCHEDULER_SUSTAINED_WINDOW:2m}
+      heap-usage-threshold: ${PJB_RUNTIME_PRESSURE_HEAP_USAGE_THRESHOLD:0.90}
+      metaspace-usage-threshold: ${PJB_RUNTIME_PRESSURE_METASPACE_USAGE_THRESHOLD:0.90}
+      direct-buffer-usage-threshold: ${PJB_RUNTIME_PRESSURE_DIRECT_BUFFER_USAGE_THRESHOLD:0.12}
+      memory-trend-window: ${PJB_RUNTIME_PRESSURE_MEMORY_TREND_WINDOW:45s}
+      heap-rising-fast-delta-mi-b: ${PJB_RUNTIME_PRESSURE_HEAP_RISING_FAST_DELTA_MIB:192}
+      direct-buffer-rising-fast-delta-mi-b: ${PJB_RUNTIME_PRESSURE_DIRECT_BUFFER_RISING_FAST_DELTA_MIB:64}
+      memory-sustained-window: ${PJB_RUNTIME_PRESSURE_MEMORY_SUSTAINED_WINDOW:2m}
+      fail-ready-on-critical-memory-runaway: ${PJB_RUNTIME_PRESSURE_FAIL_READY_ON_CRITICAL_MEMORY_RUNAWAY:true}
+      gc-trend-window: ${PJB_RUNTIME_PRESSURE_GC_TREND_WINDOW:45s}
+      gc-sustained-window: ${PJB_RUNTIME_PRESSURE_GC_SUSTAINED_WINDOW:2m}
+      gc-pause-ratio-threshold: ${PJB_RUNTIME_PRESSURE_GC_PAUSE_RATIO_THRESHOLD:0.08}
+      gc-average-pause-millis-threshold: ${PJB_RUNTIME_PRESSURE_GC_AVERAGE_PAUSE_MILLIS_THRESHOLD:150}
+      gc-collection-time-rising-fast-millis: ${PJB_RUNTIME_PRESSURE_GC_COLLECTION_TIME_RISING_FAST_MILLIS:250}
+      fail-ready-on-critical-gc-pressure: ${PJB_RUNTIME_PRESSURE_FAIL_READY_ON_CRITICAL_GC_PRESSURE:true}
+      live-total-subscribers-threshold: ${PJB_RUNTIME_PRESSURE_LIVE_TOTAL_SUBSCRIBERS_THRESHOLD:2000}
+      live-active-topics-threshold: ${PJB_RUNTIME_PRESSURE_LIVE_ACTIVE_TOPICS_THRESHOLD:400}
+      live-subscriber-rising-fast-delta: ${PJB_RUNTIME_PRESSURE_LIVE_SUBSCRIBER_RISING_FAST_DELTA:250}
+      live-trend-window: ${PJB_RUNTIME_PRESSURE_LIVE_TREND_WINDOW:45s}
+      live-sustained-window: ${PJB_RUNTIME_PRESSURE_LIVE_SUSTAINED_WINDOW:2m}
+      fail-ready-on-critical-live-surge: ${PJB_RUNTIME_PRESSURE_FAIL_READY_ON_CRITICAL_LIVE_SURGE:false}
+      kafka-buffer-available-ratio-threshold: ${PJB_RUNTIME_PRESSURE_KAFKA_BUFFER_AVAILABLE_RATIO_THRESHOLD:0.20}
+      kafka-requests-in-flight-threshold: ${PJB_RUNTIME_PRESSURE_KAFKA_REQUESTS_IN_FLIGHT_THRESHOLD:150}
+      kafka-record-queue-time-avg-threshold-millis: ${PJB_RUNTIME_PRESSURE_KAFKA_RECORD_QUEUE_TIME_AVG_THRESHOLD_MILLIS:50}
+      kafka-record-error-rate-threshold: ${PJB_RUNTIME_PRESSURE_KAFKA_RECORD_ERROR_RATE_THRESHOLD:0.02}
+      fail-ready-on-critical-kafka-pressure: ${PJB_RUNTIME_PRESSURE_FAIL_READY_ON_CRITICAL_KAFKA_PRESSURE:false}
+    acceleration:
+      component-role: ${PJB_RUNTIME_COMPONENT_ROLE:mixed}
+      async:
+        concurrency-limit: ${PJB_RUNTIME_ASYNC_CONCURRENCY:256}
+        reject-when-saturated: ${PJB_RUNTIME_ASYNC_REJECT:false}
+        termination-timeout: ${PJB_RUNTIME_ASYNC_TERMINATION:30s}
+        thread-name-prefix: ${PJB_RUNTIME_ASYNC_PREFIX:pjb-async-}
+      io:
+        concurrency-limit: ${PJB_RUNTIME_IO_CONCURRENCY:512}
+        reject-when-saturated: ${PJB_RUNTIME_IO_REJECT:false}
+        termination-timeout: ${PJB_RUNTIME_IO_TERMINATION:30s}
+        thread-name-prefix: ${PJB_RUNTIME_IO_PREFIX:pjb-io-}
+      burst:
+        concurrency-limit: ${PJB_RUNTIME_BURST_CONCURRENCY:1024}
+        reject-when-saturated: ${PJB_RUNTIME_BURST_REJECT:true}
+        termination-timeout: ${PJB_RUNTIME_BURST_TERMINATION:20s}
+        thread-name-prefix: ${PJB_RUNTIME_BURST_PREFIX:pjb-burst-}
+      external-io:
+        concurrency-limit: ${PJB_RUNTIME_EXTERNAL_IO_CONCURRENCY:192}
+        reject-when-saturated: ${PJB_RUNTIME_EXTERNAL_IO_REJECT:true}
+        termination-timeout: ${PJB_RUNTIME_EXTERNAL_IO_TERMINATION:30s}
+        thread-name-prefix: ${PJB_RUNTIME_EXTERNAL_IO_PREFIX:pjb-http-}
+      live:
+        concurrency-limit: ${PJB_RUNTIME_LIVE_CONCURRENCY:384}
+        reject-when-saturated: ${PJB_RUNTIME_LIVE_REJECT:true}
+        termination-timeout: ${PJB_RUNTIME_LIVE_TERMINATION:20s}
+        thread-name-prefix: ${PJB_RUNTIME_LIVE_PREFIX:pjb-live-}
+      job:
+        concurrency-limit: ${PJB_RUNTIME_JOB_CONCURRENCY:1024}
+        reject-when-saturated: ${PJB_RUNTIME_JOB_REJECT:true}
+        termination-timeout: ${PJB_RUNTIME_JOB_TERMINATION:20s}
+        thread-name-prefix: ${PJB_RUNTIME_JOB_PREFIX:pjb-job-}
+      http:
+        connect-timeout: ${PJB_RUNTIME_HTTP_CONNECT_TIMEOUT:5s}
+        request-timeout: ${PJB_RUNTIME_HTTP_REQUEST_TIMEOUT:20s}
+        prefer-http2: ${PJB_RUNTIME_HTTP_PREFER_HTTP2:true}
+  storage:
+    upload:
+      max-batch-items: ${PJB_STORAGE_UPLOAD_MAX_BATCH_ITEMS:64}
+      max-batch-total-bytes: ${PJB_STORAGE_UPLOAD_MAX_BATCH_TOTAL_BYTES:536870912}
+      max-document-bytes: ${PJB_STORAGE_UPLOAD_MAX_DOCUMENT_BYTES:26214400}
+      max-image-bytes: ${PJB_STORAGE_UPLOAD_MAX_IMAGE_BYTES:12582912}
+      max-audio-bytes: ${PJB_STORAGE_UPLOAD_MAX_AUDIO_BYTES:33554432}
+      max-video-bytes: ${PJB_STORAGE_UPLOAD_MAX_VIDEO_BYTES:134217728}
+      max-inline-image-bytes: ${PJB_STORAGE_UPLOAD_MAX_INLINE_IMAGE_BYTES:10485760}
+      max-inline-audio-bytes: ${PJB_STORAGE_UPLOAD_MAX_INLINE_AUDIO_BYTES:25165824}
+      max-inline-video-bytes: ${PJB_STORAGE_UPLOAD_MAX_INLINE_VIDEO_BYTES:100663296}
+      max-inline-total-bytes: ${PJB_STORAGE_UPLOAD_MAX_INLINE_TOTAL_BYTES:167772160}
+      max-inline-blocks: ${PJB_STORAGE_UPLOAD_MAX_INLINE_BLOCKS:16}
+      max-post-petition-references: ${PJB_STORAGE_UPLOAD_MAX_POST_PETITION_REFERENCES:160}
+      max-audio-duration-ms: ${PJB_STORAGE_UPLOAD_MAX_AUDIO_DURATION_MS:900000}
+      max-video-duration-ms: ${PJB_STORAGE_UPLOAD_MAX_VIDEO_DURATION_MS:900000}
+      sync-preview-max-bytes: ${PJB_STORAGE_UPLOAD_SYNC_PREVIEW_MAX_BYTES:8388608}
+      deep-inspection-threshold-bytes: ${PJB_STORAGE_UPLOAD_DEEP_INSPECTION_THRESHOLD_BYTES:50331648}
+  ui:
+    branding:
+      enabled: ${PJB_UI_BRANDING_ENABLED:true}
+      object-storage-only: ${PJB_UI_BRANDING_OBJECT_STORAGE_ONLY:true}
+      database-blob-forbidden: ${PJB_UI_BRANDING_DATABASE_BLOB_FORBIDDEN:true}
+      allow-svg: ${PJB_UI_BRANDING_ALLOW_SVG:false}
+      allow-animated: ${PJB_UI_BRANDING_ALLOW_ANIMATED:false}
+      storage-prefix: ${PJB_UI_BRANDING_STORAGE_PREFIX:ui/institutional-branding}
+      delivery-base-path: ${PJB_UI_BRANDING_DELIVERY_BASE_PATH:/api/v1/ui/branding/assets}
+      cache-ttl-seconds: ${PJB_UI_BRANDING_CACHE_TTL_SECONDS:86400}
+      allowed-mime-types: ["image/png", "image/jpeg", "image/webp"]
+      banner:
+        max-bytes: ${PJB_UI_BRANDING_BANNER_MAX_BYTES:2097152}
+        max-width-px: ${PJB_UI_BRANDING_BANNER_MAX_WIDTH_PX:1920}
+        max-height-px: ${PJB_UI_BRANDING_BANNER_MAX_HEIGHT_PX:320}
+      logo:
+        max-bytes: ${PJB_UI_BRANDING_LOGO_MAX_BYTES:786432}
+        max-width-px: ${PJB_UI_BRANDING_LOGO_MAX_WIDTH_PX:512}
+        max-height-px: ${PJB_UI_BRANDING_LOGO_MAX_HEIGHT_PX:512}
+      seal:
+        max-bytes: ${PJB_UI_BRANDING_SEAL_MAX_BYTES:786432}
+        max-width-px: ${PJB_UI_BRANDING_SEAL_MAX_WIDTH_PX:512}
+        max-height-px: ${PJB_UI_BRANDING_SEAL_MAX_HEIGHT_PX:512}
+      theme:
+        max-palette-entries: ${PJB_UI_BRANDING_MAX_PALETTE_ENTRIES:3}
+        national-accent: ${PJB_UI_BRANDING_NATIONAL_ACCENT:#0B3A75}
+        neutral-surface: ${PJB_UI_BRANDING_NEUTRAL_SURFACE:#F7F9FC}
+        neutral-ink: ${PJB_UI_BRANDING_NEUTRAL_INK:#132238}
+        watermark-enabled: ${PJB_UI_BRANDING_WATERMARK_ENABLED:true}
+        panel-banner-enabled: ${PJB_UI_BRANDING_PANEL_BANNER_ENABLED:true}
+        piece-header-banner-enabled: ${PJB_UI_BRANDING_PIECE_HEADER_BANNER_ENABLED:true}
+        print-header-enabled: ${PJB_UI_BRANDING_PRINT_HEADER_ENABLED:true}
+  atendimento:
+    attachments:
+      enabled: true
+      maxBytes: 10485760
+      maxPerMessage: 3
+      maxTotalBytesPerMessage: 20971520
+  api:
+    surface:
+      enabled: true
+      max-request-uri-length: ${PJB_API_SURFACE_MAX_URI_LENGTH:4096}
+      max-query-string-length: ${PJB_API_SURFACE_MAX_QUERY_LENGTH:4096}
+      max-header-count: ${PJB_API_SURFACE_MAX_HEADER_COUNT:120}
+      max-header-value-length: ${PJB_API_SURFACE_MAX_HEADER_VALUE_LENGTH:4096}
+      max-parameter-count: ${PJB_API_SURFACE_MAX_PARAMETER_COUNT:200}
+      max-request-id-length: ${PJB_API_SURFACE_MAX_REQUEST_ID_LENGTH:80}
+      reject-backslash-path: ${PJB_API_SURFACE_REJECT_BACKSLASH:true}
+      reject-path-traversal-tokens: ${PJB_API_SURFACE_REJECT_TRAVERSAL:true}
+      reject-double-slash-path: ${PJB_API_SURFACE_REJECT_DOUBLE_SLASH:true}
+    load-shedding:
+      enabled: ${PJB_API_LOAD_SHEDDING_ENABLED:true}
+      global-max-in-flight: ${PJB_API_LOAD_SHEDDING_GLOBAL_MAX_IN_FLIGHT:640}
+      global-acquire-timeout: ${PJB_API_LOAD_SHEDDING_GLOBAL_TIMEOUT:15ms}
+      emit-debug-headers: ${PJB_API_LOAD_SHEDDING_DEBUG_HEADERS:false}
+      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz"]
+      rules:
+        - name: frontdoor-critical
+          prefixes: ["/api/v1/peticionamento/inicial/sessao", "/api/v1/transito", "/api/v1/sigilo", "/api/v1/comunicacao-judicial", "/api/v1/comunicacoes"]
+          max-in-flight: ${PJB_API_LOAD_SHEDDING_CRITICAL_MAX_IN_FLIGHT:192}
+          acquire-timeout: ${PJB_API_LOAD_SHEDDING_CRITICAL_TIMEOUT:10ms}
+          rejection-status: ${PJB_API_LOAD_SHEDDING_CRITICAL_STATUS:503}
+          rejection-code: LOAD_SHED_CRITICAL
+        - name: petition-heavy
+          prefixes: ["/api/v1/peticionamento", "/api/v1/laiane", "/api/v1/processual/routing/diagnostico"]
+          max-in-flight: ${PJB_API_LOAD_SHEDDING_PETITION_MAX_IN_FLIGHT:128}
+          acquire-timeout: ${PJB_API_LOAD_SHEDDING_PETITION_TIMEOUT:25ms}
+          rejection-status: ${PJB_API_LOAD_SHEDDING_PETITION_STATUS:503}
+          rejection-code: LOAD_SHED_PETITION
+        - name: institutional-bulk
+          prefixes: ["/api/v1/integrations/n8n", "/api/v1/jobs", "/api/v1/work-items", "/api/v1/secretariat"]
+          max-in-flight: ${PJB_API_LOAD_SHEDDING_BULK_MAX_IN_FLIGHT:96}
+          acquire-timeout: ${PJB_API_LOAD_SHEDDING_BULK_TIMEOUT:20ms}
+          rejection-status: ${PJB_API_LOAD_SHEDDING_BULK_STATUS:503}
+          rejection-code: LOAD_SHED_BULK
+    crisis-control:
+      enabled: ${PJB_API_CRISIS_CONTROL_ENABLED:false}
+      mode: ${PJB_API_CRISIS_CONTROL_MODE:NORMAL}
+      rejection-status: ${PJB_API_CRISIS_CONTROL_STATUS:503}
+      emit-debug-headers: ${PJB_API_CRISIS_CONTROL_DEBUG_HEADERS:false}
+      rejection-code: ${PJB_API_CRISIS_CONTROL_CODE:CRISIS_CONTAINMENT}
+      rejection-detail: ${PJB_API_CRISIS_CONTROL_DETAIL:A plataforma entrou em contenção operacional temporária para preservar as trilhas críticas.}
+      blocked-prefixes:
+        - /api/v1/integrations/n8n
+        - /api/v1/jobs
+        - /api/v1/admin/scale-architecture/processual-read-models/recomposition
+        - /api/v1/jurisprudencia/sync
+      lane-directives:
+        - name: frontdoor-critical
+          max-in-flight-override: ${PJB_API_CRISIS_CONTROL_CRITICAL_MAX_IN_FLIGHT:224}
+          acquire-timeout-override: ${PJB_API_CRISIS_CONTROL_CRITICAL_TIMEOUT:8ms}
+          rejection-code: CRISIS_CRITICAL_GUARD
+        - name: petition-heavy
+          max-in-flight-override: ${PJB_API_CRISIS_CONTROL_PETITION_MAX_IN_FLIGHT:96}
+          acquire-timeout-override: ${PJB_API_CRISIS_CONTROL_PETITION_TIMEOUT:12ms}
+          rejection-code: CRISIS_PETITION_GUARD
+        - name: institutional-bulk
+          max-in-flight-override: ${PJB_API_CRISIS_CONTROL_BULK_MAX_IN_FLIGHT:16}
+          acquire-timeout-override: ${PJB_API_CRISIS_CONTROL_BULK_TIMEOUT:2ms}
+          reject-all: ${PJB_API_CRISIS_CONTROL_REJECT_BULK:true}
+          rejection-code: CRISIS_BULK_CONTAINMENT
+    db-pressure-shield:
+      enabled: ${PJB_API_DB_PRESSURE_SHIELD_ENABLED:true}
+      write-active-ratio-threshold: ${PJB_API_DB_PRESSURE_WRITE_RATIO:0.92}
+      read-active-ratio-threshold: ${PJB_API_DB_PRESSURE_READ_RATIO:0.95}
+      write-threads-awaiting-threshold: ${PJB_API_DB_PRESSURE_WRITE_AWAITING:24}
+      read-threads-awaiting-threshold: ${PJB_API_DB_PRESSURE_READ_AWAITING:48}
+      min-decision-ttl: ${PJB_API_DB_PRESSURE_TTL:100ms}
+      rejection-status: ${PJB_API_DB_PRESSURE_STATUS:503}
+      rejection-code: ${PJB_API_DB_PRESSURE_CODE:DB_PRESSURE_SHIELD}
+      emit-debug-headers: ${PJB_API_DB_PRESSURE_DEBUG_HEADERS:false}
+      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz"]
+      guarded-prefixes: ["/api/v1/peticionamento", "/api/v1/laiane", "/api/v1/processual", "/api/v1/work-items", "/api/v1/secretariat", "/api/v1/juiz"]
+    functional-availability:
+      enabled: ${PJB_API_FUNCTIONAL_AVAILABILITY_ENABLED:true}
+      rejection-status: ${PJB_API_FUNCTIONAL_AVAILABILITY_STATUS:503}
+      emit-debug-headers: ${PJB_API_FUNCTIONAL_AVAILABILITY_DEBUG_HEADERS:false}
+      domains:
+        PETICIONAMENTO: ${PJB_API_DOMAIN_PETICIONAMENTO_ENABLED:true}
+        CONSULTA: ${PJB_API_DOMAIN_CONSULTA_ENABLED:true}
+        OPERACAO_INTERNA: ${PJB_API_DOMAIN_OPERACAO_INTERNA_ENABLED:true}
+        COMUNICACAO: ${PJB_API_DOMAIN_COMUNICACAO_ENABLED:true}
+        INTEGRACOES: ${PJB_API_DOMAIN_INTEGRACOES_ENABLED:true}
+        CORE: ${PJB_API_DOMAIN_CORE_ENABLED:true}
+  live:
+    cluster:
+      enabled: ${PJB_LIVE_CLUSTER_ENABLED:true}
+      channel-prefix: ${PJB_LIVE_CLUSTER_CHANNEL_PREFIX:pjb:live:}
+      node-id: ${PJB_LIVE_CLUSTER_NODE_ID:${HOSTNAME:}}
+      key-prefix: ${PJB_LIVE_CLUSTER_KEY_PREFIX:pjb:live:cluster:}
+      replay-ttl-seconds: ${PJB_LIVE_CLUSTER_REPLAY_TTL_SECONDS:900}
+      subscriber-ttl-seconds: ${PJB_LIVE_CLUSTER_SUBSCRIBER_TTL_SECONDS:120}
+      subscriber-refresh-ms: ${PJB_LIVE_CLUSTER_SUBSCRIBER_REFRESH_MS:30000}
+  kafka:
+    enabled: true
+    scale:
+      listener-concurrency: ${PJB_KAFKA_LISTENER_CONCURRENCY:3}
+      poll-timeout: ${PJB_KAFKA_POLL_TIMEOUT:2s}
+      idle-between-polls: ${PJB_KAFKA_IDLE_BETWEEN_POLLS:100ms}
+      retry-backoff: ${PJB_KAFKA_RETRY_BACKOFF:1s}
+      retry-attempts: ${PJB_KAFKA_RETRY_ATTEMPTS:5}
+      observation-enabled: ${PJB_KAFKA_OBSERVATION_ENABLED:true}
+  search:
+    enabled: true
+  gov:
+    vital-monitor:
+      enabled: true
+  security:
+    master-key: ${PJB_MASTER_KEY_BASE64}
+    policy:
+      version: ${PJB_SECURITY_POLICY_VERSION:v1}
+      descriptor-resource: ${PJB_SECURITY_POLICY_DESCRIPTOR_RESOURCE:classpath:policies/security/pjb-access-policy.json}
+    hardening:
+      enabled: ${PJB_SECURITY_HARDENING_ENABLED:true}
+      reject-trace: ${PJB_SECURITY_HARDENING_REJECT_TRACE:true}
+      reject-track: ${PJB_SECURITY_HARDENING_REJECT_TRACK:true}
+      reject-connect: ${PJB_SECURITY_HARDENING_REJECT_CONNECT:true}
+      reject-method-override-headers: ${PJB_SECURITY_HARDENING_REJECT_METHOD_OVERRIDE:true}
+      add-browser-hardening-headers: ${PJB_SECURITY_HARDENING_BROWSER_HEADERS:true}
+      no-store-sensitive-responses: ${PJB_SECURITY_HARDENING_NOSTORE_SENSITIVE:true}
+    perimeter:
+      trust-proxy-headers: ${PJB_SECURITY_PERIMETER_TRUST_PROXY_HEADERS:true}
+      proxy:
+        reject-untrusted-forwarded-headers: ${PJB_SECURITY_PERIMETER_PROXY_REJECT_UNTRUSTED_HEADERS:true}
+        max-forwarded-for-hops: ${PJB_SECURITY_PERIMETER_PROXY_MAX_FORWARDED_FOR_HOPS:8}
+        trusted-cidrs: ${PJB_SECURITY_PERIMETER_PROXY_TRUSTED_CIDRS:}
+      blocklist:
+        store: ${PJB_SECURITY_BLOCKLIST_STORE:redis}
+      ratelimit:
+        store: ${PJB_SECURITY_RATELIMIT_STORE:redis}
+      origin-governance:
+        enabled: ${PJB_SECURITY_PERIMETER_ORIGIN_GOVERNANCE_ENABLED:true}
+    capability-ratelimit:
+      enabled: ${PJB_SECURITY_CAPABILITY_RATELIMIT_ENABLED:true}
+      store: ${PJB_SECURITY_CAPABILITY_RATELIMIT_STORE:redis}
+  comunicacao:
+    judicial:
+      sefaz-nfe:
+        enabled: ${PJB_COMJUD_SEFAZ_NFE_ENABLED:true}
+        strict-mode: ${PJB_COMJUD_SEFAZ_NFE_STRICT_MODE:true}
+  hsm:
+    mock-enabled: ${PJB_HSM_MOCK_ENABLED:false}
+  cache:
+    redis:
+      enabled: ${PJB_CACHE_REDIS_ENABLED:false}
+  procedural:
+    bootstrap:
+      fail-fast: ${PJB_PROCEDURAL_BOOTSTRAP_FAIL_FAST:true}
+      validate-legacy-boundary: ${PJB_PROCEDURAL_BOOTSTRAP_VALIDATE_LEGACY_BOUNDARY:true}

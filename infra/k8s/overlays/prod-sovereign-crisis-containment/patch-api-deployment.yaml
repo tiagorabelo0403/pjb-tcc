@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pjb-api
+spec:
+  template:
+    metadata:
+      annotations:
+        pjb.io/operational-crisis-profile: containment-v1
+        pjb.io/operational-crisis-updated-at: "2026-04-02T00:00:00Z"

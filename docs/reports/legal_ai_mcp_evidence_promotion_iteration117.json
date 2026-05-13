@@ -1,0 +1,22 @@
+{
+  "round": 117,
+  "title": "mcp evidence promotion and approval lane by replay",
+  "artifacts": [
+    "LegalMcpEvidencePromotionDecision",
+    "LegalMcpEvidencePromotionService"
+  ],
+  "integrations": [
+    "LegalMcpExecutionPlan",
+    "JuridicaMcpServerCatalogService",
+    "JuridicaUnifiedMeshProfileService",
+    "LegalToolScopePolicy",
+    "LegalSensitiveActionApprovalService",
+    "LegalAiConversationResponseComposerService"
+  ],
+  "guarantees": [
+    "example promotion bound to replay evidence",
+    "approval lane escalated by mcp evidence",
+    "promotion frozen on prompt injection or quarantined context",
+    "step-up enforced on sigilo or approval-linked transcript"
+  ]
+}

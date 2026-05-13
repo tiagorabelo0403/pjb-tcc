@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: pjb-operational-storage
+spec:
+  hard:
+    requests.ephemeral-storage: 120Gi
+    limits.ephemeral-storage: 240Gi
+    persistentvolumeclaims: "24"
+    requests.storage: 600Gi

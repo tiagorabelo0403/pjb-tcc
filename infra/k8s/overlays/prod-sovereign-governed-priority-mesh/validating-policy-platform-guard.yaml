@@ -1,0 +1,45 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: pjb-platform-guard
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups:
+          - apps
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - deployments
+  variables:
+    - name: containers
+      expression: object.spec.template.spec.containers
+    - name: securityContexts
+      expression: variables.containers.map(c, c.?securityContext)
+    - name: allowedPriorities
+      expression: "['pjb-api-high','pjb-worker-medium','pjb-custodia-critical','pjb-urgencia-sigilo-high','pjb-sessao-critical','pjb-recomposicao-medium','pjb-bulk-low']"
+  validations:
+    - expression: has(object.spec.template.spec.priorityClassName) && variables.allowedPriorities.exists(p, p == object.spec.template.spec.priorityClassName)
+      message: priorityClassName must be set to an approved pjb class
+    - expression: has(object.spec.template.spec.automountServiceAccountToken) && object.spec.template.spec.automountServiceAccountToken == false
+      message: automountServiceAccountToken must be false
+    - expression: has(object.spec.template.spec.securityContext) && has(object.spec.template.spec.securityContext.seccompProfile) && object.spec.template.spec.securityContext.seccompProfile.type == 'RuntimeDefault'
+      message: pod seccompProfile must be RuntimeDefault
+    - expression: variables.securityContexts.all(c, c.?runAsNonRoot == optional.of(true))
+      message: all containers must set runAsNonRoot to true
+    - expression: variables.securityContexts.all(c, c.?readOnlyRootFilesystem == optional.of(true))
+      message: all containers must set readOnlyRootFilesystem to true
+    - expression: variables.securityContexts.all(c, c.?allowPrivilegeEscalation != optional.of(true))
+      message: all containers must NOT set allowPrivilegeEscalation to true
+    - expression: variables.securityContexts.all(c, c.?privileged != optional.of(true))
+      message: all containers must NOT set privileged to true
+    - expression: variables.containers.all(c, has(c.securityContext) && has(c.securityContext.capabilities) && has(c.securityContext.capabilities.drop) && c.securityContext.capabilities.drop.exists(v, v == 'ALL'))
+      message: all containers must drop ALL capabilities
+    - expression: variables.containers.all(c, has(c.resources) && has(c.resources.requests) && size(c.resources.requests) > 0 && has(c.resources.limits) && size(c.resources.limits) > 0)
+      message: all containers must set requests and limits
+    - expression: variables.containers.all(c, has(c.readinessProbe) && has(c.livenessProbe) && has(c.startupProbe))
+      message: all containers must define readiness, liveness and startup probes

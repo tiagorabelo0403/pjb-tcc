@@ -1,0 +1,29 @@
+{
+  "profile": "frontend-dev",
+  "seedFiles": [
+    {
+      "code": "users",
+      "path": "src/main/resources/frontend-dev/seed-users.json",
+      "sampleCount": 3,
+      "mockExternalIntegrations": false
+    },
+    {
+      "code": "processos",
+      "path": "src/main/resources/frontend-dev/seed-processos.json",
+      "sampleCount": 4,
+      "mockExternalIntegrations": false
+    },
+    {
+      "code": "custas",
+      "path": "src/main/resources/frontend-dev/seed-custas.json",
+      "sampleCount": 3,
+      "mockExternalIntegrations": false
+    },
+    {
+      "code": "integrations",
+      "path": "src/main/resources/frontend-dev/seed-integrations.json",
+      "sampleCount": 5,
+      "mockExternalIntegrations": true
+    }
+  ]
+}

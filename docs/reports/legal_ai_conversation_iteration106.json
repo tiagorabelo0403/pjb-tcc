@@ -1,0 +1,29 @@
+{
+  "round": 106,
+  "theme": "legal_ai_conversation",
+  "entered": [
+    "LegalAiConversationRequest",
+    "LegalAiConversationResponse",
+    "LegalAiConversationController",
+    "LegalAiConversationRoutingService",
+    "LegalAiConversationContextAssemblerService",
+    "LegalAiConversationResponseComposerService",
+    "JuridicaVirtualTrendsCouncilService",
+    "JuridicaLegalAiConversationService"
+  ],
+  "virtualTrends": [
+    "RELATOR_ESTRUTURAL",
+    "LEGISLADOR_NORMATIVO",
+    "PRECEDENTES_ESTRATEGICOS",
+    "AUDITOR_SIMBOLICO",
+    "REDATOR_CONVERSACIONAL"
+  ],
+  "capability": "LEGAL_CONVERSATION_ORCHESTRATED_V3",
+  "validation": {
+    "compileDirected": true,
+    "runtimeConcurrencyGuard": true,
+    "globalMavenGreen": false,
+    "globalApiCompile": false,
+    "dockerStable": false
+  }
+}

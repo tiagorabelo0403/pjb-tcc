@@ -1,0 +1,9 @@
+{
+  "round": 76,
+  "artifacts": [
+    "core/processo/recursal/domain/foundation/RecursalConcretePieceMatrixBlueprint.java",
+    "service/processual/recursal/workspace/RecursalConcretePieceMatrixTrackFactory.java"
+  ],
+  "workspaceTrack": "MATRIZ_PECAS_CONCRETAS_POR_ATOR_E_RITO",
+  "playbookStep": "MATRIZ_PECAS_CONCRETAS_POR_ATOR_E_RITO"
+}

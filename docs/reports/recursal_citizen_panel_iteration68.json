@@ -1,0 +1,16 @@
+{
+  "round": 68,
+  "title": "painel recursal próprio do cidadão",
+  "artifacts": [
+    "RecursalCitizenPanelBlueprint",
+    "RecursalCitizenPanelTrackFactory"
+  ],
+  "workspaceTrack": "PAINEL_CIDADAO_RECURSAL_PROPRIO",
+  "playbookStep": "PUBLICAR_PAINEL_CIDADAO_RECURSAL_PROPRIO",
+  "focus": [
+    "processos próprios",
+    "últimas movimentações",
+    "cores processuais existentes",
+    "sem duplicação de superfície"
+  ]
+}

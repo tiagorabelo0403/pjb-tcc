@@ -1,0 +1,5 @@
+{
+  "version": "abac-v1.0",
+  "name": "PJB ABAC Policy v1",
+  "description": "Política ABAC inicial do PJB: justificativa obrigatória para sigilo, need-to-know por perfil e territorialidade (UF) quando conhecida."
+}

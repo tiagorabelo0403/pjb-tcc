@@ -1,0 +1,539 @@
+{
+  "consumer": {
+    "name": "PjbLegalAiConsumer"
+  },
+  "provider": {
+    "name": "PjbLegalAiProvider"
+  },
+  "interactions": [
+    {
+      "description": "generate promoted legal draft",
+      "providerStates": [
+        {
+          "name": "legal ai minuta promoted response is available"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/minuta",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "analiseV1": "Análise v1",
+          "peticaoInicialText": "Texto inicial",
+          "instrucoes": "Instruções",
+          "objetivo": "Gerar minuta",
+          "userProfile": "ADVOGADO",
+          "processoId": "PROC-1",
+          "ramo": "CIVEL",
+          "rito": "COMUM",
+          "classe": "OBRIGACAO_DE_FAZER",
+          "attachments": [
+            "documento.pdf"
+          ],
+          "contexto": {
+            "sourceSystem": "CNJ"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "minuta": "RELATÓRIO\nMinuta promovida por evidência oficial.",
+          "status": "PROMOTED",
+          "nextSteps": [
+            "Evidência oficial soberana confirmada."
+          ],
+          "safeguards": {
+            "surfaceStatus": "NOT_REQUIRED",
+            "draftPromotionStatus": "PROMOTED",
+            "promotedDraftEvidenceIds": [
+              "CNJ-OK"
+            ],
+            "evidenceProvenanceTier": "OFFICIAL_DOCUMENT"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "generate step up legal draft",
+      "providerStates": [
+        {
+          "name": "legal ai minuta step up response is available"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/minuta",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "analiseV1": "Análise v1",
+          "peticaoInicialText": "Texto inicial",
+          "instrucoes": "Instruções",
+          "objetivo": "Gerar minuta",
+          "userProfile": "ADVOGADO",
+          "processoId": "PROC-1",
+          "ramo": "CIVEL",
+          "rito": "COMUM",
+          "classe": "OBRIGACAO_DE_FAZER",
+          "attachments": [
+            "documento.pdf"
+          ],
+          "contexto": {
+            "sourceSystem": "CNJ"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "minuta": "RELATÓRIO\n[PENDENTE_CONFIRMACAO_SOBERANA]",
+          "status": "STEP_UP_REQUIRED",
+          "nextSteps": [
+            "Confirmar cadeia oficial antes da redação material."
+          ],
+          "safeguards": {
+            "surfaceStatus": "ESCALATED",
+            "draftPromotionStatus": "STEP_UP_REQUIRED",
+            "promotedDraftEvidenceIds": [],
+            "evidenceProvenanceTier": "DERIVED_DOCUMENT"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "generate blocked legal draft",
+      "providerStates": [
+        {
+          "name": "legal ai minuta blocked response is available"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/minuta",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "analiseV1": "Análise v1",
+          "peticaoInicialText": "Texto inicial",
+          "instrucoes": "Instruções",
+          "objetivo": "Gerar minuta",
+          "userProfile": "ADVOGADO",
+          "processoId": "PROC-1",
+          "ramo": "CIVEL",
+          "rito": "COMUM",
+          "classe": "OBRIGACAO_DE_FAZER",
+          "attachments": [
+            "documento.pdf"
+          ],
+          "contexto": {
+            "sourceSystem": "CNJ"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "minuta": "RELATÓRIO\n[PROMOCAO_DOCUMENTAL_BLOQUEADA]",
+          "status": "BLOCKED",
+          "nextSteps": [
+            "Remover anexo em quarentena e reenviar origem oficial."
+          ],
+          "safeguards": {
+            "surfaceStatus": "LOCKED",
+            "draftPromotionStatus": "BLOCKED",
+            "promotedDraftEvidenceIds": [],
+            "evidenceProvenanceTier": "UNTRUSTED_DOCUMENT"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "check promoted legal grounding",
+      "providerStates": [
+        {
+          "name": "legal ai grounding promoted response is available"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/grounding/check",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "texto": "Verificar consistência das citações do acórdão.",
+          "ramo": "CIVEL",
+          "rito": "COMUM",
+          "classe": "OBRIGACAO_DE_FAZER",
+          "groundedCitations": [
+            "AgInt no REsp 1"
+          ],
+          "filtros": {
+            "sourceSystem": "CNJ"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "profileCode": "LEGAL_GROUNDING_CHECK_V3",
+          "version": "V3",
+          "capability": "LEGAL_GROUNDING_CHECK_V3",
+          "status": "ALIGNED",
+          "articleReferenceVerificationRequired": true,
+          "precedentVerificationRequired": true,
+          "freeFormCitationBlocked": true,
+          "citationEmissionMode": "STRICT_OFFICIAL_ONLY",
+          "unresolvedCitationPlaceholder": "[CITACAO_PENDENTE_VALIDACAO]",
+          "evidenceProvenanceStatus": "NOT_REQUIRED",
+          "evidenceProvenanceTier": "OFFICIAL_DOCUMENT",
+          "sovereignProvenanceMode": "SOVEREIGN_PROMOTED",
+          "groundingPromotionStatus": "PROMOTED",
+          "suspiciousSignals": [],
+          "blockedReasons": [],
+          "trace": {
+            "surfaceStatus": "NOT_REQUIRED",
+            "promotedGroundingEvidenceIds": [
+              "CNJ-OK"
+            ]
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "check review required legal grounding",
+      "providerStates": [
+        {
+          "name": "legal ai grounding review required response is available"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/grounding/check",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "texto": "Verificar consistência das citações do acórdão.",
+          "ramo": "CIVEL",
+          "rito": "COMUM",
+          "classe": "OBRIGACAO_DE_FAZER",
+          "groundedCitations": [
+            "AgInt no REsp 1"
+          ],
+          "filtros": {
+            "sourceSystem": "CNJ"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "profileCode": "LEGAL_GROUNDING_CHECK_V3",
+          "version": "V3",
+          "capability": "LEGAL_GROUNDING_CHECK_V3",
+          "status": "REVIEW_REQUIRED",
+          "articleReferenceVerificationRequired": true,
+          "precedentVerificationRequired": true,
+          "freeFormCitationBlocked": true,
+          "citationEmissionMode": "STRICT_OFFICIAL_ONLY",
+          "unresolvedCitationPlaceholder": "[CITACAO_PENDENTE_VALIDACAO]",
+          "evidenceProvenanceStatus": "ESCALATED",
+          "evidenceProvenanceTier": "DERIVED_DOCUMENT",
+          "sovereignProvenanceMode": "SOVEREIGN_STEP_UP",
+          "groundingPromotionStatus": "STEP_UP_REQUIRED",
+          "suspiciousSignals": [
+            "A cadeia soberana exige confirmação oficial adicional."
+          ],
+          "blockedReasons": [],
+          "trace": {
+            "surfaceStatus": "ESCALATED",
+            "promotedGroundingEvidenceIds": []
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "check blocked legal grounding",
+      "providerStates": [
+        {
+          "name": "legal ai grounding blocked response is available"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/grounding/check",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "texto": "Verificar consistência das citações do acórdão.",
+          "ramo": "CIVEL",
+          "rito": "COMUM",
+          "classe": "OBRIGACAO_DE_FAZER",
+          "groundedCitations": [
+            "AgInt no REsp 1"
+          ],
+          "filtros": {
+            "sourceSystem": "CNJ"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "profileCode": "LEGAL_GROUNDING_CHECK_V3",
+          "version": "V3",
+          "capability": "LEGAL_GROUNDING_CHECK_V3",
+          "status": "BLOCKED",
+          "articleReferenceVerificationRequired": true,
+          "precedentVerificationRequired": true,
+          "freeFormCitationBlocked": true,
+          "citationEmissionMode": "STRICT_OFFICIAL_ONLY",
+          "unresolvedCitationPlaceholder": "[CITACAO_PENDENTE_VALIDACAO]",
+          "evidenceProvenanceStatus": "LOCKED",
+          "evidenceProvenanceTier": "UNTRUSTED_DOCUMENT",
+          "sovereignProvenanceMode": "SOVEREIGN_PROVENANCE_HARD_LOCK",
+          "groundingPromotionStatus": "BLOCKED",
+          "suspiciousSignals": [],
+          "blockedReasons": [
+            "Grounding estruturado foi bloqueado pela cerca soberana."
+          ],
+          "trace": {
+            "surfaceStatus": "LOCKED",
+            "promotedGroundingEvidenceIds": []
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "converse with promoted legal ai boundary",
+      "providerStates": [
+        {
+          "name": "legal ai conversation promoted response is available"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/conversation",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "conversationId": "conv-http",
+          "processoId": "PROC-1",
+          "message": "Preciso validar o cabimento recursal com base no acórdão anexado.",
+          "userProfile": "ADVOGADO",
+          "history": [
+            "Contexto anterior"
+          ],
+          "attachments": [
+            "acordao.pdf"
+          ],
+          "context": {
+            "sourceSystem": "CNJ",
+            "sigilo": "publico"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "conversationId": "conv-promoted",
+          "selectedVersion": "V3",
+          "selectedCapability": "LEGAL_GENERAL_ASSIST_V3",
+          "answer": "Resposta conversacional jurídica V3: analisando o pedido com malha unificada e lastro oficial confirmado.",
+          "nextSteps": [
+            "Manter a conversa em modo read-only soberano enquanto o lastro oficial estiver íntegro."
+          ],
+          "virtualTrends": [
+            {
+              "virtualTrend": "VT_OFFICIAL_GROUNDING",
+              "action": "Manter lastro oficial confirmado."
+            }
+          ],
+          "conversationContext": {
+            "conversationApproval": {
+              "status": "AUTO_READONLY"
+            },
+            "conversationTrustZone": {
+              "status": "NOT_REQUIRED",
+              "trustZone": "PUBLIC"
+            },
+            "conversationEvidenceProvenance": {
+              "status": "NOT_REQUIRED",
+              "tier": "OFFICIAL_DOCUMENT"
+            }
+          },
+          "safeguards": {
+            "approvalStatus": "AUTO_READONLY",
+            "trustZoneStatus": "NOT_REQUIRED",
+            "trustZone": "PUBLIC",
+            "evidenceProvenanceStatus": "NOT_REQUIRED",
+            "evidenceProvenanceTier": "OFFICIAL_DOCUMENT"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "converse with step up legal ai boundary",
+      "providerStates": [
+        {
+          "name": "legal ai conversation step up response is available"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/conversation",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "conversationId": "conv-http",
+          "processoId": "PROC-1",
+          "message": "Preciso validar o cabimento recursal com base no acórdão anexado.",
+          "userProfile": "ADVOGADO",
+          "history": [
+            "Contexto anterior"
+          ],
+          "attachments": [
+            "acordao.pdf"
+          ],
+          "context": {
+            "sourceSystem": "CNJ",
+            "sigilo": "publico"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "conversationId": "conv-step-up",
+          "selectedVersion": "V3",
+          "selectedCapability": "LEGAL_GENERAL_ASSIST_V3",
+          "answer": "Resposta conversacional jurídica V3: a consulta exige gate assistido antes de liberar inferência material em zona sigilosa.",
+          "nextSteps": [
+            "Exigir confirmação oficial adicional antes de ampliar o grounding desta conversa."
+          ],
+          "virtualTrends": [
+            {
+              "virtualTrend": "VT_SIGILO_STEP_UP",
+              "action": "Exigir confirmação soberana adicional."
+            }
+          ],
+          "conversationContext": {
+            "conversationApproval": {
+              "status": "STEP_UP_REQUIRED"
+            },
+            "conversationTrustZone": {
+              "status": "ESCALATED",
+              "trustZone": "SIGILOSA"
+            },
+            "conversationEvidenceProvenance": {
+              "status": "ESCALATED",
+              "tier": "DERIVED_DOCUMENT"
+            }
+          },
+          "safeguards": {
+            "approvalStatus": "STEP_UP_REQUIRED",
+            "trustZoneStatus": "ESCALATED",
+            "trustZone": "SIGILOSA",
+            "evidenceProvenanceStatus": "ESCALATED",
+            "evidenceProvenanceTier": "DERIVED_DOCUMENT"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "converse with blocked legal ai boundary",
+      "providerStates": [
+        {
+          "name": "legal ai conversation blocked response is available"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/conversation",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "conversationId": "conv-http",
+          "processoId": "PROC-1",
+          "message": "Preciso validar o cabimento recursal com base no acórdão anexado.",
+          "userProfile": "ADVOGADO",
+          "history": [
+            "Contexto anterior"
+          ],
+          "attachments": [
+            "acordao.pdf"
+          ],
+          "context": {
+            "sourceSystem": "CNJ",
+            "sigilo": "publico"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "conversationId": "conv-blocked",
+          "selectedVersion": "V3",
+          "selectedCapability": "LEGAL_GENERAL_ASSIST_V3",
+          "answer": "Resposta conversacional jurídica V3: a conversa foi mantida em revisão humana por trust zone crítica e evidência não confiável.",
+          "nextSteps": [
+            "Substituir anexo em quarentena e reenviar apenas origem oficial controlada."
+          ],
+          "virtualTrends": [
+            {
+              "virtualTrend": "VT_CRITICAL_LOCK",
+              "action": "Bloquear emissão material até revisão humana."
+            }
+          ],
+          "conversationContext": {
+            "conversationApproval": {
+              "status": "HUMAN_REVIEW_REQUIRED"
+            },
+            "conversationTrustZone": {
+              "status": "LOCKED",
+              "trustZone": "CRITICAL"
+            },
+            "conversationEvidenceProvenance": {
+              "status": "LOCKED",
+              "tier": "UNTRUSTED_DOCUMENT"
+            }
+          },
+          "safeguards": {
+            "approvalStatus": "HUMAN_REVIEW_REQUIRED",
+            "trustZoneStatus": "LOCKED",
+            "trustZone": "CRITICAL",
+            "evidenceProvenanceStatus": "LOCKED",
+            "evidenceProvenanceTier": "UNTRUSTED_DOCUMENT"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "4.0"
+    },
+    "pact-jvm": {
+      "version": "4.6.14"
+    }
+  }
+}

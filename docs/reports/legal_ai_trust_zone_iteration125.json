@@ -1,0 +1,16 @@
+{
+  "round": 125,
+  "feature": "legal_ai_trust_zone_registry",
+  "artifacts": [
+    "LegalAiConversationTrustZoneService",
+    "LegalAiConversationTrustZoneSnapshot"
+  ],
+  "integrations": [
+    "LegalAiConversationOrchestrator",
+    "LegalToolScopePolicy",
+    "LegalSensitiveActionApprovalService",
+    "LegalAiConversationResponseComposerService"
+  ],
+  "states": ["PUBLIC", "INSTITUTIONAL", "SIGILOSA", "CRITICAL"],
+  "status": "implemented"
+}

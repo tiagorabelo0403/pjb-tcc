@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pjb-worker
+spec:
+  template:
+    metadata:
+      annotations:
+        pjb.io/operational-crisis-profile: containment-v1
+        pjb.io/operational-crisis-updated-at: "2026-04-02T00:00:00Z"
+    spec:
+      containers:
+        - name: backend
+          env:
+            - name: PJB_RUNTIME_BURST_CONCURRENCY
+              value: "640"
+            - name: PJB_RUNTIME_JOB_CONCURRENCY
+              value: "512"
+            - name: PJB_RUNTIME_ASYNC_CONCURRENCY
+              value: "192"

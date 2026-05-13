@@ -1,0 +1,246 @@
+{
+  "consumer": {
+    "name": "PjbLegalAiEdgePolicyConsumer"
+  },
+  "provider": {
+    "name": "PjbLegalAiEdgePolicyProvider"
+  },
+  "interactions": [
+    {
+      "description": "reject untrusted browser origin on legal draft boundary",
+      "providerStates": [
+        {
+          "name": "legal ai edge rejects untrusted browser origin"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/minuta",
+        "headers": {
+          "Content-Type": "application/json",
+          "Origin": "https://evil.example"
+        },
+        "body": {
+          "analiseV1": "Análise v1",
+          "peticaoInicialText": "Texto inicial",
+          "instrucoes": "Instruções",
+          "objetivo": "Gerar minuta",
+          "userProfile": "ADVOGADO",
+          "processoId": "PROC-1",
+          "ramo": "CIVEL",
+          "rito": "COMUM",
+          "classe": "OBRIGACAO_DE_FAZER",
+          "attachments": [
+            "documento.pdf"
+          ],
+          "contexto": {
+            "sourceSystem": "CNJ"
+          }
+        }
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "type": "https://pjb.local/problems/browser_origin_not_allowed",
+          "title": "Origin Governance Rejected",
+          "status": 403,
+          "detail": "Origin/Referer nao pertence a uma origem confiavel configurada na borda.",
+          "instance": "/api/ai/legal/minuta"
+        },
+        "headers": {
+          "Content-Type": "application/problem+json"
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "reject untrusted browser origin on legal grounding boundary",
+      "providerStates": [
+        {
+          "name": "legal ai edge rejects untrusted browser origin"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/grounding/check",
+        "headers": {
+          "Content-Type": "application/json",
+          "Origin": "https://evil.example"
+        },
+        "body": {
+          "texto": "Verificar consistência das citações do acórdão.",
+          "ramo": "CIVEL",
+          "rito": "COMUM",
+          "classe": "OBRIGACAO_DE_FAZER",
+          "citacoes": [
+            "AgInt no REsp 1"
+          ],
+          "contexto": {
+            "sourceSystem": "CNJ"
+          }
+        }
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "type": "https://pjb.local/problems/browser_origin_not_allowed",
+          "title": "Origin Governance Rejected",
+          "status": 403,
+          "detail": "Origin/Referer nao pertence a uma origem confiavel configurada na borda.",
+          "instance": "/api/ai/legal/grounding/check"
+        },
+        "headers": {
+          "Content-Type": "application/problem+json"
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "reject untrusted browser origin on legal conversation boundary",
+      "providerStates": [
+        {
+          "name": "legal ai edge rejects untrusted browser origin"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/conversation",
+        "headers": {
+          "Content-Type": "application/json",
+          "Origin": "https://evil.example"
+        },
+        "body": {
+          "conversationId": "conv-http",
+          "processoId": "PROC-1",
+          "message": "Preciso validar o cabimento recursal com base no acórdão anexado.",
+          "userProfile": "ADVOGADO",
+          "conversationHistory": [
+            "Contexto anterior"
+          ],
+          "attachments": [
+            "acordao.pdf"
+          ],
+          "contexto": {
+            "sourceSystem": "CNJ",
+            "sigilo": "publico"
+          }
+        }
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "type": "https://pjb.local/problems/browser_origin_not_allowed",
+          "title": "Origin Governance Rejected",
+          "status": 403,
+          "detail": "Origin/Referer nao pertence a uma origem confiavel configurada na borda.",
+          "instance": "/api/ai/legal/conversation"
+        },
+        "headers": {
+          "Content-Type": "application/problem+json"
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "reject unsupported content type on legal draft boundary",
+      "providerStates": [
+        {
+          "name": "legal ai edge rejects unsupported content type"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/minuta",
+        "headers": {
+          "Content-Type": "text/plain",
+          "Origin": "https://app.pjb.justica.br"
+        },
+        "body": "texto"
+      },
+      "response": {
+        "status": 415,
+        "body": {
+          "type": "https://pjb.local/problems/content_type_not_allowed",
+          "title": "Route Governance Rejected",
+          "status": 415,
+          "detail": "Content-Type nao permitido para a faixa governada desta API.",
+          "instance": "/api/ai/legal/minuta"
+        },
+        "headers": {
+          "Content-Type": "application/problem+json"
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "reject unsupported content type on legal grounding boundary",
+      "providerStates": [
+        {
+          "name": "legal ai edge rejects unsupported content type"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/grounding/check",
+        "headers": {
+          "Content-Type": "text/plain",
+          "Origin": "https://app.pjb.justica.br"
+        },
+        "body": "texto"
+      },
+      "response": {
+        "status": 415,
+        "body": {
+          "type": "https://pjb.local/problems/content_type_not_allowed",
+          "title": "Route Governance Rejected",
+          "status": 415,
+          "detail": "Content-Type nao permitido para a faixa governada desta API.",
+          "instance": "/api/ai/legal/grounding/check"
+        },
+        "headers": {
+          "Content-Type": "application/problem+json"
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "reject unsupported content type on legal conversation boundary",
+      "providerStates": [
+        {
+          "name": "legal ai edge rejects unsupported content type"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/conversation",
+        "headers": {
+          "Content-Type": "text/plain",
+          "Origin": "https://app.pjb.justica.br"
+        },
+        "body": "texto"
+      },
+      "response": {
+        "status": 415,
+        "body": {
+          "type": "https://pjb.local/problems/content_type_not_allowed",
+          "title": "Route Governance Rejected",
+          "status": 415,
+          "detail": "Content-Type nao permitido para a faixa governada desta API.",
+          "instance": "/api/ai/legal/conversation"
+        },
+        "headers": {
+          "Content-Type": "application/problem+json"
+        }
+      },
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "3.0.0"
+    },
+    "pact-jvm": {
+      "version": "4.6.x"
+    }
+  }
+}

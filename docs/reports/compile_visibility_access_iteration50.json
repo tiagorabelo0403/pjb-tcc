@@ -1,0 +1,38 @@
+{
+  "round": 50,
+  "focus": "compile-latent access modifier relink",
+  "changes": [
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/participacao/Persona.java",
+      "actions": [
+        "enum made public",
+        "label() made public",
+        "resolve(...) made public"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/juizado/procedural/NationalProceduralJuizadoDecision.java",
+      "actions": [
+        "record made public",
+        "toMap() made public"
+      ]
+    }
+  ],
+  "validation": {
+    "cross_package_imports_of_package_private_top_level_types": 0,
+    "guards": [
+      "architecture_hygiene_guard",
+      "constructor_injection_guard",
+      "runtime_concurrency_guard",
+      "transactional_hotspot_guard --fail-on-missing-budgets",
+      "config_taxonomy_guard",
+      "repository_layout_guard",
+      "internal_reference_drift_guard"
+    ],
+    "drift": "OK - no unresolved internal references outside strings/comments"
+  },
+  "notes": [
+    "No Maven global compile claimed",
+    "Fix targets compile-latent visibility breaks after package reorganization"
+  ]
+}

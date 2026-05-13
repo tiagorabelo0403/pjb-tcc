@@ -1,0 +1,88 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: pjb-api
+  annotations:
+    scaledobject.keda.sh/transfer-hpa-ownership: "true"
+spec:
+  scaleTargetRef:
+    name: pjb-api
+  pollingInterval: 15
+  cooldownPeriod: 180
+  initialCooldownPeriod: 180
+  minReplicaCount: 3
+  maxReplicaCount: 24
+  fallback:
+    failureThreshold: 3
+    replicas: 5
+    behavior: currentReplicasIfHigher
+  advanced:
+    restoreToOriginalReplicaCount: false
+    horizontalPodAutoscalerConfig:
+      name: keda-hpa-pjb-api-adaptive
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          tolerance: 0.03
+          policies:
+            - type: Percent
+              value: 100
+              periodSeconds: 60
+            - type: Pods
+              value: 5
+              periodSeconds: 60
+          selectPolicy: Max
+        scaleDown:
+          stabilizationWindowSeconds: 420
+          tolerance: 0.08
+          policies:
+            - type: Percent
+              value: 20
+              periodSeconds: 60
+          selectPolicy: Max
+    scalingModifiers:
+      target: "1"
+      activationTarget: "0.35"
+      metricType: "Value"
+      formula: "max(api_rps_pressure, api_latency_pressure * 1.35, api_error_pressure * 2.10, api_db_pressure * 1.20)"
+  triggers:
+    - type: prometheus
+      name: api_rps_pressure
+      useCachedMetrics: true
+      metricType: Value
+      metadata:
+        serverAddress: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        query: sum(rate(http_server_requests_seconds_count{namespace="pjb",pod=~"pjb-api-.*",uri!~"/actuator.*|/v3/api-docs.*|/swagger-ui.*"}[2m])) / 80
+        threshold: "1"
+        activationThreshold: "0.35"
+        ignoreNullValues: "false"
+    - type: prometheus
+      name: api_latency_pressure
+      useCachedMetrics: true
+      metricType: Value
+      metadata:
+        serverAddress: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        query: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{namespace="pjb",pod=~"pjb-api-.*",uri!~"/actuator.*|/v3/api-docs.*|/swagger-ui.*"}[5m])) by (le)) / 0.75
+        threshold: "1"
+        activationThreshold: "0.35"
+        ignoreNullValues: "false"
+    - type: prometheus
+      name: api_error_pressure
+      useCachedMetrics: true
+      metricType: Value
+      metadata:
+        serverAddress: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        query: (sum(rate(http_server_requests_seconds_count{namespace="pjb",pod=~"pjb-api-.*",status=~"5..",uri!~"/actuator.*|/v3/api-docs.*|/swagger-ui.*"}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count{namespace="pjb",pod=~"pjb-api-.*",uri!~"/actuator.*|/v3/api-docs.*|/swagger-ui.*"}[5m])), 0.001)) / 0.02
+        threshold: "1"
+        activationThreshold: "0.20"
+        ignoreNullValues: "false"
+    - type: prometheus
+      name: api_db_pressure
+      useCachedMetrics: true
+      metricType: Value
+      metadata:
+        serverAddress: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        query: sum(hikaricp_connections_pending{namespace="pjb",pod=~"pjb-api-.*"}) / 4
+        threshold: "1"
+        activationThreshold: "0.25"
+        ignoreNullValues: "false"

@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "tokens": {
+    "URGENTE": {
+      "icon": "alert-triangle",
+      "pattern": "solid",
+      "colors": {
+        "LIGHT": { "hex": "#C62828", "on": "#FFFFFF" },
+        "DARK":  { "hex": "#EF5350", "on": "#1B1B1B" }
+      },
+      "labels": { "DEFAULT": "Urgente" },
+      "descriptions": { "DEFAULT": "Prazo crítico (<= 24h) ou prioridade máxima. Deve ir para o topo." }
+    },
+    "ATRASADO": {
+      "icon": "alarm-clock",
+      "pattern": "stripes",
+      "colors": {
+        "LIGHT": { "hex": "#6D4C41", "on": "#FFFFFF" },
+        "DARK":  { "hex": "#BCAAA4", "on": "#1B1B1B" }
+      },
+      "labels": { "DEFAULT": "Atrasado" },
+      "descriptions": { "DEFAULT": "Prazo vencido. Exige ação imediata e justificativa operacional." }
+    },
+    "PENDENTE": {
+      "icon": "circle-dashed",
+      "pattern": "dots",
+      "colors": {
+        "LIGHT": { "hex": "#F9A825", "on": "#1B1B1B" },
+        "DARK":  { "hex": "#FFD54F", "on": "#1B1B1B" }
+      },
+      "labels": { "DEFAULT": "Pendente", "ADVOCACIA": "Aguardando" },
+      "descriptions": { "DEFAULT": "Item ainda não iniciado. Aguardando providência." }
+    },
+    "EM_EXECUCAO": {
+      "icon": "loader",
+      "pattern": "outline",
+      "colors": {
+        "LIGHT": { "hex": "#1565C0", "on": "#FFFFFF" },
+        "DARK":  { "hex": "#90CAF9", "on": "#0B0F14" }
+      },
+      "labels": { "DEFAULT": "Em execução" },
+      "descriptions": { "DEFAULT": "Item já está em andamento (alguém assumiu/está executando)." }
+    },
+    "CONCLUIDO": {
+      "icon": "check-circle",
+      "pattern": "solid",
+      "colors": {
+        "LIGHT": { "hex": "#2E7D32", "on": "#FFFFFF" },
+        "DARK":  { "hex": "#A5D6A7", "on": "#0B0F14" }
+      },
+      "labels": { "DEFAULT": "Concluído" },
+      "descriptions": { "DEFAULT": "Tarefa executada. A UI pode remover da inbox padrão ou enviar para histórico." }
+    },
+    "RECURSO": {
+      "icon": "corner-up-right",
+      "pattern": "outline",
+      "colors": {
+        "LIGHT": { "hex": "#6A1B9A", "on": "#FFFFFF" },
+        "DARK":  { "hex": "#CE93D8", "on": "#0B0F14" }
+      },
+      "labels": { "DEFAULT": "Recurso" },
+      "descriptions": { "DEFAULT": "Tema recursal: agravos, apelações, embargos, etc." }
+    },
+    "SIGILOSO": {
+      "icon": "lock",
+      "pattern": "hatch",
+      "colors": {
+        "LIGHT": { "hex": "#263238", "on": "#FFFFFF" },
+        "DARK":  { "hex": "#B0BEC5", "on": "#0B0F14" }
+      },
+      "labels": { "DEFAULT": "Sigiloso" },
+      "descriptions": { "DEFAULT": "Atenção: conteúdo restrito. Respeitar sigilo/segredo de justiça." }
+    },
+    "NOTIFICADO": {
+      "icon": "message-circle",
+      "pattern": "solid",
+      "colors": {
+        "LIGHT": { "hex": "#25D366", "on": "#0B0F14" },
+        "DARK":  { "hex": "#00A884", "on": "#0B0F14" }
+      },
+      "labels": { "DEFAULT": "Notificado", "ADVOCACIA": "Nova mensagem" },
+      "descriptions": { "DEFAULT": "Nova mensagem no chat. Abra a conversa para ler e responder." }
+    },
+    "ASSUNTO": {
+      "icon": "tag",
+      "pattern": "solid",
+      "colors": {
+        "LIGHT": { "hex": "#546E7A", "on": "#FFFFFF" },
+        "DARK":  { "hex": "#B0BEC5", "on": "#0B0F14" }
+      },
+      "labels": { "DEFAULT": "Assunto" },
+      "descriptions": { "DEFAULT": "Assunto/Classe (tag dinâmica)." }
+    }
+  },
+  "assuntoPalette": {
+    "LIGHT": ["#1E88E5", "#3949AB", "#00897B", "#8E24AA", "#5E35B1", "#00ACC1", "#FB8C00", "#F4511E", "#43A047", "#7CB342", "#6D4C41", "#546E7A"],
+    "DARK":  ["#90CAF9", "#9FA8DA", "#80CBC4", "#CE93D8", "#B39DDB", "#80DEEA", "#FFCC80", "#FFAB91", "#A5D6A7", "#C5E1A5", "#BCAAA4", "#B0BEC5"]
+  }
+}

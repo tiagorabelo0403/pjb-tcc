@@ -1,0 +1,16 @@
+package com.tcc.pjb.backend.repository.ui;
+
+import com.tcc.pjb.backend.model.entity.ui.UsuarioCalculoExperiencePreference;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UsuarioCalculoExperiencePreferenceRepository extends JpaRepository<UsuarioCalculoExperiencePreference, Long> {
+  java.util.List<UsuarioCalculoExperiencePreference> findAllByPrincipalKeyAndEquipeAtivaIdOrderByUpdatedAtDescIdDesc(String principalKey, Long equipeAtivaId);
+  java.util.List<UsuarioCalculoExperiencePreference> findAllByPrincipalKeyAndEquipeAtivaIdIsNullOrderByUpdatedAtDescIdDesc(String principalKey);
+  Optional<UsuarioCalculoExperiencePreference> findTopByPrincipalKeyAndEquipeAtivaIdAndDomainCodeOrderByUpdatedAtDescIdDesc(String principalKey, Long equipeAtivaId, String domainCode);
+  Optional<UsuarioCalculoExperiencePreference> findTopByPrincipalKeyAndEquipeAtivaIdAndDomainCodeIsNullOrderByUpdatedAtDescIdDesc(String principalKey, Long equipeAtivaId);
+  Optional<UsuarioCalculoExperiencePreference> findTopByPrincipalKeyAndEquipeAtivaIdIsNullAndDomainCodeOrderByUpdatedAtDescIdDesc(String principalKey, String domainCode);
+  Optional<UsuarioCalculoExperiencePreference> findTopByPrincipalKeyAndEquipeAtivaIdIsNullAndDomainCodeIsNullOrderByUpdatedAtDescIdDesc(String principalKey);
+  Optional<UsuarioCalculoExperiencePreference> findTopByPrincipalKeyAndEquipeAtivaIdAndInstitutionalPolicyTrueAndDomainCodeOrderByUpdatedAtDescIdDesc(String principalKey, Long equipeAtivaId, String domainCode);
+  Optional<UsuarioCalculoExperiencePreference> findTopByPrincipalKeyAndEquipeAtivaIdAndInstitutionalPolicyTrueAndDomainCodeIsNullOrderByUpdatedAtDescIdDesc(String principalKey, Long equipeAtivaId);
+}

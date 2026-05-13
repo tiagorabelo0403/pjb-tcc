@@ -1,0 +1,331 @@
+{
+  "consumer": {
+    "name": "PjbAjuizamentoIntentConsumer"
+  },
+  "provider": {
+    "name": "PjbAjuizamentoIntentProvider"
+  },
+  "interactions": [
+    {
+      "description": "list ajuizamento branches",
+      "type": "Synchronous/HTTP",
+      "providerStates": [
+        {
+          "name": "ajuizamento branches can be listed"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/ai/ajuizamento/ramos"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "scope": "AJUIZAMENTO_RAMOS",
+          "items": [
+            {
+              "key": "CIVIL",
+              "fields": [
+                {
+                  "name": "label",
+                  "value": "Cível"
+                },
+                {
+                  "name": "macroArea",
+                  "value": "Direito Privado"
+                }
+              ]
+            },
+            {
+              "key": "PENAL",
+              "fields": [
+                {
+                  "name": "label",
+                  "value": "Penal"
+                },
+                {
+                  "name": "macroArea",
+                  "value": "Direito Público"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "description": "load ajuizamento branch detail",
+      "providerStates": [
+        {
+          "name": "ajuizamento branch detail can be loaded"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/ai/ajuizamento/ramos/CIVIL"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "codigo": "CIVIL",
+          "nome": "Cível",
+          "regraPrincipal": "Tutela de pretensões patrimoniais e obrigacionais",
+          "codigoProcessual": "CPC",
+          "subRamos": [
+            "COBRANCA",
+            "RESPONSABILIDADE_CIVIL"
+          ],
+          "tribunaisCompetentes": [
+            "TJCE",
+            "TRF5"
+          ],
+          "classesComuns": [
+            "Ação de cobrança",
+            "Cumprimento de sentença"
+          ],
+          "precedentesEstruturantes": [
+            "Tema 988",
+            "Tema 123"
+          ],
+          "prazosPrincipais": [
+            "15 dias úteis",
+            "30 dias"
+          ],
+          "segredoJustica": false,
+          "exigeMP": false,
+          "admiteConciliacao": true
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "route ajuizamento request",
+      "providerStates": [
+        {
+          "name": "ajuizamento route can be executed"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/ai/ajuizamento/route",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "texto": "ação de cobrança contra banco",
+          "valorCausa": 12000,
+          "tribunal": "TJCE"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "requestId": "route-2026-01",
+          "timestamp": "2026-04-16T12:00:00Z",
+          "intent": {
+            "rito": "COMUM_ORDINARIO",
+            "ramoDireito": "CIVIL",
+            "subRamo": "COBRANCA",
+            "esfera": "ESTADUAL",
+            "competencia": "2_VARA_CIVEL",
+            "tipoAcao": "AÇÃO DE COBRANÇA",
+            "fundamento": "inadimplemento contratual",
+            "confianca": 0.94,
+            "camposObrigatorios": [
+              "parteAutoraNome",
+              "pedidoPrincipal"
+            ],
+            "alertas": [
+              "Validar competência territorial"
+            ],
+            "documentosEssenciais": [
+              "Contrato",
+              "Notificação extrajudicial"
+            ],
+            "proximosPassos": [
+              "Conferir planilha de débito"
+            ],
+            "segredoJustica": false,
+            "exigeMP": false,
+            "admiteConciliacao": true,
+            "proceduralRouting": null
+          },
+          "ritoWorkflow": {
+            "status": "OK",
+            "rito": "COMUM_ORDINARIO"
+          },
+          "ramoDescriptor": {
+            "codigo": "CIVIL",
+            "nome": "Cível",
+            "regraPrincipal": "Tutela de pretensões patrimoniais e obrigacionais",
+            "codigoProcessual": "CPC",
+            "subRamos": [
+              "COBRANCA"
+            ],
+            "tribunaisCompetentes": [
+              "TJCE"
+            ],
+            "classesComuns": [
+              "Ação de cobrança"
+            ],
+            "precedentesEstruturantes": [
+              "Tema 988"
+            ],
+            "prazosPrincipais": [
+              "15 dias úteis"
+            ],
+            "segredoJustica": false,
+            "exigeMP": false,
+            "admiteConciliacao": true
+          },
+          "ramoProjeto": "CIVIL_ESTRATEGICO",
+          "ritoGrupo": "CIVIL",
+          "curriculum": {
+            "program": "CONTENCIOSO_CIVEL"
+          },
+          "knowledge": {
+            "base": "BRASIL_2026"
+          },
+          "tribunalRouting": {
+            "tribunalCodigo": "TJCE",
+            "judicialSystem": "PJE"
+          },
+          "preflight": {
+            "status": "READY",
+            "reviewChecklist": [
+              "competência territorial"
+            ]
+          },
+          "canonicalContext": {
+            "rito": "COMUM_ORDINARIO",
+            "tribunal": "TJCE"
+          },
+          "architectureSanity": {
+            "status": "GREEN"
+          },
+          "generatedWorkflow": {
+            "status": "GENERATED"
+          },
+          "recomendacaoFinal": "Ajuizamento apto para protocolo assistido.",
+          "alertasCriticos": [
+            "Confirmar endereço da parte ré"
+          ],
+          "camposObrigatorios": [
+            "parteAutoraNome",
+            "pedidoPrincipal"
+          ],
+          "documentosEssenciais": [
+            "Contrato",
+            "Notificação extrajudicial"
+          ],
+          "proximosPassos": [
+            "Gerar petição inicial"
+          ],
+          "confiancaGlobal": 0.95,
+          "sistemaProtocolo": "PJE",
+          "status": "READY",
+          "segredoJustica": false,
+          "exigeMP": false,
+          "admiteConciliacao": true
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "generate ajuizamento infer map",
+      "providerStates": [
+        {
+          "name": "ajuizamento infer map can be generated"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/ai/ajuizamento/infer-map",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "texto": "cobrança contratual cível"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "scope": "AJUIZAMENTO_INTENT_MAP",
+          "fields": [
+            {
+              "name": "ramoDireito",
+              "value": "CIVIL"
+            },
+            {
+              "name": "tipoAcao",
+              "value": "AÇÃO DE COBRANÇA"
+            },
+            {
+              "name": "confianca",
+              "value": 0.93
+            },
+            {
+              "name": "requiresHumanReview",
+              "value": false
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "load tribunal capabilities for ajuizamento",
+      "providerStates": [
+        {
+          "name": "ajuizamento tribunal capabilities can be loaded"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/ai/ajuizamento/catalog/tribunais/capabilities",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "tribunal": "TJCE",
+          "classe": "AÇÃO DE COBRANÇA"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "scope": "TRIBUNAL_CAPABILITIES",
+          "fields": [
+            {
+              "name": "tribunalCodigo",
+              "value": "TJCE"
+            },
+            {
+              "name": "capabilities",
+              "value": {
+                "tribunalCodigo": "TJCE",
+                "supportsDigitalProtocol": true,
+                "supportsBulkUpload": false,
+                "supportsJuizo100Digital": true
+              }
+            },
+            {
+              "name": "status",
+              "value": "READY"
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "4.0"
+    },
+    "pact-jvm": {
+      "version": "4.6.14"
+    }
+  }
+}

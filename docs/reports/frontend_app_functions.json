@@ -1,0 +1,71 @@
+{
+  "session": [
+    "/api/v1/frontend/app/me",
+    "/api/v1/frontend/app/me/context",
+    "/api/v1/frontend/app/me/capabilities"
+  ],
+  "officeMode": [
+    "/api/v1/frontend/app/office-mode",
+    "/api/v1/frontend/app/offices",
+    "/api/v1/frontend/app/offices/mine",
+    "/api/v1/frontend/app/offices/personal/ensure",
+    "/api/v1/frontend/app/offices/workspace/summary"
+  ],
+  "catalogs": [
+    "/api/v1/frontend/app/support/catalogs",
+    "/api/v1/frontend/app/support/catalogs/ramos-direito"
+  ],
+  "bootstrap": [
+    "/api/v1/frontend/app/bootstrap"
+  ],
+  "officeAffiliation": [
+    "/api/v1/frontend/app/offices/invites/incoming",
+    "/api/v1/frontend/app/offices/{equipeId}/invites",
+    "/api/v1/frontend/app/offices/invites",
+    "/api/v1/frontend/app/offices/invites/{inviteId}/accept",
+    "/api/v1/frontend/app/offices/invites/{inviteId}/confirm-activation",
+    "/api/v1/frontend/app/offices/invites/{inviteId}/reject",
+    "/api/v1/frontend/app/offices/invites/{inviteId}"
+  ],
+  "officeTransfer": [
+    "/api/v1/frontend/app/offices/transfers/incoming",
+    "/api/v1/frontend/app/offices/{equipeId}/transfers",
+    "/api/v1/frontend/app/offices/transfers",
+    "/api/v1/frontend/app/offices/transfers/{transferId}/accept",
+    "/api/v1/frontend/app/offices/transfers/{transferId}/reject"
+  ],
+  "officeQueue": [
+    "/api/v1/frontend/app/offices/workspace/queue",
+    "/api/v1/frontend/app/offices/workspace/queue/{queueItemId}/approve",
+    "/api/v1/frontend/app/offices/workspace/queue/{queueItemId}/reject"
+  ],
+  "officeGovernedFiling": [
+    "/api/v1/frontend/app/offices/workspace/processes/{processoId}/document-batches/{batchId}/preview",
+    "/api/v1/frontend/app/offices/workspace/processes/{processoId}/document-batches/link",
+    "/api/v1/frontend/app/offices/workspace/processes/{processoId}/protocol-packages/{protocolPackageId}/submit"
+  ],
+  "officeGovernedUploadIngress": [
+    "/api/v1/frontend/app/offices/workspace/processes/{processoId}/uploads/batches",
+    "/api/v1/frontend/app/offices/workspace/processes/{processoId}/uploads/batches/{batchId}",
+    "/api/v1/frontend/app/offices/workspace/processes/{processoId}/uploads/batches/{batchId}/items",
+    "/api/v1/frontend/app/offices/workspace/processes/{processoId}/uploads/direct/{batchId}/{itemId}",
+    "/api/v1/frontend/app/offices/workspace/processes/{processoId}/uploads/batches/{batchId}/finalize"
+  ],
+  "officeGovernedMultimedia": [
+    "/api/v1/frontend/app/offices/workspace/processes/{processoId}/multimedia/workspace"
+  ],
+  "officeGovernedPetition": [
+    "/api/v1/frontend/app/offices/workspace/processes/{processoId}/petitions"
+  ],
+  "officeWorkspaceProcessScope": [
+    "/api/v1/frontend/app/offices/workspace/processes/query",
+    "/api/v1/frontend/app/offices/workspace/processes/{processoId}/access"
+  ],
+  "officeLegalCockpit": [
+    "/api/v1/frontend/app/offices/workspace/legal-cockpit",
+    "/api/v1/frontend/app/offices/workspace/processes/{processoId}/reading-mode"
+  ],
+  "officeMainDashboard": [
+    "/api/v1/frontend/app/offices/workspace/main-dashboard"
+  ]
+}

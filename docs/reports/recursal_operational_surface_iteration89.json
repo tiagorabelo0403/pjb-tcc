@@ -1,0 +1,29 @@
+{
+  "round": 89,
+  "theme": "recursal operational surface materialization",
+  "entered": [
+    "RecursalOperationalSurfaceResponse",
+    "RecursalOperationalSurfaceSectionView",
+    "RecursalOperationalSurfaceGapView",
+    "RecursalOperationalSurfaceService",
+    "RecursalOperationalSurfaceController",
+    "RecursalRoutes.SURFACES_OPERATIONAL",
+    "RecursalOperationalSurfaceServiceTest",
+    "RecursalOperationalSurfaceRound89ArchitectureTest"
+  ],
+  "validated": {
+    "directedJavacWithStubs": true,
+    "localRunner": true,
+    "runtimeConcurrencyGuard": true,
+    "globalMavenGreen": false,
+    "globalPjbApiCompile": false,
+    "dockerStable": false
+  },
+  "stillMissing": [
+    "specialized http boundaries by attorney/institutional/documental/intelligence",
+    "provider contracts and integration tests per new surface",
+    "sovereign viewer/authenticity/signature documentary suite",
+    "mobile notification governance without parallel scheduler",
+    "global compile recovery of pjb-api"
+  ]
+}

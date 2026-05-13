@@ -1,0 +1,44 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: pjb-custodia-critical
+value: 120000
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: pjb custodia critical priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: pjb-urgencia-sigilo-high
+value: 115000
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: pjb urgencia sigilo high priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: pjb-sessao-critical
+value: 110000
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: pjb sessao critical priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: pjb-recomposicao-medium
+value: 85000
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: pjb recomposicao medium priority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: pjb-bulk-low
+value: 60000
+globalDefault: false
+preemptionPolicy: Never
+description: pjb bulk low priority

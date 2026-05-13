@@ -1,0 +1,35 @@
+package com.tcc.pjb.backend.core.comunicacao.institucional.panel.application;
+
+import com.tcc.pjb.backend.core.comunicacao.institucional.entry.domain.InstitutionalProcessProfile;
+import com.tcc.pjb.backend.model.entity.enums.CapacidadeCaixaInstitucional;
+import com.tcc.pjb.backend.model.entity.enums.InstitutionalNominationRole;
+import java.util.Set;
+
+record InstitutionalHearingSchedulingCapabilityProfile(
+        Set<CapacidadeCaixaInstitucional> capacities,
+        InstitutionalProcessProfile processProfile,
+        InstitutionalNominationRole nominationRole,
+        String scope,
+        boolean legalInstitution,
+        boolean secretariat,
+        boolean scheduler,
+        boolean technicalSupport,
+        boolean management,
+        boolean prisonFlow,
+        boolean hybridJudicial,
+        boolean sectionVisible,
+        boolean canRequestHearing,
+        boolean canSuggestSlot,
+        boolean canOrganizeDocket,
+        boolean canOperationallySchedule,
+        boolean canReschedule,
+        boolean canCancel,
+        boolean canReserveRoom,
+        boolean canManageVirtualRoom,
+        boolean canConfirmAttendance,
+        boolean canRecordTerm,
+        boolean canIssueHearingCommunications,
+        boolean canPrepareHearingBundle,
+        boolean requiresJudicialAuthorization,
+        boolean requiresSecretariatCoordination
+) {}

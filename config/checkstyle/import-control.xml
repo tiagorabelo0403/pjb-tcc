@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<!DOCTYPE import-control PUBLIC
+        "-//Checkstyle//DTD ImportControl Configuration 1.4//EN"
+        "https://checkstyle.org/dtds/import_control_1_4.dtd">
+
+<!--
+  ImportControl: hard walls for Bounded Contexts.
+
+  Supreme rules (AI domains):
+   - Legal AI must not import Financial AI.
+   - Financial AI must not import Legal AI.
+
+  Notes:
+   - Shared contracts should live in neutral packages (core/platform/domain), not across AI domains.
+   - Duplicating DTOs across domains is allowed/encouraged.
+   - Cross-domain communication happens via events/messaging/ACL inside each bounded context.
+-->
+
+<import-control pkg="com.tcc.pjb.backend">
+
+    <!--
+      Hardening: Python gRPC stubs (cheminformatics) must be used ONLY inside the HealthAI bounded context.
+      Implementação: disallow em todos os pacotes neutros/domínios/AI-mesh; HealthAI não possui este disallow.
+    -->
+
+    <subpackage name="service">
+        <disallow pkg="com.tcc.pjb.backend.controller"/>
+    </subpackage>
+
+    <subpackage name="controller">
+        <disallow pkg="com.tcc.pjb.backend.service.processual.malha.internal"/>
+    </subpackage>
+
+    <!-- Core must remain neutral (no direct imports of domain packages). -->
+    <subpackage name="core">
+<disallow pkg="com.tcc.pjb.backend.legal"/>
+        <disallow pkg="com.tcc.pjb.backend.financial"/>
+        <disallow pkg="com.tcc.pjb.backend.ai"/>
+    </subpackage>
+
+    <!-- Integration (infrastructure) must remain neutral as well. -->
+    <subpackage name="integration">
+<disallow pkg="com.tcc.pjb.backend.legal"/>
+        <disallow pkg="com.tcc.pjb.backend.financial"/>
+        <disallow pkg="com.tcc.pjb.backend.ai"/>
+    </subpackage>
+
+    <!-- Platform: utilitários neutros (não pode depender de domínios/AI). -->
+    <subpackage name="platform">
+<disallow pkg="com.tcc.pjb.backend.legal"/>
+        <disallow pkg="com.tcc.pjb.backend.financial"/>
+        <disallow pkg="com.tcc.pjb.backend.ai"/>
+    </subpackage>
+    <!-- Legal domain (non-ai glue/contracts) must not import Health/Financial domains. -->
+    <subpackage name="legal">
+<disallow pkg="com.tcc.pjb.backend.financial"/>
+<disallow pkg="com.tcc.pjb.backend.ai.financeira"/>
+    </subpackage>
+
+    <!-- Financial domain (non-ai glue/contracts) must not import Health/Legal domains. -->
+    <subpackage name="financial">
+<disallow pkg="com.tcc.pjb.backend.legal"/>
+<disallow pkg="com.tcc.pjb.backend.ai.juridica"/>
+    </subpackage>
+
+    <!-- AI domains under com.tcc.pjb.backend.ai.* -->
+    <subpackage name="ai">
+
+        <!-- AI-mesh não pode importar stubs gRPC do Python (somente HealthAI). -->
+<!-- Legal AI: cannot import Health/Financial AI nor health/financial domains. -->
+        <subpackage name="juridica">
+<disallow pkg="com.tcc.pjb.backend.ai.financeira"/>
+            <disallow pkg="com.tcc.pjb.backend.financial"/>
+        </subpackage>
+
+        <!-- Financial AI: cannot import Health/Legal AI nor health/legal domains. -->
+        <subpackage name="financeira">
+<disallow pkg="com.tcc.pjb.backend.ai.juridica"/>
+            <disallow pkg="com.tcc.pjb.backend.legal"/>
+        </subpackage>
+
+    </subpackage>
+
+</import-control>

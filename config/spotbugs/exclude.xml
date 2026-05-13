@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!--
+      Exclude patterns should be kept minimal.
+      Add exclusions ONLY with a written justification.
+    -->
+    <!-- Lombok builders sometimes trigger EI_EXPOSE_REP; handle case-by-case -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+        <Package name="~com\\.tcc\\.pjb\\..*"/>
+        <Class name="~.*Builder.*"/>
+    </Match>
+</FindBugsFilter>

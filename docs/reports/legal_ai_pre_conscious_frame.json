@@ -1,0 +1,20 @@
+{
+  "feature": "legal_ai_pre_conscious_frame",
+  "httpSurfaceCreated": false,
+  "orchestratorIntegrated": true,
+  "approvalAfterPreConsciousFrame": true,
+  "newProductionClasses": 7,
+  "newTests": 3,
+  "newClassLineLimit": 200,
+  "directedJavacValidation": "passed",
+  "localProbe": "BLOCKED|SOVEREIGN_PRE_RESPONSE_LOCK|CITATION_FIRST_BLOCKING|100",
+  "guards": {
+    "architecture_hygiene_guard": "passed",
+    "constructor_injection_guard": "passed",
+    "runtime_concurrency_guard": "passed",
+    "config_taxonomy_guard": "passed",
+    "transactional_hotspot_guard_fail_on_missing_budgets": "passed"
+  },
+  "mavenGlobalBuild": "not_claimed",
+  "mavenLimitation": "wrapper_download_failed_for_apache_maven_3.9.6_bin_zip"
+}

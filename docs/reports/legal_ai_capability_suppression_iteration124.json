@@ -1,0 +1,21 @@
+{
+  "round": 124,
+  "theme": "capability_suppression_by_process_class_and_sigilo",
+  "artifacts": [
+    "LegalAiConversationCapabilitySuppressionService",
+    "LegalAiConversationCapabilitySuppressionSnapshot",
+    "LegalToolScopePolicy.enrichWithCapabilitySuppression",
+    "LegalSensitiveActionApprovalService CAPABILITY_SUPPRESSION_*",
+    "LegalAiConversationResponseComposerService capabilitySuppression* safeguards"
+  ],
+  "validation": {
+    "runtime_concurrency_guard": "passed",
+    "architecture_hygiene_guard": "passed",
+    "constructor_injection_guard": "passed",
+    "config_taxonomy_guard": "passed",
+    "transactional_hotspot_guard": "passed",
+    "repository_layout_guard": "passed",
+    "javac_main_probe": "passed",
+    "javac_test_probe": "passed"
+  }
+}

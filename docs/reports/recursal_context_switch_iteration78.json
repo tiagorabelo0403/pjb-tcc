@@ -1,0 +1,10 @@
+{
+  "round": 78,
+  "code": "context-switch-by-panel-rite-tribunal-profile",
+  "artifacts": [
+    "RecursalPanelContextSwitchBlueprint",
+    "RecursalPanelContextSwitchTrackFactory"
+  ],
+  "workspaceTrack": "COMUTACAO_CONTEXTUAL_POR_PAINEL_RITO_TRIBUNAL",
+  "playbookStep": "COMUTAR_PAINEIS_POR_RITO_TRIBUNAL_E_PERFIL"
+}

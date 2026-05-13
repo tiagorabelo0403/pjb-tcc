@@ -1,0 +1,516 @@
+{
+  "status": "executed",
+  "mode": "targeted",
+  "seedMainSourceFiles": 17,
+  "javaVersionProbe": [
+    "openjdk version \"21.0.10\" 2026-01-20"
+  ],
+  "mainSourceFiles": 48,
+  "allJavaFilesScanned": 7847,
+  "externalImportCount": 598,
+  "generatedStubFiles": 620,
+  "stubCompile": {
+    "lineCount": 0,
+    "errorCount": 0,
+    "bucketCounts": {},
+    "missingPackages": {},
+    "touchedFiles": {},
+    "samples": []
+  },
+  "mainCompile": {
+    "lineCount": 876,
+    "errorCount": 178,
+    "bucketCounts": {
+      "generic-shape-mismatch": 1,
+      "missing-symbol": 166,
+      "other": 11
+    },
+    "missingPackages": {},
+    "touchedFiles": {
+      "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/JurisdictionEngine.java": 92,
+      "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java": 19,
+      "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/service/jurisprudencia/search/JurisprudenceSearchEngine.java": 15,
+      "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/enums/RitoProcessual.java": 14,
+      "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/worker/PJeSubmissionWorker.java": 10,
+      "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java": 10,
+      "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/core/procedural/ProceduralCatalogSupport.java": 6,
+      "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Processo.java": 4,
+      "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/workflow/zeebe/ZeebeCompat.java": 3,
+      "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/core/procedural/ProceduralRoutingReport.java": 2,
+      "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/strategies/config/WebSocketConfig.java": 2,
+      "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/factory/PJeAdapterFactory.java": 1
+    },
+    "samples": [
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/enums/RitoProcessual.java",
+        "line": 259,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "public RitoGrupoPrincipal getGrupoPrincipal() {",
+          "       ^",
+          "  symbol:   class RitoGrupoPrincipal",
+          "  location: class RitoProcessual"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/enums/RitoProcessual.java",
+        "line": 354,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "public static List<RitoWithGroup> listRitosWithGroup() {",
+          "                   ^",
+          "  symbol:   class RitoWithGroup",
+          "  location: class RitoProcessual"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/core/procedural/ProceduralRoutingReport.java",
+        "line": 32,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "        ProceduralEconomicGateReport economicGate,",
+          "        ^",
+          "  symbol:   class ProceduralEconomicGateReport",
+          "  location: class ProceduralRoutingReport"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/core/procedural/ProceduralRoutingReport.java",
+        "line": 33,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "        ProceduralForumAllocationReport forumAllocation,",
+          "        ^",
+          "  symbol:   class ProceduralForumAllocationReport",
+          "  location: class ProceduralRoutingReport"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 66,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    private TipoJurisdicao tipo;",
+          "            ^",
+          "  symbol:   class TipoJurisdicao",
+          "  location: class Jurisdicao"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 71,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    private NaturezaJurisdicao natureza;",
+          "            ^",
+          "  symbol:   class NaturezaJurisdicao",
+          "  location: class Jurisdicao"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 76,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    private GrauJurisdicao grau;",
+          "            ^",
+          "  symbol:   class GrauJurisdicao",
+          "  location: class Jurisdicao"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 81,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    private EsferaJurisdicao esfera;",
+          "            ^",
+          "  symbol:   class EsferaJurisdicao",
+          "  location: class Jurisdicao"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 86,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    private MateriaJurisdicao materia;",
+          "            ^",
+          "  symbol:   class MateriaJurisdicao",
+          "  location: class Jurisdicao"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 128,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    private RegiaoBrasil regiao;",
+          "            ^",
+          "  symbol:   class RegiaoBrasil",
+          "  location: class Jurisdicao"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 228,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "                      TipoJurisdicao tipo, NaturezaJurisdicao natureza,",
+          "                      ^",
+          "  symbol:   class TipoJurisdicao",
+          "  location: class Jurisdicao"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 228,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "                      TipoJurisdicao tipo, NaturezaJurisdicao natureza,",
+          "                                           ^",
+          "  symbol:   class NaturezaJurisdicao",
+          "  location: class Jurisdicao"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 229,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "                      GrauJurisdicao grau, EsferaJurisdicao esfera,",
+          "                      ^",
+          "  symbol:   class GrauJurisdicao",
+          "  location: class Jurisdicao"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 229,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "                      GrauJurisdicao grau, EsferaJurisdicao esfera,",
+          "                                           ^",
+          "  symbol:   class EsferaJurisdicao",
+          "  location: class Jurisdicao"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 230,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "                      MateriaJurisdicao materia) {",
+          "                      ^",
+          "  symbol:   class MateriaJurisdicao",
+          "  location: class Jurisdicao"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 471,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    private static JurisdictionEngine.Rite mapRite(RitoProcessual rito, MateriaJurisdicao materia) {",
+          "                                                                        ^",
+          "  symbol:   class MateriaJurisdicao",
+          "  location: class Jurisdicao"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Processo.java",
+        "line": 112,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    private MateriaJurisdicao materia;",
+          "            ^",
+          "  symbol:   class MateriaJurisdicao",
+          "  location: class Processo"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Processo.java",
+        "line": 441,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    public MateriaJurisdicao getMateria() {",
+          "           ^",
+          "  symbol:   class MateriaJurisdicao",
+          "  location: class Processo"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/service/jurisprudencia/search/JurisprudenceSearchEngine.java",
+        "line": 138,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    public List<JurisprudenceSearchHit> search(String query, RamoDireito ramo, String ritoName, int topK) {",
+          "                ^",
+          "  symbol:   class JurisprudenceSearchHit",
+          "  location: class JurisprudenceSearchEngine"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/service/jurisprudencia/search/JurisprudenceSearchEngine.java",
+        "line": 143,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    public List<JurisprudenceSearchHit> search(String query, RamoDireito ramo, RitoProcessual rito, int topK) {",
+          "                ^",
+          "  symbol:   class JurisprudenceSearchHit",
+          "  location: class JurisprudenceSearchEngine"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/service/jurisprudencia/search/JurisprudenceSearchEngine.java",
+        "line": 231,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "        List<JurisprudenceSearchHit> search(String query, RamoDireito ramo, RitoProcessual rito, int topK) {",
+          "             ^",
+          "  symbol:   class JurisprudenceSearchHit",
+          "  location: class Index"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/workflow/zeebe/ZeebeCompat.java",
+        "line": 15,
+        "message": "type TypeReference does not take parameters",
+        "bucket": "generic-shape-mismatch",
+        "context": [
+          "    private static final TypeReference<Map<String, Object>> MAP = new TypeReference<>() {};",
+          "                                      ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/worker/PJeSubmissionWorker.java",
+        "line": 15,
+        "message": "annotation value not of an allowable type",
+        "bucket": "other",
+        "context": [
+          "@Profile({\"dev\", \"test\"})",
+          "         ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/worker/PJeSubmissionWorker.java",
+        "line": 26,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    @JobWorker(type = \"TAREFA_SUBMETER_PROCESSO_LEGADO\", autoComplete = false)",
+          "               ^",
+          "  symbol:   method type()",
+          "  location: @interface JobWorker"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/worker/PJeSubmissionWorker.java",
+        "line": 26,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    @JobWorker(type = \"TAREFA_SUBMETER_PROCESSO_LEGADO\", autoComplete = false)",
+          "                                                         ^",
+          "  symbol:   method autoComplete()",
+          "  location: @interface JobWorker"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 48,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    @Pattern(regexp = \"^[A-Z0-9-]+$\")",
+          "             ^",
+          "  symbol:   method regexp()",
+          "  location: @interface Pattern"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 122,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    @Pattern(regexp = \"^[A-Z]{2}$\")",
+          "             ^",
+          "  symbol:   method regexp()",
+          "  location: @interface Pattern"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 160,
+        "message": "incompatible types: int cannot be converted to String",
+        "bucket": "other",
+        "context": [
+          "    @Min(1)",
+          "         ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 163,
+        "message": "incompatible types: int cannot be converted to String",
+        "bucket": "other",
+        "context": [
+          "    @Min(1)",
+          "         ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java",
+        "line": 166,
+        "message": "incompatible types: int cannot be converted to String",
+        "bucket": "other",
+        "context": [
+          "    @Min(1)",
+          "         ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Processo.java",
+        "line": 48,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "        parameters = {",
+          "        ^",
+          "  symbol:   method parameters()",
+          "  location: @interface FilterDef"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Processo.java",
+        "line": 61,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "        condition = \"((( :equipeIdParam = -1 and equipe_id is null and usuario_id = :usuarioIdParam ) \" +",
+          "        ^",
+          "  symbol:   method condition()",
+          "  location: @interface Filter"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/service/jurisprudencia/search/JurisprudenceSearchEngine.java",
+        "line": 41,
+        "message": "incompatible types: Class<ApplicationReadyEvent> cannot be converted to String",
+        "bucket": "other",
+        "context": [
+          "    @EventListener(ApplicationReadyEvent.class)",
+          "                                        ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/service/jurisprudencia/search/JurisprudenceSearchEngine.java",
+        "line": 114,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    @Scheduled(fixedDelayString = \"${pjb.jurisprudencia.index.refreshDelayMs:900000}\") ",
+          "               ^",
+          "  symbol:   method fixedDelayString()",
+          "  location: @interface Scheduled"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/factory/PJeAdapterFactory.java",
+        "line": 24,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "                .orElseThrow(() -> new PJeAdapterNotFoundException(\"Adaptador não implementado: \" + adapterKey));",
+          "                                       ^",
+          "  symbol:   class PJeAdapterNotFoundException",
+          "  location: class PJeAdapterFactory"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/strategies/config/WebSocketConfig.java",
+        "line": 15,
+        "message": "method does not override or implement a method from a supertype",
+        "bucket": "other",
+        "context": [
+          "    @Override",
+          "    ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/adapter/strategies/config/WebSocketConfig.java",
+        "line": 18,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "                .setAllowedOriginPatterns(\"*\")",
+          "                ^",
+          "  symbol:   method setAllowedOriginPatterns(String)",
+          "  location: class WebSocketHandlerRegistration"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java",
+        "line": 22,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserActivitySocketHandler.class);",
+          "                                                                       ^",
+          "  symbol:   method getLogger(Class<UserActivitySocketHandler>)",
+          "  location: class LoggerFactory"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java",
+        "line": 29,
+        "message": "method does not override or implement a method from a supertype",
+        "bucket": "other",
+        "context": [
+          "    @Override",
+          "    ^"
+        ]
+      },
+      {
+        "file": "/tmp/pjb_recovery_08/pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java",
+        "line": 33,
+        "message": "cannot find symbol",
+        "bucket": "missing-symbol",
+        "context": [
+          "            session.close(CloseStatus.POLICY_VIOLATION);",
+          "                                     ^",
+          "  symbol:   variable POLICY_VIOLATION",
+          "  location: class CloseStatus"
+        ]
+      }
+    ]
+  },
+  "notes": [
+    "Probe heurística usada para recuperação quando o Maven Wrapper não consegue baixar o Maven no ambiente.",
+    "Os stubs são transitórios e existem apenas durante a execução da probe.",
+    "O objetivo é separar bloqueio de classpath externo de possível drift interno do repositório."
+  ],
+  "pathsFile": "tooling/python/targets/compile_recovery_hotspots.txt"
+}

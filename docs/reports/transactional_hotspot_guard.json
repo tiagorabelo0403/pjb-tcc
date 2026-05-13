@@ -1,0 +1,5304 @@
+{
+  "scannedFiles": 7443,
+  "hotspots": [
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/cumprimento/application/ProcessoCumprimentoOperacionalApplicationService.java",
+      "method": "materializar",
+      "signals": [
+        "outboxPublisher.enqueue(",
+        "appendSafely(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DigitalCustodyChainLedgerService.java",
+      "method": "persist",
+      "signals": [
+        "saveAll(",
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalInstitutionalAccessGrantAdminService.java",
+      "method": "issueBatchFromTemplate",
+      "signals": [
+        "appendSafely(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalInstitutionalAccessGrantAdminService.java",
+      "method": "issueBatch",
+      "signals": [
+        "appendSafely(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/observability/business/ProcessBusinessObservabilityService.java",
+      "method": "snapshot",
+      "signals": [
+        "findAll(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/painel/PainelNacionalJusticaService.java",
+      "method": "registrarAlertaPrazo",
+      "signals": [
+        "outboxPublisher.enqueue(",
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaPanelEgressService.java",
+      "method": "reconcileVisibility",
+      "signals": [
+        "saveAll(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/TemaRecursoRepetitivoService.java",
+      "method": "aplicarResultado",
+      "signals": [
+        "saveAll(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/PjbProcessualReadModelRecompositionQueueService.java",
+      "method": "claimBatch",
+      "signals": [
+        "saveAll(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/competencia/MapaCompetenciaDinamicoEngine.java",
+      "method": "analisarRedistribuicao",
+      "signals": [
+        "outboxPublisher.enqueue(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/casefile/CaseContinuityReadinessService.java",
+      "method": "snapshot",
+      "signals": [
+        "appendSafely(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ajuizamento/federal/FederalismoRedistribuicaoService.java",
+      "method": "sugerir",
+      "signals": [
+        "findAll(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/colegiado/NationalColegiadoEngine.java",
+      "method": "registrarVotacao",
+      "signals": [
+        "appendSafely(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoChatService.java",
+      "method": "sendMessage",
+      "signals": [
+        "saveAll(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeProcessTransferService.java",
+      "method": "createTransfer",
+      "signals": [
+        "appendSafely(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeProcessTransferService.java",
+      "method": "acceptTransfer",
+      "signals": [
+        "appendSafely(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbAggregatorActivationApplicationService.java",
+      "method": "snapshot",
+      "signals": [
+        "appendSafely(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/unificado/application/ProcessoMalhaOperacaoInstitucionalApplicationService.java",
+      "method": "materializar",
+      "signals": [
+        "outboxPublisher.enqueue(",
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/timeline/application/ProcessoTimelineMalhaMaterializacaoApplicationService.java",
+      "method": "materializar",
+      "signals": [
+        "outboxPublisher.enqueue(",
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/distribuicao/application/ProcessoDistribuicaoMalhaApplicationService.java",
+      "method": "propagar",
+      "signals": [
+        "outboxPublisher.enqueue(",
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/cooperacao/application/ProcessoCooperacaoInstitucionalApplicationService.java",
+      "method": "orquestrar",
+      "signals": [
+        "outboxPublisher.enqueue(",
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/anomalia/application/ProcessoAnomaliaMalhaApplicationService.java",
+      "method": "escalar",
+      "signals": [
+        "outboxPublisher.enqueue(",
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/anomalia/application/ProcessoAnomaliaGovernancaApplicationService.java",
+      "method": "escalarSeNecessario",
+      "signals": [
+        "outboxPublisher.enqueue(",
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/governance/fonte/application/ProcessoFonteSoberanaApplicationService.java",
+      "method": "consolidar",
+      "signals": [
+        "appendSafely(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "dtoCatalog",
+      "signals": [
+        "appendSafely(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/delivery/application/PjbFrontendDeliveryApplicationService.java",
+      "method": "domains",
+      "signals": [
+        "appendSafely(",
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/audit/cross/service/CrossAuditSignalListener.java",
+      "method": "on",
+      "signals": [
+        "saveAll(",
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/regras/PluginResolucaoTribunalService.java",
+      "method": "recarregarClasspath",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/regras/PluginResolucaoTribunalService.java",
+      "method": "desativar",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/distribuicao/ConfiguracaoDistribuicaoVaraService.java",
+      "method": "sugerirRedistribuicao",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/distribuicao/ConfiguracaoDistribuicaoVaraService.java",
+      "method": "recarregarDoRepositorio",
+      "signals": [
+        "findAll(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/workitem/ProcessWorkItemAutomationService.java",
+      "method": "generate",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/upload/BulkUploadService.java",
+      "method": "finalizeBatch",
+      "signals": [
+        "saveAll(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatOperationalRedistributionService.java",
+      "method": "redistribuir",
+      "signals": [
+        "saveAll(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatOperationalAssignmentService.java",
+      "method": "atribuir",
+      "signals": [
+        "saveAll(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/oficial/SecretariatOfficialActsDrawerService.java",
+      "method": "drawers",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/governance/SecretariatGovernanceService.java",
+      "method": "exceptions",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/recursal/mesh/RecursalMeshSearchReindexService.java",
+      "method": "reindex",
+      "signals": [
+        "saveAll(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/publico/PublicJulgamentosConsultaService.java",
+      "method": "consultarPublicadosPorNumero",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/publico/ProcessoGemeoDigitalPublicoService.java",
+      "method": "consultar",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/participacao/ProcessualParticipacaoAtivaFacadeService.java",
+      "method": "protocolar",
+      "signals": [
+        "saveAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processo/ProcessoObservabilidadeAcessoService.java",
+      "method": "resumir",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/procedural/NationalForumMeshGovernanceService.java",
+      "method": "reconcile",
+      "signals": [
+        "findAll(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/painel/PainelNacionalJusticaService.java",
+      "method": "gerarSnapshot",
+      "signals": [
+        "findAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/orgao/ProcessoOrgaoOficialService.java",
+      "method": "ensureDefaults",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaWorkbenchService.java",
+      "method": "filaViva",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaNotificationCenterService.java",
+      "method": "confirmarCienciaProcessual",
+      "signals": [
+        "saveAll(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaEnderecoTriageService.java",
+      "method": "triagem",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaCalendarioOperacionalService.java",
+      "method": "calendario",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oab/OabInstitucionalService.java",
+      "method": "listarSeccional",
+      "signals": [
+        "findAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/TemaRecursoRepetitivoService.java",
+      "method": "sobrestar",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/jurisprudencia/graph/JurisprudenceGraphService.java",
+      "method": "upsertEdgesFor",
+      "signals": [
+        "saveAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/topology/JuizGabineteQueueIsolationService.java",
+      "method": "avaliar",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/handoff/JuizGabineteHandoffService.java",
+      "method": "snapshot",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/guardrails/JuizProcessoGuardRailService.java",
+      "method": "avaliar",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/GabineteAgrupadorService.java",
+      "method": "agrupar",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/QualifiedThemeProactiveService.java",
+      "method": "analyze",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/ProcessFraudRiskService.java",
+      "method": "analyze",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/PessoaLocalizacaoService.java",
+      "method": "localizar",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/PessoaLocalizacaoIntelligenceSummaryService.java",
+      "method": "resumir",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/JudgeDecisionConsistencyService.java",
+      "method": "analyze",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/JudgeAgreementApprovalService.java",
+      "method": "requestApproval",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/ExecutionRecoveryRiskService.java",
+      "method": "analyze",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/institutional/workbench/InstitutionalWorkbenchProjectionService.java",
+      "method": "quickActions",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "listarPlanosParticao",
+      "signals": [
+        "findAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/identity/ProntuarioNacionalService.java",
+      "method": "detectarLitispendenciaOuCoisaJulgada",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/identity/ProntuarioNacionalService.java",
+      "method": "atualizarStatusPorNupn",
+      "signals": [
+        "saveAll(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/governance/DocumentTrustChainService.java",
+      "method": "selar",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/document/reading/ProcessReadingContentAssemblerService.java",
+      "method": "ProcessReadingContentAssemblerService",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/cidadao/dashboard/CidadaoDashboardSnapshotWriteService.java",
+      "method": "refreshForUser",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/casefile/CaseContinuityProductionSealService.java",
+      "method": "snapshot",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/casefile/CaseContinuityObservabilityService.java",
+      "method": "snapshot",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/casefile/CaseContinuityIntegrationService.java",
+      "method": "snapshot",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/casefile/CaseContinuityDecisionGateService.java",
+      "method": "snapshot",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/casefile/CaseContinuityConsistencyService.java",
+      "method": "snapshot",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarWorkspaceService.java",
+      "method": "workspaceForUser",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarService.java",
+      "method": "listForUser",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarProcessMirrorService.java",
+      "method": "mirror",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarPanelService.java",
+      "method": "panelForUser",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/CalendarInstitutionalBridgeService.java",
+      "method": "bridgeForUser",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/assessor/guardrails/AssessorGabineteGuardRailService.java",
+      "method": "avaliarProcesso",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/api/oauth/MarketplaceOAuth2Service.java",
+      "method": "listarClientes",
+      "signals": [
+        "findAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/api/MarketplaceWebhookDispatcherService.java",
+      "method": "dispatchPending",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/api/MarketplaceGovernanceService.java",
+      "method": "listarPlanos",
+      "signals": [
+        "findAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ajuizamento/federal/FederalismoJudicialEngine.java",
+      "method": "listarNos",
+      "signals": [
+        "findAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ajuizamento/federal/FederalismoJudicialEngine.java",
+      "method": "healthFederacao",
+      "signals": [
+        "findAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/advogado/AdvogadoDashboardService.java",
+      "method": "summary",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/admin/AdministradorNacionalGovernanceService.java",
+      "method": "executarReconciliacaoGlobal",
+      "signals": [
+        "saveAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/JurisdicaoService.java",
+      "method": "listarTodas",
+      "signals": [
+        "findAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/colegiado/NationalColegiadoEngine.java",
+      "method": "montarPauta",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeSentencaService.java",
+      "method": "sugerirEmentaColegiada",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeJudgeService.java",
+      "method": "queuePanel",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeJudgeService.java",
+      "method": "agenda",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeJudgeRadarJurisprudenciaService.java",
+      "method": "analisar",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoModerationService.java",
+      "method": "listQueue",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/service/AdvClienteCanonicalizeSensitiveService.java",
+      "method": "canonicalizeBatch",
+      "signals": [
+        "saveAll(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceMainDashboardService.java",
+      "method": "dashboard",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceLegalCockpitService.java",
+      "method": "cockpit",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceDashboardService.java",
+      "method": "currentSummary",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeProcessWorkspaceScopeService.java",
+      "method": "currentWorkspaceProcesses",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficePersonalScopeService.java",
+      "method": "decide",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeDelegationService.java",
+      "method": "decideAndRecord",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/JudicialConnectorTelemetryService.java",
+      "method": "buildHealthReport",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/datajud/feed/DataJudFeedService.java",
+      "method": "runIncremental",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/inovacao/atlas/AtlasAcessoJusticaService.java",
+      "method": "gerarRelatorioUF",
+      "signals": [
+        "outboxPublisher.enqueue(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/device/SecurityChallengeService.java",
+      "method": "consumeOtp",
+      "signals": [
+        "saveAll(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/abac/PjbAuthorizationTrailAnalyticsMaterializationService.java",
+      "method": "materialize",
+      "signals": [
+        "saveAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbModuleScaffoldApplicationService.java",
+      "method": "snapshot",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbCoreSeedExtractionApplicationService.java",
+      "method": "snapshot",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbCoreSeedExtractionApplicationService.java",
+      "method": "parity",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbCoreSeedExtractionApplicationService.java",
+      "method": "drift",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbCoreExtractionPlannerApplicationService.java",
+      "method": "snapshot",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbCoreExtractionPlannerApplicationService.java",
+      "method": "movePlan",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbCoreExtractionPlannerApplicationService.java",
+      "method": "dependencies",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbCoreExtractionPlannerApplicationService.java",
+      "method": "candidates",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbAggregatorActivationApplicationService.java",
+      "method": "moduleLinks",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbAggregatorActivationApplicationService.java",
+      "method": "checklist",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/gates/application/PjbQualityGateReadinessApplicationService.java",
+      "method": "blockers",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/certificacao/application/PjbCertificacaoOperacionalApplicationService.java",
+      "method": "certificar",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/unificado/application/ProcessoBlocosSoberanosRuntimeApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/transicao/application/ProcessoConvivenciaTransicaoApplicationService.java",
+      "method": "planejar",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/timeline/application/ProcessoTimelineMalhaApplicationService.java",
+      "method": "detalhar",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/sigilo/application/ProcessoSigiloProbatorioApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/producao/application/ProcessoProducaoPesadaApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/prevencao/application/ProcessoPrevencaoConexaoDependenciaEngine.java",
+      "method": "analisar",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/migracao/application/ProcessoMigracaoFactoryApplicationService.java",
+      "method": "planejar",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/gemeo/application/ProcessoGemeoDigitalApplicationService.java",
+      "method": "simular",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/distribuicao/application/ProcessoDistribuicaoMalhaApplicationService.java",
+      "method": "detalhar",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/anomalia/application/ProcessoAntifraudeOperacionalApplicationService.java",
+      "method": "acionar",
+      "signals": [
+        "outboxPublisher.enqueue(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoLegadosApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/governance/institucional/application/PjbGovernancaInstitucionalNormativaApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "validationContract",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "publicRoutes",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "publicContractSummary",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "publicContractRoutes",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "publicContractFreeze",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "integrationPackSummary",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "httpErrorCatalog",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "frontendDevProfile",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "bootstrap",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "blockers",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/delivery/application/PjbFrontendDeliveryApplicationService.java",
+      "method": "summary",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/delivery/application/PjbFrontendDeliveryApplicationService.java",
+      "method": "bootstrap",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/delivery/application/PjbFrontendDeliveryApplicationService.java",
+      "method": "blockers",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "capabilities",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/dje/DjePublicacaoService.java",
+      "method": "notificarPartesPublicadas",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/dje/DjePublicacaoService.java",
+      "method": "consolidarPublicadas",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/digitalizacao/DigitalizacaoOcrService.java",
+      "method": "processar",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/digitalizacao/DigitalizacaoGovernanceService.java",
+      "method": "registrarRevisaoPagina",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/digitalizacao/DigitalizacaoGovernanceService.java",
+      "method": "marcarProcessamentosEstagnados",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/criminal/custodia/AudienciaCustodiaService.java",
+      "method": "concluirAudiencia",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/state/ComunicacaoJudicialStateStore.java",
+      "method": "findAll",
+      "signals": [
+        "findAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java",
+      "method": "processarPresuncoesAutomaticas",
+      "signals": [
+        "appendSafely(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoHoraCertaEngine.java",
+      "method": "registrarTentativa",
+      "signals": [
+        "appendSafely(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/workflow/application/InstitutionalTriageSuggestionApplicationService.java",
+      "method": "suggest",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/workflow/application/InstitutionalSlaPredictiveApplicationService.java",
+      "method": "dashboard",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/workflow/application/InstitutionalOperationalCoverageApplicationService.java",
+      "method": "listar",
+      "signals": [
+        "findAll(",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/knowledge/LegalKnowledgeCorpusRegistryService.java",
+      "method": "syncCatalog",
+      "signals": [
+        "for (",
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/regras/PluginResolucaoTribunalService.java",
+      "method": "todosAtivos",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/regras/PluginResolucaoTribunalService.java",
+      "method": "resumo",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/regras/PluginResolucaoTribunalService.java",
+      "method": "pluginsAtivos",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/regras/PluginResolucaoTribunalService.java",
+      "method": "listarAtivos",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/regras/PluginResolucaoTribunalService.java",
+      "method": "historicoRecente",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/distribuicao/ConfiguracaoDistribuicaoVaraService.java",
+      "method": "varasDisponiveisNaComarca",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/distribuicao/ConfiguracaoDistribuicaoVaraService.java",
+      "method": "historicoOcupacaoRecente",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/distribuicao/ConfiguracaoDistribuicaoVaraService.java",
+      "method": "dashboard",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/servidor/ServidorSecretariaOperacionalService.java",
+      "method": "saneamentoBulkFila",
+      "signals": [
+        "saveAll("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/security/operational/OperationalFunctionCredentialService.java",
+      "method": "snapshotForTarget",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/security/operational/OperationalFunctionCredentialService.java",
+      "method": "snapshotForCurrentUser",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/security/breakglass/InstitutionalBreakGlassAccessService.java",
+      "method": "snapshot",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/security/breakglass/InstitutionalBreakGlassAccessService.java",
+      "method": "activate",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/topology/JudicialTopologyCoordinationMatrixService.java",
+      "method": "snapshot",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/stability/SecretariatOperationalStabilityService.java",
+      "method": "estabilizar",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/stability/SecretariatOperationalStabilityService.java",
+      "method": "avaliar",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/organizacao/PainelOrganizacaoService.java",
+      "method": "organizarPorFiltro",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/orchestration/SecretariatOperationalOrchestrationService.java",
+      "method": "topologia",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatSpecializedOperationalExecutionService.java",
+      "method": "validarPesquisaEleitoral",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatSpecializedOperationalExecutionService.java",
+      "method": "registrarInspecaoCorregedoria",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatSpecializedOperationalExecutionService.java",
+      "method": "registrarAtendimentoBalcaoVirtual",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatSpecializedOperationalExecutionService.java",
+      "method": "receberUrgenciaPlantao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatSpecializedOperationalExecutionService.java",
+      "method": "receberMidiaProcessual",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatSpecializedOperationalExecutionService.java",
+      "method": "instaurarProcedimentoCorregedoria",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatSpecializedOperationalExecutionService.java",
+      "method": "impulsionarExecucaoTrabalhista",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatSpecializedOperationalExecutionService.java",
+      "method": "disponibilizarMidiaProcessual",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatOperationalSlaService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatOperationalRedistributionService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatOperationalHearingResourceService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatOperationalExpeditionBatchService.java",
+      "method": "materializar",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatOperationalExpeditionBatchService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatOperationalBottleneckRadarService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatOperationalAttendanceService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatOperationalAssignmentService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatCollegiateOperationalExecutionService.java",
+      "method": "registrarSustentacaoOral",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatCollegiateOperationalExecutionService.java",
+      "method": "publicarPauta",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatCollegiateOperationalExecutionService.java",
+      "method": "publicarAcordao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatCollegiateOperationalExecutionService.java",
+      "method": "incluirEmPauta",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/SecretariatCollegiateOperationalExecutionService.java",
+      "method": "baixarOrigem",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/oficial/SecretariatOfficialActsDrawerService.java",
+      "method": "drawerDetail",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/oficial/SecretariaOficialCumprimentoRoutingService.java",
+      "method": "proximaProvidencia",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/oficial/SecretariaOficialCumprimentoRoutingService.java",
+      "method": "inbox",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/governance/SecretariatGovernanceService.java",
+      "method": "governance",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/governance/SecretariatGovernanceService.java",
+      "method": "formalCatalog",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/governance/SecretariatGovernanceService.java",
+      "method": "coverage",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/export/SecretariatMinutaJuntadaPdfService.java",
+      "method": "listarJuntadas",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/export/SecretariatMinutaJuntadaPdfService.java",
+      "method": "gerarMinuta",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/access/SecretariatProcessoVisibilidadePessoalService.java",
+      "method": "definir",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/rito/RitoWorkflowService.java",
+      "method": "plan",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/rito/RitoWorkflowService.java",
+      "method": "advance",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/rito/RitoRuleProposalService.java",
+      "method": "reject",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/rito/RitoRuleProposalService.java",
+      "method": "list",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/rito/RitoRuleProposalService.java",
+      "method": "create",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/rito/RitoRuleProposalService.java",
+      "method": "approve",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/rito/RitoFeedbackService.java",
+      "method": "registerFeedback",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/recursal/routing/RecursalWorkItemPlannerService.java",
+      "method": "plan",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/recursal/mesh/RecursalMeshWorkflowIntegrationService.java",
+      "method": "onTransition",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/recursal/mesh/RecursalMeshWorkflowIntegrationService.java",
+      "method": "onAggregateOpened",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/recursal/mesh/RecursalMeshProjectionService.java",
+      "method": "findByProcesso",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/recursal/RecursalWorkItemMaterializerService.java",
+      "method": "materialize",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/publico/PublicProcessoTimelineService.java",
+      "method": "timeline",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/publico/PublicProcessoConsultaService.java",
+      "method": "consultarPorNumero",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/publico/PublicPlenarioService.java",
+      "method": "detalhar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/publico/PublicPlenarioService.java",
+      "method": "+",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/publico/PublicPlenarioGovernanceService.java",
+      "method": "detalharGovernanca",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/publico/ProcessoPesquisaIdentidadePublicaService.java",
+      "method": "buscarProcessosPublicosPorCpf",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/publico/ProcessoPesquisaIdentidadePublicaService.java",
+      "method": "buscarProcessosPorIdentidade",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/publico/ProcessoPesquisaIdentidadePublicaService.java",
+      "method": "acessoProfissionalIntegral",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceTelemetryService.java",
+      "method": "registerBatch",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceTelemetryService.java",
+      "method": "history",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceProcessFormalizationService.java",
+      "method": "history",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceProcessFormalizationService.java",
+      "method": "formalize",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceOperationalTimelineService.java",
+      "method": "timeline",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceOperationalCommandCenterService.java",
+      "method": "snapshot",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceOperationalClosureService.java",
+      "method": "history",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceOperationalCertificateService.java",
+      "method": "history",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceOperationalCertificateService.java",
+      "method": "generate",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceOperationalAnalyticsService.java",
+      "method": "analytics",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceInstitutionalMeshDispatchService.java",
+      "method": "history",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceInstitutionalAnnexationService.java",
+      "method": "history",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceCheckpointService.java",
+      "method": "history",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceCertificateEvidenceService.java",
+      "method": "suggestions",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceCertificateEvidenceService.java",
+      "method": "list",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceCertificateEvidenceService.java",
+      "method": "bind",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceAutomaticFilingService.java",
+      "method": "history",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceAutomaticFilingService.java",
+      "method": "file",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DigitalCustodyChainSyncService.java",
+      "method": "replayVerify",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DigitalCustodyChainSyncService.java",
+      "method": "history",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DigitalCustodyChainSyncService.java",
+      "method": "exportBundle",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DigitalCustodyChainLedgerService.java",
+      "method": "ledger",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DigitalCustodyChainLedgerService.java",
+      "method": "findLedger",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DeadlineFatalControlService.java",
+      "method": "monitor",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalProcessViewAuditService.java",
+      "method": "recordSearch",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalProcessViewAuditService.java",
+      "method": "recordProcessView",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalProcessViewAuditService.java",
+      "method": "recentForCurrentUser",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalInstitutionalAccessGrantAdminService.java",
+      "method": "workspace",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalInstitutionalAccessGrantAdminService.java",
+      "method": "revoke",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalInstitutionalAccessGrantAdminService.java",
+      "method": "reject",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalInstitutionalAccessGrantAdminService.java",
+      "method": "processTimeline",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalInstitutionalAccessGrantAdminService.java",
+      "method": "operationalDashboard",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalInstitutionalAccessGrantAdminService.java",
+      "method": "issue",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalInstitutionalAccessGrantAdminService.java",
+      "method": "governanceDashboard",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalInstitutionalAccessGrantAdminService.java",
+      "method": "detail",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalInstitutionalAccessGrantAdminService.java",
+      "method": "approve",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalForensicPanelService.java",
+      "method": "workspace",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalForensicPanelService.java",
+      "method": "search",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalForensicPanelService.java",
+      "method": "institutionalOverview",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalForensicPanelService.java",
+      "method": "detail",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalForensicPanelService.java",
+      "method": "client360",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalForensicPanelService.java",
+      "method": "accessMatrix",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/professional/ProfessionalForensicExecutiveDashboardService.java",
+      "method": "dashboard",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/runtime/guard/ProcessualOperationGuardService.java",
+      "method": "guard",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/postarchive/PostArchiveLifecycleService.java",
+      "method": "evaluate",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/movimentacao/MovimentacaoAdjustmentService.java",
+      "method": "historico",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/movimentacao/MovimentacaoAdjustmentService.java",
+      "method": "ajustar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/malha/ProcessoMalhaAssistidaFacadeService.java",
+      "method": "fechamento",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/malha/ProcessoMalhaAssistidaFacadeService.java",
+      "method": "execucaoAssistida",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/linkage/ProcessoLinkageGovernanceService.java",
+      "method": "aplicar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/integration/intertribunal/LitispendenciaIntertribunalService.java",
+      "method": "analisar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/document/template/OfficialDocumentTemplateService.java",
+      "method": "renderizar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/comunicacao/flow/NationalCommunicationFlowFacade.java",
+      "method": "timelineSemanticaInstitucional",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/comunicacao/flow/NationalCommunicationFlowFacade.java",
+      "method": "listarMinutasInstitucionais",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/comunicacao/flow/NationalCommunicationFlowFacade.java",
+      "method": "listarDelegacoesInstitucionais",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/comunicacao/flow/NationalCommunicationFlowFacade.java",
+      "method": "expedir",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/comunicacao/flow/NationalCommunicationFlowFacade.java",
+      "method": "acusarCiencia",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/comunicacao/flow/NationalCommunicationFlowFacade.java",
+      "method": "acionarFallback",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/cobertura/ProcessoCoberturaRitosDireitosFacadeService.java",
+      "method": "coberturaCompleta",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processo/ProcessoPostAjuizamentoOrchestratorService.java",
+      "method": "onProcessoAjuizado",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processo/ProcessoNoteService.java",
+      "method": "list",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/pericia/PeritoNomeacaoService.java",
+      "method": "revogar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/pericia/PeritoNomeacaoService.java",
+      "method": "nomear",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/pericia/PeritoNomeacaoService.java",
+      "method": "listar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/pericia/PeritoDisponibilidadeService.java",
+      "method": "sortear",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/pericia/PeritoDisponibilidadeService.java",
+      "method": "listarMinhas",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/pericia/PeritoDisponibilidadeService.java",
+      "method": "listarHistoricoPorProcesso",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/pastadigital/PastaDigitalService.java",
+      "method": "pastaDigital",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/pastadigital/PastaDigitalService.java",
+      "method": "buscarNoProcesso",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/pastadigital/PastaDigitalService.java",
+      "method": "anexarDocumentoPdf",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/painel/PainelNacionalJusticaService.java",
+      "method": "serieTemporal",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/painel/PainelNacionalJusticaService.java",
+      "method": "onProcessoEncerrado",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/painel/PainelNacionalJusticaService.java",
+      "method": "onProcessoAjuizado",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/painel/PainelNacionalJusticaService.java",
+      "method": "alertasPrazo",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaWorkbenchService.java",
+      "method": "processoWorkbench",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaWorkbenchService.java",
+      "method": "painelResumo",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaProcessoVinculoService.java",
+      "method": "vinculosDiretosUsuario",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaProcessoVinculoService.java",
+      "method": "vinculosDiretosProcesso",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaProcessoVinculoService.java",
+      "method": "possuiVinculoDireto",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaPortfolioProcessualService.java",
+      "method": "processosNomeados",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaPortfolioProcessualService.java",
+      "method": "pendencias",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaPortfolioProcessualService.java",
+      "method": "painelResumoProcessosNomeados",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaPortfolioProcessualService.java",
+      "method": "painelResumoPendencias",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaPortfolioProcessualService.java",
+      "method": "acessoProcessoNomeado",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaOficioSecurityService.java",
+      "method": "originalOnlyEnvelope",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaOficioSecurityService.java",
+      "method": "envelope",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaNotificationCenterService.java",
+      "method": "painelResumo",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaNotificationCenterService.java",
+      "method": "materializarNomeacoesAtivasUsuario",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaEnderecoTriageService.java",
+      "method": "painelResumo",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaBalcaoVirtualService.java",
+      "method": "salas",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaBalcaoVirtualService.java",
+      "method": "painelResumo",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaAgendaOperacionalService.java",
+      "method": "agenda",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/offline/PwaOfflineService.java",
+      "method": "listarBundlesRecentes",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/offline/PwaOfflineService.java",
+      "method": "criarBundle",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/offline/PwaOfflineService.java",
+      "method": "actions",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/offline/OfflineApplicationService.java",
+      "method": "timelineHealth",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/offline/OfflineApplicationService.java",
+      "method": "governanceAudit",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/offline/OfflineApplicationService.java",
+      "method": "conflictTimeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oab/OabInstitucionalService.java",
+      "method": "listarMinhasSolicitacoes",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/notification/IntimacaoAudienciaService.java",
+      "method": "listarPorAudiencia",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/notification/IntimacaoAudienciaService.java",
+      "method": "intimarLote",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/TemaRecursoRepetitivoService.java",
+      "method": "listar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/TemaPrecedenteVinculanteService.java",
+      "method": "reconhecer",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/TemaPrecedenteVinculanteService.java",
+      "method": "listarTemas",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/TemaPrecedenteVinculanteService.java",
+      "method": "aplicarResultado",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/RepercussaoGeralService.java",
+      "method": "reconhecer",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/RepercussaoGeralService.java",
+      "method": "listarTemas",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/RepercussaoGeralService.java",
+      "method": "aplicarResultado",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/MinistroPlenarioAvancadoService.java",
+      "method": "proclamar",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/MinistroPlenarioAvancadoService.java",
+      "method": "listarMinhasSessoes",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/MinistroPlenarioAvancadoService.java",
+      "method": "integridadeSessao",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/MinistroPlenarioAvancadoService.java",
+      "method": "detalharSessao",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/magistratura/delegationflow/JudgeDelegationFlowService.java",
+      "method": "solicitar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/magistratura/delegationflow/JudgeDelegationFlowService.java",
+      "method": "revogar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/magistratura/delegationflow/JudgeDelegationFlowService.java",
+      "method": "rejeitar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/magistratura/delegationflow/JudgeDelegationFlowService.java",
+      "method": "pendentesParaMagistrado",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/magistratura/delegationflow/JudgeDelegationFlowService.java",
+      "method": "minhasSolicitacoes",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/magistratura/delegationflow/JudgeDelegationFlowService.java",
+      "method": "expirarFluxosVencidos",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/magistratura/delegationflow/JudgeDelegationFlowService.java",
+      "method": "ativasDaMagistratura",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/magistratura/delegationflow/JudgeDelegationFlowService.java",
+      "method": "aprovar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/jurisprudencia/RadarNacionalJurisprudenciaService.java",
+      "method": "analisar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/julgamento/safety/DecisionSafetyService.java",
+      "method": "requireSafeDecisionContext",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/julgamento/safety/DecisionSafetyService.java",
+      "method": "openFocus",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/julgamento/safety/DecisionSafetyService.java",
+      "method": "currentFocus",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/julgamento/coverage/JulgamentoCoverageIntelligenceService.java",
+      "method": "historico",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/julgamento/JulgamentoColegiadoService.java",
+      "method": "registrarVoto",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/julgamento/JulgamentoColegiadoService.java",
+      "method": "publicarAcordao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/julgamento/JulgamentoColegiadoService.java",
+      "method": "criarJulgamento",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/julgamento/JulgamentoColegiadoService.java",
+      "method": "atualizarStatus",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/topology/JuizGabineteTopologyOrchestrationService.java",
+      "method": "topologia",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/topology/JuizGabineteTopologyOrchestrationService.java",
+      "method": "capturar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/topology/JuizGabineteQueueIsolationService.java",
+      "method": "filtrarInboxCompativel",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/handoff/JuizGabineteHandoffService.java",
+      "method": "encaminharParaSecretaria",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/handoff/JuizGabineteHandoffService.java",
+      "method": "encaminharParaAssessoria",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/handoff/JuizGabineteHandoffService.java",
+      "method": "devolverParaGabinete",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/JudicialVoiceService.java",
+      "method": "listarSessoesRecentes",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/StructuredProcessSummaryService.java",
+      "method": "summarize",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/ProcessOutcomePredictionService.java",
+      "method": "analyze",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/PessoaLocalizacaoGovernanceService.java",
+      "method": "listarRecentes",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/CaseTriageService.java",
+      "method": "triage",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/institutional/workbench/InstitutionalWorkbenchProjectionService.java",
+      "method": "operationalQueue",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/institutional/support/panel/InstitutionalSupportPanelService.java",
+      "method": "snapshot",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/institutional/support/panel/InstitutionalSupportPanelService.java",
+      "method": "agenda",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/institutional/support/operations/InstitutionalSupportOperationsService.java",
+      "method": "prePauta",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/institutional/support/operations/InstitutionalSupportOperationsService.java",
+      "method": "coverage",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/institutional/support/operations/InstitutionalSupportOperationsService.java",
+      "method": "competenceMatrix",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "processualReadModelsView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "processualReadModelPersistenceView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "materializar",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "listarPoliticasCache",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "judicialSecretariatModelsView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "judicialScaleProfilesView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "judicialRuntimePoliciesView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "judicialOperationalTransactionsView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "judicialOperationalDesksView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "judicialOperationalActionsView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "judicialInstitutionalAlignmentView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "databaseRuntimePostureView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "method": "adaptiveDataPlaneView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/PjbProcessualReadModelRecompositionQueueService.java",
+      "method": "snapshot",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/PjbProcessualReadModelRecompositionQueueService.java",
+      "method": "enqueue",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/PjbProcessualReadModelPersistenceService.java",
+      "method": "recompose",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/identity/ProntuarioNacionalService.java",
+      "method": "consultarPorDocumento",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/identity/IdentidadeJuridicaNacionalService.java",
+      "method": "resumirPorIds",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/identity/IdentidadeJuridicaNacionalService.java",
+      "method": "resolverOuCriarPorDocumento",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/forum/ForumOfficialReturnOperationalService.java",
+      "method": "inbox",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/forum/ForumHabilitacaoService.java",
+      "method": "indeferir",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/forum/ForumHabilitacaoService.java",
+      "method": "deferir",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/financeiro/SalarioMinimoNacionalService.java",
+      "method": "valorPorAno",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/extrajudicial/EscrituraExtrajudicialService.java",
+      "method": "minhasEscrituras",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/extrajudicial/EscrituraExtrajudicialService.java",
+      "method": "listarPorProcesso",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/document/reading/ProcessReadingWorkspaceFacade.java",
+      "method": "search",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/document/reading/ProcessReadingContentAssemblerService.java",
+      "method": "assembleFluxo",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/document/reading/ProcessReadingContentAssemblerService.java",
+      "method": "assembleDocumento",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/desembargador/DesembargadorPlenarioService.java",
+      "method": "painelRelator",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/defensor/DefensoriaVulnerabilidadeService.java",
+      "method": "listar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/criminal/InqueritoPolicialDigitalService.java",
+      "method": "listarPorProcesso",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/criminal/InqueritoPolicialDigitalService.java",
+      "method": "listarMeus",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/consultasrapidas/ConsultasRapidasService.java",
+      "method": "consultarPorNumero",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/consultasrapidas/ConsultasRapidasService.java",
+      "method": "buscar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/cidadao/CidadaoJuntadasService.java",
+      "method": "listar",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/cidadao/CidadaoDocumentoMetaService.java",
+      "method": "listar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/casefile/CaseContinuityRemediationService.java",
+      "method": "snapshot",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/casefile/CaseContinuityOrchestratorService.java",
+      "method": "unifyLinkedCases",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/casefile/CaseContinuityOrchestratorService.java",
+      "method": "inspect",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarService.java",
+      "method": "updateCustomEvent",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarService.java",
+      "method": "month",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarService.java",
+      "method": "listForProcessoForUser",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarService.java",
+      "method": "ics",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarService.java",
+      "method": "createCustomEvent",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarNotificationPreviewService.java",
+      "method": "previewForUser",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarNotificationPreviewService.java",
+      "method": "dueNotificationsForUser",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/CalendarNotificationDispatchService.java",
+      "method": "dispatch",
+      "signals": [
+        "outboxPublisher.enqueue("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/CalendarNativeOperationalEventAssemblerService.java",
+      "method": "assembleForUser",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/CalendarInstitutionalScopeService.java",
+      "method": "availableScopes",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/audiencia/PautaAudienciaService.java",
+      "method": "listarPorProcesso",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/audiencia/PautaAudienciaService.java",
+      "method": "listarAgendaPorVara",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/audiencia/AudienciaWebRtcService.java",
+      "method": "listarMinhasSessoes",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/assessor/guardrails/AssessorGabineteGuardRailService.java",
+      "method": "listarMinutasCompativeis",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/assessor/guardrails/AssessorGabineteGuardRailService.java",
+      "method": "listarDespachosCompativeis",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/assessor/guardrails/AssessorGabineteGuardRailService.java",
+      "method": "filtrarInboxCompativel",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/api/oauth/MarketplaceOAuth2Service.java",
+      "method": "registrarCliente",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/api/MarketplaceGovernanceService.java",
+      "method": "publicarEventoProtocolo",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/api/MarketplaceGovernanceService.java",
+      "method": "listarWebhooks",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/api/MarketplaceGovernanceService.java",
+      "method": "listarEntregas",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/api/MarketplaceGovernanceService.java",
+      "method": "listarAssinaturas",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ajuizamento/federal/FederalismoJudicialEngine.java",
+      "method": "verificarIntegridadeLedger",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ajuizamento/federal/FederalismoJudicialEngine.java",
+      "method": "registrarEventoFederado",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ajuizamento/federal/FederalismoJudicialEngine.java",
+      "method": "processarProximoEventoPendente",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ajuizamento/federal/FederalismoJudicialEngine.java",
+      "method": "listarPendencias",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ajuizamento/federal/FederalismoJudicialEngine.java",
+      "method": "consultarLedgerPorNupn",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/advogado/LaianePeticaoInicialDraftService.java",
+      "method": "listarMinhas",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/advogado/AdvogadoCockpitService.java",
+      "method": "darCienciaIntimacaoEmLote",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/UsuarioService.java",
+      "method": "listarTodosUsuarios",
+      "signals": [
+        "findAll("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/OrgaoJudiciarioService.java",
+      "method": "listarTodos",
+      "signals": [
+        "findAll("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/JurisdicaoService.java",
+      "method": "sugerir",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/JurisdicaoService.java",
+      "method": "listarPaginado",
+      "signals": [
+        "findAll("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/platform/security/idempotency/PjbIdempotencyApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/platform/security/idempotency/PjbIdempotencyApplicationService.java",
+      "method": "release",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/platform/runtime/PjbRuntimeApplicationService.java",
+      "method": "pressure",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/platform/runtime/PjbRuntimeApplicationService.java",
+      "method": "beginDrain",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/platform/runtime/PjbRuntimeApplicationService.java",
+      "method": "acceptTraffic",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/execucao/ExecucaoCumprimentoEngine.java",
+      "method": "ativarExecucao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/conciliacao/CejuscEngine.java",
+      "method": "registrarResultadoSessao",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/colegiado/NationalColegiadoEngine.java",
+      "method": "publicarAcordao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeSentencaService.java",
+      "method": "gerarRascunho",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeProtocolSubmissionService.java",
+      "method": "submit",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeProtocolSubmissionService.java",
+      "method": "rejectFromQueue",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeProtocolSubmissionService.java",
+      "method": "enqueueFromQueue",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeProtocolService.java",
+      "method": "listMine",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeMpService.java",
+      "method": "monitorDeadlines",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeMpService.java",
+      "method": "audit",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeLawyerService.java",
+      "method": "validateAttachments",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeLawyerService.java",
+      "method": "consolidateBundle",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeJudgeService.java",
+      "method": "onePager",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/jobs/LaianeProtocolSubmitPjeJobHandler.java",
+      "method": "execute",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/balcao/service/BalcaoVirtualService.java",
+      "method": "listarFila",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoReportService.java",
+      "method": "threadAtaPdf",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoReminderService.java",
+      "method": "list",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoModerationService.java",
+      "method": "releaseMessage",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoModerationService.java",
+      "method": "messageDetail",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoModerationEventQueryService.java",
+      "method": "list",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoAttachmentScanScheduler.java",
+      "method": "scanPending",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoAttachmentRetentionScheduler.java",
+      "method": "run",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/service/ClienteService.java",
+      "method": "excluirCliente",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/service/ClienteService.java",
+      "method": "criarCliente",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/service/ClienteService.java",
+      "method": "buscarClientes",
+      "signals": [
+        "findAll("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/service/ClienteService.java",
+      "method": "atualizarCliente",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceTeamAvatarService.java",
+      "method": "read",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceModeService.java",
+      "method": "update",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceModeService.java",
+      "method": "clear",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceExecutiveDashboardService.java",
+      "method": "dashboard",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceCreationService.java",
+      "method": "myOwnedOffices",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceCreationService.java",
+      "method": "createOwnOffice",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeSignatureQueueService.java",
+      "method": "rejeitar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeSignatureQueueService.java",
+      "method": "bulkApprove",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeSignatureQueueService.java",
+      "method": "aprovar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeProcessWorkspaceScopeService.java",
+      "method": "access",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeProcessTransferService.java",
+      "method": "rejectTransfer",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeProcessTransferService.java",
+      "method": "officeTransfers",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeProcessTransferService.java",
+      "method": "myIncomingTransfers",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeProcessTransferPreviewService.java",
+      "method": "preview",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficePolicyService.java",
+      "method": "listarRegras",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeOpsService.java",
+      "method": "dashboard",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeGovernedProcessOperationService.java",
+      "method": "rejectQueuedOperation",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeGovernedProcessOperationService.java",
+      "method": "approveQueuedOperation",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeDocumentBatchGovernanceService.java",
+      "method": "snapshot",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeAffiliationInviteService.java",
+      "method": "revokeInvite",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeAffiliationInviteService.java",
+      "method": "rejectInvite",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeAffiliationInviteService.java",
+      "method": "officeInvites",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeAffiliationInviteService.java",
+      "method": "myIncomingInvites",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeAffiliationInviteService.java",
+      "method": "createInvite",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeAffiliationInviteService.java",
+      "method": "acceptInvite",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/mni/application/MniRemessaService.java",
+      "method": "reprocessarPendentes",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/mni/application/MniRemessaService.java",
+      "method": "reprocessarPendentes",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/mni/application/MniRecepcaoService.java",
+      "method": "receberAutos",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/mni/MniApplicationService.java",
+      "method": "reprocessar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/mni/MniApplicationService.java",
+      "method": "remessaTimeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/mni/MniApplicationService.java",
+      "method": "recepcaoTimeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/mni/MniApplicationService.java",
+      "method": "endpointHealth",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/security/JudicialConnectorSecuritySessionService.java",
+      "method": "summary",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/security/JudicialConnectorSecuritySessionService.java",
+      "method": "recentSessions",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/security/JudicialConnectorCertificateInventoryService.java",
+      "method": "refreshConfiguredInventory",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/security/JudicialConnectorCertificateInventoryService.java",
+      "method": "refresh",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/security/JudicialConnectorCertificateInventoryService.java",
+      "method": "postureSummary",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/security/JudicialConnectorCertificateInventoryService.java",
+      "method": "latestInventory",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/SisbajudBloqueioService.java",
+      "method": "solicitarBloqueio",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/SisbajudApplicationService.java",
+      "method": "bloquear",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/RenajudRestricaoService.java",
+      "method": "solicitarRestricao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/RenajudApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/RenajudApplicationService.java",
+      "method": "retrySummary",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/RenajudApplicationService.java",
+      "method": "restringir",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/RenajudApplicationService.java",
+      "method": "processo",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/InfojudConsultaService.java",
+      "method": "consultar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/InfojudApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/InfojudApplicationService.java",
+      "method": "retrySummary",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/InfojudApplicationService.java",
+      "method": "processo",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/InfojudApplicationService.java",
+      "method": "consultar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/JudicialProtocolReplayService.java",
+      "method": "replayPendingProtocols",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/JudicialExternalSyncReplayService.java",
+      "method": "replayPendingSynchronizations",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/datajud/feed/DataJudApplicationService.java",
+      "method": "window",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/datajud/feed/DataJudApplicationService.java",
+      "method": "run",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/datajud/feed/DataJudApplicationService.java",
+      "method": "audit",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/inovacao/radar/RadarPadroesService.java",
+      "method": "alertasPorNupn",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/inovacao/radar/RadarPadroesService.java",
+      "method": "alertasDoProcesso",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/inovacao/atlas/AtlasAcessoJusticaService.java",
+      "method": "resumoNacional",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/inovacao/atlas/AtlasAcessoJusticaService.java",
+      "method": "municipiosPorUf",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/inovacao/atlas/AtlasAcessoJusticaService.java",
+      "method": "municipiosPorClassificacao",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/inovacao/atlas/AtlasAcessoJusticaService.java",
+      "method": "gerarHeatmapNacional",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/sigilo/service/SigiloAccessService.java",
+      "method": "validarCredencial",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/sigilo/service/SigiloAccessService.java",
+      "method": "revogarSolicitacao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/sigilo/service/SigiloAccessService.java",
+      "method": "rejeitarSolicitacao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/sigilo/service/SigiloAccessService.java",
+      "method": "criarSolicitacao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/sigilo/service/SigiloAccessService.java",
+      "method": "aprovarSolicitacao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/device/SecurityChallengeService.java",
+      "method": "pendingDeviceIdsForChallenge",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/device/PanicService.java",
+      "method": "trigger",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/abac/PjbAuthorizationTrailAnalyticsRefreshQueueService.java",
+      "method": "drain",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/abac/PjbAuthorizationTrailAnalyticsIncrementalRefreshService.java",
+      "method": "refreshBucket",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/GovBrAssuranceApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/GovBrAssuranceApplicationService.java",
+      "method": "stepUpHealth",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbModuleScaffoldApplicationService.java",
+      "method": "modulePoms",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbModuleScaffoldApplicationService.java",
+      "method": "directories",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbModuleScaffoldApplicationService.java",
+      "method": "buildOrder",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbCoreSeedExtractionApplicationService.java",
+      "method": "mirrors",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbCoreExtractionPlannerApplicationService.java",
+      "method": "pomPreview",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/modularization/application/PjbAggregatorActivationApplicationService.java",
+      "method": "pomPatch",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/quality/gates/application/PjbQualityGateReadinessApplicationService.java",
+      "method": "summary",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/unificado/application/ProcessoMalhaObservabilidadeApplicationService.java",
+      "method": "detalhar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/unificado/application/ProcessoMalhaNacionalFechamentoApplicationService.java",
+      "method": "executar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/unificado/application/ProcessoMalhaNacionalApplicationService.java",
+      "method": "detalhar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/unificado/application/ProcessoMalhaExecucaoAssistidaApplicationService.java",
+      "method": "executar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/unificado/application/ProcessoInfraestruturaSoberanaApplicationService.java",
+      "method": "consolidar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/timeline/application/ProcessoTimelineApplicationService.java",
+      "method": "detalhar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/painel/application/ProcessoPainelRiscoMalhaApplicationService.java",
+      "method": "detalhar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/painel/application/ProcessoPainelMalhaPapelApplicationService.java",
+      "method": "detalhar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/competencia/application/ProcessoCompetenciaMalhaApplicationService.java",
+      "method": "analisar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/anomalia/application/ProcessoAnomaliaMalhaApplicationService.java",
+      "method": "detalhar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/prazos/calendario/CalendarioForenseSeeder.java",
+      "method": "seedYear",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/prazos/application/PrazoApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoTribunalHomologacaoProbeService.java",
+      "method": "executar",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoNacionalProgramaApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoNacionalOperationalCockpitApplicationService.java",
+      "method": "reconciliarTribunal",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoNacionalOperationalCockpitApplicationService.java",
+      "method": "detalharOperacional",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoNacionalOperationalCockpitApplicationService.java",
+      "method": "cockpit",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoNacionalExecutionTransactionCoordinator.java",
+      "method": "falhar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoNacionalExecutionTransactionCoordinator.java",
+      "method": "concluir",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoNacionalExecutionTransactionCoordinator.java",
+      "method": "bloquear",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoNacionalExecutionQueryApplicationService.java",
+      "method": "listar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoMigracaoIndustrialBatchService.java",
+      "method": "executar",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaWarRoomApplicationService.java",
+      "method": "avaliarTribunal",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaWarRoomApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaTutelaColetivaApplicationService.java",
+      "method": "avaliarTribunal",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaTutelaColetivaApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaPrecedentesQualificadosApplicationService.java",
+      "method": "avaliarTribunal",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaPrecedentesQualificadosApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaPosColetivaApplicationService.java",
+      "method": "avaliarTribunal",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaPosColetivaApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaNucleoDuroApplicationService.java",
+      "method": "avaliarTribunal",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaNucleoDuroApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaMalhaJulgadoraApplicationService.java",
+      "method": "avaliarTribunal",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaMalhaJulgadoraApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaCutoverMatrixApplicationService.java",
+      "method": "avaliarTribunal",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaCutoverMatrixApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoFederativaCentroComandoApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoComunicacaoNacionalSyncService.java",
+      "method": "executar",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbArquiteturaSubstituicaoNacionalApplicationService.java",
+      "method": "avaliar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/peticionamento/saga/PeticionamentoSagaOrchestrator.java",
+      "method": "stepViews",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/peticionamento/saga/PeticionamentoSagaOrchestrator.java",
+      "method": "stepResult",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/peticionamento/saga/PeticionamentoSagaApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/peticionamento/saga/PeticionamentoSagaApplicationService.java",
+      "method": "gerarProtocolo",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/kernel/twin/ProcessDigitalTwinService.java",
+      "method": "twin",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/kernel/casefile/CaseFileEventStore.java",
+      "method": "append",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/judicial/sobrestamento/SobrestamentoTemaService.java",
+      "method": "timeline",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/judicial/sobrestamento/SobrestamentoApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/judicial/sobrestamento/SobrestamentoApplicationService.java",
+      "method": "sobrestar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/judicial/sobrestamento/SobrestamentoApplicationService.java",
+      "method": "retomar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/judicial/sobrestamento/SobrestamentoApplicationService.java",
+      "method": "health",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/identidade/vinculo/application/IdentidadeJuridicaVinculoApplicationService.java",
+      "method": "analisar",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/identidade/grafo/infrastructure/UsuarioIdentidadeJuridicaFonteAdapter.java",
+      "method": "resolver",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/identidade/grafo/infrastructure/ProcessoIdentidadeJuridicaFonteAdapter.java",
+      "method": "resolver",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/icp/IcpBrasilChainValidator.java",
+      "method": "validate",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/icp/IcpBrasilChainValidator.java",
+      "method": "timeline",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/icp/IcpBrasilChainValidator.java",
+      "method": "registerSuccess",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/icp/IcpBrasilChainValidator.java",
+      "method": "registerFailure",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/icp/IcpBrasilApplicationService.java",
+      "method": "trustAnchor",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/icp/IcpBrasilApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "summary",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "smokePack",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "seedScenarios",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "integrationArtifacts",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "httpContractFreeze",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "errorContract",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "envelopeContract",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "checklist",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/readiness/application/PjbBackendReadyForFrontendApplicationService.java",
+      "method": "authContract",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/delivery/application/PjbFrontendDeliveryApplicationService.java",
+      "method": "routes",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "supportCatalogs",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "ramoDireitoCatalog",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "professionalWorkspaceExecutiveDashboard",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "professionalOrganizationalExecutiveDashboard",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "procuradoriaOrganExecutiveDashboard",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "procuradoriaExecutiveDashboard",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "officeWorkspaceSummary",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "officeWorkspaceQueue",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "officeWorkspaceMainDashboard",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "officeWorkspaceLegalCockpit",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "officeWorkspaceExecutiveDashboard",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "officeTeamMemberAvatar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "officeProcessReadingMode",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "myOwnedOffices",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "menu",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "me",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "magistratureOrganExecutiveDashboard",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "magistratureExecutiveDashboard",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "ensurePersonalOffice",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "defensoriaOrganExecutiveDashboard",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "defensoriaExecutiveDashboard",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "context",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "method": "bootstrap",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/WorkflowTrabalhistaService.java",
+      "method": "timelineAudit",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/WorkflowTrabalhistaService.java",
+      "method": "timeline",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/WorkflowTrabalhistaService.java",
+      "method": "registrarDepositoRecursal",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/WorkflowTrabalhistaService.java",
+      "method": "homologarAcordo",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/WorkflowTrabalhistaService.java",
+      "method": "gerarGruRecursal",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/TrabalhistaApplicationService.java",
+      "method": "timelineAudit",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/TrabalhistaApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/TrabalhistaApplicationService.java",
+      "method": "registrarDeposito",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/TrabalhistaApplicationService.java",
+      "method": "homologarAcordo",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/TrabalhistaApplicationService.java",
+      "method": "gruConsistencyAudit",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/trabalhista/TrabalhistaApplicationService.java",
+      "method": "gerarGru",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/custas/CustasApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/custas/CustasApplicationService.java",
+      "method": "gerar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/financeiro/custas/CustaJudicialService.java",
+      "method": "gerarCustas",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/eleitoral/FeitoEleitoralService.java",
+      "method": "timelineAudit",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/eleitoral/FeitoEleitoralService.java",
+      "method": "sincronizarPrestacaoContas",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/eleitoral/FeitoEleitoralService.java",
+      "method": "registrarDiplomacao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/eleitoral/FeitoEleitoralService.java",
+      "method": "listarFeitosPendentesDeDiplomacao",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/eleitoral/FeitoEleitoralService.java",
+      "method": "listarFeitosPendentesDeDiplomacao",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/eleitoral/FeitoEleitoralService.java",
+      "method": "calendarioSnapshot",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/eleitoral/EleitoralApplicationService.java",
+      "method": "zonaHealthResult",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/eleitoral/EleitoralApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/eleitoral/EleitoralApplicationService.java",
+      "method": "sincronizarPrestacaoContas",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/eleitoral/EleitoralApplicationService.java",
+      "method": "pendentes",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/eleitoral/EleitoralApplicationService.java",
+      "method": "diplomacaoSyncRun",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/eleitoral/EleitoralApplicationService.java",
+      "method": "calendarioHealth",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/dje/DjePublicacaoService.java",
+      "method": "tribunalPublicationView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/dje/DjePublicacaoService.java",
+      "method": "timelineAudit",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/dje/DjePublicacaoService.java",
+      "method": "processoPublicationView",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/dje/DjePublicacaoService.java",
+      "method": "@Retry",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/dje/DjeApplicationService.java",
+      "method": "tribunalHealth",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/dje/DjeApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/dje/DjeApplicationService.java",
+      "method": "lifecycleRun",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/dje/DjeApplicationService.java",
+      "method": "edicaoMetrics",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/digitalizacao/DigitalizacaoOcrService.java",
+      "method": "queueQuery",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/digitalizacao/DigitalizacaoOcrService.java",
+      "method": "pendingReview",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/digitalizacao/DigitalizacaoGovernanceService.java",
+      "method": "reviewQueue",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/digitalizacao/DigitalizacaoGovernanceService.java",
+      "method": "reviewQueue",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/digitalizacao/DigitalizacaoApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/digitalizacao/DigitalizacaoApplicationService.java",
+      "method": "reconcileStaleProcessing",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/criminal/custodia/CustodiaApplicationService.java",
+      "method": "timeline",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/criminal/custodia/CustodiaApplicationService.java",
+      "method": "registrarPrisao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/criminal/custodia/CustodiaApplicationService.java",
+      "method": "concluir",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/criminal/custodia/AudienciaCustodiaService.java",
+      "method": "registrarPrisao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/criminal/custodia/AudienciaCustodiaService.java",
+      "method": "medidas",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/state/ComunicacaoJudicialStateStore.java",
+      "method": "findByStatusCodes",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/state/ComunicacaoJudicialStateStore.java",
+      "method": "findByStatusCode",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/state/ComunicacaoJudicialStateStore.java",
+      "method": "findBySecondaryKey",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/state/ComunicacaoJudicialStateStore.java",
+      "method": "findByProcessoId",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/SlaExpedicaoDashboardService.java",
+      "method": "atualizarBenchmark",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/ReveliaAutomaticaEngine.java",
+      "method": "registrarRespostaProtocolada",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/ReveliaAutomaticaEngine.java",
+      "method": "iniciarMonitoramento",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/RecusaRecebimentoService.java",
+      "method": "registrar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/QrCodeMandadoService.java",
+      "method": "verificar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/QrCodeMandadoService.java",
+      "method": "gerar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/PrazoRespostaPosEntregaEngine.java",
+      "method": "suspenderPrazo",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/PrazoRespostaPosEntregaEngine.java",
+      "method": "retomar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/PrazoRespostaPosEntregaEngine.java",
+      "method": "iniciarPrazoAposEntrega",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CuradorEspecialAutomaticoService.java",
+      "method": "registrarNecessidade",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CuradorEspecialAutomaticoService.java",
+      "method": "nomear",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/ComunicacaoJudicialPrazoReminderService.java",
+      "method": "monitorarPrazosCriticos",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/ComunicacaoJudicialCalendarioProcessualService.java",
+      "method": "sincronizarCiencia",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/ComunicacaoJudicialAtendimentoRelayService.java",
+      "method": "propagarAviso",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/ComunicacaoJudicialAtendimentoRelayService.java",
+      "method": "propagarAlertaPrazo",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java",
+      "method": "registrarFrustracaoEAcionarFallback",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java",
+      "method": "registrarEntregaPorInterceptacao",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java",
+      "method": "processarConfirmacaoLeitura",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java",
+      "method": "processarAcuseRecebimento",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java",
+      "method": "expedir",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java",
+      "method": "escalonarEvasoesNaoTratadas",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java",
+      "method": "analisarEvasao",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoHoraCertaEngine.java",
+      "method": "executarHoraCerta",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/BnmpIntegracaoService.java",
+      "method": "revogar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/BnmpIntegracaoService.java",
+      "method": "registrar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/BnmpIntegracaoService.java",
+      "method": "processarCumprimento",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/workflow/application/InstitutionalWorkflowApplicationService.java",
+      "method": "listarDelegacoes",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/workflow/application/InstitutionalWorkflowApplicationService.java",
+      "method": "criarOuAtualizarMinuta",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/workflow/application/InstitutionalOperationalCoverageApplicationService.java",
+      "method": "aplicarAtivas",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/workflow/application/InstitutionalFlowAnalyticsApplicationService.java",
+      "method": "timelineSemantica",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/workflow/application/InstitutionalFlowAnalyticsApplicationService.java",
+      "method": "dashboard",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/inbox/application/InstitutionalInboxApplicationService.java",
+      "method": "listarMinhasCaixas",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/delivery/application/InstitutionalDeliveryQueueApplicationService.java",
+      "method": "processarPendencias",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/ai/sync/IbgeSyncService.java",
+      "method": "syncData",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/knowledge/LegalKnowledgeCorpusRegistryService.java",
+      "method": "corpusSummary",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/knowledge/LegalKnowledgeCorpusRegistryService.java",
+      "method": "corpusMetrics",
+      "signals": [
+        ".stream()"
+      ]
+    }
+  ],
+  "hotspotCount": 730,
+  "missingBudgets": [],
+  "missingBudgetCount": 0
+}

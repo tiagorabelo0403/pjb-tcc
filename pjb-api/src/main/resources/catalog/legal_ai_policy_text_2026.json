@@ -1,0 +1,401 @@
+{
+  "capabilities": {
+    "highStakes": [
+      "PETICAO_INICIAL_ASSISTIDA",
+      "PETICAO_ASSISTIDA",
+      "DRAFT_PETITION",
+      "ANALISE_COMPETENCIA",
+      "ANALISE_PREVIDENCIARIA",
+      "SENTENCA_ASSISTIDA",
+      "PARECER_JURIDICO",
+      "PROTOCOLO_ASSISTIDO"
+    ],
+    "readHeavy": [
+      "CONSULTA_JURIDICA_V1",
+      "CONSULTA_JURIDICA_V2",
+      "CONSULTA_JURIDICA_V3",
+      "LEGAL_GENERAL_ASSIST_V3",
+      "PETICAO_ASSISTIDA",
+      "DRAFT_PETITION"
+    ]
+  },
+  "ragFusion": {
+    "profiles": {
+      "strictNoMcp": "JURIDICA_RAG_STRICT_NO_MCP_V3",
+      "localOnlySuffix": "_RAG_LOCAL_ONLY",
+      "stagedStrict": "JURIDICA_STAGED_RAG_MCP_STRICT_V3",
+      "hybridComplex": "JURIDICA_HYBRID_RAG_MCP_COMPLEX_V3",
+      "hybridBalanced": "JURIDICA_HYBRID_RAG_MCP_BALANCED_V2"
+    },
+    "executionMode": {
+      "locked": "RAG_ONLY_LOCKED",
+      "local": "RAG_ONLY_LOCAL",
+      "stagedReadOnly": "STAGED_RAG_THEN_MCP_READONLY",
+      "hybridReadOnly": "HYBRID_PARALLEL_RAG_MCP_READONLY",
+      "deferredDiscovery": "RAG_WITH_DEFERRED_MCP_DISCOVERY"
+    },
+    "reasoningEffort": {
+      "xhigh": "xhigh",
+      "high": "high",
+      "medium": "medium",
+      "low": "low"
+    },
+    "promptCacheRetention": {
+      "longWindow": "24h",
+      "session": "session"
+    },
+    "connectorFamilies": {
+      "base": [
+        "PJB_INTERNAL_JURISPRUDENCE",
+        "PJB_CURRICULUM",
+        "PJB_PETITION_BLUEPRINTS",
+        "PJB_COMPETENCE_MATRIX"
+      ],
+      "remote": [
+        "MCP_REMOTE_STORAGE_READONLY",
+        "MCP_REMOTE_COLLAB_READONLY",
+        "MCP_REMOTE_OFFICE_KNOWLEDGE_READONLY"
+      ],
+      "protocolGuard": "PJB_PROTOCOL_GUARD",
+      "calculator": "PJB_CALCULATOR",
+      "federalRecords": "PJB_FEDERAL_RECORDS",
+      "criminalLane": "PJB_CRIMINAL_LANE",
+      "electoralLane": "PJB_ELECTORAL_LANE",
+      "laborLane": "PJB_LABOR_LANE",
+      "environmentalLane": "PJB_ENVIRONMENTAL_LANE",
+      "businessLane": "PJB_BUSINESS_LANE"
+    },
+    "allowedToolClasses": {
+      "base": [
+        "READ_ONLY_SEARCH",
+        "READ_ONLY_RETRIEVAL",
+        "READ_ONLY_LEGAL_LOOKUP"
+      ],
+      "protocolPrecheck": "READ_ONLY_PROTOCOL_PRECHECK",
+      "competenceRouting": "READ_ONLY_COMPETENCE_ROUTING",
+      "calculatorLookup": "READ_ONLY_CALCULATOR_LOOKUP"
+    },
+    "evidenceLanes": {
+      "base": [
+        "VECTOR_JURISPRUDENCE",
+        "CURRICULUM",
+        "LEGAL_KNOWLEDGE_BASE"
+      ],
+      "petitionBlueprints": "PETITION_BLUEPRINTS",
+      "toolSearch": "MCP_TOOL_SEARCH",
+      "remoteReadonly": "MCP_REMOTE_READONLY"
+    },
+    "verifierChecks": {
+      "base": [
+        "SOURCE_AUTHORITY_ALIGNMENT",
+        "PROCEDURE_FAMILY_ALIGNMENT",
+        "CITATION_GROUNDING"
+      ],
+      "contradictionResolution": "CONTRADICTION_RESOLUTION",
+      "promptInjectionFence": "PROMPT_INJECTION_FENCE",
+      "petitionStructure": "PETITION_STRUCTURE_COMPLETENESS",
+      "protocolPrecheckAlignment": "PROTOCOL_PRECHECK_ALIGNMENT",
+      "competenceRoutingAlignment": "COMPETENCE_ROUTING_ALIGNMENT"
+    },
+    "approvalModes": {
+      "off": "OFF",
+      "always": "ALWAYS",
+      "readOnlyAuto": "READ_ONLY_AUTO"
+    },
+    "sessionModes": {
+      "localState": "LOCAL_STATE",
+      "pinnedServer": "PINNED_SERVER_SESSION",
+      "deferredServer": "DEFERRED_SERVER_SESSION"
+    },
+    "precedentWindows": {
+      "base": [
+        "STF_RECENT_BINDING",
+        "STJ_REPETITIVOS"
+      ],
+      "labor": "TST_IRR_E_SUMULAS",
+      "electoral": "TSE_PRECEDENTS",
+      "military": "STM_PRECEDENTS",
+      "criminal": "STJ_PENAL_AND_STF_CRIMINAL",
+      "federal": "TRF_AND_TNU_WINDOWS"
+    },
+    "decisionReasons": {
+      "capabilityPrefix": "capability=",
+      "strictGuardrails": "strict_guardrails_enabled",
+      "petitionGroundedPipeline": "petition_flow_requires_grounded_pipeline",
+      "complexMultilane": "complex_case_requires_multilane_retrieval",
+      "readonlyMcpAllowed": "readonly_mcp_allowed",
+      "toolSearchEnabled": "tool_search_enabled_for_connector_discovery",
+      "localOnlyFallback": "local_only_fallback"
+    },
+    "defaults": {
+      "generalPromptCacheProfile": "LEGAL_GENERAL"
+    }
+  },
+  "adaptiveGovernance": {
+    "governance": {
+      "policyVersionV3": "JURIDICA_ADAPTIVE_MESH_GOVERNANCE_V3",
+      "policyVersionV4": "JURIDICA_ADAPTIVE_MESH_GOVERNANCE_V4"
+    },
+    "knowledgeCadence": {
+      "profileV2": "LEGAL_KNOWLEDGE_CADENCE_V2",
+      "activationModeEditDraftProtocol": "OPEN_EDIT_DRAFT_PROTOCOL",
+      "activationModeQueryDraft": "OPEN_QUERY_DRAFT"
+    },
+    "sourceScope": {
+      "petitionSources": [
+        "VECTOR_JURISPRUDENCE",
+        "CURRICULUM",
+        "BRAZILIAN_LEGAL_KNOWLEDGE_BASE",
+        "PETITION_BLUEPRINT_CATALOG"
+      ],
+      "querySources": [
+        "VECTOR_JURISPRUDENCE",
+        "CURRICULUM",
+        "BRAZILIAN_LEGAL_KNOWLEDGE_BASE"
+      ]
+    },
+    "decisionReasons": {
+      "capabilityPrefix": "capability=",
+      "effectiveVersionPrefix": "effectiveVersion=",
+      "complexityPrefix": "complexity=",
+      "injectionRiskPrefix": "injectionRisk=",
+      "petitionDetected": "petition_detected",
+      "sigiloSensitive": "sigilo_sensitive_context",
+      "complexCaseStrictRag": "complex_case_requires_strict_rag",
+      "externalToolingLocked": "external_tooling_locked_by_risk"
+    },
+    "ragPolicy": {
+      "strictProfile": "RAG_STRICT_MULTISTAGE_V3",
+      "balancedSuffix": "_BALANCED_RAG",
+      "strictDistillation": "SEMANTIC_SOURCE_DISTILLATION_STRICT_V3",
+      "balancedDistillation": "SEMANTIC_SOURCE_DISTILLATION_BALANCED_V2"
+    },
+    "toolPolicy": {
+      "disabledByRisk": "DISABLED_BY_RISK",
+      "readOnlyGuarded": "READ_ONLY_GUARDED",
+      "localOnly": "LOCAL_ONLY",
+      "auto": "AUTO"
+    }
+  },
+  "strategicExecution": {
+    "capabilities": {
+      "protocol": [
+        "PROTOCOLO_ASSISTIDO",
+        "PETICAO_ASSISTIDA",
+        "PETICAO_INICIAL_ASSISTIDA",
+        "DRAFT_PETITION"
+      ],
+      "documentHeavy": [
+        "PETICAO_ASSISTIDA",
+        "PETICAO_INICIAL_ASSISTIDA",
+        "DRAFT_PETITION",
+        "PROTOCOLO_ASSISTIDO",
+        "ANALISE_COMPETENCIA",
+        "ANALISE_PREVIDENCIARIA",
+        "LEGAL_GENERAL_ASSIST_V3"
+      ],
+      "strictProcedures": [
+        "MANDADO_DE_SEGURANCA",
+        "CUSTODIA",
+        "TRIBUNAL_DO_JURI",
+        "EXECUCAO_FISCAL",
+        "BENEFICIO_PREVIDENCIARIO",
+        "HABEAS_CORPUS",
+        "AIJE",
+        "AIRC",
+        "AIME"
+      ]
+    },
+    "versions": {
+      "strategyVersion": "JURIDICA_STRATEGIC_EXECUTION_V1"
+    },
+    "profiles": {
+      "protocolDocHeavyStrictV4": "LEGAL_PROTOCOL_AND_DOC_HEAVY_STRICT_V4",
+      "protocolGuardedV4": "LEGAL_PROTOCOL_GUARDED_V4",
+      "batchDocumentIntensiveV4": "LEGAL_BATCH_DOCUMENT_INTENSIVE_V4",
+      "documentStrictExecutionV4": "LEGAL_DOCUMENT_STRICT_EXECUTION_V4",
+      "batchReadStrictV3": "LEGAL_BATCH_READ_STRICT_V3",
+      "petitionExecutionV3": "LEGAL_PETITION_EXECUTION_V3",
+      "balancedStrictExecutionV3": "LEGAL_BALANCED_STRICT_EXECUTION_V3",
+      "balancedExecutionV2": "LEGAL_BALANCED_EXECUTION_V2"
+    },
+    "ingestion": {
+      "modes": {
+        "protocolStagedBatch": "PROTOCOL_STAGED_BATCH_INGESTION",
+        "hierarchicalBatch": "HIERARCHICAL_BATCH_INGESTION",
+        "strictStagedDocument": "STRICT_STAGED_DOCUMENT_INGESTION",
+        "parallelBatchWindowed": "PARALLEL_BATCH_WINDOWED_INGESTION",
+        "focusedSingleDocument": "FOCUSED_SINGLE_DOCUMENT_INGESTION"
+      },
+      "ocrPolicy": {
+        "strict": "PDF_TEXT_FIRST_OCR_LAST_RESORT",
+        "assisted": "PDF_TEXT_FIRST_ASSISTED_OCR"
+      },
+      "dedupePolicy": {
+        "semantic": "DOC_HASH_AND_SEMANTIC_DEDUPE_V2",
+        "hashOnly": "DOC_HASH_ONLY"
+      },
+      "lineageEnvelope": {
+        "mandatoryProtocol": "MANDATORY_PROTOCOL_SOURCE_LINEAGE",
+        "standard": "STANDARD_SOURCE_LINEAGE"
+      }
+    },
+    "planner": {
+      "batchModes": {
+        "singlePass": "SINGLE_PASS",
+        "multiPassHierarchical": "MULTI_PASS_HIERARCHICAL",
+        "multiPassStrict": "MULTI_PASS_STRICT",
+        "balancedMultiPass": "BALANCED_MULTI_PASS"
+      },
+      "toolPrefetch": {
+        "deferred": "DEFERRED",
+        "pinnedReadOnly": "PINNED_READ_ONLY",
+        "onDemand": "ON_DEMAND"
+      },
+      "promptCompression": {
+        "strict": "LEGAL_CONTEXT_COMPRESSION_STRICT_V3",
+        "balanced": "LEGAL_CONTEXT_COMPRESSION_BALANCED_V2"
+      },
+      "resultMerging": {
+        "hierarchicalAuthorityRerank": "HIERARCHICAL_MERGE_WITH_AUTHORITY_RERANK",
+        "balancedRerank": "BALANCED_RERANK"
+      }
+    },
+    "verifier": {
+      "modes": {
+        "protocolAbsolute": "PROTOCOL_VERIFIER_ABSOLUTE",
+        "protocolStrict": "PROTOCOL_VERIFIER_STRICT",
+        "strict": "LEGAL_VERIFIER_STRICT",
+        "balanced": "LEGAL_VERIFIER_BALANCED"
+      },
+      "citationTrail": {
+        "mandatory": "MANDATORY",
+        "strongPreference": "STRONG_PREFERENCE"
+      },
+      "checklistMode": {
+        "preProtocolBlocking": "PRE_PROTOCOL_BLOCKING",
+        "nonBlockingReview": "NON_BLOCKING_REVIEW"
+      },
+      "contradictionTolerance": {
+        "minimal": "MINIMAL",
+        "low": "LOW",
+        "balanced": "BALANCED"
+      },
+      "signature": {
+        "protocol": "LEGAL_VERIFIER_PROTOCOL_V3",
+        "execution": "LEGAL_VERIFIER_EXECUTION_V2"
+      }
+    },
+    "protocol": {
+      "stages": {
+        "finalProtocolOrPreProtocol": "FINAL_PROTOCOL_OR_PRE_PROTOCOL",
+        "draftProtocolPrep": "DRAFT_PROTOCOL_PREP",
+        "queryOnly": "QUERY_ONLY"
+      },
+      "packageStrategy": {
+        "signatureEnvelopeProtocol": "SIGNATURE_ENVELOPE_AND_PROTOCOL_PACKAGE",
+        "draftOnly": "DRAFT_PACKAGE_ONLY"
+      },
+      "postProtocolReplay": {
+        "distributionReadySnapshot": "DISTRIBUTION_READY_SNAPSHOT",
+        "optional": "OPTIONAL"
+      }
+    },
+    "cache": {
+      "modes": {
+        "protocolWorkspaceCheckpoint": "PROTOCOL_WORKSPACE_CHECKPOINT_CACHE",
+        "batchExecutionCheckpoint": "BATCH_EXECUTION_CHECKPOINT_CACHE",
+        "petitionSession": "PETITION_SESSION_CACHE",
+        "queryPrefix": "QUERY_PREFIX_CACHE"
+      },
+      "prefixProfile": {
+        "protocol": "LEGAL_PROTOCOL_PREFIX_CACHE",
+        "petition": "LEGAL_PETITION_PREFIX_CACHE",
+        "query": "LEGAL_QUERY_PREFIX_CACHE"
+      },
+      "checkpointing": {
+        "multiStage": "MULTI_STAGE_CHECKPOINTING",
+        "singleStage": "SINGLE_STAGE_CHECKPOINTING"
+      },
+      "replayEnvelope": {
+        "protocolAudit": "PROTOCOL_AUDIT_REPLAY",
+        "execution": "LEGAL_EXECUTION_REPLAY"
+      }
+    },
+    "authorityLanes": {
+      "base": [
+        "LEGISLACAO_VIGENTE",
+        "JURISPRUDENCIA_QUALIFICADA"
+      ],
+      "strict": [
+        "TRIBUNAIS_SUPERIORES",
+        "REGRAS_PROCEDIMENTAIS_CANONICAS"
+      ],
+      "electoral": "TSE_E_TRE",
+      "labor": "TST_E_TRT",
+      "federal": "TRF_E_TNU",
+      "military": "STM_E_TJM"
+    },
+    "mandatoryChecks": {
+      "base": [
+        "COERENCIA_FATOS_PEDIDOS",
+        "COMPETENCIA_E_FORO",
+        "ADEQUACAO_DO_RITO"
+      ],
+      "documentChecklist": "CHECKLIST_DOCUMENTAL",
+      "citationAuthorityTrail": "TRILHA_DE_CITACOES_E_AUTORIDADES",
+      "representationCapacity": "REPRESENTACAO_E_CAPACIDADE_POSTULATORIA",
+      "protocolSignaturePackage": "PACOTE_DE_PROTOCOLO_E_ASSINATURA",
+      "familyUrgency": "MELHOR_INTERESSE_E_URGENCIA",
+      "criminalCustody": "LIBERDADE_E_MEDIDA_CAUTELAR",
+      "taxExecution": "CDA_PRESCRICAO_E_COMPETENCIA_FAZENDARIA",
+      "socialSecurity": "CARACTERIZACAO_DO_BENEFICIO_E_PROVA_MINIMA",
+      "electoralTimeliness": "TEMPESTIVIDADE_E_JANELA_ELEITORAL"
+    },
+    "queryHints": {
+      "protocolCompetence": "competencia_prevenção_redistribuição_protocolo",
+      "protocolChecklist": "checklist_documental_e_representacao",
+      "documentSummary": "sumario_hierarquico_dos_anexos",
+      "documentContradiction": "contradições_entre_documentos"
+    },
+    "readingGoals": {
+      "petitionWriting": "redacao_juridica_e_estrutura_da_peca",
+      "protocolFinalCheck": "verificacao_final_de_protocolo_e_distribuicao"
+    },
+    "protocolGates": {
+      "partesRepresentacao": "PARTES_E_REPRESENTACAO",
+      "competenciaForoUnidade": "COMPETENCIA_FORO_UNIDADE",
+      "documentosEssenciais": "DOCUMENTOS_ESSENCIAIS",
+      "identidadeInstitucional": "IDENTIDADE_INSTITUCIONAL_E_CAPACIDADE",
+      "liberdadeIntegridade": "LIBERDADE_E_INTEGRIDADE_DA_MEDIDA",
+      "janelaProcessual": "JANELA_PROCESSUAL_E_TEMPESTIVIDADE",
+      "previdenciarioProvaMinima": "PROVA_MINIMA_E_DADOS_CONTRIBUTIVOS"
+    },
+    "dangerSignals": {
+      "strictContext": "STRICT_CONTEXT",
+      "finalProtocolStage": "FINAL_PROTOCOL_STAGE",
+      "heavyDocumentContext": "HEAVY_DOCUMENT_CONTEXT",
+      "batchReadingActive": "BATCH_READING_ACTIVE",
+      "promptToolInjectionRisk": "PROMPT_OR_TOOL_INJECTION_RISK",
+      "sigiloRestricted": "SIGILO_OR_RESTRICTED_CONTEXT",
+      "authorityFloorUpgraded": "AUTHORITY_FLOOR_UPGRADED"
+    },
+    "connectorPriority": {
+      "batchDocumentMemory": "BATCH_DOCUMENT_MEMORY",
+      "lockedReadOnlyConnectors": "LOCKED_READ_ONLY_CONNECTORS"
+    },
+    "decisionReasons": {
+      "strategyProfilePrefix": "strategyProfile=",
+      "verifierModePrefix": "verifierMode=",
+      "complexityPrefix": "complexity=",
+      "injectionRiskPrefix": "injectionRisk=",
+      "strictContextEnabled": "strict_context_enabled",
+      "veryStrictFloor": "very_strict_floor",
+      "documentHeavyContext": "document_heavy_context",
+      "batchReadEnabled": "batch_read_enabled",
+      "protocolStageEnabled": "protocol_stage_enabled",
+      "petitionDetected": "petition_detected",
+      "sigiloContext": "sigilo_context"
+    }
+  }
+}

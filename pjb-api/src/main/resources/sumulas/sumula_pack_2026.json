@@ -1,0 +1,52 @@
+[
+  {
+    "tribunal": "STF",
+    "identificador": "SV 13",
+    "tipo": "SUMULA_VINCULANTE",
+    "titulo": "Nepotismo",
+    "branchCode": "ADMINISTRATIVO",
+    "summary": "Vedação de nomeação de parentes em hipóteses que afrontem os princípios da Administração Pública.",
+    "keywords": ["nepotismo", "administracao publica", "art. 37"],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "tribunal": "STF",
+    "identificador": "SV 14",
+    "tipo": "SUMULA_VINCULANTE",
+    "titulo": "Acesso aos elementos de prova",
+    "branchCode": "PENAL",
+    "summary": "Assegura à defesa acesso aos elementos de prova já documentados em procedimento investigatório.",
+    "keywords": ["defesa", "inquerito", "acesso aos autos", "contraditorio"],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "tribunal": "STJ",
+    "identificador": "JURISPRUDENCIA_EM_TESES-CONSUMIDOR-01",
+    "tipo": "JURISPRUDENCIA_EM_TESES",
+    "titulo": "Responsabilidade civil e consumo",
+    "branchCode": "CONSUMIDOR",
+    "summary": "Conjunto curado de teses de consumo e responsabilidade civil para recuperação orientada.",
+    "keywords": ["cdc", "responsabilidade objetiva", "servico", "produto"],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "tribunal": "TST",
+    "identificador": "OJ-SDI-1-394",
+    "tipo": "OJ",
+    "titulo": "Orientação jurisprudencial trabalhista curada",
+    "branchCode": "TRABALHISTA",
+    "summary": "Seed estruturado para ranking de OJs e súmulas trabalhistas em consultas do rito laboral.",
+    "keywords": ["oj", "trabalhista", "sdi", "clt"],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "tribunal": "TSE",
+    "identificador": "SUMULA-TSE-32",
+    "tipo": "SUMULA",
+    "titulo": "Súmula eleitoral curada",
+    "branchCode": "ELEITORAL",
+    "summary": "Exemplo de agrupamento de súmulas eleitorais para recuperação por tema e inelegibilidade.",
+    "keywords": ["sumula tse", "inelegibilidade", "registro de candidatura"],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  }
+]

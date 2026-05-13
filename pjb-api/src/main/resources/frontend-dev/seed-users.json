@@ -1,0 +1,26 @@
+[
+  {
+    "code": "cidadao-seed",
+    "perfil": "CIDADAO",
+    "nome": "Maria da Silva",
+    "cpf": "11111111111",
+    "email": "cidadao.seed@pjb.local",
+    "govbrAssuranceLevel": "prata"
+  },
+  {
+    "code": "magistrado-seed",
+    "perfil": "MAGISTRADO",
+    "nome": "Dr. Augusto Almeida",
+    "cpf": "22222222222",
+    "email": "magistrado.seed@pjb.local",
+    "govbrAssuranceLevel": "ouro"
+  },
+  {
+    "code": "servidor-seed",
+    "perfil": "SERVIDOR_JUDICIAL",
+    "nome": "Paula Nascimento",
+    "cpf": "33333333333",
+    "email": "servidor.seed@pjb.local",
+    "govbrAssuranceLevel": "prata"
+  }
+]

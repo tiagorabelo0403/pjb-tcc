@@ -1,0 +1,78 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: pjb-worker
+  annotations:
+    scaledobject.keda.sh/transfer-hpa-ownership: "true"
+spec:
+  scaleTargetRef:
+    name: pjb-worker
+  pollingInterval: 15
+  cooldownPeriod: 300
+  initialCooldownPeriod: 180
+  minReplicaCount: 2
+  maxReplicaCount: 20
+  fallback:
+    failureThreshold: 3
+    replicas: 4
+    behavior: currentReplicasIfHigher
+  advanced:
+    restoreToOriginalReplicaCount: false
+    horizontalPodAutoscalerConfig:
+      name: keda-hpa-pjb-worker-adaptive
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          tolerance: 0.05
+          policies:
+            - type: Percent
+              value: 100
+              periodSeconds: 60
+            - type: Pods
+              value: 3
+              periodSeconds: 60
+          selectPolicy: Max
+        scaleDown:
+          stabilizationWindowSeconds: 720
+          tolerance: 0.10
+          policies:
+            - type: Percent
+              value: 15
+              periodSeconds: 60
+          selectPolicy: Max
+    scalingModifiers:
+      target: "1"
+      activationTarget: "0.30"
+      metricType: "Value"
+      formula: "max(worker_outbox_pressure * 1.20, worker_workitems_pressure, worker_kafka_pressure * 1.30)"
+  triggers:
+    - type: prometheus
+      name: worker_outbox_pressure
+      useCachedMetrics: true
+      metricType: Value
+      metadata:
+        serverAddress: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        query: sum(pjb_outbox_pending{namespace="pjb",pod=~"pjb-worker-.*"}) / 1500
+        threshold: "1"
+        activationThreshold: "0.30"
+        ignoreNullValues: "false"
+    - type: prometheus
+      name: worker_workitems_pressure
+      useCachedMetrics: true
+      metricType: Value
+      metadata:
+        serverAddress: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        query: sum(pjb_process_business_workitems_pendentes{namespace="pjb",pod=~"pjb-worker-.*"}) / 800
+        threshold: "1"
+        activationThreshold: "0.20"
+        ignoreNullValues: "false"
+    - type: prometheus
+      name: worker_kafka_pressure
+      useCachedMetrics: true
+      metricType: Value
+      metadata:
+        serverAddress: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        query: sum(kafka_consumergroup_lag_sum{namespace="pjb",consumergroup=~"pjb-.*"}) / 3000
+        threshold: "1"
+        activationThreshold: "0.20"
+        ignoreNullValues: "false"

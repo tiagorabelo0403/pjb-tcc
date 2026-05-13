@@ -1,0 +1,18 @@
+{
+  "status": "MATERIALIZED",
+  "surface": "/api/v1/admin/frontend-readiness",
+  "endpoints": [
+    "/summary",
+    "/checklist",
+    "/auth",
+    "/errors",
+    "/public-routes",
+    "/blockers",
+    "/bootstrap"
+  ],
+  "notes": [
+    "Coloca a readiness do backend para o frontend dentro do proprio projeto.",
+    "Nao substitui validacao global de build/test fora deste ambiente.",
+    "Serve como freeze operacional da borda HTTP antes da etapa focada em frontend."
+  ]
+}

@@ -1,0 +1,117 @@
+package com.tcc.pjb.backend.core.comunicacao.institucional.panel.application.catalog;
+
+import com.tcc.pjb.backend.core.comunicacao.institucional.InstitutionalApiRoutes;
+import com.tcc.pjb.backend.core.operational.OperationalApiRoutes;
+import com.tcc.pjb.backend.core.comunicacao.institucional.panel.domain.InstitutionalPanelBlueprintSpec;
+import java.util.List;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ApoioInstitucionalPanelBlueprintCatalog implements InstitutionalPanelBlueprintCatalog {
+
+    @Override
+    public List<InstitutionalPanelBlueprintSpec> specs() {
+        return List.of(
+                spec("DELEGACIA_GESTAO", "DELEGACIA", "PAINEL_DELEGACIA", "Delegacia e polícia judiciária", "Ofícios, requisições, triagem e manifestações da autoridade policial", InstitutionalApiRoutes.painelExecutivo("DELEGACIA"),
+                                        List.of("oficios_recebidos", "diligencias", "prazos_inquerito", "minutas_para_delegado"),
+                                        List.of("receber_oficio", "confirmar_cumprimento", "preparar_minuta", "escalar_ao_delegado"),
+                                        List.of("Nomeação institucional", "Certificado ICP quando houver assinatura", "Rede confiável ou autorização remota"),
+                                        List.of("Sem manifestação jurídica fora do escopo policial"),
+                                        List.of("Delegacias entram por adesão institucional homologada com gestores próprios.")),
+                spec("DELEGACIA_TRIAGEM", "DELEGACIA", "PAINEL_CAIXA", "Triagem policial", "Fila de ofícios, diligências e retornos de campo", InstitutionalApiRoutes.painelExecutivo("DELEGACIA", "TRIAGEM"),
+                                        List.of("ordens_recebidas", "diligencias_abertas", "retornos_de_campo", "relatorios_pendentes"),
+                                        List.of("receber_oficio", "atribuir_equipes", "registrar_diligencia", "devolver_para_delegado"),
+                                        List.of("Nomeação ativa", "Rede confiável"),
+                                        List.of("Sem assinatura final da autoridade"),
+                                        List.of("Triagem policial separa execução de campo da manifestação da autoridade policial.")),
+                spec("CONTADORIA_OPERACAO", "CONTADORIA", "PAINEL_TECNICO_JUDICIAL", "Contadoria judicial", "Memória de cálculo, liquidação e execução em trilha técnica", InstitutionalApiRoutes.painelExecutivo("CONTADORIA"),
+                                        List.of("memorias_de_calculo", "liquidacoes", "execucoes_fiscais", "pendencias_de_documentos", "calculadora_judicial", "audiencias_de_liquidacao"),
+                                        List.of("receber_requisicao", "submeter_calculo", "pedir_complementacao", "encerrar_resposta", "abrir_calculadora_judicial", "solicitar_audiencia_tecnica"),
+                                        List.of("Nomeação ativa", "Certificado quando cálculo for formalmente assinado"),
+                                        List.of("Sem decisão de mérito"),
+                                        List.of("Contadoria tem separador próprio para cálculo e liquidação.")),
+                spec("CONTADORIA_MEMORIA_E_LIQUIDACAO", "CONTADORIA", "PAINEL_TECNICO_JUDICIAL", "Contadoria judicial", "Memória de cálculo, requisições de documentos, versões e retorno técnico", InstitutionalApiRoutes.painelExecutivo("CONTADORIA"),
+                                        List.of("memoria_de_calculo", "requisicoes_complementares", "versoes_de_calculo", "liquidacoes_pendentes", "retornos_ao_orgao"),
+                                        List.of("abrir_memoria_de_calculo", "pedir_documento_complementar", "registrar_versao_calculo", "encerrar_resposta_tecnica", "devolver_para_orgao"),
+                                        List.of("Nomeação ativa", "Certificado quando o cálculo formal exigir"),
+                                        List.of("Sem decisão de mérito"),
+                                        List.of("Contadoria precisa trabalhar com versão, memória, pendência documental e retorno técnico auditável.")),
+                spec("CENTRAL_MANDADOS", "CENTRAL_MANDADOS", "PAINEL_SECRETARIA_FORUM", "Central de mandados", "Cumprimento, devolução e certidões dos mandados", InstitutionalApiRoutes.painelExecutivo("CENTRAL_MANDADOS"),
+                                        List.of("mandados_pendentes", "cumprimentos_em_aberto", "certidoes_para_juntada", "rotas_de_cumprimento"),
+                                        List.of("atribuir_oficial", "registrar_cumprimento", "gerar_certidao", "devolver_mandado"),
+                                        List.of("Nomeação ativa", "Trilha de movimentação"),
+                                        List.of("Sem decisão jurisdicional"),
+                                        List.of("Central de mandados conecta processo, diligência e certidão de retorno.")),
+                spec("CENTRAL_MANDADOS_OPERACIONAL", "CENTRAL_MANDADOS", "PAINEL_UNIDADE", "Central de mandados", "Triagem, grupos, diligências, resultados e devoluções dos mandados", InstitutionalApiRoutes.painelExecutivo("CENTRAL_MANDADOS"),
+                                        List.of("mandados_por_grupo", "resultado_de_diligencia", "devolucoes_e_certidoes", "roteirizacao", "pendencias_de_cumprimento"),
+                                        List.of("atribuir_grupo", "atribuir_oficial", "registrar_resultado_diligencia", "emitir_certidao_retorno", "devolver_para_secretaria"),
+                                        List.of("Nomeação ativa", "Trilha de diligência"),
+                                        List.of("Sem alteração de competência", "Sem ato decisório"),
+                                        List.of("Central de mandados precisa enxergar grupo, resultado, retorno e gargalos de diligência.")),
+                spec("AUDIENCIAS_CONCILIACAO", "CENTRAL_AUDIENCIAS", "PAINEL_AUDIENCIAS_CONCILIACAO", "Agendamento de audiências e conciliações", "Painel próprio para pauta, salas, conciliadores e confirmações", "/api/v1/conciliacao/operacional/processos/0/agendamento",
+                                        List.of("pauta_do_dia", "salas_e_links", "confirmacoes_de_partes", "slots_de_conciliacao", "atas_e_gravacoes_midias_processuais_pjb", "presencas_confirmadas",
+                                                "tipos_salas_e_tempo_audiencia", "pre_audiencia_e_confirmacao", "remarcacoes_e_janelas_por_orgao"),
+                                        List.of("marcar_audiencia", "remarcar", "reservar_sala", "convocar_conciliador", "registrar_termo", "sincronizar_midias_processuais_pjb",
+                                                "ajustar_tempo_padrao_audiencia", "confirmar_intimacoes_pre_audiencia"),
+                                        List.of("Nomeação pelo fórum ou CEJUSC", "Login pessoal forte", "Trilha forense de remarcação"),
+                                        List.of("Sem homologação judicial autônoma", "Sem decisão de mérito"),
+                                        List.of("Quem apenas agenda entra por nomeação institucional e recebe painel específico.")),
+                spec("CUSTODIA_PRISIONAL", "UNIDADE_PRISIONAL", "PAINEL_CUSTODIA_PRISIONAL", "Polícia penal e unidade prisional", "Apresentação de presos, confirmações de custódia e ofícios operacionais", InstitutionalApiRoutes.painelExecutivo("UNIDADE_PRISIONAL"),
+                                        List.of("apresentacoes", "audiencias_de_custodia", "ordens_de_transferencia", "confirmacoes_operacionais"),
+                                        List.of("confirmar_custodia", "registrar_apresentacao", "emitir_certidao_operacional", "acionar_diretoria"),
+                                        List.of("Certificado restrito ao ambiente institucional", "Autorização remota excepcional", "Trilha de dispositivo"),
+                                        List.of("Sem decisão jurídica externa", "Sem peticionamento fora do fluxo autorizado"),
+                                        List.of("Foco em custódia, escolta, apresentação e cumprimento material da ordem.")),
+                spec("TECNICO_JUDICIAL", "ORGAO_TECNICO_CONVENIADO", "PAINEL_TECNICO_JUDICIAL", "Perícia, psicossocial, contadoria e apoio técnico", "Fila técnica com laudos, estudos e respostas estruturadas", InstitutionalApiRoutes.painelExecutivo("ORGAO_TECNICO_CONVENIADO"),
+                                        List.of("requisicoes_tecnicas", "prazos_para_laudo", "pendencias_documentais", "fila_de_entrega", "agenda_entrevistas", "pareceres_tecnicos"),
+                                        List.of("receber_requisicao", "submeter_laudo", "solicitar_complementacao", "encerrar_resposta", "agendar_entrevista", "emitir_parecer_tecnico"),
+                                        List.of("Nomeação ativa", "Perfil técnico homologado", "Certificado quando necessário"),
+                                        List.of("Sem ato decisório", "Sem acesso a caixas estranhas ao escopo técnico"),
+                                        List.of("Abrange contadoria, psicossocial, perícia e convênios técnicos.")),
+                spec("PSICOSSOCIAL_OPERACAO", "EQUIPE_PSICOSSOCIAL", "PAINEL_TECNICO_JUDICIAL", "Equipe psicossocial", "Estudos, laudos e relatórios psicossociais no fluxo processual", InstitutionalApiRoutes.painelExecutivo("EQUIPE_PSICOSSOCIAL"),
+                                        List.of("estudos_psicossociais", "entrevistas", "pendencias_de_documentos", "entregas_programadas"),
+                                        List.of("receber_requisicao", "agendar_entrevista", "submeter_estudo", "pedir_complementacao"),
+                                        List.of("Nomeação ativa", "Controle de sigilo reforçado"),
+                                        List.of("Sem ato decisório"),
+                                        List.of("Estudo psicossocial fica separado do fluxo administrativo comum.")),
+                spec("CONSELHO_TUTELAR", "CONSELHO_TUTELAR", "PAINEL_ORGAO", "Conselho tutelar", "Comunicações protetivas, respostas e acompanhamento da rede", InstitutionalApiRoutes.painelExecutivo("CONSELHO_TUTELAR"),
+                                        List.of("medidas_protetivas", "retornos_da_rede", "acompanhamento_de_criancas", "urgencias"),
+                                        List.of("receber_comunicacao", "registrar_atendimento", "submeter_relatorio", "pedir_retorno_tecnico"),
+                                        List.of("Nomeação ativa", "Sigilo reforçado"),
+                                        List.of("Sem substituição de função jurisdicional"),
+                                        List.of("Conselho tutelar opera medidas e relatórios sem login coletivo.")),
+                spec("CARTORIO_INTEGRADO", "CARTORIO_INTEGRADO", "PAINEL_ORGAO", "Cartório integrado", "Integração registral, certidões e respostas cartorárias", InstitutionalApiRoutes.painelExecutivo("CARTORIO_INTEGRADO"),
+                                        List.of("pedidos_registrais", "certidoes_pendentes", "cumprimentos", "retornos_cartorarios"),
+                                        List.of("receber_requisicao", "emitir_certidao", "registrar_cumprimento", "pedir_complementacao"),
+                                        List.of("Certificado qualificado", "Nomeação ativa"),
+                                        List.of("Sem atividade jurisdicional"),
+                                        List.of("Cartório integrado responde atos registrais em fluxo próprio.")),
+                spec("CEJUSC_GESTAO_OPERACIONAL", "CEJUSC", "PAINEL_AUDIENCIAS_CONCILIACAO", "CEJUSC", "Gestão de sessões, pré-audiência, conciliadores, salas e janelas de autocomposição", InstitutionalApiRoutes.painelExecutivo("CEJUSC"),
+                                        List.of("sessoes_e_pre_sessoes", "conciliadores_e_disponibilidade", "salas_links_e_janelas", "confirmacao_de_partes", "termos_e_homologacoes_pendentes"),
+                                        List.of("alocar_conciliador", "confirmar_partes", "ajustar_janela_sessao", "registrar_termo_preliminar", "escalar_homologacao"),
+                                        List.of("Nomeação ativa", "Trilha forense de sessão"),
+                                        List.of("Sem decisão de mérito", "Sem homologação judicial autônoma"),
+                                        List.of("O CEJUSC precisa de painel próprio para disponibilidade, pré-sessão, termos e retorno ao juízo de origem.")),
+                spec("OAB_SECCIONAL", "OAB_SECCIONAL", "PAINEL_ADMINISTRATIVO", "Presidência seccional da OAB", "Governança seccional, convênios e segurança institucional", InstitutionalApiRoutes.painelExecutivo("OAB_SECCIONAL"),
+                                        List.of("convênios", "incidentes_de_acesso", "certificados_autorizados", "governanca_seccional"),
+                                        List.of("validar_integracao", "autorizar_fluxo", "acompanhar_incidente", "revogar_credencial"),
+                                        List.of("MFA obrigatório", "Certificado quando exigido", "Trilha forense"),
+                                        List.of("Sem substituição da advocacia privada no caso concreto"),
+                                        List.of("Presidência seccional opera governança institucional, não peticionamento em massa no lugar do advogado."))
+        );
+    }
+
+    private InstitutionalPanelBlueprintSpec spec(String codigo,
+                                                 String escopo,
+                                                 String panel,
+                                                 String audience,
+                                                 String titulo,
+                                                 String rota,
+                                                 List<String> secoes,
+                                                 List<String> acoes,
+                                                 List<String> guardas,
+                                                 List<String> visibilidade,
+                                                 List<String> fundamentos) {
+        return new InstitutionalPanelBlueprintSpec(codigo, escopo, panel, audience, titulo, rota, secoes, acoes, guardas, visibilidade, fundamentos);
+    }
+}

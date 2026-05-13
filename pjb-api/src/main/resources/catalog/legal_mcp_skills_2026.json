@@ -1,0 +1,114 @@
+[
+  {
+    "skillId": "LEGAL_SKILL_CITATION_FIRST_DRAFTING",
+    "label": "Redação citation-first",
+    "category": "DRAFTING",
+    "activationMode": "AUTO_WHEN_AUTHORITY_REQUIRED",
+    "sensitive": false,
+    "supportedCapabilities": [
+      "PETICAO",
+      "PARECER",
+      "DECISAO",
+      "DESPACHO",
+      "VALIDATE"
+    ],
+    "preferredServerIds": [
+      "MCP_JURISPRUDENCIA",
+      "MCP_LEGISLACAO",
+      "MCP_PROCESSUAL"
+    ],
+    "preferredToolIds": [
+      "precedent.search",
+      "precedent.lineage.trace",
+      "processual.cabimento.check"
+    ]
+  },
+  {
+    "skillId": "LEGAL_SKILL_PRAZO_CABIMENTO_AND_COMPETENCIA",
+    "label": "Prazo, cabimento e competência",
+    "category": "PROCEDURAL_CONTROL",
+    "activationMode": "AUTO_ON_PROCESSUAL_PATH",
+    "sensitive": false,
+    "supportedCapabilities": [
+      "PETICAO",
+      "PARECER",
+      "VALIDATE",
+      "PLAN",
+      "CHECKLIST"
+    ],
+    "preferredServerIds": [
+      "MCP_PROCESSUAL",
+      "MCP_AGENDA_PRAZOS"
+    ],
+    "preferredToolIds": [
+      "processual.competence.route",
+      "processual.cabimento.check",
+      "prazos.calendar.simulate"
+    ]
+  },
+  {
+    "skillId": "LEGAL_SKILL_DOCUMENT_PROVENANCE_AND_SIGNATURE_CHAIN",
+    "label": "Proveniência, assinatura e anexos",
+    "category": "DOCUMENT_SECURITY",
+    "activationMode": "AUTO_ON_ATTACHMENT_OR_QUARANTINE",
+    "sensitive": true,
+    "supportedCapabilities": [
+      "PETICAO",
+      "VALIDATE",
+      "DESPACHO",
+      "DECISAO"
+    ],
+    "preferredServerIds": [
+      "MCP_DOCUMENTAL"
+    ],
+    "preferredToolIds": [
+      "document.signature.verify",
+      "document.provenance.inspect",
+      "document.attachment.manifest"
+    ]
+  },
+  {
+    "skillId": "LEGAL_SKILL_SIGILO_AND_APPROVAL_FENCE",
+    "label": "Sigilo e cadeia de approval",
+    "category": "GOVERNANCE",
+    "activationMode": "AUTO_ON_SIGILO_OR_SENSITIVE_ACTION",
+    "sensitive": true,
+    "supportedCapabilities": [
+      "PETICAO",
+      "PARECER",
+      "DECISAO",
+      "DESPACHO",
+      "CONSULTA"
+    ],
+    "preferredServerIds": [
+      "MCP_PROCESSUAL",
+      "MCP_DOCUMENTAL"
+    ],
+    "preferredToolIds": [
+      "processual.rito.compatibility",
+      "document.provenance.inspect"
+    ]
+  },
+  {
+    "skillId": "LEGAL_SKILL_INTEROPERABILITY_DISCOVERY_AND_GENEALOGY",
+    "label": "Interoperabilidade e genealogia processual",
+    "category": "INTEROPERABILITY",
+    "activationMode": "AUTO_ON_FEDERATED_SOURCE",
+    "sensitive": true,
+    "supportedCapabilities": [
+      "CONSULTA",
+      "RESEARCH",
+      "VALIDATE",
+      "PETICAO"
+    ],
+    "preferredServerIds": [
+      "MCP_INTEROPERABILIDADE",
+      "MCP_DOCUMENTAL"
+    ],
+    "preferredToolIds": [
+      "interoperability.case.lookup",
+      "interoperability.case.genealogy",
+      "document.attachment.manifest"
+    ]
+  }
+]

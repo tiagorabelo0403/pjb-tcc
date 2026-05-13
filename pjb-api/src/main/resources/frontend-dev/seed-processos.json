@@ -1,0 +1,34 @@
+[
+  {
+    "code": "proc-civel-001",
+    "numero": "0000001-11.2026.8.06.0001",
+    "ramo": "CIVIL",
+    "status": "EM_ANDAMENTO",
+    "assunto": "Obrigação de fazer",
+    "partePrincipal": "Maria da Silva"
+  },
+  {
+    "code": "proc-penal-001",
+    "numero": "0000002-22.2026.8.06.0001",
+    "ramo": "PENAL",
+    "status": "AUDIENCIA_CUSTODIA_PENDENTE",
+    "assunto": "Prisão em flagrante",
+    "partePrincipal": "João Pereira"
+  },
+  {
+    "code": "proc-eleitoral-001",
+    "numero": "0000003-33.2026.6.06.0001",
+    "ramo": "ELEITORAL",
+    "status": "EM_ANDAMENTO",
+    "assunto": "Prestação de contas",
+    "partePrincipal": "Candidatura Exemplo"
+  },
+  {
+    "code": "proc-trabalhista-001",
+    "numero": "0000004-44.2026.5.06.0001",
+    "ramo": "TRABALHISTA",
+    "status": "HOMOLOGACAO_ACORDO_PENDENTE",
+    "assunto": "Verbas rescisórias",
+    "partePrincipal": "Empresa Exemplo S/A"
+  }
+]

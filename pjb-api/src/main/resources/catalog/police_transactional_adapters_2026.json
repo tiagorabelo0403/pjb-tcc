@@ -1,0 +1,137 @@
+{
+  "PJB_PJE_MNI_TRANSACTIONAL": {
+    "displayName": "PJe/MNI Transacional",
+    "partnerSystem": "PJE_MNI",
+    "scope": [
+      "judiciario",
+      "ministerio_publico",
+      "delegado"
+    ],
+    "transactionFamilies": [
+      "PRECHECK_PROTOCOLO",
+      "SUBMISSAO_CAUTELAR",
+      "SUBMISSAO_REPRESENTACAO",
+      "COMUNICACAO_FLAGRANTE",
+      "PULL_SNAPSHOT_PROCESSUAL",
+      "PULL_EVENTOS",
+      "PULL_INTIMACOES"
+    ],
+    "pjbNativeFallback": [
+      "fila_contingencia_local",
+      "snapshot_soberano",
+      "retentativa_auditavel"
+    ],
+    "operationalGuarantees": [
+      "assinatura_integridade",
+      "reenvio_controlado",
+      "mapeamento_de_ack"
+    ]
+  },
+  "PJB_EPROC_TRANSACTIONAL": {
+    "displayName": "eproc Transacional",
+    "partnerSystem": "EPROC",
+    "scope": [
+      "judiciario",
+      "delegado",
+      "ministerio_publico"
+    ],
+    "transactionFamilies": [
+      "SUBMISSAO_PECA",
+      "CONSULTA_PRAZO_E_CIENCIA",
+      "DOWNLOAD_INTEGRA",
+      "PULL_EVENTOS",
+      "PULL_INTIMACOES"
+    ],
+    "pjbNativeFallback": [
+      "fila_contingencia_local",
+      "snapshot_soberano",
+      "mirror_de_ciencia"
+    ],
+    "operationalGuarantees": [
+      "controle_sigilo",
+      "auditoria_de_download",
+      "retentativa_isolada"
+    ]
+  },
+  "PJB_ESAJ_TRANSACTIONAL": {
+    "displayName": "e-SAJ Transacional",
+    "partnerSystem": "ESAJ",
+    "scope": [
+      "judiciario",
+      "delegado",
+      "ministerio_publico",
+      "procuradoria"
+    ],
+    "transactionFamilies": [
+      "PETICIONAMENTO_INICIAL",
+      "PETICIONAMENTO_INTERMEDIARIO",
+      "CONSULTA_AUTOS",
+      "RETORNO_CAIXA_POSTAL",
+      "PULL_VINCULOS_E_INCIDENTES"
+    ],
+    "pjbNativeFallback": [
+      "fila_contingencia_local",
+      "espelho_de_protocolo",
+      "replay_controlado"
+    ],
+    "operationalGuarantees": [
+      "web_signer_quando_exigido",
+      "certificado_quando_exigido",
+      "controle_de_senha_e_perfil"
+    ]
+  },
+  "PJB_EPOL_TRANSACTIONAL": {
+    "displayName": "ePol Transacional",
+    "partnerSystem": "EPOL",
+    "scope": [
+      "delegado_federal",
+      "cartorio_policial",
+      "judiciario",
+      "ministerio_publico"
+    ],
+    "transactionFamilies": [
+      "REMESSA_MP",
+      "REMESSA_JUDICIARIO",
+      "SYNC_DILIGENCIAS",
+      "SYNC_ANALYTICS",
+      "PULL_STATUS_REMESSA"
+    ],
+    "pjbNativeFallback": [
+      "cartorio_policial_nativo",
+      "remessa_soberana_local",
+      "sincronizacao_posterior"
+    ],
+    "operationalGuarantees": [
+      "painel_bi",
+      "integracao_controlada",
+      "assinatura_e_auditoria"
+    ]
+  },
+  "PJB_SINESP_PPE_TRANSACTIONAL": {
+    "displayName": "Sinesp PPE Transacional",
+    "partnerSystem": "SINESP_PPE",
+    "scope": [
+      "delegado",
+      "cartorio_policial",
+      "ministerio_publico",
+      "judiciario"
+    ],
+    "transactionFamilies": [
+      "AUTUACAO_DE_PROCEDIMENTO",
+      "CONVERSAO_DE_BO_EM_IP_TCO_APF_AIAI_AAFAI",
+      "GESTAO_DE_ANEXOS",
+      "PULL_DADOS_ESTATISTICOS",
+      "REMESSA_AO_JUDICIARIO"
+    ],
+    "pjbNativeFallback": [
+      "autuacao_nativa_do_pjb",
+      "anexos_pos_narrativa_do_pjb",
+      "fila_de_remessa_soberana"
+    ],
+    "operationalGuarantees": [
+      "parametrizacao_nacional",
+      "aproveitamento_automatico_do_bo",
+      "integracao_com_bases_externas"
+    ]
+  }
+}

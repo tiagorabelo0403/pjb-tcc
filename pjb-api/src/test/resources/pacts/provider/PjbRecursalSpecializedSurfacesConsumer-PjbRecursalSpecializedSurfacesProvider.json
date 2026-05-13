@@ -1,0 +1,179 @@
+{
+  "consumer": {
+    "name": "PjbRecursalSpecializedSurfacesConsumer"
+  },
+  "provider": {
+    "name": "PjbRecursalSpecializedSurfacesProvider"
+  },
+  "interactions": [
+    {
+      "description": "load recursal attorney surface",
+      "providerStates": [
+        {
+          "name": "recursal attorney surface can be loaded"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/processual/recursal/surfaces/attorney",
+        "body": {
+          "pronunciamentoJudicial": "SENTENCA",
+          "pretensaoRecursal": "REFORMAR",
+          "autosEletronicos": true,
+          "usuarioEnvolvidoNosAutos": true,
+          "consultaProcessualGenerica": false
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "eixo": "SURFACE_ADVOGADO_RECURSAL",
+          "rotaBase": "/surfaces/attorney",
+          "rotaPrioritaria": "/api/v1/processual/recursal/surfaces/attorney",
+          "trilhas": [
+            "PAINEL_ADVOGADO_RECURSAL_COMPLETO",
+            "PETICIONAMENTO_LOTE_ASSINATURA_RECURSAL"
+          ],
+          "gaps": [
+            {
+              "codigo": "SPECIALIZED_CONTRACTS_AND_ITS",
+              "prioridade": "CRITICA"
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "load recursal institutional surface",
+      "providerStates": [
+        {
+          "name": "recursal institutional surface can be loaded"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/processual/recursal/surfaces/institutional",
+        "body": {
+          "pronunciamentoJudicial": "SENTENCA",
+          "pretensaoRecursal": "REFORMAR",
+          "autosEletronicos": true,
+          "usuarioEnvolvidoNosAutos": true,
+          "consultaProcessualGenerica": false
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "eixo": "SURFACE_INSTITUCIONAL_RECURSAL",
+          "rotaBase": "/surfaces/institutional",
+          "rotaPrioritaria": "/api/v1/processual/recursal/surfaces/institutional",
+          "trilhas": [
+            "ORGANIZACAO_INSTITUCIONAL_RECURSAL",
+            "CAIXAS_HISTORICO_INSTITUCIONAL_RECURSAL"
+          ],
+          "gaps": [
+            {
+              "codigo": "SPECIALIZED_CONTRACTS_AND_ITS",
+              "prioridade": "CRITICA"
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "load recursal documental surface",
+      "providerStates": [
+        {
+          "name": "recursal documental surface can be loaded"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/processual/recursal/surfaces/documental",
+        "body": {
+          "pronunciamentoJudicial": "SENTENCA",
+          "pretensaoRecursal": "REFORMAR",
+          "autosEletronicos": true,
+          "usuarioEnvolvidoNosAutos": true,
+          "consultaProcessualGenerica": false
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "eixo": "SURFACE_DOCUMENTAL_RECURSAL",
+          "rotaBase": "/surfaces/documental",
+          "rotaPrioritaria": "/api/v1/processual/recursal/surfaces/documental",
+          "trilhas": [
+            "AUTOS_DIGITAIS_RECURSAIS_DETALHADOS",
+            "CERTIDOES_EXTERNAS_RECURSAIS",
+            "WIZARD_DISTRIBUICAO_ASSISTIDA_IA"
+          ],
+          "gaps": [
+            {
+              "codigo": "SPECIALIZED_CONTRACTS_AND_ITS",
+              "prioridade": "CRITICA"
+            },
+            {
+              "codigo": "DOCUMENT_VIEWER_ASSINATURA_AUTENTICIDADE",
+              "prioridade": "ALTA"
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "load recursal intelligence surface",
+      "providerStates": [
+        {
+          "name": "recursal intelligence surface can be loaded"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/processual/recursal/surfaces/intelligence",
+        "body": {
+          "pronunciamentoJudicial": "SENTENCA",
+          "pretensaoRecursal": "REFORMAR",
+          "autosEletronicos": true,
+          "usuarioEnvolvidoNosAutos": true,
+          "consultaProcessualGenerica": false
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "eixo": "SURFACE_INTELIGENCIA_RECURSAL",
+          "rotaBase": "/surfaces/intelligence",
+          "rotaPrioritaria": "/api/v1/processual/recursal/surfaces/intelligence",
+          "trilhas": [
+            "OBSERVABILIDADE_INDEXACAO_INTELIGENTE_RECURSAL",
+            "ESCALONAMENTO_ALERTAS_POR_PERFIL"
+          ],
+          "gaps": [
+            {
+              "codigo": "SPECIALIZED_CONTRACTS_AND_ITS",
+              "prioridade": "CRITICA"
+            },
+            {
+              "codigo": "MOBILE_PUSH_GOVERNANCE",
+              "prioridade": "ALTA"
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "4.0"
+    },
+    "pact-jvm": {
+      "version": "4.6.14"
+    }
+  }
+}

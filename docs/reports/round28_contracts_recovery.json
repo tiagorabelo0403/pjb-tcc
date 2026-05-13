@@ -1,0 +1,14 @@
+{
+  "round": "28",
+  "scope": "provider contracts, signed origin edge, route governance, ajuizamento boundary, selected regression fixes",
+  "guards": {
+    "architecture_hygiene_guard.py": "OK",
+    "constructor_injection_guard.py": "OK",
+    "runtime_concurrency_guard.py": "OK",
+    "transactional_hotspot_guard.py --fail-on-missing-budgets": "OK",
+    "config_taxonomy_guard.py": "OK",
+    "repository_layout_guard.py": "OK"
+  },
+  "maven": "not executed: wrapper failed to fetch apache-maven-3.9.6-bin.zip",
+  "artifact": "full repository zip"
+}

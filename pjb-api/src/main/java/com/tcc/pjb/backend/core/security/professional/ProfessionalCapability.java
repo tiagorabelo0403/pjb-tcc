@@ -1,0 +1,27 @@
+package com.tcc.pjb.backend.core.security.professional;
+
+public enum ProfessionalCapability {
+    SEARCH_BY_NAME,
+    SEARCH_BY_CPF,
+    SEARCH_BY_PROCESS_NUMBER,
+    VIEW_PUBLIC_SUMMARY,
+    VIEW_PUBLIC_ACTS,
+    VIEW_PUBLIC_DOCUMENTS,
+    VIEW_PROFESSIONAL_DOCUMENTS,
+    VIEW_RESTRICTED_PARTY_DOCUMENTS,
+    VIEW_CONFIDENTIAL_CASE,
+    VIEW_TIMELINE,
+    VIEW_DEADLINES,
+    VIEW_CALENDAR,
+    USE_JUDICIAL_CALCULATOR,
+    USE_AI_ASSIST,
+    WRITE_PRIVATE_NOTES,
+    SIGN_JUDICIAL_ACT,
+    PETITION_PROTOCOL,
+    MANAGE_REPRESENTATION,
+    VIEW_AUDIT_TRAIL;
+
+    public String code() {
+        return name();
+    }
+}

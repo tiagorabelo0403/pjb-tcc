@@ -1,0 +1,20 @@
+spring:
+  main:
+    web-application-type: none
+  data:
+    elasticsearch:
+      repositories:
+        enabled: true
+    redis:
+      repositories:
+        enabled: false
+pjb:
+  search:
+    enabled: true
+  kafka:
+    enabled: false
+  scheduling:
+    enabled: false
+  jobs:
+    dispatcher:
+      enabled: false

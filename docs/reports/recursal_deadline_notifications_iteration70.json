@@ -1,0 +1,28 @@
+{
+  "round": 70,
+  "title": "alertas_de_prazo_e_notificacoes_recursais",
+  "created": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/recursal/domain/foundation/RecursalDeadlineNotificationBlueprint.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/recursal/workspace/RecursalDeadlineNotificationTrackFactory.java"
+  ],
+  "updated": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/recursal/domain/foundation/RecursalWorkbenchSurfaceCatalog.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/recursal/domain/foundation/RecursalFormalSectionLabels.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/recursal/automation/RecursalAutomationPlaybookService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/recursal/workspace/RecursalAutomationWorkspaceService.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/service/processual/recursal/workspace/RecursalAutomationWorkspaceServiceTest.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/service/processual/recursal/automation/RecursalAutomationServiceTest.java",
+    "README.md"
+  ],
+  "integration": [
+    "/api/v1/processos/{processoId}/prazo-real?tipoAto=ATO_PROCESSUAL",
+    "/api/v1/calendar/workspace?from={from}&to={to}&processoId={processoId}",
+    "/api/v1/calendar/panel?from={from}&to={to}&processoId={processoId}",
+    "/api/v1/calendar/notification-preview?from={from}&to={to}&processoId={processoId}",
+    "/api/v1/calendar/preferences",
+    "/api/v1/notificacoes/preferencias/usuarios/{usuarioId}",
+    "/api/v1/notificacoes/multicanal/processos/{processoId}/usuarios/{usuarioId}",
+    "/api/v1/notificacoes/track/{token}/ciencia"
+  ],
+  "guardrail": "sem scheduler recursal paralelo; reutilizacao do eixo existente de calendario e notificacao"
+}

@@ -1,0 +1,33 @@
+{
+  "round": 96,
+  "scope": "compile_recovery_pje_cluster",
+  "mainFiles": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/enums/RamoDireito.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAutenticacaoResponse.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeSubmissaoResponse.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAndamentoResponse.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/adapter/worker/PJeSubmissionWorker.java"
+  ],
+  "testsAdded": [
+    "pjb-api/src/test/java/com/tcc/pjb/backend/shared/dto/PJeSharedDtoRound96Test.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/model/entity/enums/RamoDireitoRound96Test.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/adapter/worker/PJeSubmissionWorkerRound96Test.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/adapter/factory/PJeCompileRecoveryRound96ArchitectureTest.java"
+  ],
+  "validated": {
+    "javacMainCluster": "passed",
+    "localRunner": "passed",
+    "runtimeConcurrencyGuard": "passed"
+  },
+  "notes": [
+    "RamoDireito deixou de depender de Lombok e passou a expor getters explícitos.",
+    "DTOs antigos de integração PJe migraram para records imutáveis com cópia defensiva de coleções e mapas.",
+    "PJeSubmissionWorker deixou de depender de RequiredArgsConstructor e passou a usar construtor explícito."
+  ],
+  "honesty": [
+    "Nao afirma build Maven global verde.",
+    "Nao afirma compile total do pjb-api.",
+    "Nao afirma Docker estavel.",
+    "Nao ha .git no ZIP."
+  ]
+}

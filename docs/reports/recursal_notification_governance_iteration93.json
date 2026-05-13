@@ -1,0 +1,31 @@
+{
+  "round": 93,
+  "code": "recursal_notification_governance_round93",
+  "surfaces": [
+    "/api/v1/processual/recursal/analytics/mobile-acompanhamento",
+    "/api/v1/processual/recursal/analytics/notifica-pendencias",
+    "/api/v1/processual/recursal/notification/science"
+  ],
+  "artifacts": [
+    "RecursalNotificationLabels",
+    "RecursalNotificationGovernanceRequest",
+    "RecursalNotificationMobilePreviewResponse",
+    "RecursalNotificationGovernanceResponse",
+    "RecursalNotificationScienceResponse",
+    "RecursalNotificationGovernanceService",
+    "RecursalNotificationGovernanceController"
+  ],
+  "governance": [
+    "sem scheduler paralelo",
+    "sem executor paralelo",
+    "reusar preferencias globais",
+    "reusar preview/calendario",
+    "reusar ciencia multicanal",
+    "sigilo por perfil e processo"
+  ],
+  "remaining": [
+    "preferencias finas por perfil/canal",
+    "entrega mobile externa soberana",
+    "compile global pjb-api"
+  ]
+}

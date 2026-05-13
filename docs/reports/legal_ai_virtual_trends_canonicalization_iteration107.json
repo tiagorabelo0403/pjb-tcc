@@ -1,0 +1,11 @@
+{
+  "round": 107,
+  "theme": "legal_ai_virtual_trends_initial_canonicalization",
+  "filesChanged": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/conversation/JuridicaVirtualTrendsCouncilService.java"
+  ],
+  "effect": [
+    "removed hardcoded trend names from the council service",
+    "prepared a single material source for the trends"
+  ]
+}

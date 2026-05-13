@@ -1,0 +1,21 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: pjb-sovereign-gateway
+  namespace: pjb
+spec:
+  gatewayClassName: pjb-sovereign-gateway
+  listeners:
+    - name: https-main
+      hostname: "*.api.pjb.jus.br"
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: pjb-backend-secret
+      allowedRoutes:
+        namespaces:
+          from: Same

@@ -1,0 +1,21 @@
+{
+  "round": 133,
+  "scope": [
+    "/api/ai/legal/minuta",
+    "/api/ai/legal/grounding/check",
+    "/api/ai/legal/conversation"
+  ],
+  "evidence": {
+    "it": "LegalAiEdgeGovernanceIT",
+    "providerContract": "LegalAiEdgePolicyProviderContractTest",
+    "pact": "PjbLegalAiEdgePolicyConsumer-PjbLegalAiEdgePolicyProvider.json",
+    "architecture": [
+      "JuridicaLegalAiEdgeBoundaryRound133ArchitectureTest",
+      "PjbLegalAiEdgePolicyContractCoverageArchitectureTest"
+    ]
+  },
+  "rejections": [
+    {"kind": "origin", "status": 403, "type": "browser_origin_not_allowed"},
+    {"kind": "contentType", "status": 415, "type": "content_type_not_allowed"}
+  ]
+}

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pjb-worker
+spec:
+  template:
+    metadata:
+      annotations:
+        pjb.jus.br/workload-id: "spiffe://pjb.jus.br/pjb/workload/worker"
+    spec:
+      containers:
+        - name: backend
+          env:
+            - name: PJB_WORKLOAD_IDENTITY_MODE
+              value: SPIFFE
+            - name: PJB_WORKLOAD_IDENTITY_REQUIRED
+              value: "true"
+            - name: PJB_TRUST_DOMAIN
+              value: spiffe://pjb.jus.br/pjb
+            - name: PJB_DB_EDGE_RW_HOST
+              value: db-edge-rw
+            - name: PJB_DB_EDGE_RO_HOST
+              value: db-edge-ro

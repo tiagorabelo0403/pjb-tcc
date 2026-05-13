@@ -1,0 +1,13 @@
+package com.tcc.pjb.backend.core.identidade.grafo.domain;
+
+public enum IdentidadeJuridicaAchadoTipo {
+    CONEXAO_OCULTA,
+    LITIGANCIA_REPETITIVA,
+    GRUPO_ECONOMICO_PROVAVEL,
+    FRAUDE_REPRESENTACAO_POTENCIAL,
+    CONFLITO_INTERESSE_POTENCIAL,
+    EXECUCAO_CRUZADA_RELEVANTE,
+    FONTE_DEGRADADA,
+    DENSIDADE_ANOMALA,
+    CORRELACAO_RELEVANTE
+}

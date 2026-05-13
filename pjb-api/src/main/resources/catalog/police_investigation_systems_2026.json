@@ -1,0 +1,334 @@
+{
+  "EPOL_PF": {
+    "displayName": "ePol - Sistema de Gestão da Atividade de Polícia Judiciária",
+    "institution": "Polícia Federal",
+    "sphere": "FEDERAL",
+    "status": "ATIVO",
+    "documentModel": "NATO_DIGITAL_COLABORATIVO",
+    "officialSignals": [
+      {
+        "title": "Inquéritos policiais passam a tramitar eletronicamente na Polícia Federal",
+        "year": 2016,
+        "sourceType": "MJSP/PF"
+      },
+      {
+        "title": "ePol - Estatísticas de Polícia Judiciária nos dados abertos da PF",
+        "year": 2024,
+        "sourceType": "PF Dados Abertos"
+      },
+      {
+        "title": "Painel de dados com número de inquéritos em andamento",
+        "year": 2024,
+        "sourceType": "PF BI"
+      }
+    ],
+    "coreProcedures": [
+      "INQUERITO_POLICIAL",
+      "PORTARIA",
+      "REPRESENTACAO_POLICIAL",
+      "MEDIDA_CAUTELAR",
+      "RELATORIO_FINAL",
+      "REMESSA_MP",
+      "REMESSA_JUDICIARIO"
+    ],
+    "integrations": [
+      "Judiciário",
+      "Ministério Público",
+      "Instituições parceiras",
+      "Sinesp",
+      "Validador de documentos",
+      "BI institucional"
+    ],
+    "pjbImportedCapabilities": [
+      "Gestão colaborativa do inquérito eletrônico",
+      "Validador público de autenticidade documental",
+      "Assinatura digital ICP-Brasil e não repúdio",
+      "Painel BI de inquéritos em andamento",
+      "Integração federativa com plataformas externas"
+    ],
+    "hardeningWarnings": [
+      "Não imprimir o original eletrônico como substituto do documento assinado",
+      "Separar trilha de investigação sigilosa da visualização pública",
+      "Exigir autenticidade verificável por hash ou assinatura"
+    ]
+  },
+  "SINESP_PPE": {
+    "displayName": "Sinesp PPE - Procedimentos Policiais Eletrônicos",
+    "institution": "SENASP/MJSP",
+    "sphere": "NACIONAL_FEDERATIVO",
+    "status": "OFERTADO_AS_UFS",
+    "documentModel": "PADRONIZADO_NACIONAL",
+    "officialSignals": [
+      {
+        "title": "Solução disponibilizada pela Senasp às UFs",
+        "year": 2019,
+        "sourceType": "MJSP"
+      },
+      {
+        "title": "Padronização nacional dos procedimentos policiais",
+        "year": 2016,
+        "sourceType": "Estudo MJ/SERPRO"
+      }
+    ],
+    "coreProcedures": [
+      "BO",
+      "DESPACHO_HOMOLOGATORIO",
+      "TCO",
+      "BOC",
+      "IP",
+      "APF",
+      "AIAI",
+      "AAFAI"
+    ],
+    "integrations": [
+      "Gestão cartorária",
+      "Compartilhamento entre entes federados",
+      "Dados nacionais de segurança pública",
+      "Uso e consumo de dados padronizados"
+    ],
+    "pjbImportedCapabilities": [
+      "Fluxos nacionais uniformizados por tipo de procedimento",
+      "Despacho homologatório e autuação dentro da mesma espinha",
+      "Gestão cartorária nativa",
+      "Catálogo nacional de peças obrigatórias e opcionais",
+      "Acompanhamento da ocorrência desde a notícia do fato até a remessa"
+    ],
+    "hardeningWarnings": [
+      "Não duplicar sistemas estaduais e nacional sem camada de interoperabilidade",
+      "Exigir catálogo de procedimentos com versionamento nacional",
+      "Preservar campos federativos sem forçar um único fluxo cego"
+    ]
+  },
+  "PCMG_PCNET_PPJE": {
+    "displayName": "PCNet + PPJ-e",
+    "institution": "Polícia Civil de Minas Gerais",
+    "sphere": "ESTADUAL",
+    "status": "EM_IMPLANTACAO_E_EXPANSAO_2024_2025",
+    "documentModel": "VIRTUALIZACAO_COM_INTEROPERABILIDADE_PJE",
+    "officialSignals": [
+      {
+        "title": "Curso Procedimento de Polícia Judiciária Eletrônico: o PCNet em interoperabilidade com o PJe",
+        "year": 2024,
+        "sourceType": "Acadepol-MG"
+      },
+      {
+        "title": "Virtualização dos inquéritos policiais na PCMG via PPJ-e",
+        "year": 2025,
+        "sourceType": "Revista Avante/PCMG"
+      }
+    ],
+    "coreProcedures": [
+      "INQUERITO_POLICIAL",
+      "TCO",
+      "APF",
+      "MEDIDAS_PENAIS_CONEXAS",
+      "VIRTUALIZACAO_ACERVO",
+      "TRAMITACAO_MP_JUDICIARIO"
+    ],
+    "integrations": [
+      "PCNet",
+      "REDS",
+      "PPJ-e",
+      "PJe",
+      "Ministério Público"
+    ],
+    "pjbImportedCapabilities": [
+      "Interoperabilidade real entre cartório policial e PJe",
+      "Trilha de virtualização de acervo legado",
+      "Acesso simultâneo aos autos",
+      "Recuperação de provas e laudos por reaproveitamento digital",
+      "Treinamento institucional contínuo para adoção do novo fluxo"
+    ],
+    "hardeningWarnings": [
+      "Não criar hiato operacional ao migrar acervo físico",
+      "Blindar infraestrutura estável e treinamento contínuo",
+      "Tratar cibersegurança como requisito da virtualização"
+    ]
+  },
+  "PJCMT_GEIA_CARTORIUM_PJE": {
+    "displayName": "GEIA + Cartórium + PJe Criminal",
+    "institution": "Polícia Civil de Mato Grosso",
+    "sphere": "ESTADUAL",
+    "status": "ATIVO_INTEGRADO",
+    "documentModel": "NATO_DIGITAL_COM_REMESSA_TEMPO_REAL",
+    "officialSignals": [
+      {
+        "title": "Primeiro inquérito digital integrado ao TJ",
+        "year": 2020,
+        "sourceType": "PJC-MT"
+      },
+      {
+        "title": "200 mil procedimentos enviados à Justiça",
+        "year": 2022,
+        "sourceType": "SESP-MT"
+      }
+    ],
+    "coreProcedures": [
+      "INQUERITO_POLICIAL",
+      "APF",
+      "TCO",
+      "MEDIDA_PROTETIVA",
+      "CUMPRIMENTO_MANDADO",
+      "COTA_DILACAO_PRAZO"
+    ],
+    "integrations": [
+      "GEIA",
+      "Cartórium",
+      "PJe Criminal",
+      "Assinatura digital",
+      "Leitores biométricos"
+    ],
+    "pjbImportedCapabilities": [
+      "Documento nato digital sem impressão nem escaneamento",
+      "Remessa em tempo real ao Judiciário",
+      "Controle de cota, dilação de prazo e produtividade",
+      "Biometria e assinatura digital na delegacia",
+      "Métricas de conclusão do inquérito e mapas da violência"
+    ],
+    "hardeningWarnings": [
+      "Não depender de conferência manual papel-fórum",
+      "Centralizar produtividade e prazo sem duplicar planilhas",
+      "Separar storage de evidência do banco transacional"
+    ]
+  },
+  "PCSC_IP_DIGITAL": {
+    "displayName": "IP Digital",
+    "institution": "Polícia Civil de Santa Catarina",
+    "sphere": "ESTADUAL",
+    "status": "PILOTO_E_EXPANSAO_2025",
+    "documentModel": "INQUERITO_DIGITAL_COM_EVIDENCIA_E_TRANSCRICAO",
+    "officialSignals": [
+      {
+        "title": "IP Digital em parceria com o Poder Judiciário",
+        "year": 2024,
+        "sourceType": "PCSC"
+      },
+      {
+        "title": "IP Digital com integração SISP, EPROC, IPEN e PCI",
+        "year": 2025,
+        "sourceType": "PCSC"
+      },
+      {
+        "title": "Ferramenta institucional de transcrição automática segura",
+        "year": 2024,
+        "sourceType": "PCSC"
+      }
+    ],
+    "coreProcedures": [
+      "INQUERITO_POLICIAL",
+      "RELATORIO_INVESTIGATIVO",
+      "TRANSCRICAO_AUDIO_VIDEO",
+      "INTEROPERABILIDADE_POLICIA_CIENTIFICA"
+    ],
+    "integrations": [
+      "SISP",
+      "EPROC",
+      "IPEN",
+      "PCI",
+      "Polícia Científica"
+    ],
+    "pjbImportedCapabilities": [
+      "Transcrição automática interna de áudio e vídeo",
+      "Integração direta com polícia científica",
+      "Página estreita de evidências narrativas",
+      "Fluxo investigativo digital intuitivo para escrivão e delegado",
+      "Uso seguro de infraestrutura própria para dados sensíveis"
+    ],
+    "hardeningWarnings": [
+      "Não terceirizar transcrição sensível sem governança",
+      "Preservar original de mídia e derivado transcrito",
+      "Separar preview, transcrição e original probatório"
+    ]
+  },
+  "PCDF_PJE_MNI_ELAUDO": {
+    "displayName": "PJe + MNI + e-Laudo",
+    "institution": "Polícia Civil do Distrito Federal",
+    "sphere": "DISTRITO_FEDERAL",
+    "status": "ATIVO_EM_PARTES",
+    "documentModel": "TRAMITACAO_DIRETA_E_LAUDO_ELETRONICO",
+    "officialSignals": [
+      {
+        "title": "Integração PJe com sistemas da PCDF e PMDF por MNI",
+        "year": 2020,
+        "sourceType": "TJDFT/CNJ"
+      },
+      {
+        "title": "Resolução 5/2022 de tramitação direta PCDF-MPDFT via PJe",
+        "year": 2022,
+        "sourceType": "TJDFT"
+      },
+      {
+        "title": "e-Laudo sistema próprio de laudos eletrônicos",
+        "year": 2024,
+        "sourceType": "PCDF"
+      }
+    ],
+    "coreProcedures": [
+      "TERMO_CIRCUNSTANCIADO",
+      "INQUERITO",
+      "TRAMITACAO_DIRETA_MP",
+      "LAUDO_ELETRONICO",
+      "RELATORIO_INVESTIGACOES"
+    ],
+    "integrations": [
+      "PJe",
+      "MNI",
+      "MPDFT",
+      "e-Laudo"
+    ],
+    "pjbImportedCapabilities": [
+      "Tramitação direta polícia-MP sem ida e volta cartorária desnecessária",
+      "MNI como barramento interoperável com Judiciário e MP",
+      "Laudo eletrônico nativo da perícia",
+      "Tratamento próprio para TCO, inquérito e relatório de investigações"
+    ],
+    "hardeningWarnings": [
+      "Isolar classes e rotas por procedimento criminal",
+      "Não misturar laudo pericial com peça investigativa genérica",
+      "Exigir governança fina de publicidade restrita"
+    ]
+  },
+  "PCSP_IPE_SAJ": {
+    "displayName": "Inquérito Policial Eletrônico + SAJ",
+    "institution": "Polícia Civil de São Paulo",
+    "sphere": "ESTADUAL",
+    "status": "EM_EXPANSAO",
+    "documentModel": "INTEGRACAO_DIGITAL_COM_CERTIFICADO_ICP",
+    "officialSignals": [
+      {
+        "title": "Inquérito Policial Eletrônico em cidades de São Paulo",
+        "year": 2018,
+        "sourceType": "ITI/PCSP"
+      },
+      {
+        "title": "Integração do IPE com o SAJ",
+        "year": 2018,
+        "sourceType": "PCSP"
+      }
+    ],
+    "coreProcedures": [
+      "TCO",
+      "MEDIDAS_CAUTELARES",
+      "MEDIDAS_PROTETIVAS",
+      "INQUERITO_POLICIAL",
+      "FLAGRANTE",
+      "ATO_INFRACIONAL"
+    ],
+    "integrations": [
+      "SAJ",
+      "Tribunal de Justiça",
+      "ICP-Brasil"
+    ],
+    "pjbImportedCapabilities": [
+      "Integração com sistema judicial já existente no tribunal",
+      "Assinatura ICP-Brasil dentro do fluxo policial",
+      "Digitalização progressiva por classes procedimentais",
+      "Remoção gradual da impressão e assinatura manuscrita"
+    ],
+    "hardeningWarnings": [
+      "Migrar por classe procedimental e não tudo de uma vez",
+      "Não aceitar documento impresso como substituto do original eletrônico",
+      "Preservar compatibilidade com o sistema judicial do tribunal parceiro"
+    ]
+  }
+}

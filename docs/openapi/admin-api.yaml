@@ -1,0 +1,6627 @@
+openapi: "3.0.3"
+info:
+  title: "PJB Admin API"
+  version: "1.0.0-frontend-freeze"
+  description: "Contrato exportado estaticamente para integração com frontend."
+servers:
+  -
+    url: "http://localhost:8080"
+paths:
+  /api/admin/judicial/command-center/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorCommandCenterController::GET /api/admin/judicial/command-center/tribunal/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/connectors/governance/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorGovernanceController::GET /api/admin/judicial/connectors/governance/tribunal/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/control-plane/integrity:
+    get:
+      summary: "AdminJudicialConnectorControlPlaneController::GET /api/admin/judicial/control-plane/integrity"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/control-plane/integrity/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorControlPlaneController::GET /api/admin/judicial/control-plane/integrity/tribunal/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/control-plane/runtime:
+    get:
+      summary: "AdminJudicialConnectorControlPlaneController::GET /api/admin/judicial/control-plane/runtime"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/control-plane/runtime/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorControlPlaneController::GET /api/admin/judicial/control-plane/runtime/tribunal/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/control-plane/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorControlPlaneController::GET /api/admin/judicial/control-plane/tribunal/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-command-center/national:
+    get:
+      summary: "AdminJudicialConnectorCryptoCommandCenterController::GET /api/admin/judicial/crypto-command-center/national"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-command-center/packs:
+    get:
+      summary: "AdminJudicialConnectorCryptoCommandCenterController::GET /api/admin/judicial/crypto-command-center/packs"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-command-center/packs/summary:
+    get:
+      summary: "AdminJudicialConnectorCryptoCommandCenterController::GET /api/admin/judicial/crypto-command-center/packs/summary"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-command-center/packs/{system}/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorCryptoCommandCenterController::GET /api/admin/judicial/crypto-command-center/packs/{system}/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-command-center/sessions/summary:
+    get:
+      summary: "AdminJudicialConnectorCryptoCommandCenterController::GET /api/admin/judicial/crypto-command-center/sessions/summary"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-command-center/sessions/summary/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorCryptoCommandCenterController::GET /api/admin/judicial/crypto-command-center/sessions/summary/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-command-center/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorCryptoCommandCenterController::GET /api/admin/judicial/crypto-command-center/tribunal/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-ops/inspect/{system}/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorCryptoOpsController::GET /api/admin/judicial/crypto-ops/inspect/{system}/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-ops/probe/{system}/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorCryptoOpsController::GET /api/admin/judicial/crypto-ops/probe/{system}/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-posture/inventory:
+    get:
+      summary: "AdminJudicialConnectorCryptoPostureController::GET /api/admin/judicial/crypto-posture/inventory"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-posture/refresh:
+    post:
+      summary: "AdminJudicialConnectorCryptoPostureController::POST /api/admin/judicial/crypto-posture/refresh"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-posture/refresh/{system}/{tribunalCodigo}:
+    post:
+      summary: "AdminJudicialConnectorCryptoPostureController::POST /api/admin/judicial/crypto-posture/refresh/{system}/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-posture/summary:
+    get:
+      summary: "AdminJudicialConnectorCryptoPostureController::GET /api/admin/judicial/crypto-posture/summary"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-sessions/recent:
+    get:
+      summary: "AdminJudicialConnectorSecuritySessionsController::GET /api/admin/judicial/crypto-sessions/recent"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-sessions/recent/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorSecuritySessionsController::GET /api/admin/judicial/crypto-sessions/recent/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-sessions/summary:
+    get:
+      summary: "AdminJudicialConnectorSecuritySessionsController::GET /api/admin/judicial/crypto-sessions/summary"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/crypto-sessions/summary/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorSecuritySessionsController::GET /api/admin/judicial/crypto-sessions/summary/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/cryptography/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorCryptographyController::GET /api/admin/judicial/cryptography/tribunal/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/data-plane/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorDataPlaneController::GET /api/admin/judicial/data-plane/tribunal/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/observability/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdminJudicialConnectorObservabilityController::GET /api/admin/judicial/observability/tribunal/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/ops/history:
+    get:
+      summary: "AdminJudicialConnectorOpsController::GET /api/admin/judicial/ops/history"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/ping:
+    get:
+      summary: "AdminController::GET /api/admin/ping"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/procedural/governance/architecture:
+    get:
+      summary: "AdminProceduralGovernanceController::GET /api/admin/procedural/governance/architecture"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/procedural/governance/bootstrap:
+    get:
+      summary: "AdminProceduralGovernanceController::GET /api/admin/procedural/governance/bootstrap"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/procedural/governance/legacy-boundary:
+    get:
+      summary: "AdminProceduralGovernanceController::GET /api/admin/procedural/governance/legacy-boundary"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/ritos/diagnostico/processo/{processoId}:
+    get:
+      summary: "AdminRitoDiagnosticsController::GET /api/admin/ritos/diagnostico/processo/{processoId}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/ritos/feedback:
+    post:
+      summary: "AdminRitoFeedbackController::POST /api/admin/ritos/feedback"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RitoFeedbackRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/ritos/relatorios/resumo:
+    get:
+      summary: "AdminRitoReportController::GET /api/admin/ritos/relatorios/resumo"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/ritos/relatorios/resumo.csv:
+    get:
+      summary: "AdminRitoReportController::GET /api/admin/ritos/relatorios/resumo.csv"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/ritos/relatorios/sugestoes/regras-rascunho:
+    get:
+      summary: "AdminRitoReportController::GET /api/admin/ritos/relatorios/sugestoes/regras-rascunho"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/ritos/relatorios/sugestoes/regras-rascunho/propor:
+    post:
+      summary: "AdminRitoReportController::POST /api/admin/ritos/relatorios/sugestoes/regras-rascunho/propor"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/ritos/rules/proposals/{id}/approve:
+    post:
+      summary: "AdminRitoRuleProposalController::POST /api/admin/ritos/rules/proposals/{id}/approve"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/ritos/rules/proposals/{id}/reject:
+    post:
+      summary: "AdminRitoRuleProposalController::POST /api/admin/ritos/rules/proposals/{id}/reject"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/marketplace/v1/admin/clients/{clientId}/subscriptions:
+    get:
+      summary: "ApiMarketplaceAdminController::GET /api/marketplace/v1/admin/clients/{clientId}/subscriptions"
+      tags:
+        - "com.tcc.pjb.backend.controller.processo"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+    post:
+      summary: "ApiMarketplaceAdminController::POST /api/marketplace/v1/admin/clients/{clientId}/subscriptions"
+      tags:
+        - "com.tcc.pjb.backend.controller.processo"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarketplaceAdminSubscriptionRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/marketplace/v1/admin/clients/{clientId}/webhook-deliveries:
+    get:
+      summary: "ApiMarketplaceAdminController::GET /api/marketplace/v1/admin/clients/{clientId}/webhook-deliveries"
+      tags:
+        - "com.tcc.pjb.backend.controller.processo"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/marketplace/v1/admin/clients/{clientId}/webhook-deliveries/{deliveryId}/redispatch:
+    post:
+      summary: "ApiMarketplaceAdminController::POST /api/marketplace/v1/admin/clients/{clientId}/webhook-deliveries/{deliveryId}/redispatch"
+      tags:
+        - "com.tcc.pjb.backend.controller.processo"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/marketplace/v1/admin/clients/{clientId}/webhooks:
+    get:
+      summary: "ApiMarketplaceAdminController::GET /api/marketplace/v1/admin/clients/{clientId}/webhooks"
+      tags:
+        - "com.tcc.pjb.backend.controller.processo"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+    post:
+      summary: "ApiMarketplaceAdminController::POST /api/marketplace/v1/admin/clients/{clientId}/webhooks"
+      tags:
+        - "com.tcc.pjb.backend.controller.processo"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarketplaceAdminWebhookRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/marketplace/v1/admin/plans:
+    get:
+      summary: "ApiMarketplaceAdminController::GET /api/marketplace/v1/admin/plans"
+      tags:
+        - "com.tcc.pjb.backend.controller.processo"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+    post:
+      summary: "ApiMarketplaceAdminController::POST /api/marketplace/v1/admin/plans"
+      tags:
+        - "com.tcc.pjb.backend.controller.processo"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarketplaceAdminPlanRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/marketplace/v1/admin/webhook-deliveries/dispatch:
+    post:
+      summary: "ApiMarketplaceAdminController::POST /api/marketplace/v1/admin/webhook-deliveries/dispatch"
+      tags:
+        - "com.tcc.pjb.backend.controller.processo"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/advocacia/ops/summary:
+    get:
+      summary: "AdminAdvocaciaOpsSummaryController::GET /api/v1/admin/advocacia/ops/summary"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/atlas/celulas:
+    post:
+      summary: "AtlasAcessoJusticaAdminController::POST /api/v1/admin/atlas/celulas"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AtlasCelulaUpsertRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/atlas/sync/ibge:
+    post:
+      summary: "AtlasAcessoJusticaAdminController::POST /api/v1/admin/atlas/sync/ibge"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/backfills/advocacia/clientes/canonicalize-sensitive:
+    post:
+      summary: "AdminBackfillController::POST /api/v1/admin/backfills/advocacia/clientes/canonicalize-sensitive"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminBackfillCanonicalizeSensitiveRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/backfills/advocacia/clientes/canonicalize-sensitive/duplicates:
+    get:
+      summary: "AdminBackfillReviewController::GET /api/v1/admin/backfills/advocacia/clientes/canonicalize-sensitive/duplicates"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/backfills/advocacia/clientes/canonicalize-sensitive/status:
+    get:
+      summary: "AdminBackfillController::GET /api/v1/admin/backfills/advocacia/clientes/canonicalize-sensitive/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custas/gerar:
+    post:
+      summary: "AdminCustasController::POST /api/v1/admin/custas/gerar"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custas/{custaId}:
+    get:
+      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custas/{custaId}/health:
+    get:
+      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custas/{custaId}/linha-digitavel:
+    get:
+      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/linha-digitavel"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custas/{custaId}/pagamento:
+    get:
+      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/pagamento"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custas/{custaId}/pix/health:
+    get:
+      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/pix/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custas/{custaId}/status:
+    get:
+      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custas/{custaId}/timeline:
+    get:
+      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custas/{custaId}/vencimento:
+    get:
+      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/vencimento"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custodia/processos/{processoId}/medidas:
+    get:
+      summary: "AdminCustodiaController::GET /api/v1/admin/custodia/processos/{processoId}/medidas"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custodia/registrar-prisao:
+    post:
+      summary: "AdminCustodiaController::POST /api/v1/admin/custodia/registrar-prisao"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custodia/{custodiaId}:
+    get:
+      summary: "AdminCustodiaController::GET /api/v1/admin/custodia/{custodiaId}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custodia/{custodiaId}/andamento:
+    get:
+      summary: "AdminCustodiaController::GET /api/v1/admin/custodia/{custodiaId}/andamento"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custodia/{custodiaId}/auditoria:
+    get:
+      summary: "AdminCustodiaController::GET /api/v1/admin/custodia/{custodiaId}/auditoria"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custodia/{custodiaId}/concluir:
+    post:
+      summary: "AdminCustodiaController::POST /api/v1/admin/custodia/{custodiaId}/concluir"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custodia/{custodiaId}/prazo:
+    get:
+      summary: "AdminCustodiaController::GET /api/v1/admin/custodia/{custodiaId}/prazo"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custodia/{custodiaId}/resultado:
+    get:
+      summary: "AdminCustodiaController::GET /api/v1/admin/custodia/{custodiaId}/resultado"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/custodia/{custodiaId}/timeline:
+    get:
+      summary: "AdminCustodiaController::GET /api/v1/admin/custodia/{custodiaId}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/datajud/tribunais/{tribunalCodigo}/audit:
+    get:
+      summary: "AdminDataJudController::GET /api/v1/admin/datajud/tribunais/{tribunalCodigo}/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/datajud/tribunais/{tribunalCodigo}/checkpoint:
+    get:
+      summary: "AdminDataJudController::GET /api/v1/admin/datajud/tribunais/{tribunalCodigo}/checkpoint"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/datajud/tribunais/{tribunalCodigo}/checkpoint/audit:
+    get:
+      summary: "AdminDataJudController::GET /api/v1/admin/datajud/tribunais/{tribunalCodigo}/checkpoint/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/datajud/tribunais/{tribunalCodigo}/checkpoint/result:
+    get:
+      summary: "AdminDataJudController::GET /api/v1/admin/datajud/tribunais/{tribunalCodigo}/checkpoint/result"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/datajud/tribunais/{tribunalCodigo}/execution:
+    get:
+      summary: "AdminDataJudController::GET /api/v1/admin/datajud/tribunais/{tribunalCodigo}/execution"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/datajud/tribunais/{tribunalCodigo}/execution/health:
+    get:
+      summary: "AdminDataJudController::GET /api/v1/admin/datajud/tribunais/{tribunalCodigo}/execution/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/datajud/tribunais/{tribunalCodigo}/health:
+    get:
+      summary: "AdminDataJudController::GET /api/v1/admin/datajud/tribunais/{tribunalCodigo}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/datajud/tribunais/{tribunalCodigo}/run:
+    post:
+      summary: "AdminDataJudController::POST /api/v1/admin/datajud/tribunais/{tribunalCodigo}/run"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/datajud/tribunais/{tribunalCodigo}/tribunal-health:
+    get:
+      summary: "AdminDataJudController::GET /api/v1/admin/datajud/tribunais/{tribunalCodigo}/tribunal-health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/datajud/tribunais/{tribunalCodigo}/window:
+    get:
+      summary: "AdminDataJudController::GET /api/v1/admin/datajud/tribunais/{tribunalCodigo}/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/engine:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/engine"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/engine/audit:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/engine/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/engine/health:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/engine/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/governance/reconcile-stale-processing:
+    post:
+      summary: "AdminDigitalizacaoController::POST /api/v1/admin/digitalizacao/governance/reconcile-stale-processing"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/classification-health:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/classification-health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/confianca:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/confianca"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/confianca/view:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/confianca/view"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/health:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/idioma:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/idioma"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/idioma/view:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/idioma/view"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/ownership:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/ownership"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/page-window:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/page-window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/pending-review:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/pending-review"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/review-health:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/review-health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/review-ownership:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/review-ownership"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/review-window:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/review-window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/jobs/{jobId}/timeline:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/jobs/{jobId}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/pages/{pageId}:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/pages/{pageId}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/pages/{pageId}/audit:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/pages/{pageId}/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/pages/{pageId}/consistency:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/pages/{pageId}/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/review-queue:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/review-queue"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/digitalizacao/review-queue/consistency:
+    get:
+      summary: "AdminDigitalizacaoController::GET /api/v1/admin/digitalizacao/review-queue/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/edicoes/{edicao}/health:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/edicoes/{edicao}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/edicoes/{edicao}/metrics:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/edicoes/{edicao}/metrics"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/lifecycle/run:
+    post:
+      summary: "AdminDjeController::POST /api/v1/admin/dje/lifecycle/run"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/metrics/publication:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/metrics/publication"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/processos/{processoId}/publication:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/processos/{processoId}/publication"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/audit:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/consistency:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/consistency/audit:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/consistency/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/conteudo/health:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/conteudo/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/deadline/window:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/deadline/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/falha:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/falha"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/health:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/lifecycle/health:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/lifecycle/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/notificacao:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/notificacao"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/notificacao/audit:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/notificacao/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/owner:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/owner"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/prazo:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/prazo"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/prazo/health:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/prazo/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/signal:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/signal"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/status:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/timeline:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/publicacoes/{djeId}/window:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/publicacoes/{djeId}/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/tribunais/{tribunalCodigo}/budget:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/tribunais/{tribunalCodigo}/budget"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/tribunais/{tribunalCodigo}/dispatch/health:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/tribunais/{tribunalCodigo}/dispatch/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/tribunais/{tribunalCodigo}/dispatch/window:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/tribunais/{tribunalCodigo}/dispatch/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/tribunais/{tribunalCodigo}/health:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/tribunais/{tribunalCodigo}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/tribunais/{tribunalCodigo}/health/result:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/tribunais/{tribunalCodigo}/health/result"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/tribunais/{tribunalCodigo}/publication:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/tribunais/{tribunalCodigo}/publication"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/dje/tribunais/{tribunalCodigo}/publication-window/health:
+    get:
+      summary: "AdminDjeController::GET /api/v1/admin/dje/tribunais/{tribunalCodigo}/publication-window/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/calendario:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/calendario"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/calendario/health:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/calendario/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/calendario/window:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/calendario/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/calendario/window/audit:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/calendario/window/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/diplomacao/sync/run:
+    post:
+      summary: "AdminEleitoralController::POST /api/v1/admin/eleitoral/diplomacao/sync/run"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/pendentes/diplomacao:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/pendentes/diplomacao"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/cargo:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/cargo"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/consistency:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/diplomacao:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/diplomacao"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/diplomacao/health:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/diplomacao/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/diplomacao/window:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/diplomacao/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/diplomacao/window/audit:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/diplomacao/window/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/feito:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/feito"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/health:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/ownership:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/ownership"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/partido:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/partido"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/prestacao-contas:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/prestacao-contas"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/prestacao-contas/consistency:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/prestacao-contas/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/prestacao-contas/health:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/prestacao-contas/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/prestacao-contas/status:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/prestacao-contas/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/prestacao-contas/sync:
+    post:
+      summary: "AdminEleitoralController::POST /api/v1/admin/eleitoral/processos/{processoId}/prestacao-contas/sync"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/prestacao-contas/window:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/prestacao-contas/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/status:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/timeline:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/timeline/audit:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/timeline/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/zona:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/zona"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/zona/health:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/zona/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/zona/health/result:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/zona/health/result"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/processos/{processoId}/zona/processo:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/processos/{processoId}/zona/processo"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/resultado/window:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/resultado/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/eleitoral/silencio:
+    get:
+      summary: "AdminEleitoralController::GET /api/v1/admin/eleitoral/silencio"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/federalismo/eventos:
+    post:
+      summary: "FederalismoJudicialController::POST /api/v1/admin/federalismo/eventos"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FederalismoEventoRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/federalismo/health:
+    get:
+      summary: "FederalismoJudicialController::GET /api/v1/admin/federalismo/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/federalismo/ledger:
+    get:
+      summary: "FederalismoJudicialController::GET /api/v1/admin/federalismo/ledger"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/federalismo/ledger/integridade:
+    get:
+      summary: "FederalismoJudicialController::GET /api/v1/admin/federalismo/ledger/integridade"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/federalismo/nos:
+    get:
+      summary: "FederalismoJudicialController::GET /api/v1/admin/federalismo/nos"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+    post:
+      summary: "FederalismoJudicialController::POST /api/v1/admin/federalismo/nos"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FederalismoNodeUpsertRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/federalismo/nos/heartbeat:
+    post:
+      summary: "FederalismoJudicialController::POST /api/v1/admin/federalismo/nos/heartbeat"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FederalismoHeartbeatRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/federalismo/nos/{codigoTribunal}:
+    get:
+      summary: "FederalismoJudicialController::GET /api/v1/admin/federalismo/nos/{codigoTribunal}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/federalismo/outbox:
+    get:
+      summary: "FederalismoJudicialController::GET /api/v1/admin/federalismo/outbox"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/federalismo/outbox/processar:
+    post:
+      summary: "FederalismoJudicialController::POST /api/v1/admin/federalismo/outbox/processar"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/federalismo/redistribuicao/sugestoes:
+    get:
+      summary: "FederalismoRedistribuicaoController::GET /api/v1/admin/federalismo/redistribuicao/sugestoes"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/final-closure/blockers:
+    get:
+      summary: "AdminFinalClosureController::GET /api/v1/admin/final-closure/blockers"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/final-closure/readiness:
+    get:
+      summary: "AdminFinalClosureController::GET /api/v1/admin/final-closure/readiness"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/final-closure/summary:
+    get:
+      summary: "AdminFinalClosureController::GET /api/v1/admin/final-closure/summary"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/final-closure/sweep:
+    get:
+      summary: "AdminFinalClosureController::GET /api/v1/admin/final-closure/sweep"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/auth:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/auth"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/blockers:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/blockers"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/bootstrap:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/bootstrap"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/checklist:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/checklist"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/errors:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/errors"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/public-contract/dtos:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/public-contract/dtos"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/public-contract/envelopes:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/public-contract/envelopes"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/public-contract/error-catalog:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/public-contract/error-catalog"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/public-contract/freeze:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/public-contract/freeze"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/public-contract/http-freeze:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/public-contract/http-freeze"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/public-contract/routes:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/public-contract/routes"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/public-contract/summary:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/public-contract/summary"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/public-contract/validation:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/public-contract/validation"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/public-routes:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/public-routes"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/summary:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/summary"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/budget:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/budget"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/consistency:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/decision:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/decision"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/decision/window:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/decision/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/envelope:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/envelope"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/evaluate:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/evaluate"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/health:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/identity:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/identity"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/level:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/level"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/level/result:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/level/result"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/owner:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/owner"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/policy:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/policy"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/policy/budget:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/policy/budget"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/readiness:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/readiness"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/sensitive-act:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/sensitive-act"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/sensitive-act/assessment:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/sensitive-act/assessment"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/sensitive-act/health:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/sensitive-act/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/sensitive-act/window:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/sensitive-act/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/signal:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/signal"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/status:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/step-up/decision:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/step-up/decision"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/step-up/envelope:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/step-up/envelope"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/step-up/health:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/step-up/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/step-up/window:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/step-up/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/timeline:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/timeline/health:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/timeline/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/govbr/assurance/window:
+    get:
+      summary: "AdminGovBrAssuranceController::GET /api/v1/admin/govbr/assurance/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/comarcas:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/comarcas"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/health-check:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/health-check"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/modo-emergencia:
+    post:
+      summary: "AdministradorNacionalGovernanceController::POST /api/v1/admin/governance-national/modo-emergencia"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminEmergenciaRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/plataforma-sustentacao:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/plataforma-sustentacao"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/reconciliacao-global:
+    post:
+      summary: "AdministradorNacionalGovernanceController::POST /api/v1/admin/governance-national/reconciliacao-global"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/snapshot:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/snapshot"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-centro-comando:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-centro-comando"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-centro-comando/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-centro-comando/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-cutover-matrix:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-cutover-matrix"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-cutover-matrix/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-cutover-matrix/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-malha-julgadora:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-malha-julgadora"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-malha-julgadora/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-malha-julgadora/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-nucleo-duro:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-nucleo-duro"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-nucleo-duro/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-nucleo-duro/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-pos-coletiva:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-pos-coletiva"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-pos-coletiva/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-pos-coletiva/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-precedentes-qualificados:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-precedentes-qualificados"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-precedentes-qualificados/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-precedentes-qualificados/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-programa:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-programa"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-tutela-coletiva:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-tutela-coletiva"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-tutela-coletiva/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-tutela-coletiva/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-war-room:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-war-room"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/substituicao-war-room/tribunal/{tribunalCodigo}:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/substituicao-war-room/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance-national/tribunais/{uf}:
+    get:
+      summary: "AdministradorNacionalGovernanceController::GET /api/v1/admin/governance-national/tribunais/{uf}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance/decision-trail/snapshot:
+    post:
+      summary: "ProcessoDecisionTrailController::POST /api/v1/admin/governance/decision-trail/snapshot"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecisionTrailSnapshotRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance/decision-trail/{processoId}:
+    get:
+      summary: "ProcessoDecisionTrailController::GET /api/v1/admin/governance/decision-trail/{processoId}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance/document-trust-chain/seal:
+    post:
+      summary: "DocumentTrustChainController::POST /api/v1/admin/governance/document-trust-chain/seal"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentTrustChainSealRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance/document-trust-chain/{processoId}/report:
+    get:
+      summary: "DocumentTrustChainController::GET /api/v1/admin/governance/document-trust-chain/{processoId}/report"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance/document-versioning/history:
+    post:
+      summary: "DocumentoVersionamentoController::POST /api/v1/admin/governance/document-versioning/history"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentoVersionamentoRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance/functional-authority/evaluate:
+    post:
+      summary: "FunctionalAuthorityMatrixController::POST /api/v1/admin/governance/functional-authority/evaluate"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FunctionalAuthorityEvaluationRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance/sensitive-access/evaluate:
+    post:
+      summary: "SensitiveDataAccessControlController::POST /api/v1/admin/governance/sensitive-access/evaluate"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SensitiveDataAccessRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance/structural-scan/report:
+    get:
+      summary: "StructuralGovernanceScannerController::GET /api/v1/admin/governance/structural-scan/report"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/governance/structural-scan/report/detailed:
+    get:
+      summary: "StructuralGovernanceScannerController::GET /api/v1/admin/governance/structural-scan/report/detailed"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/icp/certificates/health:
+    get:
+      summary: "AdminIcpController::GET /api/v1/admin/icp/certificates/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/icp/ocsp/health:
+    get:
+      summary: "AdminIcpController::GET /api/v1/admin/icp/ocsp/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/icp/policy:
+    get:
+      summary: "AdminIcpController::GET /api/v1/admin/icp/policy"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/icp/signer/selection:
+    get:
+      summary: "AdminIcpController::GET /api/v1/admin/icp/signer/selection"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/icp/timeline:
+    get:
+      summary: "AdminIcpController::GET /api/v1/admin/icp/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/icp/trust-anchors/health:
+    get:
+      summary: "AdminIcpController::GET /api/v1/admin/icp/trust-anchors/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/icp/trust-anchors/{acSigla}:
+    get:
+      summary: "AdminIcpController::GET /api/v1/admin/icp/trust-anchors/{acSigla}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/icp/validation/health:
+    get:
+      summary: "AdminIcpController::GET /api/v1/admin/icp/validation/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/budget:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/budget"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/budget/health:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/budget/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/health:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/audit:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/audit/entry:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/audit/entry"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/consistency:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/decision:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/decision"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/envelope:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/envelope"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/execution/health:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/execution/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/health:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/owner:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/owner"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/release:
+    post:
+      summary: "AdminIdempotencyController::POST /api/v1/admin/idempotency/keys/{key}/release"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/replay:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/replay"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/replay/health:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/replay/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/replay/status:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/replay/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/signal:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/signal"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/snapshot:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/snapshot"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/status/health:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/status/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/timeline:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/window:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/idempotency/keys/{key}/window/view:
+    get:
+      summary: "AdminIdempotencyController::GET /api/v1/admin/idempotency/keys/{key}/window/view"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/infojud/consultas:
+    post:
+      summary: "AdminInfojudController::POST /api/v1/admin/infojud/consultas"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/infojud/consultas/{consultaId}/audit:
+    get:
+      summary: "AdminInfojudController::GET /api/v1/admin/infojud/consultas/{consultaId}/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/infojud/consultas/{consultaId}/consistency:
+    get:
+      summary: "AdminInfojudController::GET /api/v1/admin/infojud/consultas/{consultaId}/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/infojud/consultas/{consultaId}/health:
+    get:
+      summary: "AdminInfojudController::GET /api/v1/admin/infojud/consultas/{consultaId}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/infojud/consultas/{consultaId}/owner:
+    get:
+      summary: "AdminInfojudController::GET /api/v1/admin/infojud/consultas/{consultaId}/owner"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/infojud/consultas/{consultaId}/snapshot:
+    get:
+      summary: "AdminInfojudController::GET /api/v1/admin/infojud/consultas/{consultaId}/snapshot"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/infojud/consultas/{consultaId}/status:
+    get:
+      summary: "AdminInfojudController::GET /api/v1/admin/infojud/consultas/{consultaId}/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/infojud/consultas/{consultaId}/timeline:
+    get:
+      summary: "AdminInfojudController::GET /api/v1/admin/infojud/consultas/{consultaId}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/infojud/consultas/{consultaId}/view:
+    get:
+      summary: "AdminInfojudController::GET /api/v1/admin/infojud/consultas/{consultaId}/view"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/infojud/consultas/{consultaId}/window:
+    get:
+      summary: "AdminInfojudController::GET /api/v1/admin/infojud/consultas/{consultaId}/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/infojud/processos/{processoId}/consultas:
+    get:
+      summary: "AdminInfojudController::GET /api/v1/admin/infojud/processos/{processoId}/consultas"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/infojud/retry-summary:
+    get:
+      summary: "AdminInfojudController::GET /api/v1/admin/infojud/retry-summary"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/innovation/connector-secretariat-governance:
+    get:
+      summary: "PjbInnovationController::GET /api/v1/admin/innovation/connector-secretariat-governance"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/innovation/digital-hearing-intelligence:
+    get:
+      summary: "PjbInnovationController::GET /api/v1/admin/innovation/digital-hearing-intelligence"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/innovation/interoperability-mesh:
+    get:
+      summary: "PjbInnovationController::GET /api/v1/admin/innovation/interoperability-mesh"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/innovation/legacy-superiority-delta:
+    get:
+      summary: "PjbInnovationController::GET /api/v1/admin/innovation/legacy-superiority-delta"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/innovation/migration-hygiene-rules:
+    get:
+      summary: "PjbInnovationController::GET /api/v1/admin/innovation/migration-hygiene-rules"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/innovation/migration-hygiene/preview:
+    post:
+      summary: "PjbInnovationController::POST /api/v1/admin/innovation/migration-hygiene/preview"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PjbMigrationHygienePreviewRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/innovation/superiority-capabilities:
+    get:
+      summary: "PjbInnovationController::GET /api/v1/admin/innovation/superiority-capabilities"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/institucional/arquitetura/blueprint:
+    get:
+      summary: "AdminInstitutionalArchitectureController::GET /api/v1/admin/institucional/arquitetura/blueprint"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/institucional/arquitetura/reconhecimento-publico/simular:
+    get:
+      summary: "AdminInstitutionalArchitectureController::GET /api/v1/admin/institucional/arquitetura/reconhecimento-publico/simular"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/institucional/arquitetura/shards/resolver:
+    get:
+      summary: "AdminInstitutionalArchitectureController::GET /api/v1/admin/institucional/arquitetura/shards/resolver"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/institucional/arquitetura/visibilidade/simular:
+    get:
+      summary: "AdminInstitutionalArchitectureController::GET /api/v1/admin/institucional/arquitetura/visibilidade/simular"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/institucional/catalogo/cobertura-nacional:
+    get:
+      summary: "AdminInstitutionalCatalogGovernanceController::GET /api/v1/admin/institucional/catalogo/cobertura-nacional"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/institucional/catalogo/coberturas-operacionais:
+    get:
+      summary: "AdminInstitutionalOperationalCoverageController::GET /api/v1/admin/institucional/catalogo/coberturas-operacionais"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+    post:
+      summary: "AdminInstitutionalOperationalCoverageController::POST /api/v1/admin/institucional/catalogo/coberturas-operacionais"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NationalCommunicationInstitutionalCoverageCreateRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/institucional/catalogo/expandir-baseline-nacional:
+    post:
+      summary: "AdminInstitutionalCatalogNationalExpansionController::POST /api/v1/admin/institucional/catalogo/expandir-baseline-nacional"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/institucional/catalogo/expandir-baseline-regional:
+    post:
+      summary: "AdminInstitutionalCatalogGovernanceController::POST /api/v1/admin/institucional/catalogo/expandir-baseline-regional"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminInstitutionalRegionalBaselineExpansionRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/institucional/catalogo/governancas:
+    get:
+      summary: "AdminInstitutionalCatalogGovernanceController::GET /api/v1/admin/institucional/catalogo/governancas"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+    post:
+      summary: "AdminInstitutionalCatalogGovernanceController::POST /api/v1/admin/institucional/catalogo/governancas"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminInstitutionalCatalogGovernanceUpsertRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/institucional/catalogo/regras-competencia:
+    get:
+      summary: "AdminInstitutionalCatalogGovernanceController::GET /api/v1/admin/institucional/catalogo/regras-competencia"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+    post:
+      summary: "AdminInstitutionalCatalogGovernanceController::POST /api/v1/admin/institucional/catalogo/regras-competencia"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminInstitutionalCompetenceRuleUpsertRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/institucional/catalogo/sumario:
+    get:
+      summary: "AdminInstitutionalCatalogGovernanceController::GET /api/v1/admin/institucional/catalogo/sumario"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/metrics/replica-routing:
+    get:
+      summary: "AdminReplicaRoutingMetricsController::GET /api/v1/admin/metrics/replica-routing"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/metrics/sse/cluster:
+    get:
+      summary: "AdminSseMetricsController::GET /api/v1/admin/metrics/sse/cluster"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/metrics/sse/julgamento-votos:
+    get:
+      summary: "AdminSseMetricsController::GET /api/v1/admin/metrics/sse/julgamento-votos"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/recepcoes/{recepcaoId}:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/recepcoes/{recepcaoId}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/recepcoes/{recepcaoId}/consulta:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/recepcoes/{recepcaoId}/consulta"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/recepcoes/{recepcaoId}/envelope:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/recepcoes/{recepcaoId}/envelope"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/recepcoes/{recepcaoId}/failure:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/recepcoes/{recepcaoId}/failure"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/recepcoes/{recepcaoId}/health:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/recepcoes/{recepcaoId}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/recepcoes/{recepcaoId}/status:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/recepcoes/{recepcaoId}/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/recepcoes/{recepcaoId}/timeline:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/recepcoes/{recepcaoId}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/remessas/reprocess:
+    post:
+      summary: "AdminMniController::POST /api/v1/admin/mni/remessas/reprocess"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/remessas/{remessaId}:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/remessas/{remessaId}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/remessas/{remessaId}/health:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/remessas/{remessaId}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/remessas/{remessaId}/payload:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/remessas/{remessaId}/payload"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/remessas/{remessaId}/status:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/remessas/{remessaId}/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/remessas/{remessaId}/timeline:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/remessas/{remessaId}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/remessas/{remessaId}/window:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/remessas/{remessaId}/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/tribunais/{tribunalCodigo}/endpoint:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/tribunais/{tribunalCodigo}/endpoint"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/mni/tribunais/{tribunalCodigo}/endpoint/health:
+    get:
+      summary: "AdminMniController::GET /api/v1/admin/mni/tribunais/{tribunalCodigo}/endpoint/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/aggregator/checklist:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/aggregator/checklist"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/aggregator/module-links:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/aggregator/module-links"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/aggregator/pom-patch:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/aggregator/pom-patch"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/aggregator/snapshot:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/aggregator/snapshot"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/blockers:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/blockers"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/core-extraction/candidates:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/core-extraction/candidates"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/core-extraction/dependencies:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/core-extraction/dependencies"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/core-extraction/move-plan:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/core-extraction/move-plan"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/core-extraction/pom-preview:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/core-extraction/pom-preview"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/core-extraction/snapshot:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/core-extraction/snapshot"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/core-seed/drift:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/core-seed/drift"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/core-seed/mirrors:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/core-seed/mirrors"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/core-seed/parity:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/core-seed/parity"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/core-seed/snapshot:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/core-seed/snapshot"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/packages:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/packages"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/phases:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/phases"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/scaffold/build-order:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/scaffold/build-order"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/scaffold/directories:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/scaffold/directories"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/scaffold/module-poms:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/scaffold/module-poms"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/scaffold/snapshot:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/scaffold/snapshot"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/modularization/snapshot:
+    get:
+      summary: "AdminModularizationController::GET /api/v1/admin/modularization/snapshot"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/operations/{operation}:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/operations/{operation}/audit:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/operations/{operation}/budget:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}/budget"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/operations/{operation}/budget/audit:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}/budget/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/operations/{operation}/budget/health:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}/budget/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/operations/{operation}/consistency:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/operations/{operation}/evaluate:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}/evaluate"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/operations/{operation}/health:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/operations/{operation}/latency-window:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}/latency-window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/operations/{operation}/latency/audit:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}/latency/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/operations/{operation}/timeline:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/operations/{operation}/violation-snapshot:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}/violation-snapshot"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/registry:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/registry"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/registry/audit:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/registry/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability/slo/registry/health:
+    get:
+      summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/registry/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/action/health:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/action/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/action/window:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/action/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/conflict/timeline:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/conflict/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/consistency:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/decision:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/decision"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/envelope:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/envelope"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/expiry:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/expiry"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/governance/audit:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/governance/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/governance/status:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/governance/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/manifest/audit:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/manifest/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/metrics:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/metrics"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/ownership:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/ownership"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/replay/audit:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/replay/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/replay/health:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/replay/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/signal:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/signal"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/sync/window:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/sync/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/timeline/health:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/timeline/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/offline/bundles/{bundleToken}/window:
+    get:
+      summary: "AdminOfflineController::GET /api/v1/admin/offline/bundles/{bundleToken}/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/peticionamento/saga/{rascunhoId}/audit:
+    get:
+      summary: "AdminPeticionamentoSagaController::GET /api/v1/admin/peticionamento/saga/{rascunhoId}/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/peticionamento/saga/{rascunhoId}/compensar:
+    post:
+      summary: "AdminPeticionamentoSagaController::POST /api/v1/admin/peticionamento/saga/{rascunhoId}/compensar"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/peticionamento/saga/{rascunhoId}/compensation:
+    get:
+      summary: "AdminPeticionamentoSagaController::GET /api/v1/admin/peticionamento/saga/{rascunhoId}/compensation"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/peticionamento/saga/{rascunhoId}/execution/health:
+    get:
+      summary: "AdminPeticionamentoSagaController::GET /api/v1/admin/peticionamento/saga/{rascunhoId}/execution/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/peticionamento/saga/{rascunhoId}/health:
+    get:
+      summary: "AdminPeticionamentoSagaController::GET /api/v1/admin/peticionamento/saga/{rascunhoId}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/peticionamento/saga/{rascunhoId}/notificar:
+    post:
+      summary: "AdminPeticionamentoSagaController::POST /api/v1/admin/peticionamento/saga/{rascunhoId}/notificar"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/peticionamento/saga/{rascunhoId}/protocolo:
+    post:
+      summary: "AdminPeticionamentoSagaController::POST /api/v1/admin/peticionamento/saga/{rascunhoId}/protocolo"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/peticionamento/saga/{rascunhoId}/registrar:
+    post:
+      summary: "AdminPeticionamentoSagaController::POST /api/v1/admin/peticionamento/saga/{rascunhoId}/registrar"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/peticionamento/saga/{rascunhoId}/steps/{etapa}:
+    get:
+      summary: "AdminPeticionamentoSagaController::GET /api/v1/admin/peticionamento/saga/{rascunhoId}/steps/{etapa}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/peticionamento/saga/{rascunhoId}/timeline:
+    get:
+      summary: "AdminPeticionamentoSagaController::GET /api/v1/admin/peticionamento/saga/{rascunhoId}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/peticionamento/saga/{rascunhoId}/triagem:
+    post:
+      summary: "AdminPeticionamentoSagaController::POST /api/v1/admin/peticionamento/saga/{rascunhoId}/triagem"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/peticionamento/saga/{rascunhoId}/validar:
+    post:
+      summary: "AdminPeticionamentoSagaController::POST /api/v1/admin/peticionamento/saga/{rascunhoId}/validar"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/prazos/audit:
+    get:
+      summary: "AdminPrazoController::GET /api/v1/admin/prazos/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/prazos/audit/health:
+    get:
+      summary: "AdminPrazoController::GET /api/v1/admin/prazos/audit/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/prazos/calculo:
+    get:
+      summary: "AdminPrazoController::GET /api/v1/admin/prazos/calculo"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/prazos/calendario/health:
+    get:
+      summary: "AdminPrazoController::GET /api/v1/admin/prazos/calendario/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/prazos/health:
+    get:
+      summary: "AdminPrazoController::GET /api/v1/admin/prazos/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/prazos/policy:
+    get:
+      summary: "AdminPrazoController::GET /api/v1/admin/prazos/policy"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/prazos/regime/{regime}:
+    get:
+      summary: "AdminPrazoController::GET /api/v1/admin/prazos/regime/{regime}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/prazos/timeline:
+    get:
+      summary: "AdminPrazoController::GET /api/v1/admin/prazos/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/prazos/window:
+    get:
+      summary: "AdminPrazoController::GET /api/v1/admin/prazos/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/processual/contingency/assess:
+    post:
+      summary: "NationalContingencyOrchestratorController::POST /api/v1/admin/processual/contingency/assess"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NationalContingencyAssessmentRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/processual/rollout/resolve:
+    post:
+      summary: "NationalFeatureRolloutController::POST /api/v1/admin/processual/rollout/resolve"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NationalFeatureRolloutRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/quality-gates/architecture:
+    get:
+      summary: "AdminQualityGatesController::GET /api/v1/admin/quality-gates/architecture"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/quality-gates/blockers:
+    get:
+      summary: "AdminQualityGatesController::GET /api/v1/admin/quality-gates/blockers"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/quality-gates/build:
+    get:
+      summary: "AdminQualityGatesController::GET /api/v1/admin/quality-gates/build"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/quality-gates/build/report:
+    get:
+      summary: "BuildGateGovernanceController::GET /api/v1/admin/quality-gates/build/report"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/quality-gates/codebase-learning/report:
+    get:
+      summary: "CodebaseLearningGovernanceController::GET /api/v1/admin/quality-gates/codebase-learning/report"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/quality-gates/contracts:
+    get:
+      summary: "AdminQualityGatesController::GET /api/v1/admin/quality-gates/contracts"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/quality-gates/dast:
+    get:
+      summary: "AdminQualityGatesController::GET /api/v1/admin/quality-gates/dast"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/quality-gates/integration:
+    get:
+      summary: "AdminQualityGatesController::GET /api/v1/admin/quality-gates/integration"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/quality-gates/matrix:
+    get:
+      summary: "AdminQualityGatesController::GET /api/v1/admin/quality-gates/matrix"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/quality-gates/mutation:
+    get:
+      summary: "AdminQualityGatesController::GET /api/v1/admin/quality-gates/mutation"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/quality-gates/summary:
+    get:
+      summary: "AdminQualityGatesController::GET /api/v1/admin/quality-gates/summary"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/quality-gates/test-matrix/report:
+    get:
+      summary: "TestQualityMatrixController::GET /api/v1/admin/quality-gates/test-matrix/report"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/renajud/processos/{processoId}/restricoes:
+    get:
+      summary: "AdminRenajudController::GET /api/v1/admin/renajud/processos/{processoId}/restricoes"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/renajud/restricoes:
+    post:
+      summary: "AdminRenajudController::POST /api/v1/admin/renajud/restricoes"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/renajud/restricoes/{restricaoId}/audit:
+    get:
+      summary: "AdminRenajudController::GET /api/v1/admin/renajud/restricoes/{restricaoId}/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/renajud/restricoes/{restricaoId}/consistency:
+    get:
+      summary: "AdminRenajudController::GET /api/v1/admin/renajud/restricoes/{restricaoId}/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/renajud/restricoes/{restricaoId}/health:
+    get:
+      summary: "AdminRenajudController::GET /api/v1/admin/renajud/restricoes/{restricaoId}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/renajud/restricoes/{restricaoId}/owner:
+    get:
+      summary: "AdminRenajudController::GET /api/v1/admin/renajud/restricoes/{restricaoId}/owner"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/renajud/restricoes/{restricaoId}/snapshot:
+    get:
+      summary: "AdminRenajudController::GET /api/v1/admin/renajud/restricoes/{restricaoId}/snapshot"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/renajud/restricoes/{restricaoId}/status:
+    get:
+      summary: "AdminRenajudController::GET /api/v1/admin/renajud/restricoes/{restricaoId}/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/renajud/restricoes/{restricaoId}/timeline:
+    get:
+      summary: "AdminRenajudController::GET /api/v1/admin/renajud/restricoes/{restricaoId}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/renajud/restricoes/{restricaoId}/view:
+    get:
+      summary: "AdminRenajudController::GET /api/v1/admin/renajud/restricoes/{restricaoId}/view"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/renajud/restricoes/{restricaoId}/window:
+    get:
+      summary: "AdminRenajudController::GET /api/v1/admin/renajud/restricoes/{restricaoId}/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/renajud/retry-summary:
+    get:
+      summary: "AdminRenajudController::GET /api/v1/admin/renajud/retry-summary"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/roadmap/closure/blockers:
+    get:
+      summary: "AdminRoadmapClosureController::GET /api/v1/admin/roadmap/closure/blockers"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/roadmap/closure/macroblocks:
+    get:
+      summary: "AdminRoadmapClosureController::GET /api/v1/admin/roadmap/closure/macroblocks"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/roadmap/closure/quality:
+    get:
+      summary: "AdminRoadmapClosureController::GET /api/v1/admin/roadmap/closure/quality"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/roadmap/closure/summary:
+    get:
+      summary: "AdminRoadmapClosureController::GET /api/v1/admin/roadmap/closure/summary"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/runtime/drain:
+    get:
+      summary: "AdminRuntimeController::GET /api/v1/admin/runtime/drain"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/runtime/drain/accept:
+    post:
+      summary: "AdminRuntimeController::POST /api/v1/admin/runtime/drain/accept"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/runtime/drain/begin:
+    post:
+      summary: "AdminRuntimeController::POST /api/v1/admin/runtime/drain/begin"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/runtime/health:
+    get:
+      summary: "AdminRuntimeController::GET /api/v1/admin/runtime/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/runtime/memory-budget:
+    get:
+      summary: "AdminRuntimeController::GET /api/v1/admin/runtime/memory-budget"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/runtime/pressure:
+    get:
+      summary: "AdminRuntimeController::GET /api/v1/admin/runtime/pressure"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/runtime/raw/policy:
+    get:
+      summary: "AdminRuntimeController::GET /api/v1/admin/runtime/raw/policy"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/runtime/raw/request:
+    get:
+      summary: "AdminRuntimeController::GET /api/v1/admin/runtime/raw/request"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/runtime/sizing:
+    get:
+      summary: "AdminRuntimeController::GET /api/v1/admin/runtime/sizing"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/adaptive-data-plane:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/adaptive-data-plane"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/cache-policies:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/cache-policies"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+    post:
+      summary: "ScaleArchitectureController::POST /api/v1/admin/scale-architecture/cache-policies"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScaleArchitectureCachePolicyRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/database-runtime-posture:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/database-runtime-posture"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/judicial-institutional-alignment:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-institutional-alignment"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/judicial-operational-actions:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-operational-actions"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/judicial-operational-desks:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-operational-desks"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/judicial-operational-transactions:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-operational-transactions"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/judicial-runtime-policies:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-runtime-policies"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/judicial-scale-profiles:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-scale-profiles"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/judicial-secretariat-models:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-secretariat-models"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/partition-plans:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/partition-plans"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+    post:
+      summary: "ScaleArchitectureController::POST /api/v1/admin/scale-architecture/partition-plans"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScaleArchitecturePartitionPlanRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/partition-plans/{tableName}/materialize:
+    post:
+      summary: "ScaleArchitectureController::POST /api/v1/admin/scale-architecture/partition-plans/{tableName}/materialize"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/partition-plans/{tableName}/preview:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/partition-plans/{tableName}/preview"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/processual-read-models:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/processual-read-models"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/processual-read-models/persistence:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/processual-read-models/persistence"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/processual-read-models/recomposition:
+    post:
+      summary: "ScaleArchitectureController::POST /api/v1/admin/scale-architecture/processual-read-models/recomposition"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScaleArchitectureReadModelRecompositionRequest"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/apis/posture:
+    get:
+      summary: "AdminApiSecurityGovernanceController::GET /api/v1/admin/security/apis/posture"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails/analytics:
+    get:
+      summary: "AdminAuthorizationTrailController::GET /api/v1/admin/security/authz-trails/analytics"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails/analytics/materialize:
+    post:
+      summary: "AdminAuthorizationTrailController::POST /api/v1/admin/security/authz-trails/analytics/materialize"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails/analytics/refresh-bucket:
+    post:
+      summary: "AdminAuthorizationTrailController::POST /api/v1/admin/security/authz-trails/analytics/refresh-bucket"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails/analytics/refresh-queue/backfill:
+    post:
+      summary: "AdminAuthorizationTrailController::POST /api/v1/admin/security/authz-trails/analytics/refresh-queue/backfill"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails/analytics/refresh-queue/cleanup:
+    post:
+      summary: "AdminAuthorizationTrailController::POST /api/v1/admin/security/authz-trails/analytics/refresh-queue/cleanup"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails/analytics/refresh-queue/drain:
+    post:
+      summary: "AdminAuthorizationTrailController::POST /api/v1/admin/security/authz-trails/analytics/refresh-queue/drain"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails/analytics/refresh-queue/recover-stale:
+    post:
+      summary: "AdminAuthorizationTrailController::POST /api/v1/admin/security/authz-trails/analytics/refresh-queue/recover-stale"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails/analytics/refresh-queue/status:
+    get:
+      summary: "AdminAuthorizationTrailController::GET /api/v1/admin/security/authz-trails/analytics/refresh-queue/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails/analytics/status:
+    get:
+      summary: "AdminAuthorizationTrailController::GET /api/v1/admin/security/authz-trails/analytics/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails/export:
+    get:
+      summary: "AdminAuthorizationTrailController::GET /api/v1/admin/security/authz-trails/export"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails/forensics:
+    get:
+      summary: "AdminAuthorizationTrailController::GET /api/v1/admin/security/authz-trails/forensics"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails/retention:
+    get:
+      summary: "AdminAuthorizationTrailController::GET /api/v1/admin/security/authz-trails/retention"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sisbajud/operacoes/bloqueio:
+    post:
+      summary: "AdminSisbajudController::POST /api/v1/admin/sisbajud/operacoes/bloqueio"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sisbajud/operacoes/{operacaoId}:
+    get:
+      summary: "AdminSisbajudController::GET /api/v1/admin/sisbajud/operacoes/{operacaoId}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sisbajud/operacoes/{operacaoId}/audit:
+    get:
+      summary: "AdminSisbajudController::GET /api/v1/admin/sisbajud/operacoes/{operacaoId}/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sisbajud/operacoes/{operacaoId}/retry:
+    get:
+      summary: "AdminSisbajudController::GET /api/v1/admin/sisbajud/operacoes/{operacaoId}/retry"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sisbajud/operacoes/{operacaoId}/snapshot:
+    get:
+      summary: "AdminSisbajudController::GET /api/v1/admin/sisbajud/operacoes/{operacaoId}/snapshot"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sisbajud/operacoes/{operacaoId}/view:
+    get:
+      summary: "AdminSisbajudController::GET /api/v1/admin/sisbajud/operacoes/{operacaoId}/view"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/audit:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/audit/entry:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/audit/entry"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/audit/health:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/audit/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/budget:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/budget"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/compatibilidade:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/compatibilidade"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/consistency:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/consulta:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/consulta"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/decision:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/decision"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/decision/audit:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/decision/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/envelope:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/envelope"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/health:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/health/view:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/health/view"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/owner:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/owner"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/projection:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/projection"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/projection/health:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/projection/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/retomada:
+    post:
+      summary: "AdminSobrestamentoController::POST /api/v1/admin/sobrestamento/{codigoTema}/retomada"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/retomada/health:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/retomada/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/run:
+    post:
+      summary: "AdminSobrestamentoController::POST /api/v1/admin/sobrestamento/{codigoTema}/run"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/signal:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/signal"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/status:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/status/health:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/status/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/timeline:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/timeline/audit:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/timeline/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/timeline/health:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/timeline/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/window:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/window/audit:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/window/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/window/health:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/window/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/sobrestamento/{codigoTema}/window/view:
+    get:
+      summary: "AdminSobrestamentoController::GET /api/v1/admin/sobrestamento/{codigoTema}/window/view"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/depositos/{depositoId}/consistency:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/depositos/{depositoId}/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/depositos/{depositoId}/health:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/depositos/{depositoId}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/depositos/{depositoId}/window:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/depositos/{depositoId}/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/grus/{gruId}:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/grus/{gruId}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/grus/{gruId}/consistency:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/grus/{gruId}/consistency"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/grus/{gruId}/consistency/audit:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/grus/{gruId}/consistency/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/grus/{gruId}/health:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/grus/{gruId}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/grus/{gruId}/view:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/grus/{gruId}/view"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/processos/{processoId}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}/acordo/health:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/processos/{processoId}/acordo/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}/acordo/homologar:
+    post:
+      summary: "AdminTrabalhistaController::POST /api/v1/admin/trabalhista/processos/{processoId}/acordo/homologar"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}/deposito:
+    post:
+      summary: "AdminTrabalhistaController::POST /api/v1/admin/trabalhista/processos/{processoId}/deposito"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}/execucao:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/processos/{processoId}/execucao"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}/execucao/health:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/processos/{processoId}/execucao/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}/gru:
+    post:
+      summary: "AdminTrabalhistaController::POST /api/v1/admin/trabalhista/processos/{processoId}/gru"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}/health:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/processos/{processoId}/health"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}/ownership:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/processos/{processoId}/ownership"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}/status:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/processos/{processoId}/status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}/timeline:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/processos/{processoId}/timeline"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}/timeline/audit:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/processos/{processoId}/timeline/audit"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/trabalhista/processos/{processoId}/timeline/window:
+    get:
+      summary: "AdminTrabalhistaController::GET /api/v1/admin/trabalhista/processos/{processoId}/timeline/window"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+    basicAuth:
+      type: "http"
+      scheme: "basic"

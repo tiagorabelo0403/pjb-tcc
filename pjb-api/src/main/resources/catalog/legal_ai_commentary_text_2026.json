@@ -1,0 +1,28 @@
+{
+  "evidence": {
+    "surfaceCode": {
+      "draft": "LEGAL_DRAFT_V2",
+      "grounding": "LEGAL_GROUNDING_CHECK_V3"
+    },
+    "promotionStatus": {
+      "promoted": "PROMOTED",
+      "blocked": "BLOCKED"
+    },
+    "reason": {
+      "surfacePromotionNotAnchored": "SURFACE_PROMOTION_NOT_ANCHORED"
+    },
+    "requirementPrefix": {
+      "draft": "DRAFT_",
+      "grounding": "GROUNDING_"
+    }
+  },
+  "manifest": {
+    "error": {
+      "noRequiredResources": "Legal knowledge catalog manifest has no required resources.",
+      "validationFailedPrefix": "Legal knowledge catalog manifest validation failed: ",
+      "resourceMustBeArrayPrefix": "Legal knowledge resource must be ARRAY: ",
+      "resourceMustBeObjectPrefix": "Legal knowledge resource must be OBJECT: ",
+      "unsupportedTopLevelPrefix": "Unsupported topLevel in manifest for resource: "
+    }
+  }
+}

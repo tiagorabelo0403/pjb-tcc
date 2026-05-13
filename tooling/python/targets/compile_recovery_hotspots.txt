@@ -1,0 +1,18 @@
+# Hotspots iniciais da recuperação de compile do pjb-api.
+pjb-api/src/main/java/com/tcc/pjb/backend/BackendApplication.java
+pjb-api/src/main/java/com/tcc/pjb/backend/adapter/factory/PJeAdapterFactory.java
+pjb-api/src/main/java/com/tcc/pjb/backend/adapter/strategies/config/WebSocketConfig.java
+pjb-api/src/main/java/com/tcc/pjb/backend/tracker/UserActivitySocketHandler.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Processo.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/JurisdictionEngine.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Usuario.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Equipe.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/MembroEquipe.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/jurisprudencia/Precedente.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/repository/PrecedenteRepository.java
+pjb-api/src/main/java/com/tcc/pjb/backend/service/jurisprudencia/search/JurisprudenceSearchEngine.java
+pjb-api/src/main/java/com/tcc/pjb/backend/adapter/worker/PJeSubmissionWorker.java
+pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAutenticacaoResponse.java
+pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeSubmissaoResponse.java
+pjb-api/src/main/java/com/tcc/pjb/backend/shared/dto/PJeAndamentoResponse.java

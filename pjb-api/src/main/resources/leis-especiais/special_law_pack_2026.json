@@ -1,0 +1,164 @@
+[
+  {
+    "lawId": "CDC_LEI_8078_1990",
+    "title": "Código de Defesa do Consumidor",
+    "officialId": "Lei nº 8.078/1990",
+    "branchCode": "CONSUMIDOR",
+    "artifactType": "SPECIAL_LAW",
+    "sourceUrl": "https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm",
+    "keywords": [
+      "cdc",
+      "consumidor",
+      "fornecedor",
+      "responsabilidade objetiva",
+      "pratica abusiva"
+    ],
+    "summary": "Base normativa para relações de consumo, responsabilidade por vício e fato do produto/serviço e tutela coletiva do consumidor.",
+    "relatedRitos": [
+      "COMUM_ORDINARIO",
+      "JUIZADO_ESPECIAL_CIVEL"
+    ],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "lawId": "ECA_LEI_8069_1990",
+    "title": "Estatuto da Criança e do Adolescente",
+    "officialId": "Lei nº 8.069/1990",
+    "branchCode": "INFANCIA_E_JUVENTUDE",
+    "artifactType": "SPECIAL_LAW",
+    "sourceUrl": "https://www.planalto.gov.br/ccivil_03/leis/l8069.htm",
+    "keywords": [
+      "eca",
+      "crianca",
+      "adolescente",
+      "medida protetiva",
+      "ato infracional"
+    ],
+    "summary": "Base normativa para proteção integral, medidas protetivas e responsabilização em matéria da infância e juventude.",
+    "relatedRitos": [
+      "INFANCIA_PROTETIVO",
+      "ATO_INFRACIONAL"
+    ],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "lawId": "CTN_LEI_5172_1966",
+    "title": "Código Tributário Nacional",
+    "officialId": "Lei nº 5.172/1966",
+    "branchCode": "TRIBUTARIO",
+    "artifactType": "SPECIAL_LAW",
+    "sourceUrl": "https://www.planalto.gov.br/ccivil_03/leis/l5172compilado.htm",
+    "keywords": [
+      "ctn",
+      "tributo",
+      "credito tributario",
+      "prescricao",
+      "decadencia"
+    ],
+    "summary": "Base estruturante do sistema tributário infraconstitucional, com disciplina sobre obrigação, crédito, decadência e prescrição.",
+    "relatedRitos": [
+      "EXECUCAO_FISCAL",
+      "COMUM_ORDINARIO"
+    ],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "lawId": "LEF_LEI_6830_1980",
+    "title": "Lei de Execução Fiscal",
+    "officialId": "Lei nº 6.830/1980",
+    "branchCode": "TRIBUTARIO",
+    "artifactType": "SPECIAL_LAW",
+    "sourceUrl": "https://www.planalto.gov.br/ccivil_03/leis/l6830.htm",
+    "keywords": [
+      "execucao fiscal",
+      "cda",
+      "penhora",
+      "embargos a execucao"
+    ],
+    "summary": "Disciplina a cobrança judicial da dívida ativa da Fazenda Pública e a tramitação própria da execução fiscal.",
+    "relatedRitos": [
+      "EXECUCAO_FISCAL"
+    ],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "lawId": "MS_LEI_12016_2009",
+    "title": "Lei do Mandado de Segurança",
+    "officialId": "Lei nº 12.016/2009",
+    "branchCode": "CONSTITUCIONAL",
+    "artifactType": "SPECIAL_LAW",
+    "sourceUrl": "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2009/lei/l12016.htm",
+    "keywords": [
+      "mandado de seguranca",
+      "direito liquido e certo",
+      "liminar",
+      "autoridade coatora"
+    ],
+    "summary": "Rege o mandado de segurança individual e coletivo, com disciplina sobre cabimento, liminar, informações e recursos.",
+    "relatedRitos": [
+      "MANDADO_DE_SEGURANCA"
+    ],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "lawId": "LGPD_LEI_13709_2018",
+    "title": "Lei Geral de Proteção de Dados Pessoais",
+    "officialId": "Lei nº 13.709/2018",
+    "branchCode": "DIGITAL_E_PRIVACIDADE",
+    "artifactType": "SPECIAL_LAW",
+    "sourceUrl": "https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm",
+    "keywords": [
+      "lgpd",
+      "dados pessoais",
+      "tratamento",
+      "controlador",
+      "encarregado"
+    ],
+    "summary": "Base normativa para tratamento de dados pessoais, segurança, bases legais e governança de dados no ecossistema do PJB.",
+    "relatedRitos": [
+      "COMUM_ORDINARIO",
+      "MANDADO_DE_SEGURANCA"
+    ],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "lawId": "LEP_LEI_7210_1984",
+    "title": "Lei de Execução Penal",
+    "officialId": "Lei nº 7.210/1984",
+    "branchCode": "PENAL",
+    "artifactType": "SPECIAL_LAW",
+    "sourceUrl": "https://www.planalto.gov.br/ccivil_03/leis/l7210.htm",
+    "keywords": [
+      "execucao penal",
+      "pena",
+      "regime",
+      "progressao",
+      "remicao"
+    ],
+    "summary": "Disciplina a execução das penas e medidas de segurança, com foco em regime, progressão, remição e incidentes executórios.",
+    "relatedRitos": [
+      "EXECUCAO_PENAL"
+    ],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  },
+  {
+    "lawId": "LMP_LEI_11340_2006",
+    "title": "Lei Maria da Penha",
+    "officialId": "Lei nº 11.340/2006",
+    "branchCode": "PENAL",
+    "artifactType": "SPECIAL_LAW",
+    "sourceUrl": "https://www.planalto.gov.br/ccivil_03/_ato2004-2006/2006/lei/l11340.htm",
+    "keywords": [
+      "maria da penha",
+      "violencia domestica",
+      "medida protetiva",
+      "urgencia"
+    ],
+    "summary": "Estabelece mecanismos de prevenção e repressão à violência doméstica e familiar contra a mulher, inclusive medidas protetivas de urgência.",
+    "relatedRitos": [
+      "VIOLENCIA_DOMESTICA_URGENTE",
+      "PENAL_COMUM"
+    ],
+    "authorityLevel": "PRIMARY_OFFICIAL"
+  }
+]

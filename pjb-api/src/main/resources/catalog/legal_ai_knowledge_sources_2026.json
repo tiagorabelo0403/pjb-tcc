@@ -1,0 +1,722 @@
+[
+  {
+    "sourceId": "cf88_planalto",
+    "title": "Constituição da República Federativa do Brasil de 1988",
+    "sourceKind": "constitution",
+    "authorityLevel": "primary_official",
+    "institution": "Planalto",
+    "storageLane": "NORMATIVE_TEXT",
+    "licensingModel": "PUBLIC_OFFICIAL",
+    "baseUrl": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm",
+    "refreshStrategy": "OFFICIAL_PULL_HTML",
+    "branches": [
+      "CONSTITUCIONAL",
+      "ADMINISTRATIVO",
+      "TRIBUTARIO",
+      "ELEITORAL",
+      "PENAL",
+      "CIVIL",
+      "TRABALHISTA",
+      "PREVIDENCIARIO"
+    ],
+    "artifactTypes": [
+      "CONSTITUTION",
+      "AMENDMENTS"
+    ],
+    "retrievalTags": [
+      "cf88",
+      "constituicao",
+      "emenda constitucional"
+    ],
+    "restrictions": [
+      "Prioridade máxima em conflito normativo."
+    ]
+  },
+  {
+    "sourceId": "planalto_codigos",
+    "title": "Portal da Legislação — Códigos",
+    "sourceKind": "code_portal",
+    "authorityLevel": "primary_official",
+    "institution": "Planalto",
+    "storageLane": "NORMATIVE_TEXT",
+    "licensingModel": "PUBLIC_OFFICIAL",
+    "baseUrl": "https://www4.planalto.gov.br/legislacao/portal-legis/legislacao-1/codigos-1",
+    "refreshStrategy": "OFFICIAL_PULL_HTML",
+    "branches": [
+      "CIVIL",
+      "PENAL",
+      "TRABALHISTA",
+      "TRIBUTARIO",
+      "ADMINISTRATIVO",
+      "ELEITORAL",
+      "PREVIDENCIARIO"
+    ],
+    "artifactTypes": [
+      "CODE",
+      "LAW",
+      "COMPLEMENTARY_LAW"
+    ],
+    "retrievalTags": [
+      "codigo civil",
+      "cpc",
+      "codigo penal",
+      "cpp",
+      "clt",
+      "ctn"
+    ],
+    "restrictions": [
+      "Sempre preservar versão consolidada e data da coleta."
+    ]
+  },
+  {
+    "sourceId": "stf_jurisprudencia",
+    "title": "STF — Pesquisa de Jurisprudência",
+    "sourceKind": "jurisprudence",
+    "authorityLevel": "primary_official",
+    "institution": "STF",
+    "storageLane": "PRECEDENT",
+    "licensingModel": "PUBLIC_OFFICIAL",
+    "baseUrl": "https://portal.stf.jus.br/jurisprudencia/",
+    "refreshStrategy": "OFFICIAL_PULL_SEARCH",
+    "branches": [
+      "CONSTITUCIONAL",
+      "ADMINISTRATIVO",
+      "TRIBUTARIO",
+      "PENAL",
+      "ELEITORAL",
+      "TRABALHISTA"
+    ],
+    "artifactTypes": [
+      "ACORDAO",
+      "DECISAO_MONOCRATICA",
+      "REPERCUSSAO_GERAL",
+      "TEMA"
+    ],
+    "retrievalTags": [
+      "stf",
+      "repercussao geral",
+      "inteiro teor",
+      "tema"
+    ],
+    "restrictions": [
+      "Priorizar precedentes vinculantes, repercussão geral e controle concentrado."
+    ]
+  },
+  {
+    "sourceId": "stf_sumulas_vinculantes",
+    "title": "STF — Súmulas Vinculantes",
+    "sourceKind": "sumula",
+    "authorityLevel": "primary_official",
+    "institution": "STF",
+    "storageLane": "BINDING_STATEMENT",
+    "licensingModel": "PUBLIC_OFFICIAL",
+    "baseUrl": "https://portal.stf.jus.br/jurisprudencia/sumariosumulas.asp?base=26",
+    "refreshStrategy": "OFFICIAL_PULL_SEARCH",
+    "branches": [
+      "CONSTITUCIONAL",
+      "PENAL",
+      "TRIBUTARIO",
+      "ADMINISTRATIVO",
+      "TRABALHISTA",
+      "ELEITORAL"
+    ],
+    "artifactTypes": [
+      "SUMULA_VINCULANTE"
+    ],
+    "retrievalTags": [
+      "sumula vinculante",
+      "stf"
+    ],
+    "restrictions": [
+      "Deve prevalecer sobre doutrina em caso de conflito interpretativo no mesmo tema."
+    ]
+  },
+  {
+    "sourceId": "stj_jurisprudencia",
+    "title": "STJ — Pesquisa de Jurisprudência",
+    "sourceKind": "jurisprudence",
+    "authorityLevel": "primary_official",
+    "institution": "STJ",
+    "storageLane": "PRECEDENT",
+    "licensingModel": "PUBLIC_OFFICIAL",
+    "baseUrl": "https://www.stj.jus.br/sites/portalp/paginas/Sob-medida/Advogado/Jurisprudencia/Pesquisa-de-Jurisprudencia.aspx",
+    "refreshStrategy": "OFFICIAL_PULL_SEARCH",
+    "branches": [
+      "CIVIL",
+      "PENAL",
+      "TRIBUTARIO",
+      "PREVIDENCIARIO",
+      "ADMINISTRATIVO",
+      "EMPRESARIAL",
+      "CONSUMIDOR",
+      "AMBIENTAL",
+      "FAMILIA"
+    ],
+    "artifactTypes": [
+      "ACORDAO",
+      "SUMULA",
+      "DECISAO_MONOCRATICA",
+      "INFORMATIVO",
+      "JURISPRUDENCIA_EM_TESES",
+      "REPETITIVO"
+    ],
+    "retrievalTags": [
+      "stj",
+      "repetitivo",
+      "jurisprudencia em teses",
+      "informativo"
+    ],
+    "restrictions": [
+      "Priorizar temas repetitivos e jurisprudência em teses quando disponíveis."
+    ]
+  },
+  {
+    "sourceId": "tst_jurisprudencia_sumulas_ojs",
+    "title": "TST — Jurisprudência, Súmulas, OJs e Precedentes Normativos",
+    "sourceKind": "jurisprudence",
+    "authorityLevel": "primary_official",
+    "institution": "TST",
+    "storageLane": "PRECEDENT",
+    "licensingModel": "PUBLIC_OFFICIAL",
+    "baseUrl": "https://www.tst.jus.br/jurisprudencia",
+    "refreshStrategy": "OFFICIAL_PULL_SEARCH",
+    "branches": [
+      "TRABALHISTA"
+    ],
+    "artifactTypes": [
+      "SUMULA",
+      "OJ",
+      "PRECEDENTE_NORMATIVO",
+      "JURISPRUDENCIA",
+      "TESE_VINCULANTE"
+    ],
+    "retrievalTags": [
+      "tst",
+      "sumula",
+      "oj",
+      "precedente normativo",
+      "tese vinculante"
+    ],
+    "restrictions": [
+      "Separar súmulas, OJs e teses vinculantes em lanes distintas para ranking."
+    ]
+  },
+  {
+    "sourceId": "tse_sumulas_jurisprudencia",
+    "title": "TSE — Súmulas e Jurisprudência Eleitoral",
+    "sourceKind": "jurisprudence",
+    "authorityLevel": "primary_official",
+    "institution": "TSE",
+    "storageLane": "PRECEDENT",
+    "licensingModel": "PUBLIC_OFFICIAL",
+    "baseUrl": "https://www.tse.jus.br/legislacao/codigo-eleitoral/sumulas/sumulas-do-tse",
+    "refreshStrategy": "OFFICIAL_PULL_SEARCH",
+    "branches": [
+      "ELEITORAL"
+    ],
+    "artifactTypes": [
+      "SUMULA",
+      "ACORDAO",
+      "CONSULTA",
+      "RESOLUCAO_ELEITORAL"
+    ],
+    "retrievalTags": [
+      "tse",
+      "sumula tse",
+      "inelegibilidade",
+      "registro de candidatura"
+    ],
+    "restrictions": [
+      "Preservar distinção entre súmula, acórdão, consulta e resolução eleitoral."
+    ]
+  },
+  {
+    "sourceId": "cnj_atos_normativos",
+    "title": "CNJ — Atos Normativos",
+    "sourceKind": "normative_acts",
+    "authorityLevel": "official_curated",
+    "institution": "CNJ",
+    "storageLane": "GOVERNANCE_NORM",
+    "licensingModel": "PUBLIC_OFFICIAL",
+    "baseUrl": "https://www.cnj.jus.br/atos_normativos/",
+    "refreshStrategy": "OFFICIAL_PULL_SEARCH",
+    "branches": [
+      "ADMINISTRATIVO",
+      "PROCESSUAL",
+      "PENAL",
+      "CIVIL",
+      "ELEITORAL",
+      "TRABALHISTA"
+    ],
+    "artifactTypes": [
+      "RESOLUCAO",
+      "PROVIMENTO",
+      "PORTARIA",
+      "RECOMENDACAO",
+      "ENUNCIADO"
+    ],
+    "retrievalTags": [
+      "cnj",
+      "ato normativo",
+      "resolucao cnj",
+      "provimento cnj"
+    ],
+    "restrictions": [
+      "Usar como governança judicial e interoperabilidade, não como substituto da lei material."
+    ]
+  },
+  {
+    "sourceId": "livros_licenciados_uploads",
+    "title": "Doutrina licenciada, acervo institucional e uploads controlados",
+    "sourceKind": "doctrine",
+    "authorityLevel": "internal_controlled",
+    "institution": "PJB",
+    "storageLane": "DOCTRINE",
+    "licensingModel": "LICENSE_REQUIRED",
+    "baseUrl": "internal://legal-doctrine-library",
+    "refreshStrategy": "CONTROLLED_INGESTION",
+    "branches": [
+      "CONSTITUCIONAL",
+      "CIVIL",
+      "PENAL",
+      "TRABALHISTA",
+      "TRIBUTARIO",
+      "ADMINISTRATIVO",
+      "ELEITORAL",
+      "PREVIDENCIARIO",
+      "EMPRESARIAL",
+      "CONSUMIDOR",
+      "AMBIENTAL",
+      "FAMILIA"
+    ],
+    "artifactTypes": [
+      "BOOK",
+      "TREATISE",
+      "COMMENTARY",
+      "INTERNAL_MANUAL",
+      "COURSEBOOK"
+    ],
+    "retrievalTags": [
+      "doutrina",
+      "livro",
+      "manual",
+      "comentarios"
+    ],
+    "restrictions": [
+      "Exige licença, comprovação de titularidade, acervo próprio ou upload autorizado.",
+      "Nunca substituir fonte oficial quando houver conflito normativo ou precedencial."
+    ]
+  },
+  {
+    "sourceId": "pjb_ritos_pack_2026",
+    "title": "PJB — Rito Pack 2026 Curado",
+    "sourceKind": "internal_procedural_rites",
+    "authorityLevel": "official_curated",
+    "institution": "PJB",
+    "storageLane": "GOVERNANCE_NORM",
+    "licensingModel": "INTERNAL_CURATED",
+    "baseUrl": "internal://legal-knowledge/rito-pack-2026",
+    "refreshStrategy": "INTERNAL_CURATED_REFRESH",
+    "branches": [
+      "CIVIL",
+      "PENAL",
+      "TRABALHISTA",
+      "TRIBUTARIO",
+      "ADMINISTRATIVO",
+      "ELEITORAL",
+      "JUIZADOS"
+    ],
+    "artifactTypes": [
+      "PROCEDURAL_RITE",
+      "PROCEDURAL_STAGE",
+      "WORK_ITEM"
+    ],
+    "retrievalTags": [
+      "rito",
+      "fase processual",
+      "workflow judicial",
+      "procedimento"
+    ],
+    "restrictions": [
+      "Não substitui texto legal oficial; funciona como malha operacional e materialização de rito."
+    ]
+  },
+  {
+    "sourceId": "pjb_precedentes_seed_2026",
+    "title": "PJB — Seed Curado de Precedentes 2026",
+    "sourceKind": "internal_precedent_seed",
+    "authorityLevel": "official_curated",
+    "institution": "PJB",
+    "storageLane": "PRECEDENT",
+    "licensingModel": "INTERNAL_CURATED",
+    "baseUrl": "internal://legal-knowledge/precedent-seed-2026",
+    "refreshStrategy": "INTERNAL_CURATED_REFRESH",
+    "branches": [
+      "CONSTITUCIONAL",
+      "ADMINISTRATIVO",
+      "CIVIL",
+      "PENAL",
+      "TRABALHISTA",
+      "TRIBUTARIO"
+    ],
+    "artifactTypes": [
+      "PRECEDENT_SEED",
+      "SUMULA_VINCULANTE",
+      "REPETITIVO",
+      "TEMA"
+    ],
+    "retrievalTags": [
+      "precedente",
+      "semente curada",
+      "tese",
+      "ementa"
+    ],
+    "restrictions": [
+      "Usar como bootstrap interno; prevalece sempre a fonte oficial do tribunal competente."
+    ]
+  },
+  {
+    "sourceId": "pjb_material_pack_2026",
+    "title": "PJB — Material Jurídico Interno Controlado 2026",
+    "sourceKind": "doctrine",
+    "authorityLevel": "official_curated",
+    "institution": "PJB",
+    "storageLane": "DOCTRINE",
+    "licensingModel": "INTERNAL_CURATED",
+    "baseUrl": "internal://legal-knowledge/material-pack-2026",
+    "refreshStrategy": "INTERNAL_CURATED_REFRESH",
+    "branches": [
+      "CIVIL",
+      "PENAL",
+      "TRABALHISTA",
+      "TRIBUTARIO",
+      "JUIZADOS"
+    ],
+    "artifactTypes": [
+      "CHECKLIST",
+      "GUIDE",
+      "INTERNAL_MATERIAL"
+    ],
+    "retrievalTags": [
+      "material interno",
+      "checklist",
+      "guia",
+      "prova"
+    ],
+    "restrictions": [
+      "Somente apoio interno controlado; não pode prevalecer sobre Constituição, lei ou precedente oficial."
+    ]
+  },
+  {
+    "sourceId": "pjb_constitution_pack_2026",
+    "title": "PJB — Constituição Estruturada 2026",
+    "sourceKind": "internal_constitution_pack",
+    "authorityLevel": "official_curated",
+    "institution": "PJB",
+    "storageLane": "NORMATIVE_TEXT",
+    "licensingModel": "INTERNAL_CURATED",
+    "baseUrl": "internal://legal-knowledge/constitution-pack-2026",
+    "refreshStrategy": "INTERNAL_CURATED_REFRESH",
+    "branches": [
+      "CONSTITUCIONAL",
+      "ADMINISTRATIVO",
+      "TRIBUTARIO",
+      "PREVIDENCIARIO",
+      "PROCESSUAL"
+    ],
+    "artifactTypes": [
+      "CONSTITUTION_TOPIC",
+      "CONSTITUTION_ARTICLE_GROUP"
+    ],
+    "retrievalTags": [
+      "constituicao",
+      "artigos",
+      "direitos fundamentais",
+      "competencia"
+    ],
+    "restrictions": [
+      "Não substitui a fonte oficial do Planalto; funciona como estrutura temática curada para grounding e navegação."
+    ]
+  },
+  {
+    "sourceId": "pjb_sumula_pack_2026",
+    "title": "PJB — Pack Curado de Súmulas e Enunciados 2026",
+    "sourceKind": "internal_sumula_pack",
+    "authorityLevel": "official_curated",
+    "institution": "PJB",
+    "storageLane": "BINDING_STATEMENT",
+    "licensingModel": "INTERNAL_CURATED",
+    "baseUrl": "internal://legal-knowledge/sumula-pack-2026",
+    "refreshStrategy": "INTERNAL_CURATED_REFRESH",
+    "branches": [
+      "ADMINISTRATIVO",
+      "PENAL",
+      "CONSUMIDOR",
+      "TRABALHISTA",
+      "ELEITORAL"
+    ],
+    "artifactTypes": [
+      "SUMULA_VINCULANTE",
+      "SUMULA",
+      "OJ",
+      "JURISPRUDENCIA_EM_TESES"
+    ],
+    "retrievalTags": [
+      "sumula",
+      "oj",
+      "enunciado",
+      "tese"
+    ],
+    "restrictions": [
+      "Usar como índice curado; a redação oficial deve ser resolvida na fonte oficial correspondente."
+    ]
+  },
+  {
+    "sourceId": "pjb_doctrine_catalog_2026",
+    "title": "PJB — Catálogo Doutrinário Licenciado/Controlado 2026",
+    "sourceKind": "doctrine",
+    "authorityLevel": "official_curated",
+    "institution": "PJB",
+    "storageLane": "DOCTRINE",
+    "licensingModel": "INTERNAL_CURATED",
+    "baseUrl": "internal://legal-knowledge/doctrine-catalog-2026",
+    "refreshStrategy": "LICENSED_DOCTRINE_SYNC",
+    "branches": [
+      "CIVIL",
+      "PENAL",
+      "TRABALHISTA",
+      "PREVIDENCIARIO"
+    ],
+    "artifactTypes": [
+      "LICENSED_DOCTRINE_GUIDE",
+      "INTERNAL_MANUAL",
+      "CHECKLIST"
+    ],
+    "retrievalTags": [
+      "doutrina",
+      "manual",
+      "guia",
+      "acervo institucional"
+    ],
+    "restrictions": [
+      "Exige evidência de licença, propriedade ou acervo institucional controlado para promoção permanente."
+    ]
+  },
+  {
+    "sourceId": "planalto_leis_especiais",
+    "title": "Portal da Legislação — Leis especiais estratégicas",
+    "sourceKind": "special_law_portal",
+    "authorityLevel": "primary_official",
+    "institution": "Planalto",
+    "storageLane": "NORMATIVE_TEXT",
+    "licensingModel": "PUBLIC_OFFICIAL",
+    "baseUrl": "https://www4.planalto.gov.br/legislacao",
+    "refreshStrategy": "OFFICIAL_PULL_HTML",
+    "branches": [
+      "CIVIL",
+      "PENAL",
+      "TRIBUTARIO",
+      "ADMINISTRATIVO",
+      "CONSUMIDOR",
+      "EMPRESARIAL",
+      "PREVIDENCIARIO",
+      "ELEITORAL",
+      "TRABALHISTA"
+    ],
+    "artifactTypes": [
+      "SPECIAL_LAW",
+      "STATUTE",
+      "COMPLEMENTARY_LAW"
+    ],
+    "retrievalTags": [
+      "lei especial",
+      "cdc",
+      "eca",
+      "lgpd",
+      "lei maria da penha",
+      "mandado de seguranca",
+      "execucao fiscal"
+    ],
+    "restrictions": [
+      "Sempre preservar texto consolidado, data de coleta e vínculo com a lei oficial no Planalto."
+    ]
+  },
+  {
+    "sourceId": "stf_repercussao_geral_teses",
+    "title": "STF — Temas e teses de repercussão geral",
+    "sourceKind": "precedent_theme_portal",
+    "authorityLevel": "primary_official",
+    "institution": "STF",
+    "storageLane": "PRECEDENT",
+    "licensingModel": "PUBLIC_OFFICIAL",
+    "baseUrl": "https://portal.stf.jus.br/repercussaogeral/teses.asp",
+    "refreshStrategy": "OFFICIAL_PULL_SEARCH",
+    "branches": [
+      "CONSTITUCIONAL",
+      "TRIBUTARIO",
+      "ADMINISTRATIVO",
+      "PENAL",
+      "PREVIDENCIARIO",
+      "TRABALHISTA",
+      "ELEITORAL"
+    ],
+    "artifactTypes": [
+      "REPERCUSSAO_GERAL",
+      "TEMA",
+      "TESE"
+    ],
+    "retrievalTags": [
+      "stf",
+      "repercussao geral",
+      "tema",
+      "tese"
+    ],
+    "restrictions": [
+      "Priorizar tema, tese e situação processual oficial antes de material derivado."
+    ]
+  },
+  {
+    "sourceId": "stj_repetitivos_teses",
+    "title": "STJ — Repetitivos e jurisprudência em teses",
+    "sourceKind": "precedent_theme_portal",
+    "authorityLevel": "primary_official",
+    "institution": "STJ",
+    "storageLane": "PRECEDENT",
+    "licensingModel": "PUBLIC_OFFICIAL",
+    "baseUrl": "https://www.stj.jus.br/sites/portalp/Precedentes/informacoes-gerais/recursos-repetitivos",
+    "refreshStrategy": "OFFICIAL_PULL_SEARCH",
+    "branches": [
+      "CIVIL",
+      "PENAL",
+      "TRIBUTARIO",
+      "PREVIDENCIARIO",
+      "ADMINISTRATIVO",
+      "EMPRESARIAL",
+      "CONSUMIDOR",
+      "AMBIENTAL",
+      "FAMILIA"
+    ],
+    "artifactTypes": [
+      "REPETITIVO",
+      "TESE",
+      "JURISPRUDENCIA_EM_TESES"
+    ],
+    "retrievalTags": [
+      "stj",
+      "repetitivo",
+      "tema repetitivo",
+      "jurisprudencia em teses"
+    ],
+    "restrictions": [
+      "A tese do repetitivo deve prevalecer sobre acórdãos isolados do mesmo tema quando aplicável."
+    ]
+  },
+  {
+    "sourceId": "PJB_SPECIAL_LAW_PACK_2026",
+    "title": "PJB — pack curado de leis especiais estratégicas",
+    "sourceKind": "normative_pack",
+    "authorityLevel": "official_curated",
+    "institution": "PJB",
+    "storageLane": "NORMATIVE_TEXT",
+    "licensingModel": "INTERNAL_CURATED_OFFICIAL_DERIVED",
+    "baseUrl": "internal://legal-knowledge/special-law-pack-2026",
+    "refreshStrategy": "INTERNAL_CURATED_REFRESH",
+    "branches": [
+      "CIVIL",
+      "PENAL",
+      "TRIBUTARIO",
+      "ADMINISTRATIVO",
+      "CONSUMIDOR",
+      "EMPRESARIAL",
+      "PREVIDENCIARIO",
+      "ELEITORAL",
+      "TRABALHISTA"
+    ],
+    "artifactTypes": [
+      "SPECIAL_LAW",
+      "CHECKLIST",
+      "SEED"
+    ],
+    "retrievalTags": [
+      "leis especiais",
+      "pack interno",
+      "normativo"
+    ],
+    "restrictions": [
+      "Curadoria interna baseada em fonte oficial consolidada e hash versionado."
+    ]
+  },
+  {
+    "sourceId": "PJB_QUALIFIED_PRECEDENT_PACK_2026",
+    "title": "PJB — pack curado de precedentes qualificados",
+    "sourceKind": "precedent_pack",
+    "authorityLevel": "official_curated",
+    "institution": "PJB",
+    "storageLane": "PRECEDENT",
+    "licensingModel": "INTERNAL_CURATED_OFFICIAL_DERIVED",
+    "baseUrl": "internal://legal-knowledge/qualified-precedent-pack-2026",
+    "refreshStrategy": "INTERNAL_CURATED_REFRESH",
+    "branches": [
+      "CONSTITUCIONAL",
+      "CIVIL",
+      "PENAL",
+      "TRIBUTARIO",
+      "PREVIDENCIARIO",
+      "TRABALHISTA",
+      "ELEITORAL",
+      "ADMINISTRATIVO",
+      "CONSUMIDOR"
+    ],
+    "artifactTypes": [
+      "THEME",
+      "TESE",
+      "REPETITIVO",
+      "SUMULA",
+      "OJ"
+    ],
+    "retrievalTags": [
+      "precedente qualificado",
+      "tema",
+      "tese",
+      "repetitivo",
+      "sumula"
+    ],
+    "restrictions": [
+      "Curadoria interna deve manter tribunal, identificador, status e URL oficial do precedente qualificado."
+    ]
+  },
+  {
+    "sourceId": "PJB_GOVERNANCE_ACT_PACK_2026",
+    "title": "PJB — pack curado de atos normativos de governança judicial",
+    "sourceKind": "governance_pack",
+    "authorityLevel": "official_curated",
+    "institution": "PJB",
+    "storageLane": "GOVERNANCE_NORM",
+    "licensingModel": "INTERNAL_CURATED_OFFICIAL_DERIVED",
+    "baseUrl": "internal://legal-knowledge/governance-act-pack-2026",
+    "refreshStrategy": "INTERNAL_CURATED_REFRESH",
+    "branches": [
+      "PROCESSUAL",
+      "ADMINISTRATIVO",
+      "PENAL",
+      "CIVIL",
+      "TRABALHISTA",
+      "ELEITORAL"
+    ],
+    "artifactTypes": [
+      "RESOLUCAO",
+      "PROVIMENTO",
+      "PROCEDURAL_GOVERNANCE"
+    ],
+    "retrievalTags": [
+      "governanca judicial",
+      "cnj",
+      "pdpj",
+      "djen",
+      "domicilio judicial"
+    ],
+    "restrictions": [
+      "Usar como camada operacional e de plataforma, sem competir com legislação material."
+    ]
+  }
+]

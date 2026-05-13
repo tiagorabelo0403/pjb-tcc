@@ -1,0 +1,21 @@
+{
+  "round": 108,
+  "theme": "legal_ai_virtual_trends_dedicated_catalog",
+  "filesChanged": [
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/conversation/JuridicaVirtualTrendsCatalog.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/conversation/JuridicaVirtualTrendsCouncilService.java",
+    "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/spine/JuridicaSpineLabels.java",
+    "pjb-api/src/test/java/com/tcc/pjb/backend/ai/juridica/conversation/JuridicaLegalAiConversationRound106ArchitectureTest.java",
+    "README.md"
+  ],
+  "canonicalSource": "JuridicaVirtualTrendsCatalog.profiles()",
+  "removedMirroring": [
+    "JuridicaSpineLabels.virtualTrends()",
+    "JuridicaSpineLabels.VIRTUAL_TREND_*"
+  ],
+  "preserved": [
+    "single legal conversation entrypoint",
+    "existing council service",
+    "existing conversation orchestration flow"
+  ]
+}

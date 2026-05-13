@@ -1,0 +1,26 @@
+[
+  {
+    "code": "custa-seed-001",
+    "processoCode": "proc-civel-001",
+    "tipo": "CUSTAS_INICIAIS",
+    "status": "PENDENTE",
+    "valor": 350.75,
+    "pixTxid": "PJBSEEDCUSTA001"
+  },
+  {
+    "code": "custa-seed-002",
+    "processoCode": "proc-trabalhista-001",
+    "tipo": "DEPOSITO_RECURSAL",
+    "status": "PENDENTE",
+    "valor": 1480.00,
+    "pixTxid": "PJBSEEDCUSTA002"
+  },
+  {
+    "code": "custa-seed-003",
+    "processoCode": "proc-eleitoral-001",
+    "tipo": "PREPARO_RECURSAL",
+    "status": "PAGO",
+    "valor": 220.10,
+    "pixTxid": "PJBSEEDCUSTA003"
+  }
+]

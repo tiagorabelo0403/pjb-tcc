@@ -1,0 +1,300 @@
+{
+  "consumer": {
+    "name": "PjbLegalAiSignedOriginConsumer"
+  },
+  "provider": {
+    "name": "PjbLegalAiSignedOriginProvider"
+  },
+  "interactions": [
+    {
+      "description": "accept valid signed attestation on legal draft boundary",
+      "providerStates": [
+        {
+          "name": "legal ai edge accepts valid signed attestation"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/minuta",
+        "headers": {
+          "Content-Type": "application/json",
+          "X-PJB-Origin-Id": "edge-app",
+          "X-PJB-Timestamp": "2026-04-20T12:00:00Z",
+          "X-PJB-Body-Hash": "21c03fa918be1ced0667e58b7665685a9b90702fa1bfa96d5e3614da5ef749fd",
+          "X-PJB-Signature-Alg": "HMAC-SHA256",
+          "X-PJB-Signature": "rjwQPhHkibm1wkHAcMqNE8PVUNMpjiiVsFi8CJMgajM="
+        },
+        "body": {
+          "analiseV1": "Análise v1",
+          "peticaoInicialText": "Texto inicial",
+          "instrucoes": "Instruções",
+          "objetivo": "Gerar minuta",
+          "userProfile": "ADVOGADO",
+          "processoId": "PROC-1",
+          "ramo": "CIVEL",
+          "rito": "COMUM",
+          "classe": "OBRIGACAO_DE_FAZER",
+          "attachments": [
+            "documento.pdf"
+          ],
+          "contexto": {
+            "sourceSystem": "CNJ"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "X-PJB-Origin-Mode": "SIGNED_ATTESTATION",
+          "X-PJB-Origin-Subject": "edge-app"
+        },
+        "body": {
+          "status": "PROMOTED",
+          "safeguards": {
+            "signedOrigin": "edge-app"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "accept valid signed attestation on legal grounding boundary",
+      "providerStates": [
+        {
+          "name": "legal ai edge accepts valid signed attestation"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/grounding/check",
+        "headers": {
+          "Content-Type": "application/json",
+          "X-PJB-Origin-Id": "edge-app",
+          "X-PJB-Timestamp": "2026-04-20T12:00:00Z",
+          "X-PJB-Body-Hash": "ffb05a87fc9e1dcfbe0e54a5c9e3109569ca60dfdfd3ae8f917b71c15360df78",
+          "X-PJB-Signature-Alg": "HMAC-SHA256",
+          "X-PJB-Signature": "NtEf2HT/vWqpYwFI15tBcqjRyrG/GAhP28iZws44qmU="
+        },
+        "body": {
+          "texto": "Verificar consistência das citações do acórdão.",
+          "ramo": "CIVEL",
+          "rito": "COMUM",
+          "classe": "OBRIGACAO_DE_FAZER",
+          "citacoes": [
+            "AgInt no REsp 1"
+          ],
+          "contexto": {
+            "sourceSystem": "CNJ"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "X-PJB-Origin-Mode": "SIGNED_ATTESTATION",
+          "X-PJB-Origin-Subject": "edge-app"
+        },
+        "body": {
+          "status": "ALIGNED",
+          "groundingPromotionStatus": "PROMOTED",
+          "trace": {
+            "signedOrigin": "edge-app"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "accept valid signed attestation on legal conversation boundary",
+      "providerStates": [
+        {
+          "name": "legal ai edge accepts valid signed attestation"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/conversation",
+        "headers": {
+          "Content-Type": "application/json",
+          "X-PJB-Origin-Id": "edge-app",
+          "X-PJB-Timestamp": "2026-04-20T12:00:00Z",
+          "X-PJB-Body-Hash": "4df78ae5fd54cede4f42f5d234ef4b398802ececf8b53f698a30c0422e8d5545",
+          "X-PJB-Signature-Alg": "HMAC-SHA256",
+          "X-PJB-Signature": "roBNiUyig5M/Vj8ak7K0YJmEclSlBTQz2sQS/5CG9Uo="
+        },
+        "body": {
+          "conversationId": "conv-http",
+          "processoId": "PROC-1",
+          "message": "Preciso validar o cabimento recursal com base no acórdão anexado.",
+          "userProfile": "ADVOGADO",
+          "conversationHistory": [
+            "Contexto anterior"
+          ],
+          "attachments": [
+            "acordao.pdf"
+          ],
+          "contexto": {
+            "sourceSystem": "CNJ",
+            "sigilo": "publico"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "X-PJB-Origin-Mode": "SIGNED_ATTESTATION",
+          "X-PJB-Origin-Subject": "edge-app"
+        },
+        "body": {
+          "safeguards": {
+            "approvalStatus": "AUTO_READONLY",
+            "signedOrigin": "edge-app"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "reject signed request without origin id on legal conversation boundary",
+      "providerStates": [
+        {
+          "name": "legal ai edge rejects signed request without origin id"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/conversation",
+        "headers": {
+          "Content-Type": "application/json",
+          "X-PJB-Timestamp": "2026-04-20T12:00:00Z",
+          "X-PJB-Body-Hash": "4df78ae5fd54cede4f42f5d234ef4b398802ececf8b53f698a30c0422e8d5545",
+          "X-PJB-Signature": "roBNiUyig5M/Vj8ak7K0YJmEclSlBTQz2sQS/5CG9Uo="
+        },
+        "body": {
+          "conversationId": "conv-http",
+          "processoId": "PROC-1",
+          "message": "Preciso validar o cabimento recursal com base no acórdão anexado.",
+          "userProfile": "ADVOGADO",
+          "conversationHistory": [
+            "Contexto anterior"
+          ],
+          "attachments": [
+            "acordao.pdf"
+          ],
+          "contexto": {
+            "sourceSystem": "CNJ",
+            "sigilo": "publico"
+          }
+        }
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "type": "https://pjb.local/problems/signed_origin_id_required",
+          "title": "Origin Governance Rejected",
+          "status": 401,
+          "detail": "Cabecalho X-PJB-Origin-Id eh obrigatorio para atestacao assinada.",
+          "instance": "/api/ai/legal/conversation"
+        },
+        "headers": {
+          "Content-Type": "application/problem+json"
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "reject signed request with invalid signature on legal grounding boundary",
+      "providerStates": [
+        {
+          "name": "legal ai edge rejects signed request with invalid signature"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/grounding/check",
+        "headers": {
+          "Content-Type": "application/json",
+          "X-PJB-Origin-Id": "edge-app",
+          "X-PJB-Timestamp": "2026-04-20T12:00:00Z",
+          "X-PJB-Body-Hash": "ffb05a87fc9e1dcfbe0e54a5c9e3109569ca60dfdfd3ae8f917b71c15360df78",
+          "X-PJB-Signature": "KNFZOWGtEcz+KeOCNxwIq6uXvlQf7QVZ3rdduRPY6qU="
+        },
+        "body": {
+          "texto": "Verificar consistência das citações do acórdão.",
+          "ramo": "CIVEL",
+          "rito": "COMUM",
+          "classe": "OBRIGACAO_DE_FAZER",
+          "citacoes": [
+            "AgInt no REsp 1"
+          ],
+          "contexto": {
+            "sourceSystem": "CNJ"
+          }
+        }
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "type": "https://pjb.local/problems/signed_origin_signature_invalid",
+          "title": "Origin Governance Rejected",
+          "status": 401,
+          "detail": "Assinatura de origem da borda nao confere com o material atestado.",
+          "instance": "/api/ai/legal/grounding/check"
+        },
+        "headers": {
+          "Content-Type": "application/problem+json"
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "reject signed request with mismatched body hash on legal draft boundary",
+      "providerStates": [
+        {
+          "name": "legal ai edge rejects signed request with mismatched body hash"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/minuta",
+        "headers": {
+          "Content-Type": "application/json",
+          "X-PJB-Origin-Id": "edge-app",
+          "X-PJB-Timestamp": "2026-04-20T12:00:00Z",
+          "X-PJB-Body-Hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "X-PJB-Signature": "CC4pDHf9PIuejRtJVP13bOs1gCHG/TTQ+9/XUrAnsG4="
+        },
+        "body": {
+          "analiseV1": "Análise v1",
+          "peticaoInicialText": "Texto inicial",
+          "instrucoes": "Instruções",
+          "objetivo": "Gerar minuta",
+          "userProfile": "ADVOGADO",
+          "processoId": "PROC-1",
+          "ramo": "CIVEL",
+          "rito": "COMUM",
+          "classe": "OBRIGACAO_DE_FAZER",
+          "attachments": [
+            "documento.pdf"
+          ],
+          "contexto": {
+            "sourceSystem": "CNJ"
+          }
+        }
+      },
+      "response": {
+        "status": 409,
+        "body": {
+          "code": "BODY_HASH_MISMATCH",
+          "message": "Body hash não confere."
+        }
+      },
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "coverage": {
+    "status": {
+      "officialReady": "OFFICIAL_READY",
+      "officialPlusDoctrineReady": "OFFICIAL_PLUS_DOCTRINE_READY"
+    },
+    "mode": {
+      "officialPrimary": "OFFICIAL_PRIMARY_ONLY",
+      "officialPlusDoctrine": "OFFICIAL_PLUS_LICENSED_DOCTRINE"
+    },
+    "policyNotes": {
+      "doctrineSeparateLane": "Doutrina deve permanecer em lane separada de legislação e jurisprudência, com peso inferior à fonte oficial quando houver conflito."
+    }
+  },
+  "catalog": {
+    "healthStatusReady": "READY",
+    "healthStatusInvalid": "INVALID"
+  }
+}

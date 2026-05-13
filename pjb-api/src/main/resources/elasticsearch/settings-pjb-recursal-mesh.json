@@ -1,0 +1,9 @@
+{
+  "analysis": {
+    "analyzer": {
+      "brazilian": {
+        "type": "brazilian"
+      }
+    }
+  }
+}

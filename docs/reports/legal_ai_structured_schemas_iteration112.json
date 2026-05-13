@@ -1,0 +1,46 @@
+{
+  "round": 112,
+  "title": "Legal AI Structured Schemas",
+  "status": "completed_with_honest_validation",
+  "deliverables": [
+    "LegalAiStructuredSchemaCatalog",
+    "LegalAiSchemaDefinition",
+    "LegalAiSchemaField",
+    "LegalAiTriageSchema",
+    "LegalAiChecklistSchema",
+    "LegalAiProceduralPlanSchema",
+    "LegalAiParecerSchema",
+    "LegalAiRiskReportSchema",
+    "LegalAiDraftEnvelopeSchema",
+    "LegalAiDespachoSchema",
+    "LegalAiDecisaoSchema"
+  ],
+  "conversationContextAdds": [
+    "juridicaStructuredSchemaCatalog",
+    "juridicaRecommendedSchema"
+  ],
+  "conversationSafeguardsAdds": [
+    "recommendedSchemaId",
+    "recommendedSchemaLabel",
+    "recommendedSchemaStage"
+  ],
+  "researchTraceAdds": [
+    "recommendedStructuredSchema",
+    "structuredSchemaCatalog"
+  ],
+  "validation": {
+    "runtimeConcurrencyGuard": "passed",
+    "architectureHygieneGuard": "passed",
+    "constructorInjectionGuard": "passed",
+    "configTaxonomyGuard": "passed",
+    "transactionalHotspotGuard": "passed",
+    "repositoryLayoutGuard": "passed",
+    "targetedJavacMain": "passed",
+    "targetedJavacTests": "passed"
+  },
+  "claims_not_made": [
+    "global_maven_green_build",
+    "full_pjb_api_compile",
+    "stable_docker"
+  ]
+}

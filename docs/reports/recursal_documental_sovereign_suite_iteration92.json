@@ -1,0 +1,45 @@
+{
+  "round": 92,
+  "title": "recursal_documental_sovereign_suite",
+  "status": "implemented",
+  "delivered": {
+    "routes": [
+      "/api/v1/processual/recursal/document-viewer",
+      "/api/v1/processual/recursal/document-authenticity",
+      "/api/v1/processual/recursal/document-signature-evidence"
+    ],
+    "labels": [
+      "RecursalDocumentalLabels"
+    ],
+    "dto": [
+      "RecursalDocumentalArtifactRequest",
+      "RecursalDocumentViewerResponse",
+      "RecursalDocumentAuthenticityResponse",
+      "RecursalDocumentSignatureEvidenceResponse"
+    ],
+    "services": [
+      "RecursalDocumentalSovereignSuiteService"
+    ],
+    "controllers": [
+      "RecursalDocumentalSovereignSuiteController"
+    ],
+    "tests": [
+      "RecursalDocumentalSovereignSuiteServiceTest",
+      "RecursalDocumentalSovereignSuiteControllerIT",
+      "RecursalDocumentalSovereignSuiteRound92ArchitectureTest"
+    ]
+  },
+  "validation": {
+    "targetedJavacWithStubs": true,
+    "localRunner": true,
+    "runtimeConcurrencyGuard": true,
+    "globalMavenGreen": false,
+    "pjbApiFullCompile": false,
+    "dockerStable": false
+  },
+  "remaining": [
+    "federated external signature validation for institutional boundaries",
+    "mobile and notification governance without satellite scheduler",
+    "global compile recovery of pjb-api"
+  ]
+}

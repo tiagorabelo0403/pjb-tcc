@@ -1,0 +1,10 @@
+{
+  "cluster": "controller/processual/playbook",
+  "round": 48,
+  "files_checked": 5,
+  "imports_checked": 5,
+  "issues": [],
+  "old_controller_refs": [],
+  "trailing_whitespace": [],
+  "root_java_files": []
+}

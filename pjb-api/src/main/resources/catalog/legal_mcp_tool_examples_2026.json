@@ -1,0 +1,74 @@
+[
+  {
+    "exampleId": "EXAMPLE_PRECEDENT_SEARCH_CITATION_FIRST",
+    "toolId": "precedent.search",
+    "title": "Buscar precedentes antes de redigir tese",
+    "usagePattern": "Primeiro localiza a base; depois restringe por tribunal, tema e recorte temporal.",
+    "invocationTemplate": "precedent.search({ tribunal: 'STJ', tema: 'responsabilidade civil', citationFirst: true })",
+    "safeWhen": "Quando a tarefa exige tese, parecer ou minuta citation-first"
+  },
+  {
+    "exampleId": "EXAMPLE_PRECEDENT_LINEAGE_TRACE_AUTHORITY",
+    "toolId": "precedent.lineage.trace",
+    "title": "Confirmar linhagem e autoridade do precedente",
+    "usagePattern": "Rastreia se a tese continua íntegra, limitada ou superada.",
+    "invocationTemplate": "precedent.lineage.trace({ precedenteId: 'tema_x', includeOverruling: true })",
+    "safeWhen": "Quando há risco de citar precedente superado ou parcialmente limitado"
+  },
+  {
+    "exampleId": "EXAMPLE_PROCESSUAL_COMPETENCE_ROUTE",
+    "toolId": "processual.competence.route",
+    "title": "Roteamento de competência e órgão",
+    "usagePattern": "Resolve competência por ramo, rito, fase e recorte territorial.",
+    "invocationTemplate": "processual.competence.route({ ramo: 'civel', rito: 'comum', fase: 'recursal' })",
+    "safeWhen": "Quando o plano precisa validar o órgão correto antes de concluir"
+  },
+  {
+    "exampleId": "EXAMPLE_PROCESSUAL_CABIMENTO_CHECK",
+    "toolId": "processual.cabimento.check",
+    "title": "Checagem de cabimento recursal",
+    "usagePattern": "Valida cabimento pelo ato atacado e fase processual.",
+    "invocationTemplate": "processual.cabimento.check({ ato: 'sentenca', recurso: 'apelacao' })",
+    "safeWhen": "Quando há dúvida de cabimento ou risco de erro recursal"
+  },
+  {
+    "exampleId": "EXAMPLE_DOCUMENT_SIGNATURE_VERIFY",
+    "toolId": "document.signature.verify",
+    "title": "Verificar assinatura antes de usar o anexo",
+    "usagePattern": "Confirma integridade, certificado e aderência da assinatura.",
+    "invocationTemplate": "document.signature.verify({ attachmentId: 'peticao.pdf', strict: true })",
+    "safeWhen": "Quando o anexo pode influenciar tese, prova ou protocolo"
+  },
+  {
+    "exampleId": "EXAMPLE_DOCUMENT_PROVENANCE_INSPECT",
+    "toolId": "document.provenance.inspect",
+    "title": "Inspecionar proveniência do documento",
+    "usagePattern": "Liga o anexo à cadeia de custódia e bloqueia contexto sem fonte confiável.",
+    "invocationTemplate": "document.provenance.inspect({ attachmentId: 'laudo.pdf', requireSignedContext: true })",
+    "safeWhen": "Quando há sigilo, quarentena ou risco de injeção documental"
+  },
+  {
+    "exampleId": "EXAMPLE_DOCUMENT_ATTACHMENT_MANIFEST",
+    "toolId": "document.attachment.manifest",
+    "title": "Montar manifesto mínimo de anexos",
+    "usagePattern": "Resume o conjunto documental antes de ampliar o contexto.",
+    "invocationTemplate": "document.attachment.manifest({ attachments: ['peticao.pdf', 'laudo.pdf'] })",
+    "safeWhen": "Quando a conversa tem muitos anexos ou histórico profundo"
+  },
+  {
+    "exampleId": "EXAMPLE_PRAZO_CALENDAR_SIMULATE",
+    "toolId": "prazos.calendar.simulate",
+    "title": "Simular linha do tempo de prazo",
+    "usagePattern": "Calcula marco inicial, suspensão, feriados e data-limite.",
+    "invocationTemplate": "prazos.calendar.simulate({ ato: 'intimacao', data: '2026-04-18', ramo: 'civel' })",
+    "safeWhen": "Quando a resposta trata de prazo, tempestividade ou risco de perda"
+  },
+  {
+    "exampleId": "EXAMPLE_INTEROPERABILITY_CASE_GENEALOGY",
+    "toolId": "interoperability.case.genealogy",
+    "title": "Rastrear genealogia multissistema",
+    "usagePattern": "Consolida origem, vínculo e continuidade entre sistemas legados.",
+    "invocationTemplate": "interoperability.case.genealogy({ numeroProcesso: '000...', includeLegacyRoots: true })",
+    "safeWhen": "Quando o processo transita entre PJe, eproc, e-SAJ ou PJB"
+  }
+]

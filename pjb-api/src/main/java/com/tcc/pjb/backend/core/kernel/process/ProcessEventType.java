@@ -1,0 +1,14 @@
+package com.tcc.pjb.backend.core.kernel.process;
+public enum ProcessEventType {
+    PROCESS_CREATED,
+    PROCESS_AUTUADO,
+    PHASE_CHANGED,
+    RITO_CHANGED,
+    SIGILO_CHANGED,
+    MOVEMENT_RECORDED,
+    DOCUMENT_ADDED,
+    DOCUMENTS_BULK_ADDED,
+    DECISION_ISSUED,
+    RECURSO_INTERPOSTO,
+    RECURSO_JULGADO
+}

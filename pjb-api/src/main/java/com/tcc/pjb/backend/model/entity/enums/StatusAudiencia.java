@@ -1,0 +1,38 @@
+package com.tcc.pjb.backend.model.entity.enums;
+
+public enum StatusAudiencia {
+
+    
+    AGENDADA,
+    REDESIGNADA,
+    ADIADA,
+
+    
+    CANCELADA,
+    SUSPENSA,
+    INTERROMPIDA,
+    PROBLEMA_TECNICO,
+    SEM_COMPARECIMENTO_AUTOR,
+    SEM_COMPARECIMENTO_REU,
+    SEM_COMPARECIMENTO_AMBOS,
+
+    
+    REALIZADA,
+
+    
+    ACORDO_TOTAL,
+    ACORDO_PARCIAL,
+    ACORDO_CONDICIONADO,
+    ACORDO_PENDENTE_HOMOLOGACAO,
+
+    
+    DESISTENCIA_DA_ACAO,
+    RECONHECIMENTO_DO_PEDIDO,
+    NECESSIDADE_DE_PERICIA,
+    PRAZO_PARA_MEMORIAIS,
+
+    
+    ENCERRADA,
+    FRUSTRADA,
+
+}

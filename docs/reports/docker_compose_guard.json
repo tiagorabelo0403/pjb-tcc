@@ -1,0 +1,184 @@
+{
+  "ok": true,
+  "composeFiles": [
+    "docker-compose.yml",
+    "docker-compose.read-replica.yml",
+    "docker-compose.ha.yml",
+    "docker-compose.n8n.yml"
+  ],
+  "combinations": {
+    "base": {
+      "files": [
+        "docker-compose.yml"
+      ],
+      "ok": true,
+      "violations": [],
+      "notices": [
+        {
+          "combo": "base",
+          "service": "backend",
+          "message": "serviço ficou sob profile app para não bloquear a subida da infraestrutura enquanto o pjb-api segue em recuperação de compile."
+        },
+        {
+          "combo": "base",
+          "service": "elasticsearch",
+          "message": "heap default local fixado em 512m com xpack.ml.enabled=false para reduzir falha de subida por pressão de memória."
+        }
+      ]
+    },
+    "base+replica": {
+      "files": [
+        "docker-compose.yml",
+        "docker-compose.read-replica.yml"
+      ],
+      "ok": true,
+      "violations": [],
+      "notices": [
+        {
+          "combo": "base+replica",
+          "service": "backend",
+          "message": "serviço ficou sob profile app para não bloquear a subida da infraestrutura enquanto o pjb-api segue em recuperação de compile."
+        },
+        {
+          "combo": "base+replica",
+          "service": "elasticsearch",
+          "message": "heap default local fixado em 512m com xpack.ml.enabled=false para reduzir falha de subida por pressão de memória."
+        }
+      ]
+    },
+    "base+ha": {
+      "files": [
+        "docker-compose.yml",
+        "docker-compose.ha.yml"
+      ],
+      "ok": true,
+      "violations": [],
+      "notices": [
+        {
+          "combo": "base+ha",
+          "service": "backend",
+          "message": "serviço ficou sob profile app para não bloquear a subida da infraestrutura enquanto o pjb-api segue em recuperação de compile."
+        },
+        {
+          "combo": "base+ha",
+          "service": "elasticsearch",
+          "message": "heap default local fixado em 512m com xpack.ml.enabled=false para reduzir falha de subida por pressão de memória."
+        },
+        {
+          "combo": "base+ha",
+          "service": "pgbouncer-ro",
+          "message": "fallback padrão da rota ro aponta para postgres, permitindo HA local sem read replica obrigatória."
+        }
+      ]
+    },
+    "base+ha+replica": {
+      "files": [
+        "docker-compose.yml",
+        "docker-compose.ha.yml",
+        "docker-compose.read-replica.yml"
+      ],
+      "ok": true,
+      "violations": [],
+      "notices": [
+        {
+          "combo": "base+ha+replica",
+          "service": "backend",
+          "message": "serviço ficou sob profile app para não bloquear a subida da infraestrutura enquanto o pjb-api segue em recuperação de compile."
+        },
+        {
+          "combo": "base+ha+replica",
+          "service": "elasticsearch",
+          "message": "heap default local fixado em 512m com xpack.ml.enabled=false para reduzir falha de subida por pressão de memória."
+        },
+        {
+          "combo": "base+ha+replica",
+          "service": "pgbouncer-ro",
+          "message": "fallback padrão da rota ro aponta para postgres, permitindo HA local sem read replica obrigatória."
+        }
+      ]
+    },
+    "base+n8n": {
+      "files": [
+        "docker-compose.yml",
+        "docker-compose.n8n.yml"
+      ],
+      "ok": true,
+      "violations": [],
+      "notices": [
+        {
+          "combo": "base+n8n",
+          "service": "backend",
+          "message": "serviço ficou sob profile app para não bloquear a subida da infraestrutura enquanto o pjb-api segue em recuperação de compile."
+        },
+        {
+          "combo": "base+n8n",
+          "service": "elasticsearch",
+          "message": "heap default local fixado em 512m com xpack.ml.enabled=false para reduzir falha de subida por pressão de memória."
+        }
+      ]
+    }
+  },
+  "violations": [],
+  "notices": [
+    {
+      "combo": "base",
+      "service": "backend",
+      "message": "serviço ficou sob profile app para não bloquear a subida da infraestrutura enquanto o pjb-api segue em recuperação de compile."
+    },
+    {
+      "combo": "base",
+      "service": "elasticsearch",
+      "message": "heap default local fixado em 512m com xpack.ml.enabled=false para reduzir falha de subida por pressão de memória."
+    },
+    {
+      "combo": "base+replica",
+      "service": "backend",
+      "message": "serviço ficou sob profile app para não bloquear a subida da infraestrutura enquanto o pjb-api segue em recuperação de compile."
+    },
+    {
+      "combo": "base+replica",
+      "service": "elasticsearch",
+      "message": "heap default local fixado em 512m com xpack.ml.enabled=false para reduzir falha de subida por pressão de memória."
+    },
+    {
+      "combo": "base+ha",
+      "service": "backend",
+      "message": "serviço ficou sob profile app para não bloquear a subida da infraestrutura enquanto o pjb-api segue em recuperação de compile."
+    },
+    {
+      "combo": "base+ha",
+      "service": "elasticsearch",
+      "message": "heap default local fixado em 512m com xpack.ml.enabled=false para reduzir falha de subida por pressão de memória."
+    },
+    {
+      "combo": "base+ha",
+      "service": "pgbouncer-ro",
+      "message": "fallback padrão da rota ro aponta para postgres, permitindo HA local sem read replica obrigatória."
+    },
+    {
+      "combo": "base+ha+replica",
+      "service": "backend",
+      "message": "serviço ficou sob profile app para não bloquear a subida da infraestrutura enquanto o pjb-api segue em recuperação de compile."
+    },
+    {
+      "combo": "base+ha+replica",
+      "service": "elasticsearch",
+      "message": "heap default local fixado em 512m com xpack.ml.enabled=false para reduzir falha de subida por pressão de memória."
+    },
+    {
+      "combo": "base+ha+replica",
+      "service": "pgbouncer-ro",
+      "message": "fallback padrão da rota ro aponta para postgres, permitindo HA local sem read replica obrigatória."
+    },
+    {
+      "combo": "base+n8n",
+      "service": "backend",
+      "message": "serviço ficou sob profile app para não bloquear a subida da infraestrutura enquanto o pjb-api segue em recuperação de compile."
+    },
+    {
+      "combo": "base+n8n",
+      "service": "elasticsearch",
+      "message": "heap default local fixado em 512m com xpack.ml.enabled=false para reduzir falha de subida por pressão de memória."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "round": 118,
+  "title": "legal_ai_session_doctor",
+  "artifacts": [
+    "LegalAiConversationSessionDoctorSnapshot",
+    "LegalAiConversationSessionDoctorService"
+  ],
+  "integrations": [
+    "LegalAiConversationOrchestrator",
+    "LegalToolScopePolicy",
+    "LegalSensitiveActionApprovalService",
+    "LegalAiConversationResponseComposerService"
+  ],
+  "outcomes": [
+    "surface_freeze_on_session_drift",
+    "skill_and_example_reuse_freeze",
+    "approval_lane_escalation_from_session_doctor"
+  ]
+}

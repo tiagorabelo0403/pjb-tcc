@@ -1,0 +1,38 @@
+{
+  "round": 90,
+  "theme": "specialized recursal surfaces",
+  "entered": [
+    "RecursalSpecializedSurfaceResponse",
+    "RecursalOperationalSurfaceAxisDefinition",
+    "RecursalOperationalSurfaceCatalog",
+    "RecursalOperationalSurfaceProjectionSupport",
+    "RecursalAttorneySurfaceService",
+    "RecursalInstitutionalSurfaceService",
+    "RecursalDocumentalSurfaceService",
+    "RecursalIntelligenceSurfaceService",
+    "RecursalAttorneySurfaceController",
+    "RecursalInstitutionalSurfaceController",
+    "RecursalDocumentalSurfaceController",
+    "RecursalIntelligenceSurfaceController",
+    "RecursalRoutes.SURFACES_ATTORNEY",
+    "RecursalRoutes.SURFACES_INSTITUTIONAL",
+    "RecursalRoutes.SURFACES_DOCUMENTAL",
+    "RecursalRoutes.SURFACES_INTELLIGENCE",
+    "RecursalSpecializedSurfaceServicesTest",
+    "RecursalSpecializedSurfaceRound90ArchitectureTest"
+  ],
+  "validated": {
+    "directedJavacWithStubs": true,
+    "localRunner": true,
+    "runtimeConcurrencyGuard": true,
+    "globalMavenGreen": false,
+    "globalPjbApiCompile": false,
+    "dockerStable": false
+  },
+  "stillMissing": [
+    "provider contracts and integration tests per specialized surface",
+    "sovereign viewer/authenticity/signature documentary suite",
+    "mobile notification governance without parallel scheduler",
+    "global compile recovery of pjb-api"
+  ]
+}

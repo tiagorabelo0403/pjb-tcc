@@ -1,0 +1,23 @@
+spring:
+  main:
+    web-application-type: none
+  data:
+    elasticsearch:
+      repositories:
+        enabled: false
+    redis:
+      repositories:
+        enabled: false
+pjb:
+  cache:
+    redis:
+      enabled: true
+  live:
+    cluster:
+      enabled: true
+  kafka:
+    enabled: false
+  search:
+    enabled: false
+  scheduling:
+    enabled: false

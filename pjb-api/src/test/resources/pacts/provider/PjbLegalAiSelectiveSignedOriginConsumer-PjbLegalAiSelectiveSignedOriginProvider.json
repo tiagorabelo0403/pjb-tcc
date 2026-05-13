@@ -1,0 +1,187 @@
+{
+  "consumer": {
+    "name": "PjbLegalAiSelectiveSignedOriginConsumer"
+  },
+  "provider": {
+    "name": "PjbLegalAiSelectiveSignedOriginProvider"
+  },
+  "interactions": [
+    {
+      "description": "legal ai conversation accepts trusted browser for non sensitive capability",
+      "providerState": "legal ai conversation accepts trusted browser for non sensitive capability",
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/conversation",
+        "headers": {
+          "Content-Type": "application/json",
+          "Origin": "https://app.pjb.justica.br"
+        },
+        "body": {
+          "conversationId": "conv-http",
+          "processoId": "PROC-1",
+          "message": "Preciso validar o cabimento recursal com base no acórdão anexado.",
+          "userProfile": "ADVOGADO",
+          "history": [
+            "Contexto anterior"
+          ],
+          "attachments": [
+            "acordao.pdf"
+          ],
+          "context": {
+            "sourceSystem": "CNJ",
+            "sigilo": "publico",
+            "requestedCapability": "LEGAL_GENERAL_ASSIST_V3"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json",
+          "X-PJB-Origin-Mode": "BROWSER_ALLOWLIST",
+          "X-PJB-Origin-Requirement": "BROWSER_OR_SIGNED",
+          "X-PJB-Origin-Capability": "LEGAL_GENERAL_ASSIST_V3"
+        },
+        "body": {
+          "conversationId": "conv-selective",
+          "version": "V3",
+          "capability": "LEGAL_GENERAL_ASSIST_V3",
+          "answer": "Resposta juridica governada pela politica seletiva de origem.",
+          "nextSteps": [
+            "Preservar a cerca soberana por capability sensivel."
+          ],
+          "virtualTrends": [
+            {
+              "virtualTrend": "VT_SELECTIVE_SIGNED",
+              "action": "Exigir canal assinado apenas nas capabilities sensiveis."
+            }
+          ],
+          "trace": {
+            "conversationApproval": {
+              "status": "AUTO_READONLY"
+            }
+          },
+          "safeguards": {
+            "approvalStatus": "AUTO_READONLY"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "legal ai conversation requires signed attestation for sensitive capability",
+      "providerState": "legal ai conversation requires signed attestation for sensitive capability",
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/conversation",
+        "headers": {
+          "Content-Type": "application/json",
+          "Origin": "https://app.pjb.justica.br"
+        },
+        "body": {
+          "conversationId": "conv-http",
+          "processoId": "PROC-1",
+          "message": "Preciso validar o cabimento recursal com base no acórdão anexado.",
+          "userProfile": "ADVOGADO",
+          "history": [
+            "Contexto anterior"
+          ],
+          "attachments": [
+            "acordao.pdf"
+          ],
+          "context": {
+            "sourceSystem": "CNJ",
+            "sigilo": "publico",
+            "requestedCapability": "LEGAL_DRAFT_V2"
+          }
+        }
+      },
+      "response": {
+        "status": 403,
+        "headers": {
+          "Content-Type": "application/problem+json"
+        },
+        "body": {
+          "type": "https://pjb.local/problems/signed_attestation_required_for_capability",
+          "title": "Origin Governance Rejected",
+          "status": 403,
+          "detail": "Capability juridica sensivel exige atestacao assinada de origem, mesmo sob browser governado na borda.",
+          "instance": "/api/ai/legal/conversation"
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "legal ai conversation accepts signed attestation for sensitive capability",
+      "providerState": "legal ai conversation accepts signed attestation for sensitive capability",
+      "request": {
+        "method": "POST",
+        "path": "/api/ai/legal/conversation",
+        "headers": {
+          "Content-Type": "application/json",
+          "Origin": "https://app.pjb.justica.br",
+          "X-PJB-Origin-Id": "edge-app",
+          "X-PJB-Timestamp": "2026-04-21T12:00:00Z",
+          "X-PJB-Body-Hash": "b6bc85ed67640a38a315e99c4384a3ad7b350f9c2e5921796c66245be5ebb96d",
+          "X-PJB-Signature": "ZnkLzaf23MaUfTALdCi4QnwKV/Gh364wjSjFq6eqz6E="
+        },
+        "body": {
+          "conversationId": "conv-http",
+          "processoId": "PROC-1",
+          "message": "Preciso validar o cabimento recursal com base no acórdão anexado.",
+          "userProfile": "ADVOGADO",
+          "history": [
+            "Contexto anterior"
+          ],
+          "attachments": [
+            "acordao.pdf"
+          ],
+          "context": {
+            "sourceSystem": "CNJ",
+            "sigilo": "publico",
+            "requestedCapability": "LEGAL_DRAFT_V2"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json",
+          "X-PJB-Origin-Mode": "SIGNED_ATTESTATION",
+          "X-PJB-Origin-Requirement": "SIGNED_REQUIRED",
+          "X-PJB-Origin-Capability": "LEGAL_DRAFT_V2",
+          "X-PJB-Origin-Subject": "edge-app"
+        },
+        "body": {
+          "conversationId": "conv-selective",
+          "version": "V3",
+          "capability": "LEGAL_GENERAL_ASSIST_V3",
+          "answer": "Resposta juridica governada pela politica seletiva de origem.",
+          "nextSteps": [
+            "Preservar a cerca soberana por capability sensivel."
+          ],
+          "virtualTrends": [
+            {
+              "virtualTrend": "VT_SELECTIVE_SIGNED",
+              "action": "Exigir canal assinado apenas nas capabilities sensiveis."
+            }
+          ],
+          "trace": {
+            "conversationApproval": {
+              "status": "AUTO_READONLY"
+            }
+          },
+          "safeguards": {
+            "approvalStatus": "AUTO_READONLY"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  }
+}

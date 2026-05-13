@@ -1,0 +1,23 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: pjb-api
+spec:
+  minReplicaCount: 6
+  maxReplicaCount: 32
+  fallback:
+    failureThreshold: 3
+    replicas: 8
+    behavior: currentReplicasIfHigher
+  advanced:
+    horizontalPodAutoscalerConfig:
+      name: keda-hpa-pjb-api-crisis
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 900
+          tolerance: 0.12
+          policies:
+            - type: Percent
+              value: 10
+              periodSeconds: 60
+          selectPolicy: Max

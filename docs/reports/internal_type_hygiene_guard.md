@@ -1,0 +1,167 @@
+# Internal Type Hygiene Guard
+
+- Base analisada: `pjb-api/src/main/java/com/tcc/pjb/backend`
+- Arquivos Java: **7189**
+- Threshold de tamanho: **900 linhas**
+- Arquivos sinalizados: **23**
+- Tipos internos detectados: **188**
+
+## Arquivos sinalizados
+
+- `pjb-api/src/main/java/com/tcc/pjb/backend/core/catalog/TpuClasseCnj.java` -> 920 linhas / 4 tipos internos
+  - L701 `enum RamoJustica`
+  - L707 `enum FaixaProcedimental`
+  - L723 `enum ParteCanonica`
+  - L792 `enum TribunalAlcada`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java` -> 1169 linhas / 13 tipos internos
+  - L50 `interface PerfilDestinatario`
+  - L59 `record PessoaFisica`
+  - L70 `record PessoaJuridica`
+  - L84 `record AdvogadoOab`
+  - L94 `record DefensorPublico`
+  - L101 `record MinisterioPublico`
+  - L108 `record FazendaPublica`
+  - L116 `record JuizoDeprecado`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/core/procedural/ProceduralIntelligenceAdvisor.java` -> 902 linhas / 2 tipos internos
+  - L890 `record CandidateNature`
+  - L893 `record SignalMatrix`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/inovacao/batna/FacilitadorBatnaService.java` -> 971 linhas / 12 tipos internos
+  - L88 `record ContextoProcesso`
+  - L112 `enum FaseProcessualBatna`
+  - L122 `record RelatorioBatna`
+  - L142 `record CustosLitigio`
+  - L155 `record TempoEstimado`
+  - L166 `record RiscoRecursal`
+  - L174 `record AnaliseFinanceiraIA`
+  - L186 `record DiagnosticoTeto`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/inovacao/radar/RadarPadroesService.java` -> 1030 linhas / 7 tipos internos
+  - L102 `enum TipoPadrao`
+  - L113 `enum NivelAlerta`
+  - L120 `record AlertaRadar`
+  - L143 `record FingerprintPeticao`
+  - L156 `record PerfilLitigante`
+  - L177 `record ContextoRadar`
+  - L196 `record AnaliseRadarResultado`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianePeticaoAssistService.java` -> 1144 linhas / 1 tipos internos
+  - L1142 `record DraftBundle`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/colegiado/NationalColegiadoEngine.java` -> 963 linhas / 13 tipos internos
+  - L56 `enum TipoSessao`
+  - L65 `enum TipoAcordao`
+  - L75 `enum StatusRepetitivo`
+  - L83 `record SessaoPauta`
+  - L114 `record ItemPauta`
+  - L140 `enum StatusItemPauta`
+  - L151 `record ResultadoVotacao`
+  - L180 `record VotoRegistrado`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/conciliacao/CejuscEngine.java` -> 1047 linhas / 12 tipos internos
+  - L63 `enum ModalidadeSessao`
+  - L74 `enum StatusSessaoCejusc`
+  - L84 `enum ResultadoConciliacao`
+  - L94 `record SessaoCejusc`
+  - L126 `record ParticipanteSessao`
+  - L143 `record TermoAcordo`
+  - L169 `record AnaliseAdequacaoMetodo`
+  - L184 `record ResultadoRegistro`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/cooperacao/CooperacaoJuridicaEngine.java` -> 1105 linhas / 11 tipos internos
+  - L45 `enum TipoCooperacao`
+  - L61 `enum StatusCooperacao`
+  - L72 `enum CanaisCooperacaoInternacional`
+  - L89 `record CartaPrecatoria`
+  - L113 `record CartaRogatoria`
+  - L134 `record PlanoCooperacao`
+  - L150 `record TriagemCooperacao`
+  - L164 `record MatrizConformidade`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/impedimento/ImpedimentoSuspeicaoEngine.java` -> 992 linhas / 9 tipos internos
+  - L41 `enum TipoConflito`
+  - L56 `enum StatusDeclaracao`
+  - L67 `enum FundamentoLegal`
+  - L87 `record DeclaracaoConflito`
+  - L113 `record ResultadoVerificacao`
+  - L138 `record ConflitoPotencial`
+  - L154 `record MatrizConflito`
+  - L172 `record PainelConformidade`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/notificacao/NotificacaoInteligentePJB.java` -> 1160 linhas / 10 tipos internos
+  - L62 `enum CanalNotificacao`
+  - L73 `enum TipoAlerta`
+  - L95 `enum UrgenciaMensagem`
+  - L103 `record NotificacaoPJB`
+  - L129 `record AlertaPrazoProativo`
+  - L143 `record ConfiguracaoNotificacao`
+  - L181 `record PrazoScanContext`
+  - L187 `record PainelNotificacao`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/transparencia/TransparenciaCnjEngine.java` -> 904 linhas / 11 tipos internos
+  - L60 `enum MetaCNJ`
+  - L76 `enum StatusConformidadeDataJud`
+  - L85 `enum PrioridadeGestao`
+  - L92 `record MetricaProcessual`
+  - L108 `record SlaProcessual`
+  - L123 `record DistribuicaoRamo`
+  - L131 `record RelatorioConformidadeCnj`
+  - L149 `record DashboardGerencial`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/platform/runtime/PjbRuntimePressureService.java` -> 985 linhas / 11 tipos internos
+  - L730 `record Snapshot`
+  - L874 `record ExecutorPressure`
+  - L890 `record DatasourcePressure`
+  - L908 `record SchedulerPressure`
+  - L919 `record PressureTrend`
+  - L927 `record DatasourceTrend`
+  - L935 `record SchedulerTrend`
+  - L942 `record MemoryTrend`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/service/advogado/LaianePeticaoInicialDraftService.java` -> 1013 linhas / 6 tipos internos
+  - L892 `enum SectionKind`
+  - L899 `record DraftComputation`
+  - L921 `record EstruturarRequest`
+  - L962 `record ProtocolarRequest`
+  - L967 `record ProtocolarResult`
+  - L978 `record DraftView`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/CalendarNativeOperationalEventAssemblerService.java` -> 922 linhas / 1 tipos internos
+  - L862 `record EventProfile`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/service/competencia/MapaCompetenciaDinamicoEngine.java` -> 1027 linhas / 3 tipos internos
+  - L49 `record CachedUnits`
+  - L994 `record DynamicRequest`
+  - L1014 `record Candidate`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java` -> 981 linhas / 32 tipos internos
+  - L645 `record DefaultCachePolicy`
+  - L648 `record CachePolicyRequest`
+  - L658 `record CachePolicyView`
+  - L670 `record JudicialSecretariatModelGovernanceView`
+  - L675 `record JudicialSecretariatModelRowView`
+  - L685 `record JudicialOperationalDeskGovernanceView`
+  - L690 `record JudicialOperationalDeskRowView`
+  - L698 `record JudicialOperationalActionGovernanceView`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/service/julgamento/coverage/JulgamentoCoverageIntelligenceService.java` -> 946 linhas / 2 tipos internos
+  - L872 `record CoverageCommand`
+  - L890 `class PaneAccumulator`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/peticionamento/PeticionamentoEditorBlueprintCatalogService.java` -> 1097 linhas / 3 tipos internos
+  - L1039 `record ResolveRequest`
+  - L1058 `record ResolvedEditorBlueprint`
+  - L1072 `record SectionDefinition`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/peticionamento/workspace/PeticionamentoInitialIntakeWorkspaceService.java` -> 1025 linhas / 2 tipos internos
+  - L1001 `record IntakeResult`
+  - L1011 `record SectionExtraction`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/distribuicao/ConfiguracaoDistribuicaoVaraService.java` -> 980 linhas / 8 tipos internos
+  - L46 `enum MotivoRestricao`
+  - L60 `record RestricaoOperacional`
+  - L100 `record PerfilVara`
+  - L309 `record FiltroDistribuicao`
+  - L338 `record ResultadoConsulta`
+  - L348 `record SugestaoRedistribuicao`
+  - L359 `record AtualizacaoOcupacao`
+  - L370 `record DashboardDistribuicao`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/perfil/PerfilInstanciaTribunalService.java` -> 918 linhas / 8 tipos internos
+  - L43 `enum TermoPadrao`
+  - L123 `record IdentidadeVisual`
+  - L168 `record ConfiguracaoUx`
+  - L217 `record ContatoInstitucional`
+  - L245 `record PerfilInstancia`
+  - L309 `record DiferencaTerminologica`
+  - L325 `record ResumoPerfil`
+  - L342 `record PluginBinding`
+- `pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/regras/TribunalRuleEngine.java` -> 903 linhas / 7 tipos internos
+  - L44 `enum NivelRegra`
+  - L67 `enum TipoValor`
+  - L76 `enum ModoSobrescrita`
+  - L82 `enum NivelDesvio`
+  - L89 `record ChaveRegra`
+  - L133 `record EntradaRegra`
+  - L231 `record ContextoResolucao`

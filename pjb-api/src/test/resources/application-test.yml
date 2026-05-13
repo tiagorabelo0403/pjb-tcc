@@ -1,0 +1,195 @@
+spring:
+  main:
+    lazy-initialization: true
+    web-application-type: none
+  task:
+    execution:
+      mode: force
+    scheduling:
+      enabled: false
+  sql:
+    init:
+      mode: never
+  cloud:
+    compatibility-verifier:
+      enabled: false
+    refresh:
+      enabled: false
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: deferred
+    redis:
+      repositories:
+        enabled: false
+    elasticsearch:
+      repositories:
+        enabled: false
+  datasource:
+    url: 'jdbc:h2:mem:pjbtest;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE DOMAIN IF NOT EXISTS JSONB AS JSON\;CREATE DOMAIN IF NOT EXISTS OID AS CLOB'
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+  flyway:
+    enabled: false
+  liquibase:
+    enabled: false
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+management:
+  defaults:
+    metrics:
+      export:
+        enabled: false
+  simple:
+    metrics:
+      export:
+        enabled: false
+  health:
+    defaults:
+      enabled: false
+  endpoints:
+    enabled-by-default: false
+
+resilience4j:
+  circuitbreaker:
+    metrics:
+      enabled: false
+  retry:
+    metrics:
+      enabled: false
+  bulkhead:
+    metrics:
+      enabled: false
+  thread-pool-bulkhead:
+    metrics:
+      enabled: false
+  timelimiter:
+    metrics:
+      enabled: false
+  ratelimiter:
+    metrics:
+      enabled: false
+
+camunda:
+  client:
+    enabled: false
+    zeebe:
+      enabled: false
+zeebe:
+  client:
+    enabled: false
+
+pjb:
+  ai:
+    vector:
+      mode: disabled
+  cache:
+    redis:
+      enabled: false
+  datasource:
+    routing:
+      enabled: false
+  debug:
+    enabled: false
+    jurisdiction:
+      enabled: false
+  gov:
+    registry:
+      enabled: false
+    vital-monitor:
+      enabled: false
+  integrations:
+    pje:
+      submission:
+        mock-enabled: false
+      mock-enabled: true
+  integration:
+    judicial:
+      mni:
+        enabled: false
+      mp:
+        enabled: false
+      pdpj:
+        enabled: false
+      pje:
+        enabled: false
+      projudi:
+        enabled: false
+  jobs:
+    dispatcher:
+      enabled: false
+    pg-listen:
+      enabled: false
+  kafka:
+    enabled: false
+  live:
+    cluster:
+      enabled: false
+  scheduling:
+    enabled: false
+  search:
+    enabled: false
+  secretariat:
+    enabled: false
+    ingest:
+      enabled: false
+  security:
+    honeypot:
+      enabled: false
+    perimeter:
+      origin-governance:
+        enabled: false
+      blocklist:
+        store: memory
+      ratelimit:
+        store: memory
+  sync:
+    ibge:
+      enabled: false
+  procedural:
+    bootstrap:
+      enabled: true
+      fail-fast: false
+      validate-legacy-boundary: true
+      source-roots: src/main/java
+  prazos:
+    seed:
+      enabled: false
+  runtime:
+    barrier:
+      integrations:
+        datajud: false
+        digitalizacao: false
+        dje: false
+        govbr: false
+        hsm: false
+        icp: false
+        judicial-financeiro: false
+        judicial-security: false
+        mni: false
+      features:
+        substituicao-nacional: false
+  outbox:
+    observability:
+      enabled: false
+
+logging:
+  level:
+    org.springframework.data.repository.config.RepositoryConfigurationDelegate: warn
+    org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport: warn
+    org.springframework.boot.autoconfigure.condition.ConditionEvaluationReportLogger: error
+    io.camunda: warn

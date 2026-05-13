@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_workflow_eleitoral"
+                  targetNamespace="https://pjb.local/bpmn/eleitoral">
+  <bpmn:process id="workflow_eleitoral" name="Workflow eleitoral" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Início" />
+    <bpmn:userTask id="Task_Protocolo" name="Protocolo inicial" />
+    <bpmn:userTask id="Task_Triagem" name="Triagem e saneamento" />
+    <bpmn:userTask id="Task_Decisao" name="Decisão inicial" />
+    <bpmn:endEvent id="EndEvent_1" name="Fim" />
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_Protocolo" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Protocolo" targetRef="Task_Triagem" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Triagem" targetRef="Task_Decisao" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_Decisao" targetRef="EndEvent_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_eleitoral">
+    <bpmndi:BPMNPlane id="BPMNPlane_eleitoral" bpmnElement="workflow_eleitoral">
+      <bpmndi:BPMNShape id="Shape_Start_eleitoral" bpmnElement="StartEvent_1">
+        <dc:Bounds x="100" y="100" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Protocolo_eleitoral" bpmnElement="Task_Protocolo">
+        <dc:Bounds x="190" y="78" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Triagem_eleitoral" bpmnElement="Task_Triagem">
+        <dc:Bounds x="380" y="78" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Decisao_eleitoral" bpmnElement="Task_Decisao">
+        <dc:Bounds x="590" y="78" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_eleitoral" bpmnElement="EndEvent_1">
+        <dc:Bounds x="810" y="100" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_1_eleitoral" bpmnElement="Flow_1">
+        <di:waypoint x="136" y="118" />
+        <di:waypoint x="190" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_2_eleitoral" bpmnElement="Flow_2">
+        <di:waypoint x="330" y="118" />
+        <di:waypoint x="380" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_3_eleitoral" bpmnElement="Flow_3">
+        <di:waypoint x="540" y="118" />
+        <di:waypoint x="590" y="118" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_4_eleitoral" bpmnElement="Flow_4">
+        <di:waypoint x="750" y="118" />
+        <di:waypoint x="810" y="118" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

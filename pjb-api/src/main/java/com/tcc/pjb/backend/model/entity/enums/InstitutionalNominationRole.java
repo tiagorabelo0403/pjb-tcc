@@ -1,0 +1,30 @@
+package com.tcc.pjb.backend.model.entity.enums;
+
+public enum InstitutionalNominationRole {
+    ADMINISTRADOR_INSTITUCIONAL,
+    DIRETORIA_FORUM,
+    SECRETARIA_FORUM,
+    TRIAGEM_ORGAO,
+    ASSESSORIA_INSTITUCIONAL,
+    TITULAR_INSTITUCIONAL,
+    AGENDADOR_AUDIENCIA,
+    AGENDADOR_CONCILIACAO,
+    APOIO_TECNICO,
+    GESTOR_DELEGACIA,
+    DIRETOR_UNIDADE_PRISIONAL,
+    GESTOR_CEJUSC,
+    GESTOR_CONTADORIA,
+    GESTOR_PSICOSSOCIAL,
+    GESTOR_CARTORIO_INTEGRADO;
+
+    public static final InstitutionalNominationRole GESTOR_INSTITUCIONAL = ADMINISTRADOR_INSTITUCIONAL;
+    public static final InstitutionalNominationRole MEMBRO_TITULAR = TITULAR_INSTITUCIONAL;
+
+    public boolean isGestaoMestre() {
+        return switch (this) {
+            case ADMINISTRADOR_INSTITUCIONAL, DIRETORIA_FORUM, GESTOR_DELEGACIA, DIRETOR_UNIDADE_PRISIONAL,
+                    GESTOR_CEJUSC, GESTOR_CONTADORIA, GESTOR_PSICOSSOCIAL, GESTOR_CARTORIO_INTEGRADO -> true;
+            default -> false;
+        };
+    }
+}

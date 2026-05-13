@@ -1,0 +1,11 @@
+package com.tcc.pjb.backend.service.processual.postarchive.tombstone;
+
+public enum ProcessoTombstoneStatus {
+    ACTIVE_VISIBLE,
+    ACTIVE_REEXPOSED_BY_SECRETARIAT,
+    ARCHIVED_VISIBLE_GRACE_PERIOD,
+    ARCHIVED_HIDDEN_BY_POLICY,
+    ARCHIVED_HIDDEN_SENSITIVE_GATE,
+    ARCHIVED_HIDDEN_INSTITUTIONAL_GATE,
+    ARCHIVED_HIDDEN_PARTY_GATE
+}

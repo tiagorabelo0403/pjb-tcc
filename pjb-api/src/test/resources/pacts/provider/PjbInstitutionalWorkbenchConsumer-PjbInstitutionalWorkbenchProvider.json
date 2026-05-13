@@ -1,0 +1,159 @@
+{
+  "consumer": {
+    "name": "PjbInstitutionalWorkbenchConsumer"
+  },
+  "provider": {
+    "name": "PjbInstitutionalWorkbenchProvider"
+  },
+  "interactions": [
+    {
+      "description": "load institutional workbench workspace",
+      "providerStates": [
+        {
+          "name": "institutional workbench workspace can be loaded"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/institucional/workbench"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "profile": {
+            "actorClass": "PROCURADORIA_FEDERAL",
+            "institutionalBranch": "PROCURADORIA",
+            "federativeSphere": "FEDERAL"
+          },
+          "quickActions": {
+            "actorClass": "PROCURADORIA_FEDERAL"
+          },
+          "operationalQueue": {
+            "totalItems": 1,
+            "actionableItems": 1
+          },
+          "routes": [
+            {
+              "code": "OPEN_QUEUE",
+              "route": "/api/v1/institucional/workbench/operational-queue",
+              "method": "GET",
+              "primary": true
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "project institutional workbench quick actions",
+      "providerStates": [
+        {
+          "name": "institutional workbench quick actions can be projected"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/institucional/workbench/quick-actions",
+        "query": "processoId=9001"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "actorClass": "PROCURADORIA_FEDERAL",
+          "processoId": 9001,
+          "numeroProcesso": "0009001-11.2026.4.05.8100",
+          "actions": [
+            {
+              "code": "PROCURADORIA_CONTESTACAO",
+              "route": "/api/v1/procuradoria/operacional/processos/9001/contestacao",
+              "enabled": true,
+              "verdict": "ALLOW"
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "load institutional workbench operational queue",
+      "providerStates": [
+        {
+          "name": "institutional workbench operational queue can be loaded"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/institucional/workbench/operational-queue",
+        "query": "limit=12"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "actorClass": "PROCURADORIA_FEDERAL",
+          "requestedLimit": 12,
+          "totalItems": 1,
+          "actionableItems": 1,
+          "items": [
+            {
+              "workItemId": 77,
+              "processoId": 9001,
+              "numeroProcesso": "0009001-11.2026.4.05.8100",
+              "queueCode": "PROC:FED",
+              "primaryAction": {
+                "code": "PROCURADORIA_CONTESTACAO",
+                "enabled": true,
+                "verdict": "ALLOW"
+              },
+              "explainability": {
+                "actorBranch": "PROCURADORIA_FEDERAL",
+                "verdict": "ALLOW"
+              }
+            }
+          ]
+        }
+      },
+      "type": "Synchronous/HTTP"
+    },
+    {
+      "description": "load institutional workbench action preview",
+      "providerStates": [
+        {
+          "name": "institutional workbench action preview can be loaded"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/institucional/workbench/action-preview",
+        "query": "action=PROCURADORIA_CONTESTACAO&processoId=9001"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "actorClass": "PROCURADORIA_FEDERAL",
+          "processoId": 9001,
+          "numeroProcesso": "0009001-11.2026.4.05.8100",
+          "action": {
+            "code": "PROCURADORIA_CONTESTACAO",
+            "route": "/api/v1/procuradoria/operacional/processos/9001/contestacao",
+            "enabled": true,
+            "verdict": "ALLOW"
+          },
+          "explainability": {
+            "actorBranch": "PROCURADORIA_FEDERAL",
+            "targetSphere": "FEDERAL",
+            "verdict": "ALLOW"
+          }
+        }
+      },
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "4.0"
+    },
+    "pact-jvm": {
+      "version": "4.6.14"
+    }
+  }
+}

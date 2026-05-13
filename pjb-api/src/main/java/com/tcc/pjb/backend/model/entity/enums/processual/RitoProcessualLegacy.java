@@ -1,0 +1,116 @@
+package com.tcc.pjb.backend.model.entity.enums.processual;
+
+import com.tcc.pjb.backend.core.util.EnumText;
+import java.util.Optional;
+
+public enum RitoProcessualLegacy {
+    COMUM_ORDINARIO,
+    SUMARIO,
+    JUIZADO_ESPECIAL,
+    JUIZADO_ESPECIAL_CIVEL,
+    JUIZADO_ESPECIAL_FAZENDA_PUBLICA,
+    JUIZADO_ESPECIAL_FEDERAL,
+    EXECUCAO_TITULO_EXTRAJUDICIAL,
+    EXECUCAO_FISCAL,
+    CIVIL_TUTELA_URGENTE,
+    CIVIL_FAMILIA_ALIMENTOS,
+    CIVIL_FAMILIA_DIVORCIO,
+    CIVIL_INVENTARIO_ARROLAMENTO,
+    CIVIL_ACAO_CIVIL_PUBLICA,
+    ESPECIAL_MANDADO_SEGURANCA,
+    ESPECIAL_HABEAS_CORPUS,
+    ESPECIAL_HABEAS_DATA,
+    ESPECIAL_ACAO_POPULAR,
+    IMPROBIDADE_ADMINISTRATIVA,
+    ADMINISTRATIVO_PAD,
+    PROCEDIMENTO_PENAL_COMUM,
+    PROCEDIMENTO_PENAL_SUMARIO,
+    PROCEDIMENTO_PENAL_SUMARISSIMO,
+    TRIBUNAL_JURI,
+    JUIZADO_ESPECIAL_CRIMINAL,
+    EXECUCAO_PENAL,
+    PENAL_LEI_DROGAS,
+    PENAL_MARIA_DA_PENHA,
+    PENAL_CRIMES_TRANSITO,
+    TRABALHISTA_ORDINARIO,
+    TRABALHISTA_SUMARISSIMO,
+    TRABALHISTA_SUMARIO_ALCADA,
+    TRABALHISTA_INQUERITO_FALTA_GRAVE,
+    TRABALHISTA_ACAO_CUMPRIMENTO,
+    FAZENDA_PUBLICA_CONHECIMENTO,
+    TRIBUTARIO_ANULATORIA_DEBITO,
+    TRIBUTARIO_REPETICAO_INDEBITO,
+    TRIBUTARIO_MANDADO_SEGURANCA,
+    TRIBUTARIO_EMBARGOS_EXECUCAO_FISCAL,
+    PREVIDENCIARIO_JEF,
+    PREVIDENCIARIO_COMUM,
+    PREVIDENCIARIO_BPC_LOAS,
+    PREVIDENCIARIO_AUXILIO_INCAPACIDADE,
+    PREVIDENCIARIO_APOSENTADORIA,
+    PREVIDENCIARIO_REVISAO_BENEFICIO,
+    MILITAR,
+    MILITAR_IPM,
+    MILITAR_PROCESSO_PENAL_MILITAR,
+    MILITAR_PAD,
+    MILITAR_CONSELHO_JUSTICA,
+    ELEITORAL,
+    ELEITORAL_REGISTRO_CANDIDATURA,
+    ELEITORAL_AIRC,
+    ELEITORAL_AIJE,
+    ELEITORAL_AIME,
+    ELEITORAL_RCED,
+    ELEITORAL_PROPAGANDA,
+    ELEITORAL_DIREITO_RESPOSTA,
+    ELEITORAL_PRESTACAO_CONTAS;
+
+    public RitoProcessual toCanonicalRito() {
+        return RitoProcessual.tryParseExact(name()).orElseGet(() -> switch (this) {
+            case JUIZADO_ESPECIAL -> RitoProcessual.JUIZADO_ESPECIAL_CIVEL;
+            default -> RitoProcessual.COMUM_ORDINARIO;
+        });
+    }
+
+    public static Optional<RitoProcessual> tryResolve(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return Optional.empty();
+        }
+        String token = EnumText.normalizeToken(raw);
+        if (token.isBlank()) {
+            return Optional.empty();
+        }
+        token = switch (token) {
+            case "COMUM", "ORDINARIO", "CIVIL_COMUM" -> "COMUM_ORDINARIO";
+            case "JUIZADO", "JEC", "JUIZADO_ESPECIAL_CIVEL" -> "JUIZADO_ESPECIAL";
+            case "JEF", "JUIZADO_ESPECIAL_FEDERAL" -> "JUIZADO_ESPECIAL_FEDERAL";
+            case "FAZENDA", "JUIZADO_FAZENDA", "JUIZADO_ESPECIAL_FAZENDA" -> "JUIZADO_ESPECIAL_FAZENDA_PUBLICA";
+            case "EXECUCAO", "EXECUCAO_TITULO", "EXECUCAO_TITULO_EXTRAJUDICIAL" -> "EXECUCAO_TITULO_EXTRAJUDICIAL";
+            case "EXECUCAO_FISCAL", "EXE_FISCAL" -> "EXECUCAO_FISCAL";
+            case "MS", "MANDADO_DE_SEGURANCA" -> "ESPECIAL_MANDADO_SEGURANCA";
+            case "HC", "HABEAS_CORPUS" -> "ESPECIAL_HABEAS_CORPUS";
+            case "HD", "HABEAS_DATA" -> "ESPECIAL_HABEAS_DATA";
+            case "ACP", "ACAO_CIVIL_PUBLICA" -> "CIVIL_ACAO_CIVIL_PUBLICA";
+            case "JURI", "TRIBUNAL_DO_JURI" -> "TRIBUNAL_JURI";
+            case "JECRIM", "JUIZADO_ESPECIAL_CRIMINAL" -> "JUIZADO_ESPECIAL_CRIMINAL";
+            case "LEP", "EXECUCAO_PENAL" -> "EXECUCAO_PENAL";
+            case "PENAL_COMUM" -> "PROCEDIMENTO_PENAL_COMUM";
+            case "PENAL_SUMARIO" -> "PROCEDIMENTO_PENAL_SUMARIO";
+            case "PENAL_SUMARISSIMO" -> "PROCEDIMENTO_PENAL_SUMARISSIMO";
+            case "TRAB_ORDINARIO" -> "TRABALHISTA_ORDINARIO";
+            case "TRAB_SUMARISSIMO" -> "TRABALHISTA_SUMARISSIMO";
+            case "TRAB_SUMARIO", "TRAB_ALCADA", "RITO_ALCADA_TRABALHISTA" -> "TRABALHISTA_SUMARIO_ALCADA";
+            case "INQUERITO_FALTA_GRAVE", "INQUERITO_JUDICIAL_FALTA_GRAVE" -> "TRABALHISTA_INQUERITO_FALTA_GRAVE";
+            case "ACAO_CUMPRIMENTO_TRABALHISTA" -> "TRABALHISTA_ACAO_CUMPRIMENTO";
+            case "JEF_PREVIDENCIARIO" -> "PREVIDENCIARIO_JEF";
+            default -> token;
+        };
+        try {
+            return Optional.of(RitoProcessualLegacy.valueOf(token).toCanonicalRito());
+        } catch (Exception ex) {
+            return Optional.empty();
+        }
+    }
+
+    public static RitoProcessual fromString(String raw) {
+        return tryResolve(raw).orElse(RitoProcessual.COMUM_ORDINARIO);
+    }
+}

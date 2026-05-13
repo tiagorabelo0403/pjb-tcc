@@ -1,0 +1,15 @@
+{
+  "surface": "/api/v1/admin/frontend-readiness/public-contract",
+  "artifacts": [
+    "PjbFrontendEnvelopeContractView",
+    "PjbFrontendValidationContractView",
+    "PjbFrontendHttpErrorCatalogEntry",
+    "PjbFrontendHttpContractFreezeView"
+  ],
+  "endpoints": [
+    "/public-contract/envelopes",
+    "/public-contract/validation",
+    "/public-contract/error-catalog",
+    "/public-contract/http-freeze"
+  ]
+}

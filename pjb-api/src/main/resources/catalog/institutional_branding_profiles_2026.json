@@ -1,0 +1,173 @@
+{
+  "DEFAULT": {
+    "displayName": "Instituição do Sistema de Justiça",
+    "palette": [
+      "#0B3A75",
+      "#F7F9FC",
+      "#132238"
+    ],
+    "headerTemplate": "PJB • {{institution}} • {{pieceLabel}}",
+    "watermarkLabel": "PJB",
+    "bannerStorageKey": "ui/institutional-branding/default/banner-default.webp",
+    "bannerMimeType": "image/webp",
+    "bannerBytes": 128000,
+    "logoStorageKey": "ui/institutional-branding/default/logo-default.webp",
+    "logoMimeType": "image/webp",
+    "logoBytes": 64000,
+    "sealStorageKey": "ui/institutional-branding/default/seal-default.webp",
+    "sealMimeType": "image/webp",
+    "sealBytes": 64000
+  },
+  "MINISTERIO_PUBLICO": {
+    "displayName": "Ministério Público",
+    "palette": [
+      "#1B5E20",
+      "#F5FBF6",
+      "#132238"
+    ],
+    "headerTemplate": "{{institution}} • {{unit}} • {{pieceLabel}}",
+    "watermarkLabel": "MP",
+    "bannerStorageKey": "ui/institutional-branding/ministerio-publico/banner.webp",
+    "bannerMimeType": "image/webp",
+    "bannerBytes": 142000,
+    "logoStorageKey": "ui/institutional-branding/ministerio-publico/logo.webp",
+    "logoMimeType": "image/webp",
+    "logoBytes": 71000,
+    "sealStorageKey": "ui/institutional-branding/ministerio-publico/seal.webp",
+    "sealMimeType": "image/webp",
+    "sealBytes": 59000
+  },
+  "DEFENSORIA": {
+    "displayName": "Defensoria Pública",
+    "palette": [
+      "#1565C0",
+      "#F4F8FD",
+      "#132238"
+    ],
+    "headerTemplate": "{{institution}} • {{pieceLabel}}",
+    "watermarkLabel": "DPE",
+    "bannerStorageKey": "ui/institutional-branding/defensoria/banner.webp",
+    "bannerMimeType": "image/webp",
+    "bannerBytes": 138000,
+    "logoStorageKey": "ui/institutional-branding/defensoria/logo.webp",
+    "logoMimeType": "image/webp",
+    "logoBytes": 70000,
+    "sealStorageKey": "ui/institutional-branding/defensoria/seal.webp",
+    "sealMimeType": "image/webp",
+    "sealBytes": 56000
+  },
+  "PROCURADORIA": {
+    "displayName": "Procuradoria",
+    "palette": [
+      "#6A1B9A",
+      "#F8F4FB",
+      "#132238"
+    ],
+    "headerTemplate": "{{institution}} • {{pieceLabel}}",
+    "watermarkLabel": "PG",
+    "bannerStorageKey": "ui/institutional-branding/procuradoria/banner.webp",
+    "bannerMimeType": "image/webp",
+    "bannerBytes": 132000,
+    "logoStorageKey": "ui/institutional-branding/procuradoria/logo.webp",
+    "logoMimeType": "image/webp",
+    "logoBytes": 69000,
+    "sealStorageKey": "ui/institutional-branding/procuradoria/seal.webp",
+    "sealMimeType": "image/webp",
+    "sealBytes": 55000
+  },
+  "PERICIA": {
+    "displayName": "Perícia Judicial",
+    "palette": [
+      "#37474F",
+      "#F5F7F8",
+      "#132238"
+    ],
+    "headerTemplate": "{{institution}} • {{pieceLabel}}",
+    "watermarkLabel": "PERÍCIA",
+    "bannerStorageKey": "ui/institutional-branding/pericia/banner.webp",
+    "bannerMimeType": "image/webp",
+    "bannerBytes": 129000,
+    "logoStorageKey": "ui/institutional-branding/pericia/logo.webp",
+    "logoMimeType": "image/webp",
+    "logoBytes": 66000,
+    "sealStorageKey": "ui/institutional-branding/pericia/seal.webp",
+    "sealMimeType": "image/webp",
+    "sealBytes": 54000
+  },
+  "PSICOSSOCIAL": {
+    "displayName": "Núcleo Psicossocial",
+    "palette": [
+      "#00897B",
+      "#F2FBF9",
+      "#132238"
+    ],
+    "headerTemplate": "{{institution}} • {{pieceLabel}}",
+    "watermarkLabel": "PSICOSSOCIAL",
+    "bannerStorageKey": "ui/institutional-branding/psicossocial/banner.webp",
+    "bannerMimeType": "image/webp",
+    "bannerBytes": 131000,
+    "logoStorageKey": "ui/institutional-branding/psicossocial/logo.webp",
+    "logoMimeType": "image/webp",
+    "logoBytes": 64000,
+    "sealStorageKey": "ui/institutional-branding/psicossocial/seal.webp",
+    "sealMimeType": "image/webp",
+    "sealBytes": 52000
+  },
+  "OFICIAL_JUSTICA": {
+    "displayName": "Oficial de Justiça",
+    "palette": [
+      "#795548",
+      "#FAF7F5",
+      "#132238"
+    ],
+    "headerTemplate": "{{institution}} • {{pieceLabel}}",
+    "watermarkLabel": "OFICIAL DE JUSTIÇA",
+    "bannerStorageKey": "ui/institutional-branding/oficial-justica/banner.webp",
+    "bannerMimeType": "image/webp",
+    "bannerBytes": 127000,
+    "logoStorageKey": "ui/institutional-branding/oficial-justica/logo.webp",
+    "logoMimeType": "image/webp",
+    "logoBytes": 60000,
+    "sealStorageKey": "ui/institutional-branding/oficial-justica/seal.webp",
+    "sealMimeType": "image/webp",
+    "sealBytes": 50000
+  },
+  "POLICIA_CIVIL": {
+    "displayName": "Polícia Civil",
+    "palette": [
+      "#283593",
+      "#F4F6FD",
+      "#132238"
+    ],
+    "headerTemplate": "{{institution}} • {{unit}} • {{pieceLabel}}",
+    "watermarkLabel": "POLÍCIA CIVIL",
+    "bannerStorageKey": "ui/institutional-branding/policia-civil/banner.webp",
+    "bannerMimeType": "image/webp",
+    "bannerBytes": 136000,
+    "logoStorageKey": "ui/institutional-branding/policia-civil/logo.webp",
+    "logoMimeType": "image/webp",
+    "logoBytes": 68000,
+    "sealStorageKey": "ui/institutional-branding/policia-civil/seal.webp",
+    "sealMimeType": "image/webp",
+    "sealBytes": 54000
+  },
+  "POLICIA_FEDERAL": {
+    "displayName": "Polícia Federal",
+    "palette": [
+      "#0D47A1",
+      "#F4F8FD",
+      "#132238"
+    ],
+    "headerTemplate": "{{institution}} • {{unit}} • {{pieceLabel}}",
+    "watermarkLabel": "POLÍCIA FEDERAL",
+    "bannerStorageKey": "ui/institutional-branding/policia-federal/banner.webp",
+    "bannerMimeType": "image/webp",
+    "bannerBytes": 139000,
+    "logoStorageKey": "ui/institutional-branding/policia-federal/logo.webp",
+    "logoMimeType": "image/webp",
+    "logoBytes": 70000,
+    "sealStorageKey": "ui/institutional-branding/policia-federal/seal.webp",
+    "sealMimeType": "image/webp",
+    "sealBytes": 56000
+  }
+}

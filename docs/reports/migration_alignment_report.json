@@ -1,0 +1,92 @@
+{
+  "summary": {
+    "expectedEntries": 11,
+    "resolvedEntries": 11,
+    "duplicateMigrationVersions": {
+      "V100": [
+        "V100__download_budget_scope.sql",
+        "V100__operational_function_credentials.sql",
+        "V100__secretariat_queue_row_version.sql"
+      ]
+    }
+  },
+  "rows": [
+    {
+      "pdfVersion": "V178",
+      "label": "ICP-Brasil",
+      "resolvedMigration": "V197__icp_brasil_certificate_chain.sql",
+      "resolvedExists": true,
+      "alignment": "implementado_com_adaptacao_de_numeracao"
+    },
+    {
+      "pdfVersion": "V179",
+      "label": "MNI",
+      "resolvedMigration": "V192__mni_remessa.sql",
+      "resolvedExists": true,
+      "alignment": "implementado_com_adaptacao_de_numeracao"
+    },
+    {
+      "pdfVersion": "V180",
+      "label": "DataJud",
+      "resolvedMigration": "V193__datajud_feed_checkpoint.sql",
+      "resolvedExists": true,
+      "alignment": "implementado_com_adaptacao_de_numeracao"
+    },
+    {
+      "pdfVersion": "V181",
+      "label": "Workflow criminal",
+      "resolvedMigration": "V195__criminal_workflow.sql",
+      "resolvedExists": true,
+      "alignment": "implementado_com_adaptacao_de_numeracao"
+    },
+    {
+      "pdfVersion": "V182",
+      "label": "Integrações financeiras sensíveis",
+      "resolvedMigration": "V198__integracao_judicial_financeira.sql",
+      "resolvedExists": true,
+      "alignment": "implementado_com_adaptacao_de_numeracao"
+    },
+    {
+      "pdfVersion": "V183",
+      "label": "Custas judiciais",
+      "resolvedMigration": "V196__custas_judiciais.sql",
+      "resolvedExists": true,
+      "alignment": "implementado_com_adaptacao_de_numeracao"
+    },
+    {
+      "pdfVersion": "V184",
+      "label": "Workflow trabalhista",
+      "resolvedMigration": "V199__workflow_trabalhista.sql",
+      "resolvedExists": true,
+      "alignment": "implementado_com_adaptacao_de_numeracao"
+    },
+    {
+      "pdfVersion": "V185",
+      "label": "Workflow eleitoral",
+      "resolvedMigration": "V191__workflow_eleitoral.sql",
+      "resolvedExists": true,
+      "alignment": "implementado_com_adaptacao_de_numeracao"
+    },
+    {
+      "pdfVersion": "V186",
+      "label": "DJe",
+      "resolvedMigration": "V189__dje_publicacao.sql",
+      "resolvedExists": true,
+      "alignment": "implementado_com_adaptacao_de_numeracao"
+    },
+    {
+      "pdfVersion": "V187",
+      "label": "Digitalização de acervo",
+      "resolvedMigration": "V194__digitalizacao_acervo.sql",
+      "resolvedExists": true,
+      "alignment": "implementado_com_adaptacao_de_numeracao"
+    },
+    {
+      "pdfVersion": "V188",
+      "label": "Sobrestamento por tema",
+      "resolvedMigration": "V190__sobrestamento_tema.sql",
+      "resolvedExists": true,
+      "alignment": "implementado_com_adaptacao_de_numeracao"
+    }
+  ]
+}

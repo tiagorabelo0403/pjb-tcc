@@ -1,0 +1,11 @@
+# Cluster de jurisdição para recuperação de compile.
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/Jurisdicao.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/JurisdictionEngine.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/MateriaJurisdicao.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/NaturezaJurisdicao.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/EsferaJurisdicao.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/TipoJurisdicao.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/RegiaoBrasil.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/enums/GrauJurisdicao.java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/enums/RitoProcessual.java
+pjb-api/src/main/java/com/tcc/pjb/backend/core/procedural/ProceduralCatalogSupport.java

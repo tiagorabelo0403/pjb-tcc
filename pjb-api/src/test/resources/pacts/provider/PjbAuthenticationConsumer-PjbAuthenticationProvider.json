@@ -1,0 +1,44 @@
+{
+  "consumer": {
+    "name": "PjbAuthenticationConsumer"
+  },
+  "provider": {
+    "name": "PjbAuthenticationProvider"
+  },
+  "interactions": [
+    {
+      "description": "start passkey authentication options",
+      "providerStates": [
+        {
+          "name": "passkey challenge can be generated"
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/auth/passkey/options",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "email": "cidadao@pjb.test"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "sessionId": 101,
+          "optionsJson": "{\"challenge\":\"abc\",\"rpId\":\"pjb.test\"}"
+        }
+      },
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "4.0"
+    },
+    "pact-jvm": {
+      "version": "4.6.14"
+    }
+  }
+}

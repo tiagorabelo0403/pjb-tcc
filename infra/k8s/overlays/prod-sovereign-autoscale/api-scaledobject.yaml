@@ -1,0 +1,56 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: pjb-api
+  annotations:
+    scaledobject.keda.sh/transfer-hpa-ownership: "true"
+spec:
+  scaleTargetRef:
+    name: pjb-api
+  pollingInterval: 15
+  cooldownPeriod: 180
+  minReplicaCount: 2
+  maxReplicaCount: 18
+  fallback:
+    failureThreshold: 3
+    replicas: 4
+    behavior: currentReplicasIfHigher
+  advanced:
+    restoreToOriginalReplicaCount: false
+    horizontalPodAutoscalerConfig:
+      name: keda-hpa-pjb-api
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          policies:
+            - type: Percent
+              value: 100
+              periodSeconds: 60
+            - type: Pods
+              value: 4
+              periodSeconds: 60
+          selectPolicy: Max
+        scaleDown:
+          stabilizationWindowSeconds: 300
+          policies:
+            - type: Percent
+              value: 25
+              periodSeconds: 60
+          selectPolicy: Max
+  triggers:
+    - type: prometheus
+      name: api-rps
+      metricType: AverageValue
+      metadata:
+        serverAddress: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        query: sum(rate(http_server_requests_seconds_count{namespace="pjb",pod=~"pjb-api-.*",uri!~"/actuator.*|/v3/api-docs.*|/swagger-ui.*"}[2m]))
+        threshold: "80"
+        activationThreshold: "15"
+        ignoreNullValues: "false"
+    - type: cron
+      name: business-hours-floor
+      metadata:
+        timezone: America/Fortaleza
+        start: 0 7 * * 1-5
+        end: 0 19 * * 1-5
+        desiredReplicas: "4"

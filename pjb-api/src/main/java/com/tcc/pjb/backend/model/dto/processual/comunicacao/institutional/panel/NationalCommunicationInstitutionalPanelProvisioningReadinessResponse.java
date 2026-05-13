@@ -1,0 +1,58 @@
+package com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.panel;
+
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.governance.NationalCommunicationInstitutionalHearingSchedulingGovernanceResponse;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.governance.NationalCommunicationInstitutionalOperationalDeskGovernanceResponse;
+import java.time.Instant;
+import java.util.List;
+
+public record NationalCommunicationInstitutionalPanelProvisioningReadinessResponse(
+        String profileCode,
+        String panelCode,
+        String initialRoute,
+        boolean blueprintMatched,
+        boolean workspaceBound,
+        boolean routeReady,
+        boolean sectionsReady,
+        boolean quickActionsReady,
+        boolean guardsReady,
+        boolean visibilityRulesReady,
+        boolean tabsReady,
+        boolean workspaceActionsReady,
+        boolean authorityBandsReady,
+        boolean separatorsReady,
+        boolean notificationsReady,
+        boolean calendarReady,
+        boolean hearingsReady,
+        boolean readingModeReady,
+        boolean triageReady,
+        boolean presentationReady,
+        boolean colorSystemReady,
+        boolean opinionFlowReady,
+        boolean calculatorReady,
+        boolean sharedExperienceReady,
+        boolean complete,
+        int totalBlueprints,
+        int totalPrimarySections,
+        int totalQuickActions,
+        int totalSecurityGuards,
+        int totalVisibilityRules,
+        int totalTabs,
+        int totalWorkspaceActions,
+        int totalAuthorityBands,
+        int totalSeparators,
+        int totalSharedExperienceSurfaces,
+        int totalSharedExperienceSurfacesReady,
+        List<String> primarySections,
+        List<String> quickActions,
+        List<String> securityGuards,
+        List<String> visibilityRules,
+        List<String> tabs,
+        List<String> readySharedExperienceSurfaces,
+        List<String> missingSharedExperienceSurfaces,
+        List<String> findings,
+        List<String> fundamentos,
+        NationalCommunicationInstitutionalHearingSchedulingGovernanceResponse hearingGovernance,
+        NationalCommunicationInstitutionalOperationalDeskGovernanceResponse deskGovernance,
+        Instant generatedAt
+) {
+}
