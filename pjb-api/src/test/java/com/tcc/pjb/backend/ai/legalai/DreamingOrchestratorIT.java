@@ -17,7 +17,7 @@ import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamInput;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamPolicy;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamRepository;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamStatus;
-import com.tcc.pjb.backend.ai.legalai.dreaming.infra.DreamOutboxJpaRepository;
+import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamOutboxPort;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemorySigiloNivel;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryStore;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryStoreId;
@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 class DreamingOrchestratorIT {
 
     private final DreamRepository dreamRepository = mock(DreamRepository.class);
-    private final DreamOutboxJpaRepository outboxJpaRepository = mock(DreamOutboxJpaRepository.class);
+    private final DreamOutboxPort dreamOutboxPort = mock(DreamOutboxPort.class);
     private final MemoryStoreRepository memoryStoreRepository = mock(MemoryStoreRepository.class);
     private final LegalAiAuditService auditService = mock(LegalAiAuditService.class);
     private final Clock clock = Clock.systemUTC();
@@ -46,7 +46,7 @@ class DreamingOrchestratorIT {
     void setUp() {
         orchestrator = new DreamingOrchestrator(
                 dreamRepository,
-                outboxJpaRepository,
+                dreamOutboxPort,
                 memoryStoreRepository,
                 new DreamPolicy(),
                 clock,
@@ -56,7 +56,6 @@ class DreamingOrchestratorIT {
         );
 
         when(dreamRepository.salvar(any())).thenAnswer(inv -> inv.getArgument(0));
-        when(outboxJpaRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         doNothing().when(auditService).registrar(any());
     }
 

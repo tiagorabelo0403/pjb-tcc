@@ -8,11 +8,10 @@ import com.tcc.pjb.backend.ai.legalai.audit.domain.LegalAiAuditLog;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.Dream;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamId;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamInput;
+import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamOutboxPort;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamPolicy;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamRepository;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamStatus;
-import com.tcc.pjb.backend.ai.legalai.dreaming.infra.DreamOutboxJpaEntity;
-import com.tcc.pjb.backend.ai.legalai.dreaming.infra.DreamOutboxJpaRepository;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryStore;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryStoreId;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryStoreRepository;
@@ -25,13 +24,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class DreamingOrchestrator {
 
     private final DreamRepository dreamRepository;
-    private final DreamOutboxJpaRepository dreamOutboxJpaRepository;
+    private final DreamOutboxPort dreamOutboxPort;
     private final MemoryStoreRepository memoryStoreRepository;
     private final DreamPolicy dreamPolicy;
     private final Clock clock;
@@ -41,7 +39,7 @@ public class DreamingOrchestrator {
 
     public DreamingOrchestrator(
             DreamRepository dreamRepository,
-            DreamOutboxJpaRepository dreamOutboxJpaRepository,
+            DreamOutboxPort dreamOutboxPort,
             MemoryStoreRepository memoryStoreRepository,
             DreamPolicy dreamPolicy,
             Clock clock,
@@ -49,7 +47,7 @@ public class DreamingOrchestrator {
             AnthropicInputSanitizer inputSanitizer,
             LegalAiAuditService auditService) {
         this.dreamRepository = dreamRepository;
-        this.dreamOutboxJpaRepository = dreamOutboxJpaRepository;
+        this.dreamOutboxPort = dreamOutboxPort;
         this.memoryStoreRepository = memoryStoreRepository;
         this.dreamPolicy = dreamPolicy;
         this.clock = clock;
@@ -120,14 +118,7 @@ public class DreamingOrchestrator {
         try {
             Map<String, Object> payload = buildOutboxPayload(dream);
             String payloadJson = objectMapper.writeValueAsString(payload);
-
-            DreamOutboxJpaEntity outbox = new DreamOutboxJpaEntity();
-            outbox.setId(UUID.randomUUID());
-            outbox.setDreamId(dream.id().value());
-            outbox.setPayload(payloadJson);
-            outbox.setProcessado(false);
-            outbox.setCriadoEm(agora);
-            dreamOutboxJpaRepository.save(outbox);
+            dreamOutboxPort.registrar(dream.id().value(), payloadJson, agora);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Falha ao serializar payload do outbox para dream " + dream.id(), e);
         }

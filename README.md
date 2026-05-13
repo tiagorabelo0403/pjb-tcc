@@ -128,6 +128,19 @@ A base evita `CompletableFuture` solto, schedulers isolados e criação direta d
 
 ---
 
+## Aprendizado estrutural governado
+
+O endpoint `/codebase-learning` expõe uma leitura viva do estado estrutural do projeto: hotspots do core, trilhas internas de extração, blueprints de extração, fluxos críticos ponta a ponta e razão de cobertura de testes por fatia. O relatório de sanidade-aprendizado identifica pacotes com pressão de decomposição, sinalizando o que precisa ser endurecido antes de qualquer extração.
+
+O snapshot em memória tem TTL curto para evitar rescanear a base a cada requisição. Use `refresh=true` nos endpoints administrativo e processual para forçar revarredura quando necessário — sem necessidade de reiniciar a aplicação.
+
+```
+GET /admin/governance/codebase-learning
+GET /admin/governance/codebase-learning?refresh=true
+```
+
+---
+
 ## Qualidade executável
 
 A suíte atual conta com **2.318 testes · 0 falhas · 0 erros**. Toda alteração só é aceita quando melhora o comportamento verificável sem reduzir maturidade arquitetural.
