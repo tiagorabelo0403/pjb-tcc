@@ -47,6 +47,41 @@ ALLOWLIST_SUFFIXES = (
     ".template",
     ".md",
 )
+ALLOWED_EMAIL_DOMAINS = {
+    "example.com",
+    "example.org",
+    "example.net",
+    "example.invalid",
+    "exemplo.com",
+    "test.local",
+    "localhost",
+    "pjb.local",
+    "pjb.test",
+}
+ALLOWED_EMAIL_VALUES = {
+    "a@a.com", "a@b.com", "admin@pjb.local", "admin@test.local", "adv.teste@pjb.local",
+    "adv@example.com", "adv@pjb.br", "adv@test.local", "adv@x.com", "adv2@x.com",
+    "adva@test.local", "advb@test.local", "advogado.notificado@pjb.test", "advogado@test.local",
+    "ana@oab.com", "b@b.com", "c1@test.local", "c2@test.local", "c3@test.local",
+    "cidadao.seed@pjb.local", "cidadao@pjb.test", "colegiado@tribunal.jus.br",
+    "contato@exemplo.jus.br", "defensor@pjb.br", "defensor@pjb.test", "delegado@pjb.test",
+    "desembargador@test.local", "fulano@example.com", "fulano@exemplo.com", "juiz@pjb.br",
+    "juiz@pjb.test", "juiz@test.local", "juiz@x.com", "magistrado.seed@pjb.local",
+    "maria@email.com", "maria@estado.ce.gov.br", "maria@exemplo.com", "maria@office.com",
+    "ministro@test.local", "mp@example.com", "mp@example.test", "notif.default@pjb.test",
+    "notif.persist@pjb.test", "ocinaria.lima@exemplo.com", "oficial@pjb.test",
+    "operador@pjb.test", "parte@example.com", "perito@pjb.local", "pf@x.com",
+    "presidencia@tst.jus.br", "procurador@test.local", "psico@pjb.local",
+    "quality@test.local", "registro@pjb.local", "seed@exemplo.com", "seg@pc.ce.gov.br",
+    "seg@tjce.jus.br", "seguranca@mp.ce.gov.br", "seguranca@mpce.mp.br",
+    "seguranca@pp.ce.gov.br", "seguranca@tjce.jus.br", "senior@example.com",
+    "servidor.seed@pjb.local", "servidor@tjce.jus.br", "servidor@x.com",
+    "sistema@pjb.gov.br", "stf@stf.jus.br", "stj@stj.jus.br", "suporte@tjce.jus.br",
+    "tiago@example.com", "tiago@office.com", "usuario@mpce.mp.br",
+}
+ALLOWED_CPF_VALUES = {"04106184389", "12345678909", "98765432100"}
+ALLOWED_CNPJ_VALUES = {"11222333000181", "12495454000160"}
+ALLOWED_PHONE_VALUES = {"6130434000", "6132173000", "6133198000", "85900000000", "85999999999"}
 PROPERTY_ASSIGNMENT_SUFFIXES = {
     ".conf",
     ".env",
@@ -77,6 +112,12 @@ SECRET_PATTERNS = (
     ("google-api-key", re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b")),
     ("jwt", re.compile(r"\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b")),
 )
+EMAIL_PATTERN = re.compile(r"(?i)\b[A-Z0-9._%+-]+@([A-Z0-9.-]+\.[A-Z]{2,}|localhost)\b")
+PHONE_PATTERN = re.compile(
+    r"(?<!\d)(?:\+55\s*)?(?:\([1-9]{2}\)\s*9?\d{4}[-\s]?\d{4}|[1-9]{2}\s+9?\d{4}[-\s]\d{4})(?!\d)"
+)
+CPF_PATTERN = re.compile(r"(?<!\d)\d{3}\.?\d{3}\.?\d{3}-?\d{2}(?!\d)")
+CNPJ_PATTERN = re.compile(r"(?<!\d)\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}(?!\d)")
 QUOTED_ASSIGNMENT_PATTERN = re.compile(
     r"(?i)\b(password|passwd|pwd|secret|token|api[_-]?key|client[_-]?secret|private[_-]?key)"
     r"\b\s*[:=]\s*(['\"])([^'\"\r\n]{12,})\2"
@@ -161,6 +202,63 @@ def entropy(value: str) -> float:
     return -sum((count / len(value)) * math.log2(count / len(value)) for count in frequencies.values())
 
 
+def digits(value: str) -> str:
+    return re.sub(r"\D", "", value)
+
+
+def repeated_digits(value: str) -> bool:
+    return bool(re.fullmatch(r"([0-9])\1+", value))
+
+
+def valid_cpf(value: str) -> bool:
+    number = digits(value)
+    if len(number) != 11 or repeated_digits(number):
+        return False
+    total = sum(int(number[index]) * (10 - index) for index in range(9))
+    first = 11 - (total % 11)
+    if first >= 10:
+        first = 0
+    total = sum(int(number[index]) * (11 - index) for index in range(10))
+    second = 11 - (total % 11)
+    if second >= 10:
+        second = 0
+    return first == int(number[9]) and second == int(number[10])
+
+
+def valid_cnpj(value: str) -> bool:
+    number = digits(value)
+    if len(number) != 14 or repeated_digits(number):
+        return False
+    weights1 = (5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
+    weights2 = (6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
+    total = sum(int(number[index]) * weights1[index] for index in range(12))
+    first = total % 11
+    first = 0 if first < 2 else 11 - first
+    total = sum(int(number[index]) * weights2[index] for index in range(13))
+    second = total % 11
+    second = 0 if second < 2 else 11 - second
+    return first == int(number[12]) and second == int(number[13])
+
+
+def allowed_email(value: str) -> bool:
+    if value.lower() in ALLOWED_EMAIL_VALUES:
+        return True
+    domain = value.rsplit("@", 1)[-1].lower()
+    return domain in ALLOWED_EMAIL_DOMAINS
+
+
+def allowed_phone(value: str) -> bool:
+    number = digits(value)
+    if number.startswith("55") and len(number) > 11:
+        number = number[2:]
+    if len(number) < 10:
+        return False
+    if number in ALLOWED_PHONE_VALUES:
+        return True
+    subscriber = number[2:]
+    return bool(re.fullmatch(r"([0-9])\1+", subscriber))
+
+
 def scan_path(path: Path) -> list[Finding]:
     findings: list[Finding] = []
     if should_skip(path) or not path.exists() or not path.is_file():
@@ -182,6 +280,28 @@ def scan_path(path: Path) -> list[Finding]:
     for rule, pattern in SECRET_PATTERNS:
         if pattern.search(text):
             findings.append(Finding(relative, rule))
+
+    for match in EMAIL_PATTERN.finditer(text):
+        if not allowed_email(match.group(0)):
+            findings.append(Finding(relative, "privacy-email"))
+            break
+
+    for match in CPF_PATTERN.finditer(text):
+        number = digits(match.group(0))
+        if valid_cpf(match.group(0)) and number not in ALLOWED_CPF_VALUES:
+            findings.append(Finding(relative, "privacy-cpf"))
+            break
+
+    for match in CNPJ_PATTERN.finditer(text):
+        number = digits(match.group(0))
+        if valid_cnpj(match.group(0)) and number not in ALLOWED_CNPJ_VALUES:
+            findings.append(Finding(relative, "privacy-cnpj"))
+            break
+
+    for match in PHONE_PATTERN.finditer(text):
+        if not allowed_phone(match.group(0)):
+            findings.append(Finding(relative, "privacy-phone"))
+            break
 
     for match in QUOTED_ASSIGNMENT_PATTERN.finditer(text):
         value = match.group(3)
@@ -214,13 +334,13 @@ def main() -> int:
         findings.extend(scan_path(path))
 
     if findings:
-        print("Secret guard blocked this operation. Review these files before committing:", file=sys.stderr)
+        print("Data leak guard blocked this operation. Review these files before committing:", file=sys.stderr)
         for finding in sorted(set(findings), key=lambda item: (item.path.as_posix(), item.rule)):
             print(f"  {finding.path.as_posix()} [{finding.rule}]", file=sys.stderr)
-        print("No secret values were printed. Rotate any credential that was ever committed.", file=sys.stderr)
+        print("No sensitive values were printed. Rotate credentials and remove personal data before retrying.", file=sys.stderr)
         return 1
 
-    print("Secret guard: no obvious credentials found.")
+    print("Data leak guard: no obvious secrets or personal data found.")
     return 0
 
 

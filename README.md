@@ -270,6 +270,22 @@ Coleta de falhas:
 ./scripts/pjb-api-clean-test-errors.cmd
 ```
 
+## Sincronização Git segura
+
+O repositório possui barreira local contra vazamento de senha, token, chave, arquivo sensível e dados pessoais. Para salvar e enviar mudanças ao GitHub com segurança:
+
+```powershell
+.\scripts\git-sync-safe.ps1 "descrição objetiva da mudança"
+```
+
+Para observar alterações automaticamente durante o trabalho:
+
+```powershell
+.\scripts\git-auto-sync-safe.ps1
+```
+
+Detalhes para revisão e auditoria ficam em `docs/security/GIT_SAFE_SYNC.md` e `docs/PROJECT_REVIEW_GUIDE.md`.
+
 ## Governança de aprendizado da base
 
 A plataforma inclui capacidades de auditoria de código e aprendizado guiado por hotspots. As superfícies de `codebase-learning` e `sanidade-aprendizado` existem para transformar sinais do repositório em priorização de arquitetura.
@@ -306,4 +322,3 @@ python scripts/universal_digital_core_guard.py
 python scripts/java_comment_discipline_guard.py
 python scripts/repository_cleanliness_guard.py
 ```
-

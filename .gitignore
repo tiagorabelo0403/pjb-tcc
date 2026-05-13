@@ -21,6 +21,10 @@ logs/
 *.hprof
 *.dump
 *.dumpstream
+*.backup
+*.sqlite
+*.sqlite3
+*.db
 hs_err_pid*
 replay_pid*
 
@@ -76,3 +80,10 @@ service-account*.json
 credentials*.json
 token*.txt
 secret*.txt
+
+# Data exports that may carry personal or procedural data
+*.csv
+*.tsv
+*.xls
+*.xlsx
+*.ods

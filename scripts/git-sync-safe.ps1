@@ -3,7 +3,8 @@ param(
     [string]$Message,
 
     [switch]$NoPush,
-    [switch]$RunTests
+    [switch]$RunTests,
+    [int]$MaxChangedFiles = 100
 )
 
 $ErrorActionPreference = "Stop"
@@ -26,6 +27,10 @@ $changes = git status --porcelain
 if (-not $changes) {
     Write-Output "No local changes to commit."
     exit 0
+}
+
+if (@($changes).Count -gt $MaxChangedFiles) {
+    throw "Too many changed files ($(@($changes).Count)). Review manually before syncing."
 }
 
 if ($RunTests) {
