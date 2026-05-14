@@ -23,7 +23,7 @@ Cada eixo funcional nasce de decisões arquiteturais documentadas (ADRs), com ev
 | Build | Maven multi-module |
 | Banco principal | PostgreSQL com RLS (Row Level Security) |
 | Banco de testes | H2 em memória |
-| Migrations | Flyway (230+ versões) |
+| Migrations | Flyway (242+ versões) |
 | Persistência | JPA/Hibernate |
 | Segurança | Spring Security, ABAC, Gov.br |
 | Resiliência | Resilience4j (Circuit Breaker, Bulkhead, Retry) |
@@ -143,7 +143,7 @@ GET /admin/governance/codebase-learning?refresh=true
 
 ## Qualidade executável
 
-A suíte atual conta com **2.318 testes · 0 falhas · 0 erros**. Toda alteração só é aceita quando melhora o comportamento verificável sem reduzir maturidade arquitetural.
+A suíte atual conta com **2.343 testes · 0 falhas novas · 0 erros** (Round 28AH). Toda alteração só é aceita quando melhora o comportamento verificável sem reduzir maturidade arquitetural.
 
 Guards de conformidade estrutural:
 
