@@ -157,7 +157,7 @@ public record AdminInstitutionalArchitectureResponse(
 
     public record Readiness(
             List<String> implemented,
-            List<String> adaptedInThisRound,
+            List<String> novasFuncionalidades,
             List<String> stillMissing,
             List<String> nextSafeSteps
     ) {

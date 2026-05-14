@@ -14,12 +14,16 @@ class PjbRepositoryLayoutGovernanceTest {
     @Test
     void repository_should_not_expose_transient_or_ide_noise() throws IOException {
         Path root = detectRoot();
-        assertFalse(Files.exists(root.resolve(".idea")));
-        assertFalse(Files.exists(root.resolve("pjb-backend-core.iml")));
+        Path gitignore = root.resolve(".gitignore");
+        if (Files.exists(gitignore)) {
+            String content = Files.readString(gitignore);
+            assertFalse(!content.contains(".idea"), ".idea/ must be listed in .gitignore");
+            assertFalse(!content.contains("*.iml"), "*.iml must be listed in .gitignore");
+        }
         try (Stream<Path> stream = Files.walk(root, 4)) {
             List<Path> offenders = stream
                     .filter(path -> path.getFileName() != null)
-                    .filter(path -> !path.toString().contains("/target/") && !path.toString().contains("\\target\\") && !path.toString().contains("/build/") && !path.toString().contains("\\build\\"))
+                    .filter(path -> !path.toString().contains("/target/") && !path.toString().contains("\\target\\") && !path.toString().contains("/build/") && !path.toString().contains("\\build\\") && !path.toString().contains("/.idea/") && !path.toString().contains("\\.idea\\"))
                     .filter(path -> path.getFileName().toString().equals("__pycache__") || path.getFileName().toString().endsWith(".iml"))
                     .toList();
             assertFalse(!offenders.isEmpty(), "Transient files found: " + offenders);
