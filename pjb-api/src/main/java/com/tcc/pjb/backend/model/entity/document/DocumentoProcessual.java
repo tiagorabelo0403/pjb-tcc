@@ -87,6 +87,24 @@ public class DocumentoProcessual {
     @Column(name = "visibility_scope", length = 80)
     private String visibilityScope;
 
+    @Column(name = "estado_operacional", length = 40)
+    private String estadoOperacional;
+
+    @Column(name = "cadeia_custodia_id")
+    private UUID cadeiaCustodiaId;
+
+    @Column(name = "protocolo_externo", length = 120)
+    private String protocoloExterno;
+
+    @Column(name = "data_primeira_leitura")
+    private Instant dataPrimeiraLeitura;
+
+    @Column(name = "quantidade_paginas")
+    private Integer quantidadePaginas;
+
+    @Column(name = "lido_por_json", columnDefinition = "text")
+    private String lidoPorJson;
+
     @Column(name = "criado_por")
     private Long criadoPor;
 

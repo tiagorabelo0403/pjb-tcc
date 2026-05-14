@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.ai.legalai.dreaming.application.DreamingOrchestrator;
+import com.tcc.pjb.backend.ai.legalai.dreaming.application.LegalAiDreamingMetricsService;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.Dream;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamId;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamInput;
@@ -30,11 +31,12 @@ class DreamingControllerIT {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final DreamingOrchestrator orchestrator = mock(DreamingOrchestrator.class);
+    private final LegalAiDreamingMetricsService metricsService = mock(LegalAiDreamingMetricsService.class);
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new DreamingController(orchestrator)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(new DreamingController(orchestrator, metricsService)).build();
     }
 
     @Test

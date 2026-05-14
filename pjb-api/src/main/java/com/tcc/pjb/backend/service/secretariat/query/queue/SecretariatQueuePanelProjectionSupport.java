@@ -58,7 +58,14 @@ final class SecretariatQueuePanelProjectionSupport {
             byRito,
             byVara,
             byData,
-            Collections.unmodifiableMap(metadata)
+            Collections.unmodifiableMap(metadata),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            Map.of(),
+            List.of(),
+            List.of()
         );
     }
 

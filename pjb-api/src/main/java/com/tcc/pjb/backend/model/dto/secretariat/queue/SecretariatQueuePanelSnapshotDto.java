@@ -12,6 +12,13 @@ public record SecretariatQueuePanelSnapshotDto(
     List<SecretariatQueuePanelGroupDto> byRito,
     List<SecretariatQueuePanelGroupDto> byVara,
     List<SecretariatQueuePanelGroupDto> byData,
-    Map<String, Object> metadata
+    Map<String, Object> metadata,
+    List<SecretariatQueuePanelItemDto> minhasTarefas,
+    List<SecretariatQueuePanelItemDto> tarefasDaUnidade,
+    List<SecretariatQueuePanelItemDto> assinaturasPendentes,
+    List<SecretariatQueuePanelItemDto> expedientesPendentes,
+    Map<String, Long> agrupadores,
+    List<String> riscosOperacionais,
+    List<String> insights
 ) {
 }

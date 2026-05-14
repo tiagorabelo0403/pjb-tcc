@@ -36,7 +36,15 @@ public enum FaseProcessual {
     PERICIA_TECNICA(15, "Produção de prova pericial/técnica (complexidade variável)", "PET"),
 
     
-    PENHORA(20, "Ato de constrição patrimonial (penhora/bloqueio) para satisfação do crédito", "PEN");
+    PENHORA(20, "Ato de constrição patrimonial (penhora/bloqueio) para satisfação do crédito", "PEN"),
+
+    AUTUACAO(30, "Autuação e registro do processo no sistema", "AUT"),
+    DISTRIBUICAO(31, "Distribuição do processo ao órgão julgador competente", "DIS"),
+    CITACAO(32, "Citação da parte ré para integrar a relação processual", "CIT"),
+    RESPOSTA(33, "Fase de resposta e defesa do réu", "RSP"),
+    SANEAMENTO(34, "Saneamento do processo e fixação dos pontos controvertidos", "SAN"),
+    JULGAMENTO(35, "Julgamento do mérito pelo órgão competente", "JUL"),
+    ARQUIVAMENTO(36, "Arquivamento definitivo do processo encerrado", "ARQ");
 
     private final int ordem;
     private final String descricao;

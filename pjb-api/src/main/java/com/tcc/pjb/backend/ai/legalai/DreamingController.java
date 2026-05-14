@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.ai.legalai;
 
 import com.tcc.pjb.backend.ai.legalai.dreaming.application.DreamingNaoPermitidoException;
 import com.tcc.pjb.backend.ai.legalai.dreaming.application.DreamingOrchestrator;
+import com.tcc.pjb.backend.ai.legalai.dreaming.application.LegalAiDreamingMetricsService;
 import com.tcc.pjb.backend.ai.legalai.security.PromptInjectionException;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.Dream;
 import com.tcc.pjb.backend.ai.legalai.dreaming.domain.DreamId;
@@ -30,9 +31,12 @@ import java.util.UUID;
 public class DreamingController {
 
     private final DreamingOrchestrator orchestrator;
+    private final LegalAiDreamingMetricsService metricsService;
 
-    public DreamingController(DreamingOrchestrator orchestrator) {
+    public DreamingController(DreamingOrchestrator orchestrator,
+            LegalAiDreamingMetricsService metricsService) {
         this.orchestrator = orchestrator;
+        this.metricsService = metricsService;
     }
 
     @PostMapping(path = "/sessions", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -72,6 +76,12 @@ public class DreamingController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/metricas")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<LegalAiDreamingMetricsService.MetricasSnapshot> metricas() {
+        return ResponseEntity.ok(metricsService.snapshot());
     }
 
     private DreamInput construirInput(DreamingSessionRequest request) {
