@@ -268,7 +268,9 @@ GET /admin/governance/codebase-learning
 GET /admin/governance/codebase-learning?refresh=true
 ```
 
-Retorna hotspots do core, trilhas de extração, fluxos críticos ponta a ponta e razão de cobertura de testes por fatia. O snapshot tem TTL curto — use `refresh=true` para forçar revarredura sem reiniciar a aplicação.
+O endpoint expõe uma leitura viva do estado estrutural do projeto: hotspots do core, trilhas internas de extração, blueprints de extração, fluxos críticos ponta a ponta e razão de cobertura de testes por fatia. O relatório de sanidade-aprendizado identifica pacotes com pressão de decomposição, sinalizando o que precisa ser endurecido antes de qualquer extração.
+
+O snapshot em memória tem TTL curto para evitar reescanear a base a cada requisição. Use `refresh=true` nos endpoints administrativo e processual para forçar revarredura quando necessário — sem necessidade de reiniciar a aplicação.
 
 ---
 
