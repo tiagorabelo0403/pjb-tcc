@@ -143,7 +143,7 @@ GET /admin/governance/codebase-learning?refresh=true
 
 ## Qualidade executável
 
-A suíte atual conta com **2.498 testes · 0 falhas novas · 0 erros**. Toda alteração só é aceita quando melhora o comportamento verificável sem reduzir maturidade arquitetural.
+A suíte atual conta com **2.658 testes · 0 falhas novas · 0 erros**. Toda alteração só é aceita quando melhora o comportamento verificável sem reduzir maturidade arquitetural.
 
 Guards de conformidade estrutural:
 
@@ -183,6 +183,25 @@ A evolução funcional é guiada por uma matriz de substituição nacional que c
 docs/product/NATIONAL_JUDICIAL_SYSTEM_REPLACEMENT_MATRIX.md
 docs/product/NATIONAL_JUDICIAL_SYSTEM_REPLACEMENT_INDEX.json
 ```
+
+---
+
+## Aceleradores complementares
+
+Dez capacidades implementadas para cobrir lacunas que nenhum sistema judicial brasileiro resolve adequadamente:
+
+| # | Serviço | Função |
+|---|---------|--------|
+| 1 | `NulidadeProcessualRiskPolicy` | Diagnóstico preventivo de nulidade antes de qualquer movimentação — intimação válida, representação, sigilo, prazo, competência |
+| 2 | `ProcessoParalisacaoDiagnosisService` | Identifica a causa de processo parado (expediente sem ciência, documento sem assinatura, tarefa sem responsável, pendência vencida) sem pressionar magistrado |
+| 3 | `CivilSaneamentoChecklistService` | Checklist computável de saneamento: preliminares, pontos controvertidos, provas, ônus, julgamento antecipado e acordo provável |
+| 4 | `SobrestamentoInteligenteService` | Detecta automaticamente quando o motivo de sobrestamento cessou e avisa para dessobrestamento |
+| 5 | `ProcessoClusterSimilarityService` | Agrupa processos com mesma parte, pedido e rito em clusters para lote inteligente e acordo provável |
+| 6 | `PrecedenteAplicavelRadarService` | Sinaliza precedente repetitivo, tema suspenso ou divergência jurisprudencial — nunca decide, apenas informa |
+| 7 | `ResponsavelWorkloadBalancer` | Sugere responsável com base em carga, especialidade e equidade auditável — não impõe, justifica |
+| 8 | `DomicilioJudicialResilienceService` | Resilência no domicílio eletrônico: retry com backoff exponencial, painel de falhas e fallback gracioso |
+| 9 | `ArquivamentoPendenciaChecker` | Checklist seguro de arquivamento: custas, expedientes, prazos e documentos — nunca arquiva automaticamente |
+| 10 | `ProcessMiningMaterializedViewService` | Tabelas materializadas com atualização assíncrona em Virtual Threads — gargalo por ato, integração, rito e fase |
 
 ---
 
