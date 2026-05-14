@@ -1,4 +1,4 @@
--- V240: processo chip detection and acceleration tracking (Round 28AH)
+-- V240: processo chip detection and acceleration tracking
 
 CREATE TABLE IF NOT EXISTS pjb_processo_chip (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

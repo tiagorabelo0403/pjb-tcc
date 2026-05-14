@@ -1,4 +1,4 @@
--- V236: processo metadata quality scoring and completeness snapshots (Round 28AH)
+-- V236: processo metadata quality scoring and completeness snapshots
 
 CREATE TABLE IF NOT EXISTS pjb_metadata_quality_snapshot (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

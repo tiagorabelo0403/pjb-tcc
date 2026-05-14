@@ -1,4 +1,4 @@
--- V245: publicação de despachos e controle de ciência (Round 28AI)
+-- V245: publicação de despachos e controle de ciência
 
 CREATE TABLE IF NOT EXISTS pjb_publicacao (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -1,4 +1,4 @@
--- V234: secretariat expediente panel and ciência tracking (Round 28AH)
+-- V234: secretariat expediente panel and ciência tracking
 
 CREATE TABLE IF NOT EXISTS pjb_expediente_painel (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

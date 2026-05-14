@@ -1,4 +1,4 @@
--- V246: citação — modalidade, resultado e controle (Round 28AI)
+-- V246: citação — modalidade, resultado e controle
 
 CREATE TABLE IF NOT EXISTS pjb_citacao (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -1,4 +1,4 @@
--- V231: governance tables for institutional judicial coordination (Round 28AH)
+-- V231: governance tables for institutional judicial coordination
 
 CREATE TABLE IF NOT EXISTS pjb_instituicao_judicial (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

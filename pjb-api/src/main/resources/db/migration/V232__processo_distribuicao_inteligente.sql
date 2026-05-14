@@ -1,4 +1,4 @@
--- V232: intelligent distribution and workload balancing tables (Round 28AH)
+-- V232: intelligent distribution and workload balancing tables
 
 CREATE TABLE IF NOT EXISTS pjb_distribuicao_snapshot (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

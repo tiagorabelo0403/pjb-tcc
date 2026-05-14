@@ -1,4 +1,4 @@
--- V244: workflow de fases processuais e atos obrigatórios (Round 28AI)
+-- V244: workflow de fases processuais e atos obrigatórios
 
 CREATE TABLE IF NOT EXISTS pjb_fase_transicao_log (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

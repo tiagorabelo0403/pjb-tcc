@@ -1,4 +1,4 @@
--- V250: exportação de movimentações para o DataJud/CNJ (Round 28AI)
+-- V250: exportação de movimentações para o DataJud/CNJ
 
 CREATE TABLE IF NOT EXISTS pjb_datajud_movimentacao (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),

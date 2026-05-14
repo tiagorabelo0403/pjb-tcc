@@ -1,4 +1,4 @@
--- V241: gigs activity and execution tracking (Round 28AH)
+-- V241: gigs activity and execution tracking
 
 CREATE TABLE IF NOT EXISTS pjb_gigs_activity (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

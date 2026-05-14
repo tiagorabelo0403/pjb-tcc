@@ -1,4 +1,4 @@
--- V252: ata de audiência, precatório/RPV e extinção sem mérito (Round 28AI)
+-- V252: ata de audiência, precatório/RPV e extinção sem mérito
 
 CREATE TABLE IF NOT EXISTS pjb_ata_audiencia (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

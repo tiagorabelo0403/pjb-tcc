@@ -1,4 +1,4 @@
--- V237: documento operational state and extended custody fields (Round 28AH)
+-- V237: documento operational state and extended custody fields
 
 ALTER TABLE pjb_documento_processual
     ADD COLUMN IF NOT EXISTS estado_operacional    VARCHAR(40),

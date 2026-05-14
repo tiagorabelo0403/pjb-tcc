@@ -1,4 +1,4 @@
--- V249: conflito de competência — detecção e log (Round 28AI)
+-- V249: conflito de competência — detecção e log
 
 CREATE TABLE IF NOT EXISTS pjb_conflito_competencia (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -1,4 +1,4 @@
--- V251: honorários de sucumbência e tutela urgência (Round 28AI)
+-- V251: honorários de sucumbência e tutela urgência
 
 CREATE TABLE IF NOT EXISTS pjb_honorarios_sucumbencia (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

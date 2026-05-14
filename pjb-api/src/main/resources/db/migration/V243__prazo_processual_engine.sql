@@ -1,4 +1,4 @@
--- V243: prazo processual engine — calendário, vencimentos e certidões (Round 28AI)
+-- V243: prazo processual engine — calendário, vencimentos e certidões
 
 CREATE TABLE IF NOT EXISTS pjb_prazo_processual (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

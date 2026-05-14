@@ -1,4 +1,4 @@
--- V248: perito e laudo pericial — designação e controle (Round 28AI)
+-- V248: perito e laudo pericial — designação e controle
 
 CREATE TABLE IF NOT EXISTS pjb_perito (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

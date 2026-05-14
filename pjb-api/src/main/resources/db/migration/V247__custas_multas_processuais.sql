@@ -1,4 +1,4 @@
--- V247: custas e multas processuais (Round 28AI)
+-- V247: custas e multas processuais
 
 CREATE TABLE IF NOT EXISTS pjb_custas_processual (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

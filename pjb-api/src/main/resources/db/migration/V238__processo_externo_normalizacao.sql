@@ -1,4 +1,4 @@
--- V238: external process import normalization log (Round 28AH)
+-- V238: external process import normalization log
 
 CREATE TABLE IF NOT EXISTS pjb_processo_externo_carga (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

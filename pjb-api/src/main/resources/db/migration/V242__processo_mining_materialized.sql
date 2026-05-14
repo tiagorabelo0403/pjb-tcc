@@ -1,4 +1,4 @@
--- V242: process mining materialized view support tables (Round 28AH)
+-- V242: process mining materialized view support tables
 
 CREATE TABLE IF NOT EXISTS pjb_mining_event_log (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

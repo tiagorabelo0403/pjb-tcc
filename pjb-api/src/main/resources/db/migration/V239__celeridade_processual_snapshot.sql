@@ -1,4 +1,4 @@
--- V239: celeridade processual analytics snapshots (Round 28AH)
+-- V239: celeridade processual analytics snapshots
 
 CREATE TABLE IF NOT EXISTS pjb_celeridade_snapshot (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

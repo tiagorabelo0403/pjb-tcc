@@ -1,4 +1,4 @@
--- V233: secretariat signature queue and batch signature control (Round 28AH)
+-- V233: secretariat signature queue and batch signature control
 
 CREATE TABLE IF NOT EXISTS pjb_assinatura_pendente (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

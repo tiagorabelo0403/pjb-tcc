@@ -1,4 +1,4 @@
--- V235: autuação rectification audit trail (Round 28AH)
+-- V235: autuação rectification audit trail
 
 CREATE TABLE IF NOT EXISTS pjb_retificacao_autuacao (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
