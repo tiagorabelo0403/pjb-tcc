@@ -143,7 +143,7 @@ GET /admin/governance/codebase-learning?refresh=true
 
 ## Qualidade executável
 
-A suíte atual conta com **2.361 testes · 0 falhas novas · 0 erros** (Round 28AI). Toda alteração só é aceita quando melhora o comportamento verificável sem reduzir maturidade arquitetural.
+A suíte atual conta com **2.498 testes · 0 falhas novas · 0 erros**. Toda alteração só é aceita quando melhora o comportamento verificável sem reduzir maturidade arquitetural.
 
 Guards de conformidade estrutural:
 
