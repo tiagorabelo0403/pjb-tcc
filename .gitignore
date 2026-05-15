@@ -41,7 +41,8 @@ replay_pid*
 .mvn/jvm.config
 node_modules/
 **/node_modules/
-coverage/
+/coverage/
+frontend/coverage/
 .nyc_output/
 __pycache__/
 *.py[cod]
