@@ -1,8 +1,8 @@
 # Config Taxonomy Guard
 
-- Base analisada: `pjb-api/src/main/java/com/tcc/pjb/backend`
+- Base analisada: `pjb-api\src\main\java\com\tcc\pjb\backend`
 - Raiz canônica: `configs`
-- Arquivos Java analisados: **7443**
+- Arquivos Java analisados: **7693**
 - Arquivos na raiz canônica: **104**
 - Arquivos em raízes legadas: **0**
 
