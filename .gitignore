@@ -84,6 +84,8 @@ service-account*.json
 credentials*.json
 token*.txt
 secret*.txt
+prompt-round*.txt
+prompt*.txt
 
 # Data exports that may carry personal or procedural data
 *.csv

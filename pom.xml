@@ -573,7 +573,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${maven.surefire.version}</version>
+                <version>${maven.failsafe.version}</version>
                 <configuration>
                     <argLine>${failsafeArgLine} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.io.tmpdir=${project.build.directory}</argLine>
                     <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
