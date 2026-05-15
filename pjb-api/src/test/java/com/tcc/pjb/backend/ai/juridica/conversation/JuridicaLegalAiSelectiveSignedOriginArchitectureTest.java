@@ -25,7 +25,8 @@ class JuridicaLegalAiSelectiveSignedOriginArchitectureTest {
         assertTrue(pact.contains("signed_attestation_required_for_capability"));
         assertTrue(pact.contains("X-PJB-Origin-Requirement"));
         assertTrue(pact.contains("X-PJB-Origin-Capability"));
-        String yaml = Files.readString(configRoot);
+        String yaml = Files.readString(configRoot)
+                + Files.readString(configRoot.resolveSibling("application-security.yml"));
         assertTrue(yaml.contains("selective-signed-rules"));
         assertTrue(yaml.contains("legal-ai-conversation-sensitive-capabilities"));
         assertTrue(yaml.contains("X-PJB-Origin-Requirement"));

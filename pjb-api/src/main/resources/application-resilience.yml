@@ -1,0 +1,49 @@
+resilience4j:
+  retry:
+    instances:
+      mni-remessa:
+        max-attempts: ${PJB_R4J_MNI_MAX_ATTEMPTS:5}
+        wait-duration: ${PJB_R4J_MNI_WAIT:2s}
+        exponential-backoff-multiplier: 2
+      datajud-feed:
+        max-attempts: ${PJB_R4J_DATAJUD_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_DATAJUD_WAIT:3s}
+      sisbajud-bloqueio:
+        max-attempts: ${PJB_R4J_SISBAJUD_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_SISBAJUD_WAIT:5s}
+      infojud-consulta:
+        max-attempts: ${PJB_R4J_INFOJUD_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_INFOJUD_WAIT:3s}
+  circuitbreaker:
+    instances:
+      mni-remessa:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_MNI_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 3
+      sisbajud-bloqueio:
+        sliding-window-size: 5
+        failure-rate-threshold: 60
+        wait-duration-in-open-state: ${PJB_CB_SISBAJUD_WAIT:120s}
+      anthropic-memory:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_ANTHROPIC_MEMORY_WAIT:30s}
+        permitted-number-of-calls-in-half-open-state: 3
+        record-exceptions:
+          - java.lang.Exception
+      anthropic-dreaming:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_ANTHROPIC_DREAMING_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 2
+        record-exceptions:
+          - java.lang.Exception
+  bulkhead:
+    instances:
+      mni-remessa:
+        max-concurrent-calls: ${PJB_BH_MNI_MAX:20}
+        max-wait-duration: 2s
+      sisbajud-bloqueio:
+        max-concurrent-calls: ${PJB_BH_SISBAJUD_MAX:10}
+        max-wait-duration: 2s

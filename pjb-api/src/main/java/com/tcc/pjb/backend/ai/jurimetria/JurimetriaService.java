@@ -1,7 +1,7 @@
 package com.tcc.pjb.backend.ai.jurimetria;
 
 import com.tcc.pjb.backend.ai.jurimetria.model.JurimetriaReport;
-import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.core.processo.analytics.application.ProcessoAnalyticsAggregationService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -14,10 +14,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class JurimetriaService {
 
-    private final ProcessoRepository processoRepository;
+    private final ProcessoAnalyticsAggregationService analyticsAggregationService;
 
-    public JurimetriaService(ProcessoRepository processoRepository) {
-        this.processoRepository = Objects.requireNonNull(processoRepository);
+    public JurimetriaService(ProcessoAnalyticsAggregationService analyticsAggregationService) {
+        this.analyticsAggregationService = Objects.requireNonNull(analyticsAggregationService);
     }
 
     public JurimetriaReport gerarRelatorio(String tese,
@@ -26,8 +26,8 @@ public class JurimetriaService {
                                            String assunto,
                                            Map<String, Object> filtros) {
         String ramo = resolveRamo(filtros, classe, assunto, tese);
-        List<Object[]> agregadosRamo = processoRepository.agregadosPorRamo(ramo);
-        List<Object[]> agregadosTribunal = isBlank(tribunal) ? List.of() : processoRepository.agregadosPorRamoETribunal(ramo, tribunal.trim().toUpperCase(Locale.ROOT));
+        List<Object[]> agregadosRamo = analyticsAggregationService.agregadosPorRamo(ramo);
+        List<Object[]> agregadosTribunal = isBlank(tribunal) ? List.of() : analyticsAggregationService.agregadosPorRamoETribunal(ramo, tribunal.trim().toUpperCase(Locale.ROOT));
         LinkedHashMap<String, Double> indicadores = new LinkedHashMap<>();
         ArrayList<String> observacoes = new ArrayList<>();
         if (!agregadosRamo.isEmpty()) {

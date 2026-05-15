@@ -31,7 +31,8 @@ class JuridicaLegalAiSignedOriginArchitectureTest {
         assertTrue(pact.contains("/api/ai/legal/minuta"));
         assertTrue(pact.contains("/api/ai/legal/grounding/check"));
         assertTrue(pact.contains("/api/ai/legal/conversation"));
-        String yaml = Files.readString(configRoot);
+        String yaml = Files.readString(configRoot)
+                + Files.readString(configRoot.resolveSibling("application-security.yml"));
         assertTrue(yaml.contains("X-PJB-Origin-Id"));
         assertTrue(yaml.contains("X-PJB-Signature-Alg"));
         assertTrue(yaml.contains("X-PJB-Origin-Mode"));

@@ -1,0 +1,35 @@
+pjb:
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY:}
+    base-url: ${ANTHROPIC_BASE_URL:https://api.anthropic.com}
+    managed-agents-version: managed-agents-2026-04-01
+    dreaming-version: dreaming-2026-04-21
+    dreaming-model: ${ANTHROPIC_DREAMING_MODEL:claude-sonnet-4-6}
+
+  legal-ai:
+    dreaming:
+      enabled: ${PJB_LEGAL_AI_DREAMING_ENABLED:false}
+      schedule: ${PJB_LEGAL_AI_DREAMING_SCHEDULE:0 0 2 * * *}
+      max-sessions-per-dream: ${PJB_LEGAL_AI_DREAMING_MAX_SESSIONS:50}
+      polling-max-attempts: ${PJB_LEGAL_AI_DREAMING_POLLING_MAX_ATTEMPTS:30}
+      polling-initial-delay-seconds: ${PJB_LEGAL_AI_DREAMING_POLLING_INITIAL_DELAY:10}
+
+  ai:
+    provider: ${PJB_AI_PROVIDER:openai}
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+      model: ${PJB_AI_OPENAI_MODEL:gpt-5.2-thinking}
+      temperature: ${PJB_AI_OPENAI_TEMPERATURE:0.2}
+      timeout-ms: ${PJB_AI_OPENAI_TIMEOUT_MS:60000}
+      max-tokens: ${PJB_AI_OPENAI_MAX_TOKENS:2048}
+    google:
+      api-key: ${GOOGLE_API_KEY:}
+      base-url: ${GOOGLE_BASE_URL:https://generativelanguage.googleapis.com}
+    pje:
+      mock-enabled: ${PJB_INTEGRATIONS_PJE_MOCK_ENABLED:false}
+      submission:
+        mock-enabled: ${PJB_INTEGRATIONS_PJE_SUBMISSION_MOCK_ENABLED:${PJB_INTEGRATIONS_PJE_MOCK_ENABLED:false}}
+      model: ${PJB_AI_GOOGLE_MODEL:gemini-2.5-pro}
+      timeout-ms: ${PJB_AI_GOOGLE_TIMEOUT_MS:60000}
+      max-output-tokens: ${PJB_AI_GOOGLE_MAX_OUTPUT_TOKENS:2048}

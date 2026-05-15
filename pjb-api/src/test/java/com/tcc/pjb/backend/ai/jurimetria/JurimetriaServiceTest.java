@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.core.processo.analytics.application.ProcessoAnalyticsAggregationService;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -14,13 +14,13 @@ class JurimetriaServiceTest {
 
     @Test
     void buildsRepositoryBackedIndicators() {
-        ProcessoRepository repository = mock(ProcessoRepository.class);
-        when(repository.agregadosPorRamo(eq("CIVIL")))
+        ProcessoAnalyticsAggregationService analytics = mock(ProcessoAnalyticsAggregationService.class);
+        when(analytics.agregadosPorRamo(eq("CIVIL")))
                 .thenReturn(List.<Object[]>of(new Object[]{"CIVIL", 100L, 62L, 18L, 38L, 240.0}));
-        when(repository.agregadosPorRamoETribunal(eq("CIVIL"), eq("TJCE")))
+        when(analytics.agregadosPorRamoETribunal(eq("CIVIL"), eq("TJCE")))
                 .thenReturn(List.<Object[]>of(new Object[]{80L, 30L, 12L, 20L}));
 
-        JurimetriaService service = new JurimetriaService(repository);
+        JurimetriaService service = new JurimetriaService(analytics);
         var report = service.gerarRelatorio(
                 "Obrigação de fazer com tutela de urgência",
                 "TJCE",

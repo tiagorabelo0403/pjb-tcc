@@ -26,7 +26,7 @@ class SecurityConfigurationProfilesBindingTest {
 
     @Test
     void shouldBindBaseSecurityConfigurationFromApplicationYaml() throws Exception {
-        ConfigurableEnvironment env = loadEnvironment("application.yml");
+        ConfigurableEnvironment env = loadEnvironment("application.yml", "application-security.yml");
 
         assertEquals("v1", env.getProperty("pjb.security.policy.version"));
         assertEquals("true", env.getProperty("pjb.security.perimeter.enabled"));

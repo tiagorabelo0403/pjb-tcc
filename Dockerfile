@@ -1,14 +1,12 @@
-FROM eclipse-temurin:21-jdk-jammy AS builder
+FROM maven:3.9.9-eclipse-temurin-21-jammy AS builder
 WORKDIR /workspace
-COPY mvnw .
-COPY .mvn .mvn
 COPY pom.xml .
 COPY pjb-core/pom.xml pjb-core/pom.xml
 COPY pjb-api/pom.xml pjb-api/pom.xml
-RUN chmod +x mvnw && ./mvnw -q -pl pjb-api -am -DskipTests dependency:go-offline
+RUN mvn -q -pl pjb-api -am -DskipTests dependency:go-offline
 COPY pjb-core/src pjb-core/src
 COPY pjb-api/src pjb-api/src
-RUN ./mvnw -q -pl pjb-api -am -DskipTests package
+RUN mvn -q -pl pjb-api -am -DskipTests package
 
 FROM eclipse-temurin:21-jre-jammy AS runtime
 WORKDIR /app

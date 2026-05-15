@@ -1,4 +1,16 @@
+logging:
+  level:
+    org.springframework.data.elasticsearch: WARN
+    org.elasticsearch.client: WARN
+    org.elasticsearch: WARN
+
 spring:
+  config:
+    import:
+      - classpath:application-ai.yml
+      - classpath:application-security.yml
+      - classpath:application-integrations.yml
+      - classpath:application-resilience.yml
   data:
     redis:
       repositories:
@@ -103,21 +115,6 @@ server:
     processor-cache: ${PJB_SERVER_PROCESSOR_CACHE:200}
 
 pjb:
-
-  anthropic:
-    api-key: ${ANTHROPIC_API_KEY:}
-    base-url: ${ANTHROPIC_BASE_URL:https://api.anthropic.com}
-    managed-agents-version: managed-agents-2026-04-01
-    dreaming-version: dreaming-2026-04-21
-    dreaming-model: ${ANTHROPIC_DREAMING_MODEL:claude-sonnet-4-6}
-
-  legal-ai:
-    dreaming:
-      enabled: ${PJB_LEGAL_AI_DREAMING_ENABLED:false}
-      schedule: ${PJB_LEGAL_AI_DREAMING_SCHEDULE:0 0 2 * * *}
-      max-sessions-per-dream: ${PJB_LEGAL_AI_DREAMING_MAX_SESSIONS:50}
-      polling-max-attempts: ${PJB_LEGAL_AI_DREAMING_POLLING_MAX_ATTEMPTS:30}
-      polling-initial-delay-seconds: ${PJB_LEGAL_AI_DREAMING_POLLING_INITIAL_DELAY:10}
 
   institutional:
     official-source:
@@ -1017,11 +1014,6 @@ pjb:
   portal:
     base-url: ${PJB_PORTAL_BASE_URL:https://portal.pjb.jus.br}
 
-  bnmp:
-    enabled: ${PJB_BNMP_ENABLED:false}
-    base-url: ${PJB_BNMP_BASE_URL:https://bnmp.cnj.jus.br/api/v1}
-    token: ${PJB_BNMP_TOKEN:}
-
   comunicacao:
     judicial:
       sefaz-nfe:
@@ -1031,21 +1023,6 @@ pjb:
         timeout: ${PJB_COMJUD_SEFAZ_NFE_TIMEOUT:4s}
         user-agent: ${PJB_COMJUD_SEFAZ_NFE_USER_AGENT:PJB-Interceptacao-SefazNFe/1.0}
         consulta-url-por-uf: {}
-
-  hsm:
-    enabled: ${PJB_HSM_ENABLED:false}
-    mock-enabled: ${PJB_HSM_MOCK_ENABLED:true}
-    pkcs11-config-path: ${PJB_HSM_PKCS11_CONFIG_PATH:}
-    key-alias: ${PJB_HSM_KEY_ALIAS:aliasGovPJB}
-    pin: ${PJB_HSM_PIN:}
-    trust-store-path: ${PJB_HSM_TRUST_STORE_PATH:}
-    trust-store-password: ${PJB_HSM_TRUST_STORE_PASSWORD:}
-    trust-store-type: ${PJB_HSM_TRUST_STORE_TYPE:PKCS12}
-    signature-algorithm: ${PJB_HSM_SIGNATURE_ALGORITHM:SHA256withRSA}
-    operation-timeout: ${PJB_HSM_OPERATION_TIMEOUT:5s}
-    max-concurrent-ops: ${PJB_HSM_MAX_CONCURRENT_OPS:8}
-    interceptacao-timeout-ms: ${PJB_HSM_INTERCEPTACAO_TIMEOUT_MS:8000}
-    auditar-operacoes: ${PJB_HSM_AUDITAR_OPERACOES:true}
 
   secretariat:
     sse:
@@ -1434,6 +1411,9 @@ pjb:
       consultaPublicaPageResolve: ${PJB_CACHE_TTL_CONSULTA_PUBLICA_PAGE_RESOLVE:5m}
       jurisprudencia_semantica: ${PJB_CACHE_TTL_JURISPRUDENCIA_SEMANTICA:6h}
       perito_disponibilidade: ${PJB_CACHE_TTL_PERITO_DISPONIBILIDADE:15m}
+      processo_analytics_ramo: ${PJB_CACHE_TTL_ANALYTICS_RAMO:10m}
+      processo_analytics_tribunal: ${PJB_CACHE_TTL_ANALYTICS_TRIBUNAL:10m}
+      jurimetria_relatorio: ${PJB_CACHE_TTL_JURIMETRIA_RELATORIO:15m}
     maximum-size:
       cidadaoPainel: ${PJB_CACHE_MAX_CIDADAO_PAINEL:5000}
       govHubByUf: ${PJB_CACHE_MAX_GOV_HUB:256}
@@ -1453,6 +1433,9 @@ pjb:
       consultaPublicaPageResolve: ${PJB_CACHE_MAX_CONSULTA_PUBLICA_PAGE_RESOLVE:20000}
       jurisprudencia_semantica: ${PJB_CACHE_MAX_JURISPRUDENCIA_SEMANTICA:2000}
       perito_disponibilidade: ${PJB_CACHE_MAX_PERITO_DISPONIBILIDADE:2000}
+      processo_analytics_ramo: ${PJB_CACHE_MAX_ANALYTICS_RAMO:500}
+      processo_analytics_tribunal: ${PJB_CACHE_MAX_ANALYTICS_TRIBUNAL:1000}
+      jurimetria_relatorio: ${PJB_CACHE_MAX_JURIMETRIA_RELATORIO:200}
     enabled: ${PJB_CACHE_ENABLED:true}
     redisson-config: ${PJB_REDISSON_CONFIG:classpath:redisson.yml}
     redisson-config-path: ${PJB_REDISSON_CONFIG_PATH:}
@@ -1464,363 +1447,6 @@ pjb:
     recursal:
       ai-mesh:
         timeout: ${PJB_PROCESSUAL_RECURSAL_AI_MESH_TIMEOUT:5s}
-
-  security:
-    master-key: ${PJB_MASTER_KEY_BASE64:}
-    hardening:
-      enabled: ${PJB_SECURITY_HARDENING_ENABLED:true}
-      reject-trace: ${PJB_SECURITY_HARDENING_REJECT_TRACE:true}
-      reject-track: ${PJB_SECURITY_HARDENING_REJECT_TRACK:true}
-      reject-connect: ${PJB_SECURITY_HARDENING_REJECT_CONNECT:true}
-      reject-method-override-headers: ${PJB_SECURITY_HARDENING_REJECT_METHOD_OVERRIDE:true}
-      add-browser-hardening-headers: ${PJB_SECURITY_HARDENING_BROWSER_HEADERS:true}
-      no-store-sensitive-responses: ${PJB_SECURITY_HARDENING_NOSTORE_SENSITIVE:true}
-      sensitive-paths: ${PJB_SECURITY_HARDENING_SENSITIVE_PATHS:["/api/admin/","/api/v1/admin/","/actuator/","/api/v1/security/","/api/v1/auth/"]}
-    policy:
-      version: ${PJB_SECURITY_POLICY_VERSION:v1}
-      descriptor-resource: ${PJB_SECURITY_POLICY_DESCRIPTOR_RESOURCE:classpath:policies/security/pjb-access-policy.json}
-    perimeter:
-      enabled: ${PJB_SECURITY_PERIMETER_ENABLED:true}
-      trust-proxy-headers: ${PJB_SECURITY_PERIMETER_TRUST_PROXY_HEADERS:false}
-      cors-enabled: ${PJB_SECURITY_PERIMETER_CORS_ENABLED:true}
-      cors-allowed-origins: ${PJB_SECURITY_PERIMETER_CORS_ALLOWED_ORIGINS:}
-      cors-allowed-methods: ${PJB_SECURITY_PERIMETER_CORS_ALLOWED_METHODS:GET,POST,PUT,PATCH,DELETE,OPTIONS}
-      cors-allowed-headers: ${PJB_SECURITY_PERIMETER_CORS_ALLOWED_HEADERS:Authorization,Content-Type,X-Request-Id,X-PJB-Justificativa,X-PJB-Origin-Id,X-PJB-Body-Hash,X-PJB-Signature,X-PJB-Signature-Alg,X-PJB-Timestamp}
-      cors-exposed-headers: ${PJB_SECURITY_PERIMETER_CORS_EXPOSED_HEADERS:RateLimit-Limit,RateLimit-Remaining,RateLimit-Reset,Retry-After,X-RateLimit-Limit,X-RateLimit-Remaining,X-Request-Id,X-PJB-Origin-Mode,X-PJB-Origin-Subject,X-PJB-Origin-Requirement,X-PJB-Origin-Capability}
-      cors-allow-credentials: ${PJB_SECURITY_PERIMETER_CORS_ALLOW_CREDENTIALS:false}
-      cors-max-age: ${PJB_SECURITY_PERIMETER_CORS_MAX_AGE:1h}
-      bypass-paths: ${PJB_SECURITY_PERIMETER_BYPASS_PATHS:}
-      proxy:
-        reject-untrusted-forwarded-headers: ${PJB_SECURITY_PERIMETER_PROXY_REJECT_UNTRUSTED_HEADERS:true}
-        max-forwarded-for-hops: ${PJB_SECURITY_PERIMETER_PROXY_MAX_FORWARDED_FOR_HOPS:8}
-        trusted-cidrs: ${PJB_SECURITY_PERIMETER_PROXY_TRUSTED_CIDRS:}
-      blocklist:
-        store: ${PJB_SECURITY_BLOCKLIST_STORE:memory}
-        key-prefix: ${PJB_SECURITY_BLOCKLIST_KEY_PREFIX:pjb:sec:block:}
-      ratelimit:
-        enabled: ${PJB_SECURITY_PERIMETER_RATELIMIT_ENABLED:true}
-        store: ${PJB_SECURITY_RATELIMIT_STORE:memory}
-        key-prefix: ${PJB_SECURITY_RATELIMIT_KEY_PREFIX:pjb:sec:rl:}
-        window: ${PJB_SECURITY_RATELIMIT_WINDOW:60s}
-        maxRequests: ${PJB_SECURITY_RATELIMIT_MAX_REQUESTS:600}
-        violation-window: ${PJB_SECURITY_RATELIMIT_VIOLATION_WINDOW:10m}
-        ban-after-violations: ${PJB_SECURITY_RATELIMIT_BAN_AFTER_VIOLATIONS:7}
-        ban-ttl: ${PJB_SECURITY_RATELIMIT_BAN_TTL:1h}
-        rules:
-          - name: admin-api
-            paths: ["/api/admin/**", "/api/v1/admin/**"]
-            methods: ["GET", "POST", "PUT", "DELETE"]
-            window: ${PJB_SECURITY_RATELIMIT_ADMIN_WINDOW:60s}
-            maxRequests: ${PJB_SECURITY_RATELIMIT_ADMIN_MAX_REQUESTS:120}
-            keyStrategy: ip_user
-          - name: admin-ritos-reports
-            paths: ["/api/admin/ritos/relatorios/**"]
-            methods: ["GET"]
-            window: ${PJB_SECURITY_RATELIMIT_ADMIN_REPORTS_WINDOW:60s}
-            maxRequests: ${PJB_SECURITY_RATELIMIT_ADMIN_REPORTS_MAX_REQUESTS:60}
-            keyStrategy: ip_user
-      origin-governance:
-        enabled: ${PJB_SECURITY_PERIMETER_ORIGIN_GOVERNANCE_ENABLED:false}
-        allow-referer-fallback: ${PJB_SECURITY_PERIMETER_ORIGIN_ALLOW_REFERER_FALLBACK:true}
-        require-body-hash-on-signed-json-requests: ${PJB_SECURITY_PERIMETER_ORIGIN_REQUIRE_BODY_HASH:true}
-        max-timestamp-skew: ${PJB_SECURITY_PERIMETER_ORIGIN_MAX_TIMESTAMP_SKEW:5m}
-        exempt-prefixes: ${PJB_SECURITY_PERIMETER_ORIGIN_EXEMPT_PREFIXES:["/actuator/health","/livez","/readyz","/startupz","/internal/runtime/"]}
-        governed-prefixes: ${PJB_SECURITY_PERIMETER_ORIGIN_GOVERNED_PREFIXES:["/api/v1/auth/","/api/v1/security/","/api/ai/","/api/v1/ia/","/api/v1/peticionamento/","/api/v1/processual/","/api/v1/processos/","/api/v1/institucional/","/api/v1/advogado/","/api/v1/oab/","/api/marketplace/v1/"]}
-        signed-required-prefixes: ${PJB_SECURITY_PERIMETER_ORIGIN_SIGNED_REQUIRED_PREFIXES:}
-        trusted-browser-origins: ${PJB_SECURITY_PERIMETER_TRUSTED_BROWSER_ORIGINS:}
-        selective-signed-rules:
-          - name: legal-ai-structured-surfaces
-            paths: ["/api/ai/legal/minuta", "/api/ai/legal/grounding/check"]
-          - name: legal-ai-conversation-sensitive-capabilities
-            paths: ["/api/ai/legal/conversation"]
-            capability-values: ${PJB_SECURITY_PERIMETER_ORIGIN_LEGAL_AI_SIGNED_CAPABILITIES:LEGAL_DRAFT_V2,LEGAL_GROUNDING_CHECK_V3,LEGAL_CAPABILITY_RECOVERY_V1}
-            capability-json-pointers: ["/context/requestedCapability", "/context/capability", "/context/legalCapability", "/capability", "/contexto/requestedCapability", "/contexto/capability", "/contexto/legalCapability"]
-        trusted-origins:
-          - active: ${PJB_SECURITY_PERIMETER_EDGE_APP_ACTIVE:false}
-            id: ${PJB_SECURITY_PERIMETER_EDGE_APP_ID:edge-app}
-            secret: ${PJB_SECURITY_PERIMETER_EDGE_APP_SECRET:}
-            allowed-cidrs: ${PJB_SECURITY_PERIMETER_EDGE_APP_ALLOWED_CIDRS:}
-            allowed-path-prefixes: ${PJB_SECURITY_PERIMETER_EDGE_APP_ALLOWED_PATH_PREFIXES:/api/v1/auth/,/api/v1/security/,/api/ai/,/api/v1/ia/,/api/v1/peticionamento/,/api/v1/processual/,/api/v1/processos/,/api/v1/institucional/,/api/v1/advogado/,/api/v1/oab/,/api/marketplace/v1/}
-            allowed-methods: ${PJB_SECURITY_PERIMETER_EDGE_APP_ALLOWED_METHODS:POST,PUT,PATCH,DELETE}
-            allowed-origins: ${PJB_SECURITY_PERIMETER_EDGE_APP_ALLOWED_ORIGINS:}
-    capability-ratelimit:
-      enabled: ${PJB_SECURITY_CAPABILITY_RATELIMIT_ENABLED:true}
-      store: ${PJB_SECURITY_CAPABILITY_RATELIMIT_STORE:redis}
-      key-prefix: ${PJB_SECURITY_CAPABILITY_RATELIMIT_KEY_PREFIX:pjb:caprl}
-      window-seconds: ${PJB_SECURITY_CAPABILITY_RATELIMIT_WINDOW_SECONDS:60}
-      default-limit-tokens: ${PJB_SECURITY_CAPABILITY_RATELIMIT_DEFAULT_LIMIT_TOKENS:60}
-    sandbox:
-      enabled: ${PJB_SECURITY_SANDBOX_ENABLED:true}
-      strict: ${PJB_SECURITY_SANDBOX_STRICT:true}
-      allow-localhost: ${PJB_SECURITY_SANDBOX_ALLOW_LOCALHOST:false}
-      allow-private: ${PJB_SECURITY_SANDBOX_ALLOW_PRIVATE:false}
-      allow-cidrs: ${PJB_SECURITY_SANDBOX_ALLOW_CIDRS:}
-      deny-cidrs: ${PJB_SECURITY_SANDBOX_DENY_CIDRS:0.0.0.0/0}
-      file-upload:
-        max-files: ${PJB_SECURITY_SANDBOX_UPLOAD_MAX_FILES:8}
-        allow-content-types: ${PJB_SECURITY_SANDBOX_UPLOAD_ALLOW_CT:application/pdf,image/png,image/jpeg}
-        max-bytes: ${PJB_SECURITY_SANDBOX_UPLOAD_MAX_BYTES:10485760}
-        magic-bytes-check: ${PJB_SECURITY_SANDBOX_UPLOAD_MAGIC_BYTES:true}
-    financeira:
-      capability-catalog:
-        deny-unknown: ${PJB_SECURITY_FINANCEIRA_CAPABILITY_CATALOG_DENY_UNKNOWN:true}
-        allow-if-missing: ${PJB_SECURITY_FINANCEIRA_CAPABILITY_CATALOG_ALLOW_IF_MISSING:false}
-        allow-exact: ${PJB_SECURITY_FINANCEIRA_CAPABILITY_CATALOG_ALLOW_EXACT:}
-        allow-prefix: ${PJB_SECURITY_FINANCEIRA_CAPABILITY_CATALOG_ALLOW_PREFIX:}
-        allow-contains-any: ${PJB_SECURITY_FINANCEIRA_CAPABILITY_CATALOG_ALLOW_CONTAINS_ANY:}
-    juridica:
-      capability-catalog:
-        deny-unknown: ${PJB_SECURITY_JURIDICA_CAPABILITY_CATALOG_DENY_UNKNOWN:true}
-        allow-if-missing: ${PJB_SECURITY_JURIDICA_CAPABILITY_CATALOG_ALLOW_IF_MISSING:false}
-        allow-exact: ${PJB_SECURITY_JURIDICA_CAPABILITY_CATALOG_ALLOW_EXACT:}
-        allow-prefix: ${PJB_SECURITY_JURIDICA_CAPABILITY_CATALOG_ALLOW_PREFIX:}
-        allow-contains-any: ${PJB_SECURITY_JURIDICA_CAPABILITY_CATALOG_ALLOW_CONTAINS_ANY:}
-  crypto:
-    pqc:
-      enabled: ${PJB_CRYPTO_PQC_ENABLED:false}
-      signature-algorithm: ${PJB_CRYPTO_PQC_SIGNATURE_ALGORITHM:DILITHIUM}
-
-  integrations:
-    openai:
-      api-key: ${OPENAI_API_KEY:}
-      base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
-    google:
-      api-key: ${GOOGLE_API_KEY:}
-      base-url: ${GOOGLE_BASE_URL:https://generativelanguage.googleapis.com}
-    pje:
-      mock-enabled: ${PJB_INTEGRATIONS_PJE_MOCK_ENABLED:false}
-      submission:
-        mock-enabled: ${PJB_INTEGRATIONS_PJE_SUBMISSION_MOCK_ENABLED:${PJB_INTEGRATIONS_PJE_MOCK_ENABLED:false}}
-    govbr:
-      enabled: ${PJB_INTEGRATIONS_GOVBR_ENABLED:false}
-      authorize-url: ${PJB_GOVBR_AUTHORIZE_URL:https://sso.staging.acesso.gov.br/authorize}
-      token-url: ${PJB_GOVBR_TOKEN_URL:https://sso.staging.acesso.gov.br/token}
-      userinfo-url: ${PJB_GOVBR_USERINFO_URL:https://sso.staging.acesso.gov.br/userinfo/}
-      picture-url: ${PJB_GOVBR_PICTURE_URL:https://sso.staging.acesso.gov.br/userinfo/picture}
-      client-id: ${PJB_GOVBR_CLIENT_ID:}
-      client-secret: ${PJB_GOVBR_CLIENT_SECRET:}
-      redirect-uri: ${PJB_GOVBR_REDIRECT_URI:http://localhost:8080/api/v1/cidadao/govbr/link/callback}
-      redirect-uri-step-up: ${PJB_GOVBR_REDIRECT_URI_STEPUP:http://localhost:8080/api/v1/auth/govbr/stepup/callback}
-      step-up-scope: ${PJB_GOVBR_STEPUP_SCOPE:openid email profile govbr_confiabilidades}
-      jwks-url: ${PJB_GOVBR_JWKS_URL:}
-      issuer: ${PJB_GOVBR_ISSUER:}
-      mock-enabled: ${PJB_GOVBR_MOCK_ENABLED:false}
-      frontend-success-redirect: ${PJB_GOVBR_FE_SUCCESS_REDIRECT:http://localhost:3000/cidadao/perfil?govbr=ok}
-      frontend-error-redirect: ${PJB_GOVBR_FE_ERROR_REDIRECT:http://localhost:3000/cidadao/perfil?govbr=erro}
-      connect-timeout: ${PJB_GOVBR_CONNECT_TIMEOUT:4s}
-      request-timeout: ${PJB_GOVBR_REQUEST_TIMEOUT:6s}
-      state-ttl: ${PJB_GOVBR_STATE_TTL:5m}
-      cleanup-interval: ${PJB_GOVBR_CLEANUP_INTERVAL:3600000}
-
-  integration:
-    n8n:
-      enabled: ${PJB_N8N_ENABLED:false}
-      base-url: ${PJB_N8N_BASE_URL:https://n8n.local}
-      dispatch-path: ${PJB_N8N_DISPATCH_PATH:/webhook/pjb-event-bus}
-      dispatch-secret: ${PJB_N8N_DISPATCH_SECRET:}
-      inbound-secret: ${PJB_N8N_INBOUND_SECRET:}
-      tenant: ${PJB_N8N_TENANT:pjb}
-      require-https: ${PJB_N8N_REQUIRE_HTTPS:true}
-      allow-local-http: ${PJB_N8N_ALLOW_LOCAL_HTTP:true}
-      fail-on-dispatch-error: ${PJB_N8N_FAIL_ON_DISPATCH_ERROR:false}
-      request-timeout: ${PJB_N8N_REQUEST_TIMEOUT:15s}
-      max-payload-bytes: ${PJB_N8N_MAX_PAYLOAD_BYTES:262144}
-
-
-    judicial:
-      pje:
-        enabled: ${PJB_INTEGRATION_JUDICIAL_PJE_ENABLED:false}
-        base-url: ${PJB_INTEGRATION_JUDICIAL_PJE_BASE_URL:}
-        bearer-token: ${PJB_INTEGRATION_JUDICIAL_PJE_TOKEN:}
-        auth-required: ${PJB_INTEGRATION_JUDICIAL_PJE_AUTH_REQUIRED:false}
-        submit-path: ${PJB_INTEGRATION_JUDICIAL_PJE_SUBMIT_PATH:}
-        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_PJE_DRY_RUN_PATH:}
-        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_PJE_SNAPSHOT_PATH:}
-        events-path: ${PJB_INTEGRATION_JUDICIAL_PJE_EVENTS_PATH:}
-        certificate-alias: ${PJB_INTEGRATION_JUDICIAL_PJE_CERTIFICATE_ALIAS:}
-        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_PJE_OAUTH_TOKEN_URL:}
-        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_PJE_OAUTH_CLIENT_ID:}
-        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_PJE_OAUTH_CLIENT_SECRET:}
-        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_PJE_OAUTH_AUDIENCE:}
-        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_PJE_OAUTH_SCOPE:}
-        production-ready: ${PJB_INTEGRATION_JUDICIAL_PJE_PRODUCTION_READY:false}
-        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_PJE_HOMOLOGATED_TRIBUNAIS:}
-        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_PJE_BLOCKED_TRIBUNAIS:}
-      esaj:
-        enabled: ${PJB_INTEGRATION_JUDICIAL_ESAJ_ENABLED:false}
-        base-url: ${PJB_INTEGRATION_JUDICIAL_ESAJ_BASE_URL:}
-        bearer-token: ${PJB_INTEGRATION_JUDICIAL_ESAJ_TOKEN:}
-        auth-required: ${PJB_INTEGRATION_JUDICIAL_ESAJ_AUTH_REQUIRED:false}
-        submit-path: ${PJB_INTEGRATION_JUDICIAL_ESAJ_SUBMIT_PATH:}
-        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_ESAJ_DRY_RUN_PATH:}
-        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_ESAJ_SNAPSHOT_PATH:}
-        events-path: ${PJB_INTEGRATION_JUDICIAL_ESAJ_EVENTS_PATH:}
-        certificate-alias: ${PJB_INTEGRATION_JUDICIAL_ESAJ_CERTIFICATE_ALIAS:}
-        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_ESAJ_OAUTH_TOKEN_URL:}
-        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_ESAJ_OAUTH_CLIENT_ID:}
-        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_ESAJ_OAUTH_CLIENT_SECRET:}
-        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_ESAJ_OAUTH_AUDIENCE:}
-        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_ESAJ_OAUTH_SCOPE:}
-        production-ready: ${PJB_INTEGRATION_JUDICIAL_ESAJ_PRODUCTION_READY:false}
-        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_ESAJ_HOMOLOGATED_TRIBUNAIS:}
-        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_ESAJ_BLOCKED_TRIBUNAIS:}
-      projudi:
-        enabled: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_ENABLED:false}
-        base-url: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_BASE_URL:}
-        bearer-token: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_TOKEN:}
-        auth-required: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_AUTH_REQUIRED:false}
-        submit-path: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_SUBMIT_PATH:}
-        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_DRY_RUN_PATH:}
-        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_SNAPSHOT_PATH:}
-        events-path: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_EVENTS_PATH:}
-        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_OAUTH_TOKEN_URL:}
-        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_OAUTH_CLIENT_ID:}
-        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_OAUTH_CLIENT_SECRET:}
-        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_OAUTH_AUDIENCE:}
-        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_OAUTH_SCOPE:}
-        production-ready: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_PRODUCTION_READY:false}
-        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_HOMOLOGATED_TRIBUNAIS:}
-        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_PROJUDI_BLOCKED_TRIBUNAIS:}
-      eproc:
-        enabled: ${PJB_INTEGRATION_JUDICIAL_EPROC_ENABLED:false}
-        base-url: ${PJB_INTEGRATION_JUDICIAL_EPROC_BASE_URL:}
-        bearer-token: ${PJB_INTEGRATION_JUDICIAL_EPROC_TOKEN:}
-        auth-required: ${PJB_INTEGRATION_JUDICIAL_EPROC_AUTH_REQUIRED:false}
-        submit-path: ${PJB_INTEGRATION_JUDICIAL_EPROC_SUBMIT_PATH:}
-        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_EPROC_DRY_RUN_PATH:}
-        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_EPROC_SNAPSHOT_PATH:}
-        events-path: ${PJB_INTEGRATION_JUDICIAL_EPROC_EVENTS_PATH:}
-        certificate-alias: ${PJB_INTEGRATION_JUDICIAL_EPROC_CERTIFICATE_ALIAS:}
-        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_EPROC_OAUTH_TOKEN_URL:}
-        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_EPROC_OAUTH_CLIENT_ID:}
-        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_EPROC_OAUTH_CLIENT_SECRET:}
-        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_EPROC_OAUTH_AUDIENCE:}
-        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_EPROC_OAUTH_SCOPE:}
-        production-ready: ${PJB_INTEGRATION_JUDICIAL_EPROC_PRODUCTION_READY:false}
-        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_EPROC_HOMOLOGATED_TRIBUNAIS:}
-        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_EPROC_BLOCKED_TRIBUNAIS:}
-      creta:
-        enabled: ${PJB_INTEGRATION_JUDICIAL_CRETA_ENABLED:false}
-        base-url: ${PJB_INTEGRATION_JUDICIAL_CRETA_BASE_URL:}
-        bearer-token: ${PJB_INTEGRATION_JUDICIAL_CRETA_TOKEN:}
-        auth-required: ${PJB_INTEGRATION_JUDICIAL_CRETA_AUTH_REQUIRED:false}
-        submit-path: ${PJB_INTEGRATION_JUDICIAL_CRETA_SUBMIT_PATH:}
-        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_CRETA_DRY_RUN_PATH:}
-        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_CRETA_SNAPSHOT_PATH:}
-        events-path: ${PJB_INTEGRATION_JUDICIAL_CRETA_EVENTS_PATH:}
-        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_CRETA_OAUTH_TOKEN_URL:}
-        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_CRETA_OAUTH_CLIENT_ID:}
-        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_CRETA_OAUTH_CLIENT_SECRET:}
-        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_CRETA_OAUTH_AUDIENCE:}
-        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_CRETA_OAUTH_SCOPE:}
-        production-ready: ${PJB_INTEGRATION_JUDICIAL_CRETA_PRODUCTION_READY:false}
-        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_CRETA_HOMOLOGATED_TRIBUNAIS:}
-        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_CRETA_BLOCKED_TRIBUNAIS:}
-      pdpj:
-        enabled: ${PJB_INTEGRATION_JUDICIAL_PDPJ_ENABLED:false}
-        base-url: ${PJB_INTEGRATION_JUDICIAL_PDPJ_BASE_URL:}
-        bearer-token: ${PJB_INTEGRATION_JUDICIAL_PDPJ_TOKEN:}
-        auth-required: ${PJB_INTEGRATION_JUDICIAL_PDPJ_AUTH_REQUIRED:false}
-        submit-path: ${PJB_INTEGRATION_JUDICIAL_PDPJ_SUBMIT_PATH:}
-        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_PDPJ_DRY_RUN_PATH:}
-        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_PDPJ_SNAPSHOT_PATH:}
-        events-path: ${PJB_INTEGRATION_JUDICIAL_PDPJ_EVENTS_PATH:}
-        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_PDPJ_OAUTH_TOKEN_URL:}
-        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_PDPJ_OAUTH_CLIENT_ID:}
-        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_PDPJ_OAUTH_CLIENT_SECRET:}
-        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_PDPJ_OAUTH_AUDIENCE:}
-        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_PDPJ_OAUTH_SCOPE:}
-        production-ready: ${PJB_INTEGRATION_JUDICIAL_PDPJ_PRODUCTION_READY:false}
-        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_PDPJ_HOMOLOGATED_TRIBUNAIS:}
-        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_PDPJ_BLOCKED_TRIBUNAIS:}
-      mni:
-        enabled: ${PJB_INTEGRATION_JUDICIAL_MNI_ENABLED:false}
-        base-url: ${PJB_INTEGRATION_JUDICIAL_MNI_BASE_URL:}
-        bearer-token: ${PJB_INTEGRATION_JUDICIAL_MNI_TOKEN:}
-        auth-required: ${PJB_INTEGRATION_JUDICIAL_MNI_AUTH_REQUIRED:false}
-        submit-path: ${PJB_INTEGRATION_JUDICIAL_MNI_SUBMIT_PATH:}
-        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_MNI_DRY_RUN_PATH:}
-        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_MNI_SNAPSHOT_PATH:}
-        events-path: ${PJB_INTEGRATION_JUDICIAL_MNI_EVENTS_PATH:}
-        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_MNI_OAUTH_TOKEN_URL:}
-        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_MNI_OAUTH_CLIENT_ID:}
-        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_MNI_OAUTH_CLIENT_SECRET:}
-        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_MNI_OAUTH_AUDIENCE:}
-        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_MNI_OAUTH_SCOPE:}
-        production-ready: ${PJB_INTEGRATION_JUDICIAL_MNI_PRODUCTION_READY:false}
-        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_MNI_HOMOLOGATED_TRIBUNAIS:}
-        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_MNI_BLOCKED_TRIBUNAIS:}
-      mp:
-        enabled: ${PJB_INTEGRATION_JUDICIAL_MP_ENABLED:false}
-        base-url: ${PJB_INTEGRATION_JUDICIAL_MP_BASE_URL:}
-        bearer-token: ${PJB_INTEGRATION_JUDICIAL_MP_TOKEN:}
-        auth-required: ${PJB_INTEGRATION_JUDICIAL_MP_AUTH_REQUIRED:false}
-        submit-path: ${PJB_INTEGRATION_JUDICIAL_MP_SUBMIT_PATH:}
-        dry-run-path: ${PJB_INTEGRATION_JUDICIAL_MP_DRY_RUN_PATH:}
-        snapshot-path: ${PJB_INTEGRATION_JUDICIAL_MP_SNAPSHOT_PATH:}
-        events-path: ${PJB_INTEGRATION_JUDICIAL_MP_EVENTS_PATH:}
-        oauth-token-url: ${PJB_INTEGRATION_JUDICIAL_MP_OAUTH_TOKEN_URL:}
-        oauth-client-id: ${PJB_INTEGRATION_JUDICIAL_MP_OAUTH_CLIENT_ID:}
-        oauth-client-secret: ${PJB_INTEGRATION_JUDICIAL_MP_OAUTH_CLIENT_SECRET:}
-        oauth-audience: ${PJB_INTEGRATION_JUDICIAL_MP_OAUTH_AUDIENCE:}
-        oauth-scope: ${PJB_INTEGRATION_JUDICIAL_MP_OAUTH_SCOPE:}
-        production-ready: ${PJB_INTEGRATION_JUDICIAL_MP_PRODUCTION_READY:false}
-        homologated-tribunals: ${PJB_INTEGRATION_JUDICIAL_MP_HOMOLOGATED_TRIBUNAIS:}
-        blocked-tribunals: ${PJB_INTEGRATION_JUDICIAL_MP_BLOCKED_TRIBUNAIS:}
-      security:
-        environment-name: ${PJB_INTEGRATION_JUDICIAL_SECURITY_ENVIRONMENT:default}
-        default-protocols:
-          - TLSv1.3
-          - TLSv1.2
-        default-connect-timeout: ${PJB_INTEGRATION_JUDICIAL_SECURITY_CONNECT_TIMEOUT:10s}
-        default-read-timeout: ${PJB_INTEGRATION_JUDICIAL_SECURITY_READ_TIMEOUT:30s}
-        default-hostname-verification: ${PJB_INTEGRATION_JUDICIAL_SECURITY_HOSTNAME_VERIFICATION:true}
-        certificate-validation:
-          revocation-mode: ${PJB_INTEGRATION_JUDICIAL_SECURITY_REVOCATION_MODE:SOFT_FAIL}
-          ocsp-enabled: ${PJB_INTEGRATION_JUDICIAL_SECURITY_OCSP_ENABLED:true}
-          crl-enabled: ${PJB_INTEGRATION_JUDICIAL_SECURITY_CRL_ENABLED:false}
-          prefer-crl: ${PJB_INTEGRATION_JUDICIAL_SECURITY_PREFER_CRL:false}
-          minimum-remaining-validity: ${PJB_INTEGRATION_JUDICIAL_SECURITY_MIN_VALIDITY:30d}
-          allowed-clock-skew: ${PJB_INTEGRATION_JUDICIAL_SECURITY_ALLOWED_CLOCK_SKEW:5m}
-          require-digital-signature-key-usage: ${PJB_INTEGRATION_JUDICIAL_SECURITY_REQUIRE_DIGITAL_SIGNATURE:true}
-          require-client-auth-extended-key-usage: ${PJB_INTEGRATION_JUDICIAL_SECURITY_REQUIRE_CLIENT_AUTH:true}
-          require-trust-store-for-path-validation: ${PJB_INTEGRATION_JUDICIAL_SECURITY_REQUIRE_TRUSTSTORE:false}
-        posture:
-          initial-delay-ms: ${PJB_INTEGRATION_JUDICIAL_SECURITY_POSTURE_INITIAL_DELAY_MS:30000}
-          fixed-delay-ms: ${PJB_INTEGRATION_JUDICIAL_SECURITY_POSTURE_FIXED_DELAY_MS:900000}
-        key-stores: {}
-        trust-stores: {}
-        pkcs11-modules: {}
-        bindings: {}
-
-  cnj:
-    datajud:
-      api-key: ${CNJ_DATAJUD_API_KEY:}
-      base-url: ${CNJ_DATAJUD_BASE_URL:https://api-publica.datajud.cnj.jus.br}
-      timeout-ms: ${CNJ_DATAJUD_TIMEOUT_MS:30000}
-    tpu:
-      sync-enabled: ${CNJ_TPU_SYNC_ENABLED:true}
-      max-age-hours: ${CNJ_TPU_MAX_AGE_HOURS:24}
-
-  ai:
-    provider: ${PJB_AI_PROVIDER:openai}
-    openai:
-      api-key: ${OPENAI_API_KEY:}
-      base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
-      model: ${PJB_AI_OPENAI_MODEL:gpt-5.2-thinking}
-      temperature: ${PJB_AI_OPENAI_TEMPERATURE:0.2}
-      timeout-ms: ${PJB_AI_OPENAI_TIMEOUT_MS:60000}
-      max-tokens: ${PJB_AI_OPENAI_MAX_TOKENS:2048}
-    google:
-      api-key: ${GOOGLE_API_KEY:}
-      base-url: ${GOOGLE_BASE_URL:https://generativelanguage.googleapis.com}
-    pje:
-      mock-enabled: ${PJB_INTEGRATIONS_PJE_MOCK_ENABLED:false}
-      submission:
-        mock-enabled: ${PJB_INTEGRATIONS_PJE_SUBMISSION_MOCK_ENABLED:${PJB_INTEGRATIONS_PJE_MOCK_ENABLED:false}}
-      model: ${PJB_AI_GOOGLE_MODEL:gemini-2.5-pro}
-      timeout-ms: ${PJB_AI_GOOGLE_TIMEOUT_MS:60000}
-      max-output-tokens: ${PJB_AI_GOOGLE_MAX_OUTPUT_TOKENS:2048}
 
 
   outbox:
@@ -1863,77 +1489,6 @@ pjb:
       retentionDays: ${PJB_OPS_PRUNE_RETENTION_DAYS:7}
 
 
-  peticionamento:
-    cep:
-      enabled: ${PJB_PETICIONAMENTO_CEP_ENABLED:true}
-      base-url: ${PJB_PETICIONAMENTO_CEP_BASE_URL:https://viacep.com.br/ws}
-      read-timeout: ${PJB_PETICIONAMENTO_CEP_READ_TIMEOUT:3s}
-
-  eleitoral:
-    tse:
-      enabled: ${PJB_ELEITORAL_TSE_ENABLED:false}
-      spca-base-url: ${PJB_ELEITORAL_SPCA_URL:https://spca.tse.jus.br/api}
-      resultado-base-url: ${PJB_ELEITORAL_RESULTADO_URL:https://resultados.tse.jus.br/oficial/api}
-      dry-run: ${PJB_ELEITORAL_TSE_DRY_RUN:true}
-      diplomacao:
-        auto-extincao-enabled: ${PJB_ELEITORAL_AUTO_EXTINCAO:true}
-        scheduler-fixed-rate-ms: ${PJB_ELEITORAL_SCHEDULER_RATE_MS:86400000}
-
-  mni:
-    enabled: ${PJB_MNI_ENABLED:false}
-    retry-max-tentativas: ${PJB_MNI_RETRY_MAX:5}
-    reconciliation-fixed-rate-ms: ${PJB_MNI_RECONCILIATION_RATE_MS:300000}
-    reconciliation-batch-size: ${PJB_MNI_RECONCILIATION_BATCH_SIZE:20}
-
-  datajud:
-    feed:
-      enabled: ${PJB_DATAJUD_FEED_ENABLED:false}
-      batch-size: ${PJB_DATAJUD_FEED_BATCH_SIZE:100}
-      scheduler-fixed-rate-ms: ${PJB_DATAJUD_FEED_SCHEDULER_RATE_MS:300000}
-      max-batches-per-run: ${PJB_DATAJUD_FEED_MAX_BATCHES_PER_RUN:3}
-      tribunais: ${PJB_DATAJUD_FEED_TRIBUNAIS:CNJ}
-
-  dje:
-    enabled: ${PJB_DJE_ENABLED:false}
-    scheduler-fixed-rate-ms: ${PJB_DJE_SCHEDULER_RATE_MS:300000}
-    max-batch-size: ${PJB_DJE_MAX_BATCH_SIZE:100}
-
-  digitalizacao:
-    enabled: ${PJB_DIGITALIZACAO_ENABLED:false}
-    confianca-minima-auto: ${PJB_DIGITALIZACAO_CONFIANCA_MINIMA:70.0}
-    idioma-default: ${PJB_DIGITALIZACAO_IDIOMA:por}
-    review-batch-size: ${PJB_DIGITALIZACAO_REVIEW_BATCH_SIZE:20}
-    stale-processing-minutes: ${PJB_DIGITALIZACAO_STALE_PROCESSING_MINUTES:60}
-    governance-fixed-rate-ms: ${PJB_DIGITALIZACAO_GOVERNANCE_RATE_MS:300000}
-
-  icp:
-    enabled: ${PJB_ICP_ENABLED:false}
-    enforce-chain-validation: ${PJB_ICP_ENFORCE_CHAIN:false}
-    accepted-ac-siglas: ${PJB_ICP_ACCEPTED_ACS:Certisign,Serpro,Valid,AC-JUS,SERASA,CertiSign}
-    ocsp-cache-key-prefix: ${PJB_ICP_OCSP_CACHE_PREFIX:pjb:icp:ocsp:}
-    ocsp-cache-ttl-seconds: ${PJB_ICP_OCSP_CACHE_TTL:3600}
-    crl-cache-ttl-seconds: ${PJB_ICP_CRL_CACHE_TTL:86400}
-    pkcs11-lib-path: ${PJB_ICP_PKCS11_LIB:}
-    recursal-key-store-ref: ${PJB_ICP_RECURSAL_KEYSTORE_REF:}
-    recursal-key-alias: ${PJB_ICP_RECURSAL_KEY_ALIAS:}
-    recursal-profile-candidate: ${PJB_ICP_RECURSAL_PROFILE_CANDIDATE:LTA}
-    recursal-require-certificate: ${PJB_ICP_RECURSAL_REQUIRE_CERTIFICATE:false}
-
-  integracoes:
-    judicial-financeiro:
-      enabled: ${PJB_JUDICIAL_FINANCEIRO_ENABLED:false}
-      dry-run: ${PJB_JUDICIAL_FINANCEIRO_DRY_RUN:true}
-      retry-max-tentativas: ${PJB_JUDICIAL_FINANCEIRO_RETRY_MAX:3}
-      reconciliation-fixed-rate-ms: ${PJB_JUDICIAL_FINANCEIRO_RECONCILIATION_RATE_MS:300000}
-      reconciliation-batch-size: ${PJB_JUDICIAL_FINANCEIRO_RECONCILIATION_BATCH_SIZE:20}
-      retry-backoff-minutes: ${PJB_JUDICIAL_FINANCEIRO_RETRY_BACKOFF_MINUTES:5}
-
-  trabalhista:
-    enabled: ${PJB_TRABALHISTA_ENABLED:true}
-    indice-atualizacao-default: ${PJB_TRABALHISTA_INDICE_DEFAULT:IPCA-E}
-    prazo-pagamento-gru-dias: ${PJB_TRABALHISTA_PRAZO_GRU_DIAS:8}
-    deposito-recursal-teto-default: ${PJB_TRABALHISTA_DEPOSITO_TETO:15000.00}
-
 management:
   endpoints:
     web:
@@ -1946,52 +1501,3 @@ management:
     env:
       enabled: false
 
-resilience4j:
-  retry:
-    instances:
-      mni-remessa:
-        max-attempts: ${PJB_R4J_MNI_MAX_ATTEMPTS:5}
-        wait-duration: ${PJB_R4J_MNI_WAIT:2s}
-        exponential-backoff-multiplier: 2
-      datajud-feed:
-        max-attempts: ${PJB_R4J_DATAJUD_MAX_ATTEMPTS:3}
-        wait-duration: ${PJB_R4J_DATAJUD_WAIT:3s}
-      sisbajud-bloqueio:
-        max-attempts: ${PJB_R4J_SISBAJUD_MAX_ATTEMPTS:3}
-        wait-duration: ${PJB_R4J_SISBAJUD_WAIT:5s}
-      infojud-consulta:
-        max-attempts: ${PJB_R4J_INFOJUD_MAX_ATTEMPTS:3}
-        wait-duration: ${PJB_R4J_INFOJUD_WAIT:3s}
-  circuitbreaker:
-    instances:
-      mni-remessa:
-        sliding-window-size: 10
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: ${PJB_CB_MNI_WAIT:60s}
-        permitted-number-of-calls-in-half-open-state: 3
-      sisbajud-bloqueio:
-        sliding-window-size: 5
-        failure-rate-threshold: 60
-        wait-duration-in-open-state: ${PJB_CB_SISBAJUD_WAIT:120s}
-      anthropic-memory:
-        sliding-window-size: 10
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: ${PJB_CB_ANTHROPIC_MEMORY_WAIT:30s}
-        permitted-number-of-calls-in-half-open-state: 3
-        record-exceptions:
-          - java.lang.Exception
-      anthropic-dreaming:
-        sliding-window-size: 10
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: ${PJB_CB_ANTHROPIC_DREAMING_WAIT:60s}
-        permitted-number-of-calls-in-half-open-state: 2
-        record-exceptions:
-          - java.lang.Exception
-  bulkhead:
-    instances:
-      mni-remessa:
-        max-concurrent-calls: ${PJB_BH_MNI_MAX:20}
-        max-wait-duration: 2s
-      sisbajud-bloqueio:
-        max-concurrent-calls: ${PJB_BH_SISBAJUD_MAX:10}
-        max-wait-duration: 2s

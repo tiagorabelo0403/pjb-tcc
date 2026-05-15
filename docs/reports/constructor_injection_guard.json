@@ -1,15 +1,15 @@
 {
-  "base": "/mnt/data/pjb_work/PJB/pjb-api/src/main/java/com/tcc/pjb/backend",
+  "base": "C:\\PJB\\pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend",
   "thresholds": {
     "constructorParameterCount": 12,
     "hotspotParameterCount": 16,
     "lineCount": 900
   },
-  "totalConstructors": 1968,
+  "totalConstructors": 2022,
   "hotspotCount": 45,
   "topConstructors": [
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbArquiteturaSubstituicaoNacionalApplicationService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\plataforma\\substituicao\\application\\PjbArquiteturaSubstituicaoNacionalApplicationService.java",
       "className": "PjbArquiteturaSubstituicaoNacionalApplicationService",
       "kind": "service",
       "lineCount": 523,
@@ -58,7 +58,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/comunicacao/institutional/surface/NationalCommunicationInstitutionalSurfaceFacadeService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\comunicacao\\institutional\\surface\\NationalCommunicationInstitutionalSurfaceFacadeService.java",
       "className": "NationalCommunicationInstitutionalSurfaceFacadeService",
       "kind": "facade_service",
       "lineCount": 726,
@@ -105,7 +105,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaPainelService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\oficial_justica\\OficialJusticaPainelService.java",
       "className": "OficialJusticaPainelService",
       "kind": "service",
       "lineCount": 812,
@@ -148,7 +148,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/comunicacao/institutional/governance/NationalCommunicationInstitutionalGovernanceSurfaceFacadeService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\comunicacao\\institutional\\governance\\NationalCommunicationInstitutionalGovernanceSurfaceFacadeService.java",
       "className": "NationalCommunicationInstitutionalGovernanceSurfaceFacadeService",
       "kind": "facade_service",
       "lineCount": 762,
@@ -190,7 +190,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/kernel/twin/ProcessDigitalTwinService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\kernel\\twin\\ProcessDigitalTwinService.java",
       "className": "ProcessDigitalTwinService",
       "kind": "service",
       "lineCount": 569,
@@ -232,7 +232,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/processual/comunicacao/institutional/panel/NationalCommunicationInstitutionalInboxItemResponse.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\dto\\processual\\comunicacao\\institutional\\panel\\NationalCommunicationInstitutionalInboxItemResponse.java",
       "className": "NationalCommunicationInstitutionalInboxItemResponse",
       "kind": "other",
       "lineCount": 104,
@@ -272,7 +272,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianePeticaoAssistService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\modules\\laiane\\service\\LaianePeticaoAssistService.java",
       "className": "LaianePeticaoAssistService",
       "kind": "service",
       "lineCount": 1145,
@@ -310,7 +310,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/unificado/domain/ProcessoUnificadoCompetencia.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\unificado\\domain\\ProcessoUnificadoCompetencia.java",
       "className": "ProcessoUnificadoCompetencia",
       "kind": "other",
       "lineCount": 85,
@@ -346,7 +346,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/conversation/LegalAiConversationOrchestrator.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\ai\\juridica\\conversation\\LegalAiConversationOrchestrator.java",
       "className": "LegalAiConversationOrchestrator",
       "kind": "other",
       "lineCount": 274,
@@ -381,7 +381,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\frontend\\app\\application\\PjbFrontendAppApplicationService.java",
       "className": "PjbFrontendAppApplicationService",
       "kind": "service",
       "lineCount": 832,
@@ -415,7 +415,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/processual/recursal/automation/RecursalAutomationRequest.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\dto\\processual\\recursal\\automation\\RecursalAutomationRequest.java",
       "className": "RecursalAutomationRequest",
       "kind": "other",
       "lineCount": 200,
@@ -449,7 +449,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/surface/ProcessoSurfaceFacadeService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\surface\\ProcessoSurfaceFacadeService.java",
       "className": "ProcessoSurfaceFacadeService",
       "kind": "facade_service",
       "lineCount": 728,
@@ -482,7 +482,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/delegado/DelegadoPainelService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\delegado\\DelegadoPainelService.java",
       "className": "DelegadoPainelService",
       "kind": "service",
       "lineCount": 429,
@@ -515,7 +515,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/comunicacao/flow/NationalCommunicationFlowService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\comunicacao\\flow\\NationalCommunicationFlowService.java",
       "className": "NationalCommunicationFlowService",
       "kind": "service",
       "lineCount": 281,
@@ -548,7 +548,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/JudicialConnectorPolicyOverlay.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\integration\\judicial\\JudicialConnectorPolicyOverlay.java",
       "className": "JudicialConnectorPolicyOverlay",
       "kind": "other",
       "lineCount": 99,
@@ -581,7 +581,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/AcordoSuggestionPipelineAsyncService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\AcordoSuggestionPipelineAsyncService.java",
       "className": "AcordoSuggestionPipelineAsyncService",
       "kind": "service",
       "lineCount": 597,
@@ -613,7 +613,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/kernel/recursal/mesh/RecursalStateSnapshot.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\kernel\\recursal\\mesh\\RecursalStateSnapshot.java",
       "className": "RecursalStateSnapshot",
       "kind": "other",
       "lineCount": 301,
@@ -645,7 +645,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/peticionamento/PeticionamentoSessaoFacadeService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\peticionamento\\PeticionamentoSessaoFacadeService.java",
       "className": "PeticionamentoSessaoFacadeService",
       "kind": "facade_service",
       "lineCount": 1063,
@@ -676,7 +676,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\infra\\ScaleArchitectureService.java",
       "className": "ScaleArchitectureService",
       "kind": "service",
       "lineCount": 983,
@@ -707,7 +707,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoChatService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\modules\\atendimento\\service\\AtendimentoChatService.java",
       "className": "AtendimentoChatService",
       "kind": "service",
       "lineCount": 586,
@@ -737,7 +737,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/controller/delegado/DelegadoPainelController.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\controller\\delegado\\DelegadoPainelController.java",
       "className": "DelegadoPainelController",
       "kind": "controller",
       "lineCount": 547,
@@ -767,7 +767,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeGovernedProcessOperationService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\modules\\advocacia\\office\\service\\OfficeGovernedProcessOperationService.java",
       "className": "OfficeGovernedProcessOperationService",
       "kind": "service",
       "lineCount": 599,
@@ -796,7 +796,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/identity/ProntuarioNacionalEntrada.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\entity\\identity\\ProntuarioNacionalEntrada.java",
       "className": "ProntuarioNacionalEntrada",
       "kind": "other",
       "lineCount": 336,
@@ -825,7 +825,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/kernel/recursal/mesh/RecursalCaseContext.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\kernel\\recursal\\mesh\\RecursalCaseContext.java",
       "className": "RecursalCaseContext",
       "kind": "other",
       "lineCount": 163,
@@ -854,7 +854,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/intelligence/recursal/mesh/RecursalMeshContextRequest.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\dto\\intelligence\\recursal\\mesh\\RecursalMeshContextRequest.java",
       "className": "RecursalMeshContextRequest",
       "kind": "other",
       "lineCount": 131,
@@ -883,7 +883,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/sustentacao/application/PjbPlataformaSustentacaoApplicationService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\plataforma\\sustentacao\\application\\PjbPlataformaSustentacaoApplicationService.java",
       "className": "PjbPlataformaSustentacaoApplicationService",
       "kind": "service",
       "lineCount": 779,
@@ -911,7 +911,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/papel/domain/ProcessoPapelPerfil.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\papel\\domain\\ProcessoPapelPerfil.java",
       "className": "ProcessoPapelPerfil",
       "kind": "other",
       "lineCount": 58,
@@ -939,7 +939,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\comunicacao\\judicial\\CitacaoIntimacaoEngine.java",
       "className": "CitacaoIntimacaoEngine",
       "kind": "engine",
       "lineCount": 1186,
@@ -966,7 +966,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/orchestration/SecretariatOperationalOrchestrationService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\secretariat\\orchestration\\SecretariatOperationalOrchestrationService.java",
       "className": "SecretariatOperationalOrchestrationService",
       "kind": "service",
       "lineCount": 847,
@@ -993,7 +993,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/controller/oficial_justica/OficialJusticaCampoController.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\controller\\oficial_justica\\OficialJusticaCampoController.java",
       "className": "OficialJusticaCampoController",
       "kind": "controller",
       "lineCount": 515,
@@ -1020,7 +1020,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/federalismo/FederacaoLedgerEntry.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\entity\\federalismo\\FederacaoLedgerEntry.java",
       "className": "FederacaoLedgerEntry",
       "kind": "other",
       "lineCount": 272,
@@ -1047,7 +1047,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/institucional/InstitutionalOfficialSourceAttestationSnapshot.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\entity\\institucional\\InstitutionalOfficialSourceAttestationSnapshot.java",
       "className": "InstitutionalOfficialSourceAttestationSnapshot",
       "kind": "other",
       "lineCount": 203,
@@ -1074,7 +1074,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/institucional/InstitutionalCatalogGovernanceSnapshot.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\entity\\institucional\\InstitutionalCatalogGovernanceSnapshot.java",
       "className": "InstitutionalCatalogGovernanceSnapshot",
       "kind": "other",
       "lineCount": 187,
@@ -1101,7 +1101,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/document/reading/ProcessReadingWorkspaceService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\document\\reading\\ProcessReadingWorkspaceService.java",
       "className": "ProcessReadingWorkspaceService",
       "kind": "service",
       "lineCount": 135,
@@ -1128,7 +1128,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/decision/JuizGabineteDecisionalService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\juiz\\decision\\JuizGabineteDecisionalService.java",
       "className": "JuizGabineteDecisionalService",
       "kind": "service",
       "lineCount": 781,
@@ -1154,7 +1154,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/recursal/RecursalPeticionamentoFacadeService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\recursal\\RecursalPeticionamentoFacadeService.java",
       "className": "RecursalPeticionamentoFacadeService",
       "kind": "facade_service",
       "lineCount": 682,
@@ -1180,7 +1180,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/desembargador/DesembargadorColegialdoPainelService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\desembargador\\DesembargadorColegialdoPainelService.java",
       "className": "DesembargadorColegialdoPainelService",
       "kind": "service",
       "lineCount": 607,
@@ -1206,7 +1206,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ui/accessibility/UiAccessibilityService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\ui\\accessibility\\UiAccessibilityService.java",
       "className": "UiAccessibilityService",
       "kind": "service",
       "lineCount": 523,
@@ -1232,7 +1232,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/ingest/SecretariatDocumentBulkProcessor.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\secretariat\\ingest\\SecretariatDocumentBulkProcessor.java",
       "className": "SecretariatDocumentBulkProcessor",
       "kind": "other",
       "lineCount": 481,
@@ -1258,7 +1258,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/servidor/ServidorSecretariaOperacionalService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\servidor\\ServidorSecretariaOperacionalService.java",
       "className": "ServidorSecretariaOperacionalService",
       "kind": "service",
       "lineCount": 373,
@@ -1285,7 +1285,7 @@
   ],
   "hotspots": [
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbArquiteturaSubstituicaoNacionalApplicationService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\plataforma\\substituicao\\application\\PjbArquiteturaSubstituicaoNacionalApplicationService.java",
       "className": "PjbArquiteturaSubstituicaoNacionalApplicationService",
       "kind": "service",
       "lineCount": 523,
@@ -1334,7 +1334,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/comunicacao/institutional/surface/NationalCommunicationInstitutionalSurfaceFacadeService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\comunicacao\\institutional\\surface\\NationalCommunicationInstitutionalSurfaceFacadeService.java",
       "className": "NationalCommunicationInstitutionalSurfaceFacadeService",
       "kind": "facade_service",
       "lineCount": 726,
@@ -1381,7 +1381,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaPainelService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\oficial_justica\\OficialJusticaPainelService.java",
       "className": "OficialJusticaPainelService",
       "kind": "service",
       "lineCount": 812,
@@ -1424,7 +1424,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/comunicacao/institutional/governance/NationalCommunicationInstitutionalGovernanceSurfaceFacadeService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\comunicacao\\institutional\\governance\\NationalCommunicationInstitutionalGovernanceSurfaceFacadeService.java",
       "className": "NationalCommunicationInstitutionalGovernanceSurfaceFacadeService",
       "kind": "facade_service",
       "lineCount": 762,
@@ -1466,7 +1466,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/kernel/twin/ProcessDigitalTwinService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\kernel\\twin\\ProcessDigitalTwinService.java",
       "className": "ProcessDigitalTwinService",
       "kind": "service",
       "lineCount": 569,
@@ -1508,7 +1508,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/processual/comunicacao/institutional/panel/NationalCommunicationInstitutionalInboxItemResponse.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\dto\\processual\\comunicacao\\institutional\\panel\\NationalCommunicationInstitutionalInboxItemResponse.java",
       "className": "NationalCommunicationInstitutionalInboxItemResponse",
       "kind": "other",
       "lineCount": 104,
@@ -1548,7 +1548,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianePeticaoAssistService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\modules\\laiane\\service\\LaianePeticaoAssistService.java",
       "className": "LaianePeticaoAssistService",
       "kind": "service",
       "lineCount": 1145,
@@ -1586,7 +1586,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/unificado/domain/ProcessoUnificadoCompetencia.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\unificado\\domain\\ProcessoUnificadoCompetencia.java",
       "className": "ProcessoUnificadoCompetencia",
       "kind": "other",
       "lineCount": 85,
@@ -1622,7 +1622,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/ai/juridica/conversation/LegalAiConversationOrchestrator.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\ai\\juridica\\conversation\\LegalAiConversationOrchestrator.java",
       "className": "LegalAiConversationOrchestrator",
       "kind": "other",
       "lineCount": 274,
@@ -1657,7 +1657,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/frontend/app/application/PjbFrontendAppApplicationService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\frontend\\app\\application\\PjbFrontendAppApplicationService.java",
       "className": "PjbFrontendAppApplicationService",
       "kind": "service",
       "lineCount": 832,
@@ -1691,7 +1691,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/processual/recursal/automation/RecursalAutomationRequest.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\dto\\processual\\recursal\\automation\\RecursalAutomationRequest.java",
       "className": "RecursalAutomationRequest",
       "kind": "other",
       "lineCount": 200,
@@ -1725,7 +1725,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/surface/ProcessoSurfaceFacadeService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\surface\\ProcessoSurfaceFacadeService.java",
       "className": "ProcessoSurfaceFacadeService",
       "kind": "facade_service",
       "lineCount": 728,
@@ -1758,7 +1758,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/delegado/DelegadoPainelService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\delegado\\DelegadoPainelService.java",
       "className": "DelegadoPainelService",
       "kind": "service",
       "lineCount": 429,
@@ -1791,7 +1791,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/comunicacao/flow/NationalCommunicationFlowService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\comunicacao\\flow\\NationalCommunicationFlowService.java",
       "className": "NationalCommunicationFlowService",
       "kind": "service",
       "lineCount": 281,
@@ -1824,7 +1824,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/JudicialConnectorPolicyOverlay.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\integration\\judicial\\JudicialConnectorPolicyOverlay.java",
       "className": "JudicialConnectorPolicyOverlay",
       "kind": "other",
       "lineCount": 99,
@@ -1857,7 +1857,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/AcordoSuggestionPipelineAsyncService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\AcordoSuggestionPipelineAsyncService.java",
       "className": "AcordoSuggestionPipelineAsyncService",
       "kind": "service",
       "lineCount": 597,
@@ -1889,7 +1889,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/kernel/recursal/mesh/RecursalStateSnapshot.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\kernel\\recursal\\mesh\\RecursalStateSnapshot.java",
       "className": "RecursalStateSnapshot",
       "kind": "other",
       "lineCount": 301,
@@ -1921,7 +1921,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/peticionamento/PeticionamentoSessaoFacadeService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\peticionamento\\PeticionamentoSessaoFacadeService.java",
       "className": "PeticionamentoSessaoFacadeService",
       "kind": "facade_service",
       "lineCount": 1063,
@@ -1952,7 +1952,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\infra\\ScaleArchitectureService.java",
       "className": "ScaleArchitectureService",
       "kind": "service",
       "lineCount": 983,
@@ -1983,7 +1983,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoChatService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\modules\\atendimento\\service\\AtendimentoChatService.java",
       "className": "AtendimentoChatService",
       "kind": "service",
       "lineCount": 586,
@@ -2013,7 +2013,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/controller/delegado/DelegadoPainelController.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\controller\\delegado\\DelegadoPainelController.java",
       "className": "DelegadoPainelController",
       "kind": "controller",
       "lineCount": 547,
@@ -2043,7 +2043,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeGovernedProcessOperationService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\modules\\advocacia\\office\\service\\OfficeGovernedProcessOperationService.java",
       "className": "OfficeGovernedProcessOperationService",
       "kind": "service",
       "lineCount": 599,
@@ -2072,7 +2072,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/identity/ProntuarioNacionalEntrada.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\entity\\identity\\ProntuarioNacionalEntrada.java",
       "className": "ProntuarioNacionalEntrada",
       "kind": "other",
       "lineCount": 336,
@@ -2101,7 +2101,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/kernel/recursal/mesh/RecursalCaseContext.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\kernel\\recursal\\mesh\\RecursalCaseContext.java",
       "className": "RecursalCaseContext",
       "kind": "other",
       "lineCount": 163,
@@ -2130,7 +2130,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/intelligence/recursal/mesh/RecursalMeshContextRequest.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\dto\\intelligence\\recursal\\mesh\\RecursalMeshContextRequest.java",
       "className": "RecursalMeshContextRequest",
       "kind": "other",
       "lineCount": 131,
@@ -2159,7 +2159,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/sustentacao/application/PjbPlataformaSustentacaoApplicationService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\plataforma\\sustentacao\\application\\PjbPlataformaSustentacaoApplicationService.java",
       "className": "PjbPlataformaSustentacaoApplicationService",
       "kind": "service",
       "lineCount": 779,
@@ -2187,7 +2187,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/papel/domain/ProcessoPapelPerfil.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\papel\\domain\\ProcessoPapelPerfil.java",
       "className": "ProcessoPapelPerfil",
       "kind": "other",
       "lineCount": 58,
@@ -2215,7 +2215,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\comunicacao\\judicial\\CitacaoIntimacaoEngine.java",
       "className": "CitacaoIntimacaoEngine",
       "kind": "engine",
       "lineCount": 1186,
@@ -2242,7 +2242,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/orchestration/SecretariatOperationalOrchestrationService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\secretariat\\orchestration\\SecretariatOperationalOrchestrationService.java",
       "className": "SecretariatOperationalOrchestrationService",
       "kind": "service",
       "lineCount": 847,
@@ -2269,7 +2269,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/controller/oficial_justica/OficialJusticaCampoController.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\controller\\oficial_justica\\OficialJusticaCampoController.java",
       "className": "OficialJusticaCampoController",
       "kind": "controller",
       "lineCount": 515,
@@ -2296,7 +2296,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/federalismo/FederacaoLedgerEntry.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\entity\\federalismo\\FederacaoLedgerEntry.java",
       "className": "FederacaoLedgerEntry",
       "kind": "other",
       "lineCount": 272,
@@ -2323,7 +2323,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/institucional/InstitutionalOfficialSourceAttestationSnapshot.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\entity\\institucional\\InstitutionalOfficialSourceAttestationSnapshot.java",
       "className": "InstitutionalOfficialSourceAttestationSnapshot",
       "kind": "other",
       "lineCount": 203,
@@ -2350,7 +2350,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/institucional/InstitutionalCatalogGovernanceSnapshot.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\model\\entity\\institucional\\InstitutionalCatalogGovernanceSnapshot.java",
       "className": "InstitutionalCatalogGovernanceSnapshot",
       "kind": "other",
       "lineCount": 187,
@@ -2377,7 +2377,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/document/reading/ProcessReadingWorkspaceService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\document\\reading\\ProcessReadingWorkspaceService.java",
       "className": "ProcessReadingWorkspaceService",
       "kind": "service",
       "lineCount": 135,
@@ -2404,7 +2404,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/decision/JuizGabineteDecisionalService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\juiz\\decision\\JuizGabineteDecisionalService.java",
       "className": "JuizGabineteDecisionalService",
       "kind": "service",
       "lineCount": 781,
@@ -2430,7 +2430,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/recursal/RecursalPeticionamentoFacadeService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\recursal\\RecursalPeticionamentoFacadeService.java",
       "className": "RecursalPeticionamentoFacadeService",
       "kind": "facade_service",
       "lineCount": 682,
@@ -2456,7 +2456,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/desembargador/DesembargadorColegialdoPainelService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\desembargador\\DesembargadorColegialdoPainelService.java",
       "className": "DesembargadorColegialdoPainelService",
       "kind": "service",
       "lineCount": 607,
@@ -2482,7 +2482,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/ui/accessibility/UiAccessibilityService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\ui\\accessibility\\UiAccessibilityService.java",
       "className": "UiAccessibilityService",
       "kind": "service",
       "lineCount": 523,
@@ -2508,7 +2508,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/ingest/SecretariatDocumentBulkProcessor.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\secretariat\\ingest\\SecretariatDocumentBulkProcessor.java",
       "className": "SecretariatDocumentBulkProcessor",
       "kind": "other",
       "lineCount": 481,
@@ -2534,7 +2534,7 @@
       ]
     },
     {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/servidor/ServidorSecretariaOperacionalService.java",
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\servidor\\ServidorSecretariaOperacionalService.java",
       "className": "ServidorSecretariaOperacionalService",
       "kind": "service",
       "lineCount": 373,

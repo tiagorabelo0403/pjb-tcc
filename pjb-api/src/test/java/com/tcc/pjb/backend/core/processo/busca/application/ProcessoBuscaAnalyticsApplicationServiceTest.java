@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.core.processo.busca.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import com.tcc.pjb.backend.core.processo.analytics.application.ProcessoAnalyticsAggregationService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
@@ -24,11 +25,14 @@ class ProcessoBuscaAnalyticsApplicationServiceTest {
     @Mock
     private ProcessoRepository processoRepository;
 
+    @Mock
+    private ProcessoAnalyticsAggregationService analyticsAggregationService;
+
     private ProcessoBuscaAnalyticsApplicationService service;
 
     @BeforeEach
     void setUp() {
-        service = new ProcessoBuscaAnalyticsApplicationService(processoRepository);
+        service = new ProcessoBuscaAnalyticsApplicationService(processoRepository, analyticsAggregationService);
     }
 
     @Test
@@ -54,7 +58,7 @@ class ProcessoBuscaAnalyticsApplicationServiceTest {
 
     @Test
     void shouldBuildAnalyticsFromRamoQuery() {
-        when(processoRepository.agregadosPorRamo("CIVIL")).thenReturn(List.<Object[]>of(new Object[]{"CIVIL", 10L, 4L, 2L, 6L, 12.5d}));
+        when(analyticsAggregationService.agregadosPorRamo("CIVIL")).thenReturn(List.<Object[]>of(new Object[]{"CIVIL", 10L, 4L, 2L, 6L, 12.5d}));
 
         var aggregate = service.analytics("civil", null, null, null);
 

@@ -24,7 +24,8 @@ class JuridicaLegalAiEdgeBoundaryArchitectureTest {
         assertTrue(pact.contains("/api/ai/legal/minuta"));
         assertTrue(pact.contains("/api/ai/legal/grounding/check"));
         assertTrue(pact.contains("/api/ai/legal/conversation"));
-        String yaml = Files.readString(configRoot);
+        String yaml = Files.readString(configRoot)
+                + Files.readString(configRoot.resolveSibling("application-security.yml"));
         assertTrue(yaml.contains("name: legal-ai-governed-surfaces"));
         assertTrue(yaml.contains("/api/ai/legal/minuta"));
         assertTrue(yaml.contains("/api/ai/legal/grounding/check"));

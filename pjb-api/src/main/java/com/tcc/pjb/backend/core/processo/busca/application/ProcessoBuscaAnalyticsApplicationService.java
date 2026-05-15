@@ -8,6 +8,7 @@ import com.tcc.pjb.backend.core.processo.busca.domain.ProcessoBuscaFacet;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
+import com.tcc.pjb.backend.core.processo.analytics.application.ProcessoAnalyticsAggregationService;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -31,9 +32,12 @@ import org.springframework.stereotype.Service;
 public class ProcessoBuscaAnalyticsApplicationService {
 
     private final ProcessoRepository processoRepository;
+    private final ProcessoAnalyticsAggregationService analyticsAggregationService;
 
-    public ProcessoBuscaAnalyticsApplicationService(ProcessoRepository processoRepository) {
+    public ProcessoBuscaAnalyticsApplicationService(ProcessoRepository processoRepository,
+                                                     ProcessoAnalyticsAggregationService analyticsAggregationService) {
         this.processoRepository = Objects.requireNonNull(processoRepository);
+        this.analyticsAggregationService = Objects.requireNonNull(analyticsAggregationService);
     }
 
     public ProcessoBuscaAggregate buscar(String cpf,
@@ -121,14 +125,14 @@ public class ProcessoBuscaAnalyticsApplicationService {
 
     private AnalyticsSnapshot analyticsSnapshot(String ramo, String tribunal, String uf, String comarca) {
         if (notBlank(ramo) && notBlank(tribunal)) {
-            List<Object[]> rows = processoRepository.agregadosPorRamoETribunal(ramo.trim().toUpperCase(Locale.ROOT), tribunal.trim().toUpperCase(Locale.ROOT));
+            List<Object[]> rows = analyticsAggregationService.agregadosPorRamoETribunal(ramo.trim().toUpperCase(Locale.ROOT), tribunal.trim().toUpperCase(Locale.ROOT));
             Optional<Object[]> row = rows.stream().findFirst();
             if (row.isPresent()) {
                 return fromRamoTribunal(row.get());
             }
         }
         if (notBlank(ramo)) {
-            List<Object[]> rows = processoRepository.agregadosPorRamo(ramo.trim().toUpperCase(Locale.ROOT));
+            List<Object[]> rows = analyticsAggregationService.agregadosPorRamo(ramo.trim().toUpperCase(Locale.ROOT));
             Optional<Object[]> row = rows.stream().findFirst();
             if (row.isPresent()) {
                 return fromRamo(row.get());

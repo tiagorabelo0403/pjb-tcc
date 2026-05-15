@@ -31,6 +31,7 @@ replay_pid*
 # Java and tooling caches
 .gradle/
 .mvn/timing.properties
+.mvn/jvm.config
 node_modules/
 **/node_modules/
 coverage/
@@ -40,6 +41,9 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Security scanning tools
+.zap/
 
 # IDE and local assistant state
 .idea/
@@ -87,4 +91,3 @@ secret*.txt
 *.xls
 *.xlsx
 *.ods
-prompt-round.txt
