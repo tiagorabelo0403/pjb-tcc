@@ -22,35 +22,41 @@ public class HabeasDataReadinessService {
     ) {}
 
     public record HabeasDataResult(
-            boolean cabivel,
-            List<String> requisitosAtendidos,
-            List<String> impeditivos
+            List<String> requisitosVerificados,
+            List<String> pendenciasIdentificadas,
+            String sinalizacao
     ) {}
 
+    private static final String SINAL_SEM_PENDENCIAS =
+            "Sem pendências formais localizadas — checklist sujeito à validação judicial. Não substitui análise do magistrado.";
+    private static final String SINAL_COM_PENDENCIAS =
+            "Pendências identificadas — conferir antes de submeter ao magistrado.";
+
     public HabeasDataResult avaliar(HabeasDataInput input) {
-        List<String> atendidos = new ArrayList<>();
-        List<String> impeditivos = new ArrayList<>();
+        List<String> verificados = new ArrayList<>();
+        List<String> pendencias = new ArrayList<>();
 
         if (!input.solicitacaoAdministrativaPrevia()) {
-            impeditivos.add("HD exige prévio requerimento administrativo negado ou sem resposta (Lei 9.507/97 art. 2º — interesse de agir).");
+            pendencias.add("Possível requisito a conferir: prévio requerimento administrativo negado ou sem resposta (Lei 9.507/97 art. 2º — interesse de agir).");
         } else {
-            atendidos.add("Requerimento administrativo prévio realizado.");
+            verificados.add("Requerimento administrativo prévio realizado — conferido.");
         }
         if (!input.respostaNegadaOuOmissao()) {
-            impeditivos.add("Sem negativa ou omissão — interesse de agir não configurado.");
+            pendencias.add("Possível requisito a conferir: negativa ou omissão da entidade não identificada — interesse de agir a verificar.");
         } else {
-            atendidos.add("Negativa ou omissão da entidade configurada.");
+            verificados.add("Negativa ou omissão da entidade — conferida.");
         }
         if (!input.bancoPublicoOuCaraterPublico()) {
-            impeditivos.add("HD restrito a registros de entidades governamentais ou de caráter público (CF art. 5º LXXII).");
+            pendencias.add("Possível requisito a conferir: banco de dados deve ser governamental ou de caráter público (CF art. 5º LXXII).");
         } else {
-            atendidos.add("Banco de dados é governamental ou de caráter público.");
+            verificados.add("Banco de dados governamental ou de caráter público — conferido.");
         }
         if (input.finalidade() != null) {
-            atendidos.add("Finalidade: " + descricaoFinalidade(input.finalidade()));
+            verificados.add("Finalidade declarada: " + descricaoFinalidade(input.finalidade()));
         }
 
-        return new HabeasDataResult(impeditivos.isEmpty(), atendidos, impeditivos);
+        return new HabeasDataResult(List.copyOf(verificados), List.copyOf(pendencias),
+                pendencias.isEmpty() ? SINAL_SEM_PENDENCIAS : SINAL_COM_PENDENCIAS);
     }
 
     private String descricaoFinalidade(FinalidadeHD f) {

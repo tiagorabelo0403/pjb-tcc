@@ -16,41 +16,45 @@ public class RecuperacaoExtrajudicialService {
     ) {}
 
     public record RecuperacaoExtrajudicialResult(
-            boolean homologacaoViavel,
-            boolean vinculaTodaAClasse,
             double percentualAcordo,
-            List<String> analise,
-            List<String> impeditivos
+            List<String> indicativosIdentificados,
+            List<String> pendenciasIdentificadas,
+            String sinalizacao
     ) {}
 
     private static final double PERCENTUAL_MINIMO_HOMOLOGACAO = 0.60;
+    private static final String SINAL_SEM_PENDENCIAS =
+            "Sem pendências formais localizadas — checklist sujeito à validação judicial. Não substitui análise do magistrado.";
+    private static final String SINAL_COM_PENDENCIAS =
+            "Pendências identificadas — conferir antes de submeter ao magistrado.";
 
     public RecuperacaoExtrajudicialResult avaliar(RecuperacaoExtrajudicialInput input) {
-        List<String> analise = new ArrayList<>();
-        List<String> impeditivos = new ArrayList<>();
+        List<String> indicativos = new ArrayList<>();
+        List<String> pendencias = new ArrayList<>();
 
         double percentual = input.credoresClasseTotal() > 0
                 ? (double) input.credoresAcordo() / input.credoresClasseTotal() : 0;
 
-        analise.add(String.format(
+        indicativos.add(String.format(
                 "Credores da classe com acordo: %d/%d (%.1f%%).",
                 input.credoresAcordo(), input.credoresClasseTotal(), percentual * 100));
 
         if (!input.excluiCredoresTrabalhistasFiscaisPrevisionalAcidentarios()) {
-            impeditivos.add("CRJ não pode incluir créditos trabalhistas, tributários, previdenciários e acidentários (Lei 11.101/2005 art. 161 §1º).");
+            pendencias.add("Pendência identificada: plano não pode incluir créditos trabalhistas, tributários, previdenciários e acidentários (Lei 11.101/2005 art. 161 §1º).");
         }
 
         if (percentual < PERCENTUAL_MINIMO_HOMOLOGACAO) {
-            impeditivos.add(String.format(
-                    "Menos de 60%% dos credores da classe firmaram acordo (%.1f%%) — homologação não compulsória (art. 161 §2º).",
+            pendencias.add(String.format(
+                    "Pendência identificada: menos de 60%% dos credores firmaram acordo (%.1f%%) — homologação vinculante pode não ser cabível (art. 161 §2º).",
                     percentual * 100));
         } else {
-            analise.add(String.format("Acordo atingiu %.1f%% — homologação vincula toda a classe (art. 163).", percentual * 100));
+            indicativos.add(String.format(
+                    "Possível requisito a conferir: acordo atingiu %.1f%% — homologação pode vincular toda a classe (art. 163) — sujeito à análise judicial.",
+                    percentual * 100));
         }
 
-        boolean vincula = percentual >= PERCENTUAL_MINIMO_HOMOLOGACAO;
-
-        return new RecuperacaoExtrajudicialResult(
-                impeditivos.isEmpty(), vincula, percentual * 100, analise, impeditivos);
+        return new RecuperacaoExtrajudicialResult(percentual * 100,
+                List.copyOf(indicativos), List.copyOf(pendencias),
+                pendencias.isEmpty() ? SINAL_SEM_PENDENCIAS : SINAL_COM_PENDENCIAS);
     }
 }

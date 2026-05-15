@@ -16,31 +16,31 @@ class RecuperacaoJudicialFalenciaTest {
     private final RecuperacaoExtrajudicialService crj = new RecuperacaoExtrajudicialService();
 
     @Test
-    void recuperacaoCabivelEmpresaCom3Anos() {
+    void recuperacaoSemPendenciasEmpresaCom3Anos() {
         var input = new RecuperacaoJudicialReadinessService.RecuperacaoJudicialInput(
                 "12.345.678/0001-90",
                 LocalDate.now().minusYears(3),
                 false, null, false, false,
                 new BigDecimal("500000.00"), true);
         var result = rj.avaliar(input);
-        assertThat(result.cabivel()).isTrue();
+        assertThat(result.pendenciasIdentificadas()).isEmpty();
         assertThat(result.documentosNecessarios()).isNotEmpty();
+        assertThat(result.sinalizacao()).contains("validação judicial");
     }
 
     @Test
-    void recuperacaoIncabivelEmpresaCom1Ano() {
+    void recuperacaoComPendenciaEmpresaCom1Ano() {
         var input = new RecuperacaoJudicialReadinessService.RecuperacaoJudicialInput(
                 "12.345.678/0001-91",
                 LocalDate.now().minusMonths(14),
                 false, null, false, false,
                 new BigDecimal("100000.00"), true);
         var result = rj.avaliar(input);
-        assertThat(result.cabivel()).isFalse();
-        assertThat(result.impeditivos()).anyMatch(i -> i.contains("2 anos"));
+        assertThat(result.pendenciasIdentificadas()).anyMatch(i -> i.contains("2 anos"));
     }
 
     @Test
-    void recuperacaoIncabivelFalenciaAnteriorRecente() {
+    void recuperacaoComPendenciaFalenciaAnteriorRecente() {
         var input = new RecuperacaoJudicialReadinessService.RecuperacaoJudicialInput(
                 "12.345.678/0001-92",
                 LocalDate.now().minusYears(5),
@@ -48,19 +48,18 @@ class RecuperacaoJudicialFalenciaTest {
                 false, false,
                 new BigDecimal("200000.00"), true);
         var result = rj.avaliar(input);
-        assertThat(result.cabivel()).isFalse();
-        assertThat(result.impeditivos()).anyMatch(i -> i.contains("5 anos"));
+        assertThat(result.pendenciasIdentificadas()).anyMatch(i -> i.contains("5 anos"));
     }
 
     @Test
-    void planoAprovadoQuandoTodasClassesVotamFavor() {
+    void planoMaioriaAtingidaQuandoTodasClassesVotamFavor() {
         var classes = List.of(
                 new PlanoRecuperacaoJudicialService.VotoClasse("Trabalhistas", 10, 7, 500000L, 350000L),
                 new PlanoRecuperacaoJudicialService.VotoClasse("Quirografários", 20, 12, 1000000L, 650000L));
         var input = new PlanoRecuperacaoJudicialService.PlanoVotacaoInput("RJ001", classes, false);
         var result = plano.avaliarVotacao(input);
-        assertThat(result.resultado()).isEqualTo(PlanoRecuperacaoJudicialService.ResultadoVotacaoAG.APROVADO_MAIORIA);
-        assertThat(result.classesAprovadas()).hasSize(2);
+        assertThat(result.apuracao()).isEqualTo(PlanoRecuperacaoJudicialService.ResultadoVotacaoAG.MAIORIA_DUPLA_ATINGIDA);
+        assertThat(result.classesComMaioria()).hasSize(2);
     }
 
     @Test
@@ -71,43 +70,41 @@ class RecuperacaoJudicialFalenciaTest {
                 new PlanoRecuperacaoJudicialService.VotoClasse("Quirografários", 20, 4, 1000000L, 200000L));
         var input = new PlanoRecuperacaoJudicialService.PlanoVotacaoInput("RJ002", classes, false);
         var result = plano.avaliarVotacao(input);
-        assertThat(result.resultado()).isEqualTo(PlanoRecuperacaoJudicialService.ResultadoVotacaoAG.APROVADO_CRAM_DOWN);
-        assertThat(result.cramDownAplicavel()).isTrue();
+        assertThat(result.apuracao()).isEqualTo(PlanoRecuperacaoJudicialService.ResultadoVotacaoAG.CRAM_DOWN_CONFIGURADO);
+        assertThat(result.sinalizacao()).containsIgnoringCase("cram down");
     }
 
     @Test
-    void falenciaImpontualidadeAcima40SM() {
+    void falenciaSemPendenciaImpontualidadeAcima40SM() {
         var input = new FalenciaDecretacaoService.FalenciaInput(
                 "12.000.000/0001-00",
                 FalenciaDecretacaoService.CausaFalencia.IMPONTUALIDADE,
                 new BigDecimal("100000.00"),
                 false, false, null, false);
         var result = falencia.avaliar(input);
-        assertThat(result.decretacaoViavel()).isTrue();
-        assertThat(result.causaConfigurada()).isEqualTo(FalenciaDecretacaoService.CausaFalencia.IMPONTUALIDADE);
+        assertThat(result.pendenciasIdentificadas()).isEmpty();
+        assertThat(result.causaApurada()).isEqualTo(FalenciaDecretacaoService.CausaFalencia.IMPONTUALIDADE);
     }
 
     @Test
-    void falenciaImpontualidadeAbaixo40SMNaoCabe() {
+    void falenciaComPendenciaImpontualidadeAbaixo40SM() {
         var input = new FalenciaDecretacaoService.FalenciaInput(
                 "12.000.000/0001-01",
                 FalenciaDecretacaoService.CausaFalencia.IMPONTUALIDADE,
                 new BigDecimal("500.00"),
                 false, false, null, false);
         var result = falencia.avaliar(input);
-        assertThat(result.decretacaoViavel()).isFalse();
-        assertThat(result.impeditivos()).anyMatch(i -> i.contains("40 salários"));
+        assertThat(result.pendenciasIdentificadas()).anyMatch(i -> i.contains("40 salários"));
     }
 
     @Test
-    void falenciaBlockadaPorRecuperacaoPendente() {
+    void falenciaComPendenciaStayPeriodRecuperacaoPendente() {
         var input = new FalenciaDecretacaoService.FalenciaInput(
                 "12.000.000/0001-02",
                 FalenciaDecretacaoService.CausaFalencia.EXECUCAO_FRUSTRADA,
                 null, true, false, null, true);
         var result = falencia.avaliar(input);
-        assertThat(result.decretacaoViavel()).isFalse();
-        assertThat(result.impeditivos()).anyMatch(i -> i.contains("stay"));
+        assertThat(result.pendenciasIdentificadas()).anyMatch(i -> i.contains("stay"));
     }
 
     @Test
@@ -129,22 +126,21 @@ class RecuperacaoJudicialFalenciaTest {
     }
 
     @Test
-    void crjHomologacaoViavelCom65PorcentoCredores() {
+    void crjSemPendenciasHomologacaoViavelCom65PorcentoCredores() {
         var input = new RecuperacaoExtrajudicialService.RecuperacaoExtrajudicialInput(
                 "12.000.000/0001-03", 100, 65, true, true);
         var result = crj.avaliar(input);
-        assertThat(result.homologacaoViavel()).isTrue();
-        assertThat(result.vinculaTodaAClasse()).isTrue();
+        assertThat(result.pendenciasIdentificadas()).isEmpty();
         assertThat(result.percentualAcordo()).isEqualTo(65.0);
+        assertThat(result.sinalizacao()).contains("validação judicial");
     }
 
     @Test
-    void crjSemHomologacaoAbaixo60Porcento() {
+    void crjComPendenciaAbaixo60Porcento() {
         var input = new RecuperacaoExtrajudicialService.RecuperacaoExtrajudicialInput(
                 "12.000.000/0001-04", 100, 40, true, true);
         var result = crj.avaliar(input);
-        assertThat(result.homologacaoViavel()).isFalse();
-        assertThat(result.impeditivos()).anyMatch(i -> i.contains("60%"));
+        assertThat(result.pendenciasIdentificadas()).anyMatch(i -> i.contains("60%"));
     }
 
     @Test

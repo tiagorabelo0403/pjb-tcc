@@ -28,45 +28,52 @@ public class AcaoPopularReadinessService {
     ) {}
 
     public record AcaoPopularResult(
-            boolean cabivel,
-            boolean dentroDoPrazo,
+            boolean prazoNaoDecaido,
             int anosRestantes,
-            List<String> requisitosAtendidos,
-            List<String> impeditivos
+            List<String> requisitosVerificados,
+            List<String> pendenciasIdentificadas,
+            String sinalizacao
     ) {}
 
+    private static final String SINAL_SEM_PENDENCIAS =
+            "Sem pendências formais localizadas — checklist sujeito à validação judicial. Não substitui análise do magistrado.";
+    private static final String SINAL_COM_PENDENCIAS =
+            "Pendências identificadas — conferir antes de submeter ao magistrado.";
+
     public AcaoPopularResult avaliar(AcaoPopularInput input) {
-        List<String> atendidos = new ArrayList<>();
-        List<String> impeditivos = new ArrayList<>();
+        List<String> verificados = new ArrayList<>();
+        List<String> pendencias = new ArrayList<>();
 
         if (!input.autoreECidadaoBrasileiro()) {
-            impeditivos.add("Legitimidade ativa restrita a cidadão brasileiro (CF art. 5º LXXIII, Lei 4.717/65 art. 1º).");
+            pendencias.add("Possível requisito a conferir: legitimidade ativa restrita a cidadão brasileiro (CF art. 5º LXXIII, Lei 4.717/65 art. 1º).");
         } else {
-            atendidos.add("Autor é cidadão brasileiro.");
+            verificados.add("Autor é cidadão brasileiro — conferido.");
         }
         if (!input.possuiTituloEleitor()) {
-            impeditivos.add("Cidadania deve ser comprovada pelo título de eleitor (Lei 4.717/65 art. 1º §3º).");
+            pendencias.add("Possível requisito a conferir: título de eleitor não apresentado (Lei 4.717/65 art. 1º §3º).");
         } else {
-            atendidos.add("Título de eleitor comprovado.");
+            verificados.add("Título de eleitor comprovado — conferido.");
         }
         if (!input.atoLesivoConfigurado()) {
-            impeditivos.add("Ato lesivo ao patrimônio público não demonstrado (Lei 4.717/65 art. 2º).");
+            pendencias.add("Possível requisito a conferir: ato lesivo ao patrimônio público não demonstrado (Lei 4.717/65 art. 2º).");
         } else {
-            atendidos.add("Ato lesivo ao " + descricaoObjeto(input.objeto()) + " configurado.");
+            verificados.add("Ato lesivo ao " + descricaoObjeto(input.objeto()) + " — conferido.");
         }
 
         long anosDecorridos = input.dataAto() != null
                 ? ChronoUnit.YEARS.between(input.dataAto(), LocalDate.now()) : 0;
-        boolean dentroDoPrazo = anosDecorridos < PRAZO_PRESCRICIONAL_ANOS;
+        boolean prazoVigente = anosDecorridos < PRAZO_PRESCRICIONAL_ANOS;
         int anosRestantes = (int) Math.max(0, PRAZO_PRESCRICIONAL_ANOS - anosDecorridos);
 
-        if (!dentroDoPrazo) {
-            impeditivos.add(String.format(
-                    "Ação popular prescrita: prazo de 5 anos esgotado (%d anos desde o ato — Lei 4.717/65 art. 21).",
+        if (!prazoVigente) {
+            pendencias.add(String.format(
+                    "Pendência identificada: prazo prescricional de 5 anos possivelmente esgotado — %d anos desde o ato (Lei 4.717/65 art. 21).",
                     anosDecorridos));
         }
 
-        return new AcaoPopularResult(impeditivos.isEmpty(), dentroDoPrazo, anosRestantes, atendidos, impeditivos);
+        return new AcaoPopularResult(prazoVigente, anosRestantes,
+                List.copyOf(verificados), List.copyOf(pendencias),
+                pendencias.isEmpty() ? SINAL_SEM_PENDENCIAS : SINAL_COM_PENDENCIAS);
     }
 
     private String descricaoObjeto(ObjetoAcaoPopular obj) {

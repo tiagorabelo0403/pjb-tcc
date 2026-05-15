@@ -22,36 +22,42 @@ public class HabeasCorpusReadinessService {
     ) {}
 
     public record HabeasCorpusResult(
-            boolean cabivel,
             CompetenciaHC competenciaSugerida,
-            boolean liminarPossivel,
-            List<String> requisitosAtendidos,
-            List<String> impeditivos
+            List<String> requisitosVerificados,
+            List<String> pendenciasIdentificadas,
+            String sinalizacao
     ) {}
 
+    private static final String SINAL_SEM_PENDENCIAS =
+            "Sem pendências formais localizadas — sugestão sujeita à validação judicial. Não substitui análise do magistrado.";
+    private static final String SINAL_COM_PENDENCIAS =
+            "Pendências identificadas — conferir antes de submeter ao magistrado.";
+
     public HabeasCorpusResult avaliar(HabeasCorpusInput input) {
-        List<String> atendidos = new ArrayList<>();
-        List<String> impeditivos = new ArrayList<>();
+        List<String> verificados = new ArrayList<>();
+        List<String> pendencias = new ArrayList<>();
 
         if (input.condenacaoSomenteAMulta()) {
-            impeditivos.add("HC incabível contra condenação exclusivamente a pena de multa (Súmula 693 STF).");
+            pendencias.add("Pendência identificada: condenação exclusivamente a multa — HC possivelmente incabível (Súmula 693 STF).");
         }
         if (input.questaoMeramenteFatual()) {
-            impeditivos.add("HC não serve para reexame de prova — matéria de fato deve ser discutida em recurso próprio.");
+            pendencias.add("Pendência identificada: matéria de fato — HC não serve para reexame de prova; conferir recurso adequado.");
         }
         if (!input.liberdadeLocomocaoAmeacada() && !input.coacaoIlegal()) {
-            impeditivos.add("Não há ameaça à liberdade de locomoção nem coação ilegal identificada (CF art. 5º LXVIII).");
+            pendencias.add("Possível requisito a conferir: ameaça à liberdade de locomoção ou coação ilegal não identificada (CF art. 5º LXVIII).");
         }
 
-        if (input.liberdadeLocomocaoAmeacada()) atendidos.add("Liberdade de locomoção ameaçada ou violada.");
-        if (input.coacaoIlegal()) atendidos.add("Coação ilegal configurada.");
-        if (input.abusoDePoderConfigurado()) atendidos.add("Abuso de poder identificado.");
+        if (input.liberdadeLocomocaoAmeacada()) verificados.add("Liberdade de locomoção ameaçada ou violada — conferido.");
+        if (input.coacaoIlegal()) verificados.add("Coação ilegal — conferido.");
+        if (input.abusoDePoderConfigurado()) verificados.add("Abuso de poder — conferido.");
+        if (input.liberdadeLocomocaoAmeacada() && input.coacaoIlegal() && pendencias.isEmpty()) {
+            verificados.add("Possível requisito a conferir: tutela de urgência (liminar) — sujeito à avaliação do magistrado.");
+        }
 
         CompetenciaHC competencia = resolverCompetencia(input.autoridadeCoatora());
-        boolean cabivel = impeditivos.isEmpty();
-        boolean liminar = cabivel && input.liberdadeLocomocaoAmeacada() && input.coacaoIlegal();
 
-        return new HabeasCorpusResult(cabivel, competencia, liminar, atendidos, impeditivos);
+        return new HabeasCorpusResult(competencia, List.copyOf(verificados), List.copyOf(pendencias),
+                pendencias.isEmpty() ? SINAL_SEM_PENDENCIAS : SINAL_COM_PENDENCIAS);
     }
 
     private CompetenciaHC resolverCompetencia(String autoridade) {

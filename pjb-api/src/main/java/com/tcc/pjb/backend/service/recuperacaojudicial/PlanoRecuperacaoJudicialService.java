@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 public class PlanoRecuperacaoJudicialService {
 
     public enum ResultadoVotacaoAG {
-        APROVADO_MAIORIA,
-        APROVADO_CRAM_DOWN,
-        REJEITADO,
+        MAIORIA_DUPLA_ATINGIDA,
+        CRAM_DOWN_CONFIGURADO,
+        MAIORIA_NAO_ATINGIDA,
         SEM_QUORUM
     }
 
@@ -37,27 +37,27 @@ public class PlanoRecuperacaoJudicialService {
     ) {}
 
     public record PlanoVotacaoResult(
-            ResultadoVotacaoAG resultado,
-            boolean cramDownAplicavel,
-            List<String> classesAprovadas,
-            List<String> classesRejeitadas,
-            List<String> analise
+            ResultadoVotacaoAG apuracao,
+            List<String> classesComMaioria,
+            List<String> classesSemMaioria,
+            List<String> analise,
+            String sinalizacao
     ) {}
 
     public PlanoVotacaoResult avaliarVotacao(PlanoVotacaoInput input) {
-        List<String> aprovadas = new ArrayList<>();
-        List<String> rejeitadas = new ArrayList<>();
+        List<String> comMaioria = new ArrayList<>();
+        List<String> semMaioria = new ArrayList<>();
         List<String> analise = new ArrayList<>();
 
         for (VotoClasse vc : input.classes()) {
             if (vc.aprovada()) {
-                aprovadas.add(vc.nomeclasse());
-                analise.add(String.format("Classe '%s': APROVADA (%d/%d credores, %d/%d valor).",
+                comMaioria.add(vc.nomeclasse());
+                analise.add(String.format("Classe '%s': maioria dupla atingida (%d/%d credores, %d/%d valor).",
                         vc.nomeclasse(), vc.credoresFavoraveis(), vc.credoresTotal(),
                         vc.valorCreditosFavoraveis(), vc.valorTotalCreditos()));
             } else {
-                rejeitadas.add(vc.nomeclasse());
-                analise.add(String.format("Classe '%s': REJEITADA (%d/%d credores, %d/%d valor).",
+                semMaioria.add(vc.nomeclasse());
+                analise.add(String.format("Classe '%s': maioria dupla não atingida (%d/%d credores, %d/%d valor).",
                         vc.nomeclasse(), vc.credoresFavoraveis(), vc.credoresTotal(),
                         vc.valorCreditosFavoraveis(), vc.valorTotalCreditos()));
             }
@@ -65,21 +65,24 @@ public class PlanoRecuperacaoJudicialService {
 
         int totalClasses = input.classes().size();
 
-        if (rejeitadas.isEmpty()) {
-            return new PlanoVotacaoResult(ResultadoVotacaoAG.APROVADO_MAIORIA, false,
-                    aprovadas, rejeitadas, analise);
+        if (semMaioria.isEmpty()) {
+            return new PlanoVotacaoResult(ResultadoVotacaoAG.MAIORIA_DUPLA_ATINGIDA,
+                    List.copyOf(comMaioria), List.copyOf(semMaioria), List.copyOf(analise),
+                    "Maioria dupla atingida em todas as classes — apuração sujeita à homologação judicial (art. 58).");
         }
 
-        boolean cramDownPossivel = !aprovadas.isEmpty()
-                && (double) aprovadas.size() / totalClasses > 0.5;
+        boolean cramDownConfiguravel = !comMaioria.isEmpty()
+                && (double) comMaioria.size() / totalClasses > 0.5;
 
-        if (cramDownPossivel) {
-            analise.add("Cram down possível: mais de 50% das classes aprovaram e plano não é abusivo (art. 58 §1º).");
-            return new PlanoVotacaoResult(ResultadoVotacaoAG.APROVADO_CRAM_DOWN, true,
-                    aprovadas, rejeitadas, analise);
+        if (cramDownConfiguravel) {
+            analise.add("Possível requisito a conferir: cram down — mais de 50% das classes com maioria dupla (art. 58 §1º) — sujeito à análise judicial de abusividade.");
+            return new PlanoVotacaoResult(ResultadoVotacaoAG.CRAM_DOWN_CONFIGURADO,
+                    List.copyOf(comMaioria), List.copyOf(semMaioria), List.copyOf(analise),
+                    "Cram down possivelmente configurado — conferir requisitos do art. 58 §1º com o magistrado.");
         }
 
-        return new PlanoVotacaoResult(ResultadoVotacaoAG.REJEITADO, false,
-                aprovadas, rejeitadas, analise);
+        return new PlanoVotacaoResult(ResultadoVotacaoAG.MAIORIA_NAO_ATINGIDA,
+                List.copyOf(comMaioria), List.copyOf(semMaioria), List.copyOf(analise),
+                "Maioria dupla não atingida nas classes necessárias — checklist sujeito à validação judicial.");
     }
 }

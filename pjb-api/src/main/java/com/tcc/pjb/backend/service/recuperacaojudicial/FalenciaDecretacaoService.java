@@ -28,18 +28,23 @@ public class FalenciaDecretacaoService {
     ) {}
 
     public record FalenciaResult(
-            boolean decretacaoViavel,
-            CausaFalencia causaConfigurada,
-            List<String> analise,
-            List<String> impeditivos
+            CausaFalencia causaApurada,
+            List<String> indicativosIdentificados,
+            List<String> pendenciasIdentificadas,
+            String sinalizacao
     ) {}
 
+    private static final String SINAL_SEM_PENDENCIAS =
+            "Sem pendências formais localizadas — checklist sujeito à validação judicial. Não substitui análise do magistrado.";
+    private static final String SINAL_COM_PENDENCIAS =
+            "Pendências identificadas — conferir antes de submeter ao magistrado.";
+
     public FalenciaResult avaliar(FalenciaInput input) {
-        List<String> analise = new ArrayList<>();
-        List<String> impeditivos = new ArrayList<>();
+        List<String> indicativos = new ArrayList<>();
+        List<String> pendencias = new ArrayList<>();
 
         if (input.pedidoRecuperacaoPendenteOuDeferido()) {
-            impeditivos.add("Recuperação judicial pendente ou deferida — stay period ativo (Lei 11.101/2005 art. 6º).");
+            pendencias.add("Pendência identificada: stay period possivelmente ativo — recuperação judicial pendente ou deferida (Lei 11.101/2005 art. 6º).");
         }
 
         switch (input.causa()) {
@@ -47,30 +52,31 @@ public class FalenciaDecretacaoService {
                 BigDecimal limiteValor = LIMITE_IMPONTUALIDADE_SALARIOS.multiply(VALOR_SALARIO_MINIMO);
                 if (input.valorDividaImpontualidade() != null
                         && input.valorDividaImpontualidade().compareTo(limiteValor) > 0) {
-                    analise.add(String.format(
-                            "Impontualidade configurada: dívida R$ %.2f > 40 salários mínimos (R$ %.2f) — art. 94 I.",
+                    indicativos.add(String.format(
+                            "Possível requisito a conferir: impontualidade — dívida R$ %.2f > 40 salários mínimos (R$ %.2f) — art. 94 I.",
                             input.valorDividaImpontualidade(), limiteValor));
                 } else {
-                    impeditivos.add(String.format(
-                            "Valor insuficiente para impontualidade: inferior a 40 salários mínimos (R$ %.2f).", limiteValor));
+                    pendencias.add(String.format(
+                            "Pendência identificada: valor inferior a 40 salários mínimos (R$ %.2f) — impontualidade pode não estar configurada.", limiteValor));
                 }
             }
             case EXECUCAO_FRUSTRADA -> {
                 if (input.execucaoFrustrada()) {
-                    analise.add("Execução frustrada: devedor não pagou, não depositou nem nomeou bens à penhora (art. 94 II).");
+                    indicativos.add("Possível requisito a conferir: execução frustrada — devedor não pagou, não depositou nem nomeou bens à penhora (art. 94 II).");
                 } else {
-                    impeditivos.add("Execução frustrada não configurada.");
+                    pendencias.add("Pendência identificada: execução frustrada não configurada — conferir requisitos do art. 94 II.");
                 }
             }
             case ATO_DE_FALENCIA -> {
                 if (input.atoFalencia()) {
-                    analise.add("Ato de falência configurado: " + input.descricaoAtoFalencia() + " (art. 94 III).");
+                    indicativos.add("Possível requisito a conferir: ato de falência — " + input.descricaoAtoFalencia() + " (art. 94 III).");
                 } else {
-                    impeditivos.add("Ato de falência não configurado (art. 94 III a–l).");
+                    pendencias.add("Pendência identificada: ato de falência não configurado — conferir hipóteses do art. 94 III a–l.");
                 }
             }
         }
 
-        return new FalenciaResult(impeditivos.isEmpty(), input.causa(), analise, impeditivos);
+        return new FalenciaResult(input.causa(), List.copyOf(indicativos), List.copyOf(pendencias),
+                pendencias.isEmpty() ? SINAL_SEM_PENDENCIAS : SINAL_COM_PENDENCIAS);
     }
 }

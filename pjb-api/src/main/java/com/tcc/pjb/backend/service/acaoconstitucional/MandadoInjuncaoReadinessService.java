@@ -22,36 +22,42 @@ public class MandadoInjuncaoReadinessService {
     ) {}
 
     public record MandadoInjuncaoResult(
-            boolean cabivel,
             EfeitoMandadoInjuncao efeitoSugerido,
-            List<String> requisitosAtendidos,
-            List<String> impeditivos
+            List<String> requisitosVerificados,
+            List<String> pendenciasIdentificadas,
+            String sinalizacao
     ) {}
 
+    private static final String SINAL_SEM_PENDENCIAS =
+            "Sem pendências formais localizadas — checklist sujeito à validação judicial. Não substitui análise do magistrado.";
+    private static final String SINAL_COM_PENDENCIAS =
+            "Pendências identificadas — conferir antes de submeter ao magistrado.";
+
     public MandadoInjuncaoResult avaliar(MandadoInjuncaoInput input) {
-        List<String> atendidos = new ArrayList<>();
-        List<String> impeditivos = new ArrayList<>();
+        List<String> verificados = new ArrayList<>();
+        List<String> pendencias = new ArrayList<>();
 
         if (!input.normaConstitucionalDependeDeRegulamentacao()) {
-            impeditivos.add("MI pressupõe norma constitucional que depende de regulamentação (CF art. 5º LXXI).");
+            pendencias.add("Possível requisito a conferir: norma constitucional dependente de regulamentação não identificada (CF art. 5º LXXI).");
         } else {
-            atendidos.add("Norma constitucional carece de regulamentação para ter eficácia plena.");
+            verificados.add("Norma constitucional que depende de regulamentação — conferida.");
         }
         if (!input.omissaoNormativaConfigurada()) {
-            impeditivos.add("Omissão normativa não configurada — necessário demonstrar inércia do legislador.");
+            pendencias.add("Possível requisito a conferir: omissão normativa não demonstrada — inércia do legislador a verificar.");
         } else {
-            atendidos.add("Omissão normativa inconstitucional configurada.");
+            verificados.add("Omissão normativa inconstitucional — conferida.");
         }
         if (!input.faltaRegulamentacaoImpedeDireito()) {
-            impeditivos.add("Ausência de nexo causal: falta de regulamentação não impede o exercício do direito.");
+            pendencias.add("Possível requisito a conferir: nexo causal entre omissão e impedimento ao direito não demonstrado.");
         } else {
-            atendidos.add("Falta de regulamentação impede o exercício do direito constitucional.");
+            verificados.add("Falta de regulamentação impede o exercício do direito constitucional — conferido.");
         }
 
         EfeitoMandadoInjuncao efeito = input.interesseColetivo()
                 ? EfeitoMandadoInjuncao.ERGA_OMNES
                 : EfeitoMandadoInjuncao.INTER_PARTES;
 
-        return new MandadoInjuncaoResult(impeditivos.isEmpty(), efeito, atendidos, impeditivos);
+        return new MandadoInjuncaoResult(efeito, List.copyOf(verificados), List.copyOf(pendencias),
+                pendencias.isEmpty() ? SINAL_SEM_PENDENCIAS : SINAL_COM_PENDENCIAS);
     }
 }

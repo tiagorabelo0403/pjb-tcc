@@ -23,52 +23,58 @@ public class MandadoSegurancaReadinessService {
     ) {}
 
     public record MandadoSegurancaResult(
-            boolean cabivel,
-            boolean dentroDosPrazo,
+            boolean prazoDecadencialVigente,
             int diasRestantes,
-            List<String> requisitosAtendidos,
-            List<String> impeditivos
+            List<String> requisitosVerificados,
+            List<String> pendenciasIdentificadas,
+            String sinalizacao
     ) {}
 
+    private static final String SINAL_SEM_PENDENCIAS =
+            "Sem pendências formais localizadas — checklist sujeito à validação judicial. Não substitui análise do magistrado.";
+    private static final String SINAL_COM_PENDENCIAS =
+            "Pendências identificadas — conferir antes de submeter ao magistrado.";
+
     public MandadoSegurancaResult avaliar(MandadoSegurancaInput input) {
-        List<String> atendidos = new ArrayList<>();
-        List<String> impeditivos = new ArrayList<>();
+        List<String> verificados = new ArrayList<>();
+        List<String> pendencias = new ArrayList<>();
 
         if (input.atolLeiEmTese()) {
-            impeditivos.add("MS não cabe contra lei em tese — ausência de lesividade concreta (Súmula 266 STF).");
+            pendencias.add("Pendência identificada: ato é lei em tese — MS possivelmente incabível (Súmula 266 STF).");
         }
         if (input.atoJudicialComRecursoComEfeitoSuspensivo()) {
-            impeditivos.add("MS não cabe contra ato judicial que admite recurso com efeito suspensivo (Súmula 267 STF).");
+            pendencias.add("Pendência identificada: ato judicial com recurso de efeito suspensivo — MS possivelmente incabível (Súmula 267 STF).");
         }
         if (input.atoPraticoDeParticularSemPoderDelegado()) {
-            impeditivos.add("MS não cabe contra ato de particular sem delegação de poder público (Lei 12.016/2009 art. 1º).");
+            pendencias.add("Pendência identificada: ato de particular sem delegação pública — conferir cabimento (Lei 12.016/2009 art. 1º).");
         }
         if (!input.autoridadeCoatoraPublica()) {
-            impeditivos.add("Autoridade coatora deve ser agente público (Lei 12.016/2009 art. 1º §1º).");
+            pendencias.add("Possível requisito a conferir: autoridade coatora deve ser agente público (Lei 12.016/2009 art. 1º §1º).");
         }
         if (!input.direitoLiquidoCerto()) {
-            impeditivos.add("Ausência de direito líquido e certo — demanda dilação probatória incompatível com MS.");
+            pendencias.add("Possível requisito a conferir: direito líquido e certo não demonstrado — dilação probatória incompatível com MS.");
         }
         if (!input.provaPreConstituida()) {
-            impeditivos.add("MS exige prova pré-constituída — documentos devem acompanhar a petição inicial (Lei 12.016/2009 art. 6º).");
+            pendencias.add("Possível requisito a conferir: prova pré-constituída não apresentada (Lei 12.016/2009 art. 6º).");
         }
 
-        if (input.direitoLiquidoCerto()) atendidos.add("Direito líquido e certo evidenciado.");
-        if (input.provaPreConstituida()) atendidos.add("Prova pré-constituída disponível.");
-        if (input.autoridadeCoatoraPublica()) atendidos.add("Autoridade coatora é agente público.");
+        if (input.direitoLiquidoCerto()) verificados.add("Direito líquido e certo — conferido.");
+        if (input.provaPreConstituida()) verificados.add("Prova pré-constituída — conferida.");
+        if (input.autoridadeCoatoraPublica()) verificados.add("Autoridade coatora pública — conferida.");
 
         long diasDecorridos = input.dataCienciaAto() != null
                 ? ChronoUnit.DAYS.between(input.dataCienciaAto(), LocalDate.now()) : 0;
-        boolean dentroDoPrazo = diasDecorridos <= PRAZO_DECADENCIAL_DIAS;
+        boolean prazoVigente = diasDecorridos <= PRAZO_DECADENCIAL_DIAS;
         int diasRestantes = (int) Math.max(0, PRAZO_DECADENCIAL_DIAS - diasDecorridos);
 
-        if (!dentroDoPrazo) {
-            impeditivos.add(String.format(
-                    "Prazo decadencial de 120 dias esgotado: %d dias desde a ciência do ato (Lei 12.016/2009 art. 23).",
+        if (!prazoVigente) {
+            pendencias.add(String.format(
+                    "Pendência identificada: prazo decadencial de 120 dias possivelmente esgotado — %d dias desde a ciência (Lei 12.016/2009 art. 23).",
                     diasDecorridos));
         }
 
-        return new MandadoSegurancaResult(
-                impeditivos.isEmpty(), dentroDoPrazo, diasRestantes, atendidos, impeditivos);
+        return new MandadoSegurancaResult(prazoVigente, diasRestantes,
+                List.copyOf(verificados), List.copyOf(pendencias),
+                pendencias.isEmpty() ? SINAL_SEM_PENDENCIAS : SINAL_COM_PENDENCIAS);
     }
 }
