@@ -134,7 +134,7 @@ pjb:
             dry-run: ${PJB_INSTITUTIONAL_CNJ_DATAJUD_DRY_RUN:false}
             base-url: ${PJB_INSTITUTIONAL_CNJ_DATAJUD_BASE_URL:https://api-publica.datajud.cnj.jus.br/api_publica_trf1/_search}
             reference-url: https://www.cnj.jus.br/sistemas/datajud/api-publica/
-            api-key: ${PJB_INSTITUTIONAL_CNJ_DATAJUD_API_KEY:cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==}
+            api-key: ${PJB_INSTITUTIONAL_CNJ_DATAJUD_API_KEY:}
           SIORG:
             enabled: ${PJB_INSTITUTIONAL_SIORG_ENABLED:true}
             dry-run: ${PJB_INSTITUTIONAL_SIORG_DRY_RUN:false}
