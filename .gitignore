@@ -71,6 +71,7 @@ Thumbs.db
 !.env.example
 !.env.sample
 !.env.template
+!infra/docker/.env.compose.example
 *.local
 *.local.*
 application-local.*
