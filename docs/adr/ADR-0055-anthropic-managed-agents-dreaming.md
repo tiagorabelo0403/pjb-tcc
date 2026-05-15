@@ -1,4 +1,4 @@
-# ADR-055 — Integração Anthropic Managed Agents: Memory Stores + Dreams
+# ADR-0055 — Integração Anthropic Managed Agents: Memory Stores + Dreams
 
 **Status:** Aceito  
 **Data:** 2026-05-09  

@@ -20,9 +20,9 @@ class DatabaseInfrastructureGovernanceTest {
     private static final Path DB_MIGRATION = PjbTestPaths.pjbApiMainResourcesRoot().resolve("db/migration/V172__database_posture_professionalization.sql");
 
     @Test
-    void composeDoBancoDeveUsarPostgres18EConfigProfissional() throws IOException {
+    void composeDoBancoDeveUsarPostgres17EConfigProfissional() throws IOException {
         String compose = Files.readString(DOCKER_COMPOSE);
-        assertTrue(compose.contains("postgres:18"));
+        assertTrue(compose.contains("postgres:17"));
         assertTrue(compose.contains("./infra/docker/postgres/postgresql-pjb.conf:/etc/postgresql/postgresql-pjb.conf:ro"));
         assertTrue(compose.contains("./infra/docker/postgres/init:/docker-entrypoint-initdb.d:ro"));
         assertTrue(compose.contains("config_file=/etc/postgresql/postgresql-pjb.conf"));
@@ -31,7 +31,7 @@ class DatabaseInfrastructureGovernanceTest {
     @Test
     void malhaReplicaEHaDevemExporEdgeTcpPgBouncerEEntradaRwRo() throws IOException {
         String readReplica = Files.readString(DOCKER_COMPOSE_READ_REPLICA);
-        assertTrue(readReplica.contains("postgres:18"));
+        assertTrue(readReplica.contains("postgres:17"));
         assertTrue(readReplica.contains("/etc/postgresql/postgresql-pjb.conf:ro"));
         assertTrue(readReplica.contains("PJB_DB_READ_ROUTING_ENABLED: \"true\""));
 

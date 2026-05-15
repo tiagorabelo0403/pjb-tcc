@@ -21,7 +21,7 @@ spring:
       initialization-fail-timeout: ${PJB_DB_INITIALIZATION_FAIL_TIMEOUT_MS:1}
       data-source-properties:
         ApplicationName: ${PJB_DB_APPLICATION_NAME:pjb-api-docker}
-        assumeMinServerVersion: ${PJB_DB_ASSUME_MIN_SERVER_VERSION:15}
+        assumeMinServerVersion: ${PJB_DB_ASSUME_MIN_SERVER_VERSION:17}
         connectTimeout: ${PJB_DB_CONNECT_TIMEOUT_SECONDS:10}
         sslmode: ${PJB_DB_SSL_MODE:disable}
         sslrootcert: ${PJB_DB_SSL_ROOT_CERT:}

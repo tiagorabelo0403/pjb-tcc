@@ -26,7 +26,7 @@ services:
 
   postgres-replica:
     profiles: ["replica"]
-    image: postgres:18
+    image: postgres:17
     environment:
       POSTGRES_USER: ${PJB_DB_USER:-pjb}
       POSTGRES_PASSWORD: ${PJB_DB_PASS:-pjb}

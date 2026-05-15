@@ -45,7 +45,7 @@ spring:
       leak-detection-threshold: ${PJB_DB_LEAK_DETECTION_MS:0}
       data-source-properties:
         ApplicationName: ${PJB_DB_APPLICATION_NAME:pjb-backend-core}
-        assumeMinServerVersion: ${PJB_DB_ASSUME_MIN_SERVER_VERSION:15}
+        assumeMinServerVersion: ${PJB_DB_ASSUME_MIN_SERVER_VERSION:17}
         connectTimeout: ${PJB_DB_CONNECT_TIMEOUT_SECONDS:10}
         sslmode: ${PJB_DB_SSL_MODE:prefer}
         sslrootcert: ${PJB_DB_SSL_ROOT_CERT:}
@@ -1233,7 +1233,7 @@ pjb:
           read-only: ${PJB_DB_READ_ONLY:true}
         data-source-properties:
           ApplicationName: ${PJB_DB_READ_APPLICATION_NAME:pjb-read-replica}
-          assumeMinServerVersion: ${PJB_DB_READ_ASSUME_MIN_SERVER_VERSION:15}
+          assumeMinServerVersion: ${PJB_DB_READ_ASSUME_MIN_SERVER_VERSION:17}
           connectTimeout: ${PJB_DB_READ_CONNECT_TIMEOUT_SECONDS:10}
           sslmode: ${PJB_DB_READ_SSL_MODE:${PJB_DB_SSL_MODE:prefer}}
           sslrootcert: ${PJB_DB_READ_SSL_ROOT_CERT:${PJB_DB_SSL_ROOT_CERT:}}

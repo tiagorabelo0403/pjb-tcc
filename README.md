@@ -21,7 +21,7 @@ Os sistemas atuais (PJe, e-SAJ, eProc) acumulam décadas de débito técnico: ro
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Banco | PostgreSQL com Row Level Security por operação |
 | Banco de testes | H2 em memória |
-| Migrations | Flyway — 252 versões |
+| Migrations | Flyway — 258 versões (V0–V258) |
 | Persistência | JPA/Hibernate |
 | Segurança | Spring Security, ABAC, Gov.br, ICP-Brasil |
 | Resiliência | Resilience4j — Circuit Breaker, Bulkhead, Retry, Timeout |
@@ -176,7 +176,7 @@ Bounded concurrency via `PjbBoundedExecutorService`. Structured Concurrency para
 
 ## Banco de dados
 
-252 migrations Flyway em sequência numerada. Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento.
+258 migrations Flyway em sequência numerada (V0–V258). Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento.
 
 ```sql
 -- Exemplo de política RLS para processo sigiloso
@@ -188,7 +188,7 @@ CREATE POLICY processo_sigilo ON processo
 
 ## Qualidade executável
 
-A suíte conta com **2.688 testes · 0 falhas · 0 erros**. Toda alteração só é aceita quando melhora comportamento verificável sem reduzir maturidade arquitetural.
+A suíte conta com **2.764 testes · 0 falhas · 0 erros**. Toda alteração só é aceita quando melhora comportamento verificável sem reduzir maturidade arquitetural.
 
 Guards de conformidade estrutural executáveis:
 
