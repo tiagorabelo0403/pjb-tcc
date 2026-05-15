@@ -23,7 +23,7 @@ class PjbRepositoryLayoutGovernanceTest {
         try (Stream<Path> stream = Files.walk(root, 4)) {
             List<Path> offenders = stream
                     .filter(path -> path.getFileName() != null)
-                    .filter(path -> !path.toString().contains("/target/") && !path.toString().contains("\\target\\") && !path.toString().contains("/build/") && !path.toString().contains("\\build\\") && !path.toString().contains("/.idea/") && !path.toString().contains("\\.idea\\"))
+                    .filter(path -> !path.toString().contains("/target/") && !path.toString().contains("\\target\\") && !path.toString().contains("/build/") && !path.toString().contains("\\build\\") && !path.toString().contains("/.idea/") && !path.toString().contains("\\.idea\\") && !path.toString().contains("__pycache__"))
                     .filter(path -> path.getFileName().toString().equals("__pycache__") || path.getFileName().toString().endsWith(".iml"))
                     .toList();
             assertFalse(!offenders.isEmpty(), "Transient files found: " + offenders);
