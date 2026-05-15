@@ -1,1 +1,7 @@
-[]
+[
+  {
+    "category": "missing_static_import",
+    "file": "pjb-api\\src\\test\\java\\com\\tcc\\pjb\\backend\\ai\\legalai\\DreamingOrchestratorIT.java",
+    "detail": "any"
+  }
+]
