@@ -46,22 +46,23 @@ class ExecucaoPenalTest {
                 false, false, false, false, false,
                 true, LocalDate.now().minusMonths(10));
         var result = progressao.avaliar(input);
-        assertThat(result.progressaoPossivel()).isFalse();
+        assertThat(result.pendenciasIdentificadas()).isNotEmpty();
         assertThat(result.mesesNecessarios()).isGreaterThan(0);
-        assertThat(result.impeditivos()).isNotEmpty();
+        assertThat(result.sinalizacao()).contains("Pendências identificadas");
     }
 
     @Test
-    void progressaoAprovadaParaCrimeComumNaoReincidente() {
+    void progressaoSemPendenciasParaCrimeComumNaoReincidente() {
         var inicio = LocalDate.now().minusMonths(25);
         var input = new ProgressaoRegimeService.ProgressaoInput(
                 "P002", 120, 25, RegimePrisionalTipo.FECHADO,
                 false, false, false, false, true,
                 true, inicio);
         var result = progressao.avaliar(input);
-        assertThat(result.progressaoPossivel()).isTrue();
-        assertThat(result.proximoRegime()).isEqualTo(RegimePrisionalTipo.SEMIABERTO);
+        assertThat(result.pendenciasIdentificadas()).isEmpty();
+        assertThat(result.regimeSugerido()).isEqualTo(RegimePrisionalTipo.SEMIABERTO);
         assertThat(result.fracao()).isEqualTo(FracaoProgressaoRegime.VINTE_PORCENTO);
+        assertThat(result.sinalizacao()).contains("sujeita à validação judicial");
     }
 
     @Test
@@ -99,9 +100,10 @@ class ExecucaoPenalTest {
         var input = new LivramentoCondicionalService.LivramentoInput(
                 60, 22, false, false, true, true, false, false);
         var result = livramento.avaliar(input);
-        assertThat(result.cabivel()).isTrue();
+        assertThat(result.aplicavel()).isTrue();
         assertThat(result.mesesMinimos()).isEqualTo(20);
-        assertThat(result.requisitosAtendidos()).isTrue();
+        assertThat(result.pendenciasIdentificadas()).isEmpty();
+        assertThat(result.sinalizacao()).contains("validação judicial");
     }
 
     @Test
@@ -110,7 +112,7 @@ class ExecucaoPenalTest {
                 60, 35, true, false, true, true, false, false);
         var result = livramento.avaliar(input);
         assertThat(result.mesesMinimos()).isEqualTo(40);
-        assertThat(result.requisitosAtendidos()).isFalse();
+        assertThat(result.pendenciasIdentificadas()).anyMatch(p -> p.contains("fração mínima"));
     }
 
     @Test
@@ -120,9 +122,9 @@ class ExecucaoPenalTest {
                 null, null, null,
                 true, false, false, false, false);
         var result = extincao.verificar(input);
-        assertThat(result.extinta()).isTrue();
-        assertThat(result.causa()).isPresent();
-        assertThat(result.causa().get()).isInstanceOf(ExtincaoPunibilidadeCausa.MorteDoAgente.class);
+        assertThat(result.causaIndicada()).isPresent();
+        assertThat(result.causaIndicada().get()).isInstanceOf(ExtincaoPunibilidadeCausa.MorteDoAgente.class);
+        assertThat(result.sinalizacao()).contains("validação judicial");
     }
 
     @Test
@@ -133,8 +135,9 @@ class ExecucaoPenalTest {
                 null, null, null,
                 false, false, false, false, false);
         var result = extincao.verificar(input);
-        assertThat(result.extinta()).isTrue();
-        assertThat(result.causa().get()).isInstanceOf(ExtincaoPunibilidadeCausa.Prescricao.class);
+        assertThat(result.causaIndicada()).isPresent();
+        assertThat(result.causaIndicada().get()).isInstanceOf(ExtincaoPunibilidadeCausa.Prescricao.class);
+        assertThat(result.indicativosIdentificados()).anyMatch(i -> i.contains("pretensão punitiva"));
     }
 
     @Test
@@ -155,11 +158,12 @@ class ExecucaoPenalTest {
     }
 
     @Test
-    void desinternacaoProgressivaCabivelAposPrazoMinimo() {
+    void desinternacaoProgressivaIndicadaAposPrazoMinimo() {
         var input = new MedidaSegurancaService.MedidaSegurancaInput(
                 "P007", 4, 0, true, false, 2, false);
         var result = medida.avaliar(input);
-        assertThat(result.desinternacaoProgressivaCabivel()).isTrue();
+        assertThat(result.sinalizacao()).contains("desinternação progressiva");
+        assertThat(result.orientacoes()).anyMatch(o -> o.contains("desinternação"));
     }
 
     @Test

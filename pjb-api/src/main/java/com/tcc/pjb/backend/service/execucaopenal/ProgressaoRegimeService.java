@@ -23,22 +23,28 @@ public class ProgressaoRegimeService {
     ) {}
 
     public record ProgressaoResult(
-            boolean progressaoPossivel,
-            RegimePrisionalTipo proximoRegime,
+            RegimePrisionalTipo regimeSugerido,
             int mesesNecessarios,
             int mesesFaltantes,
-            LocalDate dataPrevisao,
+            LocalDate dataPrevisaoMinima,
             FracaoProgressaoRegime fracao,
-            List<String> impeditivos
+            List<String> pendenciasIdentificadas,
+            String sinalizacao
     ) {}
 
+    private static final String SINAL_SEM_PENDENCIAS =
+            "Sem pendências formais localizadas — sugestão sujeita à validação judicial.";
+    private static final String SINAL_COM_PENDENCIAS =
+            "Pendências identificadas — conferir antes de submeter ao magistrado.";
+
     public ProgressaoResult avaliar(ProgressaoInput input) {
-        List<String> impeditivos = new ArrayList<>();
+        List<String> pendencias = new ArrayList<>();
 
         if (input.regimeAtual() == RegimePrisionalTipo.ABERTO
                 || input.regimeAtual() == RegimePrisionalTipo.ALBERGUE_DOMICILIAR) {
-            return new ProgressaoResult(false, input.regimeAtual(), 0, 0, null, null,
-                    List.of("Condenado já no regime mais brando aplicável."));
+            return new ProgressaoResult(input.regimeAtual(), 0, 0, null, null,
+                    List.of("Possível requisito a conferir: condenado já no regime mais brando aplicável."),
+                    SINAL_COM_PENDENCIAS);
         }
 
         FracaoProgressaoRegime fracao = FracaoProgressaoRegime.resolver(
@@ -50,11 +56,11 @@ public class ProgressaoRegimeService {
         int mesesNecessarios = (int) Math.ceil(penaParaCalculo * fracao.percentual() / 100.0);
 
         if (!input.comportamentoSatisfatorio()) {
-            impeditivos.add("Comportamento insatisfatório durante a execução (LEP art. 112 §1º).");
+            pendencias.add("Pendência identificada: comportamento insatisfatório durante a execução (LEP art. 112 §1º) — sujeito à avaliação do juízo.");
         }
         if (input.mesesCumpridos() < mesesNecessarios) {
-            impeditivos.add(String.format(
-                    "Fração mínima não atingida: cumpridos %d meses, necessários %d (%d%% — %s).",
+            pendencias.add(String.format(
+                    "Pendência identificada: fração mínima não atingida — cumpridos %d meses, necessários %d (%d%% — %s).",
                     input.mesesCumpridos(), mesesNecessarios, fracao.percentual(), fracao.fundamentacao()));
         }
 
@@ -62,12 +68,10 @@ public class ProgressaoRegimeService {
         LocalDate previsao = input.dataInicioCumprimento() != null
                 ? input.dataInicioCumprimento().plusMonths(mesesNecessarios) : null;
 
-        if (!impeditivos.isEmpty()) {
-            return new ProgressaoResult(false, input.regimeAtual().proximo(),
-                    mesesNecessarios, faltam, previsao, fracao, impeditivos);
-        }
-
-        return new ProgressaoResult(true, input.regimeAtual().proximo(),
-                mesesNecessarios, 0, previsao, fracao, List.of());
+        return new ProgressaoResult(
+                input.regimeAtual().proximo(),
+                mesesNecessarios, faltam, previsao, fracao,
+                List.copyOf(pendencias),
+                pendencias.isEmpty() ? SINAL_SEM_PENDENCIAS : SINAL_COM_PENDENCIAS);
     }
 }
