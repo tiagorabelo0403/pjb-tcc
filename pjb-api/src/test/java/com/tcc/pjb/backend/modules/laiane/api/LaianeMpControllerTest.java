@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.tcc.pjb.backend.configs.SecurityConfig;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.kernel.recursal.governance.RecursalFactsIngressProperties;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
@@ -17,17 +18,24 @@ import com.tcc.pjb.backend.model.repository.MembroEquipeRepository;
 import com.tcc.pjb.backend.modules.advocacia.office.service.OfficePersonalScopeService;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.mp.LaianeMpDeadlineMonitorResponse;
 import com.tcc.pjb.backend.modules.laiane.service.LaianeMpService;
+import com.tcc.pjb.backend.modules.support.WebMvcTestSecurityConfig;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = LaianeMpController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@WebMvcTest(
+        controllers = LaianeMpController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
+@Import(WebMvcTestSecurityConfig.class)
+@WithMockUser(roles = "MEMBRO_MINISTERIO_PUBLICO")
 class LaianeMpControllerTest {
 
     @Autowired

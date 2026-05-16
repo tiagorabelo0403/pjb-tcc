@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.tcc.pjb.backend.configs.SecurityConfig;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.kernel.recursal.governance.RecursalFactsIngressProperties;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
@@ -20,18 +21,25 @@ import com.tcc.pjb.backend.modules.laiane.dto.roles.lawyer.LaianeLawyerAttachmen
 import com.tcc.pjb.backend.modules.laiane.dto.roles.lawyer.LaianeLawyerAttachmentValidationResponse;
 import com.tcc.pjb.backend.modules.laiane.service.LaianeLawyerService;
 import com.tcc.pjb.backend.modules.laiane.service.LaianePeticaoAssistService;
+import com.tcc.pjb.backend.modules.support.WebMvcTestSecurityConfig;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = LaianeLawyerController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@WebMvcTest(
+        controllers = LaianeLawyerController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
+@Import(WebMvcTestSecurityConfig.class)
+@WithMockUser(authorities = "ROLE_ADVOGADO")
 class LaianeLawyerControllerTest {
 
     @Autowired

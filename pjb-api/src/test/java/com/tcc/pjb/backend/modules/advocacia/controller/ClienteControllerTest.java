@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.tcc.pjb.backend.ai.core.LegalAiService;
+import com.tcc.pjb.backend.configs.SecurityConfig;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.kernel.recursal.governance.RecursalFactsIngressProperties;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
@@ -24,26 +25,27 @@ import com.tcc.pjb.backend.modules.advocacia.dto.ClienteDTO;
 import com.tcc.pjb.backend.modules.advocacia.enums.StatusCliente;
 import com.tcc.pjb.backend.modules.advocacia.office.service.OfficePersonalScopeService;
 import com.tcc.pjb.backend.modules.advocacia.service.ClienteService;
+import com.tcc.pjb.backend.modules.support.WebMvcTestSecurityConfig;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = ClienteController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@Import(ClienteControllerTest.MethodSecurityTestConfig.class)
+@WebMvcTest(
+        controllers = ClienteController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
+@Import(WebMvcTestSecurityConfig.class)
 class ClienteControllerTest {
 
     @Autowired
@@ -84,11 +86,6 @@ class ClienteControllerTest {
 
     @MockitoBean
     private RecursalFactsIngressProperties recursalFactsIngressProperties;
-
-    @TestConfiguration
-    @EnableMethodSecurity(prePostEnabled = true)
-    static class MethodSecurityTestConfig {
-    }
 
     @Test
     @WithMockUser(authorities = "ROLE_CIDADAO")
