@@ -36,6 +36,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -46,6 +47,7 @@ import org.springframework.test.web.servlet.MockMvc;
         controllers = ClienteController.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
 @Import(WebMvcTestSecurityConfig.class)
+@TestPropertySource(properties = "spring.main.web-application-type=servlet")
 class ClienteControllerTest {
 
     @Autowired

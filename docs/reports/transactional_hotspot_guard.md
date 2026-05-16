@@ -1,6 +1,6 @@
 # Transactional Hotspot Guard
 
-Arquivos varridos: 7693
+Arquivos varridos: 7722
 Hotspots: 730
 Métodos hotspot sem budget: 0
 

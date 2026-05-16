@@ -32,6 +32,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -39,6 +40,7 @@ import org.springframework.test.web.servlet.MockMvc;
         controllers = LaianeJudgeController.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
 @Import(WebMvcTestSecurityConfig.class)
+@TestPropertySource(properties = "spring.main.web-application-type=servlet")
 @WithMockUser(roles = "MAGISTRADO")
 class LaianeJudgeControllerTest {
 

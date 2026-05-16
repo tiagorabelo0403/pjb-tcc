@@ -52,6 +52,8 @@ __pycache__/
 
 # Security scanning tools
 .zap/
+.trivy-cache/
+dist/
 
 # IDE and local assistant state
 .idea/
