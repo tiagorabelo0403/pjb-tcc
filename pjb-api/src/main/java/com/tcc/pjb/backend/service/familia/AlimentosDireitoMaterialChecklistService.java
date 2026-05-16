@@ -8,12 +8,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
-public class FamiliaAlimentosChecklistService {
+public class AlimentosDireitoMaterialChecklistService {
 
     public enum VinculoFamiliar { PARENTESCO, CONJUGE_COMPANHEIRO, EX_CONJUGE }
     public enum ModalidadeAlimentos { PROVISORIOS, DEFINITIVOS, GRAVIDICOS }
 
-    public record FamiliaAlimentosInput(
+    public record AlimentosDireitoMaterialInput(
             String cpfAlimentando,
             VinculoFamiliar vinculo,
             ModalidadeAlimentos modalidade,
@@ -31,7 +31,7 @@ public class FamiliaAlimentosChecklistService {
             String observacao
     ) {}
 
-    public record FamiliaAlimentosResult(
+    public record AlimentosDireitoMaterialResult(
             String faixaOrientativaPercentual,
             boolean prescricaoParcelasIdentificada,
             long mesesParcelasNaoPrescritas,
@@ -49,7 +49,7 @@ public class FamiliaAlimentosChecklistService {
     private static final String SINAL_COM_PENDENCIAS =
             "Pendências identificadas — conferir com advogado especialista em direito de família antes de qualquer ato processual.";
 
-    public FamiliaAlimentosResult avaliar(FamiliaAlimentosInput input) {
+    public AlimentosDireitoMaterialResult avaliar(AlimentosDireitoMaterialInput input) {
         List<OrientacaoAlimentar> orientacoes = new ArrayList<>();
         List<String> pendencias = new ArrayList<>();
         List<String> verificados = new ArrayList<>();
@@ -73,7 +73,7 @@ public class FamiliaAlimentosChecklistService {
                     " de até 50% do salário líquido (CPC art. 529) — verificar vínculo empregatício atual."));
         }
 
-        return new FamiliaAlimentosResult(
+        return new AlimentosDireitoMaterialResult(
                 faixaPercentual,
                 verificarSePrescricaoAtingiu(input),
                 calcularMesesNaoPrescritos(input),
@@ -83,7 +83,7 @@ public class FamiliaAlimentosChecklistService {
                 pendencias.isEmpty() ? SINAL_SEM_PENDENCIAS : SINAL_COM_PENDENCIAS);
     }
 
-    private String avaliarFaixaOrientativa(FamiliaAlimentosInput input, List<String> verificados) {
+    private String avaliarFaixaOrientativa(AlimentosDireitoMaterialInput input, List<String> verificados) {
         if (input.rendaBrutaAlimentante() == null) {
             return "Não calculável — renda do alimentante não informada; apurar por outros meios (declaração de IR, contracheque, INFOJUD).";
         }
@@ -98,7 +98,7 @@ public class FamiliaAlimentosChecklistService {
         return faixa;
     }
 
-    private void verificarBinomio(FamiliaAlimentosInput input,
+    private void verificarBinomio(AlimentosDireitoMaterialInput input,
             List<OrientacaoAlimentar> orientacoes, List<String> pendencias, List<String> verificados) {
         orientacoes.add(new OrientacaoAlimentar(
                 "Binômio necessidade-possibilidade",
@@ -119,7 +119,7 @@ public class FamiliaAlimentosChecklistService {
         }
     }
 
-    private void verificarPrescricaoParcelas(FamiliaAlimentosInput input,
+    private void verificarPrescricaoParcelas(AlimentosDireitoMaterialInput input,
             List<String> pendencias, List<String> verificados) {
         if (input.dataInadimplenciaInicial() == null) return;
 
@@ -143,7 +143,7 @@ public class FamiliaAlimentosChecklistService {
         }
     }
 
-    private void verificarRevisaoAlimentos(FamiliaAlimentosInput input,
+    private void verificarRevisaoAlimentos(AlimentosDireitoMaterialInput input,
             List<String> pendencias, List<String> verificados) {
         if (input.dataUltimaFixacao() == null) {
             verificados.add("Alimentos ainda não fixados judicialmente — primeira fixação a requerer.");
@@ -170,7 +170,7 @@ public class FamiliaAlimentosChecklistService {
         }
     }
 
-    private void verificarModalidadeEVinculo(FamiliaAlimentosInput input,
+    private void verificarModalidadeEVinculo(AlimentosDireitoMaterialInput input,
             List<OrientacaoAlimentar> orientacoes, List<String> verificados) {
         switch (input.modalidade()) {
             case PROVISORIOS -> {
@@ -201,13 +201,13 @@ public class FamiliaAlimentosChecklistService {
         }
     }
 
-    private boolean verificarSePrescricaoAtingiu(FamiliaAlimentosInput input) {
+    private boolean verificarSePrescricaoAtingiu(AlimentosDireitoMaterialInput input) {
         if (input.dataInadimplenciaInicial() == null) return false;
         long meses = ChronoUnit.MONTHS.between(input.dataInadimplenciaInicial(), LocalDate.now());
         return meses > MESES_PRESCRICAO_PARCELAS;
     }
 
-    private long calcularMesesNaoPrescritos(FamiliaAlimentosInput input) {
+    private long calcularMesesNaoPrescritos(AlimentosDireitoMaterialInput input) {
         if (input.dataInadimplenciaInicial() == null) return MESES_PRESCRICAO_PARCELAS;
         long meses = ChronoUnit.MONTHS.between(input.dataInadimplenciaInicial(), LocalDate.now());
         return Math.max(0, MESES_PRESCRICAO_PARCELAS - meses);

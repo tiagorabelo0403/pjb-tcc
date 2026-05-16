@@ -8,14 +8,14 @@ import org.junit.jupiter.api.Test;
 
 class FamiliaAlimentosChecklistTest {
 
-    private final FamiliaAlimentosChecklistService svc = new FamiliaAlimentosChecklistService();
+    private final AlimentosDireitoMaterialChecklistService svc = new AlimentosDireitoMaterialChecklistService();
 
     @Test
     void parentescoComRendaInformadaRetornaFaixaOrientativa() {
-        var input = new FamiliaAlimentosChecklistService.FamiliaAlimentosInput(
+        var input = new AlimentosDireitoMaterialChecklistService.AlimentosDireitoMaterialInput(
                 "111.222.333-70",
-                FamiliaAlimentosChecklistService.VinculoFamiliar.PARENTESCO,
-                FamiliaAlimentosChecklistService.ModalidadeAlimentos.DEFINITIVOS,
+                AlimentosDireitoMaterialChecklistService.VinculoFamiliar.PARENTESCO,
+                AlimentosDireitoMaterialChecklistService.ModalidadeAlimentos.DEFINITIVOS,
                 new BigDecimal("5000.00"),
                 new BigDecimal("1500.00"),
                 null, null, null, false);
@@ -27,10 +27,10 @@ class FamiliaAlimentosChecklistTest {
 
     @Test
     void semRendaDoAlimentanteGeraPendencia() {
-        var input = new FamiliaAlimentosChecklistService.FamiliaAlimentosInput(
+        var input = new AlimentosDireitoMaterialChecklistService.AlimentosDireitoMaterialInput(
                 "111.222.333-71",
-                FamiliaAlimentosChecklistService.VinculoFamiliar.PARENTESCO,
-                FamiliaAlimentosChecklistService.ModalidadeAlimentos.DEFINITIVOS,
+                AlimentosDireitoMaterialChecklistService.VinculoFamiliar.PARENTESCO,
+                AlimentosDireitoMaterialChecklistService.ModalidadeAlimentos.DEFINITIVOS,
                 null,
                 new BigDecimal("1000.00"),
                 null, null, null, false);
@@ -40,10 +40,10 @@ class FamiliaAlimentosChecklistTest {
 
     @Test
     void semDespesasDoAlimentandoGeraPendencia() {
-        var input = new FamiliaAlimentosChecklistService.FamiliaAlimentosInput(
+        var input = new AlimentosDireitoMaterialChecklistService.AlimentosDireitoMaterialInput(
                 "111.222.333-72",
-                FamiliaAlimentosChecklistService.VinculoFamiliar.PARENTESCO,
-                FamiliaAlimentosChecklistService.ModalidadeAlimentos.DEFINITIVOS,
+                AlimentosDireitoMaterialChecklistService.VinculoFamiliar.PARENTESCO,
+                AlimentosDireitoMaterialChecklistService.ModalidadeAlimentos.DEFINITIVOS,
                 new BigDecimal("4000.00"),
                 null,
                 null, null, null, false);
@@ -53,10 +53,10 @@ class FamiliaAlimentosChecklistTest {
 
     @Test
     void prescricaoExpiradaInadimplenciaHaMaisDe24Meses() {
-        var input = new FamiliaAlimentosChecklistService.FamiliaAlimentosInput(
+        var input = new AlimentosDireitoMaterialChecklistService.AlimentosDireitoMaterialInput(
                 "111.222.333-73",
-                FamiliaAlimentosChecklistService.VinculoFamiliar.PARENTESCO,
-                FamiliaAlimentosChecklistService.ModalidadeAlimentos.DEFINITIVOS,
+                AlimentosDireitoMaterialChecklistService.VinculoFamiliar.PARENTESCO,
+                AlimentosDireitoMaterialChecklistService.ModalidadeAlimentos.DEFINITIVOS,
                 new BigDecimal("3000.00"),
                 new BigDecimal("900.00"),
                 LocalDate.now().minusYears(3),
@@ -71,10 +71,10 @@ class FamiliaAlimentosChecklistTest {
 
     @Test
     void prescricaoDentroDosPrazosInadimplenciaRecente() {
-        var input = new FamiliaAlimentosChecklistService.FamiliaAlimentosInput(
+        var input = new AlimentosDireitoMaterialChecklistService.AlimentosDireitoMaterialInput(
                 "111.222.333-74",
-                FamiliaAlimentosChecklistService.VinculoFamiliar.PARENTESCO,
-                FamiliaAlimentosChecklistService.ModalidadeAlimentos.DEFINITIVOS,
+                AlimentosDireitoMaterialChecklistService.VinculoFamiliar.PARENTESCO,
+                AlimentosDireitoMaterialChecklistService.ModalidadeAlimentos.DEFINITIVOS,
                 new BigDecimal("3000.00"),
                 new BigDecimal("900.00"),
                 LocalDate.now().minusYears(2),
@@ -88,10 +88,10 @@ class FamiliaAlimentosChecklistTest {
 
     @Test
     void revisaoSugeridaFixacaoAntigaSuperiorA3Anos() {
-        var input = new FamiliaAlimentosChecklistService.FamiliaAlimentosInput(
+        var input = new AlimentosDireitoMaterialChecklistService.AlimentosDireitoMaterialInput(
                 "111.222.333-75",
-                FamiliaAlimentosChecklistService.VinculoFamiliar.CONJUGE_COMPANHEIRO,
-                FamiliaAlimentosChecklistService.ModalidadeAlimentos.DEFINITIVOS,
+                AlimentosDireitoMaterialChecklistService.VinculoFamiliar.CONJUGE_COMPANHEIRO,
+                AlimentosDireitoMaterialChecklistService.ModalidadeAlimentos.DEFINITIVOS,
                 new BigDecimal("6000.00"),
                 new BigDecimal("2000.00"),
                 LocalDate.now().minusYears(4),
@@ -103,10 +103,10 @@ class FamiliaAlimentosChecklistTest {
 
     @Test
     void alimentosProvisionariosIndicaTutelaDeUrgencia() {
-        var input = new FamiliaAlimentosChecklistService.FamiliaAlimentosInput(
+        var input = new AlimentosDireitoMaterialChecklistService.AlimentosDireitoMaterialInput(
                 "111.222.333-76",
-                FamiliaAlimentosChecklistService.VinculoFamiliar.PARENTESCO,
-                FamiliaAlimentosChecklistService.ModalidadeAlimentos.PROVISORIOS,
+                AlimentosDireitoMaterialChecklistService.VinculoFamiliar.PARENTESCO,
+                AlimentosDireitoMaterialChecklistService.ModalidadeAlimentos.PROVISORIOS,
                 new BigDecimal("4000.00"),
                 new BigDecimal("1200.00"),
                 null, null, null, false);
@@ -116,10 +116,10 @@ class FamiliaAlimentosChecklistTest {
 
     @Test
     void alimentosGravidicos() {
-        var input = new FamiliaAlimentosChecklistService.FamiliaAlimentosInput(
+        var input = new AlimentosDireitoMaterialChecklistService.AlimentosDireitoMaterialInput(
                 "111.222.333-77",
-                FamiliaAlimentosChecklistService.VinculoFamiliar.PARENTESCO,
-                FamiliaAlimentosChecklistService.ModalidadeAlimentos.GRAVIDICOS,
+                AlimentosDireitoMaterialChecklistService.VinculoFamiliar.PARENTESCO,
+                AlimentosDireitoMaterialChecklistService.ModalidadeAlimentos.GRAVIDICOS,
                 new BigDecimal("5000.00"),
                 new BigDecimal("800.00"),
                 null, null, null, false);
@@ -129,10 +129,10 @@ class FamiliaAlimentosChecklistTest {
 
     @Test
     void execucaoEmAndamentoIndicaCoercaoPessoalEDescontoEmFolha() {
-        var input = new FamiliaAlimentosChecklistService.FamiliaAlimentosInput(
+        var input = new AlimentosDireitoMaterialChecklistService.AlimentosDireitoMaterialInput(
                 "111.222.333-78",
-                FamiliaAlimentosChecklistService.VinculoFamiliar.PARENTESCO,
-                FamiliaAlimentosChecklistService.ModalidadeAlimentos.DEFINITIVOS,
+                AlimentosDireitoMaterialChecklistService.VinculoFamiliar.PARENTESCO,
+                AlimentosDireitoMaterialChecklistService.ModalidadeAlimentos.DEFINITIVOS,
                 new BigDecimal("4000.00"),
                 new BigDecimal("1000.00"),
                 LocalDate.now().minusYears(2),
@@ -146,10 +146,10 @@ class FamiliaAlimentosChecklistTest {
 
     @Test
     void exConjugeIndicaCaraterExcepcional() {
-        var input = new FamiliaAlimentosChecklistService.FamiliaAlimentosInput(
+        var input = new AlimentosDireitoMaterialChecklistService.AlimentosDireitoMaterialInput(
                 "111.222.333-79",
-                FamiliaAlimentosChecklistService.VinculoFamiliar.EX_CONJUGE,
-                FamiliaAlimentosChecklistService.ModalidadeAlimentos.DEFINITIVOS,
+                AlimentosDireitoMaterialChecklistService.VinculoFamiliar.EX_CONJUGE,
+                AlimentosDireitoMaterialChecklistService.ModalidadeAlimentos.DEFINITIVOS,
                 new BigDecimal("5000.00"),
                 new BigDecimal("1800.00"),
                 null, null, null, false);
@@ -159,6 +159,6 @@ class FamiliaAlimentosChecklistTest {
 
     @Test
     void enumVinculoFamiliarTemTresModalidades() {
-        assertThat(FamiliaAlimentosChecklistService.VinculoFamiliar.values()).hasSize(3);
+        assertThat(AlimentosDireitoMaterialChecklistService.VinculoFamiliar.values()).hasSize(3);
     }
 }
