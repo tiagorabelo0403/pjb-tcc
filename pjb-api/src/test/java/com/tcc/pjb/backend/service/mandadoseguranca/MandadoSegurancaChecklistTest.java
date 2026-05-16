@@ -114,7 +114,7 @@ class MandadoSegurancaChecklistTest {
     void naoCabivel_transitadoJulgado() {
         var input = new MandadoSegurancaChecklistService.MandadoSegurancaInput(
                 MandadoSegurancaChecklistService.TipoMS.INDIVIDUAL,
-                MandadoSegurancaChecklistService.AutoridadeCoatora.JUIZ_ESTADUAL_1GRAU,
+                MandadoSegurancaChecklistService.AutoridadeCoatora.AUTORIDADE_ESTADUAL,
                 true, true, true, false, true, false, false);
 
         var result = svc.avaliar(input);
@@ -127,7 +127,7 @@ class MandadoSegurancaChecklistTest {
     void naoCabivel_recursoComEfeitoSuspensivo() {
         var input = new MandadoSegurancaChecklistService.MandadoSegurancaInput(
                 MandadoSegurancaChecklistService.TipoMS.INDIVIDUAL,
-                MandadoSegurancaChecklistService.AutoridadeCoatora.JUIZ_ESTADUAL_1GRAU,
+                MandadoSegurancaChecklistService.AutoridadeCoatora.AUTORIDADE_ESTADUAL,
                 true, true, true, false, false, true, false);
 
         var result = svc.avaliar(input);
