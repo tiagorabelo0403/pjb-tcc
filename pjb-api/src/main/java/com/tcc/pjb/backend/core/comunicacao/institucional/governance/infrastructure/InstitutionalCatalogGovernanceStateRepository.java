@@ -13,6 +13,7 @@ import com.tcc.pjb.backend.core.comunicacao.institucional.persistence.Institutio
 import com.tcc.pjb.backend.core.comunicacao.judicial.state.ComunicacaoJudicialStateStore;
 import com.tcc.pjb.backend.model.entity.institucional.InstitutionalCatalogGovernanceSnapshot;
 import com.tcc.pjb.backend.model.repository.institucional.InstitutionalCatalogGovernanceSnapshotRepository;
+import jakarta.inject.Inject;
 
 @Repository
 public class InstitutionalCatalogGovernanceStateRepository {
@@ -24,6 +25,7 @@ public class InstitutionalCatalogGovernanceStateRepository {
     private final InstitutionalCatalogGovernanceSnapshotRepository jpaRepository;
     private final Map<String, InstitutionalCatalogGovernanceEntry> inMemoryStore;
 
+    @Inject
     public InstitutionalCatalogGovernanceStateRepository() {
         this.stateStore = null;
         this.codec = null;

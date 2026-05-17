@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class InstitutionalHearingSchedulingGovernanceApplicationService {
@@ -17,6 +18,7 @@ public class InstitutionalHearingSchedulingGovernanceApplicationService {
     private final InstitutionalHearingSchedulingScopeSupport scopeSupport;
     private final InstitutionalHearingRiteGovernanceResolver riteGovernanceResolver;
 
+    @Inject
     public InstitutionalHearingSchedulingGovernanceApplicationService() {
         this(new InstitutionalHearingSchedulingCapabilityResolver(),
                 new InstitutionalHearingSchedulingScopeSupport(),

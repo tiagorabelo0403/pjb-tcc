@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class PeticionamentoMediaSecurityPipelineService {
@@ -24,6 +25,7 @@ public class PeticionamentoMediaSecurityPipelineService {
     private final ObjectStorageProperties.Upload uploadProperties;
     private final UploadContentPolicyService uploadContentPolicyService;
 
+    @Inject
     public PeticionamentoMediaSecurityPipelineService() {
         this(new ObjectStorageProperties(), new UploadContentPolicyService());
     }

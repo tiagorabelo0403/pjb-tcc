@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class ProcessMaterialDossierService {
@@ -15,6 +16,7 @@ public class ProcessMaterialDossierService {
     private final ProcessMaterialDossierHeuristics heuristics;
     private final ProcessMaterialDossierDiagnosticsFactory diagnosticsFactory;
 
+    @Inject
     public ProcessMaterialDossierService() {
         ProcessMaterialDossierTextSupport textSupport = new ProcessMaterialDossierTextSupport();
         this.inputFactory = new ProcessMaterialDossierInputFactory(textSupport);

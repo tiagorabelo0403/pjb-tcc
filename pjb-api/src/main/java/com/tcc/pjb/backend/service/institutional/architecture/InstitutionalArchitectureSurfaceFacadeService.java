@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class InstitutionalArchitectureSurfaceFacadeService {
@@ -32,6 +33,7 @@ public class InstitutionalArchitectureSurfaceFacadeService {
     private final InstitutionalPublicRecognitionPolicyService publicRecognitionPolicyService;
     private final Clock clock;
 
+    @Inject
     public InstitutionalArchitectureSurfaceFacadeService(CatalogoInstitucionalUnificadoService catalogoService,
                                                          InstitutionalCatalogGovernanceApplicationService governanceApplicationService,
                                                          GovBrSurfaceFacadeService govBrSurfaceFacadeService,

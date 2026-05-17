@@ -9,6 +9,7 @@ import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalTransitionCommand;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalTransitionResult;
 import com.tcc.pjb.backend.model.dto.intelligence.recursal.mesh.RecursalMeshPlanRequest;
 import com.tcc.pjb.backend.model.dto.intelligence.recursal.mesh.RecursalMeshTransitionRequest;
+import jakarta.inject.Inject;
 
 @Service
 public class NationalRecursalMeshService {
@@ -16,6 +17,7 @@ public class NationalRecursalMeshService {
     private final NationalRecursalMeshEngine engine;
     private final RecursalMeshRequestMapper requestMapper;
 
+    @Inject
     public NationalRecursalMeshService() {
         this(new NationalRecursalMeshEngine(), new RecursalMeshRequestMapper());
     }

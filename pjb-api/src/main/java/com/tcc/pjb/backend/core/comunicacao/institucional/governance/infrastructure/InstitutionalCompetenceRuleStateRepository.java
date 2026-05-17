@@ -13,6 +13,7 @@ import com.tcc.pjb.backend.core.comunicacao.institucional.persistence.Institutio
 import com.tcc.pjb.backend.core.comunicacao.judicial.state.ComunicacaoJudicialStateStore;
 import com.tcc.pjb.backend.model.entity.institucional.InstitutionalCompetenceRuleSnapshot;
 import com.tcc.pjb.backend.model.repository.institucional.InstitutionalCompetenceRuleSnapshotRepository;
+import jakarta.inject.Inject;
 
 @Repository
 public class InstitutionalCompetenceRuleStateRepository {
@@ -24,6 +25,7 @@ public class InstitutionalCompetenceRuleStateRepository {
     private final InstitutionalCompetenceRuleSnapshotRepository jpaRepository;
     private final Map<String, InstitutionalCompetenceRule> inMemoryStore;
 
+    @Inject
     public InstitutionalCompetenceRuleStateRepository() {
         this.stateStore = null;
         this.codec = null;

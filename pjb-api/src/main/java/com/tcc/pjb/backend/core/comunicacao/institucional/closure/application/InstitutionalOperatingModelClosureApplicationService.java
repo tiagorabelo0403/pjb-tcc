@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class InstitutionalOperatingModelClosureApplicationService {
@@ -35,6 +36,7 @@ public class InstitutionalOperatingModelClosureApplicationService {
     private final InstitutionalOrganizationBlueprintCatalogApplicationService blueprintCatalogApplicationService;
     private final Function<DestinatarioInstitucionalKind, List<UnidadeInstitucional>> unitResolver;
 
+    @Inject
     public InstitutionalOperatingModelClosureApplicationService(InstitutionalOrganizationBlueprintCatalogApplicationService blueprintCatalogApplicationService,
                                                                 CatalogoInstitucionalUnificadoService catalogoInstitucionalUnificadoService) {
         this(blueprintCatalogApplicationService, catalogoInstitucionalUnificadoService::listarPorTipo);

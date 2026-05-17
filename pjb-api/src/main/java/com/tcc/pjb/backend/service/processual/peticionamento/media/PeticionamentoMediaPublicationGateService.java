@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import com.tcc.pjb.backend.service.processual.peticionamento.PeticionamentoPericiaEvidenceIntelligenceService;
+import jakarta.inject.Inject;
 
 @Service
 public class PeticionamentoMediaPublicationGateService {
@@ -18,6 +19,7 @@ public class PeticionamentoMediaPublicationGateService {
     private final ObjectStorageProperties.Upload uploadProperties;
     private final UploadContentPolicyService uploadContentPolicyService;
 
+    @Inject
     public PeticionamentoMediaPublicationGateService() {
         this(new ObjectStorageProperties(), new UploadContentPolicyService());
     }

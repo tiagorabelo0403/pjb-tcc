@@ -7,6 +7,7 @@ import com.tcc.pjb.backend.core.comunicacao.institucional.processual.application
 import java.time.InstantSource;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class InstitutionalPanelProvisioningReadinessApplicationService {
@@ -23,6 +24,7 @@ public class InstitutionalPanelProvisioningReadinessApplicationService {
     private final InstitutionalPanelProvisioningSnapshotAccumulator snapshotAccumulator;
     private final InstitutionalPanelProvisioningOutcomeFactory outcomeFactory;
 
+    @Inject
     public InstitutionalPanelProvisioningReadinessApplicationService(InstitutionalAccessProfileCatalogApplicationService accessProfileCatalogApplicationService,
                                                                      InstitutionalPanelBlueprintApplicationService panelBlueprintApplicationService,
                                                                      InstitutionalProcessWorkspaceApplicationService processWorkspaceApplicationService,

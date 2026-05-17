@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class JudicialConnectorHomologationService {
@@ -22,6 +23,7 @@ public class JudicialConnectorHomologationService {
         return new JudicialConnectorHomologationService(integrationProperties, null);
     }
 
+    @Inject
     public JudicialConnectorHomologationService(JudicialIntegrationProperties integrationProperties,
                                                 ObjectProvider<JudicialConnectorPolicyService> policyServiceProvider) {
         this.integrationProperties = Objects.requireNonNull(integrationProperties);

@@ -9,12 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class PeticionamentoPericiaEvidenceIntelligenceService {
 
     private final ObjectStorageProperties.Upload uploadProperties;
 
+    @Inject
     public PeticionamentoPericiaEvidenceIntelligenceService() {
         this(new ObjectStorageProperties());
     }

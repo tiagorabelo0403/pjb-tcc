@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class InstitutionalOfficialSourceConnectorCatalogApplicationService {
@@ -18,6 +19,7 @@ public class InstitutionalOfficialSourceConnectorCatalogApplicationService {
     private final InstitutionalOfficialSourceConnectorRegistry connectorRegistry;
     private final Clock clock;
 
+    @Inject
     public InstitutionalOfficialSourceConnectorCatalogApplicationService(InstitutionalOfficialSourceCatalogService catalogService,
                                                                         InstitutionalOfficialSourceConnectorRegistry connectorRegistry) {
         this(catalogService, connectorRegistry, Clock.systemUTC());

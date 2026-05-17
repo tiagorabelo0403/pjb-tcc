@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class UploadContentPolicyService {
@@ -23,6 +24,7 @@ public class UploadContentPolicyService {
     private final Map<String, Policy> byContentType;
     private final Map<String, String> byExtension;
 
+    @Inject
     public UploadContentPolicyService() {
         this(new ObjectStorageProperties());
     }

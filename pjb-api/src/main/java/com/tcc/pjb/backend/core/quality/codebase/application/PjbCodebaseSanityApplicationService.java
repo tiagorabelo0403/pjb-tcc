@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class PjbCodebaseSanityApplicationService {
@@ -17,6 +18,7 @@ public class PjbCodebaseSanityApplicationService {
     private final PjbCodebaseSanitySnapshotBuilder snapshotBuilder;
     private final AtomicReference<SnapshotCacheEntry> cache;
 
+    @Inject
     public PjbCodebaseSanityApplicationService() {
         this(Path.of(""), PjbCodebaseSanitySettings.defaults(), Clock.systemUTC());
     }
