@@ -1,7 +1,7 @@
 spring:
   main:
     lazy-initialization: true
-    web-application-type: none
+    web-application-type: servlet
   task:
     execution:
       mode: force
@@ -170,6 +170,8 @@ pjb:
     seed:
       enabled: false
   runtime:
+    admission:
+      enabled: false
     barrier:
       integrations:
         datajud: false

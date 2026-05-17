@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import jakarta.inject.Inject;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -20,24 +21,25 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "pjb.integration.judicial.mni", name = "enabled", havingValue = "true")
 public class MniConnector extends AbstractHttpJudicialConnector {
 
+    @Inject
     public MniConnector(JudicialIntegrationProperties props,
-                         RestTemplateBuilder builder,
-                         ObjectMapper objectMapper,
+                       RestTemplateBuilder builder,
+                       ObjectMapper objectMapper,
                          JudicialOAuthTokenService judicialOAuthTokenService,
                          JudicialConnectorTransport judicialConnectorTransport) {
         super(props, builder, objectMapper, judicialOAuthTokenService, judicialConnectorTransport, LoggerFactory.getLogger(MniConnector.class));
     }
 
-    public MniConnector(JudicialIntegrationProperties props,
-                         RestTemplateBuilder builder,
-                         ObjectMapper objectMapper,
-                         JudicialOAuthTokenService judicialOAuthTokenService) {
+    MniConnector(JudicialIntegrationProperties props,
+                 RestTemplateBuilder builder,
+                 ObjectMapper objectMapper,
+                 JudicialOAuthTokenService judicialOAuthTokenService) {
         super(props, builder, objectMapper, judicialOAuthTokenService, LoggerFactory.getLogger(MniConnector.class));
     }
 
-    public MniConnector(JudicialIntegrationProperties props,
-                         RestTemplateBuilder builder,
-                         ObjectMapper objectMapper) {
+    MniConnector(JudicialIntegrationProperties props,
+                 RestTemplateBuilder builder,
+                 ObjectMapper objectMapper) {
         super(props, builder, objectMapper, null, LoggerFactory.getLogger(MniConnector.class));
     }
 

@@ -3,10 +3,12 @@ package com.tcc.pjb.backend.service.secretariat.aggregation;
 import java.time.Duration;
 import java.util.EnumSet;
 import java.util.Set;
+import org.springframework.stereotype.Component;
 
+@Component
 public final class SecretariatAgrupadorRules {
 
-    private SecretariatAgrupadorRules() {}
+    public SecretariatAgrupadorRules() {}
 
     public record AgrupadorInput(
             boolean temJusticaGratuitaSemApreciacao,

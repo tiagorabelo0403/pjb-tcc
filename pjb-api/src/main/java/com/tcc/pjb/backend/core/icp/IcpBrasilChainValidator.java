@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.icp.domain.IcpBrasilOcspEvidence;
@@ -50,11 +51,11 @@ public class IcpBrasilChainValidator {
     private final IcpBrasilSignatureProperties properties;
     private final AuditLedgerService auditLedger;
 
-    public IcpBrasilChainValidator(IcpCertificateCacheRepository certificateCacheRepository,
-                                   IcpSignatureEventRepository signatureEventRepository,
-                                   IcpBrasilOcspVerifier ocspVerifier,
-                                   IcpBrasilSignatureProperties properties,
-                                   AuditLedgerService auditLedger) {
+    IcpBrasilChainValidator(IcpCertificateCacheRepository certificateCacheRepository,
+                            IcpSignatureEventRepository signatureEventRepository,
+                            IcpBrasilOcspVerifier ocspVerifier,
+                            IcpBrasilSignatureProperties properties,
+                            AuditLedgerService auditLedger) {
         this.certificateCacheRepository = Objects.requireNonNull(certificateCacheRepository);
         this.signatureEventRepository = Objects.requireNonNull(signatureEventRepository);
         this.ocspVerifier = Objects.requireNonNull(ocspVerifier);
@@ -63,6 +64,7 @@ public class IcpBrasilChainValidator {
         this.auditLedger = Objects.requireNonNull(auditLedger);
     }
 
+    @Inject
     public IcpBrasilChainValidator(IcpCertificateCacheRepository certificateCacheRepository,
                                    IcpSignatureEventRepository signatureEventRepository,
                                    IcpBrasilOcspVerifier ocspVerifier,

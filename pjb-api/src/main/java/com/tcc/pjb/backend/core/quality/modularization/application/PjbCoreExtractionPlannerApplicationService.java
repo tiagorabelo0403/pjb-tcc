@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,11 +38,12 @@ public class PjbCoreExtractionPlannerApplicationService {
     private final AuditLedgerService auditLedgerService;
     private final Path projectRoot;
 
+    @Inject
     public PjbCoreExtractionPlannerApplicationService(AuditLedgerService auditLedgerService) {
         this(auditLedgerService, Path.of(""));
     }
 
-    public PjbCoreExtractionPlannerApplicationService(AuditLedgerService auditLedgerService, Path projectRoot) {
+    PjbCoreExtractionPlannerApplicationService(AuditLedgerService auditLedgerService, Path projectRoot) {
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
         this.projectRoot = projectRoot == null ? Path.of("").toAbsolutePath().normalize() : projectRoot.toAbsolutePath().normalize();
     }

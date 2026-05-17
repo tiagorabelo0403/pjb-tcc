@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import com.tcc.pjb.backend.core.processo.lifecycle.ProcessoLifecycleAction;
 import com.tcc.pjb.backend.core.processo.lifecycle.ProcessoLifecycleMachine;
-import com.tcc.pjb.backend.core.processual.ato.AtoProcessualCatalogService;
+import com.tcc.pjb.backend.core.processo.lifecycle.ProcessoLifecycleMachineTestFactory;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.core.validator.FaseValidatorService;
 import com.tcc.pjb.backend.model.dto.processual.validation.material.MaterialLegalValidationRequest;
@@ -27,7 +27,7 @@ class MaterialLegalValidationServiceTest {
         MaterialLegalValidationService service = new MaterialLegalValidationService(
                 processoRepository,
                 authorizationService,
-                new ProcessoLifecycleMachine(new AtoProcessualCatalogService()),
+                ProcessoLifecycleMachineTestFactory.standalone(),
                 new FaseValidatorService()
         );
         Processo processo = new Processo();
@@ -60,7 +60,7 @@ class MaterialLegalValidationServiceTest {
         MaterialLegalValidationService service = new MaterialLegalValidationService(
                 processoRepository,
                 authorizationService,
-                new ProcessoLifecycleMachine(new AtoProcessualCatalogService()),
+                ProcessoLifecycleMachineTestFactory.standalone(),
                 new FaseValidatorService()
         );
         Processo processo = new Processo();

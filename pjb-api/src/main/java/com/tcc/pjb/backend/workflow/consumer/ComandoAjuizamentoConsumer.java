@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.workflow.consumer;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import com.tcc.pjb.backend.workflow.adapter.AjuizamentoWorkflowAdapter;
 import com.tcc.pjb.backend.workflow.zeebe.ZeebeCompat;
@@ -9,6 +10,7 @@ import io.camunda.zeebe.client.ZeebeClient;
 import lombok.RequiredArgsConstructor;
 
 @Component
+@ConditionalOnBean(ZeebeClient.class)
 @RequiredArgsConstructor
 @SuppressWarnings("deprecation")
 public class ComandoAjuizamentoConsumer {

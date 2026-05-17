@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 import com.tcc.pjb.backend.core.quality.codebase.application.PjbProjectPathResolver;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,16 +36,17 @@ public class PjbQualityGateReadinessApplicationService {
     private final AuditLedgerService auditLedgerService;
     private final Path projectRoot;
 
+    @Inject
     public PjbQualityGateReadinessApplicationService(BuildGateGovernanceService buildGateGovernanceService,
                                                      TestQualityMatrixService testQualityMatrixService,
                                                      AuditLedgerService auditLedgerService) {
         this(buildGateGovernanceService, testQualityMatrixService, auditLedgerService, Path.of(""));
     }
 
-    public PjbQualityGateReadinessApplicationService(BuildGateGovernanceService buildGateGovernanceService,
-                                                     TestQualityMatrixService testQualityMatrixService,
-                                                     AuditLedgerService auditLedgerService,
-                                                     Path projectRoot) {
+    PjbQualityGateReadinessApplicationService(BuildGateGovernanceService buildGateGovernanceService,
+                                              TestQualityMatrixService testQualityMatrixService,
+                                              AuditLedgerService auditLedgerService,
+                                              Path projectRoot) {
         this.buildGateGovernanceService = Objects.requireNonNull(buildGateGovernanceService);
         this.testQualityMatrixService = Objects.requireNonNull(testQualityMatrixService);
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);

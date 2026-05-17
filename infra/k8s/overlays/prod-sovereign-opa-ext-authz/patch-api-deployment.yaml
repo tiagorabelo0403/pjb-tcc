@@ -9,8 +9,24 @@ spec:
       annotations:
         pjb.security/edge-policy: opa-ext-authz
     spec:
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: api
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 10001
+            runAsNonRoot: true
+            runAsUser: 10001
           env:
             - name: PJB_EDGE_AUTHZ_MODE
               value: OPA_ENVOY_EXT_AUTHZ
@@ -18,6 +34,15 @@ spec:
               value: "true"
         - name: opa-envoy
           image: openpolicyagent/opa:latest-envoy
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 10001
+            runAsNonRoot: true
+            runAsUser: 10001
           args:
             - run
             - --server

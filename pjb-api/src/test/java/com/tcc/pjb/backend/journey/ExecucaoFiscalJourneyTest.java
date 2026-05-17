@@ -2,9 +2,9 @@ package com.tcc.pjb.backend.journey;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
-import com.tcc.pjb.backend.core.processual.ato.AtoProcessualCatalogService;
 import com.tcc.pjb.backend.core.processo.lifecycle.ProcessoLifecycleAction;
 import com.tcc.pjb.backend.core.processo.lifecycle.ProcessoLifecycleMachine;
+import com.tcc.pjb.backend.core.processo.lifecycle.ProcessoLifecycleMachineTestFactory;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
@@ -14,7 +14,7 @@ class ExecucaoFiscalJourneyTest extends JourneyTestSupport {
     @Test
     void deveNascerEmExecucaoNoFluxoFiscal() {
         Processo processo = processo(RitoProcessual.EXECUCAO_FISCAL, StatusProcesso.DISTRIBUIDO, null);
-        ProcessoLifecycleMachine machine = new ProcessoLifecycleMachine(new AtoProcessualCatalogService());
+        ProcessoLifecycleMachine machine = ProcessoLifecycleMachineTestFactory.standalone();
 
         var decision = machine.preview(processo, ProcessoLifecycleAction.DISTRIBUIR);
 

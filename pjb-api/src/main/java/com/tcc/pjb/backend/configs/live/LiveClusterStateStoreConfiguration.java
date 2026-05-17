@@ -15,6 +15,12 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 public class LiveClusterStateStoreConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean(LiveClusterBus.class)
+    NoOpLiveClusterBus noOpLiveClusterBus() {
+        return new NoOpLiveClusterBus();
+    }
+
+    @Bean
     @ConditionalOnMissingBean(LiveClusterStateStore.class)
     NoOpLiveClusterStateStore noOpLiveClusterStateStore() {
         return new NoOpLiveClusterStateStore();

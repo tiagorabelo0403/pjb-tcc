@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import jakarta.inject.Inject;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "pjb.integration.judicial.creta", name = "enabled", havingValue = "true")
 public class CretaConnector extends AbstractHttpJudicialConnector {
 
+    @Inject
     public CretaConnector(JudicialIntegrationProperties props,
                          RestTemplateBuilder builder,
                          ObjectMapper objectMapper,
@@ -28,16 +30,16 @@ public class CretaConnector extends AbstractHttpJudicialConnector {
         super(props, builder, objectMapper, judicialOAuthTokenService, judicialConnectorTransport, LoggerFactory.getLogger(CretaConnector.class));
     }
 
-    public CretaConnector(JudicialIntegrationProperties props,
-                         RestTemplateBuilder builder,
-                         ObjectMapper objectMapper,
-                         JudicialOAuthTokenService judicialOAuthTokenService) {
+    CretaConnector(JudicialIntegrationProperties props,
+                   RestTemplateBuilder builder,
+                   ObjectMapper objectMapper,
+                   JudicialOAuthTokenService judicialOAuthTokenService) {
         super(props, builder, objectMapper, judicialOAuthTokenService, LoggerFactory.getLogger(CretaConnector.class));
     }
 
-    public CretaConnector(JudicialIntegrationProperties props,
-                         RestTemplateBuilder builder,
-                         ObjectMapper objectMapper) {
+    CretaConnector(JudicialIntegrationProperties props,
+                   RestTemplateBuilder builder,
+                   ObjectMapper objectMapper) {
         super(props, builder, objectMapper, null, LoggerFactory.getLogger(CretaConnector.class));
     }
 

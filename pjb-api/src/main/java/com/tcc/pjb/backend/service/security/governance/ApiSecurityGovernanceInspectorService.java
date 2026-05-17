@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class ApiSecurityGovernanceInspectorService {
     private final RequestMappingHandlerMapping handlerMapping;
     private final ApiRouteGovernanceProperties routeGovernanceProperties;
 
-    public ApiSecurityGovernanceInspectorService(RequestMappingHandlerMapping handlerMapping,
+    public ApiSecurityGovernanceInspectorService(@Qualifier("requestMappingHandlerMapping") RequestMappingHandlerMapping handlerMapping,
                                                 ApiRouteGovernanceProperties routeGovernanceProperties) {
         this.handlerMapping = handlerMapping;
         this.routeGovernanceProperties = routeGovernanceProperties;

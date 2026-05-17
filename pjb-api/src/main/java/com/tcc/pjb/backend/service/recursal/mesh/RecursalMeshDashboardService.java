@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import jakarta.inject.Inject;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -38,13 +39,14 @@ public class RecursalMeshDashboardService {
     private final ObjectProvider<RecursalMeshOperationalTelemetryService> telemetryProvider;
     private final ObjectMapper objectMapper;
 
-    public RecursalMeshDashboardService(RecursalProcessIntegrationStateRepository projectionRepository,
-                                        RecursalMeshProjectionService projectionService,
-                                        ObjectProvider<RecursalMeshQueryRepository> queryRepositoryProvider,
-                                        ObjectMapper objectMapper) {
+    RecursalMeshDashboardService(RecursalProcessIntegrationStateRepository projectionRepository,
+                                 RecursalMeshProjectionService projectionService,
+                                 ObjectProvider<RecursalMeshQueryRepository> queryRepositoryProvider,
+                                 ObjectMapper objectMapper) {
         this(projectionRepository, projectionService, queryRepositoryProvider, null, objectMapper);
     }
 
+    @Inject
     public RecursalMeshDashboardService(RecursalProcessIntegrationStateRepository projectionRepository,
                                         RecursalMeshProjectionService projectionService,
                                         ObjectProvider<RecursalMeshQueryRepository> queryRepositoryProvider,

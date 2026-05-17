@@ -33,8 +33,8 @@ class FlywayPostgresMigrationIT {
 
         try (Connection c = DriverManager.getConnection(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())) {
             assertTrue(tableExists(c, "pjb_outbox_event"), "Tabela pjb_outbox_event deve existir");
-            assertTrue(tableExists(c, "usuario"), "Tabela usuario deve existir");
-            assertTrue(tableExists(c, "processo"), "Tabela processo deve existir");
+            assertTrue(tableExists(c, "tb_usuario"), "Tabela tb_usuario deve existir");
+            assertTrue(tableExists(c, "tb_processo"), "Tabela tb_processo deve existir");
             assertTrue(tableExists(c, "flyway_schema_history"), "Flyway history deve existir");
         }
     }

@@ -2,10 +2,12 @@ package com.tcc.pjb.backend.service.processual.nulidade;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
+@Component
 public final class NulidadeProcessualRiskPolicy {
 
-    private NulidadeProcessualRiskPolicy() {}
+    public NulidadeProcessualRiskPolicy() {}
 
     public record NulidadeInput(
             boolean intimacaoValida,

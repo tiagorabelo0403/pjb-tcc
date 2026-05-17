@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 import com.tcc.pjb.backend.core.quality.codebase.application.PjbProjectPathResolver;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,6 +41,7 @@ public class PjbFinalClosureApplicationService {
     private final AuditLedgerService auditLedgerService;
     private final Path projectRoot;
 
+    @Inject
     public PjbFinalClosureApplicationService(BuildGateGovernanceService buildGateGovernanceService,
                                             PjbCodebaseSanityApplicationService codebaseSanityApplicationService,
                                             PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService,
@@ -55,13 +57,13 @@ public class PjbFinalClosureApplicationService {
                 Path.of(""));
     }
 
-    public PjbFinalClosureApplicationService(BuildGateGovernanceService buildGateGovernanceService,
-                                            PjbCodebaseSanityApplicationService codebaseSanityApplicationService,
-                                            PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService,
-                                            PjbModuleBoundaryReadinessApplicationService modularizationApplicationService,
-                                            PjbRoadmapClosureApplicationService roadmapClosureApplicationService,
-                                            AuditLedgerService auditLedgerService,
-                                            Path projectRoot) {
+    PjbFinalClosureApplicationService(BuildGateGovernanceService buildGateGovernanceService,
+                                      PjbCodebaseSanityApplicationService codebaseSanityApplicationService,
+                                      PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService,
+                                      PjbModuleBoundaryReadinessApplicationService modularizationApplicationService,
+                                      PjbRoadmapClosureApplicationService roadmapClosureApplicationService,
+                                      AuditLedgerService auditLedgerService,
+                                      Path projectRoot) {
         this.buildGateGovernanceService = Objects.requireNonNull(buildGateGovernanceService);
         this.codebaseSanityApplicationService = Objects.requireNonNull(codebaseSanityApplicationService);
         this.apiSurfaceSanityApplicationService = Objects.requireNonNull(apiSurfaceSanityApplicationService);

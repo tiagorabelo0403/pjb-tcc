@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public final class MotorInterceptacaoAtiva {
+public class MotorInterceptacaoAtiva {
 
     private static final Logger log = LoggerFactory.getLogger(MotorInterceptacaoAtiva.class);
     private static final String RESOURCE_TYPE = "INTERCEPTACAO_ATIVA";

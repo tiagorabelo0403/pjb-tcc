@@ -1,4 +1,4 @@
-CREATE TABLE pjb_calendario_eleitoral (
+CREATE TABLE IF NOT EXISTS pjb_calendario_eleitoral (
  id BIGSERIAL PRIMARY KEY,
  ano_eleitoral INT NOT NULL,
  tipo_eleicao VARCHAR(32) NOT NULL,
@@ -11,9 +11,8 @@ CREATE TABLE pjb_calendario_eleitoral (
  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
  CONSTRAINT uk_cal_eleitoral UNIQUE (ano_eleitoral, tipo_eleicao, fase, uf)
 );
-CREATE INDEX idx_cal_eleitoral_fase ON pjb_calendario_eleitoral (data_inicio, data_fim)
- WHERE data_fim >= CURRENT_DATE;
-CREATE TABLE pjb_processo_zona_eleitoral (
+CREATE INDEX IF NOT EXISTS idx_cal_eleitoral_fase ON pjb_calendario_eleitoral (data_fim, data_inicio);
+CREATE TABLE IF NOT EXISTS pjb_processo_zona_eleitoral (
  processo_id BIGINT PRIMARY KEY REFERENCES tb_processo(id) ON DELETE CASCADE,
  zona_eleitoral VARCHAR(16),
  municipio VARCHAR(120),
@@ -21,7 +20,7 @@ CREATE TABLE pjb_processo_zona_eleitoral (
  cartorio_codigo VARCHAR(16),
  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE TABLE pjb_feito_eleitoral_especial (
+CREATE TABLE IF NOT EXISTS pjb_feito_eleitoral_especial (
  id BIGSERIAL PRIMARY KEY,
  processo_id BIGINT NOT NULL REFERENCES tb_processo(id) ON DELETE RESTRICT,
  tipo_feito VARCHAR(64) NOT NULL,
@@ -35,5 +34,5 @@ CREATE TABLE pjb_feito_eleitoral_especial (
  motivo_extincao TEXT,
  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_feito_eleitoral_processo ON pjb_feito_eleitoral_especial (processo_id);
-CREATE INDEX idx_feito_eleitoral_partido ON pjb_feito_eleitoral_especial (partido_sigla, ano_eleitoral);
+CREATE INDEX IF NOT EXISTS idx_feito_eleitoral_processo ON pjb_feito_eleitoral_especial (processo_id);
+CREATE INDEX IF NOT EXISTS idx_feito_eleitoral_partido ON pjb_feito_eleitoral_especial (partido_sigla, ano_eleitoral);

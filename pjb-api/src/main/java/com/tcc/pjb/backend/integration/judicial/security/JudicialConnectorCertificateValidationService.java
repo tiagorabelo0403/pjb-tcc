@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -47,6 +48,7 @@ public class JudicialConnectorCertificateValidationService {
     private final JudicialConnectorSecurityTelemetryService telemetryService;
     private final Clock clock;
 
+    @Inject
     public JudicialConnectorCertificateValidationService(JudicialConnectorSecurityProperties properties,
                                                          JudicialConnectorSecurityPackService securityPackService,
                                                          JudicialConnectorCryptographicContextService cryptographicContextService,

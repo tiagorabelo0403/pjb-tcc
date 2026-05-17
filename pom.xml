@@ -59,6 +59,7 @@
         <surefireArgLine></surefireArgLine>
         <failsafeArgLine></failsafeArgLine>
         <commons-compress.version>1.27.1</commons-compress.version>
+        <commons-io.version>2.19.0</commons-io.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <assertj.version>3.27.7</assertj.version>
         <postgresql.version>42.7.11</postgresql.version>
@@ -131,6 +132,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>${commons-compress.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

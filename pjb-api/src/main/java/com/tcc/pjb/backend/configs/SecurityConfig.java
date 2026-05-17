@@ -23,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.tcc.pjb.backend.configs.security.perimeter.PerimeterSecurityFilter;
 import com.tcc.pjb.backend.configs.security.perimeter.ForwardedHeaderGuardFilter;
@@ -318,7 +320,7 @@ public class SecurityConfig {
                             if (paths.isEmpty() || rule.getAuthorities().isEmpty()) {
                                 continue;
                             }
-                            authz.requestMatchers(paths.toArray(String[]::new))
+                            authz.requestMatchers(antPathMatchers(paths))
                                     .hasAnyAuthority(rule.getAuthorities().toArray(String[]::new));
                         }
                     }
@@ -411,6 +413,12 @@ public class SecurityConfig {
                 .map(String::trim)
                 .distinct()
                 .toList();
+    }
+
+    private static RequestMatcher[] antPathMatchers(List<String> paths) {
+        return paths.stream()
+                .map(AntPathRequestMatcher::new)
+                .toArray(RequestMatcher[]::new);
     }
 
     @Bean

@@ -2,10 +2,12 @@ package com.tcc.pjb.backend.service.secretariat.batch;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
+@Component
 public final class LoteInteligenteSafetyPolicy {
 
-    private LoteInteligenteSafetyPolicy() {}
+    public LoteInteligenteSafetyPolicy() {}
 
     public record LoteSafetyInput(
             String acaoTipo,

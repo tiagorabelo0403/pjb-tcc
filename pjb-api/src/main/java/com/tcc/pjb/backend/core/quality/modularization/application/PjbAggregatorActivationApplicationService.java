@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,11 +27,12 @@ public class PjbAggregatorActivationApplicationService {
     private final AuditLedgerService auditLedgerService;
     private final Path projectRoot;
 
+    @Inject
     public PjbAggregatorActivationApplicationService(AuditLedgerService auditLedgerService) {
         this(auditLedgerService, Path.of(""));
     }
 
-    public PjbAggregatorActivationApplicationService(AuditLedgerService auditLedgerService, Path projectRoot) {
+    PjbAggregatorActivationApplicationService(AuditLedgerService auditLedgerService, Path projectRoot) {
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
         this.projectRoot = projectRoot == null ? Path.of("").toAbsolutePath().normalize() : projectRoot.toAbsolutePath().normalize();
     }

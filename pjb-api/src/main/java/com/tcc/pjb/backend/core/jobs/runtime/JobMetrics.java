@@ -18,7 +18,7 @@ public class JobMetrics {
     public JobMetrics(JdbcTemplate jdbc, MeterRegistry registry) {
         this.jdbc = Objects.requireNonNull(jdbc);
         Gauge.builder("jobs.running", running, AtomicLong::get).register(registry);
-        Gauge.builder("jobs.dead", dead, AtomicLong::get).register(registry);
+        Gauge.builder("jobs.dead.current", dead, AtomicLong::get).register(registry);
     }
 
     @Scheduled(fixedDelayString = "PT30S")

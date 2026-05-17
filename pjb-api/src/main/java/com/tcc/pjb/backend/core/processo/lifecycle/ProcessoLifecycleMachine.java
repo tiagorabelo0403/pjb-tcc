@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import com.tcc.pjb.backend.core.processo.lifecycle.civel.CivilLifecyclePack;
 import com.tcc.pjb.backend.core.processo.lifecycle.civel.FalenciaRecuperacaoLifecyclePack;
@@ -31,6 +32,7 @@ public class ProcessoLifecycleMachine {
     private final RitoLifecyclePackRegistry ritoLifecyclePackRegistry;
     private final CaseContinuityOrchestratorService caseContinuityOrchestratorService;
 
+    @Inject
     public ProcessoLifecycleMachine(AtoProcessualCatalogService atoCatalogService,
                                     RitoLifecyclePackRegistry ritoLifecyclePackRegistry,
                                     CaseContinuityOrchestratorService caseContinuityOrchestratorService) {
@@ -39,7 +41,7 @@ public class ProcessoLifecycleMachine {
         this.caseContinuityOrchestratorService = caseContinuityOrchestratorService;
     }
 
-    public ProcessoLifecycleMachine(AtoProcessualCatalogService atoCatalogService) {
+    ProcessoLifecycleMachine(AtoProcessualCatalogService atoCatalogService) {
         this(atoCatalogService, defaultRegistry(), null);
     }
 

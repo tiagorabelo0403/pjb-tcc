@@ -85,6 +85,8 @@ spec:
               value: worker
             - name: PJB_RUNTIME_COMPONENT_ROLE
               value: worker
+            - name: PJB_SECRETARIAT_SSE_HEARTBEAT_MS
+              value: "15000"
             - name: PJB_RUNTIME_LIFECYCLE_DRAIN_QUIET_PERIOD
               value: "20s"
             - name: PJB_JVM_JFR_ENABLED

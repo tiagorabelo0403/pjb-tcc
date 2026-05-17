@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.service.recursal.mesh;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import jakarta.inject.Inject;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalLifecycleState;
@@ -25,19 +26,20 @@ public class RecursalMeshPartyNotificationService {
     private final ObjectProvider<RecursalMeshOperationalTelemetryService> telemetryProvider;
     private final ObjectProvider<RecursalMeshRetryExecutor> retryExecutorProvider;
 
-    public RecursalMeshPartyNotificationService(NotificationService notificationService,
-                                                OutboxPublisher outboxPublisher,
-                                                RecursalMeshSlaService slaService) {
+    RecursalMeshPartyNotificationService(NotificationService notificationService,
+                                         OutboxPublisher outboxPublisher,
+                                         RecursalMeshSlaService slaService) {
         this(notificationService, outboxPublisher, slaService, null, null);
     }
 
-    public RecursalMeshPartyNotificationService(NotificationService notificationService,
-                                                OutboxPublisher outboxPublisher,
-                                                RecursalMeshSlaService slaService,
-                                                ObjectProvider<RecursalMeshOperationalTelemetryService> telemetryProvider) {
+    RecursalMeshPartyNotificationService(NotificationService notificationService,
+                                         OutboxPublisher outboxPublisher,
+                                         RecursalMeshSlaService slaService,
+                                         ObjectProvider<RecursalMeshOperationalTelemetryService> telemetryProvider) {
         this(notificationService, outboxPublisher, slaService, telemetryProvider, null);
     }
 
+    @Inject
     public RecursalMeshPartyNotificationService(NotificationService notificationService,
                                                 OutboxPublisher outboxPublisher,
                                                 RecursalMeshSlaService slaService,

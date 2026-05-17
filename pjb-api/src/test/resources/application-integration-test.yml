@@ -31,3 +31,7 @@ pjb:
   jobs:
     pg-listen:
       enabled: false
+  runtime:
+    barrier:
+      scheduling:
+        enabled: false

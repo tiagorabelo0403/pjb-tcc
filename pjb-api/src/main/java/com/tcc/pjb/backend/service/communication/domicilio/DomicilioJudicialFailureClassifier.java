@@ -1,8 +1,11 @@
 package com.tcc.pjb.backend.service.communication.domicilio;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public final class DomicilioJudicialFailureClassifier {
 
-    private DomicilioJudicialFailureClassifier() {}
+    public DomicilioJudicialFailureClassifier() {}
 
     public enum FalhaClassificacao {
         TRANSITORIA,

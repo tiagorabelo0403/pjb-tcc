@@ -1,5 +1,9 @@
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
+ALTER TABLE tb_processo ADD COLUMN IF NOT EXISTS uf VARCHAR(2);
+ALTER TABLE tb_processo ADD COLUMN IF NOT EXISTS comarca VARCHAR(120);
+ALTER TABLE tb_processo ADD COLUMN IF NOT EXISTS vara VARCHAR(120);
+
 CREATE INDEX IF NOT EXISTS idx_tb_processo_public_nome_autor_trgm
     ON tb_processo USING gin (lower(parte_autora_nome) gin_trgm_ops)
     WHERE nivel_sigilo = 'PUBLICO' AND parte_autora_nome IS NOT NULL;

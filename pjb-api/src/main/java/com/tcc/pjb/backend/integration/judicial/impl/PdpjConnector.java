@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import jakarta.inject.Inject;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -20,24 +21,25 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "pjb.integration.judicial.pdpj", name = "enabled", havingValue = "true")
 public class PdpjConnector extends AbstractHttpJudicialConnector {
 
+    @Inject
     public PdpjConnector(JudicialIntegrationProperties props,
-                         RestTemplateBuilder builder,
-                         ObjectMapper objectMapper,
+                        RestTemplateBuilder builder,
+                        ObjectMapper objectMapper,
                          JudicialOAuthTokenService judicialOAuthTokenService,
                          JudicialConnectorTransport judicialConnectorTransport) {
         super(props, builder, objectMapper, judicialOAuthTokenService, judicialConnectorTransport, LoggerFactory.getLogger(PdpjConnector.class));
     }
 
-    public PdpjConnector(JudicialIntegrationProperties props,
-                         RestTemplateBuilder builder,
-                         ObjectMapper objectMapper,
-                         JudicialOAuthTokenService judicialOAuthTokenService) {
+    PdpjConnector(JudicialIntegrationProperties props,
+                  RestTemplateBuilder builder,
+                  ObjectMapper objectMapper,
+                  JudicialOAuthTokenService judicialOAuthTokenService) {
         super(props, builder, objectMapper, judicialOAuthTokenService, LoggerFactory.getLogger(PdpjConnector.class));
     }
 
-    public PdpjConnector(JudicialIntegrationProperties props,
-                         RestTemplateBuilder builder,
-                         ObjectMapper objectMapper) {
+    PdpjConnector(JudicialIntegrationProperties props,
+                  RestTemplateBuilder builder,
+                  ObjectMapper objectMapper) {
         super(props, builder, objectMapper, null, LoggerFactory.getLogger(PdpjConnector.class));
     }
 

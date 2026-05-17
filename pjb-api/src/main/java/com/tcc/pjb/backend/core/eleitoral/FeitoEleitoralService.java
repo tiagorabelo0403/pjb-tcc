@@ -16,6 +16,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,7 @@ public class FeitoEleitoralService {
     private final EleitoralTseProperties properties;
     private final TseSpcaClient spcaClient;
 
+    @Inject
     public FeitoEleitoralService(ProcessoRepository processoRepository,
                                  FeitoEleitoralEspecialRepository feitoRepository,
                                  CalendarioEleitoralRepository calendarioRepository,
@@ -44,12 +46,12 @@ public class FeitoEleitoralService {
                         "cliente SPCA não configurado"));
     }
 
-    public FeitoEleitoralService(ProcessoRepository processoRepository,
-                                 FeitoEleitoralEspecialRepository feitoRepository,
-                                 CalendarioEleitoralRepository calendarioRepository,
-                                 AuditLedgerService auditLedger,
-                                 EleitoralTseProperties properties,
-                                 TseSpcaClient spcaClient) {
+    FeitoEleitoralService(ProcessoRepository processoRepository,
+                          FeitoEleitoralEspecialRepository feitoRepository,
+                          CalendarioEleitoralRepository calendarioRepository,
+                          AuditLedgerService auditLedger,
+                          EleitoralTseProperties properties,
+                          TseSpcaClient spcaClient) {
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.feitoRepository = Objects.requireNonNull(feitoRepository);
         this.calendarioRepository = Objects.requireNonNull(calendarioRepository);

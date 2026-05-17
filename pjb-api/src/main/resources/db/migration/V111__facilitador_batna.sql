@@ -30,8 +30,7 @@ create table if not exists tb_batna_relatorio (
     request_json text null,
     response_json text null,
     gerado_em timestamp with time zone not null,
-    constraint fk_batna_processo foreign key (processo_id) references tb_processo(id),
-    constraint fk_batna_proposta foreign key (proposta_acordo_id) references propostas_acordo(id)
+    constraint fk_batna_processo foreign key (processo_id) references tb_processo(id)
 );
 
 create index if not exists idx_batna_processo on tb_batna_relatorio (processo_id, gerado_em desc);

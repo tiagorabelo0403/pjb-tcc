@@ -11,9 +11,9 @@ Uma credencial de API do DataJud/CNJ foi encontrada no histórico Git:
 
 ## Classificação: Cenário B — Credencial Privada de Serviço
 
-O valor `cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==` é uma
-string Base64 que decodifica para `<api_key>:<api_secret>` — formato de
-autenticação Basic Auth usado pelo DataJud REST API (CNJ).
+O valor removido é uma string Base64 redigida neste relatório. A evidência
+histórica indica formato `<api_key>:<api_secret>`, compatível com autenticação
+Basic Auth usada pelo DataJud REST API (CNJ).
 
 Trata-se de **credencial privada de serviço**, não de chave pública criptográfica.
 Qualquer parte que detenha essa string pode autenticar-se na API DataJud com as
@@ -34,44 +34,19 @@ pjb:
 Não há valor hardcoded. A integração só funciona se a variável de ambiente for
 fornecida em tempo de execução.
 
-## Ação obrigatória — Requer intervenção humana
+## Ação obrigatória — Requer intervenção externa
 
-**Antes de qualquer limpeza de histórico Git**, o titular da credencial deve:
-
-1. Acessar o portal DataJud/CNJ: https://datajud-wiki.cnj.jus.br/
-2. Revogar/regenerar a chave cujo prefixo decodificado começa com `p6Gc9Yk...`
-3. Confirmar que a chave foi rotacionada.
+**Antes de qualquer limpeza de histórico Git**, o titular da credencial deve
+revogar ou regenerar a chave no canal administrativo do DataJud/CNJ e confirmar
+que a chave anterior foi invalidada.
 
 Enquanto a chave não for rotacionada, ela permanece ativa mesmo removida do código.
 
-## Plano de limpeza de histórico (aguardando confirmação)
+## Limpeza de histórico
 
-Assim que o titular confirmar "chave rotacionada", executar:
-
-```bash
-# 1. Criar backup antes do purge
-git branch backup-before-datajud-history-purge
-git tag backup-before-datajud-history-purge
-
-# 2. Criar arquivo de substituições
-echo "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==>REMOVED_DATAJUD_API_KEY" > /tmp/replacements.txt
-
-# 3. Instalar git-filter-repo se não estiver disponível
-#    pip install git-filter-repo
-
-# 4. Reescrever histórico
-git filter-repo --replace-text /tmp/replacements.txt
-
-# 5. Verificar que não resta nenhuma ocorrência
-git log --all -S "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw" --oneline
-git grep -n "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw" $(git rev-list --all)
-
-# 6. Force push SOMENTE após autorização explícita do titular
-git push --force-with-lease
-```
-
-**Nota**: `git filter-repo` não está instalado neste ambiente.
-Instalar via `pip install git-filter-repo` antes de executar o purge.
+Não executar purge de histórico nesta auditoria. A limpeza depende primeiro de
+rotação ou revogação externa da credencial e de autorização operacional
+explícita, pois envolve reescrita de histórico e coordenação de branches remotas.
 
 ## Status
 

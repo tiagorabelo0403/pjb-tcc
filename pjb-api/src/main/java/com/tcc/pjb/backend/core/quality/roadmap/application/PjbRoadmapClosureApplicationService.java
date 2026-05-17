@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,6 +41,7 @@ public class PjbRoadmapClosureApplicationService {
     private final PjbModuleBoundaryReadinessApplicationService modularizationApplicationService;
     private final Path projectRoot;
 
+    @Inject
     public PjbRoadmapClosureApplicationService(BuildGateGovernanceService buildGateGovernanceService,
                                                TestQualityMatrixService testQualityMatrixService,
                                                PjbCodebaseSanityApplicationService codebaseSanityApplicationService,

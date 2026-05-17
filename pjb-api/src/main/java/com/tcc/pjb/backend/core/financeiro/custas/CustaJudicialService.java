@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaJudicialView;
@@ -45,7 +46,7 @@ public class CustaJudicialService {
 
     public CustaJudicialService(ProcessoRepository processoRepository,
                                 CustaJudicialRepository custaRepository,
-                                GruCodigoBarrasGenerator gruGenerator,
+                                @Qualifier("gruCodigoBarrasGenerator") GruCodigoBarrasGenerator gruGenerator,
                                 PixPayloadGenerator pixGenerator,
                                 IsentoCustaPolicy isentoPolicy,
                                 AuditLedgerService auditLedger,

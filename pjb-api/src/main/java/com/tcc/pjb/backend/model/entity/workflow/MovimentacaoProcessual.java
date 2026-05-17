@@ -6,8 +6,6 @@ import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
 
 import java.time.Instant;
 import jakarta.persistence.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
@@ -19,7 +17,6 @@ import lombok.*;
         indexes = {
                 @Index(name = "idx_mov_processo", columnList = "processo_id,data_movimentacao")
         })
-@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @Builder
@@ -50,7 +47,13 @@ public class MovimentacaoProcessual {
     @JoinColumn(name = "ator_user_id")
     private Usuario ator;
 
-    @CreatedDate
     @Column(name = "data_movimentacao", updatable = false)
     private Instant dataMovimentacao;
+
+    @PrePersist
+    void prePersist() {
+        if (dataMovimentacao == null) {
+            dataMovimentacao = Instant.now();
+        }
+    }
 }
