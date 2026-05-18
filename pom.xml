@@ -584,6 +584,12 @@
                 <configuration>
                     <argLine>${failsafeArgLine} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.io.tmpdir=${project.build.directory}</argLine>
                     <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+                    <properties>
+                        <property>
+                            <name>junit.jupiter.execution.timeout.default</name>
+                            <value>10 m</value>
+                        </property>
+                    </properties>
                 </configuration>
                 <executions>
                     <execution>

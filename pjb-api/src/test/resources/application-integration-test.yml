@@ -9,6 +9,12 @@ spring:
       spec: maximumSize=1000,expireAfterWrite=1m
   main:
     allow-bean-definition-overriding: true
+  kafka:
+    consumer:
+      properties:
+        session.timeout.ms: 10000
+        heartbeat.interval.ms: 3000
+        max.poll.interval.ms: 30000
 camunda:
   client:
     enabled: false
@@ -16,6 +22,9 @@ zeebe:
   client:
     enabled: false
 pjb:
+  kafka:
+    scale:
+      listener-concurrency: 1
   icp:
     enabled: false
   mni:
