@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.platform.security.idempotency;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.i18n.PjbPlatformMessageCatalog;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,16 @@ public class PjbIdempotencyConfiguration {
                                                        PjbIdempotencyPolicy policy,
                                                        AuditLedgerService auditLedgerService) {
         return new PjbIdempotencyService(redis, policy, auditLedgerService);
+    }
+
+    @Bean
+    @ConditionalOnBean(PjbIdempotencyService.class)
+    public PjbIdempotencyApplicationService pjbIdempotencyApplicationService(
+            PjbIdempotencyService idempotencyService,
+            PjbIdempotencyPolicy policy,
+            PjbPlatformMessageCatalog messages,
+            AuditLedgerService auditLedgerService) {
+        return new PjbIdempotencyApplicationService(idempotencyService, policy, messages, auditLedgerService);
     }
 
     @Bean

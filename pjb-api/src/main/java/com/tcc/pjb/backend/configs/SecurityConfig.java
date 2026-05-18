@@ -70,6 +70,7 @@ import com.tcc.pjb.backend.model.repository.security.TrustedDeviceRepository;
 import com.tcc.pjb.backend.model.repository.security.PasskeySessionRepository;
 import com.tcc.pjb.backend.model.repository.security.UserSecurityProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tcc.pjb.backend.configs.security.DbUserDetailsService;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.security.ratelimit.RateLimiterStore;
 import com.tcc.pjb.backend.service.infra.scaling.JudicialScaleProfileResolver;
@@ -95,10 +96,10 @@ public class SecurityConfig {
                                            ObjectProvider<RequestBodyHashFilter> bodyHashFilterProvider,
                                            ObjectProvider<ApiRequestOriginGovernanceFilter> originGovernanceFilterProvider,
                                            ObjectProvider<PjbIdempotencyFilter> pjbIdempotencyFilterProvider,
-                                           DelegationTokenAugmentationFilter delegationFilter,
-                                           MinisterStepUpFilter ministerStepUpFilter,
-                                           DecisionStepUpFilter decisionStepUpFilter,
-                                           DecisionClientBindingFilter decisionClientBindingFilter,
+                                           ObjectProvider<DelegationTokenAugmentationFilter> delegationFilterProvider,
+                                           ObjectProvider<MinisterStepUpFilter> ministerStepUpFilterProvider,
+                                           ObjectProvider<DecisionStepUpFilter> decisionStepUpFilterProvider,
+                                           ObjectProvider<DecisionClientBindingFilter> decisionClientBindingFilterProvider,
                                            ObjectProvider<AccountFreezeFilter> accountFreezeFilterProvider,
                                            ObjectProvider<DevicePolicyFilter> devicePolicyFilterProvider,
                                            ObjectProvider<JwtDecoder> jwtDecoderProvider,
@@ -266,10 +267,40 @@ public class SecurityConfig {
             }
         }
 
-        http.addFilterAfter(delegationFilter, BasicAuthenticationFilter.class);
-        http.addFilterAfter(ministerStepUpFilter, DelegationTokenAugmentationFilter.class);
-        http.addFilterAfter(decisionStepUpFilter, MinisterStepUpFilter.class);
-        http.addFilterAfter(decisionClientBindingFilter, DecisionStepUpFilter.class);
+        DelegationTokenAugmentationFilter delegationFilter = delegationFilterProvider.getIfAvailable();
+        if (delegationFilter != null) {
+            http.addFilterAfter(delegationFilter, BasicAuthenticationFilter.class);
+        }
+        MinisterStepUpFilter ministerStepUpFilter = ministerStepUpFilterProvider.getIfAvailable();
+        if (ministerStepUpFilter != null) {
+            if (delegationFilter != null) {
+                http.addFilterAfter(ministerStepUpFilter, DelegationTokenAugmentationFilter.class);
+            } else {
+                http.addFilterAfter(ministerStepUpFilter, BasicAuthenticationFilter.class);
+            }
+        }
+        DecisionStepUpFilter decisionStepUpFilter = decisionStepUpFilterProvider.getIfAvailable();
+        if (decisionStepUpFilter != null) {
+            if (ministerStepUpFilter != null) {
+                http.addFilterAfter(decisionStepUpFilter, MinisterStepUpFilter.class);
+            } else if (delegationFilter != null) {
+                http.addFilterAfter(decisionStepUpFilter, DelegationTokenAugmentationFilter.class);
+            } else {
+                http.addFilterAfter(decisionStepUpFilter, BasicAuthenticationFilter.class);
+            }
+        }
+        DecisionClientBindingFilter decisionClientBindingFilter = decisionClientBindingFilterProvider.getIfAvailable();
+        if (decisionClientBindingFilter != null) {
+            if (decisionStepUpFilter != null) {
+                http.addFilterAfter(decisionClientBindingFilter, DecisionStepUpFilter.class);
+            } else if (ministerStepUpFilter != null) {
+                http.addFilterAfter(decisionClientBindingFilter, MinisterStepUpFilter.class);
+            } else if (delegationFilter != null) {
+                http.addFilterAfter(decisionClientBindingFilter, DelegationTokenAugmentationFilter.class);
+            } else {
+                http.addFilterAfter(decisionClientBindingFilter, BasicAuthenticationFilter.class);
+            }
+        }
 
         AccountFreezeFilter accountFreezeFilter = accountFreezeFilterProvider.getIfAvailable();
         if (accountFreezeFilter != null) {
@@ -424,5 +455,10 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService(UsuarioRepository usuarioRepository) {
+        return new DbUserDetailsService(usuarioRepository);
     }
 }

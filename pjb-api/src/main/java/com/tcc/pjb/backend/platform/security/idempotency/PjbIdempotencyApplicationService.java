@@ -30,10 +30,8 @@ import com.tcc.pjb.backend.platform.security.idempotency.domain.PjbIdempotencyWi
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Objects;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
 public class PjbIdempotencyApplicationService {
 
     private final PjbIdempotencyService idempotencyService;
