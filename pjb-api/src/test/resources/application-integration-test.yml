@@ -1,3 +1,7 @@
+logging:
+  level:
+    org.apache.kafka: ERROR
+
 spring:
   data:
     redis:
@@ -41,6 +45,8 @@ pjb:
     pg-listen:
       enabled: false
     ciencia-ficta:
+      enabled: false
+    conclusao-expirada:
       enabled: false
   runtime:
     barrier:
