@@ -45,12 +45,12 @@ class CienciaProcessualRepositoryIT extends PjbIntegrationTestBase {
                 Long.class,
                 "Teste IT " + sufixo,
                 "ciencia.it." + sufixo + "@pjb.test",
-                sufixo + "00000001"
+                String.format("%011d", Long.parseUnsignedLong(sufixo, 16))
         );
 
         processoId = jdbcTemplate.queryForObject(
                 "INSERT INTO tb_processo (numero_processo, status_processo) " +
-                "VALUES (?, 'EM_TRAMITACAO') RETURNING id",
+                "VALUES (?, 'EM_ANDAMENTO') RETURNING id",
                 Long.class,
                 "0001000-" + sufixo + ".2025.8.06.0001"
         );
