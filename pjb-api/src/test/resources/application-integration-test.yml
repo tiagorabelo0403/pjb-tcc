@@ -40,6 +40,8 @@ pjb:
   jobs:
     pg-listen:
       enabled: false
+    ciencia-ficta:
+      enabled: false
   runtime:
     barrier:
       scheduling:
