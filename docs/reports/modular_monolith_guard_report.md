@@ -1,7 +1,7 @@
 # Modular monolith guard report
 
 - Errors: 0
-- Warnings: 419
+- Warnings: 418
 
 ## ERROR
 
@@ -16,7 +16,6 @@ No findings.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/ai/legalai/MemoryStoreController.java`: Controller importa repository diretamente.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/controller/DocumentoController.java`: Controller importa repository diretamente.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/controller/advogado/AdvogadoAuditoriaController.java`: Controller importa repository diretamente.
-- `pjb-api/src/main/java/com/tcc/pjb/backend/controller/cidadao/CidadaoGovHubController.java`: Controller importa repository diretamente.
 
 ### cross-module-internal-import
 

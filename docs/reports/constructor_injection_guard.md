@@ -1,8 +1,8 @@
 # Constructor Injection Guard
 
 - Base analisada: `C:\PJB\pjb-api\src\main\java\com\tcc\pjb\backend`
-- Construtores analisados: **2032**
-- Hotspots detectados: **45**
+- Construtores analisados: **2068**
+- Hotspots detectados: **46**
 
 ## Hotspots
 

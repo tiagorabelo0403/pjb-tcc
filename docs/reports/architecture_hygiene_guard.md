@@ -1,7 +1,7 @@
 # Architecture Hygiene Guard
 
 - Base analisada: `pjb-api\src\main\java\com\tcc\pjb\backend`
-- Arquivos Java: **7733**
+- Arquivos Java: **7854**
 - Raízes de pacote: **25**
 - Classes acima de 1000 linhas: **19**
 - Services/engines acima de 900 linhas: **31**
