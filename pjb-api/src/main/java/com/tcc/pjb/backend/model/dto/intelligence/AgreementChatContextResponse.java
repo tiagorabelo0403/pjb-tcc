@@ -21,6 +21,12 @@ public record AgreementChatContextResponse(
         List<AgreementChatAttachmentResponse> structuredAttachments,
         List<String> allowedSpeakers,
         String agreementChannelStage,
-        boolean judgeDecisionEnabled
+        boolean judgeDecisionEnabled,
+        Long salaAcordoId,
+        String statusSalaAcordo,
+        String tipoSalaAcordo,
+        String confidencialidadeSalaAcordo,
+        boolean salaAcordoAtiva,
+        int participantesAceitosSalaAcordo
 ) {
 }

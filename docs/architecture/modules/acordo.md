@@ -12,6 +12,8 @@ O dominio fica em `com.tcc.pjb.backend.modules.acordo.domain` e nao depende de S
 
 O chat comum registra conversa. A sala de acordo registra ato processual controlado. Ela exige janela processual valida, participante aceito, confidencialidade, proposta formal com validade, revisao humana para proposta de IA, termo, assinatura e decisao judicial.
 
+O chat processual legado agora funciona como superficie de entrada para a sala quando o canal e negocial. Mensagens em canal explicito de acordo exigem sala ativa, participante convidado e aceite previo; mensagens comuns continuam preservadas no chat legado e so sao espelhadas na sala quando houver sala ativa e contexto negocial.
+
 ## 4. Conexoes com processo
 
 `ProcessoAcordoPort` consulta existencia, contexto processual, segredo de justica e registra movimentacao generica de acordo. O adapter usa `ProcessoRepository` como fonte publicada e converte `FaseProcessual`, sigilo e sinais textuais da janela de acordo para o contrato do modulo.
@@ -46,6 +48,7 @@ O application service exige usuario existente, participante aceito para interagi
 ## 10. Services
 
 - `AcordoProcessualApplicationService`
+- `AcordoProcessualChatBridgeService`
 - `AcordoProcessualWindowPolicy`
 - `AcordoProcessualStateMachine`
 
@@ -61,8 +64,8 @@ Os testes cobrem janela processual, sigilo, aceite de participante, usuario nao 
 
 - A politica de participacao ainda depende de dados disponiveis no processo legado e nao de uma tabela nacional completa de poderes/mandatos.
 - A assinatura logica inicial nao substitui ICP-Brasil.
-- O endpoint HTTP nao foi criado para evitar superficie publica sem policy dedicada de autorizacao, rate limit e step-up.
+- Os endpoints de chat para sala usam a autorizacao ja existente do chat processual e o application service da sala; a proxima fase deve adicionar step-up e idempotencia para assinatura, termo e homologacao.
 
 ## 14. Proxima fase
 
-Criar controller seguro com `@PreAuthorize`, rate limit, current user obrigatorio, idempotencia por comando critico, step-up para assinatura/homologacao e integracao com assinatura ICP-Brasil.
+Ampliar controller seguro com rate limit por capacidade, idempotencia por comando critico, step-up para assinatura/homologacao e integracao com assinatura ICP-Brasil.

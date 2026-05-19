@@ -15,6 +15,8 @@ import com.tcc.pjb.backend.model.entity.enums.StatusAcordo;
 import com.tcc.pjb.backend.model.repository.ChatMensagemRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.PropostaAcordoRepository;
+import com.tcc.pjb.backend.modules.acordo.api.AcordoProcessualChatContext;
+import com.tcc.pjb.backend.modules.acordo.application.AcordoProcessualChatBridgeService;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.rito.ProcessoRitoSnapshotService;
 import java.util.ArrayList;
@@ -43,6 +45,7 @@ public class AgreementChatContextService {
     private final SettlementAdvisoryService settlementAdvisoryService;
     private final AgreementChatGovernanceService agreementChatGovernanceService;
     private final AgreementChatLedgerService agreementChatLedgerService;
+    private final AcordoProcessualChatBridgeService acordoChatBridgeService;
 
     public AgreementChatContextService(ProcessoRepository processoRepository,
                                        PropostaAcordoRepository propostaAcordoRepository,
@@ -59,7 +62,8 @@ public class AgreementChatContextService {
                                        ProcessMaterialStrategyService processMaterialStrategyService,
                                        SettlementAdvisoryService settlementAdvisoryService,
                                        AgreementChatGovernanceService agreementChatGovernanceService,
-                                       AgreementChatLedgerService agreementChatLedgerService) {
+                                       AgreementChatLedgerService agreementChatLedgerService,
+                                       AcordoProcessualChatBridgeService acordoChatBridgeService) {
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.propostaAcordoRepository = Objects.requireNonNull(propostaAcordoRepository);
         this.chatMensagemRepository = Objects.requireNonNull(chatMensagemRepository);
@@ -76,6 +80,7 @@ public class AgreementChatContextService {
         this.settlementAdvisoryService = Objects.requireNonNull(settlementAdvisoryService);
         this.agreementChatGovernanceService = Objects.requireNonNull(agreementChatGovernanceService);
         this.agreementChatLedgerService = Objects.requireNonNull(agreementChatLedgerService);
+        this.acordoChatBridgeService = Objects.requireNonNull(acordoChatBridgeService);
     }
 
     @Transactional(readOnly = true)
@@ -92,6 +97,7 @@ public class AgreementChatContextService {
         SettlementAdvisoryReport advisory = buildSettlementAdvisory(processo, proposta);
         var approval = judgeAgreementApprovalService.preview(processo, proposta, advisory, outcome);
         var channelPolicy = agreementChatGovernanceService.analyze(processo, proposta);
+        AcordoProcessualChatContext salaContext = acordoChatBridgeService.obterContexto(processoId);
         List<ChatMensagem> history = chatMensagemRepository.findByProcesso_IdOrderByDataEnvioAsc(processoId);
         var rounds = agreementChatLedgerService.buildRoundTimeline(history);
         var attachments = agreementChatLedgerService.buildStructuredAttachments(history);
@@ -143,7 +149,13 @@ public class AgreementChatContextService {
                 attachments,
                 channelPolicy.allowedSpeakerBands(),
                 channelPolicy.stage(),
-                channelPolicy.judgeDecisionOpen()
+                channelPolicy.judgeDecisionOpen(),
+                salaContext.sessaoId(),
+                salaContext.status(),
+                salaContext.tipoSala(),
+                salaContext.confidencialidadeNivel(),
+                salaContext.salaAtiva(),
+                salaContext.participantesAceitos()
         );
     }
 

@@ -419,6 +419,15 @@ class AcordoProcessualApplicationServiceTest {
         }
 
         @Override
+        public Optional<AcordoSessaoSnapshot> findSessaoAtivaByProcesso(Long processoId, Instant now) {
+            return sessoes.values().stream()
+                    .filter(s -> s.processoId().equals(processoId))
+                    .filter(s -> !s.status().terminal())
+                    .filter(s -> !s.expiradaEm(now))
+                    .max(Comparator.comparing(AcordoSessaoSnapshot::id));
+        }
+
+        @Override
         public AcordoParticipanteSnapshot saveParticipante(AcordoParticipanteSnapshot participante) {
             Long id = participante.id() == null ? ++seqParticipante : participante.id();
             AcordoParticipanteSnapshot saved = new AcordoParticipanteSnapshot(id, participante.sessaoId(), participante.usuarioId(), participante.papel(),

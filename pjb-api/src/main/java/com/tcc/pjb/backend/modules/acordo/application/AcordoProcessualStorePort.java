@@ -12,6 +12,8 @@ public interface AcordoProcessualStorePort {
 
     Optional<AcordoSessaoSnapshot> findSessaoForUpdate(Long sessaoId);
 
+    Optional<AcordoSessaoSnapshot> findSessaoAtivaByProcesso(Long processoId, Instant now);
+
     AcordoParticipanteSnapshot saveParticipante(AcordoParticipanteSnapshot participante);
 
     Optional<AcordoParticipanteSnapshot> findParticipante(Long sessaoId, Long usuarioId);

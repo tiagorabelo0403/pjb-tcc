@@ -68,6 +68,14 @@ public class JpaAcordoProcessualStoreAdapter implements AcordoProcessualStorePor
     }
 
     @Override
+    public Optional<AcordoSessaoSnapshot> findSessaoAtivaByProcesso(Long processoId, Instant now) {
+        return sessaoRepository.findActiveByProcesso(processoId, now, terminalStatuses(), PageRequest.of(0, 1))
+                .stream()
+                .findFirst()
+                .map(this::toSnapshot);
+    }
+
+    @Override
     public AcordoParticipanteSnapshot saveParticipante(AcordoParticipanteSnapshot participante) {
         AcordoParticipanteEntity entity = participante.id() == null
                 ? new AcordoParticipanteEntity()
