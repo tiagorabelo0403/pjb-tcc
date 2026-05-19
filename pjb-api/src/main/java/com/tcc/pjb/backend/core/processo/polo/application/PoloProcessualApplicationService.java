@@ -55,4 +55,12 @@ public class PoloProcessualApplicationService {
     public List<PoloProcessual> listarDestinatariosCiencia(Long processoId) {
         return poloRepository.findDestinatariosCiencia(processoId);
     }
+
+    @Transactional(readOnly = true)
+    public List<Long> listarUsuarioIdsDestinatarios(Long processoId) {
+        return listarDestinatariosCiencia(processoId).stream()
+                .filter(p -> p.getUsuarioId() != null)
+                .map(PoloProcessual::getUsuarioId)
+                .toList();
+    }
 }

@@ -18,6 +18,7 @@ import com.tcc.pjb.backend.core.processo.estado.application.ProcessoEstadoApplic
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.processo.ProcessoEstadoLog;
+import com.tcc.pjb.backend.model.repository.PainelSerieTemporalDiariaRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoEstadoLogRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.util.List;
@@ -32,6 +33,7 @@ class ProcessoEstadoMaquinaTest {
     private ProcessoRepository processoRepository;
     private ProcessoEstadoLogRepository logRepository;
     private AuditLedgerService auditLedgerService;
+    private PainelSerieTemporalDiariaRepository serieRepository;
     private ProcessoEstadoApplicationService appService;
 
     @BeforeEach
@@ -39,7 +41,11 @@ class ProcessoEstadoMaquinaTest {
         processoRepository = mock(ProcessoRepository.class);
         logRepository = mock(ProcessoEstadoLogRepository.class);
         auditLedgerService = mock(AuditLedgerService.class);
-        appService = new ProcessoEstadoApplicationService(processoRepository, logRepository, auditLedgerService);
+        serieRepository = mock(PainelSerieTemporalDiariaRepository.class);
+        when(serieRepository.findByChaveSerie(any())).thenReturn(java.util.Optional.empty());
+        when(serieRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        appService = new ProcessoEstadoApplicationService(
+                processoRepository, logRepository, auditLedgerService, serieRepository);
     }
 
     @Test
