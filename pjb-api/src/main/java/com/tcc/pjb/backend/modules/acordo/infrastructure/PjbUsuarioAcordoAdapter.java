@@ -5,7 +5,10 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.modules.acordo.api.UsuarioContextoAcordo;
 import com.tcc.pjb.backend.modules.acordo.api.UsuarioAcordoPort;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Component;
 
@@ -57,6 +60,48 @@ public class PjbUsuarioAcordoAdapter implements UsuarioAcordoPort {
                 .filter(Usuario::isAtivo)
                 .map(Usuario::isMagistrado)
                 .orElse(false);
+    }
+
+    @Override
+    public UsuarioContextoAcordo obterContextoUsuario(Long processoId, Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario nao encontrado"));
+        return new UsuarioContextoAcordo(
+                usuarioId,
+                nomeExibicao(usuario),
+                papeis(usuario),
+                usuario.isAtivo(),
+                usuarioPodeParticipar(processoId, usuarioId),
+                usuarioPodeHomologar(usuarioId)
+        );
+    }
+
+    private String nomeExibicao(Usuario usuario) {
+        String nome = usuario.getNome();
+        if (nome != null && !nome.isBlank()) {
+            return nome.trim();
+        }
+        String username = usuario.getUsername();
+        return username == null || username.isBlank() ? "Usuario " + usuario.getId() : username.trim();
+    }
+
+    private List<String> papeis(Usuario usuario) {
+        TipoUsuario tipo = usuario.getTipoUsuario();
+        List<String> out = new ArrayList<>();
+        if (tipo != null) {
+            out.add(tipo.name());
+            out.add(tipo.papelArquitetural());
+        }
+        if (usuario.isAdvogado()) {
+            out.add("ADVOGADO");
+        }
+        if (usuario.isMagistrado()) {
+            out.add("MAGISTRATURA");
+        }
+        if (usuario.isServidorJudiciario()) {
+            out.add("SERVIDOR_JUDICIARIO");
+        }
+        return out.stream().distinct().toList();
     }
 
     private String digits(String value) {

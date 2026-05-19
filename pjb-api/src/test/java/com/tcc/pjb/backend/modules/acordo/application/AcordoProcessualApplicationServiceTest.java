@@ -3,11 +3,13 @@ package com.tcc.pjb.backend.modules.acordo.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tcc.pjb.backend.modules.acordo.api.AcordoAuditEntry;
+import com.tcc.pjb.backend.modules.acordo.api.AuditoriaAcordoCommand;
 import com.tcc.pjb.backend.modules.acordo.api.AuditoriaAcordoPort;
+import com.tcc.pjb.backend.modules.acordo.api.MovimentacaoAcordoCommand;
 import com.tcc.pjb.backend.modules.acordo.api.MovimentacaoAcordoPort;
 import com.tcc.pjb.backend.modules.acordo.api.ProcessoAcordoContexto;
 import com.tcc.pjb.backend.modules.acordo.api.ProcessoAcordoPort;
+import com.tcc.pjb.backend.modules.acordo.api.UsuarioContextoAcordo;
 import com.tcc.pjb.backend.modules.acordo.api.UsuarioAcordoPort;
 import com.tcc.pjb.backend.modules.acordo.domain.AcordoAuditoriaEvento;
 import com.tcc.pjb.backend.modules.acordo.domain.AcordoConfidencialidadeNivel;
@@ -181,8 +183,7 @@ class AcordoProcessualApplicationServiceTest {
 
         assertThat(homologada.status()).isEqualTo(AcordoSessaoStatus.HOMOLOGATED);
         assertThat(homologada.homologadoPorId()).isEqualTo(99L);
-        assertThat(fx.movimentos).hasSize(1);
-        assertThat(fx.movimentos.get(0).tipo()).isEqualTo("HOMOLOGACAO");
+        assertThat(fx.movimentos).extracting(Movimento::tipo).contains("SALA_ABERTA", "ENVIO_HOMOLOGACAO", "HOMOLOGACAO");
     }
 
     @Test
@@ -219,7 +220,7 @@ class AcordoProcessualApplicationServiceTest {
         fx.service.registrarMensagem(new AcordoProcessualApplicationService.RegistrarMensagemCommand(
                 sala.id(), 10L, AcordoMensagemTipo.TEXTO, "conteudo reservado", true, AcordoMensagemVisibilidade.CONFIDENCIAL, meta()));
 
-        assertThat(fx.movimentos).isEmpty();
+        assertThat(fx.movimentos).extracting(Movimento::tipo).doesNotContain("MENSAGEM");
     }
 
     @Test
@@ -232,8 +233,7 @@ class AcordoProcessualApplicationServiceTest {
 
         assertThat(encerrada.status()).isEqualTo(AcordoSessaoStatus.CLOSED);
         assertThat(fx.auditEvents()).contains(AcordoAuditoriaEvento.ENCERRAMENTO);
-        assertThat(fx.movimentos).hasSize(1);
-        assertThat(fx.movimentos.get(0).tipo()).isEqualTo("ENCERRAMENTO");
+        assertThat(fx.movimentos).extracting(Movimento::tipo).contains("SALA_ABERTA", "ENCERRAMENTO");
     }
 
     @Test
@@ -306,6 +306,10 @@ class AcordoProcessualApplicationServiceTest {
                 permitido ? "CITACAO" : "JULGAMENTO",
                 segredo,
                 permitido,
+                "PROCEDIMENTO_COMUM",
+                100L,
+                null,
+                permitido,
                 false,
                 false,
                 false,
@@ -330,7 +334,7 @@ class AcordoProcessualApplicationServiceTest {
         final Set<Long> users = new HashSet<>();
         final Set<Long> judges = new HashSet<>();
         final Set<String> allowed = new HashSet<>();
-        final List<AcordoAuditEntry> audits = new ArrayList<>();
+        final List<AuditoriaAcordoCommand> audits = new ArrayList<>();
         final List<Movimento> movimentos = new ArrayList<>();
         final AcordoProcessualApplicationService service;
 
@@ -342,7 +346,7 @@ class AcordoProcessualApplicationServiceTest {
             allow(1L, 20L);
             ProcessoAcordoPort processoPort = new FakeProcessoPort(contextos, movimentos);
             UsuarioAcordoPort usuarioPort = new FakeUsuarioPort(users, judges, allowed);
-            AuditoriaAcordoPort auditoriaPort = audits::add;
+            AuditoriaAcordoPort auditoriaPort = new FakeAuditoriaPort(audits);
             MovimentacaoAcordoPort movimentacaoPort = new FakeMovimentacaoPort(movimentos);
             service = new AcordoProcessualApplicationService(store, processoPort, usuarioPort, auditoriaPort, movimentacaoPort, clock);
         }
@@ -382,7 +386,7 @@ class AcordoProcessualApplicationServiceTest {
         }
 
         List<AcordoAuditoriaEvento> auditEvents() {
-            return audits.stream().map(AcordoAuditEntry::evento).toList();
+            return audits.stream().map(AuditoriaAcordoCommand::evento).toList();
         }
     }
 
@@ -545,6 +549,11 @@ class AcordoProcessualApplicationServiceTest {
         }
 
         @Override
+        public boolean processoPermiteAcordo(Long processoId) {
+            return Optional.ofNullable(contextos.get(processoId)).map(ProcessoAcordoContexto::permiteAcordo).orElse(false);
+        }
+
+        @Override
         public void registrarMovimentacaoAcordo(Long processoId, String tipo, String descricao) {
             movimentos.add(new Movimento("PROCESSO_PORT", processoId, tipo, descricao));
         }
@@ -575,6 +584,41 @@ class AcordoProcessualApplicationServiceTest {
         public boolean usuarioPodeHomologar(Long usuarioId) {
             return judges.contains(usuarioId);
         }
+
+        @Override
+        public UsuarioContextoAcordo obterContextoUsuario(Long processoId, Long usuarioId) {
+            return new UsuarioContextoAcordo(
+                    usuarioId,
+                    "Usuario " + usuarioId,
+                    List.of(judges.contains(usuarioId) ? "MAGISTRATURA" : "PARTE"),
+                    users.contains(usuarioId),
+                    usuarioPodeParticipar(processoId, usuarioId),
+                    usuarioPodeHomologar(usuarioId)
+            );
+        }
+    }
+
+    private static final class FakeAuditoriaPort implements AuditoriaAcordoPort {
+        private final List<AuditoriaAcordoCommand> audits;
+
+        private FakeAuditoriaPort(List<AuditoriaAcordoCommand> audits) {
+            this.audits = audits;
+        }
+
+        @Override
+        public void registrarEvento(AuditoriaAcordoCommand command) {
+            audits.add(command);
+        }
+
+        @Override
+        public void registrarEventoSensivel(AuditoriaAcordoCommand command) {
+            audits.add(command);
+        }
+
+        @Override
+        public void registrarTentativaNegada(AuditoriaAcordoCommand command) {
+            audits.add(command);
+        }
     }
 
     private static final class FakeMovimentacaoPort implements MovimentacaoAcordoPort {
@@ -585,13 +629,28 @@ class AcordoProcessualApplicationServiceTest {
         }
 
         @Override
-        public void registrarHomologacao(Long processoId, Long magistradoId, String descricao) {
-            movimentos.add(new Movimento("HOMOLOGACAO", processoId, String.valueOf(magistradoId), descricao));
+        public void registrarSalaAberta(MovimentacaoAcordoCommand command) {
+            movimentos.add(new Movimento("SALA_ABERTA", command.processoId(), String.valueOf(command.operadorId()), command.descricao()));
         }
 
         @Override
-        public void registrarEncerramentoSemAcordo(Long processoId, Long usuarioId, String descricao) {
-            movimentos.add(new Movimento("ENCERRAMENTO", processoId, String.valueOf(usuarioId), descricao));
+        public void registrarTermoEnviadoHomologacao(MovimentacaoAcordoCommand command) {
+            movimentos.add(new Movimento("ENVIO_HOMOLOGACAO", command.processoId(), String.valueOf(command.operadorId()), command.descricao()));
+        }
+
+        @Override
+        public void registrarHomologacao(MovimentacaoAcordoCommand command) {
+            movimentos.add(new Movimento("HOMOLOGACAO", command.processoId(), String.valueOf(command.operadorId()), command.descricao()));
+        }
+
+        @Override
+        public void registrarRejeicaoHomologacao(MovimentacaoAcordoCommand command) {
+            movimentos.add(new Movimento("REJEICAO", command.processoId(), String.valueOf(command.operadorId()), command.descricao()));
+        }
+
+        @Override
+        public void registrarEncerramentoSemAcordo(MovimentacaoAcordoCommand command) {
+            movimentos.add(new Movimento("ENCERRAMENTO", command.processoId(), String.valueOf(command.operadorId()), command.descricao()));
         }
     }
 

@@ -90,6 +90,19 @@ class AcordoProcessualChatBridgeServiceTest {
     }
 
     @Test
+    void mensagemDoChatNaoIgnoraAceiteDoParticipante() {
+        when(store.findSessaoAtivaByProcesso(eq(1L), any(Instant.class))).thenReturn(Optional.of(sessao()));
+        when(store.findParticipante(7L, 10L)).thenReturn(Optional.of(participanteConvidado()));
+        when(usuarioPort.usuarioPodeParticipar(1L, 10L)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.registrarMensagemDoChat(command(true)))
+                .isInstanceOf(AcordoApplicationException.class)
+                .hasMessageContaining("aceitar");
+
+        verify(applicationService, never()).registrarMensagem(any());
+    }
+
+    @Test
     void contextoDoChatExpoeSalaAtivaDoProcesso() {
         when(store.findSessaoAtivaByProcesso(eq(1L), any(Instant.class))).thenReturn(Optional.of(sessao()));
         when(store.countParticipantesAceitos(7L)).thenReturn(2L);
@@ -141,6 +154,19 @@ class AcordoProcessualChatBridgeServiceTest {
                 AcordoPapelParticipante.ADVOGADO,
                 AcordoParticipanteStatus.ACEITO,
                 NOW.minusSeconds(30),
+                null,
+                NOW.minusSeconds(40)
+        );
+    }
+
+    private AcordoParticipanteSnapshot participanteConvidado() {
+        return new AcordoParticipanteSnapshot(
+                3L,
+                7L,
+                10L,
+                AcordoPapelParticipante.ADVOGADO,
+                AcordoParticipanteStatus.CONVIDADO,
+                null,
                 null,
                 NOW.minusSeconds(40)
         );

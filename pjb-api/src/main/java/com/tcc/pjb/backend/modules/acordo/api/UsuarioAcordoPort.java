@@ -7,4 +7,6 @@ public interface UsuarioAcordoPort {
     boolean usuarioPodeParticipar(Long processoId, Long usuarioId);
 
     boolean usuarioPodeHomologar(Long usuarioId);
+
+    UsuarioContextoAcordo obterContextoUsuario(Long processoId, Long usuarioId);
 }

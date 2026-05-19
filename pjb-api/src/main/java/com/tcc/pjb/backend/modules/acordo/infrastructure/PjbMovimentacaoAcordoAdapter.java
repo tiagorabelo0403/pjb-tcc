@@ -6,6 +6,7 @@ import com.tcc.pjb.backend.model.entity.workflow.MovimentacaoProcessual;
 import com.tcc.pjb.backend.model.repository.MovimentacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.modules.acordo.api.MovimentacaoAcordoCommand;
 import com.tcc.pjb.backend.modules.acordo.api.MovimentacaoAcordoPort;
 import java.time.Instant;
 import org.springframework.stereotype.Component;
@@ -26,23 +27,43 @@ public class PjbMovimentacaoAcordoAdapter implements MovimentacaoAcordoPort {
     }
 
     @Override
-    public void registrarHomologacao(Long processoId, Long magistradoId, String descricao) {
-        registrar(processoId, magistradoId, "ACORDO_HOMOLOGADO", descricao);
+    public void registrarSalaAberta(MovimentacaoAcordoCommand command) {
+        registrar(command, "SALA_ACORDO_ABERTA");
     }
 
     @Override
-    public void registrarEncerramentoSemAcordo(Long processoId, Long usuarioId, String descricao) {
-        registrar(processoId, usuarioId, "ACORDO_ENCERRADO_SEM_COMPOSICAO", descricao);
+    public void registrarTermoEnviadoHomologacao(MovimentacaoAcordoCommand command) {
+        registrar(command, "ACORDO_TERMO_ENVIADO_HOMOLOGACAO");
     }
 
-    private void registrar(Long processoId, Long usuarioId, String tipo, String descricao) {
-        Processo processo = processoRepository.findById(processoId)
+    @Override
+    public void registrarHomologacao(MovimentacaoAcordoCommand command) {
+        registrar(command, "ACORDO_HOMOLOGADO");
+    }
+
+    @Override
+    public void registrarRejeicaoHomologacao(MovimentacaoAcordoCommand command) {
+        registrar(command, "ACORDO_REJEITADO");
+    }
+
+    @Override
+    public void registrarEncerramentoSemAcordo(MovimentacaoAcordoCommand command) {
+        registrar(command, "ACORDO_ENCERRADO_SEM_COMPOSICAO");
+    }
+
+    private void registrar(MovimentacaoAcordoCommand command, String fallbackTipo) {
+        if (command == null || command.processoId() == null) {
+            throw new IllegalArgumentException("Comando de movimentacao de acordo invalido");
+        }
+        Processo processo = processoRepository.findById(command.processoId())
                 .orElseThrow(() -> new IllegalArgumentException("Processo nao encontrado"));
-        Usuario usuario = usuarioId == null ? null : usuarioRepository.findById(usuarioId).orElse(null);
+        Usuario usuario = command.operadorId() == null ? null : usuarioRepository.findById(command.operadorId()).orElse(null);
+        String tipo = nonBlank(command.tipo(), fallbackTipo);
+        String origem = nonBlank(command.origem(), "ACORDO_PROCESSUAL");
         movimentacaoRepository.save(MovimentacaoProcessual.builder()
                 .processo(processo)
                 .ator(usuario)
-                .descricao(limit(tipo + ": " + nonBlank(descricao, "Movimentacao de sala de acordo processual."), 3000))
+                .descricao(limit(origem + " " + tipo + ": " + nonBlank(command.descricao(), "Movimentacao de sala de acordo processual."), 3000))
                 .dataMovimentacao(Instant.now())
                 .build());
     }

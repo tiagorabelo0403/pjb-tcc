@@ -8,5 +8,7 @@ public interface ProcessoAcordoPort {
 
     boolean processoEstaEmSegredo(Long processoId);
 
+    boolean processoPermiteAcordo(Long processoId);
+
     void registrarMovimentacaoAcordo(Long processoId, String tipo, String descricao);
 }

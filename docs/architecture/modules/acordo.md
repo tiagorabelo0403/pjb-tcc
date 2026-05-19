@@ -16,15 +16,15 @@ O chat processual legado agora funciona como superficie de entrada para a sala q
 
 ## 4. Conexoes com processo
 
-`ProcessoAcordoPort` consulta existencia, contexto processual, segredo de justica e registra movimentacao generica de acordo. O adapter usa `ProcessoRepository` como fonte publicada e converte `FaseProcessual`, sigilo e sinais textuais da janela de acordo para o contrato do modulo.
+`ProcessoAcordoPort` consulta existencia, contexto processual, segredo de justica, permissao de acordo e movimentacao generica de acordo. O adapter usa `ProcessoRepository` como fonte publicada e converte `FaseProcessual`, classe processual, unidade judiciaria, sigilo e sinais textuais da janela de acordo para `ProcessoAcordoContexto`.
 
 ## 5. Conexoes com usuario/participante
 
-`UsuarioAcordoPort` valida existencia, participacao no processo e permissao de homologacao. O adapter autoriza parte por CPF, advogado vinculado como usuario do processo, conciliador, mediador, magistrado, servidor judiciario e administrador ativo.
+`UsuarioAcordoPort` valida existencia, participacao no processo, permissao de homologacao e contexto reduzido do usuario. O adapter autoriza parte por CPF, advogado vinculado como usuario do processo, conciliador, mediador, magistrado, servidor judiciario e administrador ativo. O record `UsuarioContextoAcordo` nao carrega CPF, email, senha ou entity JPA.
 
 ## 6. Conexoes com movimentacao
 
-`MovimentacaoAcordoPort` registra homologacao e encerramento sem acordo em `tb_movimentacao_processual`. Mensagem confidencial nao gera movimentacao publica.
+`MovimentacaoAcordoPort` recebe `MovimentacaoAcordoCommand` e registra sala aberta, termo enviado para homologacao, homologacao, rejeicao e encerramento sem acordo em `tb_movimentacao_processual`. Mensagem confidencial nao gera movimentacao publica.
 
 ## 7. Conexoes com seguranca
 
@@ -32,7 +32,23 @@ O application service exige usuario existente, participante aceito para interagi
 
 ## 8. Conexoes com auditoria
 
-`AuditoriaAcordoPort` grava todos os atos sensiveis em `tb_acordo_auditoria`: abertura, convite, aceite, recusa, mensagem, proposta, contraproposta, termo, revisao humana, assinatura, envio para homologacao, homologacao, rejeicao, encerramento e expiracao.
+`AuditoriaAcordoPort` recebe `AuditoriaAcordoCommand` e grava todos os atos sensiveis em `tb_acordo_auditoria`: abertura, convite, aceite, recusa, mensagem, proposta, contraproposta, termo, revisao humana, assinatura, envio para homologacao, homologacao, rejeicao, encerramento e expiracao.
+
+## 8.1 Ports e adapters utilizados
+
+- `ProcessoAcordoPort` -> `PjbProcessoAcordoAdapter`
+- `UsuarioAcordoPort` -> `PjbUsuarioAcordoAdapter`
+- `MovimentacaoAcordoPort` -> `PjbMovimentacaoAcordoAdapter`
+- `AuditoriaAcordoPort` -> `JpaAuditoriaAcordoAdapter`
+- `AcordoProcessualStorePort` -> `JpaAcordoProcessualStoreAdapter`
+
+As dependencias legadas com `ProcessoRepository`, `UsuarioRepository`, `MovimentacaoProcessualRepository`, `Processo`, `Usuario` e `MovimentacaoProcessual` ficam restritas a `infrastructure`. `application`, `domain` e `api` nao importam repositories legados.
+
+## 8.2 O que ainda falta isolar
+
+- Documento processual nao foi ligado nesta onda porque o fluxo atual da sala nao consome documento.
+- A origem confiavel de `magistradoId` no contexto processual ainda nao existe no legado publicado.
+- Assinatura ICP-Brasil e idempotencia de comando critico continuam fora desta onda.
 
 ## 9. Tabelas
 
@@ -68,4 +84,4 @@ Os testes cobrem janela processual, sigilo, aceite de participante, usuario nao 
 
 ## 14. Proxima fase
 
-Ampliar controller seguro com rate limit por capacidade, idempotencia por comando critico, step-up para assinatura/homologacao e integracao com assinatura ICP-Brasil.
+Aplicar o mesmo padrao de ports/facades para ledger, prazos/notificacoes, documento e auditoria global, sem mover pacotes legados em massa.

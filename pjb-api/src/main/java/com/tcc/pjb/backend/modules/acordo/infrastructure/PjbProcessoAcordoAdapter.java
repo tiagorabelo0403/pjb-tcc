@@ -34,22 +34,49 @@ public class PjbProcessoAcordoAdapter implements ProcessoAcordoPort {
                 .orElseThrow(() -> new IllegalArgumentException("Processo nao encontrado"));
         FaseProcessual fase = processo.getFaseAtual();
         String resumo = texto(processo.getJanelaAcordoResumo(), processo.getResultadoFinal(), processo.getObjetoProcessual());
+        boolean antesContestacao = fase == FaseProcessual.AUTUACAO || fase == FaseProcessual.DISTRIBUICAO || fase == FaseProcessual.CITACAO;
+        boolean antesAudiencia = containsAny(resumo, "AUDIENCIA", "CONCILIACAO", "MEDIACAO");
+        boolean aposContestacao = fase == FaseProcessual.RESPOSTA || fase == FaseProcessual.SANEAMENTO || fase == FaseProcessual.INSTRUTORIA;
+        boolean propostaFormal = containsAny(resumo, "PROPOSTA FORMAL", "PROPOSTA DE ACORDO", "CONTRAPROPOSTA");
+        boolean aposPericia = fase == FaseProcessual.PERICIA_TECNICA || containsAny(resumo, "LAUDO", "PERICIA");
+        boolean antesSentenca = fase == FaseProcessual.CONHECIMENTO || fase == FaseProcessual.SANEAMENTO || fase == FaseProcessual.INSTRUTORIA || fase == FaseProcessual.PERICIA_TECNICA;
+        boolean faseRecursal = fase != null && fase.isRecursal();
+        boolean execucao = fase != null && fase.isExecutionLike();
+        boolean mutirao = containsAny(resumo, "MUTIRAO");
+        boolean requerimento = containsAny(resumo, "REQUERIMENTO DE PARTE", "REQUERIMENTO");
+        boolean determinacao = containsAny(resumo, "DETERMINACAO JUDICIAL", "DETERMINACAO");
+        boolean cejusc = containsAny(resumo, "CEJUSC");
+        boolean permiteAcordo = antesContestacao
+                || antesAudiencia
+                || (aposContestacao && propostaFormal)
+                || aposPericia
+                || antesSentenca
+                || faseRecursal
+                || execucao
+                || mutirao
+                || requerimento
+                || determinacao
+                || cejusc;
         return new ProcessoAcordoContexto(
                 processoId,
                 fase != null ? fase.name() : null,
                 processo.isSigiloso(),
-                fase == FaseProcessual.AUTUACAO || fase == FaseProcessual.DISTRIBUICAO || fase == FaseProcessual.CITACAO,
-                containsAny(resumo, "AUDIENCIA", "CONCILIACAO", "MEDIACAO"),
-                fase == FaseProcessual.RESPOSTA || fase == FaseProcessual.SANEAMENTO || fase == FaseProcessual.INSTRUTORIA,
-                containsAny(resumo, "PROPOSTA FORMAL", "PROPOSTA DE ACORDO", "CONTRAPROPOSTA"),
-                fase == FaseProcessual.PERICIA_TECNICA || containsAny(resumo, "LAUDO", "PERICIA"),
-                fase == FaseProcessual.CONHECIMENTO || fase == FaseProcessual.SANEAMENTO || fase == FaseProcessual.INSTRUTORIA || fase == FaseProcessual.PERICIA_TECNICA,
-                fase != null && fase.isRecursal(),
-                fase != null && fase.isExecutionLike(),
-                containsAny(resumo, "MUTIRAO"),
-                containsAny(resumo, "REQUERIMENTO DE PARTE", "REQUERIMENTO"),
-                containsAny(resumo, "DETERMINACAO JUDICIAL", "DETERMINACAO"),
-                containsAny(resumo, "CEJUSC"),
+                permiteAcordo,
+                processo.getClasseProcessual(),
+                processo.getJurisdicao() != null ? processo.getJurisdicao().getId() : null,
+                null,
+                antesContestacao,
+                antesAudiencia,
+                aposContestacao,
+                propostaFormal,
+                aposPericia,
+                antesSentenca,
+                faseRecursal,
+                execucao,
+                mutirao,
+                requerimento,
+                determinacao,
+                cejusc,
                 processo.getPotencialAcordoScore(),
                 processo.getJanelaAcordoResumo()
         );
@@ -58,6 +85,14 @@ public class PjbProcessoAcordoAdapter implements ProcessoAcordoPort {
     @Override
     public boolean processoEstaEmSegredo(Long processoId) {
         return processoRepository.findById(processoId).map(Processo::isSigiloso).orElse(false);
+    }
+
+    @Override
+    public boolean processoPermiteAcordo(Long processoId) {
+        if (processoId == null) {
+            return false;
+        }
+        return obterContextoProcessual(processoId).permiteAcordo();
     }
 
     @Override

@@ -2,7 +2,13 @@ package com.tcc.pjb.backend.modules.acordo.api;
 
 public interface MovimentacaoAcordoPort {
 
-    void registrarHomologacao(Long processoId, Long magistradoId, String descricao);
+    void registrarSalaAberta(MovimentacaoAcordoCommand command);
 
-    void registrarEncerramentoSemAcordo(Long processoId, Long usuarioId, String descricao);
+    void registrarTermoEnviadoHomologacao(MovimentacaoAcordoCommand command);
+
+    void registrarHomologacao(MovimentacaoAcordoCommand command);
+
+    void registrarRejeicaoHomologacao(MovimentacaoAcordoCommand command);
+
+    void registrarEncerramentoSemAcordo(MovimentacaoAcordoCommand command);
 }

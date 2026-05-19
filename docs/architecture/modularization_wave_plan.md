@@ -11,12 +11,27 @@
 
 ## ONDA 2: facades para processo, usuario, documento, movimentacao e auditoria
 
+- Status: iniciada no modulo `acordo`.
 - Objetivo: reduzir dependencia direta em repositories compartilhados.
 - Risco: criar facades anemicas ou duplicar regra.
 - Arquivos provaveis: `modules.<modulo>.api`, adapters em `infrastructure`.
 - Teste obrigatorio: contrato de facade e teste de autorizacao.
-- Evidencia: dependencias removidas do modulo consumidor.
+- Evidencia: dependencias removidas do modulo consumidor e repositories legados restritos a adapters.
 - O que nao fazer: substituir todos os repositories do sistema de uma vez.
+
+Aplicacao inicial:
+
+- `acordo.application` consome `ProcessoAcordoPort`, `UsuarioAcordoPort`, `MovimentacaoAcordoPort` e `AuditoriaAcordoPort`.
+- `acordo.api` publica records internos de contexto/comando, sem entity JPA legada.
+- `acordo.infrastructure` concentra `ProcessoRepository`, `UsuarioRepository` e `MovimentacaoProcessualRepository`.
+- Documento ficou fora desta onda porque a sala ainda nao consome documento processual.
+
+Proxima aplicacao da Onda 2:
+
+- Repetir o padrao em ledger.
+- Depois aplicar em prazos/notificacoes.
+- Depois documento.
+- Depois auditoria global.
 
 ## ONDA 3: bloquear novas violacoes
 

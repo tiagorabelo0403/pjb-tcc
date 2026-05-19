@@ -1,7 +1,7 @@
 # Modular monolith guard report
 
 - Errors: 0
-- Warnings: 383
+- Warnings: 419
 
 ## ERROR
 
@@ -99,6 +99,45 @@ No findings.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/model/dto/acordo/ChatAcordoSalaResponse.java`: Codigo relacionado a modulo novo fora de modules.*; manter apenas quando for compatibilidade com legado.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/service/ChatService.java`: Codigo relacionado a modulo novo fora de modules.*; manter apenas quando for compatibilidade com legado.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/AgreementChatContextService.java`: Codigo relacionado a modulo novo fora de modules.*; manter apenas quando for compatibilidade com legado.
+
+### module-imports-legacy-repository
+
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/jobs/AdvClienteCanonicalizeSensitiveJobHandler.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeAffiliationInviteService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeAuthorizationService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeDelegationService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeDocumentBatchGovernanceService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeGovernedProcessOperationService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficePersonalScopeService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficePolicyService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeProcessTransferPreviewService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeProcessTransferService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeProcessWorkspaceScopeService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeSignatureQueueService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeTrustScoreService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceCreationService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceDashboardService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceExecutiveDashboardService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceLegalCockpitService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceModeService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/office/service/OfficeWorkspaceTeamAvatarService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/advocacia/service/ClienteService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoChatAccessSupport.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoChatMessagingSupport.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoChatService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoChatThreadViewSupport.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoChecklistService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoModerationService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoQuarantineResolutionScheduler.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoReminderService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoReportService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeInboxService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeJudgeRadarJurisprudenciaService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeJudgeService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeLawyerService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeMetaService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeMpService.java`: Modulo importa repository legado fora de infrastructure.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeSentencaService.java`: Modulo importa repository legado fora de infrastructure.
 
 ### module-package-shape
 

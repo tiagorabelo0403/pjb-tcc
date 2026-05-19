@@ -69,6 +69,16 @@ def is_repository_import(value: str) -> bool:
     return has_any(value, REPOSITORY_IMPORT) or value.endswith("Repository")
 
 
+def is_legacy_repository_import(value: str) -> bool:
+    return value.startswith("com.tcc.pjb.backend.model.repository.") or (
+        value.startswith("com.tcc.pjb.backend.") and ".modules." not in value and value.endswith("Repository")
+    )
+
+
+def is_legacy_entity_import(value: str) -> bool:
+    return value.startswith("com.tcc.pjb.backend.model.entity.")
+
+
 def is_web_import(value: str) -> bool:
     return has_any(value, WEB_IMPORT)
 
@@ -96,6 +106,12 @@ def check_file(path: Path, findings: list[Finding]) -> None:
     if module and layer is None:
         add(findings, "WARNING", "module-package-shape", path, "Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.")
 
+    if module and name.endswith("Adapter") and layer != "infrastructure":
+        add(findings, severity_for_layer(layer, set(STANDARD_LAYERS)), "adapter-outside-infrastructure", path, "Adapter de modulo deve ficar em infrastructure.")
+
+    if module and layer != "infrastructure" and any(is_legacy_repository_import(item) for item in imported):
+        add(findings, severity_for_layer(layer, {"application", "web", "domain", "api"}), "module-imports-legacy-repository", path, "Modulo importa repository legado fora de infrastructure.")
+
     if CONTROLLER_ANNOTATION.search(source) and any(is_repository_import(item) for item in imported):
         add(findings, severity_for_layer(layer, {"web"}), "controller-imports-repository", path, "Controller importa repository diretamente.")
 
@@ -117,8 +133,14 @@ def check_file(path: Path, findings: list[Finding]) -> None:
     if layer == "application" and any(is_web_import(item) for item in imported):
         add(findings, "ERROR", "application-imports-web", path, "Application importa web/controller.")
 
+    if layer == "application" and any(is_repository_import(item) for item in imported):
+        add(findings, "ERROR", "application-imports-repository", path, "Application importa repository diretamente.")
+
     if layer == "infrastructure" and any(is_web_import(item) for item in imported):
         add(findings, "ERROR", "infrastructure-imports-web", path, "Infrastructure importa web/controller.")
+
+    if layer == "api" and name.endswith("Port") and any(is_legacy_entity_import(item) for item in imported):
+        add(findings, "ERROR", "port-imports-legacy-entity", path, "Port de modulo nao deve importar entity JPA do legado.")
 
     if is_service_or_job(package, name, rel) and FIND_ALL.search(source):
         add(findings, severity_for_layer(layer, {"application", "web"}), "find-all-in-service-or-job", path, "Uso de findAll em service/job deve ser paginado, limitado ou migrado para read model.")

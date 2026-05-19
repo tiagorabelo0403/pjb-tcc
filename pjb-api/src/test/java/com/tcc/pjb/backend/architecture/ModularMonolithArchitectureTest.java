@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.architecture;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -37,6 +38,11 @@ class ModularMonolithArchitectureTest {
                     .should().dependOnClassesThat().resideInAnyPackage("..modules..web..", "..controller..", "..controllers..", "org.springframework.web..");
 
     @ArchTest
+    static final ArchRule application_nao_acessa_repository =
+            noClasses().that().resideInAPackage("..modules..application..")
+                    .should().dependOnClassesThat().haveSimpleNameEndingWith("Repository");
+
+    @ArchTest
     static final ArchRule infrastructure_nao_depende_de_web =
             noClasses().that().resideInAPackage("..modules..infrastructure..")
                     .should().dependOnClassesThat().resideInAnyPackage("..modules..web..", "..controller..", "..controllers..", "org.springframework.web..");
@@ -45,6 +51,24 @@ class ModularMonolithArchitectureTest {
     static final ArchRule web_nao_acessa_repository =
             noClasses().that().resideInAPackage("..modules..web..")
                     .should().dependOnClassesThat().haveSimpleNameEndingWith("Repository")
+                    .allowEmptyShould(true);
+
+    @ArchTest
+    static final ArchRule adapters_ficam_em_infrastructure =
+            classes().that().resideInAPackage("..modules..")
+                    .and().haveSimpleNameEndingWith("Adapter")
+                    .should().resideInAPackage("..modules..infrastructure..");
+
+    @ArchTest
+    static final ArchRule ports_nao_retornam_entity_legada =
+            noMethods().that().areDeclaredInClassesThat().resideInAPackage("..modules..api..")
+                    .and().areDeclaredInClassesThat().haveSimpleNameEndingWith("Port")
+                    .should().haveRawReturnType(resideInAPackage("..model.entity.."));
+
+    @ArchTest
+    static final ArchRule controllers_nao_acessam_domain_de_modulos =
+            noClasses().that().resideInAnyPackage("..controller..", "..controllers..")
+                    .should().dependOnClassesThat().resideInAPackage("..modules..domain..")
                     .allowEmptyShould(true);
 
     @ArchTest

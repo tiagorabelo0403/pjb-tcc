@@ -1,7 +1,8 @@
 package com.tcc.pjb.backend.modules.acordo.application;
 
-import com.tcc.pjb.backend.modules.acordo.api.AcordoAuditEntry;
+import com.tcc.pjb.backend.modules.acordo.api.AuditoriaAcordoCommand;
 import com.tcc.pjb.backend.modules.acordo.api.AuditoriaAcordoPort;
+import com.tcc.pjb.backend.modules.acordo.api.MovimentacaoAcordoCommand;
 import com.tcc.pjb.backend.modules.acordo.api.MovimentacaoAcordoPort;
 import com.tcc.pjb.backend.modules.acordo.api.ProcessoAcordoContexto;
 import com.tcc.pjb.backend.modules.acordo.api.ProcessoAcordoPort;
@@ -117,6 +118,13 @@ public class AcordoProcessualApplicationService {
                 "momento", decision.momento().name(),
                 "segredoJustica", segredo,
                 "expiraEm", expiraEm.toString()
+        ));
+        movimentacaoPort.registrarSalaAberta(new MovimentacaoAcordoCommand(
+                processoId,
+                "SALA_ACORDO_ABERTA",
+                "Sala de acordo processual aberta.",
+                abertaPorId,
+                "ACORDO_PROCESSUAL"
         ));
         return sessao;
     }
@@ -336,6 +344,13 @@ public class AcordoProcessualApplicationService {
                 "termoId", termo.id(),
                 "propostaId", termo.propostaId()
         ));
+        movimentacaoPort.registrarTermoEnviadoHomologacao(new MovimentacaoAcordoCommand(
+                sessao.processoId(),
+                "ACORDO_TERMO_ENVIADO_HOMOLOGACAO",
+                "Termo de acordo enviado para homologacao judicial.",
+                command.usuarioId(),
+                "ACORDO_PROCESSUAL"
+        ));
         return enviado;
     }
 
@@ -354,7 +369,13 @@ public class AcordoProcessualApplicationService {
         store.saveTermo(termo.withStatus(AcordoTermoStatus.HOMOLOGADO));
         AcordoSessaoSnapshot homologada = store.saveSessao(sessao.withHomologacao(AcordoSessaoStatus.HOMOLOGATED, now, magistradoId));
         String descricao = nonBlank(command.descricaoMovimentacao(), "Acordo processual homologado judicialmente.");
-        movimentacaoPort.registrarHomologacao(sessao.processoId(), magistradoId, descricao);
+        movimentacaoPort.registrarHomologacao(new MovimentacaoAcordoCommand(
+                sessao.processoId(),
+                "ACORDO_HOMOLOGADO",
+                descricao,
+                magistradoId,
+                "ACORDO_PROCESSUAL"
+        ));
         audit(sessao.id(), magistradoId, AcordoAuditoriaEvento.HOMOLOGACAO, metadata(command.metadata()), details(
                 "termoId", termo.id(),
                 "processoId", sessao.processoId()
@@ -376,7 +397,13 @@ public class AcordoProcessualApplicationService {
         stateMachine.requireRejeicao(sessao.status(), termo.status(), motivo);
         store.saveTermo(termo.withStatus(AcordoTermoStatus.REJEITADO));
         AcordoSessaoSnapshot rejeitada = store.saveSessao(sessao.withStatus(AcordoSessaoStatus.REJECTED_BY_JUDGE));
-        processoPort.registrarMovimentacaoAcordo(sessao.processoId(), "ACORDO_REJEITADO", "Homologacao do acordo rejeitada judicialmente: " + limit(motivo, 600));
+        movimentacaoPort.registrarRejeicaoHomologacao(new MovimentacaoAcordoCommand(
+                sessao.processoId(),
+                "ACORDO_REJEITADO",
+                "Homologacao do acordo rejeitada judicialmente: " + limit(motivo, 600),
+                magistradoId,
+                "ACORDO_PROCESSUAL"
+        ));
         audit(sessao.id(), magistradoId, AcordoAuditoriaEvento.REJEICAO, metadata(command.metadata()), details(
                 "termoId", termo.id(),
                 "motivo", motivo
@@ -398,7 +425,13 @@ public class AcordoProcessualApplicationService {
         }
         String motivo = requireText(command.motivo(), "motivo", 2000);
         AcordoSessaoSnapshot encerrada = store.saveSessao(sessao.withStatus(AcordoSessaoStatus.CLOSED));
-        movimentacaoPort.registrarEncerramentoSemAcordo(sessao.processoId(), usuarioId, "Sala de acordo encerrada sem composicao: " + limit(motivo, 600));
+        movimentacaoPort.registrarEncerramentoSemAcordo(new MovimentacaoAcordoCommand(
+                sessao.processoId(),
+                "ACORDO_ENCERRADO_SEM_COMPOSICAO",
+                "Sala de acordo encerrada sem composicao: " + limit(motivo, 600),
+                usuarioId,
+                "ACORDO_PROCESSUAL"
+        ));
         audit(sessao.id(), usuarioId, AcordoAuditoriaEvento.ENCERRAMENTO, metadata(command.metadata()), details("motivo", motivo));
         return encerrada;
     }
@@ -592,15 +625,21 @@ public class AcordoProcessualApplicationService {
                        AcordoAuditoriaEvento evento,
                        AcordoOperationMetadata metadata,
                        Map<String, Object> detalhes) {
-        auditoriaPort.registrarEvento(new AcordoAuditEntry(
+        AuditoriaAcordoCommand command = new AuditoriaAcordoCommand(
                 sessaoId,
                 usuarioId,
                 evento,
                 detalhes,
+                "ACORDO_PROCESSUAL",
                 metadata.ipHash(),
                 metadata.userAgentHash(),
                 Instant.now(clock)
-        ));
+        );
+        if (evento == AcordoAuditoriaEvento.MENSAGEM) {
+            auditoriaPort.registrarEvento(command);
+        } else {
+            auditoriaPort.registrarEventoSensivel(command);
+        }
     }
 
     private Map<String, Object> details(Object... items) {
