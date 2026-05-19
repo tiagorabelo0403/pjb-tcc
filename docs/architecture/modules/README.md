@@ -163,3 +163,15 @@ O modulo `prazos` e a referencia para encapsular um nucleo legado existente sem 
 - `web`: nao criado porque os endpoints legados permanecem em funcionamento.
 
 Esse padrao deve ser usado quando o legado ja tem regra robusta e o objetivo da onda e impedir acesso direto por novos modulos.
+
+## 17. Exemplo usando o modulo notificacoes
+
+O modulo `notificacoes` e a referencia para criar uma fronteira pequena de publicacao sem reescrever canais legados:
+
+- `domain`: `NotificacaoPrazoPolicy`, prioridade, normalizacao e exception de dominio.
+- `application`: `NotificacaoPrazoApplicationService`.
+- `api`: `NotificacaoPrazoPort`, comando e resultado.
+- `infrastructure`: `CalendarPrazoNotificacaoAdapter`.
+- `web`: nao criado porque nao houve nova superficie HTTP.
+
+Esse padrao deve ser usado quando um modulo novo precisa disparar comunicacao operacional, mas a entrega real continua centralizada no legado.

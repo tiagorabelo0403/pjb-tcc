@@ -80,6 +80,19 @@ Proxima aplicacao da Onda 4:
 - Migrar um fluxo pequeno de alerta de prazo para a fronteira modular.
 - Manter auditoria global fora ate rodada propria.
 
+Aplicacao complementar:
+
+- `modules.notificacoes.api` publica contrato de alerta de prazo.
+- `modules.notificacoes.domain` normaliza prioridade, texto, origem e chave.
+- `modules.notificacoes.application` consome `PrazoProcessualCalculoResult`.
+- `modules.notificacoes.infrastructure` adapta para `CalendarNotificationEventPublisher`.
+- Nenhum canal, repository ou controller legado foi reescrito.
+
+Proxima aplicacao complementar:
+
+- Conectar um fluxo pequeno existente de alerta de prazo ao novo application service.
+- Depois avaliar port geral de notificacao sem escalar a mudanca para todos os canais.
+
 ## ONDA 5: criar read models para consultas pesadas
 
 - Objetivo: remover `findAll` e consultas amplas de services.

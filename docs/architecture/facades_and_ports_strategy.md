@@ -47,7 +47,7 @@ Um modulo `ledger` deve publicar `LedgerPort` ou `LedgerFacade` com comandos com
 
 Prazos agora possuem `PrazoProcessualPort`, `PrazoProcessualApplicationService` e `LegacyPrazoProcessualAdapter`. O modulo chamador envia comando interno com tipo de prazo, ramo, grau, tribunal, UF, comarca e data inicial. O adapter conversa com `PrazoProcessualNacionalService` e devolve record modular, sem DTO HTTP e sem entity JPA.
 
-Notificacoes continuam como proxima fronteira: devem expor port de envio/agendamento e consumir resultado de prazo sem conhecer o service legado.
+Notificacoes agora possuem `NotificacaoPrazoPort`, `NotificacaoPrazoApplicationService` e `CalendarPrazoNotificacaoAdapter`. O modulo consome `PrazoProcessualCalculoResult` por `modules.prazos.api` e publica alerta de prazo no fluxo legado de calendario sem acessar repositories diretamente.
 
 ## 9. O que e proibido
 
