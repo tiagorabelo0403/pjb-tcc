@@ -32,21 +32,32 @@ public enum StatusProcesso {
     EXECUCAO_TRABALHISTA,
     SUSPENSO_TEMA_REPERCUSSAO,
     SUSPENSO_RECURSO_REPETITIVO,
-    
-    SUSPENSO_POR_OBITO;
+    SUSPENSO_POR_OBITO,
 
-    public static final StatusProcesso SUSPENSO = SUSPENSO_POR_OBITO;
+    PETICIONADO,
+    AUTUADO,
+    CONCLUSO_JUIZ,
+    CONCLUSO_RELATOR,
+    EM_INSTRUCAO,
+    SANEADO,
+    PAUTADO,
+    EM_JULGAMENTO,
+    SUSPENSO,
+    SOBRESTADO,
+    PARALISADO,
+    SENTENCIADO,
+    TRANSITADO,
+    EM_CUMPRIMENTO,
+    EXTINTO_SEM_RESOLUCAO;
 
     private static final Map<String, StatusProcesso> ALIASES = Map.ofEntries(
             entry("EM_TRAMITE", EM_ANDAMENTO),
             entry("TRAMITANDO", EM_ANDAMENTO),
-            entry("SENTENCIADO", SENTENCA_PROFERIDA),
             entry("SENTENCA", SENTENCA_PROFERIDA),
             entry("TRANSITO", TRANSITO_EM_JULGADO),
             entry("BAIXA", BAIXADO),
             entry("ARQUIVAMENTO", ARQUIVADO),
             entry("CONCLUSO", CONCLUSO),
-            entry("SUSPENSO", SUSPENSO_POR_OBITO),
             entry("SOBRESTADO_TEMA", SUSPENSO_TEMA_REPERCUSSAO),
             entry("SOBRESTADO_REPETITIVO", SUSPENSO_RECURSO_REPETITIVO)
     );
