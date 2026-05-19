@@ -151,3 +151,15 @@ O modulo `acordo` e a referencia atual:
 - `web`: reservado para endpoints especificos quando houver superficie segura dedicada.
 
 A integracao com o chat legado foi feita por application bridge e DTOs de compatibilidade, sem expor repositories da sala ao controller.
+
+## 16. Exemplo usando o modulo prazos
+
+O modulo `prazos` e a referencia para encapsular um nucleo legado existente sem mover classes em massa:
+
+- `domain`: `PrazoProcessualBoundaryPolicy`, parametros e exception de dominio.
+- `application`: `PrazoProcessualApplicationService`.
+- `api`: `PrazoProcessualPort`, comandos e resultados internos.
+- `infrastructure`: `LegacyPrazoProcessualAdapter`.
+- `web`: nao criado porque os endpoints legados permanecem em funcionamento.
+
+Esse padrao deve ser usado quando o legado ja tem regra robusta e o objetivo da onda e impedir acesso direto por novos modulos.

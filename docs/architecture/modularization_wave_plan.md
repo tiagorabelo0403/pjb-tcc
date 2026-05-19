@@ -58,12 +58,27 @@ Proxima aplicacao da Onda 3:
 
 ## ONDA 4: migrar fluxos pequenos e isolados
 
+- Status: iniciada com fronteira modular para prazos processuais.
 - Objetivo: mover casos de uso com baixa dependencia cruzada.
 - Risco: quebrar endpoint ou comportamento historico.
 - Arquivos provaveis: services pequenos, controllers finos, adapters.
 - Teste obrigatorio: teste de regressao do fluxo e teste de fronteira.
 - Evidencia: antes/depois do grafo de imports.
 - O que nao fazer: migrar fluxo critico sem teste negativo.
+
+Aplicacao inicial:
+
+- `modules.prazos.api` publica comandos e resultados internos.
+- `modules.prazos.domain` valida fronteira e conferencia manual.
+- `modules.prazos.application` oferece caso de uso de calculo e dia forense.
+- `modules.prazos.infrastructure` concentra o adapter para `PrazoProcessualNacionalService`.
+- Nenhum endpoint legado foi alterado.
+
+Proxima aplicacao da Onda 4:
+
+- Criar fronteira de notificacoes consumindo resultado de prazo.
+- Migrar um fluxo pequeno de alerta de prazo para a fronteira modular.
+- Manter auditoria global fora ate rodada propria.
 
 ## ONDA 5: criar read models para consultas pesadas
 

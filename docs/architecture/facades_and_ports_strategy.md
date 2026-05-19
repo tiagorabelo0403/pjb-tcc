@@ -43,9 +43,11 @@ Os adapters `PjbProcessoAcordoAdapter`, `PjbUsuarioAcordoAdapter`, `PjbMovimenta
 
 Um modulo `ledger` deve publicar `LedgerPort` ou `LedgerFacade` com comandos como `registrarEventoImutavel`. Modulos consumidores nao devem acessar tabela, repository ou service interno do ledger.
 
-## 8. Exemplo futuro com prazos e notificacoes
+## 8. Exemplo com prazos e notificacoes
 
-Prazos devem expor um port de consulta/calculo de prazo e notificacoes devem expor um port de envio/agendamento. O modulo chamador envia comando com processo, destinatario e origem. O adapter decide como conversar com o legado.
+Prazos agora possuem `PrazoProcessualPort`, `PrazoProcessualApplicationService` e `LegacyPrazoProcessualAdapter`. O modulo chamador envia comando interno com tipo de prazo, ramo, grau, tribunal, UF, comarca e data inicial. O adapter conversa com `PrazoProcessualNacionalService` e devolve record modular, sem DTO HTTP e sem entity JPA.
+
+Notificacoes continuam como proxima fronteira: devem expor port de envio/agendamento e consumir resultado de prazo sem conhecer o service legado.
 
 ## 9. O que e proibido
 
