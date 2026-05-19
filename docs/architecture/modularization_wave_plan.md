@@ -35,12 +35,26 @@ Proxima aplicacao da Onda 2:
 
 ## ONDA 3: bloquear novas violacoes
 
+- Status: iniciada com baseline numerico do guard modular.
 - Objetivo: transformar regras em guardas automatizados.
 - Risco: falso positivo agressivo travar entrega legitima.
 - Arquivos provaveis: scripts, ArchUnit e docs de baseline.
 - Teste obrigatorio: guard e suite de arquitetura.
 - Evidencia: relatorio com warnings legados e zero erros novos.
 - O que nao fazer: quebrar build por divida antiga catalogada.
+
+Aplicacao inicial:
+
+- `scripts/modular_monolith_guard.py` compara warnings atuais contra `docs/architecture/modular_monolith_guard_baseline.json`.
+- O baseline inicial ficou em 419 warnings e 0 errors.
+- Warnings catalogados podem reduzir; crescimento acima do orcamento falha o guard.
+- O relatorio JSON `docs/reports/modular_monolith_guard_report.json` permite comparar regras por tipo sem depender apenas do markdown.
+
+Proxima aplicacao da Onda 3:
+
+- Ligar o guard no fluxo de CI quando o pipeline estiver estavel.
+- Rebaixar o baseline por onda concluida.
+- Criar politica de aprovacao para qualquer aumento temporario de budget.
 
 ## ONDA 4: migrar fluxos pequenos e isolados
 

@@ -42,6 +42,9 @@ Nao devem ser aceitas em novos modulos:
 - `ModularMonolithArchitectureTest`
 - Revisao de imports no diff.
 - Relatorio de guard em `docs/reports/modular_monolith_guard_report.md`.
+- Baseline numerico em `docs/architecture/modular_monolith_guard_baseline.json`.
+
+O guard agora compara os warnings atuais contra o baseline versionado. A divida catalogada pode diminuir por onda, mas nao pode aumentar silenciosamente. Se uma regra ganhar novo warning acima do orcamento, o guard passa a falhar.
 
 ## 5. Como reduzir por ondas
 
@@ -60,6 +63,7 @@ Metas iniciais:
 - Reduzir controllers com repository direto por contexto migrado.
 - Substituir `findAll` em fluxos produtivos por consultas paginadas ou read models.
 - Aumentar uso de ports/facades para processo, usuario, documento, movimentacao e auditoria.
+- Reduzir o baseline numerico por contexto migrado, nunca aumentar o teto sem justificativa registrada.
 
 ## 7. O que nao sera corrigido agora
 

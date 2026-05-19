@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "generatedFromCommit": "8e53215",
+  "generatedAt": "2026-05-19",
+  "policy": "Errors sempre bloqueiam. Warnings legados podem reduzir, mas nao podem aumentar sem decisao arquitetural explicita.",
+  "maxErrors": 0,
+  "maxWarnings": 419,
+  "warningBudgets": {
+    "controller-imports-repository": 6,
+    "cross-module-internal-import": 14,
+    "find-all-in-service-or-job": 53,
+    "module-code-outside-modules": 6,
+    "module-imports-legacy-repository": 36,
+    "module-package-shape": 304
+  }
+}

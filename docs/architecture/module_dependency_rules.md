@@ -52,6 +52,16 @@ ou uma facade de aplicacao explicitamente documentada.
 
 Repositories em `com.tcc.pjb.backend.model.repository` podem continuar sendo usados por adapters de infraestrutura e legado. Novos modulos devem preferir ports no application e adapters na infrastructure.
 
+## Regra de crescimento do baseline
+
+O baseline numerico do guard modular fica em `docs/architecture/modular_monolith_guard_baseline.json`.
+
+- `errors` sempre bloqueiam.
+- `warnings` legados nao bloqueiam quando permanecem dentro do orcamento versionado.
+- Novo warning acima do orcamento bloqueia o guard.
+- Reducao de warnings deve atualizar o baseline para baixo na mesma onda.
+- Aumento temporario de budget exige justificativa em relatorio da rodada.
+
 ## Regra para controllers
 
 Controllers devem:

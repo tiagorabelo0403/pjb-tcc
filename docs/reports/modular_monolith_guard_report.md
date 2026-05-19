@@ -264,8 +264,12 @@ No findings.
 - ... 184 additional findings omitted from this report section.
 
 
+## Baseline
+
+- Baseline respeitado: a divida catalogada nao aumentou.
+
 ## Policy
 
 - Errors block the build because they indicate clear violations in standard module layers.
-- Warnings describe legacy or transitional debt and do not block this round.
+- Warnings describe legacy or transitional debt and block only when they exceed the committed baseline.
 - The baseline must shrink by migration waves, not by mass refactor.

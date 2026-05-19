@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import sys
 from dataclasses import dataclass
@@ -8,6 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 JAVA_ROOT = ROOT / "pjb-api" / "src" / "main" / "java"
 REPORT = ROOT / "docs" / "reports" / "modular_monolith_guard_report.md"
+REPORT_JSON = ROOT / "docs" / "reports" / "modular_monolith_guard_report.json"
+BASELINE = ROOT / "docs" / "architecture" / "modular_monolith_guard_baseline.json"
 PACKAGE = re.compile(r"^\s*package\s+([\w.]+)\s*;", re.MULTILINE)
 IMPORT = re.compile(r"^\s*import\s+([\w.*]+)\s*;", re.MULTILINE)
 TYPE_NAME = re.compile(r"\b(?:class|record|interface|enum)\s+(\w+)")
@@ -93,6 +96,10 @@ def severity_for_layer(layer: str | None, strict_layers: set[str]) -> str:
 
 def add(findings: list[Finding], severity: str, rule: str, path: Path, detail: str) -> None:
     findings.append(Finding(severity, rule, relative(path), detail))
+
+
+def finding_key(item: Finding) -> tuple[str, str, str, str]:
+    return item.severity, item.rule, item.path, item.detail
 
 
 def check_file(path: Path, findings: list[Finding]) -> None:
@@ -185,7 +192,58 @@ def looks_like_new_module_code(path: Path, source: str) -> bool:
     return any(marker in source for marker in markers)
 
 
-def write_report(findings: list[Finding]) -> None:
+def rule_counts(items: list[Finding]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for item in items:
+        counts[item.rule] = counts.get(item.rule, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def load_baseline() -> tuple[dict[str, object] | None, list[str]]:
+    if not BASELINE.exists():
+        return None, [f"Baseline ausente: {BASELINE.relative_to(ROOT).as_posix()}."]
+    try:
+        loaded = json.loads(BASELINE.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return None, [f"Baseline invalido: {exc}."]
+    if not isinstance(loaded, dict):
+        return None, ["Baseline invalido: raiz JSON deve ser objeto."]
+    return loaded, []
+
+
+def evaluate_baseline(errors: list[Finding], warnings: list[Finding], baseline: dict[str, object] | None, baseline_errors: list[str]) -> list[str]:
+    issues = list(baseline_errors)
+    if baseline is None:
+        return issues
+    max_errors = baseline.get("maxErrors")
+    if not isinstance(max_errors, int):
+        issues.append("Baseline invalido: maxErrors deve ser inteiro.")
+    elif len(errors) > max_errors:
+        issues.append(f"Errors atuais {len(errors)} excedem baseline {max_errors}.")
+    max_warnings = baseline.get("maxWarnings")
+    if not isinstance(max_warnings, int):
+        issues.append("Baseline invalido: maxWarnings deve ser inteiro.")
+    elif len(warnings) > max_warnings:
+        issues.append(f"Warnings atuais {len(warnings)} excedem baseline {max_warnings}.")
+    warning_budgets = baseline.get("warningBudgets")
+    if not isinstance(warning_budgets, dict):
+        issues.append("Baseline invalido: warningBudgets deve ser objeto.")
+        return issues
+    counts = rule_counts(warnings)
+    for rule, count in counts.items():
+        budget = warning_budgets.get(rule)
+        if not isinstance(budget, int):
+            issues.append(f"Baseline sem orcamento para warning {rule}.")
+        elif count > budget:
+            issues.append(f"Warning {rule} atual {count} excede baseline {budget}.")
+    for rule, budget in warning_budgets.items():
+        if not isinstance(rule, str) or not isinstance(budget, int):
+            issues.append("Baseline invalido: warningBudgets deve mapear string para inteiro.")
+            break
+    return issues
+
+
+def write_report(findings: list[Finding], baseline_issues: list[str]) -> None:
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     errors = [item for item in findings if item.severity == "ERROR"]
     warnings = [item for item in findings if item.severity == "WARNING"]
@@ -201,16 +259,44 @@ def write_report(findings: list[Finding]) -> None:
     lines.extend(render_findings(errors))
     lines.extend(["", "## WARNING", ""])
     lines.extend(render_findings(warnings))
+    lines.extend(["", "## Baseline", ""])
+    if baseline_issues:
+        lines.extend(f"- {issue}" for issue in baseline_issues)
+    else:
+        lines.append("- Baseline respeitado: a divida catalogada nao aumentou.")
     lines.extend([
         "",
         "## Policy",
         "",
         "- Errors block the build because they indicate clear violations in standard module layers.",
-        "- Warnings describe legacy or transitional debt and do not block this round.",
+        "- Warnings describe legacy or transitional debt and block only when they exceed the committed baseline.",
         "- The baseline must shrink by migration waves, not by mass refactor.",
         "",
     ])
     REPORT.write_text("\n".join(lines), encoding="utf-8")
+    write_json_report(findings, baseline_issues)
+
+
+def write_json_report(findings: list[Finding], baseline_issues: list[str]) -> None:
+    errors = [item for item in findings if item.severity == "ERROR"]
+    warnings = [item for item in findings if item.severity == "WARNING"]
+    payload = {
+        "errors": len(errors),
+        "warnings": len(warnings),
+        "errorCounts": rule_counts(errors),
+        "warningCounts": rule_counts(warnings),
+        "baselineIssues": baseline_issues,
+        "findings": [
+            {
+                "severity": item.severity,
+                "rule": item.rule,
+                "path": item.path,
+                "detail": item.detail,
+            }
+            for item in sorted(findings, key=finding_key)
+        ],
+    }
+    REPORT_JSON.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def render_findings(items: list[Finding]) -> list[str]:
@@ -237,14 +323,18 @@ def main() -> int:
     findings: list[Finding] = []
     for path in sorted(JAVA_ROOT.rglob("*.java")):
         check_file(path, findings)
-    write_report(findings)
     errors = [item for item in findings if item.severity == "ERROR"]
     warnings = [item for item in findings if item.severity == "WARNING"]
+    baseline, baseline_errors = load_baseline()
+    baseline_issues = evaluate_baseline(errors, warnings, baseline, baseline_errors)
+    write_report(findings, baseline_issues)
     print("MODULAR MONOLITH GUARD")
     print(f"report={REPORT.relative_to(ROOT).as_posix()}")
+    print(f"json={REPORT_JSON.relative_to(ROOT).as_posix()}")
     print(f"errors={len(errors)}")
     print(f"warnings={len(warnings)}")
-    return 1 if errors else 0
+    print(f"baseline_issues={len(baseline_issues)}")
+    return 1 if errors or baseline_issues else 0
 
 
 if __name__ == "__main__":
