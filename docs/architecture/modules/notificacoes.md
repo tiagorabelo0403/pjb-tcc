@@ -24,6 +24,12 @@ O modulo `notificacoes` cria uma fronteira modular para publicacao de alertas de
 
 `CalendarPrazoNotificacaoAdapter` publica `CalendarNotificationEnvelope` usando `CalendarNotificationEventPublisher`. O adapter nao acessa repository diretamente. A entrega real, deduplicacao, canais, preferencias, historico e outbox continuam no legado existente.
 
+## 4.1 Fluxo legado migrado
+
+`CalendarNotificationScheduler` passou a rotear envelopes de lane ou segmento `PRAZO`/`PRAZOS` para `NotificacaoPrazoApplicationService`. Envelopes que nao sao prazo continuam indo direto para `CalendarNotificationEventPublisher`.
+
+Se a fronteira modular recusar o alerta ou lancar excecao operacional, o scheduler usa o publisher legado com o mesmo envelope. Isso preserva entrega e evita que a migracao modular interrompa notificacoes existentes.
+
 ## 5. Segurança e sigilo
 
 O comando modular nao recebe conteudo processual sensivel. O corpo padrao informa somente vencimento forense e necessidade de conferencia manual. Qualquer enriquecimento futuro deve passar por policy de sigilo antes de chegar ao adapter.
@@ -64,4 +70,4 @@ O adapter publica envelope no fluxo de calendario. Quando Kafka estiver habilita
 
 ## 12. Proxima fase
 
-Migrar um fluxo pequeno de alerta de prazo para consumir `NotificacaoPrazoApplicationService`, mantendo endpoints e jobs legados estaveis. Depois disso, avaliar um port de notificacao geral sem acoplar channels e repositories a novos modulos.
+Migrar outro fluxo pequeno, de preferencia uma consulta/preview de prazo com baixo risco, para consumir o mesmo application service. Depois disso, avaliar um port de notificacao geral sem acoplar channels e repositories a novos modulos.

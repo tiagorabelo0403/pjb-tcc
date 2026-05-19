@@ -8,6 +8,7 @@
 - Policy de dominio `NotificacaoPrazoPolicy`.
 - Application service `NotificacaoPrazoApplicationService`.
 - Adapter `CalendarPrazoNotificacaoAdapter`.
+- Migracao do fluxo de prazo do `CalendarNotificationScheduler` para a fronteira modular com fallback legado.
 - Testes de dominio, application, adapter e arquitetura.
 
 ## 2. O que foi preservado
@@ -34,6 +35,12 @@ Novos modulos podem publicar alerta de prazo sem importar diretamente:
 
 `NotificacaoPrazoApplicationService.notificarPrazoCalculado` recebe `PrazoProcessualCalculoResult` do modulo `prazos` e transforma em alerta seguro, com prioridade calculada e texto reduzido.
 
+## 4.1 Fluxo migrado
+
+`CalendarNotificationScheduler` passou a identificar envelopes de lane ou segmento de prazo. Esses envelopes sao publicados por `NotificacaoPrazoApplicationService`. Envelopes de agenda, audiencia e demais trilhas continuam no `CalendarNotificationEventPublisher`.
+
+Se a fronteira modular nao aceitar o alerta ou falhar, o scheduler publica o envelope original no caminho legado. Assim a migracao fica ativa, mas nao interrompe entrega existente.
+
 ## 5. Arquivos criados
 
 - `pjb-api/src/main/java/com/tcc/pjb/backend/modules/notificacoes/api/NotificacaoPrazoPort.java`.
@@ -58,6 +65,8 @@ Novos modulos podem publicar alerta de prazo sem importar diretamente:
 - `docs/architecture/facades_and_ports_strategy.md`.
 - `docs/architecture/modules/README.md`.
 - `docs/architecture/modularization_wave_plan.md`.
+- `docs/architecture/modules/notificacoes.md`.
+- `pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/CalendarNotificationScheduler.java`.
 
 ## 7. Testes e guards
 
@@ -65,7 +74,7 @@ Novos modulos podem publicar alerta de prazo sem importar diretamente:
 - `scripts/architecture_hygiene_guard.py`: aprovado.
 - `scripts/constructor_injection_guard.py`: aprovado.
 - `.\mvnw.cmd -B -pl pjb-api test-compile --no-transfer-progress`: aprovado.
-- `.\mvnw.cmd -B -pl pjb-api test "-Dtest=NotificacaoPrazoPolicyTest,NotificacaoPrazoApplicationServiceTest,CalendarPrazoNotificacaoAdapterTest,NotificacoesArchitectureTest,PrazosArchitectureTest,ModularMonolithArchitectureTest" "-DfailIfNoTests=false" --no-transfer-progress`: aprovado com 33 testes, 0 falhas, 0 erros e 0 ignorados.
+- `.\mvnw.cmd -B -pl pjb-api test "-Dtest=CalendarNotificationSchedulerTest,NotificacaoPrazoPolicyTest,NotificacaoPrazoApplicationServiceTest,CalendarPrazoNotificacaoAdapterTest,NotificacoesArchitectureTest,PrazosArchitectureTest,ModularMonolithArchitectureTest" "-DfailIfNoTests=false" --no-transfer-progress`: aprovado com 35 testes, 0 falhas, 0 erros e 0 ignorados.
 
 Nesta sessao, `python` nao estava no PATH. Os guards foram executados com o Python local encontrado em `C:\Program Files\PostgreSQL\18\pgAdmin 4\python\python.exe`, preservando os scripts e parametro `-B`.
 
@@ -78,4 +87,4 @@ Nesta sessao, `python` nao estava no PATH. Os guards foram executados com o Pyth
 
 ## 9. Proxima etapa recomendada
 
-Migrar um fluxo pequeno existente de alerta de prazo para chamar `NotificacaoPrazoApplicationService`, mantendo fallback legado e testes de regressao.
+Migrar uma segunda entrada pequena de alerta de prazo ou preview operacional para a mesma fronteira, depois avaliar port de notificacao geral.

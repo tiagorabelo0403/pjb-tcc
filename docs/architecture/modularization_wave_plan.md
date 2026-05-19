@@ -93,6 +93,13 @@ Proxima aplicacao complementar:
 - Conectar um fluxo pequeno existente de alerta de prazo ao novo application service.
 - Depois avaliar port geral de notificacao sem escalar a mudanca para todos os canais.
 
+Fluxo pequeno migrado:
+
+- `CalendarNotificationScheduler` roteia envelopes de prazo para `NotificacaoPrazoApplicationService`.
+- Demais envelopes continuam no publisher legado.
+- Falha ou recusa da fronteira modular cai no fallback `CalendarNotificationEventPublisher`.
+- Nenhum canal, repository, controller ou job amplo foi reescrito.
+
 ## ONDA 5: criar read models para consultas pesadas
 
 - Objetivo: remover `findAll` e consultas amplas de services.
