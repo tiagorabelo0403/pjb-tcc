@@ -41,6 +41,8 @@ pjb:
   integrations:
     pje:
       mock-enabled: true
+  demo:
+    seed-enabled: false
   jobs:
     pg-listen:
       enabled: false

@@ -213,6 +213,33 @@ python scripts/runtime_concurrency_guard.py
 
 ---
 
+## Quickstart — 1 comando
+
+```bash
+# Linux/Mac
+bash demo.sh
+
+# Windows
+demo.cmd
+```
+
+O script:
+1. Copia `.env.example` para `.env` com valores demo prontos (se não existir)
+2. Compila os módulos `pjb-core` e `pjb-api`
+3. Sobe PostgreSQL, Kafka, Elasticsearch, Redis e o backend via Docker Compose
+4. Aguarda o backend ficar saudável e exibe os endpoints
+
+Após subir, acesse:
+- **`http://localhost:8080/livez`** — liveness check
+- **`http://localhost:8080/demo/status`** — estatísticas em tempo real (usuários, processos, documentos)
+- **`http://localhost:8080/swagger-ui.html`** — documentação de API
+
+Ao iniciar com o profile `docker`, o sistema semeará automaticamente 4 usuários e 3 processos de demonstração para que os dados apareçam imediatamente.
+
+Para parar: `docker compose down`
+
+---
+
 ## Como rodar
 
 **Compilar:**

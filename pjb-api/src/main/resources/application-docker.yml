@@ -179,7 +179,7 @@ pjb:
       global-max-in-flight: ${PJB_API_LOAD_SHEDDING_GLOBAL_MAX_IN_FLIGHT:640}
       global-acquire-timeout: ${PJB_API_LOAD_SHEDDING_GLOBAL_TIMEOUT:15ms}
       emit-debug-headers: ${PJB_API_LOAD_SHEDDING_DEBUG_HEADERS:false}
-      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz"]
+      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz", "/demo/**"]
       rules:
         - name: frontdoor-critical
           prefixes: ["/api/v1/peticionamento/inicial/sessao", "/api/v1/transito", "/api/v1/sigilo", "/api/v1/comunicacao-judicial", "/api/v1/comunicacoes"]
@@ -235,7 +235,7 @@ pjb:
       rejection-status: ${PJB_API_DB_PRESSURE_STATUS:503}
       rejection-code: ${PJB_API_DB_PRESSURE_CODE:DB_PRESSURE_SHIELD}
       emit-debug-headers: ${PJB_API_DB_PRESSURE_DEBUG_HEADERS:false}
-      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz"]
+      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz", "/demo/**"]
       guarded-prefixes: ["/api/v1/peticionamento", "/api/v1/laiane", "/api/v1/processual", "/api/v1/work-items", "/api/v1/secretariat", "/api/v1/juiz"]
     functional-availability:
       enabled: ${PJB_API_FUNCTIONAL_AVAILABILITY_ENABLED:true}
@@ -317,7 +317,7 @@ pjb:
       very-large-content-length-bytes: ${PJB_RUNTIME_ADMISSION_VERY_LARGE_CONTENT_LENGTH_BYTES:16777216}
       large-page-size-threshold: ${PJB_RUNTIME_ADMISSION_LARGE_PAGE_SIZE_THRESHOLD:500}
       large-estimated-items-threshold: ${PJB_RUNTIME_ADMISSION_LARGE_ESTIMATED_ITEMS_THRESHOLD:10000}
-      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz", "/internal/runtime/"]
+      exempt-prefixes: ["/actuator/health", "/livez", "/readyz", "/startupz", "/internal/runtime/", "/demo/**"]
       guarded-prefixes: ["/api/v1/peticionamento", "/api/v1/laiane", "/api/v1/processual", "/api/v1/work-items", "/api/v1/secretariat", "/api/v1/juiz", "/api/v1/oficial", "/api/v1/delegado", "/api/v1/cidadao"]
       expensive-prefixes: ["/api/v1/peticionamento", "/api/v1/laiane", "/api/v1/work-items", "/api/v1/secretariat", "/api/v1/juiz", "/api/v1/oficial", "/api/v1/delegado"]
       write-sensitive-prefixes: ["/api/v1/peticionamento", "/api/v1/processual", "/api/v1/secretariat", "/api/v1/juiz", "/api/v1/oficial", "/api/v1/delegado"]
@@ -457,6 +457,8 @@ pjb:
         strict-mode: ${PJB_COMJUD_SEFAZ_NFE_STRICT_MODE:false}
   hsm:
     mock-enabled: ${PJB_HSM_MOCK_ENABLED:false}
+  demo:
+    seed-enabled: true
 
 management:
   endpoints:
