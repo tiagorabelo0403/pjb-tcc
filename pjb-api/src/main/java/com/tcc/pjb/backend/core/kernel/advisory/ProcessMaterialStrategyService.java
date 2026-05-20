@@ -8,7 +8,6 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import jakarta.inject.Inject;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class ProcessMaterialStrategyService {
 
@@ -16,7 +15,6 @@ public class ProcessMaterialStrategyService {
     private final ProcessMaterialStrategyReportFactory reportFactory;
 
     @Inject
-    @Autowired
     public ProcessMaterialStrategyService() {
         ProcessMaterialStrategyTextSupport textSupport = new ProcessMaterialStrategyTextSupport();
         ProcessMaterialStrategyScoringPolicy scoringPolicy = new ProcessMaterialStrategyScoringPolicy(textSupport);

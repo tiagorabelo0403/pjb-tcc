@@ -30,7 +30,6 @@ import com.tcc.pjb.backend.core.quality.codebase.application.PjbProjectPathResol
 import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class PjbFinalClosureApplicationService {
 
@@ -43,7 +42,6 @@ public class PjbFinalClosureApplicationService {
     private final Path projectRoot;
 
     @Inject
-    @Autowired
     public PjbFinalClosureApplicationService(BuildGateGovernanceService buildGateGovernanceService,
                                             PjbCodebaseSanityApplicationService codebaseSanityApplicationService,
                                             PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService,

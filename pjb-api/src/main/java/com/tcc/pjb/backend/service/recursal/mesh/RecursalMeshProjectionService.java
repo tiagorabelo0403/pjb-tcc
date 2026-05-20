@@ -15,7 +15,6 @@ import com.tcc.pjb.backend.model.entity.recursalmesh.RecursalAggregateState;
 import com.tcc.pjb.backend.model.entity.recursalmesh.RecursalProcessIntegrationState;
 import com.tcc.pjb.backend.model.repository.recursalmesh.RecursalProcessIntegrationStateRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class RecursalMeshProjectionService {
 
@@ -33,7 +32,6 @@ public class RecursalMeshProjectionService {
     }
 
     @Inject
-    @Autowired
     public RecursalMeshProjectionService(RecursalProcessIntegrationStateRepository repository,
                                          RecursalMeshFingerprintService fingerprintService,
                                          RecursalMeshSlaService slaService,

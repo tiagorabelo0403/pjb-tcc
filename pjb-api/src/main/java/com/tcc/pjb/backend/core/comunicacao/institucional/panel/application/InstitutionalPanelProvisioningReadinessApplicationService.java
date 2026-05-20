@@ -9,7 +9,6 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import jakarta.inject.Inject;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class InstitutionalPanelProvisioningReadinessApplicationService {
 
@@ -26,7 +25,6 @@ public class InstitutionalPanelProvisioningReadinessApplicationService {
     private final InstitutionalPanelProvisioningOutcomeFactory outcomeFactory;
 
     @Inject
-    @Autowired
     public InstitutionalPanelProvisioningReadinessApplicationService(InstitutionalAccessProfileCatalogApplicationService accessProfileCatalogApplicationService,
                                                                      InstitutionalPanelBlueprintApplicationService panelBlueprintApplicationService,
                                                                      InstitutionalProcessWorkspaceApplicationService processWorkspaceApplicationService,

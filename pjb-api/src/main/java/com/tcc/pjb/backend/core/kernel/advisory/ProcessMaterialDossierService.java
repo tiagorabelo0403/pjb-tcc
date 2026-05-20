@@ -9,7 +9,6 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import jakarta.inject.Inject;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class ProcessMaterialDossierService {
 
@@ -18,7 +17,6 @@ public class ProcessMaterialDossierService {
     private final ProcessMaterialDossierDiagnosticsFactory diagnosticsFactory;
 
     @Inject
-    @Autowired
     public ProcessMaterialDossierService() {
         ProcessMaterialDossierTextSupport textSupport = new ProcessMaterialDossierTextSupport();
         this.inputFactory = new ProcessMaterialDossierInputFactory(textSupport);

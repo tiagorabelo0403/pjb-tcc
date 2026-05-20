@@ -24,7 +24,6 @@ import com.tcc.pjb.backend.platform.cluster.PjbClusterLockService;
 import com.tcc.pjb.backend.query.recursalmesh.RecursalMeshQueryModel;
 import com.tcc.pjb.backend.query.recursalmesh.RecursalMeshQueryRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class RecursalMeshSearchReindexService {
 
@@ -57,7 +56,6 @@ public class RecursalMeshSearchReindexService {
     }
 
     @Inject
-    @Autowired
     public RecursalMeshSearchReindexService(RecursalProcessIntegrationStateRepository projectionRepository,
                                             ObjectProvider<RecursalMeshSearchIndexerService> indexerServiceProvider,
                                             ObjectProvider<ElasticsearchOperations> elasticsearchOperationsProvider,

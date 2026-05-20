@@ -30,7 +30,6 @@ import com.tcc.pjb.backend.model.repository.recursalmesh.RecursalProcessIntegrat
 import com.tcc.pjb.backend.query.recursalmesh.RecursalMeshQueryModel;
 import com.tcc.pjb.backend.query.recursalmesh.RecursalMeshQueryRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class RecursalMeshDashboardService {
 
@@ -48,7 +47,6 @@ public class RecursalMeshDashboardService {
     }
 
     @Inject
-    @Autowired
     public RecursalMeshDashboardService(RecursalProcessIntegrationStateRepository projectionRepository,
                                         RecursalMeshProjectionService projectionService,
                                         ObjectProvider<RecursalMeshQueryRepository> queryRepositoryProvider,

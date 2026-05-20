@@ -19,7 +19,6 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import jakarta.inject.Inject;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class InstitutionalArchitectureSurfaceFacadeService {
 
@@ -35,7 +34,6 @@ public class InstitutionalArchitectureSurfaceFacadeService {
     private final Clock clock;
 
     @Inject
-    @Autowired
     public InstitutionalArchitectureSurfaceFacadeService(CatalogoInstitucionalUnificadoService catalogoService,
                                                          InstitutionalCatalogGovernanceApplicationService governanceApplicationService,
                                                          GovBrSurfaceFacadeService govBrSurfaceFacadeService,

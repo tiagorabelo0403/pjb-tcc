@@ -20,7 +20,6 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import jakarta.inject.Inject;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class InstitutionalOfficialIdentifierDossierApplicationService {
 
@@ -31,7 +30,6 @@ public class InstitutionalOfficialIdentifierDossierApplicationService {
     private final Clock clock;
 
     @Inject
-    @Autowired
     public InstitutionalOfficialIdentifierDossierApplicationService(InstitutionalAffiliationStateRepository affiliationRepository,
                                                                     InstitutionalAffiliationRequestStateRepository requestRepository,
                                                                     InstitutionalPublicRecognitionGateApplicationService publicRecognitionGateApplicationService,

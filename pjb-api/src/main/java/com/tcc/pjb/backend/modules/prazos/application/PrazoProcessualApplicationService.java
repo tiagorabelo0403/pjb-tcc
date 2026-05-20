@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.modules.prazos.application;
 
+import jakarta.inject.Inject;
 import com.tcc.pjb.backend.modules.prazos.api.PrazoDiaForenseCommand;
 import com.tcc.pjb.backend.modules.prazos.api.PrazoDiaForenseResult;
 import com.tcc.pjb.backend.modules.prazos.api.PrazoProcessualCalculoCommand;
@@ -10,14 +11,12 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class PrazoProcessualApplicationService {
 
     private final PrazoProcessualPort port;
     private final PrazoProcessualBoundaryPolicy policy;
-
-    @Autowired
+@Inject
 
     public PrazoProcessualApplicationService(PrazoProcessualPort port) {
         this(port, new PrazoProcessualBoundaryPolicy());

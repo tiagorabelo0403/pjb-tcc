@@ -41,7 +41,6 @@ import com.tcc.pjb.backend.core.icp.domain.IcpBrasilTimelineQuery;
 import com.tcc.pjb.backend.core.icp.domain.IcpBrasilTimelineResult;
 import com.tcc.pjb.backend.core.icp.domain.IcpBrasilTrustAnchorAuditSnapshot;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class IcpBrasilChainValidator {
 
@@ -66,7 +65,6 @@ public class IcpBrasilChainValidator {
     }
 
     @Inject
-    @Autowired
     public IcpBrasilChainValidator(IcpCertificateCacheRepository certificateCacheRepository,
                                    IcpSignatureEventRepository signatureEventRepository,
                                    IcpBrasilOcspVerifier ocspVerifier,

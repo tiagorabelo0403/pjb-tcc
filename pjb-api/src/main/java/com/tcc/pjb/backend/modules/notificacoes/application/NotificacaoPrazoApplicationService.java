@@ -1,12 +1,12 @@
 package com.tcc.pjb.backend.modules.notificacoes.application;
 
+import jakarta.inject.Inject;
 import com.tcc.pjb.backend.modules.notificacoes.api.NotificacaoPrazoCommand;
 import com.tcc.pjb.backend.modules.notificacoes.api.NotificacaoPrazoDispatchResult;
 import com.tcc.pjb.backend.modules.notificacoes.api.NotificacaoPrazoPort;
 import com.tcc.pjb.backend.modules.notificacoes.domain.NotificacaoPrazoPolicy;
 import com.tcc.pjb.backend.modules.prazos.api.PrazoProcessualCalculoResult;
 import java.util.Objects;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,8 +15,7 @@ public class NotificacaoPrazoApplicationService {
 
     private final NotificacaoPrazoPort port;
     private final NotificacaoPrazoPolicy policy;
-
-    @Autowired
+    @Inject
     public NotificacaoPrazoApplicationService(NotificacaoPrazoPort port) {
         this(port, new NotificacaoPrazoPolicy());
     }

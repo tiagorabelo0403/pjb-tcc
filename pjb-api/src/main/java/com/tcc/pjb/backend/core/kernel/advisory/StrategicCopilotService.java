@@ -9,7 +9,6 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import jakarta.inject.Inject;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class StrategicCopilotService {
 
@@ -17,7 +16,6 @@ public class StrategicCopilotService {
     private final StrategicCopilotProcessReportFactory processReportFactory;
 
     @Inject
-    @Autowired
     public StrategicCopilotService() {
         StrategicCopilotSupport support = new StrategicCopilotSupport();
         StrategicCopilotDiagnosticsFactory diagnosticsFactory = new StrategicCopilotDiagnosticsFactory(support);

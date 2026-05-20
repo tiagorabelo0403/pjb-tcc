@@ -11,7 +11,6 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import jakarta.inject.Inject;
 
-import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class InstitutionalHearingSchedulingGovernanceApplicationService {
 
@@ -20,7 +19,6 @@ public class InstitutionalHearingSchedulingGovernanceApplicationService {
     private final InstitutionalHearingRiteGovernanceResolver riteGovernanceResolver;
 
     @Inject
-    @Autowired
     public InstitutionalHearingSchedulingGovernanceApplicationService() {
         this(new InstitutionalHearingSchedulingCapabilityResolver(),
                 new InstitutionalHearingSchedulingScopeSupport(),
