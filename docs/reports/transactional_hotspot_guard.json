@@ -1,5 +1,5 @@
 {
-  "scannedFiles": 7722,
+  "scannedFiles": 7856,
   "hotspots": [
     {
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\cumprimento\\application\\ProcessoCumprimentoOperacionalApplicationService.java",
@@ -1051,6 +1051,22 @@
       "signals": [
         "for (",
         ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\conclusao\\application\\ConclusaoProcessualApplicationService.java",
+      "method": "processarExpiradas",
+      "signals": [
+        "saveAll(",
+        "for ("
+      ]
+    },
+    {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\ciencia\\application\\CienciaProcessualApplicationService.java",
+      "method": "processarExpirados",
+      "signals": [
+        "saveAll(",
+        "for ("
       ]
     },
     {
@@ -3681,6 +3697,13 @@
       ]
     },
     {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\modules\\acordo\\application\\AcordoProcessualApplicationService.java",
+      "method": "expirarSalasVencidas",
+      "signals": [
+        "for ("
+      ]
+    },
+    {
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\integration\\mni\\application\\MniRemessaService.java",
       "method": "reprocessarPendentes",
       "signals": [
@@ -4101,6 +4124,20 @@
       ]
     },
     {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\polo\\application\\PoloProcessualApplicationService.java",
+      "method": "listarUsuarioIdsDestinatarios",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\polo\\application\\PoloProcessualApplicationService.java",
+      "method": "incluir",
+      "signals": [
+        ".stream()"
+      ]
+    },
+    {
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\painel\\application\\ProcessoPainelRiscoMalhaApplicationService.java",
       "method": "detalhar",
       "signals": [
@@ -4115,10 +4152,38 @@
       ]
     },
     {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\estado\\application\\ProcessoEstadoApplicationService.java",
+      "method": "transitar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\competencia\\application\\ProcessoCompetenciaMalhaApplicationService.java",
       "method": "analisar",
       "signals": [
         ".stream()"
+      ]
+    },
+    {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\ciencia\\application\\CienciaProcessualApplicationService.java",
+      "method": "registrar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\ciencia\\application\\CienciaProcessualApplicationService.java",
+      "method": "confirmar",
+      "signals": [
+        "appendSafely("
+      ]
+    },
+    {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\carga\\application\\CargaProcessoApplicationService.java",
+      "method": "registrarExtravio",
+      "signals": [
+        "appendSafely("
       ]
     },
     {
@@ -5298,7 +5363,7 @@
       ]
     }
   ],
-  "hotspotCount": 730,
+  "hotspotCount": 739,
   "missingBudgets": [],
   "missingBudgetCount": 0
 }

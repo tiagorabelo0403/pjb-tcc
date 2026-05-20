@@ -1,7 +1,7 @@
 # Transactional Hotspot Guard
 
-Arquivos varridos: 7722
-Hotspots: 730
+Arquivos varridos: 7856
+Hotspots: 739
 Métodos hotspot sem budget: 0
 
 - `pjb-api\src\main\java\com\tcc\pjb\backend\core\processo\cumprimento\application\ProcessoCumprimentoOperacionalApplicationService.java` :: `materializar` :: outboxPublisher.enqueue(, appendSafely(, for (, .stream()

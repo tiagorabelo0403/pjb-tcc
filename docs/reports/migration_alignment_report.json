@@ -2,13 +2,7 @@
   "summary": {
     "expectedEntries": 11,
     "resolvedEntries": 11,
-    "duplicateMigrationVersions": {
-      "V100": [
-        "V100__download_budget_scope.sql",
-        "V100__operational_function_credentials.sql",
-        "V100__secretariat_queue_row_version.sql"
-      ]
-    }
+    "duplicateMigrationVersions": {}
   },
   "rows": [
     {

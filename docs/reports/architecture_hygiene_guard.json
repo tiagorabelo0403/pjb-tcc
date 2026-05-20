@@ -1,8 +1,8 @@
 {
   "base": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend",
   "totals": {
-    "javaFiles": 7854,
-    "rootPackages": 25,
+    "javaFiles": 7856,
+    "rootPackages": 26,
     "oversizedClasses": 19,
     "oversizedServicesOrEngines": 31,
     "oversizedControllers": 0,
@@ -23,8 +23,9 @@
     "bootstrap": 1,
     "command": 3,
     "configs": 104,
-    "controller": 356,
+    "controller": 357,
     "core": 2737,
+    "demo": 1,
     "domain": 2,
     "financial": 8,
     "inovacao": 4,
