@@ -23,6 +23,7 @@ import com.tcc.pjb.backend.model.entity.enums.DestinatarioInstitucionalKind;
 import com.tcc.pjb.backend.model.entity.enums.StatusComunicacaoInstitucional;
 import jakarta.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class InstitutionalSlaPredictiveApplicationService {
 
@@ -34,6 +35,7 @@ public class InstitutionalSlaPredictiveApplicationService {
     private final AtomicReference<CachedDashboard> dashboardCache = new AtomicReference<>();
 
     @Inject
+    @Autowired
     public InstitutionalSlaPredictiveApplicationService(InstitutionalInboxStateRepository inboxRepository,
                                                         CatalogoInstitucionalUnificadoService catalogo) {
         this(inboxRepository, catalogo, Clock.systemUTC());

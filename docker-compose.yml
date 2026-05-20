@@ -97,6 +97,7 @@ services:
       PJB_DB_USER: ${PJB_DB_USER:-pjb}
       PJB_DB_PASS: ${PJB_DB_PASS:-pjb}
       PJB_MASTER_KEY_BASE64: ${PJB_MASTER_KEY_BASE64:-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
+      PJB_JVM_MAX_METASPACE_SIZE: ${PJB_JVM_MAX_METASPACE_SIZE:-512m}
       JAVA_OPTS: ${PJB_JAVA_OPTS:--Dfile.encoding=UTF-8 -Djava.security.egd=file:/dev/urandom}
     depends_on:
       postgres:

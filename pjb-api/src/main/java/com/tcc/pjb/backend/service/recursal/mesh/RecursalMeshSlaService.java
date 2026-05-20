@@ -17,6 +17,7 @@ import com.tcc.pjb.backend.model.entity.recursalmesh.RecursalAggregateState;
 import com.tcc.pjb.backend.tribunal.calendario.CalendarioForenseTribunalService;
 import jakarta.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class RecursalMeshSlaService {
 
@@ -24,6 +25,7 @@ public class RecursalMeshSlaService {
     private final RecursalSlaPolicyCatalog policyCatalog;
 
     @Inject
+    @Autowired
     public RecursalMeshSlaService(CalendarioForenseTribunalService calendarioService) {
         this(calendarioService, new RecursalSlaPolicyCatalog());
     }

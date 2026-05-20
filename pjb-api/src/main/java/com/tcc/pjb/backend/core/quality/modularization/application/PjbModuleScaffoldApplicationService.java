@@ -18,6 +18,7 @@ import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class PjbModuleScaffoldApplicationService {
 
@@ -27,6 +28,7 @@ public class PjbModuleScaffoldApplicationService {
     private final AuditLedgerService auditLedgerService;
     private final Path projectRoot;
     @Inject
+    @Autowired
     public PjbModuleScaffoldApplicationService(AuditLedgerService auditLedgerService) {
         this(auditLedgerService, Path.of(""));
     }

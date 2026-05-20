@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import jakarta.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class InstitutionalOperatingModelClosureApplicationService {
 
@@ -37,6 +38,7 @@ public class InstitutionalOperatingModelClosureApplicationService {
     private final Function<DestinatarioInstitucionalKind, List<UnidadeInstitucional>> unitResolver;
 
     @Inject
+    @Autowired
     public InstitutionalOperatingModelClosureApplicationService(InstitutionalOrganizationBlueprintCatalogApplicationService blueprintCatalogApplicationService,
                                                                 CatalogoInstitucionalUnificadoService catalogoInstitucionalUnificadoService) {
         this(blueprintCatalogApplicationService, catalogoInstitucionalUnificadoService::listarPorTipo);

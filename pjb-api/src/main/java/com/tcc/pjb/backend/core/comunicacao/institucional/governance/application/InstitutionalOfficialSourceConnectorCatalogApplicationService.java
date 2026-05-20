@@ -12,6 +12,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import jakarta.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class InstitutionalOfficialSourceConnectorCatalogApplicationService {
 
@@ -20,6 +21,7 @@ public class InstitutionalOfficialSourceConnectorCatalogApplicationService {
     private final Clock clock;
 
     @Inject
+    @Autowired
     public InstitutionalOfficialSourceConnectorCatalogApplicationService(InstitutionalOfficialSourceCatalogService catalogService,
                                                                         InstitutionalOfficialSourceConnectorRegistry connectorRegistry) {
         this(catalogService, connectorRegistry, Clock.systemUTC());

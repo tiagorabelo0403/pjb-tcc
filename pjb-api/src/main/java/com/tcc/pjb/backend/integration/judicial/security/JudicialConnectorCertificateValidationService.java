@@ -35,6 +35,7 @@ import java.util.Set;
 import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class JudicialConnectorCertificateValidationService {
 
@@ -49,6 +50,7 @@ public class JudicialConnectorCertificateValidationService {
     private final Clock clock;
 
     @Inject
+    @Autowired
     public JudicialConnectorCertificateValidationService(JudicialConnectorSecurityProperties properties,
                                                          JudicialConnectorSecurityPackService securityPackService,
                                                          JudicialConnectorCryptographicContextService cryptographicContextService,

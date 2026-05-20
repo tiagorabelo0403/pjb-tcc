@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.core.jobs.runtime;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -34,12 +35,12 @@ public class JobClaimDao {
                 " RETURNING j.id, j.type, j.owner_user_id, j.inbox_key";
 
         return jdbc.query(sql, ps -> {
-            ps.setObject(1, now);
-            ps.setObject(2, expiredLockAt);
+            ps.setTimestamp(1, Timestamp.from(now));
+            ps.setTimestamp(2, Timestamp.from(expiredLockAt));
             ps.setInt(3, limit);
             ps.setString(4, instanceId);
-            ps.setObject(5, now);
-            ps.setObject(6, now);
+            ps.setTimestamp(5, Timestamp.from(now));
+            ps.setTimestamp(6, Timestamp.from(now));
         }, (ResultSet rs) -> {
             java.util.ArrayList<JobClaim> claims = new java.util.ArrayList<>();
             while (rs.next()) {
@@ -62,14 +63,16 @@ public class JobClaimDao {
     }
 
     public int touchLock(UUID jobId, String instanceId, Instant now) {
-        return jdbc.update("UPDATE tb_job SET locked_at=?, updated_at=? WHERE id=? AND locked_by=?", now, now, jobId, instanceId);
+        Timestamp ts = Timestamp.from(now);
+        return jdbc.update("UPDATE tb_job SET locked_at=?, updated_at=? WHERE id=? AND locked_by=?", ts, ts, jobId, instanceId);
     }
 
     public int pauseAllByType(String jobType, String reason, Instant now) {
-        return jdbc.update("UPDATE tb_job SET status='PAUSED', paused_at=?, pause_reason=?, locked_by=NULL, locked_at=NULL, updated_at=? WHERE type=? AND status IN ('PENDING','FAILED')", now, reason, now, jobType);
+        Timestamp ts = Timestamp.from(now);
+        return jdbc.update("UPDATE tb_job SET status='PAUSED', paused_at=?, pause_reason=?, locked_by=NULL, locked_at=NULL, updated_at=? WHERE type=? AND status IN ('PENDING','FAILED')", ts, reason, ts, jobType);
     }
 
     public int resumeAllByType(String jobType, Instant now) {
-        return jdbc.update("UPDATE tb_job SET status='PENDING', paused_at=NULL, pause_reason=NULL, next_retry_at=NULL, updated_at=? WHERE type=? AND status='PAUSED'", now, jobType);
+        return jdbc.update("UPDATE tb_job SET status='PENDING', paused_at=NULL, pause_reason=NULL, next_retry_at=NULL, updated_at=? WHERE type=? AND status='PAUSED'", Timestamp.from(now), jobType);
     }
 }

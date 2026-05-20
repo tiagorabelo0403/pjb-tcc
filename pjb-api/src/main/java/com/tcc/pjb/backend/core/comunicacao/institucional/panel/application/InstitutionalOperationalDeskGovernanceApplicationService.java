@@ -8,6 +8,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import jakarta.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class InstitutionalOperationalDeskGovernanceApplicationService {
 
@@ -15,6 +16,7 @@ public class InstitutionalOperationalDeskGovernanceApplicationService {
     private final InstitutionalOperationalDeskGovernanceAssembler governanceAssembler;
 
     @Inject
+    @Autowired
     public InstitutionalOperationalDeskGovernanceApplicationService() {
         this(new InstitutionalOperationalDeskSupport());
     }

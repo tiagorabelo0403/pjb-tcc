@@ -25,6 +25,7 @@ import com.tcc.pjb.backend.model.entity.enums.PapelProcessualInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import jakarta.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class InstitutionalCatalogGovernanceApplicationService {
 
@@ -33,6 +34,7 @@ public class InstitutionalCatalogGovernanceApplicationService {
     private final Clock clock;
 
     @Inject
+    @Autowired
     public InstitutionalCatalogGovernanceApplicationService(CatalogoInstitucionalUnificadoService catalogo,
                                                             InstitutionalCatalogGovernanceOverlayService overlayService) {
         this(catalogo, overlayService, Clock.systemUTC());

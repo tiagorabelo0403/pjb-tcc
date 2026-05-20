@@ -19,6 +19,7 @@ import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.tribunal.regras.TribunalRuleEngine;
 import jakarta.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class NationalProcessRoutingService {
 
@@ -33,6 +34,7 @@ public class NationalProcessRoutingService {
     private final NationalProcessRoutingMetadataFactory metadataFactory;
 
     @Inject
+    @Autowired
     public NationalProcessRoutingService(TribunalRuleEngine tribunalRuleEngine,
                                          TerritorialRoutingResolver territorialRoutingResolver,
                                          RelationalRoutingResolver relationalRoutingResolver,

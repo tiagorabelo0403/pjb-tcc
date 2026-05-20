@@ -13,16 +13,10 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
 
-@Component
-@ConditionalOnBean(StringRedisTemplate.class)
-@ConditionalOnProperty(name = "pjb.live.cluster.enabled", havingValue = "true")
 public class RedisLiveClusterBus implements LiveClusterBus, MessageListener {
 
     private static final Logger log = LoggerFactory.getLogger(RedisLiveClusterBus.class);

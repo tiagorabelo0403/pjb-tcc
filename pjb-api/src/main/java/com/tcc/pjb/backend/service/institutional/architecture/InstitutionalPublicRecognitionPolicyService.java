@@ -10,6 +10,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import jakarta.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class InstitutionalPublicRecognitionPolicyService {
 
@@ -18,6 +19,7 @@ public class InstitutionalPublicRecognitionPolicyService {
     private final Clock clock;
 
     @Inject
+    @Autowired
     public InstitutionalPublicRecognitionPolicyService() {
         this(Clock.systemUTC());
     }

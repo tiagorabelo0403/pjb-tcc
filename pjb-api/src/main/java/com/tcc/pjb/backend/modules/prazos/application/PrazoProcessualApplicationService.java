@@ -10,11 +10,14 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class PrazoProcessualApplicationService {
 
     private final PrazoProcessualPort port;
     private final PrazoProcessualBoundaryPolicy policy;
+
+    @Autowired
 
     public PrazoProcessualApplicationService(PrazoProcessualPort port) {
         this(port, new PrazoProcessualBoundaryPolicy());

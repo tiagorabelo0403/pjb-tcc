@@ -25,6 +25,7 @@ import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class ProcessoLifecycleMachine {
 
@@ -33,6 +34,7 @@ public class ProcessoLifecycleMachine {
     private final CaseContinuityOrchestratorService caseContinuityOrchestratorService;
 
     @Inject
+    @Autowired
     public ProcessoLifecycleMachine(AtoProcessualCatalogService atoCatalogService,
                                     RitoLifecyclePackRegistry ritoLifecyclePackRegistry,
                                     CaseContinuityOrchestratorService caseContinuityOrchestratorService) {

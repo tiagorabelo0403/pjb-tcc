@@ -15,6 +15,7 @@ import com.tcc.pjb.backend.model.entity.recursalmesh.RecursalAggregateState;
 import com.tcc.pjb.backend.service.notification.NotificationService;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 public class RecursalMeshPartyNotificationService {
 
@@ -40,6 +41,7 @@ public class RecursalMeshPartyNotificationService {
     }
 
     @Inject
+    @Autowired
     public RecursalMeshPartyNotificationService(NotificationService notificationService,
                                                 OutboxPublisher outboxPublisher,
                                                 RecursalMeshSlaService slaService,
