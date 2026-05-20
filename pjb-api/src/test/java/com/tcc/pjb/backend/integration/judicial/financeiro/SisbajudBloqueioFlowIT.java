@@ -7,8 +7,10 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.SisbajudOperacaoRepository;
+import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,8 @@ class SisbajudBloqueioFlowIT extends PjbIntegrationTestBase {
     private SisbajudBloqueioService sisbajudBloqueioService;
     @Autowired
     private SisbajudOperacaoRepository operacaoRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @MockitoBean
     private SisbajudHttpClient sisbajudHttpClient;
@@ -33,8 +37,9 @@ class SisbajudBloqueioFlowIT extends PjbIntegrationTestBase {
 
     @Test
     void devePersistirOperacaoConfirmada() {
-        Usuario usuario = new Usuario();
-        usuario.setId(5L);
+        Usuario usuario = usuarioRepository.save(Usuario.builder()
+                .nome("Operador Sisbajud").email("operador-sisbajud-test").cpf("00000000005").senha("x")
+                .tipoUsuario(TipoUsuario.SERVIDOR_FORUM).perfil("SERVIDOR_FORUM").ativo(true).build());
         org.mockito.Mockito.when(currentUserService.getRequired()).thenReturn(usuario);
         org.mockito.Mockito.when(sisbajudHttpClient.solicitarBloqueio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new com.tcc.pjb.backend.integration.judicial.financeiro.domain.SisbajudHttpResponse("PROTO-1", "ok"));

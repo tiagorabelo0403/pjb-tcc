@@ -2,9 +2,11 @@ package com.tcc.pjb.backend.core.infra.spring;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
+@Lazy(false)
 public class SpringContext implements ApplicationContextAware {
 
     private static volatile ApplicationContext CTX;

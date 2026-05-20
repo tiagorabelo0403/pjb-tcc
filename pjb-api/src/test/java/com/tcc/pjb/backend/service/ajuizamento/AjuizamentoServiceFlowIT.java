@@ -19,6 +19,7 @@ import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.repository.outbox.OutboxEventRepository;
 import com.tcc.pjb.backend.service.AjuizamentoService;
 import com.tcc.pjb.backend.service.exception.ErroDeTetoException;
+import com.tcc.pjb.backend.service.triagem.TriagemNacionalIAEngine;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @TestPropertySource(properties = {
         "spring.cache.type=none",
@@ -46,6 +48,9 @@ class AjuizamentoServiceFlowIT extends PjbIntegrationTestBase {
 
     @Autowired
     private OutboxEventRepository outboxEventRepository;
+
+    @MockitoBean
+    private TriagemNacionalIAEngine triagemNacionalIAEngine;
 
     @Test
     void deveAjuizarEmitirOutboxECriarFilaDeRevisaoDaSecretariaQuandoHouverPendenciaInicial() {

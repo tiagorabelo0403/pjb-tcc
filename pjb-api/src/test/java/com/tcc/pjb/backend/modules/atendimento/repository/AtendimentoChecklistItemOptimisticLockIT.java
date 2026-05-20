@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tcc.pjb.backend.modules.atendimento.entity.AtendimentoChecklistItem;
 import com.tcc.pjb.backend.modules.atendimento.model.AtendimentoChecklistItemKind;
@@ -28,6 +30,7 @@ class AtendimentoChecklistItemOptimisticLockIT {
   EntityManagerFactory emf;
 
   @Test
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
   void concurrent_updates_should_fail_with_optimistic_lock() {
     Instant now = Instant.parse("2026-02-28T12:00:00Z");
 

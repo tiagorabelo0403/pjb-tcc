@@ -7,8 +7,10 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.InfojudConsultaRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -21,6 +23,8 @@ class InfojudConsultaFlowIT extends PjbIntegrationTestBase {
     private InfojudConsultaService infojudConsultaService;
     @Autowired
     private InfojudConsultaRepository infojudConsultaRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @MockitoBean
     private InfojudHttpClient infojudHttpClient;
@@ -31,8 +35,9 @@ class InfojudConsultaFlowIT extends PjbIntegrationTestBase {
 
     @Test
     void devePersistirConsultaConfirmada() {
-        Usuario usuario = new Usuario();
-        usuario.setId(11L);
+        Usuario usuario = usuarioRepository.save(Usuario.builder()
+                .nome("Operador Infojud").email("operador-infojud-test").cpf("00000000011").senha("x")
+                .tipoUsuario(TipoUsuario.SERVIDOR_FORUM).perfil("SERVIDOR_FORUM").ativo(true).build());
         org.mockito.Mockito.when(currentUserService.getRequired()).thenReturn(usuario);
         org.mockito.Mockito.when(infojudHttpClient.consultar(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new com.tcc.pjb.backend.integration.judicial.financeiro.domain.InfojudConsultaResponse("INFO-1", "retorno-ok"));

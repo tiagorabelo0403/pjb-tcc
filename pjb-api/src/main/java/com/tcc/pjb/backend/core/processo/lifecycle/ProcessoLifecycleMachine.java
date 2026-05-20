@@ -132,9 +132,10 @@ public class ProcessoLifecycleMachine {
                     || status == StatusProcesso.EM_ANDAMENTO
                     || status == StatusProcesso.JULGADO;
             case CERTIFICAR_TRANSITO -> status != StatusProcesso.ARQUIVADO;
-            case INICIAR_CUMPRIMENTO -> status == StatusProcesso.TRANSITO_EM_JULGADO
+            case INICIAR_CUMPRIMENTO -> (status == StatusProcesso.TRANSITO_EM_JULGADO
                     || status == StatusProcesso.JULGADO
-                    || status == StatusProcesso.SENTENCA_PROFERIDA;
+                    || status == StatusProcesso.SENTENCA_PROFERIDA)
+                    && (rito == null || !rito.isPenal());
             case ARQUIVAR -> status == StatusProcesso.TRANSITO_EM_JULGADO
                     || status == StatusProcesso.CUMPRIMENTO_SENTENCA
                     || status == StatusProcesso.JULGADO

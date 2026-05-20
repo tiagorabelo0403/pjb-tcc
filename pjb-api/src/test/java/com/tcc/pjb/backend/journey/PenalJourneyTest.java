@@ -12,7 +12,7 @@ import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 
 class PenalJourneyTest extends JourneyTestSupport {
     @Test
-    void deveLevarRitoPenalParaExecucaoAposTransito() {
+    void deveBloquearCumprimentoParaRitoPenalAposTransito() {
         Processo processo = processo(RitoProcessual.TRIBUNAL_JURI, StatusProcesso.SENTENCA_PROFERIDA, FaseProcessual.PRONUNCIA);
         ProcessoLifecycleMachine machine = ProcessoLifecycleMachineTestFactory.standalone();
 
@@ -20,9 +20,11 @@ class PenalJourneyTest extends JourneyTestSupport {
         assertThat(processo.getFaseAtual()).isEqualTo(FaseProcessual.RECURSAL);
 
         machine.apply(processo, ProcessoLifecycleAction.CERTIFICAR_TRANSITO);
-        machine.apply(processo, ProcessoLifecycleAction.INICIAR_CUMPRIMENTO);
+        var decision = machine.apply(processo, ProcessoLifecycleAction.INICIAR_CUMPRIMENTO);
 
-        assertThat(processo.getFaseAtual()).isEqualTo(FaseProcessual.EXECUCAO);
+        assertThat(decision.permitida()).isFalse();
+        assertThat(decision.motivo()).contains("rito penal");
+        assertThat(processo.getFaseAtual()).isEqualTo(FaseProcessual.RECURSAL);
     }
 
     @Test

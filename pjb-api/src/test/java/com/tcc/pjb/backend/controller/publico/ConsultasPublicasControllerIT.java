@@ -12,6 +12,7 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.document.DocumentoPagina;
 import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
+import com.tcc.pjb.backend.model.entity.enums.DocumentoCategoria;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
@@ -92,6 +93,7 @@ class ConsultasPublicasControllerIT extends PjbIntegrationTestBase {
                 .titulo("Acórdão público")
                 .nomeOriginal("acordao-publico.pdf")
                 .nivelSigilo(NivelSigilo.PUBLICO)
+                .categoria(DocumentoCategoria.PUBLICO)
                 .criadoEm(LocalDateTime.of(2026, 4, 16, 10, 0))
                 .build());
 

@@ -8,6 +8,7 @@ import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.document.DocumentoPagina;
 import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.DocumentoCategoria;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
@@ -77,6 +78,7 @@ class ConsultaPublicaSearchFlowIT extends PjbIntegrationTestBase {
                 .titulo("Acórdão de apelação cível")
                 .nomeOriginal("acordao-publico.pdf")
                 .nivelSigilo(NivelSigilo.PUBLICO)
+                .categoria(DocumentoCategoria.PUBLICO)
                 .criadoEm(LocalDateTime.of(2026, 4, 16, 10, 0))
                 .build());
 
@@ -126,6 +128,7 @@ class ConsultaPublicaSearchFlowIT extends PjbIntegrationTestBase {
                 .titulo("Petição inicial")
                 .nomeOriginal("peticao-inicial.pdf")
                 .nivelSigilo(NivelSigilo.PUBLICO)
+                .categoria(DocumentoCategoria.PESSOAL)
                 .criadoEm(LocalDateTime.of(2026, 4, 16, 11, 0))
                 .build());
 

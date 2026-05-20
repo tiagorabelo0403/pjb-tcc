@@ -105,6 +105,10 @@ public class CaseContinuityOrchestratorService {
         CaseContinuityTrack anchorTrack = resolveTrack(processo, action);
         CaseProceedingRole role = Objects.equals(resolution.caseFile().getRootProcessoId(), processo.getId()) ? CaseProceedingRole.ROOT : CaseProceedingRole.VINCULADO;
         boolean dirty = syncAnchor(anchor, processo, role, null, anchorTrack);
+        if (action == ProcessoLifecycleAction.INICIAR_CUMPRIMENTO && anchor.getStatus() == CaseProceedingStatus.RECONCILED) {
+            anchor.setStatus(CaseProceedingStatus.ACTIVE);
+            dirty = true;
+        }
         if (dirty) {
             caseProceedingRepository.save(anchor);
         }

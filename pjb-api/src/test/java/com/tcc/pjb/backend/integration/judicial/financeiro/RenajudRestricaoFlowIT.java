@@ -7,8 +7,10 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.RenajudRestricaoRepository;
+import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -21,6 +23,8 @@ class RenajudRestricaoFlowIT extends PjbIntegrationTestBase {
     private RenajudRestricaoService renajudRestricaoService;
     @Autowired
     private RenajudRestricaoRepository renajudRestricaoRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @MockitoBean
     private RenajudHttpClient renajudHttpClient;
@@ -31,8 +35,9 @@ class RenajudRestricaoFlowIT extends PjbIntegrationTestBase {
 
     @Test
     void devePersistirRestricaoConfirmada() {
-        Usuario usuario = new Usuario();
-        usuario.setId(12L);
+        Usuario usuario = usuarioRepository.save(Usuario.builder()
+                .nome("Operador Renajud").email("operador-renajud-test").cpf("00000000012").senha("x")
+                .tipoUsuario(TipoUsuario.SERVIDOR_FORUM).perfil("SERVIDOR_FORUM").ativo(true).build());
         org.mockito.Mockito.when(currentUserService.getRequired()).thenReturn(usuario);
         org.mockito.Mockito.when(renajudHttpClient.solicitarRestricao(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new com.tcc.pjb.backend.integration.judicial.financeiro.domain.RenajudRestricaoResponse("REN-1", "ok"));
