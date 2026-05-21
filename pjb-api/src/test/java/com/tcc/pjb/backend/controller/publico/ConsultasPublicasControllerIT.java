@@ -155,6 +155,6 @@ class ConsultasPublicasControllerIT extends PjbIntegrationTestBase {
         mockMvc.perform(get("/api/v1/public/consultas-publicas/processos/{numero}", "0009102-22.2026.8.06.0001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resumo.acessoRestrito").value(true))
-                .andExpect(jsonPath("$.resumo.orientacaoAcesso", containsString("advogados habilitados")));
+                .andExpect(jsonPath("$.resumo.orientacaoAcesso", containsString("credencial temporária de sigilo")));
     }
 }

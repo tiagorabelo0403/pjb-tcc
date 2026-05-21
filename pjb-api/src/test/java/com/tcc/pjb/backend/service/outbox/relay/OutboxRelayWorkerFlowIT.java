@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.AopTestUtils;
 
 @TestPropertySource(properties = {
         "pjb.outbox.relay.enabled=true",
@@ -37,9 +38,12 @@ class OutboxRelayWorkerFlowIT extends PjbIntegrationTestBase {
     @MockitoBean
     private KafkaTemplate<String, String> kafkaTemplate;
 
+    private OutboxRelayWorker rawWorker;
+
     @BeforeEach
     void clearOutbox() {
         outboxEventRepository.deleteAll();
+        rawWorker = AopTestUtils.getUltimateTargetObject(outboxRelayWorker);
     }
 
     @Test
@@ -55,7 +59,7 @@ class OutboxRelayWorkerFlowIT extends PjbIntegrationTestBase {
                 Instant.now()
         ));
 
-        outboxRelayWorker.relay();
+        rawWorker.relay();
 
         OutboxEvent result = outboxEventRepository.findById(event.getId()).orElseThrow();
         assertThat(result.getStatus()).isEqualTo(OutboxStatus.DONE);
@@ -80,7 +84,7 @@ class OutboxRelayWorkerFlowIT extends PjbIntegrationTestBase {
                 Instant.now()
         ));
 
-        outboxRelayWorker.relay();
+        rawWorker.relay();
 
         OutboxEvent result = outboxEventRepository.findById(event.getId()).orElseThrow();
         assertThat(result.getStatus()).isEqualTo(OutboxStatus.PENDING);
@@ -108,7 +112,7 @@ class OutboxRelayWorkerFlowIT extends PjbIntegrationTestBase {
         event.markRetry(Instant.now(), "attempt-2");
         outboxEventRepository.save(event);
 
-        outboxRelayWorker.relay();
+        rawWorker.relay();
 
         OutboxEvent result = outboxEventRepository.findById(event.getId()).orElseThrow();
         assertThat(result.getStatus()).isEqualTo(OutboxStatus.FAILED);

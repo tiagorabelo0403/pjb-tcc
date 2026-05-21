@@ -10,7 +10,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,7 +20,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
 @ConditionalOnProperty(prefix = "pjb.outbox.relay", name = "enabled", havingValue = "true")
-@ConditionalOnBean(KafkaTemplate.class)
+@ConditionalOnProperty(name = "pjb.kafka.enabled", havingValue = "true")
 public class OutboxRelayWorker {
 
     private static final Logger log = LoggerFactory.getLogger(OutboxRelayWorker.class);
@@ -55,7 +54,7 @@ public class OutboxRelayWorker {
     private List<UUID> claimBatch() {
         List<UUID> result = tx.execute(status -> {
             List<UUID> ids = repository.claimIdsForUpdate(
-                    OutboxStatus.PENDING.name(), Instant.now(), properties.batchSize());
+                    OutboxStatus.PENDING.name(), properties.batchSize());
             if (ids.isEmpty()) {
                 return ids;
             }

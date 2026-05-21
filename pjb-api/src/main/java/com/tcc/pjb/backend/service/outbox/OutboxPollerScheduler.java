@@ -61,7 +61,7 @@ public class OutboxPollerScheduler {
     Instant now = Instant.now();
 
     List<OutboxEvent> claimed = java.util.Objects.requireNonNullElseGet(tx.execute(status -> {
-      List<UUID> ids = repo.claimIdsForUpdate("PENDING", now, Math.max(1, batchSize * 4));
+      List<UUID> ids = repo.claimIdsForUpdate("PENDING", Math.max(1, batchSize * 4));
       if (ids == null || ids.isEmpty()) {
         return List.of();
       }

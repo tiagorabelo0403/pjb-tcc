@@ -13,14 +13,13 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEvent, UUID> 
 
   @Query(
       value = "select id from tb_outbox_event "
-          + "where status = :status and available_at <= :now "
+          + "where status = :status and available_at <= now() "
           + "order by created_at asc "
           + "limit :limit "
           + "for update skip locked",
       nativeQuery = true)
   List<UUID> claimIdsForUpdate(
       @Param("status") String status,
-      @Param("now") Instant now,
       @Param("limit") int limit);
 
   @Query(
