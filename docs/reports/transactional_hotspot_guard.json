@@ -1,5 +1,5 @@
 {
-  "scannedFiles": 7856,
+  "scannedFiles": 7863,
   "hotspots": [
     {
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\cumprimento\\application\\ProcessoCumprimentoOperacionalApplicationService.java",

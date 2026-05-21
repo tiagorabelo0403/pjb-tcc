@@ -1,11 +1,11 @@
 {
   "summary": {
     "scanRoots": [
-      "pjb-api/src/main/java",
-      "pjb-api/src/test/java"
+      "pjb-api\\src\\main\\java",
+      "pjb-api\\src\\test\\java"
     ],
-    "knownInternalTypes": 10135,
-    "filesScanned": 8335,
+    "knownInternalTypes": 11609,
+    "filesScanned": 9185,
     "unresolvedOccurrences": 0,
     "unresolvedImports": 0,
     "unresolvedReferences": 0

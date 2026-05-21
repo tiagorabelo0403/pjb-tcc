@@ -1,7 +1,7 @@
 # Internal Reference Drift Guard
 
-- Tipos internos conhecidos: **10135**
-- Arquivos varridos: **8335**
+- Tipos internos conhecidos: **11609**
+- Arquivos varridos: **9185**
 - Ocorrências não resolvidas: **0**
 - Imports não resolvidos: **0**
 - Referências não resolvidas: **0**

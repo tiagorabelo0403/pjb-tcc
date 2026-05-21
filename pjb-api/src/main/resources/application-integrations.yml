@@ -30,6 +30,18 @@ pjb:
       request-timeout: ${PJB_GOVBR_REQUEST_TIMEOUT:6s}
       state-ttl: ${PJB_GOVBR_STATE_TTL:5m}
       cleanup-interval: ${PJB_GOVBR_CLEANUP_INTERVAL:3600000}
+    sisbajud:
+      base-url: ${PJB_SISBAJUD_BASE_URL:}
+      token: ${PJB_SISBAJUD_TOKEN:}
+      timeout-seconds: ${PJB_SISBAJUD_TIMEOUT_SECONDS:30}
+    renajud:
+      base-url: ${PJB_RENAJUD_BASE_URL:}
+      token: ${PJB_RENAJUD_TOKEN:}
+      timeout-seconds: ${PJB_RENAJUD_TIMEOUT_SECONDS:30}
+    infojud:
+      base-url: ${PJB_INFOJUD_BASE_URL:}
+      token: ${PJB_INFOJUD_TOKEN:}
+      timeout-seconds: ${PJB_INFOJUD_TIMEOUT_SECONDS:30}
 
   integration:
     n8n:
