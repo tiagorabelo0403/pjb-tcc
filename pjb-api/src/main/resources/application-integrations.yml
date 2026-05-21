@@ -236,6 +236,9 @@ pjb:
     retry-max-tentativas: ${PJB_MNI_RETRY_MAX:5}
     reconciliation-fixed-rate-ms: ${PJB_MNI_RECONCILIATION_RATE_MS:300000}
     reconciliation-batch-size: ${PJB_MNI_RECONCILIATION_BATCH_SIZE:20}
+    base-url: ${PJB_MNI_BASE_URL:}
+    token: ${PJB_MNI_TOKEN:}
+    timeout-seconds: ${PJB_MNI_TIMEOUT_SECONDS:30}
 
   datajud:
     feed:
@@ -244,6 +247,9 @@ pjb:
       scheduler-fixed-rate-ms: ${PJB_DATAJUD_FEED_SCHEDULER_RATE_MS:300000}
       max-batches-per-run: ${PJB_DATAJUD_FEED_MAX_BATCHES_PER_RUN:3}
       tribunais: ${PJB_DATAJUD_FEED_TRIBUNAIS:CNJ}
+      base-url: ${PJB_DATAJUD_FEED_BASE_URL:}
+      api-key: ${PJB_DATAJUD_FEED_API_KEY:}
+      timeout-seconds: ${PJB_DATAJUD_FEED_TIMEOUT_SECONDS:30}
 
   dje:
     enabled: ${PJB_DJE_ENABLED:false}
