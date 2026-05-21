@@ -50,7 +50,7 @@ class UsuarioServiceTest {
 
         UsuarioRequest dto = new UsuarioRequest();
         dto.setCpf("000.000.000-00");
-        dto.setEmail("teste@pjb.br");
+        dto.setEmail("teste@test.local");
 
         assertThatThrownBy(() -> service.criarUsuario(dto))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -61,11 +61,11 @@ class UsuarioServiceTest {
     void deveLancarExcecaoQuandoEmailJaCadastrado() {
         when(documentoNacionalValidator.normalizarDocumento("12345678909")).thenReturn("12345678909");
         when(documentoNacionalValidator.cpfValido("12345678909")).thenReturn(true);
-        when(usuarioRepository.findByEmail("duplicado@pjb.br")).thenReturn(Optional.of(new Usuario()));
+        when(usuarioRepository.findByEmail("duplicado@test.local")).thenReturn(Optional.of(new Usuario()));
 
         UsuarioRequest dto = new UsuarioRequest();
         dto.setCpf("12345678909");
-        dto.setEmail("duplicado@pjb.br");
+        dto.setEmail("duplicado@test.local");
 
         assertThatThrownBy(() -> service.criarUsuario(dto))
                 .isInstanceOf(RecursoJaExistenteException.class)
@@ -76,12 +76,12 @@ class UsuarioServiceTest {
     void deveLancarExcecaoQuandoCpfJaCadastrado() {
         when(documentoNacionalValidator.normalizarDocumento("12345678909")).thenReturn("12345678909");
         when(documentoNacionalValidator.cpfValido("12345678909")).thenReturn(true);
-        when(usuarioRepository.findByEmail("novo@pjb.br")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail("novo@test.local")).thenReturn(Optional.empty());
         when(usuarioRepository.findByCpf("12345678909")).thenReturn(Optional.of(new Usuario()));
 
         UsuarioRequest dto = new UsuarioRequest();
         dto.setCpf("12345678909");
-        dto.setEmail("novo@pjb.br");
+        dto.setEmail("novo@test.local");
 
         assertThatThrownBy(() -> service.criarUsuario(dto))
                 .isInstanceOf(RecursoJaExistenteException.class)
@@ -92,7 +92,7 @@ class UsuarioServiceTest {
     void deveLancarExcecaoQuandoAdvogadoNaoInformarOab() {
         when(documentoNacionalValidator.normalizarDocumento("12345678909")).thenReturn("12345678909");
         when(documentoNacionalValidator.cpfValido("12345678909")).thenReturn(true);
-        when(usuarioRepository.findByEmail("adv@pjb.br")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail("adv@test.local")).thenReturn(Optional.empty());
         when(usuarioRepository.findByCpf("12345678909")).thenReturn(Optional.empty());
 
         Usuario advogado = new Usuario();
@@ -101,7 +101,7 @@ class UsuarioServiceTest {
 
         UsuarioRequest dto = new UsuarioRequest();
         dto.setCpf("12345678909");
-        dto.setEmail("adv@pjb.br");
+        dto.setEmail("adv@test.local");
 
         assertThatThrownBy(() -> service.criarUsuario(dto))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -112,7 +112,7 @@ class UsuarioServiceTest {
     void deveCriarUsuarioBemSucedido() {
         when(documentoNacionalValidator.normalizarDocumento("12345678909")).thenReturn("12345678909");
         when(documentoNacionalValidator.cpfValido("12345678909")).thenReturn(true);
-        when(usuarioRepository.findByEmail("servidor@pjb.br")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail("servidor@test.local")).thenReturn(Optional.empty());
         when(usuarioRepository.findByCpf("12345678909")).thenReturn(Optional.empty());
 
         Usuario entidade = new Usuario();
@@ -128,11 +128,11 @@ class UsuarioServiceTest {
 
         UsuarioRequest dto = new UsuarioRequest();
         dto.setCpf("12345678909");
-        dto.setEmail("servidor@pjb.br");
+        dto.setEmail("servidor@test.local");
 
         service.criarUsuario(dto);
 
-        verify(usuarioRepository).findByEmail("servidor@pjb.br");
+        verify(usuarioRepository).findByEmail("servidor@test.local");
         verify(identidadeJuridicaNacionalService).sincronizarUsuario(any());
     }
 

@@ -5,7 +5,9 @@ import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.versioning.ApiVersion;
 import com.tcc.pjb.backend.service.processual.acceleration.trabalhista.TrabalhistaDejtPublicationReadinessService;
 import com.tcc.pjb.backend.service.processual.acceleration.trabalhista.TrabalhistaExecucaoFastTrackService;
+import com.tcc.pjb.backend.service.trabalhista.VerbaRescisoriaCltChecklistService;
 import jakarta.validation.Valid;
+import java.util.Objects;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -20,14 +22,17 @@ public class TrabalhistaController {
 
     private final TrabalhistaDejtPublicationReadinessService dejtService;
     private final TrabalhistaExecucaoFastTrackService fastTrackService;
+    private final VerbaRescisoriaCltChecklistService verbaRescisoriaCltChecklistService;
     private final CapabilityRateLimiter rateLimiter;
 
     public TrabalhistaController(TrabalhistaDejtPublicationReadinessService dejtService,
                                  TrabalhistaExecucaoFastTrackService fastTrackService,
+                                 VerbaRescisoriaCltChecklistService verbaRescisoriaCltChecklistService,
                                  CapabilityRateLimiter rateLimiter) {
-        this.dejtService = dejtService;
-        this.fastTrackService = fastTrackService;
-        this.rateLimiter = rateLimiter;
+        this.dejtService = Objects.requireNonNull(dejtService);
+        this.fastTrackService = Objects.requireNonNull(fastTrackService);
+        this.verbaRescisoriaCltChecklistService = Objects.requireNonNull(verbaRescisoriaCltChecklistService);
+        this.rateLimiter = Objects.requireNonNull(rateLimiter);
     }
 
     @PostMapping("/dejt-readiness")
@@ -46,5 +51,14 @@ public class TrabalhistaController {
             Authentication authentication) {
         rateLimiter.enforce(CapabilityRateLimitDomain.JURIDICA, authentication, "trabalhista_execucao_fast_track", ApiVersion.V1);
         return ResponseEntity.ok(fastTrackService.avaliar(input));
+    }
+
+    @PostMapping("/verbas-rescisorias")
+    @PreAuthorize("hasAnyRole('ADVOGADO','DEFENSOR_PUBLICO','MAGISTRADO','JUIZ','SERVIDOR_FORUM')")
+    public ResponseEntity<VerbaRescisoriaCltChecklistService.VerbaRescisoriaCltResult> verbas(
+            @Valid @RequestBody VerbaRescisoriaCltChecklistService.VerbaRescisoriaCltInput input,
+            Authentication authentication) {
+        rateLimiter.enforce(CapabilityRateLimitDomain.JURIDICA, authentication, "trabalhista_verbas_rescisoriias", ApiVersion.V1);
+        return ResponseEntity.ok(verbaRescisoriaCltChecklistService.avaliar(input));
     }
 }
