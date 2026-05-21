@@ -30,14 +30,12 @@ class InfojudConsultaFlowIT extends PjbIntegrationTestBase {
     private InfojudHttpClient infojudHttpClient;
     @MockitoBean
     private com.tcc.pjb.backend.core.security.CurrentUserService currentUserService;
-    @MockitoBean
-    private com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService authorizationService;
 
     @Test
     void devePersistirConsultaConfirmada() {
         Usuario usuario = usuarioRepository.save(Usuario.builder()
-                .nome("Operador Infojud").email("operador-infojud-test").cpf("00000000011").senha("x")
-                .tipoUsuario(TipoUsuario.SERVIDOR_FORUM).perfil("SERVIDOR_FORUM").ativo(true).build());
+                .nome("Juiz Infojud").email("juiz-infojud-test").cpf("00000000011").senha("x")
+                .tipoUsuario(TipoUsuario.JUIZ_ESTADUAL).perfil("JUIZ_ESTADUAL").ativo(true).build());
         org.mockito.Mockito.when(currentUserService.getRequired()).thenReturn(usuario);
         org.mockito.Mockito.when(infojudHttpClient.consultar(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new com.tcc.pjb.backend.integration.judicial.financeiro.domain.InfojudConsultaResponse("INFO-1", "retorno-ok"));

@@ -32,14 +32,12 @@ class SisbajudBloqueioFlowIT extends PjbIntegrationTestBase {
     private SisbajudHttpClient sisbajudHttpClient;
     @MockitoBean
     private com.tcc.pjb.backend.core.security.CurrentUserService currentUserService;
-    @MockitoBean
-    private com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService authorizationService;
 
     @Test
     void devePersistirOperacaoConfirmada() {
         Usuario usuario = usuarioRepository.save(Usuario.builder()
-                .nome("Operador Sisbajud").email("operador-sisbajud-test").cpf("00000000005").senha("x")
-                .tipoUsuario(TipoUsuario.SERVIDOR_FORUM).perfil("SERVIDOR_FORUM").ativo(true).build());
+                .nome("Juiz Sisbajud").email("juiz-sisbajud-test").cpf("00000000005").senha("x")
+                .tipoUsuario(TipoUsuario.JUIZ_ESTADUAL).perfil("JUIZ_ESTADUAL").ativo(true).build());
         org.mockito.Mockito.when(currentUserService.getRequired()).thenReturn(usuario);
         org.mockito.Mockito.when(sisbajudHttpClient.solicitarBloqueio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new com.tcc.pjb.backend.integration.judicial.financeiro.domain.SisbajudHttpResponse("PROTO-1", "ok"));

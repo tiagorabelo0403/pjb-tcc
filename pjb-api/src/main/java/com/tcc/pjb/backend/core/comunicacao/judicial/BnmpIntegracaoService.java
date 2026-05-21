@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -65,8 +65,8 @@ public class BnmpIntegracaoService {
             Long processoId,
             String numeroUnificado,
             TipoMandadoPrisao tipo,
-            String nomePreso,
-            String cpfPreso,
+            @JsonIgnore String nomePreso,
+            @JsonIgnore String cpfPreso,
             String rg,
             String dataExpedicao,
             String juizExpedidor,
@@ -147,7 +147,7 @@ public class BnmpIntegracaoService {
     }
 
     @Transactional
-    public CompletableFuture<RegistroBnmp> registrar(MandadoPrisaoPjb mandado) {
+    public RegistroBnmp registrar(MandadoPrisaoPjb mandado) {
         Objects.requireNonNull(mandado, "mandado");
         return executionOrchestrator.supply(PjbExecutionDescriptor.externalIo("bnmp-integracao.registrar", Duration.ofSeconds(TIMEOUT_SEG)), () -> {
             String payloadJson = serializarMandado(mandado);
@@ -179,11 +179,11 @@ public class BnmpIntegracaoService {
             );
             log.info("[BNMP] Mandado {}. processo={} numeroBnmp={}", status, mandado.processoId(), numeroBnmp);
             return registro;
-        });
+        }).join();
     }
 
     @Transactional
-    public CompletableFuture<RegistroBnmp> processarCumprimento(EventoCumprimentoBnmp evento) {
+    public RegistroBnmp processarCumprimento(EventoCumprimentoBnmp evento) {
         Objects.requireNonNull(evento, "evento");
         return executionOrchestrator.supply(PjbExecutionDescriptor.externalIo("bnmp-integracao.processar-cumprimento", Duration.ofSeconds(TIMEOUT_SEG)), () -> {
             RegistroBnmp registro = consultarPorNumeroBnmp(evento.numeroBnmp()).orElse(null);
@@ -215,7 +215,7 @@ public class BnmpIntegracaoService {
             notificarJuizCumprimento(registro.processoId(), evento);
             log.info("[BNMP] Cumprimento processado. numeroBnmp={} processo={}", evento.numeroBnmp(), registro.processoId());
             return atualizado;
-        });
+        }).join();
     }
 
     @Transactional

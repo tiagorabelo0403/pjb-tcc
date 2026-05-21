@@ -9,6 +9,7 @@ import com.tcc.pjb.backend.integration.judicial.financeiro.domain.InfojudConsult
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -78,7 +79,7 @@ public class InfojudConsultaService {
             consultaRepository.save(entity);
             rawPolicy.markWrite();
             auditLedger.appendSafely("INFOJUD_CONSULTA_OK", "PROCESSO", String.valueOf(processo.getId()),
-                    "protocolo=" + response.protocolo() + " alvo=" + request.cpfCnpjConsultado());
+                    "protocolo=" + response.protocolo() + " alvo=" + Hashes.sha256HexPrefix(request.cpfCnpjConsultado(), 8));
             return InfojudConsultaResult.success(entity.getId(), response.protocolo(), response.resumoRetorno());
         } catch (Exception e) {
             entity.setStatus("FAILED");

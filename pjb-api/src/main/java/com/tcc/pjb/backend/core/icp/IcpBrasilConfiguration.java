@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class IcpBrasilConfiguration {
 
     @Bean
-    public IcpBrasilOcspVerifier icpBrasilOcspVerifier() {
-        return certificate -> com.tcc.pjb.backend.core.icp.domain.IcpBrasilOcspResult.good();
+    public IcpBrasilOcspVerifier icpBrasilOcspVerifier(IcpBrasilTrustAnchorLoader trustAnchorLoader) {
+        return new IcpBrasilPkixOcspVerifier(trustAnchorLoader);
     }
 }

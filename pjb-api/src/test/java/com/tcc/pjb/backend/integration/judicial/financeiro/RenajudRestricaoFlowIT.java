@@ -30,14 +30,12 @@ class RenajudRestricaoFlowIT extends PjbIntegrationTestBase {
     private RenajudHttpClient renajudHttpClient;
     @MockitoBean
     private com.tcc.pjb.backend.core.security.CurrentUserService currentUserService;
-    @MockitoBean
-    private com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService authorizationService;
 
     @Test
     void devePersistirRestricaoConfirmada() {
         Usuario usuario = usuarioRepository.save(Usuario.builder()
-                .nome("Operador Renajud").email("operador-renajud-test").cpf("00000000012").senha("x")
-                .tipoUsuario(TipoUsuario.SERVIDOR_FORUM).perfil("SERVIDOR_FORUM").ativo(true).build());
+                .nome("Juiz Renajud").email("juiz-renajud-test").cpf("00000000012").senha("x")
+                .tipoUsuario(TipoUsuario.JUIZ_ESTADUAL).perfil("JUIZ_ESTADUAL").ativo(true).build());
         org.mockito.Mockito.when(currentUserService.getRequired()).thenReturn(usuario);
         org.mockito.Mockito.when(renajudHttpClient.solicitarRestricao(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new com.tcc.pjb.backend.integration.judicial.financeiro.domain.RenajudRestricaoResponse("REN-1", "ok"));
