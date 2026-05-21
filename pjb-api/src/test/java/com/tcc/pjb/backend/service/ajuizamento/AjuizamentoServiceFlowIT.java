@@ -33,7 +33,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @TestPropertySource(properties = {
         "spring.cache.type=none",
-        "pjb.workflow.enabled=false"
+        "pjb.workflow.enabled=false",
+        "pjb.outbox.ingress.enabled=false"
 })
 class AjuizamentoServiceFlowIT extends PjbIntegrationTestBase {
 
