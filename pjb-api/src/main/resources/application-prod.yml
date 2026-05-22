@@ -114,6 +114,8 @@ pjb:
   procedural:
     bootstrap:
       strict-connector-registry: ${PJB_PROCEDURAL_BOOTSTRAP_STRICT_CONNECTOR_REGISTRY:true}
+      fail-fast: ${PJB_PROCEDURAL_BOOTSTRAP_FAIL_FAST:true}
+      validate-legacy-boundary: ${PJB_PROCEDURAL_BOOTSTRAP_VALIDATE_LEGACY_BOUNDARY:true}
   datasource:
     budget:
       enabled: ${PJB_DB_BUDGET_ENABLED:true}
@@ -497,7 +499,3 @@ pjb:
   cache:
     redis:
       enabled: ${PJB_CACHE_REDIS_ENABLED:false}
-  procedural:
-    bootstrap:
-      fail-fast: ${PJB_PROCEDURAL_BOOTSTRAP_FAIL_FAST:true}
-      validate-legacy-boundary: ${PJB_PROCEDURAL_BOOTSTRAP_VALIDATE_LEGACY_BOUNDARY:true}

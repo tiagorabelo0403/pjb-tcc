@@ -10,6 +10,7 @@ final class ApiSurfaceTestSupport {
 
     static final Path MAIN_JAVA = Path.of("src/main/java");
     static final Path APPLICATION_YML = Path.of("src/main/resources/application.yml");
+    static final Path API_GOVERNANCE_YML = Path.of("src/main/resources/application-api-governance.yml");
 
     private ApiSurfaceTestSupport() {
     }
@@ -33,6 +34,6 @@ final class ApiSurfaceTestSupport {
     }
 
     static String applicationYaml() {
-        return read(APPLICATION_YML);
+        return read(APPLICATION_YML) + "\n" + read(API_GOVERNANCE_YML);
     }
 }

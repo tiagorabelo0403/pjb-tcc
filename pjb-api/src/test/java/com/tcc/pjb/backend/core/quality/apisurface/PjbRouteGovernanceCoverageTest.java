@@ -10,7 +10,8 @@ class PjbRouteGovernanceCoverageTest {
 
     @Test
     void routeGovernanceMustCoverPublicCatalogProntuarioMarketplaceAndInternalAudit() throws Exception {
-        String content = Files.readString(Path.of("src/main/resources/application.yml"));
+        String content = Files.readString(Path.of("src/main/resources/application.yml"))
+                + "\n" + Files.readString(Path.of("src/main/resources/application-api-governance.yml"));
         assertTrue(content.contains("- name: public-catalog-ui-readonly"));
         assertTrue(content.contains("/api/v1/catalog/**"));
         assertTrue(content.contains("/api/v1/ui/**"));

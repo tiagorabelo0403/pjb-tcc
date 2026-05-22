@@ -487,9 +487,10 @@ Compilar + guards Python verdes + suíte sem regressão + contratos públicos pr
 ```
 GET /admin/governance/codebase-learning
 GET /admin/governance/codebase-learning?refresh=true
+GET /admin/governance/sanidade-aprendizado
 ```
 
-Expõe leitura viva do estado estrutural: hotspots do core, trilhas de extração, blueprints arquiteturais, fluxos críticos ponta a ponta e razão de cobertura por bounded context. O snapshot tem TTL curto; use `refresh=true` para forçar revarredura sem reiniciar a aplicação.
+Expõe leitura viva do estado estrutural: hotspots do core, trilhas internas de extração do core, blueprints de extração e fluxos críticos ponta a ponta e razão de cobertura por bounded context. O snapshot em memória tem TTL curto; use `refresh=true` para forçar revarredura sem reiniciar a aplicação.
 
 ```
 GET /admin/governance/health-matrix

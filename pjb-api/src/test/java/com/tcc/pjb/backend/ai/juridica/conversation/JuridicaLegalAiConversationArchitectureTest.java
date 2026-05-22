@@ -246,7 +246,8 @@ class JuridicaLegalAiConversationArchitectureTest {
         assertTrue(pact.contains("evidenceProvenanceTier"));
         Path scriptsRoot = PjbTestPaths.projectRoot().resolve("scripts/legal_ai_surface_split_guard.py");
         assertTrue(Files.exists(scriptsRoot));
-        String yaml = Files.readString(configRoot);
+        String yaml = Files.readString(configRoot)
+                + Files.readString(configRoot.resolveSibling("application-api-governance.yml"));
         assertTrue(yaml.contains("name: legal-ai-governed-surfaces"));
         assertTrue(yaml.contains("/api/ai/legal/conversation"));
         assertTrue(yaml.contains("PJB_API_ROUTE_GOVERNANCE_LEGAL_AI_SURFACE_RATE_LIMIT"));

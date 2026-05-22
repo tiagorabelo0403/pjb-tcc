@@ -26,7 +26,7 @@ class SecurityConfigurationProfilesBindingTest {
 
     @Test
     void shouldBindBaseSecurityConfigurationFromApplicationYaml() throws Exception {
-        ConfigurableEnvironment env = loadEnvironment("application.yml", "application-security.yml");
+        ConfigurableEnvironment env = loadEnvironment("application.yml", "application-security.yml", "application-api-governance.yml");
 
         assertEquals("v1", env.getProperty("pjb.security.policy.version"));
         assertEquals("true", env.getProperty("pjb.security.perimeter.enabled"));
@@ -79,7 +79,7 @@ class SecurityConfigurationProfilesBindingTest {
     @Test
     void shouldKeepSecurityPolicyAndRedisStoresAlignedAcrossProdAndDocker() throws Exception {
         for (String profileFile : List.of("application-prod.yml", "application-docker.yml")) {
-            ConfigurableEnvironment env = loadEnvironment("application.yml", profileFile);
+            ConfigurableEnvironment env = loadEnvironment("application.yml", "application-api-governance.yml", profileFile);
             PolicyProperties policy = bind(env, "pjb.security.policy", PolicyProperties.class);
             SecurityPerimeterProperties perimeter = bind(env, "pjb.security.perimeter", SecurityPerimeterProperties.class);
             ApiRequestOriginGovernanceProperties originGovernance = bind(env, "pjb.security.perimeter.origin-governance", ApiRequestOriginGovernanceProperties.class);
