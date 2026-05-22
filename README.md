@@ -533,3 +533,9 @@ docs/product/NATIONAL_JUDICIAL_SYSTEM_REPLACEMENT_INDEX.json
 | **JEC** | Juizado Especial Cível |
 | **JEF** | Juizado Especial Federal |
 | **JEFP** | Juizado Especial da Fazenda Pública |
+
+---
+
+## Próximos passos
+
+O backend cobre integralmente os bounded contexts descritos neste documento. A camada de frontend — interface web para magistrados, servidores, advogados e partes — está em desenvolvimento e será integrada ao backend via as APIs documentadas em `/swagger-ui/index.html` e `/v3/api-docs`.
