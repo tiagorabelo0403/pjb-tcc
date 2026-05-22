@@ -21,7 +21,7 @@ Os sistemas atuais (PJe, e-SAJ, eProc) acumulam décadas de débito técnico: ro
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Banco | PostgreSQL com Row Level Security por operação |
 | Banco de testes | H2 em memória |
-| Migrations | Flyway — 258 versões (V0–V258) |
+| Migrations | Flyway — 243 migrations (V0–V280) |
 | Persistência | JPA/Hibernate |
 | Segurança | Spring Security, ABAC, Gov.br, ICP-Brasil |
 | Resiliência | Resilience4j — Circuit Breaker, Bulkhead, Retry, Timeout |
@@ -176,7 +176,7 @@ Bounded concurrency via `PjbBoundedExecutorService`. Structured Concurrency para
 
 ## Banco de dados
 
-258 migrations Flyway em sequência numerada (V0–V258). Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento.
+243 migrations Flyway (V0–V280). Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento.
 
 ```sql
 -- Exemplo de política RLS para processo sigiloso
@@ -232,7 +232,7 @@ O script:
 Após subir, acesse:
 - **`http://localhost:8080/livez`** — liveness check
 - **`http://localhost:8080/demo/status`** — estatísticas em tempo real (usuários, processos, documentos)
-- **`http://localhost:8080/swagger-ui.html`** — documentação de API
+- **`http://localhost:8080/swagger-ui/index.html`** — documentação de API
 
 Ao iniciar com o profile `docker`, o sistema semeará automaticamente 4 usuários e 3 processos de demonstração para que os dados apareçam imediatamente.
 
