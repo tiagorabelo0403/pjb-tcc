@@ -1,1 +1,1 @@
-# Sem dependências de terceiros no momento. O tooling usa a biblioteca padrão do Python.
+pyyaml>=6.0

@@ -42,7 +42,7 @@ public class OpsPruningScheduler {
           ts
       );
       int idem = jdbc.update(
-          "delete from tb_idempotency_action where status = 'COMPLETED' and created_at < ?",
+          "delete from tb_idempotency where status = 'COMPLETED' and created_at < ?",
           ts
       );
       log.info("Prune ok: outbox={} idempotency={} retentionDays={}", outbox, idem, retention.toDays());

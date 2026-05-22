@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.governance.idempotency.cleanup;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -67,6 +68,6 @@ public class IdempotencyCleanupScheduler {
                 ") " +
                 "delete from tb_request_idempotency t using cte where t.request_hash = cte.request_hash";
 
-        return jdbc.update(sql, threshold, batchSize);
+        return jdbc.update(sql, Timestamp.from(threshold), batchSize);
     }
 }

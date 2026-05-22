@@ -65,7 +65,6 @@ spring:
     open-in-view: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           batch_size: ${PJB_JPA_BATCH_SIZE:64}
           fetch_size: ${PJB_JPA_FETCH_SIZE:100}
