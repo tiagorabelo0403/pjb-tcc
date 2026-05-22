@@ -61,10 +61,10 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
             LEFT JOIN p.jurisdicao j
             WHERE (:excludeId IS NULL OR p.id <> :excludeId)
               AND (:tribunal IS NULL OR :tribunal = ''
-                    OR UPPER(COALESCE(p.tribunal, '')) = UPPER(:tribunal)
-                    OR UPPER(COALESCE(j.codigo, '')) = UPPER(:tribunal)
-                    OR UPPER(COALESCE(j.sigla, '')) = UPPER(:tribunal))
-              AND (:classe IS NULL OR :classe = '' OR UPPER(COALESCE(p.classeProcessual, '')) = UPPER(:classe))
+                    OR UPPER(p.tribunal) = UPPER(:tribunal)
+                    OR UPPER(j.codigo) = UPPER(:tribunal)
+                    OR UPPER(j.sigla) = UPPER(:tribunal))
+              AND (:classe IS NULL OR :classe = '' OR UPPER(p.classeProcessual) = UPPER(:classe))
               AND (:assunto IS NULL OR :assunto = ''
                     OR LOWER(COALESCE(p.assunto, '')) LIKE LOWER(CONCAT('%', :assunto, '%'))
                     OR LOWER(:assunto) LIKE LOWER(CONCAT('%', COALESCE(p.assunto, ''), '%')))
@@ -93,7 +93,7 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
             WHERE p.ramoDireito IS NOT NULL
               AND p.statusProcesso NOT IN :statusIgnorados
               AND p.id > :lastProcessoId
-              AND UPPER(COALESCE(p.tribunal, '')) = UPPER(:tribunalCodigo)
+              AND UPPER(p.tribunal) = UPPER(:tribunalCodigo)
             ORDER BY p.id ASC
             """)
     Slice<Processo> findDataJudFeedBatch(@Param("lastProcessoId") Long lastProcessoId,

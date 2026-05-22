@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.platform.jusos.v2.jurimetria;
 import com.tcc.pjb.backend.ai.jurimetria.JurimetriaService;
 import com.tcc.pjb.backend.ai.jurimetria.model.JurimetriaReport;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.processo.analytics.application.ProcessoAnalyticsAggregationService;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.dto.ui.UiToken;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -186,6 +187,7 @@ public class JurimetriaEngine {
     ) {}
 
     private final ProcessoRepository processoRepository;
+    private final ProcessoAnalyticsAggregationService analyticsService;
     private final JurimetriaService jurimetriaService;
     private final JurisprudenciaService jurisprudenciaService;
     private final NationalRulePackEngine rulePackEngine;
@@ -199,6 +201,7 @@ public class JurimetriaEngine {
     private final JurimetriaNarrativeSupport narrativeSupport;
 
     public JurimetriaEngine(ProcessoRepository processoRepository,
+                            ProcessoAnalyticsAggregationService analyticsService,
                             JurimetriaService jurimetriaService,
                             JurisprudenciaService jurisprudenciaService,
                             NationalRulePackEngine rulePackEngine,
@@ -211,6 +214,7 @@ public class JurimetriaEngine {
                             JurimetriaRiskAnalysisSupport riskAnalysisSupport,
                             JurimetriaNarrativeSupport narrativeSupport) {
         this.processoRepository = processoRepository;
+        this.analyticsService = Objects.requireNonNull(analyticsService, "analyticsService");
         this.jurimetriaService = jurimetriaService;
         this.jurisprudenciaService = jurisprudenciaService;
         this.rulePackEngine = rulePackEngine;
@@ -232,7 +236,7 @@ public class JurimetriaEngine {
         String tribunal = resolverTribunal(alvo);
         TribunalFonte fonteTribunal = resolverFonteTribunal(tribunal, ramo, grau);
 
-        BaseLocalAnalitica baseLocal = aggregationSupport.carregarBaseLocal(processoRepository, ramo, grau, tribunal);
+        BaseLocalAnalitica baseLocal = aggregationSupport.carregarBaseLocal(analyticsService, ramo, grau, tribunal);
         JurimetriaReport relatorioIA = gerarRelatorioIA(alvo, tribunal);
         NationalRulePackEngine.ResultadoRegras regras = aplicarRegras(alvo, ramo, grau, tribunal);
         List<Precedente> precedentes = buscarPrecedentes(alvo, fonteTribunal, ramo);

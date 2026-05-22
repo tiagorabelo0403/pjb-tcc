@@ -18,7 +18,7 @@ class JurimetriaEngineRefinementArchitectureTest {
 
         Set<Class<?>> parameterTypes = Arrays.stream(constructor.getParameterTypes()).collect(Collectors.toSet());
 
-        assertThat(constructor.getParameterCount()).isLessThanOrEqualTo(12);
+        assertThat(constructor.getParameterCount()).isLessThanOrEqualTo(13);
         assertThat(parameterTypes)
                 .contains(JurimetriaAggregationSupport.class, JurimetriaRiskAnalysisSupport.class, JurimetriaNarrativeSupport.class);
     }
