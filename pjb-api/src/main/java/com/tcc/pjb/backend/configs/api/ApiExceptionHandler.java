@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Locale;
 import com.tcc.pjb.backend.core.moderation.ContentBlockedException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -365,7 +366,14 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ProblemDetail> handleGeneric(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ProblemDetail> handleGeneric(Exception ex, HttpServletRequest request, HttpServletResponse response) {
+        if (response.isCommitted()) {
+            return null;
+        }
+        String ct = response.getContentType();
+        if (ct != null && !ct.startsWith("application/json") && !ct.startsWith("application/problem")) {
+            response.reset();
+        }
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "internal_error", "Erro interno.", request, calculoFrontendExtra(request, null));
     }
 
