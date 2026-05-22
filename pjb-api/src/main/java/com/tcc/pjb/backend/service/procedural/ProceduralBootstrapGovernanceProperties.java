@@ -10,8 +10,10 @@ public class ProceduralBootstrapGovernanceProperties {
     private boolean enabled = true;
     private boolean failFast = false;
     private boolean validateLegacyBoundary = true;
+    private boolean strictConnectorRegistry = false;
     private int maxViolations = 50;
     private List<String> failFastProfiles = new ArrayList<>(List.of("prod"));
+    private List<String> strictConnectorRegistryProfiles = new ArrayList<>(List.of("prod", "strict"));
     private List<String> sourceRoots = new ArrayList<>(List.of("src/main/java"));
 
     public boolean isEnabled() {
@@ -38,6 +40,14 @@ public class ProceduralBootstrapGovernanceProperties {
         this.validateLegacyBoundary = validateLegacyBoundary;
     }
 
+    public boolean isStrictConnectorRegistry() {
+        return strictConnectorRegistry;
+    }
+
+    public void setStrictConnectorRegistry(boolean strictConnectorRegistry) {
+        this.strictConnectorRegistry = strictConnectorRegistry;
+    }
+
     public int getMaxViolations() {
         return maxViolations;
     }
@@ -52,6 +62,14 @@ public class ProceduralBootstrapGovernanceProperties {
 
     public void setFailFastProfiles(List<String> failFastProfiles) {
         this.failFastProfiles = sanitizeList(failFastProfiles, List.of("prod"));
+    }
+
+    public List<String> getStrictConnectorRegistryProfiles() {
+        return List.copyOf(strictConnectorRegistryProfiles);
+    }
+
+    public void setStrictConnectorRegistryProfiles(List<String> strictConnectorRegistryProfiles) {
+        this.strictConnectorRegistryProfiles = sanitizeList(strictConnectorRegistryProfiles, List.of("prod", "strict"));
     }
 
     public List<String> getSourceRoots() {

@@ -6,6 +6,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import com.tcc.pjb.backend.PjbIntegrationTestBase;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FlywayPostgresMigrationIT {
 
     @Container
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
+    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(PjbIntegrationTestBase.POSTGRES_IMAGE)
             .withDatabaseName("pjb")
             .withUsername("pjb")
             .withPassword("pjb");

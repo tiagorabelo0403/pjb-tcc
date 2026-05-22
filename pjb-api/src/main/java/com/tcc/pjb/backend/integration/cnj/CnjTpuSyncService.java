@@ -157,8 +157,9 @@ public class CnjTpuSyncService {
     }
 
     public boolean isFresh() {
-        TpuCatalogSnapshot snap = currentSnapshot.get();
-        return snap != null && snap.isFresh(Duration.ofHours(Math.max(1, maxAgeHours)));
+        return currentSnapshot()
+                .map(snap -> snap.isFresh(Duration.ofHours(Math.max(1, maxAgeHours))))
+                .orElse(false);
     }
 
     public Instant lastSyncAttempt() { return lastSyncAttempt.get(); }
@@ -166,8 +167,7 @@ public class CnjTpuSyncService {
 
     
     public DivergenceReport checkDivergence() {
-        TpuCatalogSnapshot snapshot = currentSnapshot.get();
-        TpuCatalogSnapshot effectiveSnapshot = snapshot == null ? buildFromLocal() : snapshot;
+        TpuCatalogSnapshot effectiveSnapshot = currentSnapshot().orElseGet(this::buildFromLocal);
 
         Map<Integer, TpuClasseCnj> localByCode = new LinkedHashMap<>();
         Map<String, TpuClasseCnj> localByNormalizedName = new LinkedHashMap<>();
@@ -244,7 +244,7 @@ public class CnjTpuSyncService {
     }
 
     public Map<String, Object> health() {
-        TpuCatalogSnapshot snap = currentSnapshot.get();
+        TpuCatalogSnapshot snap = currentSnapshot().orElse(null);
         Map<String, Object> h = new LinkedHashMap<>();
         h.put("syncEnabled", syncEnabled);
         h.put("hasSnapshot", snap != null);

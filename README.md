@@ -262,6 +262,13 @@ Para parar: `docker compose down`
 docker compose up -d
 ```
 
+**Backend local em Docker:**
+```bash
+docker compose --profile app up -d --build
+```
+
+O serviço `backend` fica no profile `app`; sem esse profile, o Compose sobe apenas a infraestrutura. Se houver PostgreSQL local usando `5432`, use `PJB_PG_PORT=5433` no `.env`; o backend em Docker continua acessando `postgres:5432` pela rede interna.
+
 ---
 
 ## Sincronização Git segura

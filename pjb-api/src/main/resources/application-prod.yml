@@ -111,6 +111,9 @@ server:
     max-connections: ${PJB_SERVER_MAX_CONNECTIONS:12000}
 
 pjb:
+  procedural:
+    bootstrap:
+      strict-connector-registry: ${PJB_PROCEDURAL_BOOTSTRAP_STRICT_CONNECTOR_REGISTRY:true}
   datasource:
     budget:
       enabled: ${PJB_DB_BUDGET_ENABLED:true}

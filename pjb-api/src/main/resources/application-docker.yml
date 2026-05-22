@@ -163,6 +163,8 @@ pjb:
         print-header-enabled: ${PJB_UI_BRANDING_PRINT_HEADER_ENABLED:true}
 
   api:
+    docs:
+      public: ${PJB_API_DOCS_PUBLIC:true}
     surface:
       enabled: true
       max-request-uri-length: ${PJB_API_SURFACE_MAX_URI_LENGTH:4096}

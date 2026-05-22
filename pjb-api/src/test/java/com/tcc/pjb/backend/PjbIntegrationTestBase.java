@@ -15,16 +15,16 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 public abstract class PjbIntegrationTestBase {
 
-    @Container
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
-            .withDatabaseName("pjb_it")
-            .withUsername("pjb")
-            .withPassword("pjb_test")
-            .withReuse(true);
+    public static final DockerImageName POSTGRES_IMAGE = DockerImageName.parse("postgres:17");
 
     @Container
-    static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
-            .withReuse(true);
+    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(POSTGRES_IMAGE)
+            .withDatabaseName("pjb_it")
+            .withUsername("pjb")
+            .withPassword("pjb_test");
+
+    @Container
+    static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.0"));
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {

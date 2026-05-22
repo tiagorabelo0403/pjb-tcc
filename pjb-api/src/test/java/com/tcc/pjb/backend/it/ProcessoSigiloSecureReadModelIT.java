@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.it;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.tcc.pjb.backend.PjbIntegrationTestBase;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -18,7 +19,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class ProcessoSigiloSecureReadModelIT {
 
     @Container
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
+    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(PjbIntegrationTestBase.POSTGRES_IMAGE)
             .withDatabaseName("pjb")
             .withUsername("pjb")
             .withPassword("pjb");

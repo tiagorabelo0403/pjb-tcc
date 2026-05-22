@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.env.MockEnvironment;
 
 class ProceduralArchitectureSanityServiceTest {
 
@@ -42,12 +43,16 @@ class ProceduralArchitectureSanityServiceTest {
         JudicialProcessConnector outro = mock(JudicialProcessConnector.class);
         when(outro.system()).thenReturn(JudicialSystem.OUTRO);
         JudicialConnectorRegistry registry = new JudicialConnectorRegistry(List.of(outro));
+        ProceduralBootstrapGovernanceProperties properties = new ProceduralBootstrapGovernanceProperties();
+        properties.setStrictConnectorRegistry(true);
 
         ProceduralArchitectureSanityService service = new ProceduralArchitectureSanityService(
                 catalogService,
                 ritoPackService,
                 cnjTpuSyncService,
-                registry
+                registry,
+                properties,
+                new MockEnvironment()
         );
 
         var report = service.report();
@@ -55,5 +60,55 @@ class ProceduralArchitectureSanityServiceTest {
         assertFalse(report.healthy());
         assertTrue(report.issues().stream().anyMatch(issue -> issue.contains("Rito pack carregado")));
         assertTrue(report.issues().stream().anyMatch(issue -> issue.contains("Conector preferido")));
+    }
+
+    @Test
+    void keepsMissingPreferredConnectorsNonBlockingOutsideStrictProfiles() {
+        ProceduralCatalogService catalogService = mock(ProceduralCatalogService.class);
+        when(catalogService.coverage()).thenReturn(Map.of(
+                "totalRitos", 0,
+                "withStages", 0,
+                "withRequiredParties", 0,
+                "withRequiredDocuments", 0,
+                "withExternalActor", 0
+        ));
+        when(catalogService.catalogDrivenRitos()).thenReturn(List.of());
+        when(catalogService.listNationalTribunals()).thenReturn(List.of(Map.of(
+                "codigo", "TJCE",
+                "connectorPreferido", "PJE"
+        )));
+
+        RitoPackService ritoPackService = mock(RitoPackService.class);
+        when(ritoPackService.definitions()).thenReturn(Map.of());
+
+        CnjTpuSyncService cnjTpuSyncService = mock(CnjTpuSyncService.class);
+        when(cnjTpuSyncService.health()).thenReturn(Map.of("snapshotFresh", true));
+        when(cnjTpuSyncService.checkDivergence()).thenReturn(new DivergenceReport(
+                Instant.now(),
+                10,
+                10,
+                List.of(),
+                List.of(),
+                List.of(),
+                true
+        ));
+
+        JudicialProcessConnector outro = mock(JudicialProcessConnector.class);
+        when(outro.system()).thenReturn(JudicialSystem.OUTRO);
+
+        ProceduralArchitectureSanityService service = new ProceduralArchitectureSanityService(
+                catalogService,
+                ritoPackService,
+                cnjTpuSyncService,
+                new JudicialConnectorRegistry(List.of(outro)),
+                new ProceduralBootstrapGovernanceProperties(),
+                new MockEnvironment().withProperty("spring.profiles.active", "docker")
+        );
+
+        var report = service.report();
+
+        assertTrue(report.healthy());
+        assertFalse(report.routingCoverage().get("missingPreferredConnectors").toString().isBlank());
+        assertFalse((Boolean) report.routingCoverage().get("strictConnectorRegistry"));
     }
 }

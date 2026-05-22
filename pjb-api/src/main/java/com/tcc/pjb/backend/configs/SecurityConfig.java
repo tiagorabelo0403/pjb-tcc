@@ -80,6 +80,9 @@ import com.tcc.pjb.backend.service.infra.scaling.JudicialScaleProfileResolver;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
+    private static final String STRICT_CONTENT_SECURITY_POLICY = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
+    private static final String SWAGGER_UI_CONTENT_SECURITY_POLICY = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            UserDetailsService userDetailsService,
@@ -331,7 +334,11 @@ public class SecurityConfig {
                 .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
                 .referrerPolicy(referrer -> referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
                 .cacheControl(Customizer.withDefaults())
-                .addHeaderWriter(new StaticHeadersWriter("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"))
+                .addHeaderWriter((request, response) -> response.setHeader(
+                        "Content-Security-Policy",
+                        publicDocs && isSwaggerUiPath(request.getServletPath())
+                                ? SWAGGER_UI_CONTENT_SECURITY_POLICY
+                                : STRICT_CONTENT_SECURITY_POLICY))
                 .addHeaderWriter(new StaticHeadersWriter("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()"))
                 .addHeaderWriter(new StaticHeadersWriter("Cross-Origin-Opener-Policy", "same-origin"))
                 .addHeaderWriter(new StaticHeadersWriter("Cross-Origin-Resource-Policy", "same-origin")));
@@ -452,6 +459,10 @@ public class SecurityConfig {
         return paths.stream()
                 .map(AntPathRequestMatcher::new)
                 .toArray(RequestMatcher[]::new);
+    }
+
+    private static boolean isSwaggerUiPath(String path) {
+        return "/swagger-ui.html".equals(path) || path.startsWith("/swagger-ui/");
     }
 
     @Bean

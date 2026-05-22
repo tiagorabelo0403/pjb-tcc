@@ -4,7 +4,7 @@ spring:
   data:
     elasticsearch:
       repositories:
-        enabled: true
+        enabled: false
     redis:
       repositories:
         enabled: false

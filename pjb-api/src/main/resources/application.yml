@@ -19,6 +19,9 @@ spring:
     redis:
       repositories:
         enabled: false
+    elasticsearch:
+      repositories:
+        enabled: false
   threads:
     virtual:
       enabled: true
@@ -1006,6 +1009,8 @@ pjb:
       enabled: ${PJB_PROCEDURAL_BOOTSTRAP_ENABLED:true}
       fail-fast: ${PJB_PROCEDURAL_BOOTSTRAP_FAIL_FAST:false}
       validate-legacy-boundary: ${PJB_PROCEDURAL_BOOTSTRAP_VALIDATE_LEGACY_BOUNDARY:true}
+      strict-connector-registry: ${PJB_PROCEDURAL_BOOTSTRAP_STRICT_CONNECTOR_REGISTRY:false}
+      strict-connector-registry-profiles: ${PJB_PROCEDURAL_BOOTSTRAP_STRICT_CONNECTOR_REGISTRY_PROFILES:prod,strict}
       max-violations: ${PJB_PROCEDURAL_BOOTSTRAP_MAX_VIOLATIONS:50}
       fail-fast-profiles: ${PJB_PROCEDURAL_BOOTSTRAP_FAIL_FAST_PROFILES:prod}
       source-roots: ${PJB_PROCEDURAL_BOOTSTRAP_SOURCE_ROOTS:src/main/java}
@@ -1504,4 +1509,3 @@ management:
   info:
     env:
       enabled: false
-
