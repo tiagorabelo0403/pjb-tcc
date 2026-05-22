@@ -7,10 +7,6 @@ import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHardwareSecurityModu
 import com.tcc.pjb.backend.core.comunicacao.judicial.state.ComunicacaoJudicialStateStore;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.platform.jusos.v2.notificacao.NotificacaoInteligentePJB;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Duration;
@@ -27,7 +23,6 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -105,7 +100,7 @@ public class BnmpIntegracaoService {
     ) {
     }
 
-    private final HttpClient httpClient;
+    private final BnmpApiGateway bnmpApiGateway;
     private final PjbHardwareSecurityModule hsm;
     private final ProcessoRepository processoRepository;
     private final AuditLedgerService auditLedger;
@@ -121,23 +116,17 @@ public class BnmpIntegracaoService {
             .expireAfterAccess(Duration.ofHours(24))
             .build();
 
-    @Value("${pjb.bnmp.base-url:https://bnmp.cnj.jus.br/api/v1}")
-    private String bnmpBaseUrl;
-
     @Value("${pjb.bnmp.enabled:false}")
     private boolean bnmpEnabled;
 
-    @Value("${pjb.bnmp.token:}")
-    private String bnmpToken;
-
-    public BnmpIntegracaoService(@Qualifier("hsmInterceptacaoHttpClient") HttpClient httpClient,
+    public BnmpIntegracaoService(BnmpApiGateway bnmpApiGateway,
                                  PjbHardwareSecurityModule hsm,
                                  ProcessoRepository processoRepository,
                                  AuditLedgerService auditLedger,
                                  NotificacaoInteligentePJB notificacaoEngine,
                                  ComunicacaoJudicialStateStore stateStore,
                                  PjbExecutionOrchestrator executionOrchestrator) {
-        this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
+        this.bnmpApiGateway = Objects.requireNonNull(bnmpApiGateway, "bnmpApiGateway");
         this.hsm = Objects.requireNonNull(hsm, "hsm");
         this.processoRepository = Objects.requireNonNull(processoRepository, "processoRepository");
         this.auditLedger = Objects.requireNonNull(auditLedger, "auditLedger");
@@ -153,9 +142,22 @@ public class BnmpIntegracaoService {
             String payloadJson = serializarMandado(mandado);
             byte[] payloadBytes = payloadJson.getBytes(StandardCharsets.UTF_8);
             PjbHardwareSecurityModule.AssinaturaHsm assinatura = hsm.assinar(payloadBytes);
-            String numeroBnmp = bnmpEnabled ? chamarApiBnmpRegistro(payloadJson) : "BNMP-MOCK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-            StatusMandadoBnmp status = numeroBnmp != null ? StatusMandadoBnmp.REGISTRADO_BNMP : StatusMandadoBnmp.ERRO_REGISTRO;
-            String hashBnmp = numeroBnmp != null ? sha256Hex(numeroBnmp + mandado.processoId()) : null;
+            StatusMandadoBnmp status;
+            String numeroBnmp;
+            if (!bnmpEnabled) {
+                numeroBnmp = "BNMP-MOCK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                status = StatusMandadoBnmp.REGISTRADO_BNMP;
+            } else {
+                try {
+                    numeroBnmp = bnmpApiGateway.registrar(payloadJson);
+                    status = StatusMandadoBnmp.REGISTRADO_BNMP;
+                } catch (BnmpApiUnavailableException | IllegalStateException e) {
+                    log.warn("[BNMP] Registro indisponível: {}", e.getMessage());
+                    numeroBnmp = "";
+                    status = StatusMandadoBnmp.ERRO_REGISTRO;
+                }
+            }
+            String hashBnmp = status == StatusMandadoBnmp.REGISTRADO_BNMP ? sha256Hex(numeroBnmp + mandado.processoId()) : null;
             RegistroBnmp registro = new RegistroBnmp(
                     UUID.randomUUID().toString(),
                     mandado.mandadoUuid(),
@@ -167,7 +169,7 @@ public class BnmpIntegracaoService {
                     mandado.hashIntegridade(),
                     hashBnmp,
                     assinatura,
-                    numeroBnmp != null
+                    status == StatusMandadoBnmp.REGISTRADO_BNMP
             );
             persistirRegistro(registro);
             auditLedger.appendSafely(
@@ -226,7 +228,7 @@ public class BnmpIntegracaoService {
             return;
         }
         if (bnmpEnabled && registro.numeroBnmp() != null) {
-            chamarApiBnmpRevogacao(registro.numeroBnmp(), motivo);
+            bnmpApiGateway.revogar(registro.numeroBnmp(), motivo);
         }
         RegistroBnmp revogado = new RegistroBnmp(
                 registro.registroUuid(),
@@ -323,59 +325,6 @@ public class BnmpIntegracaoService {
             }
         }
         return List.copyOf(consolidados.values());
-    }
-
-    private String chamarApiBnmpRegistro(String payloadJson) {
-        try {
-            HttpRequest req = HttpRequest.newBuilder()
-                    .uri(URI.create(bnmpBaseUrl + "/mandados"))
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + bnmpToken)
-                    .POST(HttpRequest.BodyPublishers.ofString(payloadJson, StandardCharsets.UTF_8))
-                    .timeout(Duration.ofSeconds(TIMEOUT_SEG))
-                    .build();
-            HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
-                return extrairNumeroBnmp(resp.body());
-            }
-            log.warn("[BNMP] Registro falhou. status={}", resp.statusCode());
-            return null;
-        } catch (Exception e) {
-            log.error("[BNMP] Erro ao registrar. {}", e.getMessage());
-            return null;
-        }
-    }
-
-    private void chamarApiBnmpRevogacao(String numeroBnmp, String motivo) {
-        try {
-            String body = "{\"motivo\":\"" + escapeJson(motivo) + "\"}";
-            HttpRequest req = HttpRequest.newBuilder()
-                    .uri(URI.create(bnmpBaseUrl + "/mandados/" + numeroBnmp + "/revogar"))
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + bnmpToken)
-                    .PUT(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
-                    .timeout(Duration.ofSeconds(TIMEOUT_SEG))
-                    .build();
-            httpClient.send(req, HttpResponse.BodyHandlers.discarding());
-        } catch (Exception e) {
-            log.error("[BNMP] Erro ao revogar numeroBnmp={}. {}", numeroBnmp, e.getMessage());
-        }
-    }
-
-    private String extrairNumeroBnmp(String responseBody) {
-        if (responseBody == null) {
-            return null;
-        }
-        int idx = responseBody.indexOf("\"numeroBnmp\":");
-        if (idx < 0) {
-            return "BNMP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        }
-        int inicio = responseBody.indexOf('"', idx + 13) + 1;
-        int fim = responseBody.indexOf('"', inicio);
-        if (inicio > 0 && fim > inicio) {
-            return responseBody.substring(inicio, fim);
-        }
-        return null;
     }
 
     private String serializarMandado(MandadoPrisaoPjb m) {

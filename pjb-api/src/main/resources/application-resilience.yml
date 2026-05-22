@@ -14,6 +14,9 @@ resilience4j:
       infojud-consulta:
         max-attempts: ${PJB_R4J_INFOJUD_MAX_ATTEMPTS:3}
         wait-duration: ${PJB_R4J_INFOJUD_WAIT:3s}
+      renajud-restricao:
+        max-attempts: ${PJB_R4J_RENAJUD_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_RENAJUD_WAIT:5s}
   circuitbreaker:
     instances:
       mni-remessa:
@@ -39,6 +42,34 @@ resilience4j:
         permitted-number-of-calls-in-half-open-state: 2
         record-exceptions:
           - java.lang.Exception
+      datajud-feed:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_DATAJUD_WAIT:120s}
+        permitted-number-of-calls-in-half-open-state: 2
+        record-exceptions:
+          - java.lang.Exception
+      infojud-consulta:
+        sliding-window-size: 5
+        failure-rate-threshold: 60
+        wait-duration-in-open-state: ${PJB_CB_INFOJUD_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 2
+        record-exceptions:
+          - java.lang.Exception
+      renajud-restricao:
+        sliding-window-size: 5
+        failure-rate-threshold: 60
+        wait-duration-in-open-state: ${PJB_CB_RENAJUD_WAIT:120s}
+        permitted-number-of-calls-in-half-open-state: 2
+        record-exceptions:
+          - java.lang.Exception
+      bnmp-registro:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_BNMP_WAIT:120s}
+        permitted-number-of-calls-in-half-open-state: 2
+        record-exceptions:
+          - java.lang.Exception
   bulkhead:
     instances:
       mni-remessa:
@@ -47,3 +78,15 @@ resilience4j:
       sisbajud-bloqueio:
         max-concurrent-calls: ${PJB_BH_SISBAJUD_MAX:10}
         max-wait-duration: 2s
+      datajud-feed:
+        max-concurrent-calls: ${PJB_BH_DATAJUD_MAX:5}
+        max-wait-duration: 2s
+      infojud-consulta:
+        max-concurrent-calls: ${PJB_BH_INFOJUD_MAX:10}
+        max-wait-duration: 2s
+      renajud-restricao:
+        max-concurrent-calls: ${PJB_BH_RENAJUD_MAX:10}
+        max-wait-duration: 2s
+      bnmp-registro:
+        max-concurrent-calls: ${PJB_BH_BNMP_MAX:5}
+        max-wait-duration: 1s
