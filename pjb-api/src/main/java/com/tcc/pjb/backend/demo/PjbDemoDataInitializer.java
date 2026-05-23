@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,9 +18,11 @@ public class PjbDemoDataInitializer {
     private static final Logger log = LoggerFactory.getLogger(PjbDemoDataInitializer.class);
 
     private final JdbcTemplate jdbc;
+    private final PasswordEncoder passwordEncoder;
 
-    public PjbDemoDataInitializer(JdbcTemplate jdbc) {
+    public PjbDemoDataInitializer(JdbcTemplate jdbc, PasswordEncoder passwordEncoder) {
         this.jdbc = jdbc;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -39,11 +42,12 @@ public class PjbDemoDataInitializer {
     }
 
     private void seedUsuarios() {
+        String hash = passwordEncoder.encode("demo123");
         List<Object[]> usuarios = List.of(
-            new Object[]{"Juíza Ana Beatriz Costa", e("ana.costa"), "MAGISTRADO", "demo-hash-1", "12345678901", "MAGISTRADO"},
-            new Object[]{"Dr. Carlos Mendes (Advogado)", e("carlos.mendes"), "ADVOGADO", "demo-hash-2", "23456789012", "ADVOGADO"},
-            new Object[]{"Servidora Paula Rocha", e("paula.rocha"), "SERVIDOR", "demo-hash-3", "34567890123", "SERVIDOR"},
-            new Object[]{"Admin Sistema PJB", e("admin"), "ADMINISTRADOR", "demo-hash-4", "45678901234", "ADMINISTRADOR"}
+            new Object[]{"Juíza Ana Beatriz Costa", e("ana.costa"), "MAGISTRADO", hash, "12345678901", "MAGISTRADO"},
+            new Object[]{"Dr. Carlos Mendes (Advogado)", e("carlos.mendes"), "ADVOGADO", hash, "23456789012", "ADVOGADO"},
+            new Object[]{"Servidora Paula Rocha", e("paula.rocha"), "SERVIDOR", hash, "34567890123", "SERVIDOR"},
+            new Object[]{"Admin Sistema PJB", e("admin"), "ADMINISTRADOR", hash, "45678901234", "ADMINISTRADOR"}
         );
         for (Object[] u : usuarios) {
             Integer exists = jdbc.queryForObject(

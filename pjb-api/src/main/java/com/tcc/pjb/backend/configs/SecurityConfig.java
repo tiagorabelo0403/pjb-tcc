@@ -347,6 +347,7 @@ public class SecurityConfig {
                     authz.requestMatchers("/actuator/health", "/actuator/health/**", "/livez", "/readyz", "/startupz").permitAll();
                     authz.requestMatchers("/demo/**").permitAll();
                     authz.requestMatchers("/api/v1/public/**").permitAll();
+                    authz.requestMatchers("/api/v1/auth/passkey/options", "/api/v1/auth/passkey/finish").permitAll();
                     authz.requestMatchers("/actuator/info", "/actuator/metrics/**", "/actuator/prometheus")
                             .hasAnyAuthority("ROLE_ADMIN", "ROLE_ADMINISTRADOR");
                     authz.requestMatchers("/api/admin/**", "/api/v1/admin/**")
@@ -421,6 +422,12 @@ public class SecurityConfig {
                                                              RateLimiterStore rateLimiterStore,
                                                              JudicialScaleProfileResolver judicialScaleProfileResolver) {
         return new ApiRouteGovernanceFilter(properties, clientIpResolver, rateLimiterStore, judicialScaleProfileResolver);
+    }
+
+    @Bean
+    public PasskeyAuthenticationFilter passkeyAuthenticationFilter(PasskeySessionRepository sessionRepo,
+                                                                   UserDetailsService userDetailsService) {
+        return new PasskeyAuthenticationFilter(sessionRepo, userDetailsService);
     }
 
     @Bean

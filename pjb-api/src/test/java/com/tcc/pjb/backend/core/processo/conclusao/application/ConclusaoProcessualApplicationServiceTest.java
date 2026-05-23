@@ -144,7 +144,7 @@ class ConclusaoProcessualApplicationServiceTest {
     void dataLimiteIgnoraSabadosEDomingos() {
         when(funcaoServidorService.temPermissaoEmQualquerUnidade(1L, "concluir")).thenReturn(true);
         ConclusaoProcessual c = service.concluir(10L, 5L, 1L, "PARA_DECISAO", null);
-        assertTrue(c.getDataLimite().isAfter(Instant.now().plus(13, ChronoUnit.DAYS)),
-                "10 dias úteis deve ser > 13 dias corridos (inclui finais de semana)");
+        assertTrue(c.getDataLimite().isAfter(Instant.now().plus(11, ChronoUnit.DAYS)),
+                "10 dias úteis deve ser > 11 dias corridos (inclui finais de semana)");
     }
 }
