@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.NotBlank;
@@ -30,8 +31,13 @@ import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.modules.advocacia.office.enums.OfficeActionType;
 import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeProcessWorkspaceScopeService;
 import com.tcc.pjb.backend.service.AjuizamentoService;
+import com.tcc.pjb.backend.service.competencia.MapaCompetenciaDinamicoEngine;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.processual.guard.DefensoriaInstitutionalCompetenceGuardService;
+import com.tcc.pjb.backend.service.processual.legitimidade.OabValidationService;
+import com.tcc.pjb.backend.service.processual.numero.NumeroProcessoCnjService;
+import com.tcc.pjb.backend.service.processual.polo.PeticionamentoInicialPolosService;
+import com.tcc.pjb.backend.service.processual.protocolo.ProtocoloReciboService;
 import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -39,6 +45,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Service
 public class LaianePeticaoInicialDraftService {
+
+    private static final Pattern AUTOR_MINUTA_PATTERN = Pattern.compile("(?m)^(.{1,255}?), por intermédio de .+?, apresenta ");
+    private static final Pattern REU_MINUTA_PATTERN = Pattern.compile("(?m)^em face de (.{1,255}?)\\.$");
 
     private final LaianePeticaoInicialDraftSessionRepository repository;
     private final ProcessoRepository processoRepository;
@@ -48,6 +57,11 @@ public class LaianePeticaoInicialDraftService {
     private final RepresentacaoProcessualPolicyService representacaoProcessualPolicyService;
     private final OfficeProcessWorkspaceScopeService officeProcessWorkspaceScopeService;
     private final DefensoriaInstitutionalCompetenceGuardService defensoriaInstitutionalCompetenceGuardService;
+    private final OabValidationService oabValidationService;
+    private final NumeroProcessoCnjService numeroProcessoCnjService;
+    private final PeticionamentoInicialPolosService peticionamentoInicialPolosService;
+    private final ProtocoloReciboService protocoloReciboService;
+    private final MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine;
 
     public LaianePeticaoInicialDraftService(LaianePeticaoInicialDraftSessionRepository repository,
                                             ProcessoRepository processoRepository,
@@ -56,7 +70,12 @@ public class LaianePeticaoInicialDraftService {
                                             ObjectMapper objectMapper,
                                             RepresentacaoProcessualPolicyService representacaoProcessualPolicyService,
                                             ObjectProvider<OfficeProcessWorkspaceScopeService> officeProcessWorkspaceScopeServiceProvider,
-                                            DefensoriaInstitutionalCompetenceGuardService defensoriaInstitutionalCompetenceGuardService) {
+                                            DefensoriaInstitutionalCompetenceGuardService defensoriaInstitutionalCompetenceGuardService,
+                                            OabValidationService oabValidationService,
+                                            NumeroProcessoCnjService numeroProcessoCnjService,
+                                            PeticionamentoInicialPolosService peticionamentoInicialPolosService,
+                                            ProtocoloReciboService protocoloReciboService,
+                                            MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine) {
         this.repository = Objects.requireNonNull(repository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.ajuizamentoService = Objects.requireNonNull(ajuizamentoService);
@@ -65,6 +84,11 @@ public class LaianePeticaoInicialDraftService {
         this.representacaoProcessualPolicyService = Objects.requireNonNull(representacaoProcessualPolicyService);
         this.officeProcessWorkspaceScopeService = officeProcessWorkspaceScopeServiceProvider.getIfAvailable();
         this.defensoriaInstitutionalCompetenceGuardService = Objects.requireNonNull(defensoriaInstitutionalCompetenceGuardService);
+        this.oabValidationService = Objects.requireNonNull(oabValidationService);
+        this.numeroProcessoCnjService = Objects.requireNonNull(numeroProcessoCnjService);
+        this.peticionamentoInicialPolosService = Objects.requireNonNull(peticionamentoInicialPolosService);
+        this.protocoloReciboService = Objects.requireNonNull(protocoloReciboService);
+        this.mapaCompetenciaDinamicoEngine = Objects.requireNonNull(mapaCompetenciaDinamicoEngine);
     }
 
     @Transactional(readOnly = true)
@@ -136,16 +160,18 @@ public class LaianePeticaoInicialDraftService {
         }
 
         defensoriaInstitutionalCompetenceGuardService.requireAllowedForDraftProtocol(entity, request != null ? request.tipoJustica() : null);
+        oabValidationService.requireAdvogadoAptoParaProtocolo(usuario);
 
-        Processo processo = new Processo();
-        processo.setNumeroUnificado(generateDraftProtocolNumber(entity.getId()));
-        processo.setNumeroProcesso(processo.getNumeroUnificado());
-        processo.setTipoJustica(resolveTipoJustica(request != null ? request.tipoJustica() : null));
-        processo.setRamoDireito(RamoDireito.fromString(entity.getRamoDireito()));
-        if (processo.getRamoDireito() == null) {
-            processo.setRamoDireito(RamoDireito.CIVIL);
+        PartesProtocoladas partes = resolvePartesProtocoladas(entity, usuario);
+        TipoJustica tipoJusticaProtocolo = resolveTipoJustica(request != null ? request.tipoJustica() : null);
+        RamoDireito ramoDireitoProtocolo = RamoDireito.fromString(entity.getRamoDireito());
+        if (ramoDireitoProtocolo == null) {
+            ramoDireitoProtocolo = RamoDireito.CIVIL;
         }
-        processo.setMateria(MateriaJurisdicao.fromRamo(processo.getRamoDireito()));
+        Processo processo = new Processo();
+        processo.setTipoJustica(tipoJusticaProtocolo);
+        processo.setRamoDireito(ramoDireitoProtocolo);
+        processo.setMateria(MateriaJurisdicao.fromRamo(ramoDireitoProtocolo));
         processo.setClasseProcessual(defaultText(entity.getClasseSugerida(), "PETICAO_INICIAL"));
         processo.setAssunto(defaultText(entity.getTituloCaso(), "PETICAO INICIAL"));
         processo.setObjetoProcessual(firstOrNull(readList(entity.getFatosJson())));
@@ -155,7 +181,12 @@ public class LaianePeticaoInicialDraftService {
         processo.setResumoIA(joinLines(readList(entity.getFundamentosJson())));
         processo.setValorCausa(null);
         processo.setUsuario(usuario);
-        processo.setParteAutoraNome(usuario.getNome());
+        processo.setUf(defaultText(usuario.getUf(), null));
+        processo.setComarca(defaultText(usuario.getComarca(), null));
+        processo.setNumeroUnificado(numeroProcessoCnjService.gerarParaAjuizamento(processo));
+        processo.setNumeroProcesso(processo.getNumeroUnificado());
+        processo.setParteAutoraNome(partes.autoraNome());
+        processo.setParteReuNome(partes.reuNome());
         processo.setConnectorSystem("LAIANE_PETICAO_INICIAL");
         processo.setConnectorProtocolReference("LAIANE-DRAFT:" + entity.getId());
         processo.setConnectorSubmissionStatus("PROTOCOLO_REALIZADO");
@@ -163,6 +194,13 @@ public class LaianePeticaoInicialDraftService {
         processo.setConnectorSubmissionProcessedAt(java.time.LocalDateTime.now());
         processo.setRito(RitoProcessual.tryParse(entity.getRitoSugerido()).orElse(RitoProcessual.COMUM_ORDINARIO));
         Processo salvo = ajuizamentoService.ajuizar(processo);
+        salvo.setTipoJustica(tipoJusticaProtocolo);
+        salvo.setRamoDireito(ramoDireitoProtocolo);
+        salvo.setMateria(MateriaJurisdicao.fromRamo(ramoDireitoProtocolo));
+        processoRepository.saveAndFlush(salvo);
+        mapaCompetenciaDinamicoEngine.registrarDistribuicaoInicial(salvo);
+        peticionamentoInicialPolosService.registrar(salvo, usuario);
+        protocoloReciboService.emitirReciboPeticaoInicial(salvo, usuario, entity.getHashIntegridade());
 
         entity.setProcesso(salvo);
         entity.setStatus("PROTOCOLO_REALIZADO");
@@ -548,8 +586,19 @@ public class LaianePeticaoInicialDraftService {
         return parsed == null ? TipoJustica.ESTADUAL : parsed;
     }
 
-    private String generateDraftProtocolNumber(Long draftId) {
-        return "LD" + draftId + "-" + System.currentTimeMillis();
+    private PartesProtocoladas resolvePartesProtocoladas(LaianePeticaoInicialDraftSession entity, Usuario usuario) {
+        String minuta = defaultText(entity.getMinutaInicial(), null);
+        String autora = defaultText(extractFirstGroup(AUTOR_MINUTA_PATTERN, minuta), usuario.getNome());
+        String reu = defaultText(extractFirstGroup(REU_MINUTA_PATTERN, minuta), null);
+        return new PartesProtocoladas(autora, reu);
+    }
+
+    private String extractFirstGroup(Pattern pattern, String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        var matcher = pattern.matcher(value);
+        return matcher.find() ? trimToNull(matcher.group(1)) : null;
     }
 
     private String joinLines(List<String> values) {
@@ -899,6 +948,9 @@ public class LaianePeticaoInicialDraftService {
     }
 
     private record DraftComputation(DraftView view) {
+    }
+
+    private record PartesProtocoladas(String autoraNome, String reuNome) {
     }
 
     private static List<String> sanitizeRecordList(List<String> values) {

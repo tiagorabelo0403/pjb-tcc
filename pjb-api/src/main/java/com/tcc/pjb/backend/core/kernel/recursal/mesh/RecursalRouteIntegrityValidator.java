@@ -14,7 +14,8 @@ public final class RecursalRouteIntegrityValidator {
         require(routePlan.remessa() != null, "Plano recursal sem regra de remessa");
         require(routePlan.tribunalDetalhadoOrigem().familia() == routePlan.tribunalOrigem(), "Tribunal detalhado de origem incompatível com a família recursal");
         require(routePlan.tribunalDetalhadoDestino().familia() == routePlan.tribunalDestino(), "Tribunal detalhado de destino incompatível com a família recursal");
-        if (routePlan.mesmaCorte()) {
+        boolean mesmaCorteInterna = routePlan.mesmaCorte() && routePlan.instanciaDestino() == context.instanciaAtual();
+        if (mesmaCorteInterna) {
             require(!routePlan.remessa().externa(), "Mesma corte não admite remessa externa");
             require(routePlan.instanciaDestino() == context.instanciaAtual(), "Mesma corte deve preservar a instância do julgamento");
             require(routePlan.tribunalDetalhadoOrigem() == routePlan.tribunalDetalhadoDestino(), "Mesma corte deve preservar o tribunal detalhado");

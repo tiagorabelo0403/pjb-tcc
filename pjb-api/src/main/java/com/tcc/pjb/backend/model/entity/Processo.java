@@ -476,7 +476,7 @@ public class Processo {
     }
 
     public void setConnectorSubmissionMessage(String connectorSubmissionMessage) {
-        this.connectorSubmissionMessage = connectorSubmissionMessage;
+        this.connectorSubmissionMessage = limitText(connectorSubmissionMessage, 500);
     }
 
     public String getTribunalCodigoRoteado() {
@@ -647,7 +647,7 @@ public class Processo {
     }
 
     public void setConnectorSyncMessage(String connectorSyncMessage) {
-        this.connectorSyncMessage = connectorSyncMessage;
+        this.connectorSyncMessage = limitText(connectorSyncMessage, 500);
     }
 
     public LocalDateTime getConnectorSubmissionProcessedAt() {
@@ -712,6 +712,13 @@ public class Processo {
 
     public void setCatalogVersionId(Long catalogVersionId) {
         this.catalogVersionId = catalogVersionId;
+    }
+
+    private static String limitText(String value, int maxLength) {
+        if (value == null || maxLength < 1) {
+            return value;
+        }
+        return value.length() <= maxLength ? value : value.substring(0, maxLength);
     }
 
 }

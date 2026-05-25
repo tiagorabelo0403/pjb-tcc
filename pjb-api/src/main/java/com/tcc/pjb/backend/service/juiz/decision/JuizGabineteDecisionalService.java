@@ -15,6 +15,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -35,7 +37,10 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.TemplateDocumentoOficial;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
+import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
+import com.tcc.pjb.backend.model.entity.workflow.MovimentacaoProcessual;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
+import com.tcc.pjb.backend.model.repository.MovimentacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
@@ -60,6 +65,8 @@ import com.tcc.pjb.backend.service.secretariat.routing.SecretariatOperationalRou
 
 @Service
 public class JuizGabineteDecisionalService {
+
+    private static final Logger log = LoggerFactory.getLogger(JuizGabineteDecisionalService.class);
 
     private static final EnumSet<TipoUsuario> MAGISTRATURA_GABINETE = EnumSet.of(
             TipoUsuario.JUIZ,
@@ -89,6 +96,8 @@ public class JuizGabineteDecisionalService {
     private final JuizGabineteRoutingResolver juizGabineteRoutingResolver;
     private final JuizGabineteQueueIsolationService juizGabineteQueueIsolationService;
     private final OfficialDocumentTemplateService officialDocumentTemplateService;
+    private final MovimentacaoProcessualRepository movimentacaoProcessualRepository;
+    private final DespachoComunicacaoPosAtoService despachoComunicacaoPosAtoService;
 
     public JuizGabineteDecisionalService(PerfilDashboardContextFactory contextFactory,
                                          PainelServiceCommons commons,
@@ -106,7 +115,9 @@ public class JuizGabineteDecisionalService {
                                          JuizProcessoGuardRailService guardRailService,
                                          JuizGabineteRoutingResolver juizGabineteRoutingResolver,
                                          JuizGabineteQueueIsolationService juizGabineteQueueIsolationService,
-                                         OfficialDocumentTemplateService officialDocumentTemplateService) {
+                                         OfficialDocumentTemplateService officialDocumentTemplateService,
+                                         MovimentacaoProcessualRepository movimentacaoProcessualRepository,
+                                         DespachoComunicacaoPosAtoService despachoComunicacaoPosAtoService) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
@@ -124,6 +135,8 @@ public class JuizGabineteDecisionalService {
         this.juizGabineteRoutingResolver = juizGabineteRoutingResolver;
         this.juizGabineteQueueIsolationService = juizGabineteQueueIsolationService;
         this.officialDocumentTemplateService = officialDocumentTemplateService;
+        this.movimentacaoProcessualRepository = movimentacaoProcessualRepository;
+        this.despachoComunicacaoPosAtoService = despachoComunicacaoPosAtoService;
     }
 
     @Cacheable(cacheNames = "juiz_painel", key = "'bootstrap:' + @currentUserService.currentUserIdOrZero()", condition = "@cacheRuntime.redisEnabled()")
@@ -310,6 +323,7 @@ public class JuizGabineteDecisionalService {
         JuizGabineteRoutingProfile gabineteRouting = juizGabineteRoutingResolver.resolve(processo);
         SecretariatOperationalRoutingProfile secretariatRouting = gabineteRouting.secretariatRouting();
         String dedupKey = deterministicKey("DESPACHO", processoId, usuario.getId());
+        FaseProcessual faseOrigem = processo.getFaseAtual();
         WorkItem despacho = WorkItem.builder()
                 .processo(processo)
                 .faseOrigem(processo.getFaseAtual())
@@ -337,10 +351,20 @@ public class JuizGabineteDecisionalService {
                 "fundamentacao", defaultText(fundamentacao, "Fundamentação judicial lançada no gabinete."),
                 "determinacao", defaultText(conteudo, "Determinação judicial materializada no fluxo do gabinete.")
         ));
+        MovimentacaoProcessual movimentacao = registrarMovimentacaoDespacho(processo, usuario, faseOrigem, documentoAssinado);
+        DespachoComunicacaoPosAtoResult comunicacaoPosDespacho = registrarComunicacaoPosDespacho(
+                processo,
+                usuario,
+                movimentacao,
+                documentoAssinado,
+                conteudo
+        );
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "ASSINADO");
         out.put("processoId", processoId);
         out.put("workItemId", despacho.getId());
+        out.put("movimentacaoId", movimentacao.getId());
+        out.put("comunicacaoPosDespacho", comunicacaoPosDespacho.asMap());
         out.put("dedupKey", dedupKey);
         out.put("continuidadeInicial", continuidade.asMap());
         out.put("guardRail", guard.metrics());
@@ -351,6 +375,37 @@ public class JuizGabineteDecisionalService {
             out.put("conferenciaCruzadaWorkItemId", conferenciaItem.getId());
         }
         return out;
+    }
+
+    private DespachoComunicacaoPosAtoResult registrarComunicacaoPosDespacho(Processo processo,
+                                                                            Usuario usuario,
+                                                                            MovimentacaoProcessual movimentacao,
+                                                                            OfficialDocumentTemplateRenderResponse documentoAssinado,
+                                                                            String conteudo) {
+        try {
+            return despachoComunicacaoPosAtoService.registrar(processo, usuario, movimentacao, documentoAssinado, conteudo);
+        } catch (RuntimeException ex) {
+            log.warn("Falha controlada em comunicacao pos-despacho processo={} erro={}", processo.getId(), ex.getClass().getSimpleName());
+            return new DespachoComunicacaoPosAtoResult(null, "FALHA_CONTROLADA", null, 0, 0, List.of(), List.of(), null, null, true);
+        }
+    }
+
+    private MovimentacaoProcessual registrarMovimentacaoDespacho(Processo processo,
+                                                                 Usuario usuario,
+                                                                 FaseProcessual faseOrigem,
+                                                                 OfficialDocumentTemplateRenderResponse documentoAssinado) {
+        Instant agora = Instant.now();
+        MovimentacaoProcessual movimentacao = movimentacaoProcessualRepository.save(MovimentacaoProcessual.builder()
+                .processo(processo)
+                .faseDe(faseOrigem)
+                .fasePara(processo.getFaseAtual())
+                .descricao("Despacho judicial proferido e documento assinado: " + documentoAssinado.documentoId())
+                .ator(usuario)
+                .dataMovimentacao(agora)
+                .build());
+        processo.setDataUltimaMovimentacao(agora);
+        processoRepository.save(processo);
+        return movimentacao;
     }
 
     @Transactional

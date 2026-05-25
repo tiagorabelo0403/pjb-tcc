@@ -106,6 +106,8 @@ public class RecursalPeticionamentoFacadeService {
     private final RecursalProjectionAssembler projectionAssembler;
     private final RecursalPeticionamentoSupport peticionamentoSupport;
     private final RecursalOperationalAutomationService recursalOperationalAutomationService;
+    private final RecursalValidacaoMinimaService recursalValidacaoMinimaService;
+    private final RecursalFluxoMinimoPersistenciaService recursalFluxoMinimoPersistenciaService;
 
     public RecursalPeticionamentoFacadeService(PerfilDashboardContextFactory contextFactory,
                                                ProcessoRepository processoRepository,
@@ -123,7 +125,9 @@ public class RecursalPeticionamentoFacadeService {
                                                RecursalFormalizacaoService recursalFormalizacaoService,
                                                RecursalSigiloGovernanceService recursalSigiloGovernanceService,
                                                RecursalProjectionAssembler projectionAssembler,
-                                               RecursalOperationalAutomationService recursalOperationalAutomationService) {
+                                               RecursalOperationalAutomationService recursalOperationalAutomationService,
+                                               RecursalValidacaoMinimaService recursalValidacaoMinimaService,
+                                               RecursalFluxoMinimoPersistenciaService recursalFluxoMinimoPersistenciaService) {
         this.contextFactory = Objects.requireNonNull(contextFactory);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
@@ -141,6 +145,8 @@ public class RecursalPeticionamentoFacadeService {
         this.recursalSigiloGovernanceService = Objects.requireNonNull(recursalSigiloGovernanceService);
         this.projectionAssembler = Objects.requireNonNull(projectionAssembler);
         this.recursalOperationalAutomationService = Objects.requireNonNull(recursalOperationalAutomationService);
+        this.recursalValidacaoMinimaService = Objects.requireNonNull(recursalValidacaoMinimaService);
+        this.recursalFluxoMinimoPersistenciaService = Objects.requireNonNull(recursalFluxoMinimoPersistenciaService);
         this.peticionamentoSupport = new RecursalPeticionamentoSupport();
     }
 
@@ -175,6 +181,20 @@ public class RecursalPeticionamentoFacadeService {
                 "RECURSO:" + descriptor.profileCode() + ':' + processoId + ':' + peticionamentoSupport.resourceKeyForCorrelation(recursoNormalizado, canonicalAlias, appealType, speciesType) + ':' + actorKey
         ).getBytes(StandardCharsets.UTF_8)).toString();
         Instant dueAt = Instant.now().plus(descriptor.dueHours(), ChronoUnit.HOURS);
+        RecursalValidacaoMinimaResult validacaoMinima = recursalValidacaoMinimaService.validar(
+                processo,
+                usuario,
+                appealType,
+                correlationKey + ":RECURSO",
+                preparoDispensado || descriptor.autoIsencaoBase(),
+                descriptor
+        );
+        ArrayList<String> avisos = new ArrayList<>();
+        ProcessoRecursalAggregate catalogoRecursal = safeCatalogoRecursal(processoId, avisos);
+        MeshBundle meshBundle = buildMeshBundle(processo, appealType, speciesType, correlationKey, preparoDispensado, pedidoEfeitoSuspensivo, observacoesNormalizadas, descriptor, avisos);
+        if (meshBundle.contextRequest() == null || meshBundle.speciesRequest() == null) {
+            throw new IllegalStateException("Malha recursal indisponivel para interposicao: " + String.join("; ", avisos));
+        }
 
         WorkItem peticaoRecursal = WorkItem.builder()
                 .processo(processo)
@@ -217,9 +237,6 @@ public class RecursalPeticionamentoFacadeService {
         lifecycleMachine.apply(processo, ProcessoLifecycleAction.INTERPOR_RECURSO);
         processoRepository.save(processo);
 
-        ArrayList<String> avisos = new ArrayList<>();
-        ProcessoRecursalAggregate catalogoRecursal = safeCatalogoRecursal(processoId, avisos);
-        MeshBundle meshBundle = buildMeshBundle(processo, appealType, speciesType, correlationKey, preparoDispensado, pedidoEfeitoSuspensivo, observacoesNormalizadas, descriptor, avisos);
         String minuta = draftPreviewAssembler.buildDraftPreview(processo, descriptor, recursoNormalizado, razoesNormalizadas, fundamentacaoNormalizada, meshBundle.admissibility(), meshBundle.plan(), observacoesNormalizadas);
         LinkedHashMap<String, Object> endpoints = projectionAssembler.buildEndpoints(processoId);
         LinkedHashMap<String, Object> enumConnection = buildEnumConnection(recursoNormalizado, canonicalAlias, appealType, speciesType, processo, meshBundle, catalogoRecursal);
@@ -265,6 +282,7 @@ public class RecursalPeticionamentoFacadeService {
         response.put("filaPeticao", descriptor.peticaoQueueCode());
         response.put("filaRecurso", descriptor.recursoQueueCode());
         response.put("dedupKey", correlationKey);
+        response.put("admissibilidadeFormal", validacaoMinima.toMap());
         response.put("automacaoSecretariaRecursal", recursalOperationalAutomationService.materialize(processo, usuario, recursoNormalizado, peticaoRecursal, recurso));
         if (observacoesNormalizadas != null) {
             response.put("observacoes", observacoesNormalizadas);
@@ -309,6 +327,21 @@ public class RecursalPeticionamentoFacadeService {
             peticionamentoSupport.putIfNotNull(response, "assinaturaVinculada", formalizacaoRecursal.assinaturaVinculada());
             peticionamentoSupport.putIfNotNull(response, "protocoloConectorJudicial", formalizacaoRecursal.protocoloConectorJudicial());
         }
+        RecursalFluxoMinimoPersistenciaResult fluxoPersistido = recursalFluxoMinimoPersistenciaService.registrar(
+                processo,
+                usuario,
+                appealType,
+                recurso,
+                recursoNormalizado,
+                razoesNormalizadas,
+                fundamentacaoNormalizada,
+                correlationKey,
+                meshBundle,
+                formalizacaoRecursal,
+                validacaoMinima
+        );
+        response.put("numeroRecursal", fluxoPersistido.numeroRecursal());
+        response.put("fluxoRecursalPersistido", fluxoPersistido.toMap());
         LinkedHashMap<String, Object> distribuicaoRecursal = projectionAssembler.buildDistributionProjection(meshBundle.plan(), meshBundle.admissibility());
         response.put("distribuicaoRecursal", distribuicaoRecursal);
         Map<String, Object> cadernoDecisorioOrigem = projectionAssembler.buildDecisionCarryOverProjection(processo, appealType, distribuicaoRecursal);
@@ -430,25 +463,31 @@ public class RecursalPeticionamentoFacadeService {
             RecursalMeshSpeciesRequest speciesRequest = buildSpeciesRequest(processo, speciesType, appealType, observacoes, descriptor);
             RecursalMeshPlanRequest planRequest = new RecursalMeshPlanRequest(recursoId, contextRequest, speciesRequest);
             var plan = recursalMeshService.plan(planRequest);
-            RecursalAdmissibilityRequest admissibilityRequest = buildAdmissibilityRequest(processo, planRequest, preparoDispensado, pedidoEfeitoSuspensivo, observacoes);
-            RecursalAdmissibilityResponse admissibility = processualOperationalSurfaceFacadeService.avaliarRecursal(admissibilityRequest);
-            RecursalIaConferenciaResponse aiReview = recursalIaConferenciaService.conferir(new RecursalIaConferenciaRequest(
-                    admissibilityRequest,
-                    peticionamentoSupport.buildPedidoUsuarioIa(appealType, observacoes),
-                    true,
-                    true,
-                    true,
-                    true,
-                    processo.getId(),
-                    appealType.name(),
-                    processo.getRamoDireito() != null ? processo.getRamoDireito().name() : null,
-                    processo.getRito() != null ? processo.getRito().name() : null,
-                    true,
-                    true,
-                    true,
-                    true,
-                    true
-            ));
+            RecursalAdmissibilityResponse admissibility = null;
+            RecursalIaConferenciaResponse aiReview = null;
+            try {
+                RecursalAdmissibilityRequest admissibilityRequest = buildAdmissibilityRequest(processo, planRequest, preparoDispensado, pedidoEfeitoSuspensivo, observacoes);
+                admissibility = processualOperationalSurfaceFacadeService.avaliarRecursal(admissibilityRequest);
+                aiReview = recursalIaConferenciaService.conferir(new RecursalIaConferenciaRequest(
+                        admissibilityRequest,
+                        peticionamentoSupport.buildPedidoUsuarioIa(appealType, observacoes),
+                        true,
+                        true,
+                        true,
+                        true,
+                        processo.getId(),
+                        appealType.name(),
+                        processo.getRamoDireito() != null ? processo.getRamoDireito().name() : null,
+                        processo.getRito() != null ? processo.getRito().name() : null,
+                        true,
+                        true,
+                        true,
+                        true,
+                        true
+                ));
+            } catch (RuntimeException ex) {
+                avisos.add("Conferencia recursal assistida indisponivel: " + peticionamentoSupport.safeMessage(ex));
+            }
             return new MeshBundle(plan, admissibility, aiReview, contextRequest, speciesRequest);
         } catch (RuntimeException ex) {
             avisos.add(peticionamentoSupport.safeMessage(ex));

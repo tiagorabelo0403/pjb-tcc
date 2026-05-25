@@ -7,13 +7,13 @@ import com.tcc.pjb.backend.core.util.EnumText;
 
 public enum TipoJustica {
 
-    ESTADUAL("1"),
+    ESTADUAL("8"),
     FEDERAL("4"),
     ELEITORAL("6"),
-    MILITAR_ESTADUAL("7"),
-    MILITAR_FEDERAL("8"),
+    MILITAR_ESTADUAL("9"),
+    MILITAR_FEDERAL("7"),
     TRABALHO("5"),
-    SUPERIOR("9");
+    SUPERIOR("3");
 
     private final String codigoCNJ;
 

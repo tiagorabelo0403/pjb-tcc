@@ -770,6 +770,9 @@ public class AjuizamentoCanonicalContextService {
         if (candidate == null || candidate == current) {
             return false;
         }
+        if (current == TipoJustica.ESTADUAL && candidate == TipoJustica.SUPERIOR) {
+            return false;
+        }
         return current == null || current == TipoJustica.ESTADUAL && candidate != TipoJustica.ESTADUAL;
     }
 

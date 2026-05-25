@@ -42,8 +42,9 @@ public class ProcessoInitialDistributionSnapshotService {
     private boolean aplicarSnapshot(Processo processo,
                                     DistribuicaoProcessualNacionalEngine.DistributionSnapshot snapshot) {
         boolean changed = false;
-        changed |= replaceIfDifferent(processo.getTribunalCodigoRoteado(), snapshot.tribunalCodigoRoteado(), processo::setTribunalCodigoRoteado);
-        changed |= replaceIfDifferent(processo.getTribunal(), firstNonBlank(snapshot.tribunalCodigoRoteado(), processo.getTribunal()), processo::setTribunal);
+        String tribunalCodigo = tribunalCodigoSnapshot(snapshot.tribunalCodigoRoteado(), processo.getTribunalCodigoRoteado());
+        changed |= replaceIfDifferent(processo.getTribunalCodigoRoteado(), tribunalCodigo, processo::setTribunalCodigoRoteado);
+        changed |= replaceIfDifferent(processo.getTribunal(), firstNonBlank(tribunalCodigo, processo.getTribunal()), processo::setTribunal);
         changed |= replaceIfDifferent(processo.getComarca(), snapshot.comarcaDestino(), processo::setComarca);
         changed |= replaceIfDifferent(processo.getVara(), snapshot.varaDestino(), processo::setVara);
         changed |= replaceIfDifferent(processo.getUnidadeJudiciariaCodigo(), snapshot.varaDestino(), processo::setUnidadeJudiciariaCodigo);
@@ -69,6 +70,18 @@ public class ProcessoInitialDistributionSnapshotService {
             processo.setDataAtualizacao(LocalDateTime.now());
         }
         return changed;
+    }
+
+    private String tribunalCodigoSnapshot(String roteado, String atual) {
+        String normalized = normalize(roteado);
+        if (normalized != null) {
+            int separador = normalized.indexOf('_');
+            if (separador > 0) {
+                return normalized.substring(0, separador);
+            }
+            return normalized;
+        }
+        return atual;
     }
 
     private boolean replaceIfDifferent(String atual, String novo, java.util.function.Consumer<String> consumer) {

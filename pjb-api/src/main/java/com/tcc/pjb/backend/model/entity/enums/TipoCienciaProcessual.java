@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.model.entity.enums;
 public enum TipoCienciaProcessual {
 
     CITACAO_INICIAL(15, true, true, "Citação inicial"),
+    INTIMACAO_DECISAO(15, true, true, "Intimacao de decisao"),
     INTIMACAO_DECISAO_INTERLOCUTORIA(15, true, true, "Intimação de decisão"),
     INTIMACAO_SENTENCA(15, true, true, "Intimação de sentença"),
     INTIMACAO_ACORDAO(15, true, true, "Intimação de acórdão"),

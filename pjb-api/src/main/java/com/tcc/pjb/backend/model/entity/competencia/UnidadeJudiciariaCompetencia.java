@@ -6,6 +6,7 @@ import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.Normalizer;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -184,6 +185,9 @@ public class UnidadeJudiciariaCompetencia {
     @PrePersist
     @PreUpdate
     void normalize() {
+        if (this.id == null && this.versao == null) {
+            this.versao = 0L;
+        }
         this.codigo = normalizeUpper(this.codigo);
         this.tribunalCodigo = normalizeUpper(this.tribunalCodigo);
         this.uf = normalizeUpper(this.uf);
@@ -553,6 +557,17 @@ public class UnidadeJudiciariaCompetencia {
     }
 
     private static String normalizeKey(String value) {
-        return normalizeUpper(value);
+        String normalized = normalizeUpper(value);
+        if (normalized == null) {
+            return null;
+        }
+        normalized = Normalizer.normalize(normalized, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
+        return switch (normalized) {
+            case "CIVEL" -> "CIVIL";
+            case "TRIBUTARIA" -> "TRIBUTARIO";
+            case "PREVIDENCIARIA" -> "PREVIDENCIARIO";
+            case "ACAO_DE_COBRANCA", "COBRANCA", "PETICAO_INICIAL" -> "PROCEDIMENTO_COMUM_CIVEL";
+            default -> normalized;
+        };
     }
 }

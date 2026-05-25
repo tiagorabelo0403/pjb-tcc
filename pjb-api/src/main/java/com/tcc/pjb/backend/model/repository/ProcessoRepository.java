@@ -26,6 +26,10 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
     
     Optional<Processo> findByNumeroUnificado(String numeroUnificado);
 
+    boolean existsByNumeroProcesso(String numeroProcesso);
+
+    boolean existsByNumeroUnificado(String numeroUnificado);
+
     @EntityGraph(attributePaths = {"jurisdicao", "usuario"})
     @Query("""
             SELECT p FROM Processo p

@@ -16,10 +16,11 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
 @PjbPublicApi(module = PjbModuleId.AJUIZAMENTO)
@@ -34,6 +35,7 @@ public class AjuizamentoPostCommitOperationalEffectsService {
     private final FederalismoJudicialEngine federalismoJudicialEngine;
     private final PainelNacionalJusticaService painelNacionalJusticaService;
     private final RadarPadroesService radarPadroesService;
+    private final TransactionTemplate postCommitTransactionTemplate;
 
     public AjuizamentoPostCommitOperationalEffectsService(AjuizamentoService ajuizamentoService,
                                                           MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine,
@@ -41,7 +43,8 @@ public class AjuizamentoPostCommitOperationalEffectsService {
                                                           ProntuarioNacionalService prontuarioNacionalService,
                                                           FederalismoJudicialEngine federalismoJudicialEngine,
                                                           PainelNacionalJusticaService painelNacionalJusticaService,
-                                                          RadarPadroesService radarPadroesService) {
+                                                          RadarPadroesService radarPadroesService,
+                                                          PlatformTransactionManager transactionManager) {
         this.ajuizamentoService = Objects.requireNonNull(ajuizamentoService);
         this.mapaCompetenciaDinamicoEngine = Objects.requireNonNull(mapaCompetenciaDinamicoEngine);
         this.processoInitialDistributionSnapshotService = Objects.requireNonNull(processoInitialDistributionSnapshotService);
@@ -49,10 +52,12 @@ public class AjuizamentoPostCommitOperationalEffectsService {
         this.federalismoJudicialEngine = Objects.requireNonNull(federalismoJudicialEngine);
         this.painelNacionalJusticaService = Objects.requireNonNull(painelNacionalJusticaService);
         this.radarPadroesService = Objects.requireNonNull(radarPadroesService);
+        TransactionTemplate template = new TransactionTemplate(Objects.requireNonNull(transactionManager));
+        template.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        this.postCommitTransactionTemplate = template;
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @PjbTransactionalBudget(operation = "ajuizamento.service.post-commit.persist", maxMillis = 2200, critical = true)
     public void onProcessoAjuizado(ProcessoAjuizadoEvent event) {
         if (event == null || event.getProcessoId() == null) {
@@ -101,7 +106,7 @@ public class AjuizamentoPostCommitOperationalEffectsService {
 
     private void registrarFederalismoSafely(Processo processo) {
         try {
-            federalismoJudicialEngine.registrarProcessoAjuizado(processo);
+            postCommitTransactionTemplate.executeWithoutResult(status -> federalismoJudicialEngine.registrarProcessoAjuizado(processo));
         } catch (Exception ex) {
             log.warn("Registro federativo nao bloqueante falhou. processoId={} erro={}", processo != null ? processo.getId() : null, ex.getMessage());
         }

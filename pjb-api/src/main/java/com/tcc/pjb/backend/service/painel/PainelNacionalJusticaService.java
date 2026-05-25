@@ -476,7 +476,7 @@ public class PainelNacionalJusticaService {
         String ramo = normalizeUpper(ramoDireito) == null ? "NAO_INFORMADO" : normalizeUpper(ramoDireito);
         LocalDate referencia = ocorridoEm == null ? LocalDate.now() : LocalDateTime.ofInstant(ocorridoEm, java.time.ZoneOffset.UTC).toLocalDate();
         PainelTribunalMetrica item = tribunalRepository.findByCodigoTribunal(tribunal)
-                .orElseGet(() -> new PainelTribunalMetrica(tribunal, tribunal, noFederacaoRepository.findByCodigoTribunal(tribunal).map(NoFederacaoJudicial::getUf).orElse("N/D")));
+                .orElseGet(() -> new PainelTribunalMetrica(tribunal, tribunal, noFederacaoRepository.findByCodigoTribunal(tribunal).map(NoFederacaoJudicial::getUf).map(this::normalizeUf).orElse(null)));
         item.setProcessosAtivos(item.getProcessosAtivos() + 1L);
         item.setAjuizadosHoje(item.getAjuizadosHoje() + 1L);
         item.setAjuizadosSemana(item.getAjuizadosSemana() + 1L);
@@ -594,11 +594,18 @@ public class PainelNacionalJusticaService {
     }
 
     private String resolveUf(Processo processo) {
+        String processoUf = normalizeUf(processo.getUf());
+        if (processoUf != null) {
+            return processoUf;
+        }
         if (processo.getJurisdicao() != null && processo.getJurisdicao().getEstado() != null && !processo.getJurisdicao().getEstado().isBlank()) {
-            return normalizeUpper(processo.getJurisdicao().getEstado());
+            String jurisdicaoUf = normalizeUf(processo.getJurisdicao().getEstado());
+            if (jurisdicaoUf != null) {
+                return jurisdicaoUf;
+            }
         }
         String tribunalCodigo = resolveTribunalCodigo(processo);
-        return noFederacaoRepository.findByCodigoTribunal(tribunalCodigo).map(NoFederacaoJudicial::getUf).map(this::normalizeUpper).orElse("N/D");
+        return noFederacaoRepository.findByCodigoTribunal(tribunalCodigo).map(NoFederacaoJudicial::getUf).map(this::normalizeUf).orElse(null);
     }
 
     private String resolveRamo(Processo processo) {
@@ -778,6 +785,14 @@ public class PainelNacionalJusticaService {
         }
         String normalized = value.strip();
         return normalized.isEmpty() ? null : normalized.toUpperCase(Locale.ROOT);
+    }
+
+    private String normalizeUf(String value) {
+        String normalized = normalizeUpper(value);
+        if (normalized == null) {
+            return null;
+        }
+        return normalized.matches("[A-Z]{2}") ? normalized : null;
     }
 
     private String normalizeText(String value) {

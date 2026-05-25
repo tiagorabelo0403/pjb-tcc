@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.Normalizer;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -958,7 +959,25 @@ public class ConfiguracaoDistribuicaoVaraService {
 
     private static String normalizeToken(String value) {
         String normalized = normalizeText(value);
-        return normalized == null ? null : normalized.toUpperCase(Locale.ROOT).replace(' ', '_');
+        if (normalized == null) {
+            return null;
+        }
+        String token = Normalizer.normalize(normalized, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toUpperCase(Locale.ROOT)
+                .replaceAll("[^A-Z0-9]+", "_")
+                .replaceAll("_+", "_")
+                .replaceAll("^_+", "")
+                .replaceAll("_+$", "");
+        return switch (token) {
+            case "CIVEL" -> "CIVIL";
+            case "TRIBUTARIA" -> "TRIBUTARIO";
+            case "PREVIDENCIARIA" -> "PREVIDENCIARIO";
+            case "ACAO_DE_COBRANCA", "PETICAO_INICIAL" -> "PROCEDIMENTO_COMUM_CIVEL";
+            case "COBRANCA", "COBRANCA_CONTRATUAL", "CONTRATO_INADIMPLIDO", "CONTRATUAL" -> "CONTRATOS";
+            case "OBRIGACAO_CONTRATUAL_VENCIDA", "OBRIGACOES_CONTRATUAIS" -> "OBRIGACOES";
+            default -> token;
+        };
     }
 
     private static String blankToNull(String value) {
