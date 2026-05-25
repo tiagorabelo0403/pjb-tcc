@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/demo")
-@PreAuthorize("permitAll()")
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_ADMINISTRADOR')")
 public class PjbDemoStatusController {
 
     private final JdbcTemplate jdbc;

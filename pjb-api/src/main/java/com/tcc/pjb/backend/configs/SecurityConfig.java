@@ -345,7 +345,8 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(authz -> {
                     authz.requestMatchers("/actuator/health", "/actuator/health/**", "/livez", "/readyz", "/startupz").permitAll();
-                    authz.requestMatchers("/demo/**").permitAll();
+                    authz.requestMatchers("/demo/**")
+                            .hasAnyAuthority("ROLE_ADMIN", "ROLE_ADMINISTRADOR");
                     authz.requestMatchers("/api/v1/public/**").permitAll();
                     authz.requestMatchers("/api/v1/auth/passkey/options", "/api/v1/auth/passkey/finish").permitAll();
                     authz.requestMatchers("/actuator/info", "/actuator/metrics/**", "/actuator/prometheus")

@@ -9,6 +9,7 @@ import com.tcc.pjb.backend.configs.live.RedisLiveClusterStateStore;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -32,5 +33,17 @@ class LiveClusterStateStoreContextGuardTest {
     void deveManterImplementacoesForaDeEstereotiposDuplicados() {
         assertThat(RedisLiveClusterStateStore.class.isAnnotationPresent(org.springframework.stereotype.Component.class)).isFalse();
         assertThat(NoOpLiveClusterStateStore.class.isAnnotationPresent(org.springframework.stereotype.Component.class)).isFalse();
+    }
+
+    @Test
+    void deveFalharFechadoQuandoClusterEstiverHabilitadoSemRedis() {
+        new ApplicationContextRunner()
+                .withUserConfiguration(LiveClusterStateStoreConfiguration.class)
+                .withPropertyValues("pjb.live.cluster.enabled=true")
+                .run(context -> {
+                    assertThat(context.getStartupFailure()).isNotNull();
+                    assertThat(context.getStartupFailure())
+                            .hasMessageContaining("pjb.live.cluster.enabled=true");
+                });
     }
 }

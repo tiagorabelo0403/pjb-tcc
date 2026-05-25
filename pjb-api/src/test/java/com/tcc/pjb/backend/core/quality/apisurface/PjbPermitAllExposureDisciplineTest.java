@@ -17,7 +17,6 @@ class PjbPermitAllExposureDisciplineTest {
             "src/main/java/com/tcc/pjb/backend/controller/auth/PasskeyAuthController.java",
             "src/main/java/com/tcc/pjb/backend/controller/auth/PasskeyStepUpController.java",
             "src/main/java/com/tcc/pjb/backend/controller/consulta/ConsultasRapidasController.java",
-            "src/main/java/com/tcc/pjb/backend/controller/demo/PjbDemoStatusController.java",
             "src/main/java/com/tcc/pjb/backend/controller/integration/N8nIntegrationController.java",
             "src/main/java/com/tcc/pjb/backend/controller/notification/NotificationTrackingController.java",
             "src/main/java/com/tcc/pjb/backend/controller/publico/AtlasAcessoJusticaController.java",
