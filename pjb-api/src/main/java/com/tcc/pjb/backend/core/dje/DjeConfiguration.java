@@ -15,12 +15,14 @@ public class DjeConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(DjeHttpClient.class)
+    @ConditionalOnProperty(prefix = "pjb.dje", name = "enabled", havingValue = "false", matchIfMissing = true)
     public DjeHttpClient djeHttpClient() {
         return (tribunalCodigo, conteudo, tipoAto) -> new com.tcc.pjb.backend.core.dje.domain.DjeEnvioResult("MOCK");
     }
 
     @Bean
     @ConditionalOnMissingBean(DjePartesNotificacaoPort.class)
+    @ConditionalOnProperty(prefix = "pjb.dje", name = "enabled", havingValue = "false", matchIfMissing = true)
     public DjePartesNotificacaoPort djePartesNotificacaoPort() {
         return publicacao -> DjePartesNotificacaoResult.success(publicacao.getId(), "mock");
     }
