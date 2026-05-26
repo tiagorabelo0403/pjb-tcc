@@ -3,13 +3,16 @@ package com.tcc.pjb.backend.bootstrap;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import jakarta.inject.Inject;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
@@ -23,13 +26,27 @@ public class AdminBootstrapper implements ApplicationRunner {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final Environment environment;
+    private final AuditLedgerService auditLedgerService;
+    private final Function<String, String> envProvider;
 
+    @Inject
     public AdminBootstrapper(UsuarioRepository usuarioRepository,
                              PasswordEncoder passwordEncoder,
-                             Environment environment) {
+                             Environment environment,
+                             AuditLedgerService auditLedgerService) {
+        this(usuarioRepository, passwordEncoder, environment, auditLedgerService, System::getenv);
+    }
+
+    AdminBootstrapper(UsuarioRepository usuarioRepository,
+                      PasswordEncoder passwordEncoder,
+                      Environment environment,
+                      AuditLedgerService auditLedgerService,
+                      Function<String, String> envProvider) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.environment = environment;
+        this.auditLedgerService = auditLedgerService;
+        this.envProvider = envProvider;
     }
 
     @Override
@@ -69,9 +86,14 @@ public class AdminBootstrapper implements ApplicationRunner {
     }
 
     private boolean bootstrapPermitido() {
-        String explicit = System.getenv("PJB_ADMIN_BOOTSTRAP_ENABLED");
-        if (explicit != null && !explicit.isBlank()) {
-            return Boolean.parseBoolean(explicit.trim());
+        String explicit = envProvider.apply("PJB_ADMIN_BOOTSTRAP_ENABLED");
+        if (explicit != null && !explicit.isBlank() && Boolean.parseBoolean(explicit.trim())) {
+            if (!isProfileSeguro()) {
+                log.error("SECURITY: PJB_ADMIN_BOOTSTRAP_ENABLED=true detectado em perfil não seguro. Bootstrap BLOQUEADO.");
+                auditLedgerService.appendSafely("ADMIN_BOOTSTRAP_BLOQUEADO_PROD",
+                        "PJB_ADMIN_BOOTSTRAP_ENABLED ativo em perfil não seguro — bootstrap bloqueado.");
+                return false;
+            }
         }
         return isProfileSeguro();
     }
@@ -96,7 +118,7 @@ public class AdminBootstrapper implements ApplicationRunner {
     }
 
     private String resolveAdminName() {
-        String nome = System.getenv("PJB_ADMIN_NAME");
+        String nome = envProvider.apply("PJB_ADMIN_NAME");
         if (nome == null || nome.isBlank()) {
             return "Admin PJB";
         }
@@ -104,7 +126,7 @@ public class AdminBootstrapper implements ApplicationRunner {
     }
 
     private String envOrDefault(String key, String def) {
-        String v = System.getenv(key);
+        String v = envProvider.apply(key);
         if (v == null || v.isBlank()) {
             return def;
         }

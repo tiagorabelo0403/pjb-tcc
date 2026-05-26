@@ -33,7 +33,7 @@ public class DbUserDetailsService implements UserDetailsService {
         String password = normalizePassword(usuario.getSenha());
 
         var authorities = PjbGrantedAuthorityFactory.authoritiesFor(usuario.getTipoUsuario(), usuario.getEnteFederativo());
-        return new User(key, password, true, true, true, true, authorities);
+        return new User(key, password, usuario.isAtivo(), true, true, true, authorities);
     }
 
     private String normalizePassword(String stored) {

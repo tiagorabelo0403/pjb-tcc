@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
 import com.tcc.pjb.backend.core.validation.oab.OabStrictValidator;
 import com.tcc.pjb.backend.mapper.UsuarioMapper;
@@ -27,17 +30,20 @@ public class UsuarioService {
     private final OabStrictValidator oabStrictValidator;
     private final DocumentoNacionalValidator documentoNacionalValidator;
     private final IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService;
+    private final AuditLedgerService auditLedgerService;
 
     public UsuarioService(UsuarioRepository usuarioRepository,
                           UsuarioMapper usuarioMapper,
                           OabStrictValidator oabStrictValidator,
                           DocumentoNacionalValidator documentoNacionalValidator,
-                          IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService) {
+                          IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService,
+                          AuditLedgerService auditLedgerService) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioMapper = usuarioMapper;
         this.oabStrictValidator = oabStrictValidator;
         this.documentoNacionalValidator = documentoNacionalValidator;
         this.identidadeJuridicaNacionalService = identidadeJuridicaNacionalService;
+        this.auditLedgerService = auditLedgerService;
     }
 
     @Transactional(readOnly = true)
@@ -69,6 +75,8 @@ public class UsuarioService {
         Usuario entidadeSalva = usuarioRepository.save(novaEntidade);
         sincronizarIdentidadeNacional(entidadeSalva);
         Usuario entidadeFinal = usuarioRepository.save(entidadeSalva);
+        auditLedgerService.appendSafely("USUARIO_CRIADO", "USUARIO", String.valueOf(entidadeFinal.getId()),
+                null, "por:" + obterAtorAtual());
 
         UsuarioResponse response = usuarioMapper.entidadeParaResponse(entidadeFinal);
         enrichResponse(entidadeFinal, response);
@@ -90,6 +98,8 @@ public class UsuarioService {
         Usuario entidadeSalva = usuarioRepository.save(entidadeExistente);
         sincronizarIdentidadeNacional(entidadeSalva);
         Usuario entidadeFinal = usuarioRepository.save(entidadeSalva);
+        auditLedgerService.appendSafely("USUARIO_PERFIL_ALTERADO", "USUARIO", String.valueOf(id),
+                null, "por:" + obterAtorAtual());
 
         UsuarioResponse response = usuarioMapper.entidadeParaResponse(entidadeFinal);
         enrichResponse(entidadeFinal, response);
@@ -101,6 +111,13 @@ public class UsuarioService {
         Usuario entidade = buscarUsuarioPeloId(id);
         entidade.setAtivo(false);
         usuarioRepository.save(entidade);
+        auditLedgerService.appendSafely("USUARIO_DESATIVADO", "USUARIO", String.valueOf(id),
+                null, "por:" + obterAtorAtual());
+    }
+
+    private String obterAtorAtual() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (auth != null && auth.getName() != null) ? auth.getName() : "SISTEMA";
     }
 
     private Usuario buscarUsuarioPeloId(Long id) {

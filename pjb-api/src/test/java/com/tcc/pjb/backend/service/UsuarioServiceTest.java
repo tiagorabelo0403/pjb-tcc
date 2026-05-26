@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
 import com.tcc.pjb.backend.core.validation.oab.OabStrictValidator;
 import com.tcc.pjb.backend.mapper.UsuarioMapper;
@@ -29,6 +30,7 @@ class UsuarioServiceTest {
     private final OabStrictValidator oabStrictValidator = mock(OabStrictValidator.class);
     private final DocumentoNacionalValidator documentoNacionalValidator = mock(DocumentoNacionalValidator.class);
     private final IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService = mock(IdentidadeJuridicaNacionalService.class);
+    private final AuditLedgerService auditLedgerService = mock(AuditLedgerService.class);
 
     private UsuarioService service;
 
@@ -39,7 +41,8 @@ class UsuarioServiceTest {
                 usuarioMapper,
                 oabStrictValidator,
                 documentoNacionalValidator,
-                identidadeJuridicaNacionalService
+                identidadeJuridicaNacionalService,
+                auditLedgerService
         );
     }
 
