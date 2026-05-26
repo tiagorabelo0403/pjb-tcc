@@ -94,6 +94,7 @@ import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumen
 import com.tcc.pjb.backend.service.processual.document.template.OfficialDocumentTemplateService;
 import com.tcc.pjb.backend.service.processual.pauta.PautaAudienciaNacionalService;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalFluxoMinimoPersistenciaService;
+import com.tcc.pjb.backend.service.processual.recursal.RecursalMeshBundleService;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalPeticionamentoFacadeService;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalValidacaoMinimaService;
 import com.tcc.pjb.backend.service.processual.recursal.formalizacao.RecursalFormalizacaoService;
@@ -609,6 +610,11 @@ class PjbFluxoJudicialCompletoE2ETest extends PjbIntegrationTestBase {
                 new ObjectMapper(),
                 meshRequestMapper
         );
+        RecursalMeshBundleService recursalMeshBundleService = new RecursalMeshBundleService(
+                recursalMeshService,
+                Mockito.mock(ProcessualOperationalSurfaceFacadeService.class),
+                Mockito.mock(RecursalIaConferenciaService.class)
+        );
         recursalFacadeService = new RecursalPeticionamentoFacadeService(
                 recursalContextFactory,
                 processoRepository,
@@ -617,9 +623,7 @@ class PjbFluxoJudicialCompletoE2ETest extends PjbIntegrationTestBase {
                 recursalLifecycleMachine,
                 Mockito.mock(PainelServiceCommons.class),
                 Mockito.mock(ProcessoRecursalApplicationService.class),
-                recursalMeshService,
-                Mockito.mock(ProcessualOperationalSurfaceFacadeService.class),
-                Mockito.mock(RecursalIaConferenciaService.class),
+                recursalMeshBundleService,
                 Mockito.mock(RecursalDraftPreviewAssembler.class),
                 Mockito.mock(RecursalIntelligenceFacadeService.class),
                 Mockito.mock(RecursalFactIdempotentIngestService.class),

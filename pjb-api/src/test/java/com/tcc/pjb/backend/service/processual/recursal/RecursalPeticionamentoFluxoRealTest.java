@@ -164,6 +164,11 @@ class RecursalPeticionamentoFluxoRealTest {
                 new ObjectMapper(),
                 meshRequestMapper
         );
+        RecursalMeshBundleService meshBundleService = new RecursalMeshBundleService(
+                recursalMeshService,
+                Mockito.mock(ProcessualOperationalSurfaceFacadeService.class),
+                Mockito.mock(RecursalIaConferenciaService.class)
+        );
         facadeService = new RecursalPeticionamentoFacadeService(
                 contextFactory,
                 processoRepository,
@@ -172,9 +177,7 @@ class RecursalPeticionamentoFluxoRealTest {
                 lifecycleMachine,
                 Mockito.mock(PainelServiceCommons.class),
                 Mockito.mock(ProcessoRecursalApplicationService.class),
-                recursalMeshService,
-                Mockito.mock(ProcessualOperationalSurfaceFacadeService.class),
-                Mockito.mock(RecursalIaConferenciaService.class),
+                meshBundleService,
                 Mockito.mock(RecursalDraftPreviewAssembler.class),
                 Mockito.mock(RecursalIntelligenceFacadeService.class),
                 Mockito.mock(RecursalFactIdempotentIngestService.class),
