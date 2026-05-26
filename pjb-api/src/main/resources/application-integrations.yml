@@ -30,6 +30,15 @@ pjb:
       request-timeout: ${PJB_GOVBR_REQUEST_TIMEOUT:6s}
       state-ttl: ${PJB_GOVBR_STATE_TTL:5m}
       cleanup-interval: ${PJB_GOVBR_CLEANUP_INTERVAL:3600000}
+    serpro:
+      datavalid:
+        enabled: ${PJB_SERPRO_DATAVALID_ENABLED:false}
+        consumer-key: ${PJB_SERPRO_DATAVALID_CONSUMER_KEY:}
+        consumer-secret: ${PJB_SERPRO_DATAVALID_CONSUMER_SECRET:}
+        base-url: ${PJB_SERPRO_DATAVALID_BASE_URL:https://apigateway.serpro.gov.br/datavalid/v2/cpf}
+        token-url: ${PJB_SERPRO_DATAVALID_TOKEN_URL:https://autenticacao.sapi.serpro.gov.br/authenticate}
+        connect-timeout: ${PJB_SERPRO_DATAVALID_CONNECT_TIMEOUT:5s}
+        read-timeout: ${PJB_SERPRO_DATAVALID_READ_TIMEOUT:3s}
     sisbajud:
       base-url: ${PJB_SISBAJUD_BASE_URL:}
       token: ${PJB_SISBAJUD_TOKEN:}

@@ -241,6 +241,21 @@ public class ApiExceptionHandler {
         return build(HttpStatus.UNPROCESSABLE_ENTITY, "processual_territorial_violation", safeMessage(ex), request, extra);
     }
 
+    @ExceptionHandler(com.tcc.pjb.backend.configs.security.PasskeyRequiredException.class)
+    public ResponseEntity<ProblemDetail> handlePasskeyRequired(
+            com.tcc.pjb.backend.configs.security.PasskeyRequiredException ex, HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, "passkey_required",
+                "Autenticação forte por passkey obrigatória para este perfil.", request, null);
+    }
+
+    @ExceptionHandler(com.tcc.pjb.backend.integration.serpro.datavalid.CpfSituacaoBloqueadaException.class)
+    public ResponseEntity<ProblemDetail> handleCpfBloqueado(com.tcc.pjb.backend.integration.serpro.datavalid.CpfSituacaoBloqueadaException ex, HttpServletRequest request) {
+        Map<String, Object> extra = new LinkedHashMap<>();
+        extra.put("errorCode", ex.getCodigoPjb());
+        return build(HttpStatus.UNPROCESSABLE_ENTITY, "cpf_situacao_bloqueada",
+                "Peticionamento não permitido para o CPF informado.", request, extra);
+    }
+
     @ExceptionHandler(RegraNegocioException.class)
     public ResponseEntity<ProblemDetail> handleBusiness(RegraNegocioException ex, HttpServletRequest request) {
         return build(HttpStatus.UNPROCESSABLE_ENTITY, "business_rule", safeMessage(ex), request, null);

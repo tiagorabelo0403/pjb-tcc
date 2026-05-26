@@ -43,6 +43,7 @@ import com.tcc.pjb.backend.service.processual.peticionamento.media.Peticionament
 import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaStorageShieldService;
 import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMultimidiaComposerService;
 import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoThreatSentinelService;
+import com.tcc.pjb.backend.integration.serpro.datavalid.CpfValidacaoService;
 
 @Service
 public class PeticionamentoSessaoFacadeService {
@@ -69,6 +70,7 @@ public class PeticionamentoSessaoFacadeService {
     private final PeticionamentoJurisprudenciaWorkspaceService jurisprudenciaWorkspaceService;
     private final InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService;
     private final OfficeProcessWorkspaceScopeService officeProcessWorkspaceScopeService;
+    private final CpfValidacaoService cpfValidacaoService;
 
     public PeticionamentoSessaoFacadeService(CurrentUserService currentUserService,
                                              PeticionamentoEnderecoAutomationService enderecoAutomationService,
@@ -91,7 +93,8 @@ public class PeticionamentoSessaoFacadeService {
                                              UploadCapacityGovernanceService uploadCapacityGovernanceService,
                                              PeticionamentoJurisprudenciaWorkspaceService jurisprudenciaWorkspaceService,
                                              InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService,
-                                             ObjectProvider<OfficeProcessWorkspaceScopeService> officeProcessWorkspaceScopeServiceProvider) {
+                                             ObjectProvider<OfficeProcessWorkspaceScopeService> officeProcessWorkspaceScopeServiceProvider,
+                                             CpfValidacaoService cpfValidacaoService) {
         this.currentUserService = Objects.requireNonNull(currentUserService, "currentUserService");
         this.enderecoAutomationService = Objects.requireNonNull(enderecoAutomationService, "enderecoAutomationService");
         this.representacaoProcessualPolicyService = Objects.requireNonNull(representacaoProcessualPolicyService, "representacaoProcessualPolicyService");
@@ -114,12 +117,14 @@ public class PeticionamentoSessaoFacadeService {
         this.jurisprudenciaWorkspaceService = Objects.requireNonNull(jurisprudenciaWorkspaceService, "jurisprudenciaWorkspaceService");
         this.institutionalMultimediaWorkspaceService = Objects.requireNonNull(institutionalMultimediaWorkspaceService, "institutionalMultimediaWorkspaceService");
         this.officeProcessWorkspaceScopeService = officeProcessWorkspaceScopeServiceProvider.getIfAvailable();
+        this.cpfValidacaoService = Objects.requireNonNull(cpfValidacaoService, "cpfValidacaoService");
     }
 
     public PeticionamentoSessaoResponse abrirSessaoInicial(PeticionamentoSessaoRequest request) {
         PeticionamentoPayloadHardeningService.HardenedPayload hardened = payloadHardeningService.harden(request);
         PeticionamentoSessaoRequest safe = hardened.request();
         Usuario usuario = requirePeticionante();
+        cpfValidacaoService.validarParaPeticionamento(usuario.getCpf());
         PeticionamentoModo modo = safe.modoResolvido();
         String sessionKey = buildSessionKey(usuario, safe, modo, hardened.fingerprint());
 
