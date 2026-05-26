@@ -11,6 +11,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import com.tcc.pjb.backend.configs.security.PasskeyRequiredException;
+import com.tcc.pjb.backend.configs.security.PasskeyRequirementEnforcer;
 import com.tcc.pjb.backend.core.observability.RequestContext;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.magistratura.delegation.DelegationCredential;
@@ -38,10 +40,14 @@ public class MinisterStepUpFilter extends OncePerRequestFilter {
 
     private final FaceReauthTokenService faceTokenService;
     private final CurrentUserService currentUserService;
+    private final PasskeyRequirementEnforcer passkeyRequirementEnforcer;
 
-    public MinisterStepUpFilter(FaceReauthTokenService faceTokenService, CurrentUserService currentUserService) {
+    public MinisterStepUpFilter(FaceReauthTokenService faceTokenService,
+                                CurrentUserService currentUserService,
+                                PasskeyRequirementEnforcer passkeyRequirementEnforcer) {
         this.faceTokenService = faceTokenService;
         this.currentUserService = currentUserService;
+        this.passkeyRequirementEnforcer = passkeyRequirementEnforcer;
     }
 
     @Override
@@ -49,10 +55,17 @@ public class MinisterStepUpFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        
+
         Usuario u = currentUserService.getOrNull();
         if (u == null) {
             filterChain.doFilter(request, response);
+            return;
+        }
+
+        try {
+            passkeyRequirementEnforcer.exigirParaMagistratura(u.getId(), u.getTipoUsuario());
+        } catch (PasskeyRequiredException e) {
+            deny(response, "PJB_PASSKEY_REQUIRED");
             return;
         }
 

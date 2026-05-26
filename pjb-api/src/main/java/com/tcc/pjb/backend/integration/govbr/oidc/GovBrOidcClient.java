@@ -180,7 +180,8 @@ public class GovBrOidcClient {
           stringValue(claims.get("iss")),
           stringValue(claims.get("sub")),
           parseEpochSeconds(claims.get("exp")),
-          Map.copyOf(claims)
+          Map.copyOf(claims),
+          stringValue(claims.get("acr"))
       );
     } catch (Exception ignored) {
       return GovBrAccessTokenSignals.empty();
@@ -377,7 +378,8 @@ public class GovBrOidcClient {
       String issuer,
       String subject,
       Instant expiresAt,
-      Map<String, Object> claims
+      Map<String, Object> claims,
+      String acr
   ) {
     public GovBrAccessTokenSignals {
       amr = amr == null ? List.of() : List.copyOf(amr);
@@ -385,7 +387,7 @@ public class GovBrOidcClient {
     }
 
     public static GovBrAccessTokenSignals empty() {
-      return new GovBrAccessTokenSignals(false, false, List.of(), null, null, null, Map.of());
+      return new GovBrAccessTokenSignals(false, false, List.of(), null, null, null, Map.of(), null);
     }
   }
 }

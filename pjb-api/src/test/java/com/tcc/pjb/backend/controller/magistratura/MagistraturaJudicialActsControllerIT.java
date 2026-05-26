@@ -29,8 +29,10 @@ import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
+import com.tcc.pjb.backend.model.entity.security.TrustedDevice;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.model.repository.security.TrustedDeviceRepository;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDecision;
 import com.tcc.pjb.backend.service.casefile.CaseContinuityDecisionGateService;
@@ -78,6 +80,9 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
 
     @Autowired
     private ProcessoRepository processoRepository;
+
+    @Autowired
+    private TrustedDeviceRepository trustedDeviceRepository;
 
     @MockitoBean
     private UserPersonaService personaService;
@@ -132,11 +137,16 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
     @BeforeEach
     void setup() {
         processoRepository.deleteAll();
+        trustedDeviceRepository.deleteAll();
         usuarioRepository.deleteAll();
 
         Usuario juiz = usuarioRepository.save(novoJuiz());
-        usuarioRepository.save(novoDesembargador());
-        usuarioRepository.save(novoMinistro());
+        Usuario desembargador = usuarioRepository.save(novoDesembargador());
+        Usuario ministro = usuarioRepository.save(novoMinistro());
+
+        registrarPasskey(juiz, "cred-juiz-atos-it");
+        registrarPasskey(desembargador, "cred-desemb-atos-it");
+        registrarPasskey(ministro, "cred-ministro-atos-it");
         processo = processoRepository.save(Processo.builder()
                 .numeroProcesso("MAG-ATOS-2026-01")
                 .numeroUnificado("0009001-11.2026.8.06.0001")
@@ -545,6 +555,18 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
                 EsferaJurisdicao.JUSTICA_ESTADUAL,
                 false
         );
+    }
+
+    private void registrarPasskey(Usuario usuario, String credentialId) {
+        TrustedDevice passkey = new TrustedDevice();
+        passkey.setUsuario(usuario);
+        passkey.setCredentialId(credentialId);
+        passkey.setPublicKey("pub-key-" + credentialId);
+        passkey.setAlias("passkey-" + credentialId);
+        passkey.setAttestationTrusted(false);
+        passkey.setEnrollSuspectNetwork(false);
+        passkey.setRiskScoreEnroll(0);
+        trustedDeviceRepository.save(passkey);
     }
 
     private JuizProcessoGuardRailService.GuardRailSnapshot guardAllow() {

@@ -6,7 +6,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.tcc.pjb.backend.BackendApplication;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
+import com.tcc.pjb.backend.model.entity.security.TrustedDevice;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.model.repository.security.TrustedDeviceRepository;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,11 +39,15 @@ class JuizGabineteDecisionalFluxoTest {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private TrustedDeviceRepository trustedDeviceRepository;
+
     @MockitoBean
     private CapabilityRateLimiter capabilityRateLimiter;
 
     @BeforeEach
     void setup() {
+        trustedDeviceRepository.deleteAll();
         usuarioRepository.deleteAll();
         Usuario juiz = Usuario.builder()
                 .nome("Juiz IT")
@@ -52,7 +58,17 @@ class JuizGabineteDecisionalFluxoTest {
                 .perfil(TipoUsuario.MAGISTRADO.name())
                 .ativo(true)
                 .build();
-        usuarioRepository.save(juiz);
+        juiz = usuarioRepository.save(juiz);
+
+        TrustedDevice passkey = new TrustedDevice();
+        passkey.setUsuario(juiz);
+        passkey.setCredentialId("cred-juiz-gabinete-it");
+        passkey.setPublicKey("pub-key-juiz-gabinete-it-placeholder");
+        passkey.setAlias("dispositivo-it");
+        passkey.setAttestationTrusted(false);
+        passkey.setEnrollSuspectNetwork(false);
+        passkey.setRiskScoreEnroll(0);
+        trustedDeviceRepository.save(passkey);
     }
 
     @Test

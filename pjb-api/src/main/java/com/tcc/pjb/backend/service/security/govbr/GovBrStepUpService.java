@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.service.security.govbr;
 
 import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.integration.govbr.GovBrAssuranceLevel;
 import com.tcc.pjb.backend.integration.govbr.oidc.GovBrOidcClient;
 import com.tcc.pjb.backend.integration.govbr.oidc.GovBrOidcProperties;
 import com.tcc.pjb.backend.integration.govbr.oidc.GovBrOidcUrls;
@@ -172,6 +173,9 @@ public class GovBrStepUpService {
     GovBrOidcClient.GovBrAccessTokenSignals accessSignals = client.extractAccessTokenSignals(token.accessToken());
     if (!accessSignals.mfaPresent()) {
       return errorRedirect("mfa_absent");
+    }
+    if (!GovBrAssuranceLevel.meetsMinimum(accessSignals.acr(), GovBrAssuranceLevel.PRATA)) {
+      return errorRedirect("assurance_insuficiente");
     }
 
     GovBrUserInfoResponse info;
