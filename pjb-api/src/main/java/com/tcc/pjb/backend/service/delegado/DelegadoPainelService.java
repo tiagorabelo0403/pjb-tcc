@@ -27,6 +27,7 @@ import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopo
 import com.tcc.pjb.backend.service.intelligence.PessoaLocalizacaoIntelligenceSummaryService;
 import com.tcc.pjb.backend.service.intelligence.PessoaLocalizacaoService;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 import com.tcc.pjb.backend.service.profile.PerfilCapabilityMatrixService;
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
 import com.tcc.pjb.backend.service.ui.branding.InstitutionalPanelBrandingService;
@@ -316,7 +317,7 @@ public class DelegadoPainelService {
                                                               Long inqueritoId,
                                                               DelegadoInqueritoMultimidiaRequest request) {
         String titulo = resolveInvestigativePieceTitle(request);
-        QualifiedDocumentSignatureEnvelopeService.SignedContent signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
+        SignedDocumentEnvelope signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
                 null,
                 usuario,
                 titulo,

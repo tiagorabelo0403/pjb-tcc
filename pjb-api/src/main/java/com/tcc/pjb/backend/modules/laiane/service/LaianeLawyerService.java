@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.modules.laiane.service;
 
+import com.tcc.pjb.backend.core.time.PjbTimeService;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -50,6 +51,7 @@ public class LaianeLawyerService {
     private final ObjectMapper objectMapper;
     private final ProceduralCatalogService proceduralCatalogService;
     private final RepresentacaoProcessualPolicyService representacaoProcessualPolicyService;
+    private final PjbTimeService timeService;
 
     
     
@@ -336,7 +338,7 @@ public class LaianeLawyerService {
         }
 
         d.setStatus(LaianeDeadlineDelegationStatus.ACEITA);
-        d.setAcceptedAt(LocalDateTime.now());
+        d.setAcceptedAt(LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone()));
         d = delegationRepository.save(d);
 
         auditoria.registrarEventoImutavelJustificado(
@@ -365,7 +367,7 @@ public class LaianeLawyerService {
         }
 
         d.setStatus(LaianeDeadlineDelegationStatus.CONCLUIDA);
-        d.setCompletedAt(LocalDateTime.now());
+        d.setCompletedAt(LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone()));
         d = delegationRepository.save(d);
 
         auditoria.registrarEventoImutavelJustificado(

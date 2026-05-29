@@ -41,6 +41,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.QualifiedSignatureMetadata;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.SovereignValidationResult;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -63,7 +68,9 @@ class DiligenceProcessFormalizationServiceTest {
         DigitalCustodyChainLedgerService custodyLedgerService = Mockito.mock(DigitalCustodyChainLedgerService.class);
         DiligenceOperationalMinutePdfService minutePdfService = Mockito.mock(DiligenceOperationalMinutePdfService.class);
         QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService = Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class);
-        when(qualifiedDocumentSignatureEnvelopeService.signFreeContent(any(), any(), any(), any(), any(), any(), Mockito.anyBoolean(), any())).thenReturn(new QualifiedDocumentSignatureEnvelopeService.SignedContent("FORMALIZACAO_ASSINADA", "aa".repeat(32), java.util.Map.of("rubrica", "PJB-RUB-FORM"), java.util.Map.of("status", "VALIDO")));
+        SovereignValidationResult sovereignResult = new SovereignValidationResult("VALIDO", null, null, false, false, false, false, false, null, null, null, null, null, null, null, List.of());
+        QualifiedSignatureMetadata qsm = new QualifiedSignatureMetadata("ENV-FORM", null, null, null, true, "PJB-RUB-FORM", LocalDate.of(2026, 3, 11), LocalTime.of(15, 0), "QUIXADÁ", "Oficial Operacional", "OFICIAL_JUSTICA", null, null, null, null, null, null, null, null, true, null, null, null, sovereignResult);
+        when(qualifiedDocumentSignatureEnvelopeService.signFreeContent(any(), any(), any(), any(), any(), any(), Mockito.anyBoolean(), any())).thenReturn(new SignedDocumentEnvelope("FORMALIZACAO_TITULO", "FORMALIZACAO_ASSINADA", "aa".repeat(32), true, qsm, sovereignResult));
         DiligenceProcessFormalizationService service = new DiligenceProcessFormalizationService(
                 currentUserService,
                 authorizationService,
@@ -144,8 +151,9 @@ class DiligenceProcessFormalizationServiceTest {
         assertThat(response.evidenceIntegrityOk()).isTrue();
         assertThat(response.documentosReferenciados()).isEqualTo(1);
         assertThat(response.formalizationDigestSha256()).hasSize(64);
-        assertThat(response.assinaturaQualificada()).containsKey("rubrica");
-        assertThat(response.validacaoSoberana()).containsEntry("status", "VALIDO");
+        assertThat(response.assinaturaQualificada()).isNotNull();
+        assertThat(response.assinaturaQualificada().rubricaEletronica()).isEqualTo("PJB-RUB-FORM");
+        assertThat(response.validacaoSoberana().status()).isEqualTo("VALIDO");
     }
 
     private static Usuario usuario() {

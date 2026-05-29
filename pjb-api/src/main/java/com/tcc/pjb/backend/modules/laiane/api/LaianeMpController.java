@@ -57,10 +57,9 @@ public class LaianeMpController {
     public LaianeMpAuditResponse audit(
             @RequestParam(required = false) String referenciaId,
             @RequestParam(required = false) String acao,
-            @RequestParam(required = false) Long usuarioId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "30") int size
     ) {
-        return service.audit(referenciaId, acao, usuarioId, page, size);
+        return service.audit(referenciaId, acao, page, size);
     }
 }

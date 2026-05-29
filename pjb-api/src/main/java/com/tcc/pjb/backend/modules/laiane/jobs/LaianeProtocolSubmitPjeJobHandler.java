@@ -20,6 +20,7 @@ import com.tcc.pjb.backend.modules.laiane.entity.LaianeProtocolPackage;
 import com.tcc.pjb.backend.modules.laiane.repository.LaianeProtocolPackageRepository;
 import com.tcc.pjb.backend.modules.laiane.service.LaianeNationalPreflightService;
 import com.tcc.pjb.backend.modules.laiane.service.LaianeProtocolSubmissionService;
+import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.service.procedural.ProceduralCatalogService;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -41,6 +42,7 @@ public class LaianeProtocolSubmitPjeJobHandler implements JobHandler {
     private final JudicialConnectorRegistry connectorRegistry;
     private final JudicialConnectorReadinessService judicialConnectorReadinessService;
     private final ProceduralCatalogService proceduralCatalogService;
+    private final PjbTimeService timeService;
     private final boolean mockEnabled;
 
     public LaianeProtocolSubmitPjeJobHandler(LaianeProtocolPackageRepository protocolRepo,
@@ -51,6 +53,7 @@ public class LaianeProtocolSubmitPjeJobHandler implements JobHandler {
                                              JudicialConnectorRegistry connectorRegistry,
                                              JudicialConnectorReadinessService judicialConnectorReadinessService,
                                              ProceduralCatalogService proceduralCatalogService,
+                                             PjbTimeService timeService,
                                              @Value("${pjb.integrations.pje.mock-enabled:${PJB_INTEGRATIONS_PJE_MOCK_ENABLED:false}}") boolean mockEnabled) {
         this.protocolRepo = Objects.requireNonNull(protocolRepo);
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
@@ -60,6 +63,7 @@ public class LaianeProtocolSubmitPjeJobHandler implements JobHandler {
         this.connectorRegistry = Objects.requireNonNull(connectorRegistry);
         this.judicialConnectorReadinessService = Objects.requireNonNull(judicialConnectorReadinessService);
         this.proceduralCatalogService = Objects.requireNonNull(proceduralCatalogService);
+        this.timeService = Objects.requireNonNull(timeService);
         this.mockEnabled = mockEnabled;
     }
 
@@ -141,7 +145,7 @@ public class LaianeProtocolSubmitPjeJobHandler implements JobHandler {
         }
 
         p.setExternalProtocolRef(result.protocolReference());
-        p.setSubmittedAt(LocalDateTime.now());
+        p.setSubmittedAt(LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone()));
         p.setLastError(null);
         p.setStatus("SUBMITTED");
         protocolRepo.save(p);

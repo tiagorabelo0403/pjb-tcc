@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.modules.laiane.api;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -21,14 +22,20 @@ import com.tcc.pjb.backend.modules.laiane.service.LaianeMpService;
 import com.tcc.pjb.backend.modules.support.WebMvcTestSecurityConfig;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -95,5 +102,38 @@ class LaianeMpControllerTest {
                 .andExpect(jsonPath("$.items").isEmpty());
 
         verify(service).monitorDeadlines(30, 50);
+    }
+
+    @Test
+    void getOficio_403_quandoUsuarioAlheio() throws Exception {
+        UUID trackingCode = UUID.fromString("01963c1a-7e3f-7000-8000-000000000001");
+        when(service.getOficio(trackingCode)).thenThrow(new AccessDeniedException("Acesso negado ao ofício."));
+
+        mockMvc.perform(get("/api/v1/laiane/mp/oficios/{trackingCode}", trackingCode))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateStatus_403_quandoUsuarioOrigem() throws Exception {
+        UUID trackingCode = UUID.fromString("01963c1a-7e3f-7000-8000-000000000001");
+        when(service.updateOficioStatus(Mockito.eq(trackingCode), Mockito.any()))
+                .thenThrow(new AccessDeniedException("Operação negada para este ofício."));
+
+        mockMvc.perform(put("/api/v1/laiane/mp/oficios/{trackingCode}/status", trackingCode)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":\"ENTREGUE\",\"justificativa\":\"Controle institucional\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateStatus_statusInvalido_retorna400() throws Exception {
+        UUID trackingCode = UUID.fromString("01963c1a-7e3f-7000-8000-000000000002");
+        when(service.updateOficioStatus(Mockito.eq(trackingCode), Mockito.any()))
+                .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status desconhecido: STATUS_INVALIDO"));
+
+        mockMvc.perform(put("/api/v1/laiane/mp/oficios/{trackingCode}/status", trackingCode)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":\"STATUS_INVALIDO\",\"justificativa\":\"teste\"}"))
+                .andExpect(status().isBadRequest());
     }
 }

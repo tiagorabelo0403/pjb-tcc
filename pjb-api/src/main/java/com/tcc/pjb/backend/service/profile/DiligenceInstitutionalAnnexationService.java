@@ -35,6 +35,7 @@ import com.tcc.pjb.backend.model.repository.DiligenciaOperadorJuntadaProcessualR
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 
 @Service
 public class DiligenceInstitutionalAnnexationService {
@@ -251,7 +252,7 @@ public class DiligenceInstitutionalAnnexationService {
 
     private DiligenceInstitutionalAnnexationResponse toResponse(Usuario actor,
                                                                 DiligenciaOperadorAnexacaoInstitucional entity) {
-        QualifiedDocumentSignatureEnvelopeService.SignedContent signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
+        SignedDocumentEnvelope signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
                 null,
                 actor,
                 annexationTitle(entity),

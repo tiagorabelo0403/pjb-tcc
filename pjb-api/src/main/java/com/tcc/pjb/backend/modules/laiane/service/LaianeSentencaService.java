@@ -23,6 +23,7 @@ import com.tcc.pjb.backend.ai.core.pipeline.MinimalQuestionPlanner;
 import com.tcc.pjb.backend.ai.provenance.EvidenceItem;
 import com.tcc.pjb.backend.ai.provenance.EvidenceItem.EvidenceType;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.core.security.crypto.quantum.QuantumDecisionSignerService;
 import com.tcc.pjb.backend.model.dto.intelligence.JudgeDecisionConsistencyResponse;
@@ -70,6 +71,7 @@ public class LaianeSentencaService {
     private final JudgeDecisionConsistencyService judgeDecisionConsistencyService;
     private final StructuredProcessSummaryService structuredProcessSummaryService;
     private final QualifiedThemeProactiveService qualifiedThemeProactiveService;
+    private final PjbTimeService timeService;
     private final EvidenceContradictionAnalyzer contradictionAnalyzer = new EvidenceContradictionAnalyzer();
 
     public LaianeSentencaService(ProcessoRepository processoRepository,
@@ -86,7 +88,8 @@ public class LaianeSentencaService {
                                  LaianeJudicialDecisionAdvisoryService judicialDecisionAdvisoryService,
                                  JudgeDecisionConsistencyService judgeDecisionConsistencyService,
                                  StructuredProcessSummaryService structuredProcessSummaryService,
-                                 QualifiedThemeProactiveService qualifiedThemeProactiveService) {
+                                 QualifiedThemeProactiveService qualifiedThemeProactiveService,
+                                 PjbTimeService timeService) {
         this.processoRepository = processoRepository;
         this.repository = repository;
         this.currentUserService = currentUserService;
@@ -102,6 +105,7 @@ public class LaianeSentencaService {
         this.judgeDecisionConsistencyService = judgeDecisionConsistencyService;
         this.structuredProcessSummaryService = structuredProcessSummaryService;
         this.qualifiedThemeProactiveService = qualifiedThemeProactiveService;
+        this.timeService = timeService;
     }
 
     @Transactional
@@ -237,7 +241,7 @@ public class LaianeSentencaService {
 
         var pqcEvidence = quantumDecisionSignerService.signAndAttachEvidenceOrThrowIfEnabled(draft).orElse(null);
         draft.setStatus(LaianeSentencaStatus.PUBLISHED);
-        draft.setPublishedAt(LocalDateTime.now());
+        draft.setPublishedAt(LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone()));
         LaianeSentencaDraft saved = repository.save(draft);
         evictLatestCache(saved.getProcesso() != null ? saved.getProcesso().getId() : null);
         return toResponse(saved, null, null, null, null, null, null, null, null, pqcEvidence);

@@ -14,6 +14,7 @@ import com.tcc.pjb.backend.model.entity.enums.InstitutionalSensitiveAct;
 import com.tcc.pjb.backend.model.entity.processo.ProcessoNote;
 import com.tcc.pjb.backend.model.repository.processo.ProcessoNoteRepository;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -128,7 +129,7 @@ public class OperationalNotificationProofService {
         List<String> normalizedEvidence = normalizeEvidence(evidenceReferences);
         String title = buildTitle(documentKind, safeProcesso);
         String body = buildBody(safeProcesso, usuario, actorScope, documentKind, communicationChannel, communicationMode, proofSummary, normalizedEvidence, contactEnvelope, note, now);
-        QualifiedDocumentSignatureEnvelopeService.SignedContent signed = signatureEnvelopeService.signFreeContent(
+        SignedDocumentEnvelope signed = signatureEnvelopeService.signFreeContent(
                 safeProcesso,
                 usuario,
                 title,
@@ -147,7 +148,7 @@ public class OperationalNotificationProofService {
         document.put("documentKind", normalizeCode(documentKind));
         document.put("noteId", noteEntity.getId());
         document.put("title", title);
-        document.put("contentHash", signed.documentHash());
+        document.put("contentHash", signed.contentHash());
         document.put("createdAt", now.toString());
         document.put("communicationChannel", trimToNull(communicationChannel));
         document.put("communicationMode", trimToNull(communicationMode));

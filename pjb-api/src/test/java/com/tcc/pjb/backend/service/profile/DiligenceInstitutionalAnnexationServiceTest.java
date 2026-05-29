@@ -129,8 +129,9 @@ class DiligenceInstitutionalAnnexationServiceTest {
         assertThat(response.annexationStatus()).isEqualTo("ACKED");
         assertThat(response.executionDigestSha256()).hasSize(64);
         assertThat(response.processEventSeq()).isEqualTo(92L);
-        assertThat(response.assinaturaQualificada()).containsKeys("rubrica", "data", "hora", "local", "envelopeId");
-        assertThat(response.validacaoSoberana()).containsEntry("status", "VALIDO");
+        assertThat(response.assinaturaQualificada()).isNotNull();
+        assertThat(response.assinaturaQualificada().envelopeId()).isNotNull();
+        assertThat(response.validacaoSoberana().status()).isEqualTo("VALIDO");
     }
 
     private static Usuario usuario() {

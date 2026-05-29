@@ -64,7 +64,7 @@ class DiligenceOperationalClosureServiceTest {
         DiligenceOperationalClosureService service = new DiligenceOperationalClosureService(currentUserService, keyMaterialService, certificateService, evidenceService, certidaoRepository, encerramentoRepository, workItemRepository, institutionalActorRoutingService, qualifiedDocumentSignatureEnvelopeService);
         when(currentUserService.getRequired()).thenReturn(usuario());
         when(certificateService.generate(Mockito.eq(TelemetriaOperacionalCanal.OFICIAL_JUSTICA), Mockito.eq("99"), any(DiligenceAutoCertificateRequest.class)))
-                .thenReturn(new DiligenceCertificateResponse(900L, "OFICIAL_JUSTICA", "OFICIAL_JUSTICA", "99", 99L, 501L, "0009999-11.2026.8.06.0001", 700L, DiligenciaCertidaoTipo.CUMPRIMENTO_POSITIVO.name(), "t", "n", "ab".repeat(32), "cd".repeat(32), -4.3d, -38.9d, -4.3d, -38.9d, 10d, true, 1, "CST-1", "ef".repeat(32), Instant.parse("2026-03-11T18:00:00Z"), java.util.Map.of(), java.util.Map.of()));
+                .thenReturn(new DiligenceCertificateResponse(900L, "OFICIAL_JUSTICA", "OFICIAL_JUSTICA", "99", 99L, 501L, "0009999-11.2026.8.06.0001", 700L, DiligenciaCertidaoTipo.CUMPRIMENTO_POSITIVO.name(), "t", "n", "ab".repeat(32), "cd".repeat(32), -4.3d, -38.9d, -4.3d, -38.9d, 10d, true, 1, "CST-1", "ef".repeat(32), Instant.parse("2026-03-11T18:00:00Z"), null, null));
         DiligenciaOperadorCertidao certidao = DiligenciaOperadorCertidao.builder()
                 .id(900L)
                 .canal(TelemetriaOperacionalCanal.OFICIAL_JUSTICA)
@@ -116,8 +116,9 @@ class DiligenceOperationalClosureServiceTest {
         assertThat(response.followupWorkItemId()).isEqualTo(1200L);
         assertThat(response.documentosVinculados()).isEqualTo(2);
         assertThat(response.executionDigestSha256()).hasSize(64);
-        assertThat(response.assinaturaQualificada()).containsKeys("rubrica", "data", "hora", "local", "envelopeId");
-        assertThat(response.validacaoSoberana()).containsEntry("status", "VALIDO");
+        assertThat(response.assinaturaQualificada()).isNotNull();
+        assertThat(response.assinaturaQualificada().envelopeId()).isNotNull();
+        assertThat(response.validacaoSoberana().status()).isEqualTo("VALIDO");
     }
 
     private static Usuario usuario() {

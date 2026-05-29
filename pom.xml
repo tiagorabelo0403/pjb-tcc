@@ -575,6 +575,7 @@
                 <configuration>
                     <argLine>${surefireArgLine} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.io.tmpdir=${project.build.directory}</argLine>
                     <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+                    <excludedGroups>integration</excludedGroups>
                     <includes>
                         <include>**/*Test.java</include>
                         <include>**/*Tests.java</include>

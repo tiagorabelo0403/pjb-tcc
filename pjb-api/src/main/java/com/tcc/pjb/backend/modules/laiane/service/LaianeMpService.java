@@ -1,14 +1,26 @@
 package com.tcc.pjb.backend.modules.laiane.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tcc.pjb.backend.core.util.Hashes;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.QualifiedSignatureMetadata;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.SovereignValidationResult;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.ValidationRule;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import com.tcc.pjb.backend.core.id.PjbUuidV7Generator;
 import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
@@ -22,6 +34,7 @@ import com.tcc.pjb.backend.modules.laiane.dto.roles.mp.*;
 import com.tcc.pjb.backend.modules.laiane.entity.LaianeOficio;
 import com.tcc.pjb.backend.modules.laiane.model.LaianeOficioStatus;
 import com.tcc.pjb.backend.modules.laiane.repository.LaianeOficioRepository;
+import com.tcc.pjb.backend.modules.laiane.security.LaianeOficioAccessGuard;
 import com.tcc.pjb.backend.modules.laiane.util.LaianeRoleGuard;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 public class LaianeMpService {
 
     private final LaianeRoleGuard guard;
+    private final LaianeOficioAccessGuard accessGuard;
     private final WorkItemRepository workItemRepository;
     private final LaianeOficioRepository oficioRepository;
     private final UsuarioRepository usuarioRepository;
@@ -37,6 +51,7 @@ public class LaianeMpService {
     private final AuditoriaRepository auditoriaRepository;
     private final PjbTimeService timeService;
     private final QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService;
+    private final ObjectMapper objectMapper;
 
     
     
@@ -86,11 +101,20 @@ public class LaianeMpService {
         Usuario destino = null;
         if (req.getDestinoId() != null) {
             destino = usuarioRepository.findById(req.getDestinoId())
-                    .orElseThrow(() -> new NoSuchElementException("Destino não encontrado"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Destino não encontrado"));
+        }
+
+        String bodyHash = computeBodyHash(req);
+        if (bodyHash != null) {
+            LocalDateTime since = LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone()).minusMinutes(5);
+            Optional<LaianeOficio> existing = oficioRepository.findFirstByBodyHashAndCreatedAtAfter(bodyHash, since);
+            if (existing.isPresent()) {
+                return toOficioResponse(existing.get());
+            }
         }
 
         LaianeOficio oficio = LaianeOficio.builder()
-                .trackingCode(UUID.randomUUID())
+                .trackingCode(PjbUuidV7Generator.generate())
                 .status(LaianeOficioStatus.CRIADO)
                 .origem(mp)
                 .destino(destino)
@@ -98,8 +122,10 @@ public class LaianeMpService {
                 .protocolo(req.getProtocolo())
                 .assunto(req.getAssunto())
                 .conteudo(req.getConteudo())
+                .bodyHash(bodyHash)
                 .build();
 
+        oficio.setSignedEnvelopeJson(serializeSignedEnvelope(oficio));
         oficio = oficioRepository.save(oficio);
 
         auditoria.registrarEventoImutavelJustificado(
@@ -114,25 +140,36 @@ public class LaianeMpService {
 
     @Transactional(readOnly = true)
     public LaianeMpOficioResponse getOficio(UUID trackingCode) {
-        guard.requireMinisterioPublico();
-        LaianeOficio oficio = oficioRepository.findByTrackingCode(trackingCode)
-                .orElseThrow(() -> new NoSuchElementException("Ofício não encontrado"));
+        Usuario mp = guard.requireMinisterioPublico();
+        LaianeOficio oficio = findOficioForMp(trackingCode, mp.getId());
+        accessGuard.requireRead(oficio);
         return toOficioResponse(oficio);
     }
 
     @Transactional
     public LaianeMpOficioResponse updateOficioStatus(UUID trackingCode, LaianeMpOficioStatusUpdateRequest req) {
         var mp = guard.requireMinisterioPublico();
-        LaianeOficio oficio = oficioRepository.findByTrackingCode(trackingCode)
-                .orElseThrow(() -> new NoSuchElementException("Ofício não encontrado"));
+        LaianeOficio oficio = findOficioForMp(trackingCode, mp.getId());
+        accessGuard.requireUpdateStatus(oficio);
 
-        LaianeOficioStatus status = LaianeOficioStatus.from(req.getStatus());
-        oficio.setStatus(status);
-        if (status == LaianeOficioStatus.ENVIADO) {
-            oficio.setEnviadoEm(LocalDateTime.now());
+        LaianeOficioStatus currentStatus = oficio.getStatus();
+        LaianeOficioStatus targetStatus;
+        try {
+            targetStatus = LaianeOficioStatus.valueOf(req.getStatus());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status desconhecido: " + req.getStatus());
         }
-        if (status == LaianeOficioStatus.ENTREGUE) {
-            oficio.setEntregueEm(LocalDateTime.now());
+        if (!currentStatus.canTransitionTo(targetStatus)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Transição inválida: " + currentStatus + " → " + targetStatus);
+        }
+        accessGuard.requireHighAssuranceForCancellation(targetStatus);
+        oficio.setStatus(targetStatus);
+        if (targetStatus == LaianeOficioStatus.ENVIADO) {
+            oficio.setEnviadoEm(LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone()));
+        }
+        if (targetStatus == LaianeOficioStatus.ENTREGUE) {
+            oficio.setEntregueEm(LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone()));
         }
 
         oficio = oficioRepository.save(oficio);
@@ -140,21 +177,27 @@ public class LaianeMpService {
         auditoria.registrarEventoImutavelJustificado(
                 "MP_OFICIO_STATUS",
                 String.valueOf(oficio.getTrackingCode()),
-                "status=" + status.name() + ";mpId=" + mp.getId(),
+                "status=" + targetStatus.name() + ";mpId=" + mp.getId(),
                 req.getJustificativa()
         );
 
         return toOficioResponse(oficio);
     }
 
+    private LaianeOficio findOficioForMp(UUID trackingCode, Long usuarioId) {
+        return oficioRepository.findByTrackingCodeAndUsuarioEnvolvido(trackingCode, usuarioId)
+                .or(() -> oficioRepository.findByTrackingCode(trackingCode))
+                .orElseThrow(() -> new NoSuchElementException("Ofício não encontrado"));
+    }
+
     @Transactional(readOnly = true)
-    public LaianeMpAuditResponse audit(String referenciaId, String acao, Long usuarioId, int page, int size) {
-        guard.requireMinisterioPublico();
+    public LaianeMpAuditResponse audit(String referenciaId, String acao, int page, int size) {
+        Usuario me = guard.requireMinisterioPublico();
 
         int safePage = Math.max(0, page);
         int safeSize = Math.max(5, Math.min(size, 200));
 
-        var result = auditoriaRepository.search(referenciaId, acao, usuarioId, PageRequest.of(safePage, safeSize));
+        var result = auditoriaRepository.search(referenciaId, acao, me.getId(), PageRequest.of(safePage, safeSize));
 
         List<LaianeMpAuditEventDto> items = result.getContent().stream().map(this::toAuditDto).toList();
 
@@ -179,16 +222,11 @@ public class LaianeMpService {
     }
 
     private LaianeMpOficioResponse toOficioResponse(LaianeOficio o) {
-        Map<String, Object> documentoFormalAssinado = buildSignedOficio(o);
-        @SuppressWarnings("unchecked")
-        Map<String, Object> assinaturaQualificada = documentoFormalAssinado == null ? Map.of() : (Map<String, Object>) documentoFormalAssinado.getOrDefault("assinaturaQualificada", Map.of());
-        @SuppressWarnings("unchecked")
-        Map<String, Object> validacaoSoberana = documentoFormalAssinado == null ? Map.of() : (Map<String, Object>) documentoFormalAssinado.getOrDefault("validacaoSoberana", Map.of());
+        LaianeDocumentoFormalAssinadoResponse documentoFormalAssinado = buildSignedOficio(o);
+        LaianeAssinaturaQualificadaResponse assinaturaQualificada = documentoFormalAssinado == null ? null : documentoFormalAssinado.assinaturaQualificada();
+        LaianeValidacaoSoberanaResponse validacaoSoberana = documentoFormalAssinado == null ? null : documentoFormalAssinado.validacaoSoberana();
         return LaianeMpOficioResponse.builder()
-                .id(o.getId())
                 .trackingCode(o.getTrackingCode())
-                .origemId(o.getOrigem() != null ? o.getOrigem().getId() : null)
-                .destinoId(o.getDestino() != null ? o.getDestino().getId() : null)
                 .status(o.getStatus() != null ? o.getStatus().name() : null)
                 .tipo(o.getTipo())
                 .protocolo(o.getProtocolo())
@@ -204,31 +242,118 @@ public class LaianeMpService {
                 .build();
     }
 
-    private Map<String, Object> buildSignedOficio(LaianeOficio oficio) {
-        if (oficio == null) {
-            return Map.of();
+    private LaianeDocumentoFormalAssinadoResponse buildSignedOficio(LaianeOficio oficio) {
+        if (oficio == null) return null;
+        if (oficio.getSignedEnvelopeJson() != null) {
+            try {
+                SignedDocumentEnvelope env = objectMapper.readValue(
+                        oficio.getSignedEnvelopeJson(), SignedDocumentEnvelope.class);
+                return toDocumentoFormalAssinado(env);
+            } catch (Exception ignored) { }
         }
+        return toDocumentoFormalAssinado(signOficio(oficio));
+    }
+
+    private SignedDocumentEnvelope signOficio(LaianeOficio oficio) {
         Usuario actor = oficio.getOrigem();
         String titulo = firstNonBlank(oficio.getAssunto(), oficio.getTipo(), "Ofício do Ministério Público");
         String conteudo = materializeOficioContent(oficio);
-        QualifiedDocumentSignatureEnvelopeService.SignedContent signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
-                null,
-                actor,
-                titulo,
-                conteudo,
-                resolvePaper(actor),
-                "MINISTERIO_PUBLICO_QUALIFICADA_SOBERANA",
-                true,
-                List.of("MINISTERIO_PUBLICO", "OFICIO_INSTITUCIONAL", "LAIANE_MP")
+        return qualifiedDocumentSignatureEnvelopeService.signFreeContent(
+                null, actor, titulo, conteudo, resolvePaper(actor),
+                "MINISTERIO_PUBLICO_QUALIFICADA_SOBERANA", true,
+                List.of("MINISTERIO_PUBLICO", "OFICIO_INSTITUCIONAL", "LAIANE_MP"));
+    }
+
+    private String computeBodyHash(LaianeMpOficioCreateRequest req) {
+        try {
+            return Hashes.sha256Hex(objectMapper.writeValueAsString(req));
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private String serializeSignedEnvelope(LaianeOficio oficio) {
+        try {
+            SignedDocumentEnvelope envelope = signOficio(oficio);
+            if (envelope == null) return null;
+            return objectMapper.writeValueAsString(envelope);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private LaianeDocumentoFormalAssinadoResponse toDocumentoFormalAssinado(SignedDocumentEnvelope source) {
+        if (source == null) {
+            return null;
+        }
+        LaianeValidacaoSoberanaResponse validacaoSoberana = toValidacaoSoberana(source.validacaoSoberana());
+        LaianeAssinaturaQualificadaResponse assinaturaQualificada = toAssinaturaQualificada(source.assinaturaQualificada(), validacaoSoberana);
+        return new LaianeDocumentoFormalAssinadoResponse(
+                source.tituloDocumento(),
+                source.renderedContent(),
+                source.contentHash(),
+                source.selado(),
+                assinaturaQualificada,
+                validacaoSoberana
         );
-        LinkedHashMap<String, Object> out = new LinkedHashMap<>();
-        out.put("tituloDocumento", titulo);
-        out.put("conteudoAssinado", signedContent.renderedContent());
-        out.put("hashSha256", signedContent.contentHash());
-        out.put("assinaturaQualificada", signedContent.assinaturaQualificada());
-        out.put("validacaoSoberana", signedContent.validacaoSoberana());
-        out.put("selado", Boolean.TRUE);
-        return Map.copyOf(out);
+    }
+
+    private LaianeAssinaturaQualificadaResponse toAssinaturaQualificada(QualifiedSignatureMetadata source, LaianeValidacaoSoberanaResponse validacaoSoberana) {
+        if (source == null) {
+            return null;
+        }
+        return new LaianeAssinaturaQualificadaResponse(
+                source.envelopeId(),
+                source.assinaturaHash(),
+                source.conteudoBaseHash(),
+                source.documentoAssinadoHash(),
+                source.rubrica(),
+                source.data(),
+                source.hora(),
+                source.local(),
+                source.signatario(),
+                source.papelAssinante(),
+                source.papelAssinanteDetalhado(),
+                source.segmentoInstitucional(),
+                source.ramoJustica(),
+                source.esferaInstitucional(),
+                source.instancia(),
+                source.orgaoAssinante(),
+                source.lotacaoAssinante(),
+                source.registroProfissional(),
+                source.coerenciaCertificadoUsuario(),
+                source.sessionBindingHash(),
+                source.replayShieldHash(),
+                validacaoSoberana
+        );
+    }
+
+    private LaianeValidacaoSoberanaResponse toValidacaoSoberana(SovereignValidationResult source) {
+        if (source == null) {
+            return null;
+        }
+        return new LaianeValidacaoSoberanaResponse(
+                source.status(),
+                source.fonte(),
+                source.politicaAssinatura(),
+                source.cadeiaCustodiaElegivel(),
+                source.assinaturaCompletaMaterializada(),
+                source.rubricaDataHoraLocalPresentes(),
+                source.classificacaoContextualCoerente(),
+                source.certificadoEntradaVinculado(),
+                source.papelAssinanteDetalhado(),
+                source.ramoJustica(),
+                source.instancia(),
+                source.lotacaoAssinante(),
+                source.sessionBindingHash(),
+                source.replayShieldHash(),
+                source.documentoAssinadoHash(),
+                source.regrasAplicadas() == null ? List.of() : source.regrasAplicadas().stream().map(this::toRegraValidacao).toList()
+        );
+    }
+
+    private LaianeRegraValidacaoResponse toRegraValidacao(ValidationRule source) {
+        return new LaianeRegraValidacaoResponse(source.codigo(), source.descricao(), source.resultado());
     }
 
     private String materializeOficioContent(LaianeOficio oficio) {

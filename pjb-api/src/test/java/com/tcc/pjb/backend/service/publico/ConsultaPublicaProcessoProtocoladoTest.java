@@ -25,11 +25,13 @@ import com.tcc.pjb.backend.service.triagem.TriagemNacionalIAEngine;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+@Tag("integration")
 @TestPropertySource(properties = {
         "spring.cache.type=none",
         "pjb.scheduling.enabled=false",

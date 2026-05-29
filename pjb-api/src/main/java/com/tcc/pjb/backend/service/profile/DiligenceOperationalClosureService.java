@@ -32,6 +32,7 @@ import com.tcc.pjb.backend.model.repository.DiligenciaOperadorEncerramentoReposi
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 
 @Service
 public class DiligenceOperationalClosureService {
@@ -331,7 +332,7 @@ public class DiligenceOperationalClosureService {
 
     private DiligenceOperationalClosureResponse toResponse(Usuario actor,
                                                            DiligenciaOperadorEncerramento entity) {
-        QualifiedDocumentSignatureEnvelopeService.SignedContent signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
+        SignedDocumentEnvelope signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
                 null,
                 actor,
                 closureTitle(entity),
