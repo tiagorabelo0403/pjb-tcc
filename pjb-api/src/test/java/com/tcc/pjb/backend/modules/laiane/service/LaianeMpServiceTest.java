@@ -15,8 +15,9 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
-import com.tcc.pjb.backend.modules.auditoria.AuditoriaInteligenteService;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaRepository;
+import com.tcc.pjb.backend.modules.laiane.event.LaianeOficioAuditEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.mp.LaianeMpOficioCreateRequest;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.mp.LaianeMpOficioResponse;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.mp.LaianeMpOficioStatusUpdateRequest;
@@ -53,11 +54,11 @@ class LaianeMpServiceTest {
         WorkItemRepository workItemRepository = Mockito.mock(WorkItemRepository.class);
         LaianeOficioRepository oficioRepository = Mockito.mock(LaianeOficioRepository.class);
         UsuarioRepository usuarioRepository = Mockito.mock(UsuarioRepository.class);
-        AuditoriaInteligenteService auditoria = Mockito.mock(AuditoriaInteligenteService.class);
         AuditoriaRepository auditoriaRepository = Mockito.mock(AuditoriaRepository.class);
         PjbTimeService timeService = Mockito.mock(PjbTimeService.class);
         QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService = Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class);
         LaianeOficioAccessGuard accessGuard = Mockito.mock(LaianeOficioAccessGuard.class);
+        ApplicationEventPublisher eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
 
         Usuario mp = new Usuario();
         mp.setId(88L);
@@ -141,11 +142,11 @@ class LaianeMpServiceTest {
                 workItemRepository,
                 oficioRepository,
                 usuarioRepository,
-                auditoria,
                 auditoriaRepository,
                 timeService,
                 qualifiedDocumentSignatureEnvelopeService,
-                testObjectMapper
+                testObjectMapper,
+                eventPublisher
         );
 
         LaianeMpOficioCreateRequest request = LaianeMpOficioCreateRequest.builder()
@@ -165,6 +166,7 @@ class LaianeMpServiceTest {
         UUID trackingCode = response.getTrackingCode();
         assertThat(trackingCode).isNotNull();
         assertThat((trackingCode.getMostSignificantBits() >> 12) & 0xF).isEqualTo(7L);
+        verify(eventPublisher).publishEvent(Mockito.any(LaianeOficioAuditEvent.class));
     }
 
     @Test
@@ -199,7 +201,6 @@ class LaianeMpServiceTest {
         WorkItemRepository workItemRepository = Mockito.mock(WorkItemRepository.class);
         LaianeOficioRepository oficioRepository = Mockito.mock(LaianeOficioRepository.class);
         UsuarioRepository usuarioRepository = Mockito.mock(UsuarioRepository.class);
-        AuditoriaInteligenteService auditoria = Mockito.mock(AuditoriaInteligenteService.class);
         AuditoriaRepository auditoriaRepository = Mockito.mock(AuditoriaRepository.class);
         PjbTimeService timeService = Mockito.mock(PjbTimeService.class);
         QualifiedDocumentSignatureEnvelopeService qsvc = Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class);
@@ -220,8 +221,8 @@ class LaianeMpServiceTest {
         when(timeService.legalZone()).thenReturn(ZoneId.of("America/Sao_Paulo"));
 
         LaianeMpService service = new LaianeMpService(guard, accessGuard, workItemRepository,
-                oficioRepository, usuarioRepository, auditoria, auditoriaRepository, timeService, qsvc,
-                Mockito.mock(ObjectMapper.class));
+                oficioRepository, usuarioRepository, auditoriaRepository, timeService, qsvc,
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class));
 
         var req = LaianeMpOficioStatusUpdateRequest.builder()
                 .status("ENVIADO").justificativa("Envio confirmado").build();
@@ -252,10 +253,9 @@ class LaianeMpServiceTest {
 
         LaianeMpService service = new LaianeMpService(guard, accessGuard,
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
-                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaInteligenteService.class),
-                Mockito.mock(AuditoriaRepository.class), Mockito.mock(PjbTimeService.class),
-                Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
-                Mockito.mock(ObjectMapper.class));
+                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
+                Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class));
 
         var req = LaianeMpOficioStatusUpdateRequest.builder()
                 .status("CRIADO").justificativa("teste").build();
@@ -285,10 +285,9 @@ class LaianeMpServiceTest {
 
         LaianeMpService service = new LaianeMpService(guard, accessGuard,
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
-                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaInteligenteService.class),
-                Mockito.mock(AuditoriaRepository.class), Mockito.mock(PjbTimeService.class),
-                Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
-                Mockito.mock(ObjectMapper.class));
+                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
+                Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class));
 
         var req = LaianeMpOficioStatusUpdateRequest.builder()
                 .status("STATUS_INVALIDO").justificativa("teste").build();
@@ -313,10 +312,9 @@ class LaianeMpServiceTest {
 
         LaianeMpService service = new LaianeMpService(guard, accessGuard,
                 Mockito.mock(WorkItemRepository.class), Mockito.mock(LaianeOficioRepository.class),
-                usuarioRepository, Mockito.mock(AuditoriaInteligenteService.class),
-                Mockito.mock(AuditoriaRepository.class), Mockito.mock(PjbTimeService.class),
-                Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
-                Mockito.mock(ObjectMapper.class));
+                usuarioRepository, Mockito.mock(AuditoriaRepository.class),
+                Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class));
 
         var req = LaianeMpOficioCreateRequest.builder()
                 .tipo("OFICIO_REQUISITORIO").conteudo("conteudo").destinoId(999L)
@@ -354,9 +352,9 @@ class LaianeMpServiceTest {
         ObjectMapper testObjectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         LaianeMpService service = new LaianeMpService(guard, accessGuard,
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
-                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaInteligenteService.class),
-                Mockito.mock(AuditoriaRepository.class), Mockito.mock(PjbTimeService.class),
-                qsvc, testObjectMapper);
+                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
+                Mockito.mock(PjbTimeService.class), qsvc,
+                testObjectMapper, Mockito.mock(ApplicationEventPublisher.class));
 
         service.getOficio(tc);
 
@@ -384,10 +382,9 @@ class LaianeMpServiceTest {
 
         LaianeMpService service = new LaianeMpService(guard, accessGuard,
                 Mockito.mock(WorkItemRepository.class), Mockito.mock(LaianeOficioRepository.class),
-                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaInteligenteService.class),
-                auditoriaRepository, Mockito.mock(PjbTimeService.class),
-                Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
-                Mockito.mock(ObjectMapper.class));
+                Mockito.mock(UsuarioRepository.class), auditoriaRepository,
+                Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class));
 
         var response = service.audit(null, null, 0, 10);
 
@@ -420,8 +417,8 @@ class LaianeMpServiceTest {
         ObjectMapper testObjectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         LaianeMpService service = new LaianeMpService(guard, accessGuard,
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
-                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaInteligenteService.class),
-                Mockito.mock(AuditoriaRepository.class), timeService, qsvc, testObjectMapper);
+                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
+                timeService, qsvc, testObjectMapper, Mockito.mock(ApplicationEventPublisher.class));
 
         var req = LaianeMpOficioCreateRequest.builder()
                 .tipo("OFICIO_REQUISITORIO").conteudo("conteudo idempotente")
@@ -461,8 +458,8 @@ class LaianeMpServiceTest {
         ObjectMapper testObjectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         LaianeMpService service = new LaianeMpService(guard, accessGuard,
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
-                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaInteligenteService.class),
-                Mockito.mock(AuditoriaRepository.class), timeService, qsvc, testObjectMapper);
+                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
+                timeService, qsvc, testObjectMapper, Mockito.mock(ApplicationEventPublisher.class));
 
         var req1 = LaianeMpOficioCreateRequest.builder()
                 .tipo("OFICIO_REQUISITORIO").conteudo("conteudo A").justificativa("novo").build();

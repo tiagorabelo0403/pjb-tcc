@@ -2,6 +2,8 @@ package com.tcc.pjb.backend.modules.laiane.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.core.util.Hashes;
+import com.tcc.pjb.backend.modules.laiane.event.LaianeOficioAuditEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -27,7 +29,6 @@ import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaEventoComportamental;
-import com.tcc.pjb.backend.modules.auditoria.AuditoriaInteligenteService;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaRepository;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.common.LaianeWorkItemLiteDto;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.mp.*;
@@ -47,11 +48,11 @@ public class LaianeMpService {
     private final WorkItemRepository workItemRepository;
     private final LaianeOficioRepository oficioRepository;
     private final UsuarioRepository usuarioRepository;
-    private final AuditoriaInteligenteService auditoria;
     private final AuditoriaRepository auditoriaRepository;
     private final PjbTimeService timeService;
     private final QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService;
     private final ObjectMapper objectMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     
     
@@ -128,12 +129,12 @@ public class LaianeMpService {
         oficio.setSignedEnvelopeJson(serializeSignedEnvelope(oficio));
         oficio = oficioRepository.save(oficio);
 
-        auditoria.registrarEventoImutavelJustificado(
+        eventPublisher.publishEvent(new LaianeOficioAuditEvent(
                 "MP_OFICIO_CRIADO",
                 String.valueOf(oficio.getTrackingCode()),
                 "tipo=" + req.getTipo() + ";destinoId=" + (destino != null ? destino.getId() : null),
                 req.getJustificativa()
-        );
+        ));
 
         return toOficioResponse(oficio);
     }
@@ -174,12 +175,12 @@ public class LaianeMpService {
 
         oficio = oficioRepository.save(oficio);
 
-        auditoria.registrarEventoImutavelJustificado(
+        eventPublisher.publishEvent(new LaianeOficioAuditEvent(
                 "MP_OFICIO_STATUS",
                 String.valueOf(oficio.getTrackingCode()),
                 "status=" + targetStatus.name() + ";mpId=" + mp.getId(),
                 req.getJustificativa()
-        );
+        ));
 
         return toOficioResponse(oficio);
     }
