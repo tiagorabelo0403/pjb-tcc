@@ -1,8 +1,8 @@
 # Constructor Injection Guard
 
 - Base analisada: `C:\PJB\pjb-api\src\main\java\com\tcc\pjb\backend`
-- Construtores analisados: **2071**
-- Hotspots detectados: **46**
+- Construtores analisados: **2110**
+- Hotspots detectados: **48**
 
 ## Hotspots
 
@@ -18,12 +18,12 @@
 - `pjb-api\src\main\java\com\tcc\pjb\backend\core\frontend\app\application\PjbFrontendAppApplicationService.java` -> 25 dependências, 832 linhas (service)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\model\dto\processual\recursal\automation\RecursalAutomationRequest.java` -> 25 dependências, 200 linhas (other)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\service\processual\surface\ProcessoSurfaceFacadeService.java` -> 24 dependências, 728 linhas (facade_service)
-- `pjb-api\src\main\java\com\tcc\pjb\backend\service\delegado\DelegadoPainelService.java` -> 24 dependências, 429 linhas (service)
+- `pjb-api\src\main\java\com\tcc\pjb\backend\service\delegado\DelegadoPainelService.java` -> 24 dependências, 430 linhas (service)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\service\processual\comunicacao\flow\NationalCommunicationFlowService.java` -> 24 dependências, 281 linhas (service)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\integration\judicial\JudicialConnectorPolicyOverlay.java` -> 24 dependências, 99 linhas (other)
+- `pjb-api\src\main\java\com\tcc\pjb\backend\service\processual\peticionamento\PeticionamentoSessaoFacadeService.java` -> 23 dependências, 1068 linhas (facade_service)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\service\AcordoSuggestionPipelineAsyncService.java` -> 23 dependências, 597 linhas (service)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\core\kernel\recursal\mesh\RecursalStateSnapshot.java` -> 23 dependências, 301 linhas (other)
-- `pjb-api\src\main\java\com\tcc\pjb\backend\service\processual\peticionamento\PeticionamentoSessaoFacadeService.java` -> 22 dependências, 1063 linhas (facade_service)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\service\infra\ScaleArchitectureService.java` -> 22 dependências, 983 linhas (service)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\modules\atendimento\service\AtendimentoChatService.java` -> 21 dependências, 586 linhas (service)
 

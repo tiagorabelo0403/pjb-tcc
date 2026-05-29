@@ -5,8 +5,8 @@
     "hotspotParameterCount": 16,
     "lineCount": 900
   },
-  "totalConstructors": 2071,
-  "hotspotCount": 46,
+  "totalConstructors": 2110,
+  "hotspotCount": 48,
   "topConstructors": [
     {
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\plataforma\\substituicao\\application\\PjbArquiteturaSubstituicaoNacionalApplicationService.java",
@@ -485,7 +485,7 @@
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\delegado\\DelegadoPainelService.java",
       "className": "DelegadoPainelService",
       "kind": "service",
-      "lineCount": 429,
+      "lineCount": 430,
       "constructorParameterCount": 24,
       "constructorParameterTypes": [
         "PerfilDashboardContextFactory",
@@ -581,6 +581,38 @@
       ]
     },
     {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\peticionamento\\PeticionamentoSessaoFacadeService.java",
+      "className": "PeticionamentoSessaoFacadeService",
+      "kind": "facade_service",
+      "lineCount": 1068,
+      "constructorParameterCount": 23,
+      "constructorParameterTypes": [
+        "CurrentUserService",
+        "PeticionamentoEnderecoAutomationService",
+        "RepresentacaoProcessualPolicyService",
+        "LaianePeticaoInicialDraftService",
+        "PeticionamentoInitialIntakeWorkspaceService",
+        "LaianePeticaoAssistService",
+        "SigiloService",
+        "PeticionamentoPreventiveGuardrailService",
+        "PeticionamentoPayloadHardeningService",
+        "PeticionamentoDocumentBatchReadingStrategyService",
+        "PeticionamentoProcedureSpecificVerifierService",
+        "PeticionamentoProtocolEnvelopeHardeningService",
+        "PeticionamentoMultimidiaComposerService",
+        "PeticionamentoMediaSecurityPipelineService",
+        "PeticionamentoThreatSentinelService",
+        "PeticionamentoMediaStorageShieldService",
+        "PeticionamentoPericiaEvidenceIntelligenceService",
+        "PeticionamentoMediaPublicationGateService",
+        "UploadCapacityGovernanceService",
+        "PeticionamentoJurisprudenciaWorkspaceService",
+        "InstitutionalMultimediaWorkspaceService",
+        "ObjectProvider<OfficeProcessWorkspaceScopeService>",
+        "CpfValidacaoService"
+      ]
+    },
+    {
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\AcordoSuggestionPipelineAsyncService.java",
       "className": "AcordoSuggestionPipelineAsyncService",
       "kind": "service",
@@ -642,37 +674,6 @@
         "boolean",
         "boolean",
         "Instant"
-      ]
-    },
-    {
-      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\peticionamento\\PeticionamentoSessaoFacadeService.java",
-      "className": "PeticionamentoSessaoFacadeService",
-      "kind": "facade_service",
-      "lineCount": 1063,
-      "constructorParameterCount": 22,
-      "constructorParameterTypes": [
-        "CurrentUserService",
-        "PeticionamentoEnderecoAutomationService",
-        "RepresentacaoProcessualPolicyService",
-        "LaianePeticaoInicialDraftService",
-        "PeticionamentoInitialIntakeWorkspaceService",
-        "LaianePeticaoAssistService",
-        "SigiloService",
-        "PeticionamentoPreventiveGuardrailService",
-        "PeticionamentoPayloadHardeningService",
-        "PeticionamentoDocumentBatchReadingStrategyService",
-        "PeticionamentoProcedureSpecificVerifierService",
-        "PeticionamentoProtocolEnvelopeHardeningService",
-        "PeticionamentoMultimidiaComposerService",
-        "PeticionamentoMediaSecurityPipelineService",
-        "PeticionamentoThreatSentinelService",
-        "PeticionamentoMediaStorageShieldService",
-        "PeticionamentoPericiaEvidenceIntelligenceService",
-        "PeticionamentoMediaPublicationGateService",
-        "UploadCapacityGovernanceService",
-        "PeticionamentoJurisprudenciaWorkspaceService",
-        "InstitutionalMultimediaWorkspaceService",
-        "ObjectProvider<OfficeProcessWorkspaceScopeService>"
       ]
     },
     {
@@ -880,6 +881,34 @@
         "boolean",
         "boolean",
         "boolean"
+      ]
+    },
+    {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\juiz\\decision\\JuizGabineteDecisionalService.java",
+      "className": "JuizGabineteDecisionalService",
+      "kind": "service",
+      "lineCount": 836,
+      "constructorParameterCount": 19,
+      "constructorParameterTypes": [
+        "PerfilDashboardContextFactory",
+        "PainelServiceCommons",
+        "ProcessoRepository",
+        "WorkItemRepository",
+        "PjbAuthorizationService",
+        "ProcessoLifecycleMachine",
+        "PautaAudienciaNacionalService",
+        "DecisionSafetyService",
+        "CaseContinuityDecisionGateService",
+        "GabineteOperationalProfileResolver",
+        "GabineteSessionProfileResolver",
+        "RepresentacaoProcessualPolicyService",
+        "DespachoInicialContinuityOrchestratorService",
+        "JuizProcessoGuardRailService",
+        "JuizGabineteRoutingResolver",
+        "JuizGabineteQueueIsolationService",
+        "OfficialDocumentTemplateService",
+        "MovimentacaoProcessualRepository",
+        "DespachoComunicacaoPosAtoService"
       ]
     },
     {
@@ -1128,58 +1157,6 @@
       ]
     },
     {
-      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\juiz\\decision\\JuizGabineteDecisionalService.java",
-      "className": "JuizGabineteDecisionalService",
-      "kind": "service",
-      "lineCount": 781,
-      "constructorParameterCount": 17,
-      "constructorParameterTypes": [
-        "PerfilDashboardContextFactory",
-        "PainelServiceCommons",
-        "ProcessoRepository",
-        "WorkItemRepository",
-        "PjbAuthorizationService",
-        "ProcessoLifecycleMachine",
-        "PautaAudienciaNacionalService",
-        "DecisionSafetyService",
-        "CaseContinuityDecisionGateService",
-        "GabineteOperationalProfileResolver",
-        "GabineteSessionProfileResolver",
-        "RepresentacaoProcessualPolicyService",
-        "DespachoInicialContinuityOrchestratorService",
-        "JuizProcessoGuardRailService",
-        "JuizGabineteRoutingResolver",
-        "JuizGabineteQueueIsolationService",
-        "OfficialDocumentTemplateService"
-      ]
-    },
-    {
-      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\recursal\\RecursalPeticionamentoFacadeService.java",
-      "className": "RecursalPeticionamentoFacadeService",
-      "kind": "facade_service",
-      "lineCount": 682,
-      "constructorParameterCount": 17,
-      "constructorParameterTypes": [
-        "PerfilDashboardContextFactory",
-        "ProcessoRepository",
-        "WorkItemRepository",
-        "PjbAuthorizationService",
-        "ProcessoLifecycleMachine",
-        "PainelServiceCommons",
-        "ProcessoRecursalApplicationService",
-        "NationalRecursalMeshService",
-        "ProcessualOperationalSurfaceFacadeService",
-        "RecursalIaConferenciaService",
-        "RecursalDraftPreviewAssembler",
-        "RecursalIntelligenceFacadeService",
-        "RecursalFactIdempotentIngestService",
-        "RecursalFormalizacaoService",
-        "RecursalSigiloGovernanceService",
-        "RecursalProjectionAssembler",
-        "RecursalOperationalAutomationService"
-      ]
-    },
-    {
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\desembargador\\DesembargadorColegialdoPainelService.java",
       "className": "DesembargadorColegialdoPainelService",
       "kind": "service",
@@ -1255,6 +1232,32 @@
         "SecretariatJudicialIntegrationResolver",
         "Environment",
         "@org.springframework.beans.factory.annotation.Qualifier(\"pjbBurstExecutor\") java.util.concurrent.Executor"
+      ]
+    },
+    {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\recursal\\RecursalPeticionamentoFacadeService.java",
+      "className": "RecursalPeticionamentoFacadeService",
+      "kind": "facade_service",
+      "lineCount": 474,
+      "constructorParameterCount": 17,
+      "constructorParameterTypes": [
+        "PerfilDashboardContextFactory",
+        "ProcessoRepository",
+        "WorkItemRepository",
+        "PjbAuthorizationService",
+        "ProcessoLifecycleMachine",
+        "PainelServiceCommons",
+        "ProcessoRecursalApplicationService",
+        "RecursalMeshBundleService",
+        "RecursalDraftPreviewAssembler",
+        "RecursalIntelligenceFacadeService",
+        "RecursalFactIdempotentIngestService",
+        "RecursalFormalizacaoService",
+        "RecursalSigiloGovernanceService",
+        "RecursalProjectionAssembler",
+        "RecursalOperationalAutomationService",
+        "RecursalValidacaoMinimaService",
+        "RecursalFluxoMinimoPersistenciaService"
       ]
     },
     {
@@ -1762,7 +1765,7 @@
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\delegado\\DelegadoPainelService.java",
       "className": "DelegadoPainelService",
       "kind": "service",
-      "lineCount": 429,
+      "lineCount": 430,
       "constructorParameterCount": 24,
       "constructorParameterTypes": [
         "PerfilDashboardContextFactory",
@@ -1858,6 +1861,38 @@
       ]
     },
     {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\peticionamento\\PeticionamentoSessaoFacadeService.java",
+      "className": "PeticionamentoSessaoFacadeService",
+      "kind": "facade_service",
+      "lineCount": 1068,
+      "constructorParameterCount": 23,
+      "constructorParameterTypes": [
+        "CurrentUserService",
+        "PeticionamentoEnderecoAutomationService",
+        "RepresentacaoProcessualPolicyService",
+        "LaianePeticaoInicialDraftService",
+        "PeticionamentoInitialIntakeWorkspaceService",
+        "LaianePeticaoAssistService",
+        "SigiloService",
+        "PeticionamentoPreventiveGuardrailService",
+        "PeticionamentoPayloadHardeningService",
+        "PeticionamentoDocumentBatchReadingStrategyService",
+        "PeticionamentoProcedureSpecificVerifierService",
+        "PeticionamentoProtocolEnvelopeHardeningService",
+        "PeticionamentoMultimidiaComposerService",
+        "PeticionamentoMediaSecurityPipelineService",
+        "PeticionamentoThreatSentinelService",
+        "PeticionamentoMediaStorageShieldService",
+        "PeticionamentoPericiaEvidenceIntelligenceService",
+        "PeticionamentoMediaPublicationGateService",
+        "UploadCapacityGovernanceService",
+        "PeticionamentoJurisprudenciaWorkspaceService",
+        "InstitutionalMultimediaWorkspaceService",
+        "ObjectProvider<OfficeProcessWorkspaceScopeService>",
+        "CpfValidacaoService"
+      ]
+    },
+    {
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\AcordoSuggestionPipelineAsyncService.java",
       "className": "AcordoSuggestionPipelineAsyncService",
       "kind": "service",
@@ -1919,37 +1954,6 @@
         "boolean",
         "boolean",
         "Instant"
-      ]
-    },
-    {
-      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\peticionamento\\PeticionamentoSessaoFacadeService.java",
-      "className": "PeticionamentoSessaoFacadeService",
-      "kind": "facade_service",
-      "lineCount": 1063,
-      "constructorParameterCount": 22,
-      "constructorParameterTypes": [
-        "CurrentUserService",
-        "PeticionamentoEnderecoAutomationService",
-        "RepresentacaoProcessualPolicyService",
-        "LaianePeticaoInicialDraftService",
-        "PeticionamentoInitialIntakeWorkspaceService",
-        "LaianePeticaoAssistService",
-        "SigiloService",
-        "PeticionamentoPreventiveGuardrailService",
-        "PeticionamentoPayloadHardeningService",
-        "PeticionamentoDocumentBatchReadingStrategyService",
-        "PeticionamentoProcedureSpecificVerifierService",
-        "PeticionamentoProtocolEnvelopeHardeningService",
-        "PeticionamentoMultimidiaComposerService",
-        "PeticionamentoMediaSecurityPipelineService",
-        "PeticionamentoThreatSentinelService",
-        "PeticionamentoMediaStorageShieldService",
-        "PeticionamentoPericiaEvidenceIntelligenceService",
-        "PeticionamentoMediaPublicationGateService",
-        "UploadCapacityGovernanceService",
-        "PeticionamentoJurisprudenciaWorkspaceService",
-        "InstitutionalMultimediaWorkspaceService",
-        "ObjectProvider<OfficeProcessWorkspaceScopeService>"
       ]
     },
     {
@@ -2157,6 +2161,34 @@
         "boolean",
         "boolean",
         "boolean"
+      ]
+    },
+    {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\juiz\\decision\\JuizGabineteDecisionalService.java",
+      "className": "JuizGabineteDecisionalService",
+      "kind": "service",
+      "lineCount": 836,
+      "constructorParameterCount": 19,
+      "constructorParameterTypes": [
+        "PerfilDashboardContextFactory",
+        "PainelServiceCommons",
+        "ProcessoRepository",
+        "WorkItemRepository",
+        "PjbAuthorizationService",
+        "ProcessoLifecycleMachine",
+        "PautaAudienciaNacionalService",
+        "DecisionSafetyService",
+        "CaseContinuityDecisionGateService",
+        "GabineteOperationalProfileResolver",
+        "GabineteSessionProfileResolver",
+        "RepresentacaoProcessualPolicyService",
+        "DespachoInicialContinuityOrchestratorService",
+        "JuizProcessoGuardRailService",
+        "JuizGabineteRoutingResolver",
+        "JuizGabineteQueueIsolationService",
+        "OfficialDocumentTemplateService",
+        "MovimentacaoProcessualRepository",
+        "DespachoComunicacaoPosAtoService"
       ]
     },
     {
@@ -2405,58 +2437,6 @@
       ]
     },
     {
-      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\juiz\\decision\\JuizGabineteDecisionalService.java",
-      "className": "JuizGabineteDecisionalService",
-      "kind": "service",
-      "lineCount": 781,
-      "constructorParameterCount": 17,
-      "constructorParameterTypes": [
-        "PerfilDashboardContextFactory",
-        "PainelServiceCommons",
-        "ProcessoRepository",
-        "WorkItemRepository",
-        "PjbAuthorizationService",
-        "ProcessoLifecycleMachine",
-        "PautaAudienciaNacionalService",
-        "DecisionSafetyService",
-        "CaseContinuityDecisionGateService",
-        "GabineteOperationalProfileResolver",
-        "GabineteSessionProfileResolver",
-        "RepresentacaoProcessualPolicyService",
-        "DespachoInicialContinuityOrchestratorService",
-        "JuizProcessoGuardRailService",
-        "JuizGabineteRoutingResolver",
-        "JuizGabineteQueueIsolationService",
-        "OfficialDocumentTemplateService"
-      ]
-    },
-    {
-      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\recursal\\RecursalPeticionamentoFacadeService.java",
-      "className": "RecursalPeticionamentoFacadeService",
-      "kind": "facade_service",
-      "lineCount": 682,
-      "constructorParameterCount": 17,
-      "constructorParameterTypes": [
-        "PerfilDashboardContextFactory",
-        "ProcessoRepository",
-        "WorkItemRepository",
-        "PjbAuthorizationService",
-        "ProcessoLifecycleMachine",
-        "PainelServiceCommons",
-        "ProcessoRecursalApplicationService",
-        "NationalRecursalMeshService",
-        "ProcessualOperationalSurfaceFacadeService",
-        "RecursalIaConferenciaService",
-        "RecursalDraftPreviewAssembler",
-        "RecursalIntelligenceFacadeService",
-        "RecursalFactIdempotentIngestService",
-        "RecursalFormalizacaoService",
-        "RecursalSigiloGovernanceService",
-        "RecursalProjectionAssembler",
-        "RecursalOperationalAutomationService"
-      ]
-    },
-    {
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\desembargador\\DesembargadorColegialdoPainelService.java",
       "className": "DesembargadorColegialdoPainelService",
       "kind": "service",
@@ -2532,6 +2512,32 @@
         "SecretariatJudicialIntegrationResolver",
         "Environment",
         "@org.springframework.beans.factory.annotation.Qualifier(\"pjbBurstExecutor\") java.util.concurrent.Executor"
+      ]
+    },
+    {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\recursal\\RecursalPeticionamentoFacadeService.java",
+      "className": "RecursalPeticionamentoFacadeService",
+      "kind": "facade_service",
+      "lineCount": 474,
+      "constructorParameterCount": 17,
+      "constructorParameterTypes": [
+        "PerfilDashboardContextFactory",
+        "ProcessoRepository",
+        "WorkItemRepository",
+        "PjbAuthorizationService",
+        "ProcessoLifecycleMachine",
+        "PainelServiceCommons",
+        "ProcessoRecursalApplicationService",
+        "RecursalMeshBundleService",
+        "RecursalDraftPreviewAssembler",
+        "RecursalIntelligenceFacadeService",
+        "RecursalFactIdempotentIngestService",
+        "RecursalFormalizacaoService",
+        "RecursalSigiloGovernanceService",
+        "RecursalProjectionAssembler",
+        "RecursalOperationalAutomationService",
+        "RecursalValidacaoMinimaService",
+        "RecursalFluxoMinimoPersistenciaService"
       ]
     },
     {
