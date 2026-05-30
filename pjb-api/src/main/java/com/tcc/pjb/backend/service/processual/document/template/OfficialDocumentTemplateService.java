@@ -1,8 +1,11 @@
 package com.tcc.pjb.backend.service.processual.document.template;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -25,9 +28,12 @@ import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.governance.DocumentTrustChainService;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 
 @Service
 public class OfficialDocumentTemplateService {
+
+    private static final TypeReference<LinkedHashMap<String, Object>> MAP_TYPE = new TypeReference<>() {};
 
     private final ProcessoRepository processoRepository;
     private final DocumentoProcessualRepository documentoProcessualRepository;
@@ -35,19 +41,22 @@ public class OfficialDocumentTemplateService {
     private final PjbAuthorizationService authorizationService;
     private final DocumentTrustChainService documentTrustChainService;
     private final QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService;
+    private final ObjectMapper objectMapper;
 
     public OfficialDocumentTemplateService(ProcessoRepository processoRepository,
                                            DocumentoProcessualRepository documentoProcessualRepository,
                                            CurrentUserService currentUserService,
                                            PjbAuthorizationService authorizationService,
                                            DocumentTrustChainService documentTrustChainService,
-                                           QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService) {
+                                           QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService,
+                                           ObjectMapper objectMapper) {
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.documentoProcessualRepository = Objects.requireNonNull(documentoProcessualRepository);
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.authorizationService = Objects.requireNonNull(authorizationService);
         this.documentTrustChainService = Objects.requireNonNull(documentTrustChainService);
         this.qualifiedDocumentSignatureEnvelopeService = Objects.requireNonNull(qualifiedDocumentSignatureEnvelopeService);
+        this.objectMapper = Objects.requireNonNull(objectMapper);
     }
 
     @Transactional
@@ -69,7 +78,7 @@ public class OfficialDocumentTemplateService {
                 ? request.template().tituloPadrao() + " — " + processo.getNumeroProcesso()
                 : request.tituloCustomizado().trim();
         String conteudo = montarConteudo(request.template(), processo, usuario, titulo, variaveis);
-        QualifiedDocumentSignatureEnvelopeService.SignedContent signedContent = qualifiedDocumentSignatureEnvelopeService.signOfficialTemplate(
+        SignedDocumentEnvelope signedContent = qualifiedDocumentSignatureEnvelopeService.signOfficialTemplate(
                 processo,
                 usuario,
                 request.template(),
@@ -121,8 +130,8 @@ public class OfficialDocumentTemplateService {
                 persistido,
                 selado,
                 List.copyOf(alertas),
-                signedContent.assinaturaQualificada(),
-                signedContent.validacaoSoberana()
+                objectMapper.convertValue(signedContent.assinaturaQualificada(), MAP_TYPE),
+                objectMapper.convertValue(signedContent.validacaoSoberana(), MAP_TYPE)
         );
     }
 

@@ -56,6 +56,7 @@ import com.tcc.pjb.backend.service.juiz.routing.JuizGabineteRoutingResolver;
 import com.tcc.pjb.backend.service.processo.DespachoInicialContinuityOrchestratorService;
 import com.tcc.pjb.backend.service.processual.pauta.PautaAudienciaNacionalService;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 import com.tcc.pjb.backend.service.processual.document.template.OfficialDocumentTemplateService;
 import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
 import com.tcc.pjb.backend.service.casefile.CaseContinuityDecisionGateService;
@@ -136,7 +137,9 @@ class DespachoProcessoProtocoladoTest {
                 currentUserService,
                 authorizationService,
                 documentTrustChainService,
-                qualifiedDocumentSignatureEnvelopeService
+                qualifiedDocumentSignatureEnvelopeService,
+                new com.fasterxml.jackson.databind.ObjectMapper()
+                        .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
         );
         despachoComunicacaoPosAtoService = new DespachoComunicacaoPosAtoService(
                 djePublicacaoRepository,
@@ -269,11 +272,14 @@ class DespachoProcessoProtocoladoTest {
         when(qualifiedDocumentSignatureEnvelopeService.signOfficialTemplate(any(), any(), eq(TemplateDocumentoOficial.DESPACHO), anyString(), anyString(), eq(true)))
                 .thenAnswer(invocation -> {
                     String conteudo = invocation.getArgument(4);
-                    return new QualifiedDocumentSignatureEnvelopeService.SignedContent(
+                    String titulo = invocation.getArgument(3);
+                    return new SignedDocumentEnvelope(
+                            titulo != null ? titulo : "despacho",
                             conteudo,
                             Hashes.sha256Hex(conteudo),
-                            Map.of("rubrica", "PJB-RUB-TESTE"),
-                            Map.of("status", "VALIDO")
+                            true,
+                            null,
+                            null
                     );
                 });
     }

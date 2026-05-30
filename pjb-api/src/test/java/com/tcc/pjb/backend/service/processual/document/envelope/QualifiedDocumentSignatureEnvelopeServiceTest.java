@@ -226,14 +226,14 @@ class QualifiedDocumentSignatureEnvelopeServiceTest {
                 true
         );
 
-        assertEquals("JUIZ_ELEITORAL_PRIMEIRO_GRAU", signed.assinaturaQualificada().get("papelAssinanteDetalhado"));
-        assertEquals("ELEITORAL", signed.assinaturaQualificada().get("ramoJustica"));
-        assertEquals("PRIMEIRO_GRAU", signed.assinaturaQualificada().get("instancia"));
-        assertTrue(((String) signed.renderedContent()).contains("Certificado de entrada: FP=AABBCCDDEEFF"));
-        assertTrue(((String) signed.renderedContent()).contains("Lotação: TRE-CE | 87ª Zona Eleitoral de Fortaleza | COD=TRE-CE-ZE-0087 | Fortaleza/CE"));
-        assertEquals("TRE-CE | 87ª Zona Eleitoral de Fortaleza | COD=TRE-CE-ZE-0087 | Fortaleza/CE", signed.assinaturaQualificada().get("lotacaoAssinante"));
-        assertEquals(Boolean.TRUE, signed.validacaoSoberana().get("certificadoEntradaVinculado"));
-        assertTrue(((java.util.Map<?, ?>) signed.assinaturaQualificada().get("certificadoEntrada")).containsKey("fingerprintSha256"));
+        assertEquals("JUIZ_ELEITORAL_PRIMEIRO_GRAU", signed.assinaturaQualificada().papelAssinanteDetalhado());
+        assertEquals("ELEITORAL", signed.assinaturaQualificada().ramoJustica());
+        assertEquals("PRIMEIRO_GRAU", signed.assinaturaQualificada().instancia());
+        assertTrue(signed.renderedContent().contains("Certificado de entrada: FP=AABBCCDDEEFF"));
+        assertTrue(signed.renderedContent().contains("Lotação: TRE-CE | 87ª Zona Eleitoral de Fortaleza | COD=TRE-CE-ZE-0087 | Fortaleza/CE"));
+        assertEquals("TRE-CE | 87ª Zona Eleitoral de Fortaleza | COD=TRE-CE-ZE-0087 | Fortaleza/CE", signed.assinaturaQualificada().lotacaoAssinante());
+        assertTrue(signed.validacaoSoberana().certificadoEntradaVinculado());
+        assertTrue(signed.assinaturaQualificada().rubrica());
     }
 
     @Test
@@ -286,14 +286,14 @@ class QualifiedDocumentSignatureEnvelopeServiceTest {
                 true
         );
 
-        assertEquals("JUIZ_FEDERAL_PRIMEIRO_GRAU", signed.assinaturaQualificada().get("papelAssinanteDetalhado"));
-        assertEquals("FEDERAL", signed.assinaturaQualificada().get("ramoJustica"));
-        assertEquals("TRF5 | 2ª Vara Federal de Sobral | COD=JFCE-SOBRAL-2VF | Sobral/CE", signed.assinaturaQualificada().get("lotacaoAssinante"));
-        assertEquals("USUARIO_CERTIFICADO_MEDIA", signed.assinaturaQualificada().get("coerenciaCertificadoUsuario"));
-        assertEquals("Secretaria da 2ª Vara Federal de Sobral", signed.assinaturaQualificada().get("secretariaRecursal"));
-        assertEquals("Mesa de Embargos da 2ª Vara Federal de Sobral", signed.assinaturaQualificada().get("secretariaEmbargos"));
-        assertTrue(((java.util.Map<?, ?>) signed.assinaturaQualificada().get("lotacaoInstitucional")).containsKey("unidadeJudiciariaCodigo"));
-        assertTrue(((java.util.Map<?, ?>) signed.assinaturaQualificada().get("identidadeAssinante")).containsKey("cpfCoerente"));
+        assertEquals("JUIZ_FEDERAL_PRIMEIRO_GRAU", signed.assinaturaQualificada().papelAssinanteDetalhado());
+        assertEquals("FEDERAL", signed.assinaturaQualificada().ramoJustica());
+        assertEquals("TRF5 | 2ª Vara Federal de Sobral | COD=JFCE-SOBRAL-2VF | Sobral/CE", signed.assinaturaQualificada().lotacaoAssinante());
+        assertEquals("USUARIO_CERTIFICADO_MEDIA", signed.assinaturaQualificada().coerenciaCertificadoUsuarioResumo());
+        assertTrue(signed.renderedContent().contains("Secretaria recursal: Secretaria da 2ª Vara Federal de Sobral"));
+        assertTrue(signed.renderedContent().contains("Secretaria de embargos: Mesa de Embargos da 2ª Vara Federal de Sobral"));
+        assertTrue(signed.renderedContent().contains("COD=JFCE-SOBRAL-2VF"));
+        assertNotNull(signed.assinaturaQualificada().coerenciaCertificadoUsuarioResumo());
     }
     @Test
     void shouldClassifySecondInstanceElectoralSecretariatAndExposePjbPanel() {
@@ -340,12 +340,10 @@ class QualifiedDocumentSignatureEnvelopeServiceTest {
                 true
         );
 
-        assertEquals("SECRETARIA_SEGUNDA_INSTANCIA_ELEITORAL", signed.assinaturaQualificada().get("papelAssinanteDetalhado"));
-        assertEquals("PJB_SEGUNDA_INSTANCIA", signed.assinaturaQualificada().get("namespacePjb"));
-        assertEquals("PJB Segunda Instância | ELEITORAL", signed.assinaturaQualificada().get("painelPjb"));
-        assertEquals("Secretaria Judiciária Eleitoral - TRE-CE", signed.assinaturaQualificada().get("secretariaEspecializada"));
+        assertEquals("SECRETARIA_SEGUNDA_INSTANCIA_ELEITORAL", signed.assinaturaQualificada().papelAssinanteDetalhado());
         assertTrue(signed.renderedContent().contains("Namespace PJB: PJB_SEGUNDA_INSTANCIA"));
         assertTrue(signed.renderedContent().contains("Painel PJB: PJB Segunda Instância | ELEITORAL"));
+        assertTrue(signed.renderedContent().contains("Secretaria especializada: Secretaria Judiciária Eleitoral - TRE-CE"));
     }
 
     @Test

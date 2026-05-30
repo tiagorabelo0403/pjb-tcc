@@ -3,6 +3,8 @@ package com.tcc.pjb.backend.modules.laiane.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.modules.laiane.event.LaianeOficioAuditEvent;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.context.ApplicationEventPublisher;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -11,6 +13,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
+import com.tcc.pjb.backend.platform.versioning.ApiVersion;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
 import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.QualifiedSignatureMetadata;
@@ -19,6 +24,8 @@ import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocume
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,10 +44,7 @@ import com.tcc.pjb.backend.modules.laiane.model.LaianeOficioStatus;
 import com.tcc.pjb.backend.modules.laiane.repository.LaianeOficioRepository;
 import com.tcc.pjb.backend.modules.laiane.security.LaianeOficioAccessGuard;
 import com.tcc.pjb.backend.modules.laiane.util.LaianeRoleGuard;
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class LaianeMpService {
 
     private final LaianeRoleGuard guard;
@@ -53,6 +57,34 @@ public class LaianeMpService {
     private final QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService;
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final MeterRegistry meterRegistry;
+    private final CapabilityRateLimiter capabilityRateLimiter;
+
+    public LaianeMpService(LaianeRoleGuard guard,
+                           LaianeOficioAccessGuard accessGuard,
+                           WorkItemRepository workItemRepository,
+                           LaianeOficioRepository oficioRepository,
+                           UsuarioRepository usuarioRepository,
+                           AuditoriaRepository auditoriaRepository,
+                           PjbTimeService timeService,
+                           QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService,
+                           ObjectMapper objectMapper,
+                           ApplicationEventPublisher eventPublisher,
+                           MeterRegistry meterRegistry,
+                           CapabilityRateLimiter capabilityRateLimiter) {
+        this.guard = guard;
+        this.accessGuard = accessGuard;
+        this.workItemRepository = workItemRepository;
+        this.oficioRepository = oficioRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.auditoriaRepository = auditoriaRepository;
+        this.timeService = timeService;
+        this.qualifiedDocumentSignatureEnvelopeService = qualifiedDocumentSignatureEnvelopeService;
+        this.objectMapper = objectMapper;
+        this.eventPublisher = eventPublisher;
+        this.meterRegistry = meterRegistry;
+        this.capabilityRateLimiter = capabilityRateLimiter;
+    }
 
     
     
@@ -97,6 +129,11 @@ public class LaianeMpService {
 
     @Transactional
     public LaianeMpOficioResponse createOficio(LaianeMpOficioCreateRequest req) {
+        if (capabilityRateLimiter != null) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            capabilityRateLimiter.enforce(CapabilityRateLimitDomain.INSTITUCIONAL, auth, "laiane_mp_oficio_create", ApiVersion.V1);
+        }
+        Timer.Sample sample = Timer.start(meterRegistry);
         var mp = guard.requireMinisterioPublico();
 
         Usuario destino = null;
@@ -136,11 +173,17 @@ public class LaianeMpService {
                 req.getJustificativa()
         ));
 
+        sample.stop(Timer.builder("pjb.laiane.mp.oficio.criado")
+                .tag("tipo", req.getTipo() != null ? req.getTipo() : "DESCONHECIDO")
+                .register(meterRegistry));
+        meterRegistry.counter("pjb.laiane.mp.oficio.total", "operacao", "criar").increment();
+
         return toOficioResponse(oficio);
     }
 
     @Transactional(readOnly = true)
     public LaianeMpOficioResponse getOficio(UUID trackingCode) {
+        meterRegistry.counter("pjb.laiane.mp.oficio.consulta").increment();
         Usuario mp = guard.requireMinisterioPublico();
         LaianeOficio oficio = findOficioForMp(trackingCode, mp.getId());
         accessGuard.requireRead(oficio);
@@ -181,6 +224,8 @@ public class LaianeMpService {
                 "status=" + targetStatus.name() + ";mpId=" + mp.getId(),
                 req.getJustificativa()
         ));
+        meterRegistry.counter("pjb.laiane.mp.oficio.status.transicao",
+                "de", currentStatus.name(), "para", targetStatus.name()).increment();
 
         return toOficioResponse(oficio);
     }
@@ -193,6 +238,7 @@ public class LaianeMpService {
 
     @Transactional(readOnly = true)
     public LaianeMpAuditResponse audit(String referenciaId, String acao, int page, int size) {
+        meterRegistry.counter("pjb.laiane.mp.auditoria.consulta").increment();
         Usuario me = guard.requireMinisterioPublico();
 
         int safePage = Math.max(0, page);

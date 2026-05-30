@@ -17,6 +17,8 @@ import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaRepository;
 import com.tcc.pjb.backend.modules.laiane.event.LaianeOficioAuditEvent;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.springframework.context.ApplicationEventPublisher;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.mp.LaianeMpOficioCreateRequest;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.mp.LaianeMpOficioResponse;
@@ -26,6 +28,7 @@ import com.tcc.pjb.backend.modules.laiane.model.LaianeOficioStatus;
 import com.tcc.pjb.backend.modules.laiane.repository.LaianeOficioRepository;
 import com.tcc.pjb.backend.modules.laiane.security.LaianeOficioAccessGuard;
 import com.tcc.pjb.backend.modules.laiane.util.LaianeRoleGuard;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
 import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.QualifiedSignatureMetadata;
@@ -136,6 +139,8 @@ class LaianeMpServiceTest {
 
         ObjectMapper testObjectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
+        SimpleMeterRegistry registry = new SimpleMeterRegistry();
+
         LaianeMpService service = new LaianeMpService(
                 guard,
                 accessGuard,
@@ -146,7 +151,9 @@ class LaianeMpServiceTest {
                 timeService,
                 qualifiedDocumentSignatureEnvelopeService,
                 testObjectMapper,
-                eventPublisher
+                eventPublisher,
+                registry,
+                null
         );
 
         LaianeMpOficioCreateRequest request = LaianeMpOficioCreateRequest.builder()
@@ -222,7 +229,7 @@ class LaianeMpServiceTest {
 
         LaianeMpService service = new LaianeMpService(guard, accessGuard, workItemRepository,
                 oficioRepository, usuarioRepository, auditoriaRepository, timeService, qsvc,
-                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class));
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
 
         var req = LaianeMpOficioStatusUpdateRequest.builder()
                 .status("ENVIADO").justificativa("Envio confirmado").build();
@@ -255,7 +262,7 @@ class LaianeMpServiceTest {
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
                 Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
-                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class));
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
 
         var req = LaianeMpOficioStatusUpdateRequest.builder()
                 .status("CRIADO").justificativa("teste").build();
@@ -287,7 +294,7 @@ class LaianeMpServiceTest {
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
                 Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
-                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class));
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
 
         var req = LaianeMpOficioStatusUpdateRequest.builder()
                 .status("STATUS_INVALIDO").justificativa("teste").build();
@@ -314,7 +321,7 @@ class LaianeMpServiceTest {
                 Mockito.mock(WorkItemRepository.class), Mockito.mock(LaianeOficioRepository.class),
                 usuarioRepository, Mockito.mock(AuditoriaRepository.class),
                 Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
-                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class));
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
 
         var req = LaianeMpOficioCreateRequest.builder()
                 .tipo("OFICIO_REQUISITORIO").conteudo("conteudo").destinoId(999L)
@@ -354,7 +361,7 @@ class LaianeMpServiceTest {
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
                 Mockito.mock(PjbTimeService.class), qsvc,
-                testObjectMapper, Mockito.mock(ApplicationEventPublisher.class));
+                testObjectMapper, Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
 
         service.getOficio(tc);
 
@@ -384,7 +391,7 @@ class LaianeMpServiceTest {
                 Mockito.mock(WorkItemRepository.class), Mockito.mock(LaianeOficioRepository.class),
                 Mockito.mock(UsuarioRepository.class), auditoriaRepository,
                 Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
-                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class));
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
 
         var response = service.audit(null, null, 0, 10);
 
@@ -418,7 +425,7 @@ class LaianeMpServiceTest {
         LaianeMpService service = new LaianeMpService(guard, accessGuard,
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
-                timeService, qsvc, testObjectMapper, Mockito.mock(ApplicationEventPublisher.class));
+                timeService, qsvc, testObjectMapper, Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
 
         var req = LaianeMpOficioCreateRequest.builder()
                 .tipo("OFICIO_REQUISITORIO").conteudo("conteudo idempotente")
@@ -459,7 +466,7 @@ class LaianeMpServiceTest {
         LaianeMpService service = new LaianeMpService(guard, accessGuard,
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
-                timeService, qsvc, testObjectMapper, Mockito.mock(ApplicationEventPublisher.class));
+                timeService, qsvc, testObjectMapper, Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
 
         var req1 = LaianeMpOficioCreateRequest.builder()
                 .tipo("OFICIO_REQUISITORIO").conteudo("conteudo A").justificativa("novo").build();
@@ -471,5 +478,119 @@ class LaianeMpServiceTest {
 
         assertThat(resp1.getTrackingCode()).isNotNull();
         assertThat(resp2.getTrackingCode()).isNotNull();
+    }
+
+    @Test
+    void createOficio_registraTimerECounter() {
+        LaianeRoleGuard guard = Mockito.mock(LaianeRoleGuard.class);
+        LaianeOficioAccessGuard accessGuard = Mockito.mock(LaianeOficioAccessGuard.class);
+        LaianeOficioRepository oficioRepository = Mockito.mock(LaianeOficioRepository.class);
+        PjbTimeService timeService = Mockito.mock(PjbTimeService.class);
+        QualifiedDocumentSignatureEnvelopeService qsvc = Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class);
+
+        UUID tc = PjbUuidV7Generator.generate();
+        Usuario mp = new Usuario();
+        mp.setId(8L);
+        mp.setTipoUsuario(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO);
+
+        when(guard.requireMinisterioPublico()).thenReturn(mp);
+        when(timeService.nowUtc()).thenReturn(Instant.parse("2026-05-01T12:00:00Z"));
+        when(timeService.legalZone()).thenReturn(ZoneId.of("America/Sao_Paulo"));
+        when(oficioRepository.findFirstByBodyHashAndCreatedAtAfter(Mockito.anyString(), Mockito.any()))
+                .thenReturn(Optional.empty());
+        when(oficioRepository.save(Mockito.any(LaianeOficio.class))).thenAnswer(inv -> {
+            LaianeOficio o = inv.getArgument(0);
+            o.setId(99L);
+            if (o.getTrackingCode() == null) o.setTrackingCode(tc);
+            return o;
+        });
+
+        SimpleMeterRegistry registry = new SimpleMeterRegistry();
+        ObjectMapper testObjectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        LaianeMpService service = new LaianeMpService(guard, accessGuard,
+                Mockito.mock(WorkItemRepository.class), oficioRepository,
+                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
+                timeService, qsvc, testObjectMapper,
+                Mockito.mock(ApplicationEventPublisher.class), registry, null);
+
+        service.createOficio(LaianeMpOficioCreateRequest.builder()
+                .tipo("OFICIO_REQUISITORIO").conteudo("conteudo").justificativa("j").build());
+
+        assertThat(registry.find("pjb.laiane.mp.oficio.criado").timer()).isNotNull();
+        assertThat(registry.find("pjb.laiane.mp.oficio.criado").timer().count()).isEqualTo(1L);
+        assertThat(registry.find("pjb.laiane.mp.oficio.total").counter()).isNotNull();
+        assertThat(registry.find("pjb.laiane.mp.oficio.total").counter().count()).isEqualTo(1.0);
+    }
+
+    @Test
+    void createOficio_excedeLimite_retorna429() {
+        LaianeRoleGuard guard = Mockito.mock(LaianeRoleGuard.class);
+        LaianeOficioAccessGuard accessGuard = Mockito.mock(LaianeOficioAccessGuard.class);
+
+        Usuario mp = new Usuario();
+        mp.setId(9L);
+        mp.setTipoUsuario(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO);
+        when(guard.requireMinisterioPublico()).thenReturn(mp);
+
+        CapabilityRateLimiter rateLimiter = Mockito.mock(CapabilityRateLimiter.class);
+        Mockito.doThrow(new com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitExceededException(
+                com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain.INSTITUCIONAL,
+                "laiane_mp_oficio_create",
+                new com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDecision(false, 10, 0, 60, 60, 1)
+        )).when(rateLimiter).enforce(any(), any(), anyString(), any());
+
+        LaianeMpService service = new LaianeMpService(guard, accessGuard,
+                Mockito.mock(WorkItemRepository.class), Mockito.mock(LaianeOficioRepository.class),
+                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
+                Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class),
+                new SimpleMeterRegistry(), rateLimiter);
+
+        var req = LaianeMpOficioCreateRequest.builder()
+                .tipo("OFICIO_REQUISITORIO").conteudo("conteudo").justificativa("teste").build();
+
+        assertThatThrownBy(() -> service.createOficio(req))
+                .isInstanceOf(com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitExceededException.class);
+    }
+
+    @Test
+    void createOficio_dentroDoLimite_passa() {
+        LaianeRoleGuard guard = Mockito.mock(LaianeRoleGuard.class);
+        LaianeOficioAccessGuard accessGuard = Mockito.mock(LaianeOficioAccessGuard.class);
+        LaianeOficioRepository oficioRepository = Mockito.mock(LaianeOficioRepository.class);
+        PjbTimeService timeService = Mockito.mock(PjbTimeService.class);
+        QualifiedDocumentSignatureEnvelopeService qsvc = Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class);
+
+        Usuario mp = new Usuario();
+        mp.setId(10L);
+        mp.setTipoUsuario(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO);
+
+        when(guard.requireMinisterioPublico()).thenReturn(mp);
+        when(timeService.nowUtc()).thenReturn(Instant.parse("2026-05-01T12:00:00Z"));
+        when(timeService.legalZone()).thenReturn(ZoneId.of("America/Sao_Paulo"));
+        when(oficioRepository.findFirstByBodyHashAndCreatedAtAfter(Mockito.anyString(), Mockito.any()))
+                .thenReturn(Optional.empty());
+        when(oficioRepository.save(Mockito.any(LaianeOficio.class))).thenAnswer(inv -> {
+            LaianeOficio o = inv.getArgument(0);
+            o.setId(100L);
+            return o;
+        });
+
+        CapabilityRateLimiter rateLimiter = Mockito.mock(CapabilityRateLimiter.class);
+
+        ObjectMapper testObjectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        LaianeMpService service = new LaianeMpService(guard, accessGuard,
+                Mockito.mock(WorkItemRepository.class), oficioRepository,
+                Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
+                timeService, qsvc, testObjectMapper,
+                Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), rateLimiter);
+
+        var req = LaianeMpOficioCreateRequest.builder()
+                .tipo("OFICIO_REQUISITORIO").conteudo("conteudo").justificativa("ok").build();
+
+        var response = service.createOficio(req);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getTrackingCode()).isNotNull();
     }
 }

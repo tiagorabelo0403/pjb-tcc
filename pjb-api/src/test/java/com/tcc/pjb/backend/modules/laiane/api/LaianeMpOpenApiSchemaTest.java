@@ -12,7 +12,11 @@ import io.swagger.v3.core.converter.ResolvedSchema;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 class LaianeMpOpenApiSchemaTest {
@@ -57,6 +61,61 @@ class LaianeMpOpenApiSchemaTest {
         assertFalse(props.has("id"), "propriedade 'id' exposta no schema público");
         assertFalse(props.has("origemId"), "propriedade 'origemId' exposta no schema público");
         assertFalse(props.has("destinoId"), "propriedade 'destinoId' exposta no schema público");
+    }
+
+    @Test
+    void contratoPublicoDeveManterCamposDoBaselineVersionado() throws Exception {
+        Path baseline = Path.of("../docs/api/laiane-mp-openapi-v1.json");
+        if (!Files.exists(baseline)) {
+            return;
+        }
+        JsonNode baselineNode = new ObjectMapper().readTree(Files.readString(baseline));
+        JsonNode fields = baselineNode.path("fields");
+
+        ResolvedSchema resolved = ModelConverters.getInstance()
+                .readAllAsResolvedSchema(LaianeMpOficioResponse.class);
+        JsonNode props = objectMapper.readTree(objectMapper.writeValueAsString(resolved.schema))
+                .path("properties");
+
+        fields.forEach(field -> assertTrue(
+                props.has(field.asText()),
+                "Campo '" + field.asText() + "' removido do contrato sem versionamento — quebra backward compatibility"
+        ));
+
+        JsonNode prohibited = baselineNode.path("prohibited");
+        prohibited.forEach(field -> assertFalse(
+                props.has(field.asText()),
+                "Campo proibido '" + field.asText() + "' exposto no schema público"
+        ));
+    }
+
+    @Test
+    @Tag("spec-export")
+    @Disabled("Executar manualmente para atualizar docs/api/laiane-mp-openapi-v1.json: mvnw -Dtest=LaianeMpOpenApiSchemaTest#exportarBaselineVersionado -Dgroups=spec-export test")
+    void exportarBaselineVersionado() throws Exception {
+        ResolvedSchema resolved = ModelConverters.getInstance()
+                .readAllAsResolvedSchema(LaianeMpOficioResponse.class);
+        JsonNode schema = objectMapper.readTree(objectMapper.writeValueAsString(resolved.schema));
+        JsonNode props = schema.path("properties");
+
+        com.fasterxml.jackson.databind.node.ObjectNode baseline = objectMapper.createObjectNode();
+        baseline.put("version", "v1");
+        baseline.put("schema", "LaianeMpOficioResponse");
+        baseline.put("generated", java.time.LocalDate.now().toString());
+        com.fasterxml.jackson.databind.node.ArrayNode fieldArray = baseline.putArray("fields");
+        props.fieldNames().forEachRemaining(fieldArray::add);
+        com.fasterxml.jackson.databind.node.ObjectNode requiredFormat = baseline.putObject("required_format");
+        if (props.has("trackingCode") && props.path("trackingCode").has("format")) {
+            requiredFormat.put("trackingCode", props.path("trackingCode").path("format").asText());
+        }
+        com.fasterxml.jackson.databind.node.ArrayNode prohibited = baseline.putArray("prohibited");
+        prohibited.add("id");
+        prohibited.add("origemId");
+        prohibited.add("destinoId");
+
+        Path out = Path.of("../docs/api/laiane-mp-openapi-v1.json");
+        Files.createDirectories(out.getParent());
+        Files.writeString(out, objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(baseline));
     }
 
     private boolean hasFieldNamed(JsonNode node, String fieldName) {

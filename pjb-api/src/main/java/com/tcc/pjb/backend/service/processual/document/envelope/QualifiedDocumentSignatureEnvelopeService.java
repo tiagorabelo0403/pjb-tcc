@@ -51,12 +51,12 @@ public class QualifiedDocumentSignatureEnvelopeService {
         this.officeProcessWorkspaceScopeService = officeProcessWorkspaceScopeServiceProvider.getIfAvailable();
     }
 
-    public SignedContent signOfficialTemplate(Processo processo,
-                                              Usuario usuario,
-                                              TemplateDocumentoOficial template,
-                                              String titulo,
-                                              String conteudo,
-                                              boolean preservaSigilo) {
+    public SignedDocumentEnvelope signOfficialTemplate(Processo processo,
+                                                       Usuario usuario,
+                                                       TemplateDocumentoOficial template,
+                                                       String titulo,
+                                                       String conteudo,
+                                                       boolean preservaSigilo) {
         String papel = resolveTemplateRole(template, usuario);
         String politica = resolvePolicy(template, papel);
         LinkedHashSet<String> governanceTags = new LinkedHashSet<>();
@@ -65,7 +65,7 @@ public class QualifiedDocumentSignatureEnvelopeService {
         governanceTags.add("envelope_assinatura_soberana");
         governanceTags.add("antifraude_anti_replay");
         governanceTags.add(template == null ? "template_nao_informado" : template.name().toLowerCase(Locale.ROOT));
-        return toLegacySignedContent(signContent(processo, usuario, titulo, conteudo, papel, politica, preservaSigilo, List.copyOf(governanceTags), true));
+        return signContent(processo, usuario, titulo, conteudo, papel, politica, preservaSigilo, List.copyOf(governanceTags), true).envelope();
     }
 
     public SignedDocumentEnvelope signFreeContent(Processo processo,
@@ -79,15 +79,15 @@ public class QualifiedDocumentSignatureEnvelopeService {
         return signContent(processo, usuario, titulo, conteudo, papelAssinante, politicaAssinatura, preservaSigilo, governanceTags, true).envelope();
     }
 
-    public SignedContent signGovernedContent(Processo processo,
-                                             Usuario usuario,
-                                             String titulo,
-                                             String conteudo,
-                                             String papelAssinante,
-                                             String politicaAssinatura,
-                                             boolean preservaSigilo,
-                                             List<String> governanceTags) {
-        return toLegacySignedContent(signContent(processo, usuario, titulo, conteudo, papelAssinante, politicaAssinatura, preservaSigilo, governanceTags, false));
+    public SignedDocumentEnvelope signGovernedContent(Processo processo,
+                                                      Usuario usuario,
+                                                      String titulo,
+                                                      String conteudo,
+                                                      String papelAssinante,
+                                                      String politicaAssinatura,
+                                                      boolean preservaSigilo,
+                                                      List<String> governanceTags) {
+        return signContent(processo, usuario, titulo, conteudo, papelAssinante, politicaAssinatura, preservaSigilo, governanceTags, false).envelope();
     }
 
     private EnvelopeAssembly signContent(Processo processo,
@@ -361,15 +361,6 @@ public class QualifiedDocumentSignatureEnvelopeService {
                 .toList();
     }
 
-    private SignedContent toLegacySignedContent(EnvelopeAssembly assembly) {
-        return new SignedContent(
-                assembly.envelope().renderedContent(),
-                assembly.envelope().contentHash(),
-                assembly.assinaturaQualificada(),
-                assembly.validacaoSoberana()
-        );
-    }
-
     private String renderSignatureIdentityLine(String label, Object value) {
         if (value == null) {
             return "";
@@ -501,17 +492,6 @@ public class QualifiedDocumentSignatureEnvelopeService {
 
     private String normalize(String value) {
         return value == null ? "" : value.trim();
-    }
-
-    public record SignedContent(
-            String renderedContent,
-            String contentHash,
-            Map<String, Object> assinaturaQualificada,
-            Map<String, Object> validacaoSoberana
-    ) {
-        public String documentHash() {
-            return contentHash;
-        }
     }
 
     private record EnvelopeAssembly(
