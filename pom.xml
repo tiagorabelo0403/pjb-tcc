@@ -730,6 +730,17 @@
                                 <requireMavenVersion>
                                     <version>[3.9.6,)</version>
                                 </requireMavenVersion>
+                                <requireReleaseVersion>
+                                    <failWhenParentIsSnapshot>true</failWhenParentIsSnapshot>
+                                </requireReleaseVersion>
+                                <requireReleaseDeps>
+                                    <onlyWhenRelease>false</onlyWhenRelease>
+                                    <failWhenParentIsSnapshot>true</failWhenParentIsSnapshot>
+                                    <searchTransitive>true</searchTransitive>
+                                </requireReleaseDeps>
+                                <requirePluginVersions>
+                                    <banSnapshots>true</banSnapshots>
+                                </requirePluginVersions>
                             </rules>
                         </configuration>
                     </execution>
