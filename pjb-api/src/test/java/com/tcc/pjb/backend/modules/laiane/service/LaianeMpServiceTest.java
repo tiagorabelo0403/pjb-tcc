@@ -28,6 +28,7 @@ import com.tcc.pjb.backend.modules.laiane.model.LaianeOficioStatus;
 import com.tcc.pjb.backend.modules.laiane.repository.LaianeOficioRepository;
 import com.tcc.pjb.backend.modules.laiane.security.LaianeOficioAccessGuard;
 import com.tcc.pjb.backend.modules.laiane.util.LaianeRoleGuard;
+import com.tcc.pjb.backend.core.security.audit.PjbSecurityEventLogger;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
 import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
@@ -153,7 +154,8 @@ class LaianeMpServiceTest {
                 testObjectMapper,
                 eventPublisher,
                 registry,
-                null
+                null,
+                new PjbSecurityEventLogger(new SimpleMeterRegistry())
         );
 
         LaianeMpOficioCreateRequest request = LaianeMpOficioCreateRequest.builder()
@@ -229,7 +231,7 @@ class LaianeMpServiceTest {
 
         LaianeMpService service = new LaianeMpService(guard, accessGuard, workItemRepository,
                 oficioRepository, usuarioRepository, auditoriaRepository, timeService, qsvc,
-                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null, new PjbSecurityEventLogger(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
 
         var req = LaianeMpOficioStatusUpdateRequest.builder()
                 .status("ENVIADO").justificativa("Envio confirmado").build();
@@ -262,7 +264,7 @@ class LaianeMpServiceTest {
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
                 Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
-                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null, new PjbSecurityEventLogger(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
 
         var req = LaianeMpOficioStatusUpdateRequest.builder()
                 .status("CRIADO").justificativa("teste").build();
@@ -294,7 +296,7 @@ class LaianeMpServiceTest {
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
                 Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
-                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null, new PjbSecurityEventLogger(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
 
         var req = LaianeMpOficioStatusUpdateRequest.builder()
                 .status("STATUS_INVALIDO").justificativa("teste").build();
@@ -321,7 +323,7 @@ class LaianeMpServiceTest {
                 Mockito.mock(WorkItemRepository.class), Mockito.mock(LaianeOficioRepository.class),
                 usuarioRepository, Mockito.mock(AuditoriaRepository.class),
                 Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
-                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null, new PjbSecurityEventLogger(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
 
         var req = LaianeMpOficioCreateRequest.builder()
                 .tipo("OFICIO_REQUISITORIO").conteudo("conteudo").destinoId(999L)
@@ -361,7 +363,7 @@ class LaianeMpServiceTest {
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
                 Mockito.mock(PjbTimeService.class), qsvc,
-                testObjectMapper, Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
+                testObjectMapper, Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null, new PjbSecurityEventLogger(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
 
         service.getOficio(tc);
 
@@ -391,7 +393,7 @@ class LaianeMpServiceTest {
                 Mockito.mock(WorkItemRepository.class), Mockito.mock(LaianeOficioRepository.class),
                 Mockito.mock(UsuarioRepository.class), auditoriaRepository,
                 Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
-                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
+                Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null, new PjbSecurityEventLogger(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
 
         var response = service.audit(null, null, 0, 10);
 
@@ -425,7 +427,7 @@ class LaianeMpServiceTest {
         LaianeMpService service = new LaianeMpService(guard, accessGuard,
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
-                timeService, qsvc, testObjectMapper, Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
+                timeService, qsvc, testObjectMapper, Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null, new PjbSecurityEventLogger(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
 
         var req = LaianeMpOficioCreateRequest.builder()
                 .tipo("OFICIO_REQUISITORIO").conteudo("conteudo idempotente")
@@ -466,7 +468,7 @@ class LaianeMpServiceTest {
         LaianeMpService service = new LaianeMpService(guard, accessGuard,
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
-                timeService, qsvc, testObjectMapper, Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null);
+                timeService, qsvc, testObjectMapper, Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null, new PjbSecurityEventLogger(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
 
         var req1 = LaianeMpOficioCreateRequest.builder()
                 .tipo("OFICIO_REQUISITORIO").conteudo("conteudo A").justificativa("novo").build();
@@ -511,7 +513,8 @@ class LaianeMpServiceTest {
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
                 timeService, qsvc, testObjectMapper,
-                Mockito.mock(ApplicationEventPublisher.class), registry, null);
+                Mockito.mock(ApplicationEventPublisher.class), registry, null,
+                new PjbSecurityEventLogger(new SimpleMeterRegistry()));
 
         service.createOficio(LaianeMpOficioCreateRequest.builder()
                 .tipo("OFICIO_REQUISITORIO").conteudo("conteudo").justificativa("j").build());
@@ -544,7 +547,7 @@ class LaianeMpServiceTest {
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
                 Mockito.mock(PjbTimeService.class), Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class),
                 Mockito.mock(ObjectMapper.class), Mockito.mock(ApplicationEventPublisher.class),
-                new SimpleMeterRegistry(), rateLimiter);
+                new SimpleMeterRegistry(), rateLimiter, new PjbSecurityEventLogger(new SimpleMeterRegistry()));
 
         var req = LaianeMpOficioCreateRequest.builder()
                 .tipo("OFICIO_REQUISITORIO").conteudo("conteudo").justificativa("teste").build();
@@ -583,7 +586,7 @@ class LaianeMpServiceTest {
                 Mockito.mock(WorkItemRepository.class), oficioRepository,
                 Mockito.mock(UsuarioRepository.class), Mockito.mock(AuditoriaRepository.class),
                 timeService, qsvc, testObjectMapper,
-                Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), rateLimiter);
+                Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), rateLimiter, new PjbSecurityEventLogger(new SimpleMeterRegistry()));
 
         var req = LaianeMpOficioCreateRequest.builder()
                 .tipo("OFICIO_REQUISITORIO").conteudo("conteudo").justificativa("ok").build();

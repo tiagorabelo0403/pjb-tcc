@@ -44,6 +44,7 @@ import com.tcc.pjb.backend.modules.laiane.model.LaianeOficioStatus;
 import com.tcc.pjb.backend.modules.laiane.repository.LaianeOficioRepository;
 import com.tcc.pjb.backend.modules.laiane.security.LaianeOficioAccessGuard;
 import com.tcc.pjb.backend.modules.laiane.util.LaianeRoleGuard;
+import com.tcc.pjb.backend.core.security.audit.PjbSecurityEventLogger;
 @Service
 public class LaianeMpService {
 
@@ -59,6 +60,7 @@ public class LaianeMpService {
     private final ApplicationEventPublisher eventPublisher;
     private final MeterRegistry meterRegistry;
     private final CapabilityRateLimiter capabilityRateLimiter;
+    private final PjbSecurityEventLogger securityEventLogger;
 
     public LaianeMpService(LaianeRoleGuard guard,
                            LaianeOficioAccessGuard accessGuard,
@@ -71,7 +73,8 @@ public class LaianeMpService {
                            ObjectMapper objectMapper,
                            ApplicationEventPublisher eventPublisher,
                            MeterRegistry meterRegistry,
-                           CapabilityRateLimiter capabilityRateLimiter) {
+                           CapabilityRateLimiter capabilityRateLimiter,
+                           PjbSecurityEventLogger securityEventLogger) {
         this.guard = guard;
         this.accessGuard = accessGuard;
         this.workItemRepository = workItemRepository;
@@ -84,6 +87,7 @@ public class LaianeMpService {
         this.eventPublisher = eventPublisher;
         this.meterRegistry = meterRegistry;
         this.capabilityRateLimiter = capabilityRateLimiter;
+        this.securityEventLogger = securityEventLogger;
     }
 
     
@@ -147,6 +151,8 @@ public class LaianeMpService {
             LocalDateTime since = LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone()).minusMinutes(5);
             Optional<LaianeOficio> existing = oficioRepository.findFirstByBodyHashAndCreatedAtAfter(bodyHash, since);
             if (existing.isPresent()) {
+                securityEventLogger.idempotencyHit(bodyHash,
+                        existing.get().getTrackingCode() != null ? existing.get().getTrackingCode().toString() : "DESCONHECIDO");
                 return toOficioResponse(existing.get());
             }
         }

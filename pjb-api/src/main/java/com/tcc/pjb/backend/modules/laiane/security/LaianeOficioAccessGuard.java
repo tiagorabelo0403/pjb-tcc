@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.modules.laiane.security;
 
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.audit.PjbSecurityEventLogger;
 import com.tcc.pjb.backend.core.security.context.CurrentAuthenticationContextService;
 import com.tcc.pjb.backend.integration.govbr.GovBrAssuranceLevel;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -16,16 +17,23 @@ public final class LaianeOficioAccessGuard {
 
     private final CurrentUserService currentUserService;
     private final CurrentAuthenticationContextService authContextService;
+    private final PjbSecurityEventLogger securityEventLogger;
 
     public LaianeOficioAccessGuard(CurrentUserService currentUserService,
-                                   CurrentAuthenticationContextService authContextService) {
+                                   CurrentAuthenticationContextService authContextService,
+                                   PjbSecurityEventLogger securityEventLogger) {
         this.currentUserService = currentUserService;
         this.authContextService = authContextService;
+        this.securityEventLogger = securityEventLogger;
     }
 
     public void requireRead(LaianeOficio oficio) {
         Usuario me = currentUserService.get();
         if (!canRead(me, oficio)) {
+            String trackingCode = oficio != null && oficio.getTrackingCode() != null
+                    ? oficio.getTrackingCode().toString() : "DESCONHECIDO";
+            String userId = me != null && me.getId() != null ? me.getId().toString() : "ANONIMO";
+            securityEventLogger.bolaAttempt(trackingCode, userId, "ACCESS_DENIED");
             throw new AccessDeniedException("Acesso negado ao ofício.");
         }
     }
@@ -41,6 +49,8 @@ public final class LaianeOficioAccessGuard {
         if (targetStatus != LaianeOficioStatus.CANCELADO) return;
         String acr = authContextService.current().acr();
         if (!GovBrAssuranceLevel.meetsMinimum(acr, GovBrAssuranceLevel.OURO)) {
+            String currentLevel = acr != null ? acr : "NENHUM";
+            securityEventLogger.stepUpDenied("CURRENT_USER", GovBrAssuranceLevel.OURO, currentLevel);
             throw new AccessDeniedException("Cancelamento de ofício exige nível de segurança Ouro.");
         }
     }

@@ -6,8 +6,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.audit.PjbSecurityEventLogger;
 import com.tcc.pjb.backend.core.security.context.CurrentAuthenticationContext;
 import com.tcc.pjb.backend.core.security.context.CurrentAuthenticationContextService;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import com.tcc.pjb.backend.integration.govbr.GovBrAssuranceLevel;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.modules.laiane.entity.LaianeOficio;
@@ -28,7 +30,7 @@ class LaianeOficioAccessGuardTest {
         LaianeOficio oficio = oficio(origem, usuario(2L));
         when(currentUserService.get()).thenReturn(origem);
 
-        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, Mockito.mock(CurrentAuthenticationContextService.class));
+        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, Mockito.mock(CurrentAuthenticationContextService.class), new PjbSecurityEventLogger(new SimpleMeterRegistry()));
 
         assertThatCode(() -> guard.requireRead(oficio)).doesNotThrowAnyException();
     }
@@ -40,7 +42,7 @@ class LaianeOficioAccessGuardTest {
         LaianeOficio oficio = oficio(usuario(1L), destino);
         when(currentUserService.get()).thenReturn(destino);
 
-        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, Mockito.mock(CurrentAuthenticationContextService.class));
+        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, Mockito.mock(CurrentAuthenticationContextService.class), new PjbSecurityEventLogger(new SimpleMeterRegistry()));
 
         assertThatCode(() -> guard.requireRead(oficio)).doesNotThrowAnyException();
     }
@@ -51,7 +53,7 @@ class LaianeOficioAccessGuardTest {
         LaianeOficio oficio = oficio(usuario(1L), usuario(2L));
         when(currentUserService.get()).thenReturn(usuario(3L));
 
-        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, Mockito.mock(CurrentAuthenticationContextService.class));
+        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, Mockito.mock(CurrentAuthenticationContextService.class), new PjbSecurityEventLogger(new SimpleMeterRegistry()));
 
         assertThatThrownBy(() -> guard.requireRead(oficio))
                 .isInstanceOf(AccessDeniedException.class);
@@ -64,7 +66,7 @@ class LaianeOficioAccessGuardTest {
         LaianeOficio oficio = oficio(origem, usuario(2L));
         when(currentUserService.get()).thenReturn(origem);
 
-        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, Mockito.mock(CurrentAuthenticationContextService.class));
+        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, Mockito.mock(CurrentAuthenticationContextService.class), new PjbSecurityEventLogger(new SimpleMeterRegistry()));
 
         assertThatThrownBy(() -> guard.requireUpdateStatus(oficio))
                 .isInstanceOf(AccessDeniedException.class);
@@ -78,7 +80,7 @@ class LaianeOficioAccessGuardTest {
         oficio.setTrackingCode(trackingCode);
         when(currentUserService.get()).thenReturn(usuario(3L));
 
-        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, Mockito.mock(CurrentAuthenticationContextService.class));
+        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, Mockito.mock(CurrentAuthenticationContextService.class), new PjbSecurityEventLogger(new SimpleMeterRegistry()));
 
         assertThatThrownBy(() -> guard.requireRead(oficio))
                 .isInstanceOf(AccessDeniedException.class)
@@ -95,7 +97,7 @@ class LaianeOficioAccessGuardTest {
                 GovBrAssuranceLevel.PRATA, List.of(), List.of(), false, Instant.now());
         when(authCtx.current()).thenReturn(ctx);
 
-        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, authCtx);
+        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, authCtx, new PjbSecurityEventLogger(new SimpleMeterRegistry()));
 
         assertThatThrownBy(() -> guard.requireHighAssuranceForCancellation(LaianeOficioStatus.CANCELADO))
                 .isInstanceOf(AccessDeniedException.class);
@@ -111,7 +113,7 @@ class LaianeOficioAccessGuardTest {
                 GovBrAssuranceLevel.OURO, List.of(), List.of(), false, Instant.now());
         when(authCtx.current()).thenReturn(ctx);
 
-        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, authCtx);
+        LaianeOficioAccessGuard guard = new LaianeOficioAccessGuard(currentUserService, authCtx, new PjbSecurityEventLogger(new SimpleMeterRegistry()));
 
         assertThatCode(() -> guard.requireHighAssuranceForCancellation(LaianeOficioStatus.CANCELADO))
                 .doesNotThrowAnyException();
