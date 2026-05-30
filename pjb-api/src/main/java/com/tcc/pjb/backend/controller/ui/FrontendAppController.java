@@ -25,7 +25,9 @@ import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -416,10 +418,33 @@ public ResponseEntity<ApiQueryResponse<?>> procuradoriaOrganExecutiveDashboard(A
 public ResponseEntity<Resource> officeTeamMemberAvatar(@org.springframework.web.bind.annotation.PathVariable Long userId,
                                                        HttpServletRequest request) throws java.io.IOException {
     var result = applicationService.officeTeamMemberAvatar(userId, request);
-    return ResponseEntity.ok()
-            .header(HttpHeaders.CACHE_CONTROL, "private, max-age=300")
-            .contentType(MediaType.parseMediaType(result.contentType() == null || result.contentType().isBlank() ? MediaType.IMAGE_JPEG_VALUE : result.contentType()))
-            .body(new ByteArrayResource(result.bytes()));
+
+    String etag = (result.etag() != null && !result.etag().isBlank()) ? '"' + result.etag() + '"' : null;
+
+    String ifNoneMatch = request.getHeader(HttpHeaders.IF_NONE_MATCH);
+    if (etag != null && etag.equals(ifNoneMatch)) {
+        return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                .eTag(etag)
+                .cacheControl(CacheControl.noCache().cachePrivate())
+                .build();
+    }
+
+    String ct = (result.contentType() == null || result.contentType().isBlank())
+            ? MediaType.IMAGE_JPEG_VALUE
+            : result.contentType();
+
+    ResponseEntity.BodyBuilder builder = ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(ct))
+            .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+            .header("X-Content-Type-Options", "nosniff");
+
+    if (etag != null) {
+        builder = builder.eTag(etag).cacheControl(CacheControl.noCache().cachePrivate());
+    } else {
+        builder = builder.cacheControl(CacheControl.noStore());
+    }
+
+    return builder.body(new ByteArrayResource(result.bytes()));
 }
 
     @GetMapping("/bootstrap")
