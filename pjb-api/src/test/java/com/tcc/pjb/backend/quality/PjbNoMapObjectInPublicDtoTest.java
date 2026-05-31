@@ -12,6 +12,15 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Detecta Map&lt;String,Object&gt; em campos de DTOs públicos dentro de modules/.
+ *
+ * ESCOPO DELIBERADO: apenas modules/ — 5 classes conhecidas.
+ * GAP DOCUMENTADO: existem ~128 Response/View adicionais com Map&lt;String,Object&gt;
+ * fora de modules/ (em ai/, model/dto/, financial/, controller/ etc.).
+ * Esses 128 serão cobertos em BLOCO-28/29 com tipagem progressiva por módulo.
+ * Allowlist em docs/architecture/openapi-contract-hardening-allowlist.yml.
+ */
 class PjbNoMapObjectInPublicDtoTest {
 
     private static final Set<String> KNOWN_VIOLATIONS = Set.of(
