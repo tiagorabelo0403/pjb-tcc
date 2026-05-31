@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.ai.juridica.v3.core.LegalDraftingService;
+import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.HsmTestFactory;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHardwareSecurityModule;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHsmProperties;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
@@ -83,7 +84,7 @@ class RecursalFormalizacaoServiceTest {
     void setUp() {
         objectMapper = new ObjectMapper();
         AuditLedgerService auditLedgerService = new AuditLedgerService();
-        PjbHardwareSecurityModule hsm = new PjbHardwareSecurityModule(new PjbHsmProperties(
+        PjbHardwareSecurityModule hsm = HsmTestFactory.forTest(new PjbHsmProperties(
                 false,
                 true,
                 null,

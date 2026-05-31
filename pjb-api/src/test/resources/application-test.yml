@@ -112,7 +112,13 @@ pjb:
       enabled: false
     vital-monitor:
       enabled: false
+  bnmp:
+    mock-enabled: true
+  dje:
+    mock-enabled: true
   integrations:
+    govbr:
+      mock-enabled: true
     pje:
       submission:
         mock-enabled: false

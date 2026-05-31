@@ -494,8 +494,18 @@ pjb:
       sefaz-nfe:
         enabled: ${PJB_COMJUD_SEFAZ_NFE_ENABLED:true}
         strict-mode: ${PJB_COMJUD_SEFAZ_NFE_STRICT_MODE:true}
+  ai:
+    vector:
+      mode: ${PJB_AI_VECTOR_MODE:disabled}
+  bnmp:
+    mock-enabled: ${PJB_BNMP_MOCK_ENABLED:false}
+  dje:
+    mock-enabled: ${PJB_DJE_MOCK_ENABLED:false}
   hsm:
     mock-enabled: ${PJB_HSM_MOCK_ENABLED:false}
+  integrations:
+    govbr:
+      mock-enabled: ${PJB_GOVBR_MOCK_ENABLED:false}
   cache:
     redis:
       enabled: ${PJB_CACHE_REDIS_ENABLED:false}

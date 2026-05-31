@@ -262,6 +262,7 @@ pjb:
 
   dje:
     enabled: ${PJB_DJE_ENABLED:false}
+    mock-enabled: ${PJB_DJE_MOCK_ENABLED:false}
     scheduler-fixed-rate-ms: ${PJB_DJE_SCHEDULER_RATE_MS:300000}
     max-batch-size: ${PJB_DJE_MAX_BATCH_SIZE:100}
 

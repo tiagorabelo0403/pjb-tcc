@@ -17,8 +17,14 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import com.tcc.pjb.backend.core.guard.MockGuardAuditEvent;
+import com.tcc.pjb.backend.core.guard.MockGuardEnvironmentQuery;
+import com.tcc.pjb.backend.core.guard.MockGuardProfile;
+import com.tcc.pjb.backend.core.guard.MockGuardViolation;
+import com.tcc.pjb.backend.core.guard.MockGuardViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -40,9 +46,15 @@ public final class PjbHardwareSecurityModule {
     private final Provider hsmProvider;
     private final PrivateKey chavePrivada;
     private final Semaphore semaphore;
+    private final MockGuardEnvironmentQuery mockGuardQuery;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public PjbHardwareSecurityModule(PjbHsmProperties props) {
+    public PjbHardwareSecurityModule(PjbHsmProperties props,
+                                     MockGuardEnvironmentQuery mockGuardQuery,
+                                     ApplicationEventPublisher eventPublisher) {
         this.props = Objects.requireNonNull(props, "props");
+        this.mockGuardQuery = Objects.requireNonNull(mockGuardQuery, "mockGuardQuery");
+        this.eventPublisher = Objects.requireNonNull(eventPublisher, "eventPublisher");
         props.validateIfEnabled();
         this.semaphore = new Semaphore(props.maxConcurrentOps(), true);
         if (!props.enabled() || props.mockEnabled()) {
@@ -128,6 +140,13 @@ public final class PjbHardwareSecurityModule {
     }
 
     private AssinaturaHsm assinarMock(byte[] payload) {
+        if (mockGuardQuery.isRealEnvironment()) {
+            MockGuardViolation violation = MockGuardViolation.of(
+                    "hsm", "pjb.hsm.mock-enabled", mockGuardQuery.activeGuardProfile());
+            mockGuardQuery.recordViolation("hsm");
+            eventPublisher.publishEvent(new MockGuardAuditEvent(this, violation));
+            throw new MockGuardViolationException(violation);
+        }
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] hash = md.digest(payload);

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.HsmTestFactory;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHardwareSecurityModule;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHsmProperties;
 import com.tcc.pjb.backend.core.icp.RecursalIcpBrasilIntegrationService;
@@ -37,7 +38,7 @@ class RecursalPdfLongTermValidationServiceTest {
     @Test
     void finalizeEvidenceShouldPromoteArtifactToLtaCandidateWhenCertificateValidationPasses() {
         AuditLedgerService auditLedgerService = new AuditLedgerService();
-        PjbHardwareSecurityModule hsm = new PjbHardwareSecurityModule(new PjbHsmProperties(
+        PjbHardwareSecurityModule hsm = HsmTestFactory.forTest(new PjbHsmProperties(
                 false,
                 true,
                 null,

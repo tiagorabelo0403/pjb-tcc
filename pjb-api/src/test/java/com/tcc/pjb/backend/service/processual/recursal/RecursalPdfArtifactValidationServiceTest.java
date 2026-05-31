@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.service.processual.recursal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.HsmTestFactory;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHardwareSecurityModule;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHsmProperties;
 import com.tcc.pjb.backend.core.icp.RecursalIcpBrasilIntegrationService;
@@ -35,7 +36,7 @@ class RecursalPdfArtifactValidationServiceTest {
     @BeforeEach
     void setUp() {
         AuditLedgerService auditLedgerService = new AuditLedgerService();
-        PjbHardwareSecurityModule hsm = new PjbHardwareSecurityModule(new PjbHsmProperties(
+        PjbHardwareSecurityModule hsm = HsmTestFactory.forTest(new PjbHsmProperties(
                 false,
                 true,
                 null,

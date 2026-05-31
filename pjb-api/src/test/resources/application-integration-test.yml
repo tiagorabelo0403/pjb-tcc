@@ -38,7 +38,13 @@ pjb:
       enabled: false
   dje:
     enabled: false
+  bnmp:
+    mock-enabled: true
+  dje:
+    mock-enabled: true
   integrations:
+    govbr:
+      mock-enabled: true
     pje:
       mock-enabled: true
   demo:

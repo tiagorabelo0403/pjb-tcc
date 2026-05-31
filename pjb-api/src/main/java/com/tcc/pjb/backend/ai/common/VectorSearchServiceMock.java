@@ -1,11 +1,17 @@
 package com.tcc.pjb.backend.ai.common;
 
+import com.tcc.pjb.backend.core.guard.MockGuardAuditEvent;
+import com.tcc.pjb.backend.core.guard.MockGuardEnvironmentQuery;
+import com.tcc.pjb.backend.core.guard.MockGuardEnvironmentValidator;
+import com.tcc.pjb.backend.core.guard.MockGuardViolation;
+import com.tcc.pjb.backend.core.guard.MockGuardViolationException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import java.util.Locale;
@@ -36,8 +42,21 @@ public class VectorSearchServiceMock implements VectorSearchService {
     private final Map<String, Doc> docs = new ConcurrentHashMap<>();
     private final Map<String, Double> idfCache = new ConcurrentHashMap<>();
     private final Map<String, AtomicInteger> usageGlobal = new ConcurrentHashMap<>();
+    private final MockGuardEnvironmentQuery mockGuardQuery;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public VectorSearchServiceMock() {
+    public VectorSearchServiceMock(MockGuardEnvironmentQuery mockGuardQuery,
+                                   ApplicationEventPublisher eventPublisher) {
+        this.mockGuardQuery = Objects.requireNonNull(mockGuardQuery, "mockGuardQuery");
+        this.eventPublisher = Objects.requireNonNull(eventPublisher, "eventPublisher");
+        if (mockGuardQuery.isRealEnvironment()) {
+            MockGuardViolation violation = MockGuardViolation.of(
+                    "vector-search", MockGuardEnvironmentValidator.VECTOR_MOCK_PROPERTY,
+                    mockGuardQuery.activeGuardProfile());
+            mockGuardQuery.recordViolation("vector-search");
+            eventPublisher.publishEvent(new MockGuardAuditEvent(this, violation));
+            throw new MockGuardViolationException(violation);
+        }
         seedBase();
         recomputeIdf();
     }

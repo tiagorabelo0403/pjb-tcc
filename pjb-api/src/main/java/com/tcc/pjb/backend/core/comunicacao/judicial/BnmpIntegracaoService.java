@@ -4,6 +4,11 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHardwareSecurityModule;
+import com.tcc.pjb.backend.core.guard.MockGuardAuditEvent;
+import com.tcc.pjb.backend.core.guard.MockGuardEnvironmentQuery;
+import com.tcc.pjb.backend.core.guard.MockGuardProfile;
+import com.tcc.pjb.backend.core.guard.MockGuardViolation;
+import com.tcc.pjb.backend.core.guard.MockGuardViolationException;
 import com.tcc.pjb.backend.core.comunicacao.judicial.state.ComunicacaoJudicialStateStore;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.platform.jusos.v2.notificacao.NotificacaoInteligentePJB;
@@ -23,7 +28,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.platform.runtime.execution.PjbExecutionDescriptor;
@@ -107,6 +112,9 @@ public class BnmpIntegracaoService {
     private final NotificacaoInteligentePJB notificacaoEngine;
     private final ComunicacaoJudicialStateStore stateStore;
     private final PjbExecutionOrchestrator executionOrchestrator;
+    private final PjbBnmpProperties bnmpProps;
+    private final MockGuardEnvironmentQuery mockGuardQuery;
+    private final ApplicationEventPublisher eventPublisher;
     private final Cache<String, RegistroBnmp> registrosPorMandado = Caffeine.newBuilder()
             .maximumSize(50000)
             .expireAfterAccess(Duration.ofHours(24))
@@ -116,16 +124,16 @@ public class BnmpIntegracaoService {
             .expireAfterAccess(Duration.ofHours(24))
             .build();
 
-    @Value("${pjb.bnmp.enabled:false}")
-    private boolean bnmpEnabled;
-
     public BnmpIntegracaoService(BnmpApiGateway bnmpApiGateway,
                                  PjbHardwareSecurityModule hsm,
                                  ProcessoRepository processoRepository,
                                  AuditLedgerService auditLedger,
                                  NotificacaoInteligentePJB notificacaoEngine,
                                  ComunicacaoJudicialStateStore stateStore,
-                                 PjbExecutionOrchestrator executionOrchestrator) {
+                                 PjbExecutionOrchestrator executionOrchestrator,
+                                 PjbBnmpProperties bnmpProps,
+                                 MockGuardEnvironmentQuery mockGuardQuery,
+                                 ApplicationEventPublisher eventPublisher) {
         this.bnmpApiGateway = Objects.requireNonNull(bnmpApiGateway, "bnmpApiGateway");
         this.hsm = Objects.requireNonNull(hsm, "hsm");
         this.processoRepository = Objects.requireNonNull(processoRepository, "processoRepository");
@@ -133,20 +141,33 @@ public class BnmpIntegracaoService {
         this.notificacaoEngine = Objects.requireNonNull(notificacaoEngine, "notificacaoEngine");
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
         this.executionOrchestrator = Objects.requireNonNull(executionOrchestrator, "executionOrchestrator");
+        this.bnmpProps = Objects.requireNonNull(bnmpProps, "bnmpProps");
+        this.mockGuardQuery = Objects.requireNonNull(mockGuardQuery, "mockGuardQuery");
+        this.eventPublisher = Objects.requireNonNull(eventPublisher, "eventPublisher");
     }
 
     @Transactional
     public RegistroBnmp registrar(MandadoPrisaoPjb mandado) {
         Objects.requireNonNull(mandado, "mandado");
-        return executionOrchestrator.supply(PjbExecutionDescriptor.externalIo("bnmp-integracao.registrar", Duration.ofSeconds(TIMEOUT_SEG)), () -> {
+        return executionOrchestrator.supply(PjbExecutionDescriptor.externalIo("bnmp-integracao.registrar", Duration.ofSeconds(bnmpProps.timeoutSegundos())), () -> {
             String payloadJson = serializarMandado(mandado);
             byte[] payloadBytes = payloadJson.getBytes(StandardCharsets.UTF_8);
             PjbHardwareSecurityModule.AssinaturaHsm assinatura = hsm.assinar(payloadBytes);
             StatusMandadoBnmp status;
             String numeroBnmp;
-            if (!bnmpEnabled) {
+            if (bnmpProps.mockEnabled()) {
+                if (mockGuardQuery.isRealEnvironment()) {
+                    MockGuardViolation violation = MockGuardViolation.of(
+                            "bnmp", "pjb.bnmp.mock-enabled", mockGuardQuery.activeGuardProfile());
+                    mockGuardQuery.recordViolation("bnmp");
+                    eventPublisher.publishEvent(new MockGuardAuditEvent(this, violation));
+                    throw new MockGuardViolationException(violation);
+                }
                 numeroBnmp = "BNMP-MOCK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
                 status = StatusMandadoBnmp.REGISTRADO_BNMP;
+            } else if (!bnmpProps.enabled()) {
+                numeroBnmp = "";
+                status = StatusMandadoBnmp.ERRO_REGISTRO;
             } else {
                 try {
                     numeroBnmp = bnmpApiGateway.registrar(payloadJson);
@@ -227,7 +248,7 @@ public class BnmpIntegracaoService {
         if (registro == null) {
             return;
         }
-        if (bnmpEnabled && registro.numeroBnmp() != null) {
+        if (bnmpProps.enabled() && registro.numeroBnmp() != null) {
             bnmpApiGateway.revogar(registro.numeroBnmp(), motivo);
         }
         RegistroBnmp revogado = new RegistroBnmp(
