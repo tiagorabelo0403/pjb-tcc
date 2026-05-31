@@ -1,0 +1,874 @@
+meta:
+  bloco: BLOCO-26
+  gerado_em: "2026-05-31"
+  total_entradas: 57
+  descricao: >
+    Allowlist de violações legadas de contrato OpenAPI e superfície HTTP do PJB.
+    Detectores criados no BLOCO-26 falham para novas violações mas toleram as entradas aqui.
+    Remover entrada após corrigir a violação no bloco indicado em bloco_correcao.
+
+allowlist:
+
+  # ── GROUP C-6 ─ ResponseEntity<Object> (3 controllers, 25 ocorrências) ───────────────────────
+
+  - id: AL-0001
+    tipo: controller_raw_response
+    schema: InqueritoPolicialDigitalController
+    endpoint: /api/v1/criminal/inquerito
+    violacao:
+      - "ResponseEntity<Object>"
+    motivo: "23 métodos retornam ResponseEntity<Object> — controlador criminal sem DTO tipado definido"
+    owner: equipa-criminal
+    risco: alto
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-08-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0002
+    tipo: controller_raw_response
+    schema: DelegadoPainelController
+    endpoint: /api/v1/delegado/painel
+    violacao:
+      - "ResponseEntity<Object>"
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "malhaProcesso retorna Object; experienciaCompartilhada retorna Map — painel delegado sem DTOs concretos"
+    owner: equipa-delegado
+    risco: alto
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-08-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0003
+    tipo: controller_raw_response
+    schema: OficialJusticaMandadoController
+    endpoint: /api/v1/oficial-justica/mandado
+    violacao:
+      - "ResponseEntity<Object>"
+    motivo: "malhaProcesso retorna Object — mandado judicial sem DTO tipado de resposta"
+    owner: equipa-oficial-justica
+    risco: alto
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-08-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  # ── GROUP C-6 ─ ResponseEntity<Map<String,Object>> (18 controllers) ──────────────────────────
+
+  - id: AL-0004
+    tipo: controller_raw_map_response
+    schema: AssessorPainelController
+    endpoint: /api/v1/assessor/painel
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "experienciaCompartilhada retorna Map<String,Object> — sem DTO de experiência compartilhada"
+    owner: equipa-assessor
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0005
+    tipo: controller_raw_map_response
+    schema: CidadaoPainelController
+    endpoint: /api/v1/cidadao/painel
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "experienciaCompartilhada retorna Map<String,Object> — painel cidadão sem DTO tipado"
+    owner: equipa-cidadao
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0006
+    tipo: controller_raw_map_response
+    schema: ConciliadorMediadorPainelController
+    endpoint: /api/v1/conciliador/painel
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "experienciaCompartilhada retorna Map — painel conciliador/mediador sem DTO"
+    owner: equipa-conciliacao
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0007
+    tipo: controller_raw_map_response
+    schema: CuradorAusentesPainelController
+    endpoint: /api/v1/curador/painel
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "experienciaCompartilhada retorna Map — curadoria sem DTO tipado"
+    owner: equipa-curadoria
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0008
+    tipo: controller_raw_map_response
+    schema: DefensorPublicoPainelController
+    endpoint: /api/v1/defensor/painel
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "experienciaCompartilhada retorna Map — defensoria pública sem DTO tipado"
+    owner: equipa-defensoria
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0009
+    tipo: controller_raw_map_response
+    schema: CartorioExtrajudicialPainelController
+    endpoint: /api/v1/cartorio/painel
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "experienciaCompartilhada retorna Map — cartório extrajudicial sem DTO tipado"
+    owner: equipa-cartorio
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0010
+    tipo: controller_raw_map_response
+    schema: ForumOfficialReturnController
+    endpoint: /api/v1/forum/official-return
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "inbox e reativar retornam Map — fluxo de retorno oficial sem DTOs tipados"
+    owner: equipa-forum
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0011
+    tipo: controller_raw_map_response
+    schema: InstitutionalMaterialActionGuardController
+    endpoint: /api/v1/institutional/material
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "analyzeProcessAction retorna Map — análise processual institucional sem DTO"
+    owner: equipa-institutional
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0012
+    tipo: controller_raw_map_response
+    schema: LegalAiKnowledgeController
+    endpoint: /api/v1/ai/legal/knowledge
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "sources, catalogHealth e corpus retornam Map — endpoints de IA sem DTO tipado"
+    owner: equipa-ai
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0013
+    tipo: controller_raw_map_response
+    schema: LeiloeiroJudicialPainelController
+    endpoint: /api/v1/leiloeiro/painel
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "experienciaCompartilhada retorna Map — leiloeiro judicial sem DTO tipado"
+    owner: equipa-leilao
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0014
+    tipo: controller_raw_map_response
+    schema: MinisterioPublicoPainelController
+    endpoint: /api/v1/mp/painel
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "experienciaCompartilhada retorna Map — MP sem DTO tipado de painel"
+    owner: equipa-mp
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0015
+    tipo: controller_raw_map_response
+    schema: OficialJusticaPainelController
+    endpoint: /api/v1/oficial-justica/painel
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "notificacoes, notificacoesRuntime, balcaoVirtualEnviar, experienciaCompartilhada retornam Map"
+    owner: equipa-oficial-justica
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0016
+    tipo: controller_raw_map_response
+    schema: PeritoPainelController
+    endpoint: /api/v1/perito/painel
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "experienciaCompartilhada retorna Map — perito judicial sem DTO tipado"
+    owner: equipa-perito
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0017
+    tipo: controller_raw_map_response
+    schema: PsicossocialJudicialPainelController
+    endpoint: /api/v1/psicossocial/painel
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "experienciaCompartilhada retorna Map — psicossocial judicial sem DTO tipado"
+    owner: equipa-psicossocial
+    risco: medio
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2026-10-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0018
+    tipo: controller_raw_map_response
+    schema: PjbProbeController
+    endpoint: /actuator/startupz
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "startupz e readyz retornam Map — endpoints de probe de infraestrutura (aceitável para ops, mas não para API pública)"
+    owner: equipa-infra
+    risco: baixo
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0019
+    tipo: controller_raw_map_response
+    schema: PjbRuntimeDrainController
+    endpoint: /actuator/drain
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "beginDrain retorna Map — endpoint de drain de runtime (aceitável para ops)"
+    owner: equipa-infra
+    risco: baixo
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0020
+    tipo: controller_raw_map_response
+    schema: PjbRuntimeExecutionGovernanceController
+    endpoint: /actuator/execution-governance
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "snapshot retorna Map — endpoint de governança de execução de runtime"
+    owner: equipa-infra
+    risco: baixo
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  - id: AL-0021
+    tipo: controller_raw_map_response
+    schema: PjbRuntimePressureController
+    endpoint: /actuator/pressure
+    violacao:
+      - "ResponseEntity<Map<String,Object>>"
+    motivo: "pressure retorna Map — endpoint de pressão de runtime de infraestrutura"
+    owner: equipa-infra
+    risco: baixo
+    bloco_correcao: BLOCO-30
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoRawObjectControllerContractTest
+    criado_em: "2026-05-31"
+    auditoria_ref: C-6
+
+  # ── GROUP A-7 ─ Map<String,Object> em campos de módulo Response (5 classes) ─────────────────
+
+  - id: AL-0022
+    tipo: dto_map_field
+    schema: LaianeCockpitResponse
+    endpoint: /api/v1/laiane/cockpit
+    violacao:
+      - "campo Map<String,Object> em DTO de resposta pública"
+    motivo: "LaianeCockpitResponse tem campo Map<String,Object> — DTO do cockpit Laiane sem tipagem forte"
+    owner: equipa-laiane
+    risco: medio
+    bloco_correcao: BLOCO-28
+    sla_remocao: "2026-09-30"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0023
+    tipo: dto_map_field
+    schema: LaianeJudicialDecisionAdvisoryResponse
+    endpoint: /api/v1/laiane/judicial/decision
+    violacao:
+      - "campo Map<String,Object> em DTO de resposta pública"
+    motivo: "LaianeJudicialDecisionAdvisoryResponse tem campo Map<String,Object>"
+    owner: equipa-laiane
+    risco: medio
+    bloco_correcao: BLOCO-28
+    sla_remocao: "2026-09-30"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0024
+    tipo: dto_map_field
+    schema: LaianeLawyerProcuracaoResponse
+    endpoint: /api/v1/laiane/lawyer/procuracao
+    violacao:
+      - "campo Map<String,Object> em DTO de resposta pública"
+    motivo: "LaianeLawyerProcuracaoResponse tem campo Map<String,Object>"
+    owner: equipa-laiane
+    risco: medio
+    bloco_correcao: BLOCO-28
+    sla_remocao: "2026-09-30"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0025
+    tipo: dto_map_field
+    schema: LaianePeticaoAssistResponse
+    endpoint: /api/v1/laiane/peticao/assist
+    violacao:
+      - "campo Map<String,Object> em DTO de resposta pública"
+    motivo: "LaianePeticaoAssistResponse tem campo Map<String,Object>"
+    owner: equipa-laiane
+    risco: medio
+    bloco_correcao: BLOCO-28
+    sla_remocao: "2026-09-30"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0026
+    tipo: dto_map_field
+    schema: LaianePeticaoProtocolPackageResponse
+    endpoint: /api/v1/laiane/peticao/protocol
+    violacao:
+      - "campo Map<String,Object> em DTO de resposta pública"
+    motivo: "LaianePeticaoProtocolPackageResponse tem campo Map<String,Object>"
+    owner: equipa-laiane
+    risco: medio
+    bloco_correcao: BLOCO-28
+    sla_remocao: "2026-09-30"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  # ── GROUP DTO-SCHEMA ─ @Schema ausente em módulo Response (31 classes) ────────────────────────
+
+  - id: AL-0027
+    tipo: dto_schema_ausente
+    schema: BalcaoAtendimentoResponse
+    endpoint: /api/v1/balcao/atendimento
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "BalcaoAtendimentoResponse não tem @Schema — geração OpenAPI incompleta"
+    owner: equipa-balcao
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0028
+    tipo: dto_schema_ausente
+    schema: LaianeAssinaturaQualificadaResponse
+    endpoint: /api/v1/laiane
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeAssinaturaQualificadaResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0029
+    tipo: dto_schema_ausente
+    schema: LaianeCaseBundleConsolidationResponse
+    endpoint: /api/v1/laiane/case
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeCaseBundleConsolidationResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0030
+    tipo: dto_schema_ausente
+    schema: LaianeCaseBundleResponse
+    endpoint: /api/v1/laiane/case
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeCaseBundleResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0031
+    tipo: dto_schema_ausente
+    schema: LaianeCockpitResponse
+    endpoint: /api/v1/laiane/cockpit
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeCockpitResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0032
+    tipo: dto_schema_ausente
+    schema: LaianeDeadlineDelegationResponse
+    endpoint: /api/v1/laiane/deadline
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeDeadlineDelegationResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0033
+    tipo: dto_schema_ausente
+    schema: LaianeDocumentoFormalAssinadoResponse
+    endpoint: /api/v1/laiane
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeDocumentoFormalAssinadoResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0034
+    tipo: dto_schema_ausente
+    schema: LaianeDraftResponse
+    endpoint: /api/v1/laiane/draft
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeDraftResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0035
+    tipo: dto_schema_ausente
+    schema: LaianeInboxResponse
+    endpoint: /api/v1/laiane/inbox
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeInboxResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0036
+    tipo: dto_schema_ausente
+    schema: LaianeJudgeAgendaResponse
+    endpoint: /api/v1/laiane/judge/agenda
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeJudgeAgendaResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0037
+    tipo: dto_schema_ausente
+    schema: LaianeJudgeInitialDispatchResponse
+    endpoint: /api/v1/laiane/judge/dispatch
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeJudgeInitialDispatchResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0038
+    tipo: dto_schema_ausente
+    schema: LaianeJudgeOnePagerResponse
+    endpoint: /api/v1/laiane/judge/one-pager
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeJudgeOnePagerResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0039
+    tipo: dto_schema_ausente
+    schema: LaianeJudgeQueuePanelResponse
+    endpoint: /api/v1/laiane/judge/queue
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeJudgeQueuePanelResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0040
+    tipo: dto_schema_ausente
+    schema: LaianeJudgeRadarJurisprudenciaResponse
+    endpoint: /api/v1/laiane/judge/radar
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeJudgeRadarJurisprudenciaResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0041
+    tipo: dto_schema_ausente
+    schema: LaianeJudgeSanitationChecklistResponse
+    endpoint: /api/v1/laiane/judge/sanitation
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeJudgeSanitationChecklistResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0042
+    tipo: dto_schema_ausente
+    schema: LaianeJudgeUrgencyPanelResponse
+    endpoint: /api/v1/laiane/judge/urgency
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeJudgeUrgencyPanelResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0043
+    tipo: dto_schema_ausente
+    schema: LaianeJudicialDecisionAdvisoryResponse
+    endpoint: /api/v1/laiane/judicial/decision
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeJudicialDecisionAdvisoryResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0044
+    tipo: dto_schema_ausente
+    schema: LaianeLawyerAttachmentValidationResponse
+    endpoint: /api/v1/laiane/lawyer/attachment
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeLawyerAttachmentValidationResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0045
+    tipo: dto_schema_ausente
+    schema: LaianeLawyerProcuracaoResponse
+    endpoint: /api/v1/laiane/lawyer/procuracao
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeLawyerProcuracaoResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0046
+    tipo: dto_schema_ausente
+    schema: LaianeLawyerTeseResponse
+    endpoint: /api/v1/laiane/lawyer/tese
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeLawyerTeseResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0047
+    tipo: dto_schema_ausente
+    schema: LaianeMpAuditResponse
+    endpoint: /api/v1/laiane/mp/audit
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeMpAuditResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0048
+    tipo: dto_schema_ausente
+    schema: LaianeMpDeadlineMonitorResponse
+    endpoint: /api/v1/laiane/mp/deadline
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeMpDeadlineMonitorResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0049
+    tipo: dto_schema_ausente
+    schema: LaianeMpInboxResponse
+    endpoint: /api/v1/laiane/mp/inbox
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeMpInboxResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0050
+    tipo: dto_schema_ausente
+    schema: LaianePeticaoAssistResponse
+    endpoint: /api/v1/laiane/peticao/assist
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianePeticaoAssistResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0051
+    tipo: dto_schema_ausente
+    schema: LaianePeticaoProtocolPackageResponse
+    endpoint: /api/v1/laiane/peticao/protocol
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianePeticaoProtocolPackageResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0052
+    tipo: dto_schema_ausente
+    schema: LaianePeticaoValidateResponse
+    endpoint: /api/v1/laiane/peticao/validate
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianePeticaoValidateResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0053
+    tipo: dto_schema_ausente
+    schema: LaianeProtocolVerificationResponse
+    endpoint: /api/v1/laiane/protocol/verify
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeProtocolVerificationResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0054
+    tipo: dto_schema_ausente
+    schema: LaianeRegraValidacaoResponse
+    endpoint: /api/v1/laiane/regra/validacao
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeRegraValidacaoResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0055
+    tipo: dto_schema_ausente
+    schema: LaianeRitosCoverageResponse
+    endpoint: /api/v1/laiane/ritos/coverage
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeRitosCoverageResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0056
+    tipo: dto_schema_ausente
+    schema: LaianeSentencaDraftResponse
+    endpoint: /api/v1/laiane/sentenca/draft
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeSentencaDraftResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
+
+  - id: AL-0057
+    tipo: dto_schema_ausente
+    schema: LaianeValidacaoSoberanaResponse
+    endpoint: /api/v1/laiane/validacao/soberana
+    violacao:
+      - "@Schema ausente em DTO de resposta pública"
+    motivo: "LaianeValidacaoSoberanaResponse não tem @Schema"
+    owner: equipa-laiane
+    risco: baixo
+    bloco_correcao: BLOCO-27
+    sla_remocao: "2027-01-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-05-31"
+    auditoria_ref: A-7
