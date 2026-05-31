@@ -43,7 +43,7 @@ class LocacaoInquilinaoChecklistTest {
         var input = new LocacaoInquilinaoChecklistService.LocacaoInput(
                 LocacaoInquilinaoChecklistService.TipoLocacao.RESIDENCIAL,
                 LocacaoInquilinaoChecklistService.SituacaoContrato.VENCIDO_RENOVANDO,
-                LocalDate.now().minusMonths(36),
+                LocalDate.now().minusMonths(37),
                 LocalDate.now().minusMonths(6),
                 new BigDecimal("1800.00"),
                 0, true, true, false);
