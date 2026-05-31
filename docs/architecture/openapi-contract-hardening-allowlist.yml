@@ -6,6 +6,11 @@ meta:
     Allowlist de violações legadas de contrato OpenAPI e superfície HTTP do PJB.
     Detectores criados no BLOCO-26 falham para novas violações mas toleram as entradas aqui.
     Remover entrada após corrigir a violação no bloco indicado em bloco_correcao.
+  gap_nao_listado: >
+    128 Response/View adicionais com Map<String,Object> existem fora de modules/
+    (em ai/, model/dto/, financial/ e demais pacotes). Não estão listados individualmente
+    porque serão endereçados globalmente no BLOCO-28 com tipagem progressiva por módulo.
+    O detector PjbNoMapObjectInPublicDtoTest cobre apenas modules/ intencionalmente.
 
 allowlist:
 
