@@ -457,6 +457,8 @@ pjb:
       sefaz-nfe:
         enabled: ${PJB_COMJUD_SEFAZ_NFE_ENABLED:false}
         strict-mode: ${PJB_COMJUD_SEFAZ_NFE_STRICT_MODE:false}
+  dje:
+    mock-enabled: true
   hsm:
     mock-enabled: ${PJB_HSM_MOCK_ENABLED:false}
   demo:
