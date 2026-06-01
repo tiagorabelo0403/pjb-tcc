@@ -14,8 +14,11 @@ import com.tcc.pjb.backend.modules.laiane.dto.legal.LaianePeticaoProtocolPackage
 import com.tcc.pjb.backend.modules.laiane.dto.roles.lawyer.*;
 import com.tcc.pjb.backend.modules.laiane.entity.LaianeProcuracao;
 import com.tcc.pjb.backend.modules.laiane.entity.LaianeTese;
+import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.modules.laiane.service.LaianeLawyerService;
 import com.tcc.pjb.backend.modules.laiane.service.LaianePeticaoAssistService;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
 import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyJsonExtractor;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
@@ -31,15 +34,18 @@ public class LaianeLawyerController {
     private final LaianePeticaoAssistService assistService;
     private final CapabilityRateLimiter capabilityRateLimiter;
     private final ObjectMapper objectMapper;
+    private final PjbTimeService timeService;
 
     public LaianeLawyerController(LaianeLawyerService service,
                                  LaianePeticaoAssistService assistService,
                                  CapabilityRateLimiter capabilityRateLimiter,
-                                 ObjectMapper objectMapper) {
+                                 ObjectMapper objectMapper,
+                                 PjbTimeService timeService) {
         this.service = service;
         this.assistService = assistService;
         this.capabilityRateLimiter = capabilityRateLimiter;
         this.objectMapper = objectMapper;
+        this.timeService = timeService;
     }
 
     @PostMapping("/procuracoes")
@@ -297,8 +303,8 @@ public class LaianeLawyerController {
                 .titulo(t.getTitulo())
                 .corpo(t.getCorpo())
                 .tagsJson(t.getTagsJson())
-                .createdAt(t.getCreatedAt())
-                .updatedAt(t.getUpdatedAt())
+                .createdAt(toOffset(t.getCreatedAt()))
+                .updatedAt(toOffset(t.getUpdatedAt()))
                 .build();
     }
 
@@ -315,15 +321,19 @@ public class LaianeLawyerController {
         return LaianeLawyerProcuracaoResponse.builder()
                 .id(p.getId())
                 .clienteId(p.getClienteId())
-                .status(p.getStatus() != null ? p.getStatus().name() : null)
+                .status(p.getStatus())
                 .processoId(p.getProcessoId())
                 .inicioVigencia(p.getInicioVigencia())
                 .fimVigencia(p.getFimVigencia())
                 .poderes(p.getPoderes())
                 .anexosJson(p.getAnexosJson())
                 .representacaoPolicy(extractRepresentacaoPolicy(p.getPoderes()))
-                .createdAt(p.getCreatedAt())
-                .updatedAt(p.getUpdatedAt())
+                .createdAt(toOffset(p.getCreatedAt()))
+                .updatedAt(toOffset(p.getUpdatedAt()))
                 .build();
+    }
+
+    private OffsetDateTime toOffset(LocalDateTime ldt) {
+        return ldt == null ? null : ldt.atZone(timeService.legalZone()).toOffsetDateTime();
     }
 }

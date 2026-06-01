@@ -53,7 +53,7 @@ public class ForumHabilitacaoController {
         return LaianeLawyerProcuracaoResponse.builder()
                 .id(proc.getId())
                 .clienteId(proc.getClienteId())
-                .status(proc.getStatus() != null ? proc.getStatus().name() : null)
+                .status(proc.getStatus())
                 .processoId(proc.getProcessoId())
                 .inicioVigencia(proc.getInicioVigencia())
                 .fimVigencia(proc.getFimVigencia())

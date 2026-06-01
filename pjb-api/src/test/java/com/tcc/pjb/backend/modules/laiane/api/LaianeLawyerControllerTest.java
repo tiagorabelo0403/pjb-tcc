@@ -19,6 +19,7 @@ import com.tcc.pjb.backend.model.repository.MembroEquipeRepository;
 import com.tcc.pjb.backend.modules.advocacia.office.service.OfficePersonalScopeService;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.lawyer.LaianeLawyerAttachmentValidationRequest;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.lawyer.LaianeLawyerAttachmentValidationResponse;
+import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.modules.laiane.service.LaianeLawyerService;
 import com.tcc.pjb.backend.modules.laiane.service.LaianePeticaoAssistService;
 import com.tcc.pjb.backend.modules.support.WebMvcTestSecurityConfig;
@@ -85,6 +86,9 @@ class LaianeLawyerControllerTest {
 
     @MockitoBean
     private RecursalFactsIngressProperties recursalFactsIngressProperties;
+
+    @MockitoBean
+    private PjbTimeService timeService;
 
     @Test
     void validateAttachments_shouldReturn200AndCallService() throws Exception {

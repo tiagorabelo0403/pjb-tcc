@@ -2,6 +2,8 @@
 package com.tcc.pjb.backend.modules.laiane.dto.legal;
 
 import com.tcc.pjb.backend.modules.laiane.dto.protocol.LaianeProtocolPackageDto;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,11 +13,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Schema(description = "Pacote de protocolo de petição gerado pelo Laiane (pré-protocolo no PJe/eProc)")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class LaianePeticaoProtocolPackageResponse {
+    @Schema(description = "Pacote de protocolo com metadados de submissão")
     private LaianeProtocolPackageDto protocolPackage;
     private LaianePeticaoAssistResponse preflight;
     @Builder.Default

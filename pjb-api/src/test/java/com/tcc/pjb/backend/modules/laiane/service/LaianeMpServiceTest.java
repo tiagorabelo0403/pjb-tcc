@@ -238,7 +238,7 @@ class LaianeMpServiceTest {
 
         var response = service.updateOficioStatus(tc, req);
 
-        assertThat(response.getStatus()).isEqualTo("ENVIADO");
+        assertThat(response.getStatus()).isEqualTo(LaianeOficioStatus.ENVIADO);
         assertThat(response.getEnviadoEm()).isNotNull();
     }
 

@@ -4,6 +4,7 @@ import com.tcc.pjb.backend.core.time.PjbTimeService;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -555,12 +556,12 @@ public class LaianeLawyerService {
                 .delegatorId(d.getDelegator() != null ? d.getDelegator().getId() : null)
                 .delegateeId(d.getDelegatee() != null ? d.getDelegatee().getId() : null)
                 .workItemId(d.getWorkItem() != null ? d.getWorkItem().getId() : null)
-                .status(d.getStatus() != null ? d.getStatus().name() : null)
+                .status(d.getStatus())
                 .descricao(d.getDescricao())
-                .createdAt(d.getCreatedAt())
-                .updatedAt(d.getUpdatedAt())
-                .acceptedAt(d.getAcceptedAt())
-                .completedAt(d.getCompletedAt())
+                .createdAt(toOffset(d.getCreatedAt()))
+                .updatedAt(toOffset(d.getUpdatedAt()))
+                .acceptedAt(toOffset(d.getAcceptedAt()))
+                .completedAt(toOffset(d.getCompletedAt()))
                 .build();
     }
 
@@ -569,13 +570,17 @@ public class LaianeLawyerService {
         return LaianeCaseBundleResponse.builder()
                 .id(b.getId())
                 .advogadoId(b.getAdvogado() != null ? b.getAdvogado().getId() : null)
-                .status(b.getStatus() != null ? b.getStatus().name() : null)
+                .status(b.getStatus())
                 .processosIds(processos)
                 .teseId(b.getTeseId())
                 .descricao(b.getDescricao())
-                .createdAt(b.getCreatedAt())
-                .updatedAt(b.getUpdatedAt())
+                .createdAt(toOffset(b.getCreatedAt()))
+                .updatedAt(toOffset(b.getUpdatedAt()))
                 .build();
+    }
+
+    private OffsetDateTime toOffset(LocalDateTime ldt) {
+        return ldt == null ? null : ldt.atZone(timeService.legalZone()).toOffsetDateTime();
     }
 
     private List<Long> readProcessos(String json) {

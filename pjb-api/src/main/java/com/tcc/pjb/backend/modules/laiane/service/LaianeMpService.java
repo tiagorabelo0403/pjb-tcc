@@ -8,6 +8,7 @@ import io.micrometer.core.instrument.Timer;
 import org.springframework.context.ApplicationEventPublisher;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -280,7 +281,7 @@ public class LaianeMpService {
         LaianeValidacaoSoberanaResponse validacaoSoberana = documentoFormalAssinado == null ? null : documentoFormalAssinado.validacaoSoberana();
         return LaianeMpOficioResponse.builder()
                 .trackingCode(o.getTrackingCode())
-                .status(o.getStatus() != null ? o.getStatus().name() : null)
+                .status(o.getStatus())
                 .tipo(o.getTipo())
                 .protocolo(o.getProtocolo())
                 .assunto(o.getAssunto())
@@ -288,10 +289,10 @@ public class LaianeMpService {
                 .documentoFormalAssinado(documentoFormalAssinado)
                 .assinaturaQualificada(assinaturaQualificada)
                 .validacaoSoberana(validacaoSoberana)
-                .enviadoEm(o.getEnviadoEm())
-                .entregueEm(o.getEntregueEm())
-                .createdAt(o.getCreatedAt())
-                .updatedAt(o.getUpdatedAt())
+                .enviadoEm(toOffset(o.getEnviadoEm()))
+                .entregueEm(toOffset(o.getEntregueEm()))
+                .createdAt(toOffset(o.getCreatedAt()))
+                .updatedAt(toOffset(o.getUpdatedAt()))
                 .build();
     }
 
@@ -462,10 +463,14 @@ public class LaianeMpService {
                 .referenciaId(e.getReferenciaId())
                 .detalhes(e.getDetalhes())
                 .justificativa(e.getJustificativa())
-                .timestamp(e.getTimestamp())
+                .timestamp(toOffset(e.getTimestamp()))
                 .nivelRisco(String.valueOf(e.getNivelRisco()))
                 .perfilComportamental(e.getPerfilComportamental())
                 .hashIntegridade(e.getHashIntegridade())
                 .build();
+    }
+
+    private OffsetDateTime toOffset(LocalDateTime ldt) {
+        return ldt == null ? null : ldt.atZone(timeService.legalZone()).toOffsetDateTime();
     }
 }

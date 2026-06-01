@@ -31,17 +31,21 @@ import com.tcc.pjb.backend.service.identity.ProntuarioNacionalService;
 import com.tcc.pjb.backend.service.teto.TetoProcessualService;
 import com.tcc.pjb.backend.service.territorial.TerritorialProcessualService;
 import com.tcc.pjb.backend.service.triagem.TriagemNacionalIAEngine;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Schema(description = "Resposta de assistência à elaboração de petição pelo Laiane")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class LaianePeticaoAssistResponse {
 
+    @Schema(description = "ID único da requisição de assistência", example = "req-2026-001")
     private String requestId;
     private Instant generatedAt;
     private String draftMarkdown;

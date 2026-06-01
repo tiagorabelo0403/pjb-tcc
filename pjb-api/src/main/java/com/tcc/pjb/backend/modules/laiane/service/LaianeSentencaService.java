@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.modules.laiane.service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -530,11 +531,11 @@ public class LaianeSentencaService {
                 .draftId(draft.getId())
                 .uuid(draft.getUuid() != null ? draft.getUuid().toString() : null)
                 .processoId(draft.getProcesso() != null ? draft.getProcesso().getId() : null)
-                .status(draft.getStatus() != null ? draft.getStatus().name() : null)
+                .status(draft.getStatus())
                 .inputHash(draft.getInputHash())
                 .draftMarkdown(draft.getDraftMarkdown())
-                .createdAt(draft.getCreatedAt())
-                .publishedAt(draft.getPublishedAt())
+                .createdAt(toOffset(draft.getCreatedAt()))
+                .publishedAt(toOffset(draft.getPublishedAt()))
                 .resumoExecutivo(resolvedResumoExecutivo)
                 .questoesASolver(resolvedQuestoes)
                 .contradicoes(resolvedContradicoes)
@@ -836,5 +837,7 @@ public class LaianeSentencaService {
                 .trim();
     }
 
-
+    private OffsetDateTime toOffset(LocalDateTime ldt) {
+        return ldt == null ? null : ldt.atZone(timeService.legalZone()).toOffsetDateTime();
+    }
 }

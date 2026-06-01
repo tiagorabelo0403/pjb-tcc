@@ -1,9 +1,10 @@
 package com.tcc.pjb.backend.modules.laiane.service;
 
-import java.time.ZoneId;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -141,16 +142,16 @@ public class LaianeJudgeService {
                     .status(e.getStatus() != null ? e.getStatus().name() : null)
                     .titulo(e.getTitulo())
                     .descricao(e.getDescricao())
-                    .dataInicio(e.getDataInicio())
-                    .dataFim(e.getDataFim())
+                    .dataInicio(toOffset(e.getDataInicio()))
+                    .dataFim(toOffset(e.getDataFim()))
                     .conflict(conflict[i])
                     .conflictCount(counts[i])
                     .build());
         }
 
         return LaianeJudgeAgendaResponse.builder()
-                .inicio(safeInicio)
-                .fim(safeFim)
+                .inicio(toOffset(safeInicio))
+                .fim(toOffset(safeFim))
                 .total(dtos.size())
                 .totalConflitos(totalConflitos)
                 .events(dtos)
@@ -259,7 +260,7 @@ public class LaianeJudgeService {
                 .rito(ritoSnapshot.ritoCode())
                 .faseAtual(p.getFaseAtual() != null ? p.getFaseAtual().name() : null)
                 .status(resolveStatus(p))
-                .ultimaMovimentacao(p.getDataUltimaMovimentacao())
+                .ultimaMovimentacao(toOffset(p.getDataUltimaMovimentacao()))
                 .resumoProcessual(firstNonBlank(p.getResumoIA(), p.getObjetoProcessual(), p.getPedidoPrincipal(), p.getAssunto()))
                 .fatosRelevantes(firstNonBlank(p.getObjetoProcessual(), p.getResumoIA(), p.getAssunto()))
                 .pedidosCentrais(splitNarrative(p.getPedidosConsolidados(), p.getPedidoPrincipal()))
@@ -354,7 +355,7 @@ public class LaianeJudgeService {
     private LaianeMovimentacaoLiteDto toMovLite(MovimentacaoProcessual m) {
         return LaianeMovimentacaoLiteDto.builder()
                 .id(m.getId())
-                .dataMovimentacao(m.getDataMovimentacao() != null ? java.time.LocalDateTime.ofInstant(m.getDataMovimentacao(), ZoneId.systemDefault()) : null)
+                .dataMovimentacao(m.getDataMovimentacao() != null ? m.getDataMovimentacao().atZone(timeService.legalZone()).toOffsetDateTime() : null)
                 .tipo(m.getFasePara() != null ? m.getFasePara().name() : (m.getFaseDe() != null ? m.getFaseDe().name() : null))
                 .descricao(m.getDescricao())
                 .build();
@@ -370,5 +371,9 @@ public class LaianeJudgeService {
                 .tema(tema)
                 .ementa(p.getEmentaResumo())
                 .build();
+    }
+
+    private OffsetDateTime toOffset(LocalDateTime ldt) {
+        return ldt == null ? null : ldt.atZone(timeService.legalZone()).toOffsetDateTime();
     }
 }
