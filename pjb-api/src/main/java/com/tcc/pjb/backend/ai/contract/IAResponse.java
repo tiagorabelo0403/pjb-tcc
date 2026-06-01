@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import com.tcc.pjb.backend.ai.provenance.EvidenceItem;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,10 +37,12 @@ public class IAResponse implements Serializable {
     @Singular("alerta")
     private final List<String> alertasCriticos;
 
+    @Schema(description = "Metadados técnicos do pipeline de IA — estrutura varia por versão (v1/v2/v3) e domínio (jurídica/financeira)")
+    @Size(max = 50)
     @Singular("metadado")
     private final Map<String, Object> metadados;
 
-    
+    @Schema(hidden = true)
     @Builder.Default
     private final Map<String, Object> essence = Collections.emptyMap();
 

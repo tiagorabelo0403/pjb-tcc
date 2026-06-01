@@ -1,18 +1,18 @@
 meta:
-  bloco: BLOCO-26
+  bloco: BLOCO-28.A
   gerado_em: "2026-05-31"
-  total_entradas: 27
-  atualizado_em: "2026-05-31"
+  total_entradas: 30
+  atualizado_em: "2026-06-01"
   corrigidos_em_bloco27: "AL-0028 a AL-0057 removidos — 30 DTOs laiane receberam @Schema"
+  adicionados_em_bloco28a: "AL-0028 a AL-0030 — 3 DTOs ai/ Categoria D documentados com @Schema+@Size"
   descricao: >
     Allowlist de violações legadas de contrato OpenAPI e superfície HTTP do PJB.
     Detectores criados no BLOCO-26 falham para novas violações mas toleram as entradas aqui.
     Remover entrada após corrigir a violação no bloco indicado em bloco_correcao.
   gap_nao_listado: >
-    128 Response/View adicionais com Map<String,Object> existem fora de modules/
-    (em ai/, model/dto/, financial/ e demais pacotes). Não estão listados individualmente
-    porque serão endereçados globalmente no BLOCO-28 com tipagem progressiva por módulo.
-    O detector PjbNoMapObjectInPublicDtoTest cobre apenas modules/ intencionalmente.
+    Outros pacotes (model/dto/, financial/) ainda têm Map<String,Object> não listados.
+    Serão endereçados no BLOCO-28.B/C. O detector PjbNoMapObjectInPublicDtoTest
+    agora cobre modules/ (5 classes) e ai/ (3 classes — BLOCO-28.A).
 
 allowlist:
 
@@ -429,4 +429,62 @@ allowlist:
     teste_negativo: PjbNoMapObjectInPublicDtoTest
     criado_em: "2026-05-31"
     auditoria_ref: A-7
+
+  # ── GROUP MAP-AI ─ Map<String,Object> Categoria D em ai/ (BLOCO-28.A) ──────────────────────────
+
+  - id: AL-0028
+    tipo: map_string_object_categoria_d
+    schema: AgentResult
+    endpoint: /api/v1/ai/agentic/run
+    violacao:
+      - "Map<String,Object> data em campo de resultado de agente"
+    motivo: >
+      Categoria D: payload polimórfico — cada agente concreto (CashFlow, FinancialRatios,
+      Compliance, Tax, Contract, Jurisprudence) coloca schema diferente em data.
+      Mitigado com @Schema(description) + @Size(max=50). Tipagem sealed por agente
+      seria possível mas ultrapassa o escopo do BLOCO-28.A.
+    owner: equipa-ai
+    risco: medio
+    bloco_correcao: BLOCO-29
+    sla_remocao: "2027-06-30"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-8
+
+  - id: AL-0029
+    tipo: map_string_object_categoria_d
+    schema: AgenticRunResponse
+    endpoint: /api/v1/ai/agentic/run
+    violacao:
+      - "Map<String,Object> output — legado @Deprecated(forRemoval=true)"
+    motivo: >
+      Categoria D (legado): output populado apenas por setters @Deprecated(forRemoval).
+      Campo marcado @JsonIgnore + @Schema(hidden=true) — não aparece no contrato OpenAPI.
+      Remover quando os setters deprecated forem eliminados.
+    owner: equipa-ai
+    risco: baixo
+    bloco_correcao: BLOCO-29
+    sla_remocao: "2027-06-30"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-8
+
+  - id: AL-0030
+    tipo: map_string_object_categoria_d
+    schema: IAResponse
+    endpoint: /api/v1/ai/juridica /api/v1/ai/financeira
+    violacao:
+      - "Map<String,Object> metadados — metadados técnicos de pipeline de IA"
+      - "Map<String,Object> essence — campo de extensão reservado (sempre vazio)"
+    motivo: >
+      Categoria D: metadados varia por versão (v1/v2/v3) e domínio (jurídica/financeira).
+      Mitigado com @Schema(description) + @Size(max=50).
+      essence é sempre emptyMap() — marcado @Schema(hidden=true), oculto do contrato.
+    owner: equipa-ai
+    risco: medio
+    bloco_correcao: BLOCO-29
+    sla_remocao: "2027-06-30"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-8
 

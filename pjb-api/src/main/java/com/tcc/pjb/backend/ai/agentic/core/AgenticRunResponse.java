@@ -1,5 +1,7 @@
 package com.tcc.pjb.backend.ai.agentic.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +14,7 @@ public class AgenticRunResponse {
     private String traceId;
     private Instant createdAt = Instant.now();
     private String summary;
+    @Schema(hidden = true)
     private Map<String, Object> output = new HashMap<>();
     private List<AgentResult> agentResults = new ArrayList<>();
     private List<ApprovalItem> approvalsRequired = new ArrayList<>();
@@ -41,6 +44,7 @@ public class AgenticRunResponse {
         this.summary = summary;
     }
 
+    @JsonIgnore
     public Map<String, Object> getOutput() {
         return output;
     }
