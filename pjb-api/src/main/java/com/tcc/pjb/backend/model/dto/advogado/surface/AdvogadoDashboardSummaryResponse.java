@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.model.dto.advogado.surface;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,8 +21,10 @@ public record AdvogadoDashboardSummaryResponse(
             Long id,
             String tipo,
             String titulo,
-            LocalDateTime dataInicio,
-            LocalDateTime dataFim,
+            @Schema(description = "Data e hora de início do evento da agenda", format = "date-time",
+                    example = "2026-06-01T14:00:00-03:00") LocalDateTime dataInicio,
+            @Schema(description = "Data e hora de fim do evento da agenda", format = "date-time",
+                    example = "2026-06-01T15:00:00-03:00") LocalDateTime dataFim,
             Long processoId,
             String processoNumero
     ) {}
