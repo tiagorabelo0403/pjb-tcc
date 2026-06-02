@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.model.dto.calendar;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -74,7 +75,8 @@ public record CalendarPanelResponse(
             int attentionScore,
             String title,
             String subtitle,
-            LocalDateTime at,
+            @Schema(description = "Data e hora do evento destacado no calendário", format = "date-time",
+                    example = "2026-06-01T14:00:00-03:00") LocalDateTime at,
             String color,
             String detailsUrl,
             String audienceCode

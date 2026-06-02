@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.model.dto.calendar;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,7 +44,8 @@ public record CalendarInstitutionalBridgeResponse(
             int criticalEvents,
             int overdueEvents,
             int processCount,
-            LocalDateTime nextAt,
+            @Schema(description = "Data/hora do próximo evento neste card", format = "date-time",
+                    example = "2026-06-01T14:00:00-03:00") LocalDateTime nextAt,
             String detailsUrl,
             List<String> highlights,
             String presentationCode,
