@@ -5,6 +5,9 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record PjbSubstituicaoHomologacaoProbeResponse(
         Long probeId,
@@ -14,7 +17,13 @@ public record PjbSubstituicaoHomologacaoProbeResponse(
         String ambienteCodigo,
         PjbSubstituicaoHomologacaoProbeSituacao situacao,
         int gateScore,
+        @Schema(description = "Evidencias de homologacao — heterogeneas por tipo de probe de validacao", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> evidencias,
+        @Schema(description = "Resultado de homologacao — heterogeneo por tipo de probe de validacao", implementation = Object.class)
+        @Size(max = 30)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> resultado,
         Instant criadoEm,
         Instant atualizadoEm
@@ -24,3 +33,4 @@ public record PjbSubstituicaoHomologacaoProbeResponse(
         resultado = resultado == null ? Map.of() : Collections.unmodifiableMap(new LinkedHashMap<>(resultado));
     }
 }
+

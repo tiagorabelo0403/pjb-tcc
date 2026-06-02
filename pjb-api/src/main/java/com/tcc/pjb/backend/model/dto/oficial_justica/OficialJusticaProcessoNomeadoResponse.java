@@ -2,6 +2,9 @@ package com.tcc.pjb.backend.model.dto.oficial_justica;
 
 import java.time.Instant;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record OficialJusticaProcessoNomeadoResponse(
         String territorio,
@@ -85,7 +88,10 @@ public record OficialJusticaProcessoNomeadoResponse(
             String statusVinculo,
             boolean possuiPendenciaAtiva,
             String proximaAcao,
-            java.util.Map<String, Object> unidadeContexto,
+            @Schema(description = "Contexto da unidade judicial executora — chaves variam por tribunal e tipo de diligencia", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        java.util.Map<String, Object> unidadeContexto,
             List<String> alerts
     ) {
         public ProcessoRow {
@@ -94,3 +100,5 @@ public record OficialJusticaProcessoNomeadoResponse(
         }
     }
 }
+
+

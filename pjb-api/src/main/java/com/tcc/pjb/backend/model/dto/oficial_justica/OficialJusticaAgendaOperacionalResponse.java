@@ -4,6 +4,9 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import java.util.Objects;
 
 public record OficialJusticaAgendaOperacionalResponse(
@@ -214,7 +217,10 @@ public record OficialJusticaAgendaOperacionalResponse(
             String janelaRetornoLabel,
             boolean podeEnviarNoProcesso,
             String bloqueioEnvio,
-            Map<String, Object> quickActions,
+            @Schema(description = "Acoes rapidas disponíveis — polimorficas por tipo de diligencia e fase", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        Map<String, Object> quickActions,
             List<String> alertas
     ) {
         public StopRow {
@@ -265,3 +271,4 @@ public record OficialJusticaAgendaOperacionalResponse(
         return safe.isEmpty() ? Map.of() : Map.copyOf(safe);
     }
 }
+

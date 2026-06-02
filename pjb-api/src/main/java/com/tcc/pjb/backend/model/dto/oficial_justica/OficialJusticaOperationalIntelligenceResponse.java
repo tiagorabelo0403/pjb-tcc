@@ -2,6 +2,9 @@ package com.tcc.pjb.backend.model.dto.oficial_justica;
 
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record OficialJusticaOperationalIntelligenceResponse(
         String territorio,
@@ -13,6 +16,9 @@ public record OficialJusticaOperationalIntelligenceResponse(
         int totalPenhoras,
         List<String> filasCriticas,
         List<DiligenciaView> proximasDiligencias,
+        @Schema(description = "Metricas operacionais do servico de inteligencia — chaves variam por dominio de analise", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> metricas
 ) {
     public OficialJusticaOperationalIntelligenceResponse {
@@ -31,3 +37,4 @@ public record OficialJusticaOperationalIntelligenceResponse(
     ) {
     }
 }
+

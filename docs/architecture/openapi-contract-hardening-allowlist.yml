@@ -1,19 +1,21 @@
 meta:
-  bloco: BLOCO-28.C
+  bloco: BLOCO-28.D
   gerado_em: "2026-05-31"
-  total_entradas: 66
-  atualizado_em: "2026-06-01"
+  total_entradas: 106
+  atualizado_em: "2026-06-02"
   corrigidos_em_bloco27: "AL-0028 a AL-0057 removidos — 30 DTOs laiane receberam @Schema"
   adicionados_em_bloco28a: "AL-0028 a AL-0030 — 3 DTOs ai/ Categoria D documentados com @Schema+@Size"
   adicionados_em_bloco28b: "AL-0031 a AL-0054 — 14 leitura/ + 9 peticionamento/ Categoria D; 4 records tipados (A)"
+  adicionados_em_bloco28d: "AL-0067 a AL-0106 — 40 DTOs oficial_justica/magistratura/institutional/substituicao/transito/frontend/shared Categoria D"
   descricao: >
     Allowlist de violações legadas de contrato OpenAPI e superfície HTTP do PJB.
     Detectores criados no BLOCO-26 falham para novas violações mas toleram as entradas aqui.
     Remover entrada após corrigir a violação no bloco indicado em bloco_correcao.
   gap_nao_listado: >
-    Outros pacotes (calculo/, oficial_justica/, magistratura/, financial/) ainda têm
-    Map<String,Object> não listados — endereçados no BLOCO-28.C. O detector
-    PjbNoMapObjectInPublicDtoTest agora cobre modules/(5), ai/(3), leitura/(14), peticionamento/(9).
+    Pacotes financial/ ainda têm Map<String,Object> não listados. O detector
+    PjbNoMapObjectInPublicDtoTest cobre modules/(5), ai/(3), leitura/(14), peticionamento/(9),
+    calculo/(13), oficial_justica/(10), magistratura/(5), institutional/(8), substituicao/(7),
+    transito/(5), core/frontend/(2), shared/dto/(3) — todos documentados até BLOCO-28.D.
 
 allowlist:
 
@@ -1039,3 +1041,634 @@ allowlist:
     criado_em: "2026-06-01"
     auditoria_ref: A-10
 
+
+  # -- GROUP 28.D - Map<String,Object> Categoria D -- oficial_justica/ magistratura/ institutional/ substituicao/ transito/ frontend/ shared/ ---
+
+  - id: AL-0067
+    tipo: map_string_object_categoria_d
+    schema: OficialJusticaProcessoWorkbenchResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> unidadeContexto"
+      - "Map<String,Object> securityEnvelope"
+      - "Map<String,Object> legendaAndamento"
+      - "Map<String,Object> calculadoraJudicial"
+      - "Map<String,Object> assistenciaOperacionalIa"
+    motivo: "Categoria D: contexto de unidade, envelope de seguranca, legenda de andamento e assistencia IA variam por tipo de processo e perfil do oficial."
+    owner: equipa-oficial-justica
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0068
+    tipo: map_string_object_categoria_d
+    schema: OficialJusticaCumprimentoEncerramentoResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> cienciaProcessual"
+      - "Map<String,Object> oficioOriginalDireto"
+      - "Map<String,Object> mandadoFormalAssinado"
+      - "Map<String,Object> certidaoFormalAssinada"
+      - "Map<String,Object> autoCumprimentoAssinado"
+      - "Map<String,Object> recebimentoSecretaria"
+      - "Map<String,Object> processoContexto"
+      - "Map<String,Object> oficialResponsavel"
+    motivo: "Categoria D: documentos de encerramento de cumprimento variam por tipo de diligencia e mandado -- campos estruturalmente heterogeneos por natureza."
+    owner: equipa-oficial-justica
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0069
+    tipo: map_string_object_categoria_d
+    schema: OficialJusticaDiligenciaQueueResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> execucaoViva"
+      - "Map<String,Object> unidadeContexto"
+      - "Map<String,Object> quickActions"
+    motivo: "Categoria D: estado de execucao viva, contexto de unidade e acoes rapidas variam por tipo de diligencia e sistema-fonte."
+    owner: equipa-oficial-justica
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0070
+    tipo: map_string_object_categoria_d
+    schema: OficialJusticaOperationalIntelligenceResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> metricas"
+    motivo: "Categoria D: metricas operacionais de inteligencia variam por tipo de indicador e periodo de coleta."
+    owner: equipa-oficial-justica
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0071
+    tipo: map_string_object_categoria_d
+    schema: OficialJusticaPessoaRastreioResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> sinaisReceita"
+      - "Map<String,Object> prontuarioNacional"
+      - "Map<String,Object> heuristicaOperacional"
+    motivo: "Categoria D: dados de rastreio de pessoa variam por sistema-fonte (Receita, BNMP, INFOJUD) com esquemas heterogeneos."
+    owner: equipa-oficial-justica
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0072
+    tipo: map_string_object_categoria_d
+    schema: OficialJusticaProcessoAcessoResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> processo"
+    motivo: "Categoria D: conteudo do processo varia por tipo, rito e nivel de acesso -- schema heterogeneo por design."
+    owner: equipa-oficial-justica
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0073
+    tipo: map_string_object_categoria_d
+    schema: OficialJusticaBalcaoVirtualChatResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> unidadeContexto"
+    motivo: "Categoria D: contexto de unidade no balcao virtual varia por tipo de atendimento e jurisdicao."
+    owner: equipa-oficial-justica
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0074
+    tipo: map_string_object_categoria_d
+    schema: OficialJusticaPendenciaOperacionalResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> unidadeContexto"
+    motivo: "Categoria D: contexto de unidade em pendencias operacionais varia por tipo de pendencia e comarca."
+    owner: equipa-oficial-justica
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0075
+    tipo: map_string_object_categoria_d
+    schema: OficialJusticaProcessoNomeadoResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> unidadeContexto"
+    motivo: "Categoria D: contexto de unidade em processo nomeado varia por tipo de processo e perfil de acesso."
+    owner: equipa-oficial-justica
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0076
+    tipo: map_string_object_categoria_d
+    schema: OficialJusticaAgendaOperacionalResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> quickActions"
+    motivo: "Categoria D: acoes rapidas da agenda operacional variam por tipo de diligencia e prioridade."
+    owner: equipa-oficial-justica
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0077
+    tipo: map_string_object_categoria_d
+    schema: MagistraturaJudicialActWorkspaceResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> processSignals"
+    motivo: "Categoria D: sinais do processo no workspace judicial variam por tipo de ato e estado processual."
+    owner: equipa-magistratura
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0078
+    tipo: map_string_object_categoria_d
+    schema: MagistraturaJudicialActCommandResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> payload"
+    motivo: "Categoria D: payload de comando judicial varia por tipo de ato (despacho, decisao, sentenca)."
+    owner: equipa-magistratura
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0079
+    tipo: map_string_object_categoria_d
+    schema: MagistraturaJudicialActPreviewResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> metrics"
+    motivo: "Categoria D: metricas de preview do ato judicial variam por tipo de ato e contexto processual."
+    owner: equipa-magistratura
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0080
+    tipo: map_string_object_categoria_d
+    schema: MagistraturaJudicialProvidenceResponse
+    endpoint: N/A
+    violacao:
+      - "List<Map<String,Object>> participants"
+      - "Map<String,Object> metrics"
+    motivo: "Categoria D: participantes e metricas de provimento judicial variam por tipo de rito e perfil das partes."
+    owner: equipa-magistratura
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0081
+    tipo: map_string_object_categoria_d
+    schema: MagistraturaJudicialProvidenceDispatchResponse
+    endpoint: N/A
+    violacao:
+      - "List<Map<String,Object>> participants"
+      - "Map<String,Object> metrics"
+    motivo: "Categoria D: participantes e metricas de despacho de provimento variam por tipo de expedicao e destinatario."
+    owner: equipa-magistratura
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0082
+    tipo: map_string_object_categoria_d
+    schema: InstitutionalSupportCompetenceSnapshotResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> lane"
+      - "Map<String,Object> metrics"
+    motivo: "Categoria D: lane e metricas de competencia institucional variam por tipo de jurisdicao e periodo de referencia."
+    owner: equipa-institutional
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0083
+    tipo: map_string_object_categoria_d
+    schema: InstitutionalSupportCoverageSnapshotResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> lane"
+      - "Map<String,Object> metrics"
+    motivo: "Categoria D: lane e metricas de cobertura de suporte variam por tipo de cobertura e unidade judiciaria."
+    owner: equipa-institutional
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0084
+    tipo: map_string_object_categoria_d
+    schema: InstitutionalSupportPrepautaSnapshotResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> lane"
+      - "Map<String,Object> processo"
+      - "Map<String,Object> metrics"
+      - "Map<String,Object> contactEnvelope"
+    motivo: "Categoria D: lane, processo, metricas e envelope de contato na prepautacao variam por tipo de audiencia e orgao."
+    owner: equipa-institutional
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0085
+    tipo: map_string_object_categoria_d
+    schema: InstitutionalSupportPanelSnapshotResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> lane"
+      - "Map<String,Object> metrics"
+      - "Map<String,Object> credential"
+    motivo: "Categoria D: lane, metricas e credencial do painel de suporte variam por tipo de operacao e perfil institucional."
+    owner: equipa-institutional
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0086
+    tipo: map_string_object_categoria_d
+    schema: InstitutionalSupportPanelItemResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> contactEnvelope"
+    motivo: "Categoria D: envelope de contato no item de painel varia por tipo de destinatario e canal de comunicacao."
+    owner: equipa-institutional
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0087
+    tipo: map_string_object_categoria_d
+    schema: InstitutionalWorkbenchActionResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> metrics"
+    motivo: "Categoria D: metricas de acao no workbench institucional variam por tipo de acao e periodo de execucao."
+    owner: equipa-institutional
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0088
+    tipo: map_string_object_categoria_d
+    schema: InstitutionalWorkbenchExplainabilityResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> metrics"
+    motivo: "Categoria D: metricas de explicabilidade no workbench variam por tipo de decisao e modelo de IA aplicado."
+    owner: equipa-institutional
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0089
+    tipo: map_string_object_categoria_d
+    schema: InstitutionalWorkbenchWidgetResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> payload"
+    motivo: "Categoria D: payload de widget institucional varia por tipo de widget e configuracao do painel."
+    owner: equipa-institutional
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0090
+    tipo: map_string_object_categoria_d
+    schema: PjbSubstituicaoComunicacaoSyncCursorResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> snapshot"
+    motivo: "Categoria D: snapshot de cursor de sincronizacao varia por sistema-fonte e estado da sincronizacao."
+    owner: equipa-substituicao
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0091
+    tipo: map_string_object_categoria_d
+    schema: PjbSubstituicaoComunicacaoSyncItemResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> payload"
+      - "Map<String,Object> resultado"
+    motivo: "Categoria D: payload e resultado de item de sync variam por tipo de comunicacao e sistema legado de origem."
+    owner: equipa-substituicao
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0092
+    tipo: map_string_object_categoria_d
+    schema: PjbSubstituicaoHomologacaoProbeResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> evidencias"
+      - "Map<String,Object> resultado"
+    motivo: "Categoria D: evidencias e resultado de probe de homologacao variam por tipo de verificacao e tribunal-alvo."
+    owner: equipa-substituicao
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0093
+    tipo: map_string_object_categoria_d
+    schema: PjbSubstituicaoMigracaoLoteResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> snapshot"
+    motivo: "Categoria D: snapshot de lote de migracao varia por sistema legado (PJe, e-SAJ, eProc) e tipo de artefato migrado."
+    owner: equipa-substituicao
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0094
+    tipo: map_string_object_categoria_d
+    schema: PjbSubstituicaoNacionalExecucaoEventoResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> detalhes"
+    motivo: "Categoria D: detalhes de evento de execucao nacional variam por tipo de evento e estagio da substituicao."
+    owner: equipa-substituicao
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0095
+    tipo: map_string_object_categoria_d
+    schema: PjbSubstituicaoNacionalExecucaoResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> payload"
+      - "Map<String,Object> resultado"
+    motivo: "Categoria D: payload e resultado de execucao nacional variam por tipo de fase e tribunal em migracao."
+    owner: equipa-substituicao
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0096
+    tipo: map_string_object_categoria_d
+    schema: PjbSubstituicaoTribunalEvidenciaExportavelResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> payload"
+    motivo: "Categoria D: payload de evidencia exportavel varia por tipo de artefato e sistema legado de origem."
+    owner: equipa-substituicao
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0097
+    tipo: map_string_object_categoria_d
+    schema: ExecutionPanelResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> integrity"
+      - "Map<String,Object> frontend"
+    motivo: "Categoria D: integridade e dados de frontend do painel de execucao variam por tipo de configuracao e tema institucional."
+    owner: equipa-transito
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0098
+    tipo: map_string_object_categoria_d
+    schema: ExecutionPanelLaneResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> metadata"
+    motivo: "Categoria D: metadados de lane do painel de execucao variam por tipo de etapa e fluxo processual."
+    owner: equipa-transito
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0099
+    tipo: map_string_object_categoria_d
+    schema: ExecutionPanelActionResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> payload"
+    motivo: "Categoria D: payload de acao do painel de execucao varia por tipo de acao e contexto de tramitacao."
+    owner: equipa-transito
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0100
+    tipo: map_string_object_categoria_d
+    schema: PostArchiveAccessResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> metadata"
+    motivo: "Categoria D: metadados de acesso pos-arquivo variam por tipo de acesso e regime de sigilo do processo."
+    owner: equipa-transito
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0101
+    tipo: map_string_object_categoria_d
+    schema: PostArchiveLifecycleResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> metadata"
+    motivo: "Categoria D: metadados de ciclo de vida pos-arquivo variam por tipo de evento de arquivamento e rito."
+    owner: equipa-transito
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0102
+    tipo: map_string_object_categoria_d
+    schema: PjbFrontendOfficeGovernedMultimediaWorkspaceView
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> workspace"
+    motivo: "Categoria D: configuracao do workspace multimidia varia por tipo de midia e perfil de acesso do usuario."
+    owner: equipa-frontend
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0103
+    tipo: map_string_object_categoria_d
+    schema: PjbFrontendOfficeGovernedPetitionView
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> signatureEnvelope"
+    motivo: "Categoria D: envelope de assinatura varia por tipo de assinatura digital e provedor (ICP-Brasil, certificado gov)."
+    owner: equipa-frontend
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0104
+    tipo: map_string_object_categoria_d
+    schema: PJeAndamentoResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> metadados"
+      - "Map<String,Object> extras"
+    motivo: "Categoria D: metadados e extras de andamento PJe variam por tipo de movimentacao e sistema de origem."
+    owner: equipa-substituicao
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0105
+    tipo: map_string_object_categoria_d
+    schema: PJeAutenticacaoResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> metadados"
+    motivo: "Categoria D: metadados de autenticacao PJe variam por tipo de perfil e metodo de autenticacao externo."
+    owner: equipa-substituicao
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D
+
+  - id: AL-0106
+    tipo: map_string_object_categoria_d
+    schema: PJeSubmissaoResponse
+    endpoint: N/A
+    violacao:
+      - "Map<String,Object> metadados"
+    motivo: "Categoria D: metadados de submissao PJe variam por tipo de peticao e sistema de destino."
+    owner: equipa-substituicao
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-02"
+    auditoria_ref: BLOCO-28.D

@@ -3,6 +3,9 @@ package com.tcc.pjb.backend.model.dto.oficial_justica;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record OficialJusticaProcessoWorkbenchResponse(
         Instant generatedAt,
@@ -10,12 +13,27 @@ public record OficialJusticaProcessoWorkbenchResponse(
         String processoNumero,
         boolean acessoProcessoPermitido,
         String fundamentoAcesso,
+        @Schema(description = "Contexto da unidade judicial executora — chaves variam por tribunal e tipo de diligencia", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> unidadeContexto,
         Summary summary,
+        @Schema(description = "Envelope de seguranca do workbench — dados de autenticacao e autorizacao por sessao", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> securityEnvelope,
         List<FolderBucket> pastas,
+        @Schema(description = "Legenda de andamento processual — chaves variam por rito e fase processual", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> legendaAndamento,
+        @Schema(description = "Estado da calculadora judicial integrada — parametros variam por tipo de calculo", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> calculadoraJudicial,
+        @Schema(description = "Assistencia operacional da IA — sugestoes variam por tipo de diligencia e tribunal", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> assistenciaOperacionalIa,
         List<PendingAction> pendencias,
         List<String> alerts
@@ -69,3 +87,4 @@ public record OficialJusticaProcessoWorkbenchResponse(
     ) {
     }
 }
+

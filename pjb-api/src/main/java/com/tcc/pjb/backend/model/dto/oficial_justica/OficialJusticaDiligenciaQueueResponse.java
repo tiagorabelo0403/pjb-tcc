@@ -3,6 +3,9 @@ package com.tcc.pjb.backend.model.dto.oficial_justica;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record OficialJusticaDiligenciaQueueResponse(
         String territorio,
@@ -108,10 +111,19 @@ public record OficialJusticaDiligenciaQueueResponse(
             String resumoProcessual,
             String fundamentoMissao,
             String calculadoraSugerida,
-            Map<String, Object> execucaoViva,
-            Map<String, Object> unidadeContexto,
+            @Schema(description = "Estado de execucao ativa da diligencia — polimórfico por tipo de cumprimento", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        Map<String, Object> execucaoViva,
+            @Schema(description = "Contexto da unidade judicial executora — chaves variam por tribunal e tipo de diligencia", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        Map<String, Object> unidadeContexto,
             List<String> alertas,
-            Map<String, Object> quickActions
+            @Schema(description = "Acoes rapidas disponíveis — polimorficas por tipo de diligencia e fase", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        Map<String, Object> quickActions
     ) {
         public Row {
             execucaoViva = immutableObjectMap(execucaoViva);
@@ -134,3 +146,4 @@ public record OficialJusticaDiligenciaQueueResponse(
         return safe.isEmpty() ? Map.of() : Map.copyOf(safe);
     }
 }
+

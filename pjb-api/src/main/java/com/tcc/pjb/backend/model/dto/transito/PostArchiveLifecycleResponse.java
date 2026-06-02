@@ -2,6 +2,9 @@ package com.tcc.pjb.backend.model.dto.transito;
 
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record PostArchiveLifecycleResponse(
         Long processoId,
@@ -14,6 +17,9 @@ public record PostArchiveLifecycleResponse(
         long totalDocumentos,
         int totalMovimentacoesRecentes,
         List<String> alertas,
+        @Schema(description = "Metadados de ciclo de vida pos-transito — heterogeneos por fase de arquivamento", implementation = Object.class)
+        @Size(max = 20)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> metadata
 ) {
     public PostArchiveLifecycleResponse {
@@ -21,3 +27,4 @@ public record PostArchiveLifecycleResponse(
         metadata = metadata == null ? Map.of() : Map.copyOf(metadata);
     }
 }
+
