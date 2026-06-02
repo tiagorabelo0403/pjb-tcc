@@ -1,5 +1,8 @@
 package com.tcc.pjb.backend.model.dto.processual.peticionamento.journey;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -24,8 +27,17 @@ public record PeticionamentoSimpleProtocolWizardResponse(
         List<String> blockingIssues,
         List<String> checklist,
         List<String> warnings,
+        @Schema(description = "Preview dinâmico do protocolo — varia por tribunal e rito (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> protocolPreview,
+        @Schema(description = "Playbook do rito processual — passos e requisitos por classificação (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> playbook,
+        @Schema(description = "Variação por tribunal — configurações específicas do sistema judicial (Categoria D)")
+        @Size(max = 30)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> tribunalVariation,
         List<String> nextSteps,
         PeticionamentoJourneyIntelligenceResponse journeyIntelligence

@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.service.document.reading;
 
 import com.tcc.pjb.backend.model.dto.leitura.ProcessReadingFlowResponse;
 import com.tcc.pjb.backend.model.dto.leitura.ProcessReadingProcessEntryResponse;
+import com.tcc.pjb.backend.model.dto.shared.reading.ProcessReadingFlowMetadataDto;
 import com.tcc.pjb.backend.model.entity.EventoProcessual;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -16,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -42,18 +44,19 @@ public class ProcessReadingFlowResolver {
         long inlineCount = ordered.stream().filter(entry -> "PROCESS_INLINE_TEXT".equals(entry.sourceType())).count();
         long movementCount = ordered.stream().filter(entry -> "MOVIMENTACAO_PROCESSUAL".equals(entry.sourceType())).count();
         long eventCount = ordered.stream().filter(entry -> "EVENTO_PROCESSUAL".equals(entry.sourceType())).count();
-        LinkedHashMap<String, Object> metadata = new LinkedHashMap<>();
-        metadata.put("userCluster", resolveCluster(usuario));
-        metadata.put("supportsInlineReading", true);
-        metadata.put("supportsNativeActs", true);
-        metadata.put("supportsChronology", true);
-        metadata.put("supportsOperationalOverlay", true);
-        metadata.put("supportsInlineHtmlActs", true);
-        metadata.put("supportsSignedPdfInspection", true);
-        metadata.put("defaultLane", modeProfile.recursal() ? "RECURSAL" : "ATOS");
-        metadata.put("focusBandMode", presetProfile.focusBandMode());
-        metadata.put("chronologyMode", presetProfile.chronologyMode());
-        metadata.put("openEndpoint", processo != null && processo.getId() != null ? "/api/v1/processos/" + processo.getId() + "/painel-leitura/fluxo" : null);
+        ProcessReadingFlowMetadataDto metadata = new ProcessReadingFlowMetadataDto(
+                resolveCluster(usuario),
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                modeProfile.recursal() ? "RECURSAL" : "ATOS",
+                presetProfile.focusBandMode(),
+                presetProfile.chronologyMode(),
+                processo != null && processo.getId() != null ? "/api/v1/processos/" + processo.getId() + "/painel-leitura/fluxo" : null
+        );
         return new ProcessReadingFlowResponse(
                 ordered.size(),
                 inlineCount,

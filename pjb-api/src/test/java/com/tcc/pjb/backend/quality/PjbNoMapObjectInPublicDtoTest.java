@@ -12,8 +12,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
-// ESCOPO INTENCIONAL: este teste cobre modules/ (5 classes) e ai/ (3 classes — BLOCO-28.A).
-// Outros pacotes (model/dto/, financial/) ficam para BLOCO-28.B/C.
+// ESCOPO INTENCIONAL: modules/ (5), ai/ (3), leitura/ (14), peticionamento/ (9) — BLOCO-28.B.
+// Outros pacotes (calculo/, oficial_justica/, magistratura/, financial/) ficam para BLOCO-28.C.
 class PjbNoMapObjectInPublicDtoTest {
 
     private static final Pattern MAP_STRING_OBJECT =
@@ -112,6 +112,112 @@ class PjbNoMapObjectInPublicDtoTest {
                     "Se diminuiu: remova da KNOWN_VIOLATIONS_AI. " +
                     "Se aumentou: corrija o DTO — não adicione na allowlist sem ADR.", EXPECTED_AI_COUNT)
                 .hasSize(EXPECTED_AI_COUNT);
+    }
+
+    // --- model/dto/leitura/ — BLOCO-28.B ---
+    // 14 classes com Map<String,Object> documentados como Categoria D (payload polimórfico de leitura processual).
+    // EcosystemResponse.frontend/integrity e FlowResponse.metadata foram tipados como records (Categoria A).
+    // WorkspaceResponse.integrity tipado como record. WorkspaceResponse.frontend e PresetCatalogResponse.frontend ficam D.
+
+    private static final Set<String> KNOWN_VIOLATIONS_LEITURA = Set.of(
+            "ProcessReadingActionResponse",
+            "ProcessReadingContentBlockResponse",
+            "ProcessReadingContentResponse",
+            "ProcessReadingDocumentResponse",
+            "ProcessReadingLaneResponse",
+            "ProcessReadingNavigationNodeResponse",
+            "ProcessReadingNavigationResponse",
+            "ProcessReadingPresetCatalogResponse",
+            "ProcessReadingProceduralContextResponse",
+            "ProcessReadingProcessEntryResponse",
+            "ProcessReadingSearchHitResponse",
+            "ProcessReadingSpecializationResponse",
+            "ProcessReadingSurfaceResponse",
+            "ProcessReadingWorkspaceResponse"
+    );
+
+    private static final int EXPECTED_LEITURA_COUNT = 14;
+
+    @Test
+    void nenhum_novo_dto_publico_de_leitura_pode_ter_campo_mapStringObject() throws IOException {
+        Path leituraDto = Path.of("src/main/java/com/tcc/pjb/backend/model/dto/leitura");
+
+        Set<String> violacoes = new LinkedHashSet<>();
+
+        try (Stream<Path> paths = Files.walk(leituraDto)) {
+            paths.filter(p -> {
+                     String name = p.getFileName().toString();
+                     return name.endsWith("Response.java") || name.endsWith("View.java");
+                 })
+                 .forEach(p -> {
+                     String source = ler(p);
+                     String className = p.getFileName().toString().replace(".java", "");
+                     if (MAP_STRING_OBJECT.matcher(source).find()) {
+                         violacoes.add(className);
+                     }
+                 });
+        }
+
+        Set<String> novasViolacoes = new HashSet<>(violacoes);
+        novasViolacoes.removeAll(KNOWN_VIOLATIONS_LEITURA);
+
+        assertThat(novasViolacoes)
+                .as("Novos DTOs em leitura/ com Map<String,Object> não documentados. Use record tipado ou @Schema+@Size.")
+                .isEmpty();
+
+        assertThat(violacoes)
+                .as("Contagem deve ser exatamente %d. Se diminuiu: remova da KNOWN_VIOLATIONS_LEITURA.", EXPECTED_LEITURA_COUNT)
+                .hasSize(EXPECTED_LEITURA_COUNT);
+    }
+
+    // --- model/dto/processual/peticionamento/ — BLOCO-28.B ---
+    // 9 classes com Map<String,Object> documentados como Categoria D.
+    // Studio Maps (procedure, dossier, riskMatrix, etc.) passados de projection sem tipagem — cascata fora de escopo.
+
+    private static final Set<String> KNOWN_VIOLATIONS_PETICIONAMENTO = Set.of(
+            "PeticionamentoAutomacaoResponse",
+            "PeticionamentoGuardrailResponse",
+            "PeticionamentoJourneyIntelligenceResponse",
+            "PeticionamentoSimpleProtocolWizardResponse",
+            "PeticionamentoSessaoResponse",
+            "PeticionamentoStudioDraftDiffResponse",
+            "PeticionamentoStudioGovernedReviewResponse",
+            "PeticionamentoStudioQuickDraftResponse",
+            "PeticionamentoStudioWorkspaceResponse"
+    );
+
+    private static final int EXPECTED_PETICIONAMENTO_COUNT = 9;
+
+    @Test
+    void nenhum_novo_dto_publico_de_peticionamento_pode_ter_campo_mapStringObject() throws IOException {
+        Path peticionamentoDto = Path.of("src/main/java/com/tcc/pjb/backend/model/dto/processual/peticionamento");
+
+        Set<String> violacoes = new LinkedHashSet<>();
+
+        try (Stream<Path> paths = Files.walk(peticionamentoDto)) {
+            paths.filter(p -> {
+                     String name = p.getFileName().toString();
+                     return name.endsWith("Response.java") || name.endsWith("View.java");
+                 })
+                 .forEach(p -> {
+                     String source = ler(p);
+                     String className = p.getFileName().toString().replace(".java", "");
+                     if (MAP_STRING_OBJECT.matcher(source).find()) {
+                         violacoes.add(className);
+                     }
+                 });
+        }
+
+        Set<String> novasViolacoes = new HashSet<>(violacoes);
+        novasViolacoes.removeAll(KNOWN_VIOLATIONS_PETICIONAMENTO);
+
+        assertThat(novasViolacoes)
+                .as("Novos DTOs em peticionamento/ com Map<String,Object> não documentados. Use record tipado ou @Schema+@Size.")
+                .isEmpty();
+
+        assertThat(violacoes)
+                .as("Contagem deve ser exatamente %d. Se diminuiu: remova da KNOWN_VIOLATIONS_PETICIONAMENTO.", EXPECTED_PETICIONAMENTO_COUNT)
+                .hasSize(EXPECTED_PETICIONAMENTO_COUNT);
     }
 
     private static String ler(Path p) {

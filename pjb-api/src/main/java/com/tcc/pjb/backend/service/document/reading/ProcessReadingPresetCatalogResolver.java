@@ -16,7 +16,7 @@ final class ProcessReadingPresetCatalogResolver {
                                                 ProcessReadingWorkspaceSession session) {
         ProcessReadingPreferenceResponse activePreference = toPreferenceResponse(session.presetProfile());
         LinkedHashSet<String> availablePresets = resolveAvailablePresets(session.usuario(), session.context().processo(), session.modeProfile(), session.presetProfile());
-        LinkedHashMap<String, Object> featureFlags = new LinkedHashMap<>();
+        LinkedHashMap<String, Boolean> featureFlags = new LinkedHashMap<>();
         featureFlags.put("supportsInstitutionalPreset", true);
         featureFlags.put("supportsAmberMode", true);
         featureFlags.put("supportsPrivacyVeil", session.modeProfile().sigiloReforcado() || !"SEM_MASCARA".equals(session.presetProfile().privacyVeilMode()));

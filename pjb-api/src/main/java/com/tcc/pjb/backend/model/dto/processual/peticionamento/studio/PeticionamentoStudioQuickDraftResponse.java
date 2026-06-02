@@ -3,6 +3,9 @@ package com.tcc.pjb.backend.model.dto.processual.peticionamento.studio;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record PeticionamentoStudioQuickDraftResponse(
         String status,
@@ -11,13 +14,37 @@ public record PeticionamentoStudioQuickDraftResponse(
         String title,
         String draftingMode,
         String markdown,
+        @Schema(description = "Contexto procedimental — classeProcessual, ramoDireito, ritoProcessual, justicaSugerida, petitionFamily (Categoria D: passado de projection)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> procedure,
+        @Schema(description = "Resumo de evidências do caso — estrutura varia por tipo de prova (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> evidence,
+        @Schema(description = "Linha do tempo do caso — eventos e marcos processuais (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> caseTimeline,
+        @Schema(description = "Matriz de requerimento de provas — varia por rito e tipo de prova (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> proofRequestMatrix,
+        @Schema(description = "Checklist de protocolo — itens de conformidade procedimental (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> protocolChecklist,
+        @Schema(description = "Matriz de risco — checklist, blockingIssues, alerts (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> riskMatrix,
+        @Schema(description = "Matriz de gaps documentais — documentos faltantes por tipo (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> documentGapMatrix,
+        @Schema(description = "Governança de revisão — regras e aprovadores do processo (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> reviewGovernance,
         List<String> checklist,
         List<String> nextSteps
@@ -52,3 +79,4 @@ public record PeticionamentoStudioQuickDraftResponse(
         return value.trim();
     }
 }
+

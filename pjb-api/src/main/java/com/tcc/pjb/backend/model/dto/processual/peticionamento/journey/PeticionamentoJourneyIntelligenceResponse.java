@@ -1,6 +1,9 @@
 package com.tcc.pjb.backend.model.dto.processual.peticionamento.journey;
 
 import java.time.Instant;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,6 +29,9 @@ public record PeticionamentoJourneyIntelligenceResponse(
         List<String> missingDomains,
         List<PeticionamentoJourneyStepResponse> steps,
         List<PeticionamentoJourneyActionResponse> nextActions,
+        @Schema(description = "Métricas compactas da jornada de peticionamento — scores, contagens e sinais operacionais (Categoria D: valores heterogêneos)")
+        @Size(max = 30)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> compactMetrics
 ) {
     public PeticionamentoJourneyIntelligenceResponse {

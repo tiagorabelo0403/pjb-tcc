@@ -1,5 +1,8 @@
 package com.tcc.pjb.backend.model.dto.processual.peticionamento.governance;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +16,9 @@ public record PeticionamentoGuardrailResponse(
         List<String> bloqueios,
         List<String> alertas,
         List<String> checklist,
+        @Schema(description = "Envelope de guardrail — resultado da análise de conformidade processual (Categoria D: chaves variam por tipo de guardrail)")
+        @Size(max = 20)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> envelope
 ) {
     public PeticionamentoGuardrailResponse {

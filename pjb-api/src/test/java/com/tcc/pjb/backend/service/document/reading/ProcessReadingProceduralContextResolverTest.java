@@ -37,7 +37,7 @@ class ProcessReadingProceduralContextResolverTest {
                 "TRILHA_DECISORIA_E_CHECKLIST_DE_ENFRENTAMENTO", "ANOTACAO_LATERAL_E_FIXACAO", "BLOCOS_CURTOS_COM_RESPIRACAO_VISUAL", "SINOPSE_PROGRESSIVA_POR_BLOCO",
                 3, 120, 82, true, true, true, List.of());
         ProcessReadingFlowResponse processFlow = new ProcessReadingFlowResponse(
-                4L, 2L, 1L, 1L, "LINHA_DO_TEMPO_PROCESSUAL", "ATOS_E_RECURSOS_EM_LINHA_DO_TEMPO", List.of(), Map.of());
+                4L, 2L, 1L, 1L, "LINHA_DO_TEMPO_PROCESSUAL", "ATOS_E_RECURSOS_EM_LINHA_DO_TEMPO", List.of(), null);
         ProcessReadingNavigationResponse navigation = new ProcessReadingNavigationResponse(
                 42L, "MAPA_RECURSAL_E_PECA_CHAVE", "LINHA_DO_TEMPO_PROCESSUAL", 6, List.of(), Map.of());
 

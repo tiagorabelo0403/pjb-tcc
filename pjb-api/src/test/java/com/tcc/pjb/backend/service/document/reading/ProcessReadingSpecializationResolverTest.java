@@ -39,7 +39,7 @@ class ProcessReadingSpecializationResolverTest {
                 "TRILHA_DECISORIA_E_CHECKLIST_DE_ENFRENTAMENTO", "ANOTACAO_LATERAL_E_FIXACAO", "BLOCOS_CURTOS_COM_RESPIRACAO_VISUAL", "SINOPSE_PROGRESSIVA_POR_BLOCO",
                 2, 22, 91, false, true, false, List.of());
 
-        ProcessReadingFlowResponse processFlow = new ProcessReadingFlowResponse(4L, 3L, 1L, 0L, "LINHA_DO_TEMPO_PROCESSUAL", "ATOS_E_RECURSOS_EM_LINHA_DO_TEMPO", List.of(), Map.of());
+        ProcessReadingFlowResponse processFlow = new ProcessReadingFlowResponse(4L, 3L, 1L, 0L, "LINHA_DO_TEMPO_PROCESSUAL", "ATOS_E_RECURSOS_EM_LINHA_DO_TEMPO", List.of(), null);
         ProcessReadingProceduralContextResponse proceduralContext = new ProcessReadingProceduralContextResponse(
                 "JUSTICA_FEDERAL",
                 "SEGUNDO_GRAU",
