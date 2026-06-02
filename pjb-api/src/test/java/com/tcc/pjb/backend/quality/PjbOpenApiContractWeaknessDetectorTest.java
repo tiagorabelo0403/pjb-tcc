@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 @Tag("contract")
 class PjbOpenApiContractWeaknessDetectorTest {
 
-    private static final Path SNAPSHOT = Path.of("target/openapi-snapshot.json");
+    private static final Path SNAPSHOT = Path.of("../target/openapi-snapshot.json");
     private static final Path ALLOWLIST = Path.of("../docs/architecture/openapi-contract-hardening-allowlist.yml");
 
     private static final Pattern ADDITIONAL_PROPERTIES_TRUE =
