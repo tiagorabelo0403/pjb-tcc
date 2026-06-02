@@ -16,7 +16,7 @@ public class LaianeMpInboxResponse {
     @Schema(description = "Dica ou orientação contextual para o inbox",
             example = "Você tem 3 ofícios aguardando resposta")
     private String hint;
-    @Schema(description = "Número da página atual (base 0)", example = "0")
+    @Schema(description = "Número da página atual (base 0)", example = "0", minimum = "0")
     private int page;
     @Schema(description = "Tamanho da página", example = "20")
     private int size;

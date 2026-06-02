@@ -12,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LaianeMpAuditResponse {
-    @Schema(description = "Número da página atual (base 0)", example = "0")
+    @Schema(description = "Número da página atual (base 0)", example = "0", minimum = "0")
     private int page;
     @Schema(description = "Tamanho da página", example = "20")
     private int size;
