@@ -1,7 +1,7 @@
 meta:
-  bloco: BLOCO-28.B
+  bloco: BLOCO-28.C
   gerado_em: "2026-05-31"
-  total_entradas: 53
+  total_entradas: 66
   atualizado_em: "2026-06-01"
   corrigidos_em_bloco27: "AL-0028 a AL-0057 removidos — 30 DTOs laiane receberam @Schema"
   adicionados_em_bloco28a: "AL-0028 a AL-0030 — 3 DTOs ai/ Categoria D documentados com @Schema+@Size"
@@ -839,4 +839,203 @@ allowlist:
     teste_negativo: PjbNoMapObjectInPublicDtoTest
     criado_em: "2026-06-01"
     auditoria_ref: A-9
+
+
+
+  # ── GROUP MAP-CALCULO ─ Map<String,Object> Categoria D em calculo/ (BLOCO-28.C) ───────────────
+
+  - id: AL-0054
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialEconomicReferenceResponse
+    endpoint: /api/v1/calculo/economic-references
+    violacao:
+      - "Map<String,Object> metadata — Boolean, Integer e String heterogeneos"
+    motivo: "Categoria D: panelReady(Boolean)+asOfYear(Integer)+Strings — nao redutivel a Map<String,String>. salarioMinimoNacional e inss tipados como records (Categoria A)."
+    owner: equipa-calculo
+    risco: baixo
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
+
+  - id: AL-0055
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialAjuizamentoSignalResponse
+    endpoint: /api/v1/calculo/ajuizamento/signal
+    violacao:
+      - "5 campos Map: routes, economicReferences, agentResults, metadata, mensagensTemporarias"
+    motivo: "Categoria D: agentes polimorficos (financeiro/compliance/tributario) com payloads heterogeneos."
+    owner: equipa-calculo
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
+
+  - id: AL-0056
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialAssistenciaResponse
+    endpoint: /api/v1/calculo/assistencia
+    violacao:
+      - "Map<String,Object> autopreenchimentoSeguro, desenhoAssistido"
+    motivo: "Categoria D: chaves dependem do formulario do rito processual aplicavel."
+    owner: equipa-calculo
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
+
+  - id: AL-0057
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialExperiencePreferenceResponse
+    endpoint: /api/v1/calculo/experience-preference
+    violacao:
+      - "Map<String,Object> selector, policyContext"
+    motivo: "Categoria D: configuracao por perfil (magistrado/advogado/perito) e competencia territorial."
+    owner: equipa-calculo
+    risco: baixo
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
+
+  - id: AL-0058
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialFrontendBootstrapResponse
+    endpoint: /api/v1/calculo/frontend/bootstrap
+    violacao:
+      - "8 campos Map: http, aiAgents, officialTables, payloadInicial, iaRequestExemplo, requestExemplo, responseExemplo, errorExemplo"
+    motivo: "Categoria D: exemplos de request/response gerados dinamicamente por rito processual."
+    owner: equipa-calculo
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
+
+  - id: AL-0059
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialFrontendCatalogResponse
+    endpoint: /api/v1/calculo/frontend/catalog
+    violacao:
+      - "Map<String,Object> ui, erros"
+    motivo: "Categoria D: configuracao de interface e mensagens de erro variam por dominio e perfil."
+    owner: equipa-calculo
+    risco: baixo
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
+
+  - id: AL-0060
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialFrontendDomainResponse
+    endpoint: /api/v1/calculo/frontend/domain
+    violacao:
+      - "11 campos Map + 2 List<Map>: secoes, campos, resultado, ux, erros, http, aiAgents, officialTables, payloadInicial, exemplos"
+    motivo: "Categoria D: schema de formulario dinamico definido pelo rito processual — impossivel tipar sem sealed hierarchy por rito."
+    owner: equipa-calculo
+    risco: alto
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
+
+  - id: AL-0061
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialIaFinanceiraResponse
+    endpoint: /api/v1/calculo/ia/financeira
+    violacao:
+      - "Map<String,Object> autopreenchimentoAplicado, metadata"
+    motivo: "Categoria D: AI output dinamico por rito; metadata heterogeneo (versao do agente, modo)."
+    owner: equipa-calculo
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
+
+  - id: AL-0062
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialResumoResponse
+    endpoint: /api/v1/calculo/resumo
+    violacao:
+      - "Map<String,Object> metadata — versao, modo e trilha de auditoria"
+    motivo: "Categoria D: metadata heterogeneo (versao, flags boolean, trilha de auditoria como List)."
+    owner: equipa-calculo
+    risco: baixo
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
+
+  - id: AL-0063
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialTabelaOficialItemResponse
+    endpoint: /api/v1/calculo/tabelas-oficiais
+    violacao:
+      - "3 campos Map + 1 List<Map>: cobertura, interoperabilidade, diffAtual, trilhaAtualizacao"
+    motivo: "Categoria D: chaves variam por tipo de tabela (trabalhista/previdenciario/federal); valores incluem List<String>."
+    owner: equipa-calculo
+    risco: medio
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
+
+  - id: AL-0064
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialTabelaOficialResponse
+    endpoint: /api/v1/calculo/tabelas-oficiais
+    violacao:
+      - "Map<String,Object> politicaAtualizacao"
+    motivo: "Categoria D: politica de atualizacao varia por orgao emissor e tipo de tabela."
+    owner: equipa-calculo
+    risco: baixo
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
+
+  - id: AL-0065
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialWorkspaceCardResponse
+    endpoint: /api/v1/calculo/workspace
+    violacao:
+      - "Map<String,Object> design"
+    motivo: "Categoria D: hints de layout e tipografia variam por tema institucional e perfil do usuario."
+    owner: equipa-calculo
+    risco: baixo
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
+
+  - id: AL-0066
+    tipo: map_string_object_categoria_d
+    schema: CalculoJudicialWorkspaceResponse
+    endpoint: /api/v1/calculo/workspace
+    violacao:
+      - "Map<String,Object> designNavegacao"
+    motivo: "Categoria D: configuracao de design de navegacao varia por preferencia do usuario e tema."
+    owner: equipa-calculo
+    risco: baixo
+    bloco_correcao: BLOCO-35
+    sla_remocao: "2026-12-31"
+    teste_negativo: PjbNoMapObjectInPublicDtoTest
+    criado_em: "2026-06-01"
+    auditoria_ref: A-10
 

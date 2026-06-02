@@ -12,8 +12,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
-// ESCOPO INTENCIONAL: modules/ (5), ai/ (3), leitura/ (14), peticionamento/ (9) — BLOCO-28.B.
-// Outros pacotes (calculo/, oficial_justica/, magistratura/, financial/) ficam para BLOCO-28.C.
+// ESCOPO INTENCIONAL: modules/ (5), ai/ (3), leitura/ (14), peticionamento/ (9), calculo/ (13) — BLOCO-28.B/C.
+// Outros pacotes (oficial_justica/, magistratura/, financial/) ficam para BLOCO-28.D+.
 class PjbNoMapObjectInPublicDtoTest {
 
     private static final Pattern MAP_STRING_OBJECT =
@@ -218,6 +218,61 @@ class PjbNoMapObjectInPublicDtoTest {
         assertThat(violacoes)
                 .as("Contagem deve ser exatamente %d. Se diminuiu: remova da KNOWN_VIOLATIONS_PETICIONAMENTO.", EXPECTED_PETICIONAMENTO_COUNT)
                 .hasSize(EXPECTED_PETICIONAMENTO_COUNT);
+    }
+
+    // --- model/dto/processual/calculo/ — BLOCO-28.C ---
+    // 13 classes com Map<String,Object> documentados como Categoria D.
+    // EconomicReferenceResponse: salarioMinimoNacional e inss tipados como records (Categoria A);
+    // fontesOficiais convertido a Map<String,String> (Categoria C); metadata fica D.
+
+    private static final Set<String> KNOWN_VIOLATIONS_CALCULO = Set.of(
+            "CalculoJudicialAjuizamentoSignalResponse",
+            "CalculoJudicialAssistenciaResponse",
+            "CalculoJudicialEconomicReferenceResponse",
+            "CalculoJudicialExperiencePreferenceResponse",
+            "CalculoJudicialFrontendBootstrapResponse",
+            "CalculoJudicialFrontendCatalogResponse",
+            "CalculoJudicialFrontendDomainResponse",
+            "CalculoJudicialIaFinanceiraResponse",
+            "CalculoJudicialResumoResponse",
+            "CalculoJudicialTabelaOficialItemResponse",
+            "CalculoJudicialTabelaOficialResponse",
+            "CalculoJudicialWorkspaceCardResponse",
+            "CalculoJudicialWorkspaceResponse"
+    );
+
+    private static final int EXPECTED_CALCULO_COUNT = 13;
+
+    @Test
+    void nenhum_novo_dto_publico_de_calculo_pode_ter_campo_mapStringObject() throws IOException {
+        Path calculoDto = Path.of("src/main/java/com/tcc/pjb/backend/model/dto/processual/calculo");
+
+        Set<String> violacoes = new LinkedHashSet<>();
+
+        try (Stream<Path> paths = Files.walk(calculoDto)) {
+            paths.filter(p -> {
+                     String name = p.getFileName().toString();
+                     return name.endsWith("Response.java") || name.endsWith("View.java");
+                 })
+                 .forEach(p -> {
+                     String source = ler(p);
+                     String className = p.getFileName().toString().replace(".java", "");
+                     if (MAP_STRING_OBJECT.matcher(source).find()) {
+                         violacoes.add(className);
+                     }
+                 });
+        }
+
+        Set<String> novasViolacoes = new HashSet<>(violacoes);
+        novasViolacoes.removeAll(KNOWN_VIOLATIONS_CALCULO);
+
+        assertThat(novasViolacoes)
+                .as("Novos DTOs em calculo/ com Map<String,Object> nao documentados. Use record tipado ou @Schema+@Size.")
+                .isEmpty();
+
+        assertThat(violacoes)
+                .as("Contagem deve ser exatamente %d. Se diminuiu: remova da KNOWN_VIOLATIONS_CALCULO.", EXPECTED_CALCULO_COUNT)
+                .hasSize(EXPECTED_CALCULO_COUNT);
     }
 
     private static String ler(Path p) {
