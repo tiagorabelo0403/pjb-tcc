@@ -14,8 +14,10 @@ public record CalculoJudicialTabelaOficialItemResponse(
         String urlOficial,
         String modoAdocaoPjb,
         String referenciaTemporal,
-        String vigenciaPjbInicio,
-        String vigenciaPjbFim,
+        @Schema(description = "Início da vigência da tabela no PJB", format = "date",
+                example = "2026-01-01") String vigenciaPjbInicio,
+        @Schema(description = "Fim da vigência da tabela no PJB", format = "date",
+                example = "2026-12-31") String vigenciaPjbFim,
         String fingerprint,
         String algoritmoFingerprint,
         @Schema(description = "Cobertura da tabela oficial por dominio juridico — estrutura varia por tipo (trabalhista/previdenciario/federal)", implementation = Object.class)

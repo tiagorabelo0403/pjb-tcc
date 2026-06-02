@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.model.dto.governance;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 public record DecisionTrailResponse(
@@ -11,7 +12,8 @@ public record DecisionTrailResponse(
     public record DecisionTrailEntryView(
             String origem,
             String tipo,
-            String ocorridoEm,
+            @Schema(description = "Data/hora em que o evento ocorreu", format = "date-time",
+                    example = "2026-06-01T10:00:00-03:00") String ocorridoEm,
             String ator,
             String resumo,
             String hash,
