@@ -1,0 +1,20 @@
+package com.tcc.pjb.backend.model.entity.enums.processual.completude;
+
+public enum TipoDocumentoProcessual {
+
+    DOCUMENTO_IDENTIDADE,
+    PROCURACAO,
+    DECLARACAO_HIPOSSUFICIENCIA,
+    CTPS,
+    CONTRATO_TRABALHO,
+    BOLETIM_OCORRENCIA,
+    AUTO_PRISAO,
+    CERTIDAO_NASCIMENTO,
+    CERTIDAO_OBITO,
+    LAUDO_MEDICO,
+    COMPROVANTE_RESIDENCIA,
+    ATO_CONSTITUTIVO,
+    TITULO_EXECUTIVO,
+    CONTRATO_LOCACAO,
+    CERTIDAO_NEGATIVA_DEBITOS
+}
