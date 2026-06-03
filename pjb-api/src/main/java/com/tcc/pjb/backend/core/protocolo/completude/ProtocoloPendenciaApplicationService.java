@@ -2,16 +2,20 @@ package com.tcc.pjb.backend.core.protocolo.completude;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tcc.pjb.backend.core.id.PjbUuidV7Generator;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.ResultadoValidacao;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.ViolacaoCompletude;
 import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.OrigemValidacao;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeStatus;
+import com.tcc.pjb.backend.model.entity.protocolo.ProtocoloCompletudeOutboxEntity;
 import com.tcc.pjb.backend.model.entity.protocolo.ProtocoloPendencia;
 import com.tcc.pjb.backend.model.entity.protocolo.ProtocoloValidacaoHistorico;
+import com.tcc.pjb.backend.model.repository.protocolo.ProtocoloCompletudeOutboxRepository;
 import com.tcc.pjb.backend.model.repository.protocolo.ProtocoloPendenciaRepository;
 import com.tcc.pjb.backend.model.repository.protocolo.ProtocoloValidacaoHistoricoRepository;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,6 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -29,17 +34,20 @@ public class ProtocoloPendenciaApplicationService {
 
     private final ProtocoloPendenciaRepository pendenciaRepository;
     private final ProtocoloValidacaoHistoricoRepository historicoRepository;
+    private final ProtocoloCompletudeOutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
 
     public ProtocoloPendenciaApplicationService(ProtocoloPendenciaRepository pendenciaRepository,
                                                 ProtocoloValidacaoHistoricoRepository historicoRepository,
+                                                ProtocoloCompletudeOutboxRepository outboxRepository,
                                                 ObjectMapper objectMapper) {
         this.pendenciaRepository = Objects.requireNonNull(pendenciaRepository);
         this.historicoRepository = Objects.requireNonNull(historicoRepository);
+        this.outboxRepository = Objects.requireNonNull(outboxRepository);
         this.objectMapper = Objects.requireNonNull(objectMapper);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ProtocoloPendencia registrarPendencia(Long protocoloId,
                                                   ResultadoValidacao resultado,
                                                   List<String> documentosAnexados,
@@ -81,10 +89,12 @@ public class ProtocoloPendenciaApplicationService {
         }
 
         gravarHistorico(protocoloId, resultado, docHash, origem, executadoPor);
+        gravarOutbox(protocoloId, "PROTOCOLO_PENDENTE_DOCUMENTACAO",
+                salva.getPrazoRegularizacao() != null ? salva.getPrazoRegularizacao().toString() : null);
         return salva;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registrarCompleto(Long protocoloId,
                                    ResultadoValidacao resultado,
                                    List<String> documentosAnexados,
@@ -92,6 +102,15 @@ public class ProtocoloPendenciaApplicationService {
                                    Long executadoPor) {
         String docHash = computeHash(documentosAnexados);
         gravarHistorico(protocoloId, resultado, docHash, origem, executadoPor);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void escalarExpirada(Long pendenciaId) {
+        pendenciaRepository.findById(pendenciaId).ifPresent(p -> {
+            if (p.getStatus() == ProtocoloCompletudeStatus.PENDENTE_DOCUMENTACAO) {
+                gravarOutbox(p.getProtocoloId(), "PROTOCOLO_EXPIRADO", null);
+            }
+        });
     }
 
     private void gravarHistorico(Long protocoloId, ResultadoValidacao resultado,
@@ -107,6 +126,25 @@ public class ProtocoloPendenciaApplicationService {
                 .executadoPor(executadoPor)
                 .build();
         historicoRepository.save(historico);
+    }
+
+    private void gravarOutbox(Long protocoloId, String tipo, String prazo) {
+        try {
+            ObjectNode node = objectMapper.createObjectNode();
+            node.put("protocoloId", protocoloId);
+            node.put("tipo", tipo);
+            if (prazo != null) node.put("prazoRegularizacao", prazo);
+            ProtocoloCompletudeOutboxEntity entry = new ProtocoloCompletudeOutboxEntity();
+            entry.setId(PjbUuidV7Generator.generate());
+            entry.setProtocoloId(protocoloId);
+            entry.setTipo(tipo);
+            entry.setPayload(node.toString());
+            entry.setProcessado(false);
+            entry.setTentativas(0);
+            entry.setCriadoEm(Instant.now());
+            outboxRepository.save(entry);
+        } catch (Exception ignored) {
+        }
     }
 
     public static String computeHash(List<String> documentosAnexados) {

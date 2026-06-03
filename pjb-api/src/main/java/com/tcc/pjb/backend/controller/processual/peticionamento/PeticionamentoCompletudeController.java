@@ -1,18 +1,25 @@
 package com.tcc.pjb.backend.controller.processual.peticionamento;
 
 import com.tcc.pjb.backend.core.protocolo.completude.ContextoValidacaoCompletude;
+import com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeOverrideService;
 import com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeValidator;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.ResultadoValidacao;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.ViolacaoCompletude;
+import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.model.dto.processual.peticionamento.completude.OverrideCompletudeRequest;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.completude.PreValidacaoCompletudeRequest;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.completude.PreValidacaoCompletudeResponse;
+import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeStatus;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoRepresentanteProcessual;
+import com.tcc.pjb.backend.model.entity.protocolo.ProtocoloPendencia;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Objects;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,9 +31,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class PeticionamentoCompletudeController {
 
     private final ProtocoloCompletudeValidator validator;
+    private final ProtocoloCompletudeOverrideService overrideService;
+    private final CurrentUserService currentUserService;
 
-    public PeticionamentoCompletudeController(ProtocoloCompletudeValidator validator) {
+    public PeticionamentoCompletudeController(ProtocoloCompletudeValidator validator,
+                                               ProtocoloCompletudeOverrideService overrideService,
+                                               CurrentUserService currentUserService) {
         this.validator = Objects.requireNonNull(validator);
+        this.overrideService = Objects.requireNonNull(overrideService);
+        this.currentUserService = Objects.requireNonNull(currentUserService);
     }
 
     @PostMapping("/pre-validar")
@@ -84,5 +97,21 @@ public class PeticionamentoCompletudeController {
                 return TipoRepresentanteProcessual.ADVOGADO_PRIVADO;
         }
         return TipoRepresentanteProcessual.PARTE_SEM_ADVOGADO;
+    }
+
+    @PostMapping("/override/{protocoloId}")
+    @PreAuthorize("hasAnyRole('SERVIDOR_FORUM','ADMIN','MAGISTRADO','JUIZ')")
+    public ResponseEntity<Map<String, Object>> dispensar(
+            @PathVariable Long protocoloId,
+            @Valid @RequestBody OverrideCompletudeRequest request) {
+
+        Long servidorId = currentUserService.getRequired().getId();
+        ProtocoloPendencia dispensada = overrideService.dispensar(protocoloId, request.justificativa(), servidorId);
+
+        return ResponseEntity.ok(Map.of(
+                "protocoloId", protocoloId,
+                "status", dispensada.getStatus().name(),
+                "dispensadoPor", servidorId,
+                "mensagem", "Pendência dispensada. O protocolo pode avançar para distribuição."));
     }
 }

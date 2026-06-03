@@ -64,6 +64,7 @@ public class LaianePeticaoInicialDraftService {
     private final MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine;
     private final com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeValidator completudeValidator;
     private final com.tcc.pjb.backend.core.protocolo.completude.ProtocoloPendenciaApplicationService completudeService;
+    private final com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeMetrics completudeMetrics;
 
     public LaianePeticaoInicialDraftService(LaianePeticaoInicialDraftSessionRepository repository,
                                             ProcessoRepository processoRepository,
@@ -79,7 +80,8 @@ public class LaianePeticaoInicialDraftService {
                                             ProtocoloReciboService protocoloReciboService,
                                             MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine,
                                             com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeValidator completudeValidator,
-                                            com.tcc.pjb.backend.core.protocolo.completude.ProtocoloPendenciaApplicationService completudeService) {
+                                            com.tcc.pjb.backend.core.protocolo.completude.ProtocoloPendenciaApplicationService completudeService,
+                                            com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeMetrics completudeMetrics) {
         this.repository = Objects.requireNonNull(repository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.ajuizamentoService = Objects.requireNonNull(ajuizamentoService);
@@ -95,6 +97,7 @@ public class LaianePeticaoInicialDraftService {
         this.mapaCompetenciaDinamicoEngine = Objects.requireNonNull(mapaCompetenciaDinamicoEngine);
         this.completudeValidator = Objects.requireNonNull(completudeValidator);
         this.completudeService = Objects.requireNonNull(completudeService);
+        this.completudeMetrics = Objects.requireNonNull(completudeMetrics);
     }
 
     @Transactional(readOnly = true)
@@ -215,7 +218,15 @@ public class LaianePeticaoInicialDraftService {
                         java.time.LocalDate.now());
         com.tcc.pjb.backend.core.protocolo.completude.domain.ResultadoValidacao resultadoGate =
                 completudeValidator.validar(contextoGate);
+        completudeMetrics.registrarValidacao(
+                com.tcc.pjb.backend.model.entity.enums.processual.completude.OrigemValidacao.PROTOCOLO);
         if (resultadoGate.temBloqueante()) {
+            completudeMetrics.registrarBloqueado(processo.getRito());
+            resultadoGate.bloqueantes().forEach(v -> {
+                if (v instanceof com.tcc.pjb.backend.core.protocolo.completude.domain.ViolacaoCompletude.DocumentoObrigatorioAusente ausente) {
+                    completudeMetrics.registrarViolacaoTipoDoc(ausente.tipoDocumento());
+                }
+            });
             com.tcc.pjb.backend.model.entity.protocolo.ProtocoloPendencia pendencia =
                     completudeService.registrarPendencia(entity.getId(), resultadoGate, docNomes,
                             com.tcc.pjb.backend.model.entity.enums.processual.completude.OrigemValidacao.PROTOCOLO,
@@ -223,6 +234,7 @@ public class LaianePeticaoInicialDraftService {
             throw new com.tcc.pjb.backend.core.protocolo.completude.ProtocoloPendenteException(
                     entity.getId(), resultadoGate, pendencia.getPrazoRegularizacao());
         }
+        completudeMetrics.registrarLiberado(processo.getRito());
         completudeService.registrarCompleto(entity.getId(), resultadoGate, docNomes,
                 com.tcc.pjb.backend.model.entity.enums.processual.completude.OrigemValidacao.PROTOCOLO,
                 usuario.getId());
