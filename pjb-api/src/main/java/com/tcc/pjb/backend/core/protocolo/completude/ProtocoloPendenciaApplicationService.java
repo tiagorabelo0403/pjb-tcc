@@ -8,10 +8,12 @@ import com.tcc.pjb.backend.core.protocolo.completude.domain.ResultadoValidacao;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.ViolacaoCompletude;
 import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.OrigemValidacao;
+import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeEventoTipo;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeStatus;
 import com.tcc.pjb.backend.model.entity.protocolo.ProtocoloCompletudeOutboxEntity;
 import com.tcc.pjb.backend.model.entity.protocolo.ProtocoloPendencia;
 import com.tcc.pjb.backend.model.entity.protocolo.ProtocoloValidacaoHistorico;
+import com.tcc.pjb.backend.model.repository.LaianePeticaoInicialDraftSessionRepository;
 import com.tcc.pjb.backend.model.repository.protocolo.ProtocoloCompletudeOutboxRepository;
 import com.tcc.pjb.backend.model.repository.protocolo.ProtocoloPendenciaRepository;
 import com.tcc.pjb.backend.model.repository.protocolo.ProtocoloValidacaoHistoricoRepository;
@@ -35,15 +37,18 @@ public class ProtocoloPendenciaApplicationService {
     private final ProtocoloPendenciaRepository pendenciaRepository;
     private final ProtocoloValidacaoHistoricoRepository historicoRepository;
     private final ProtocoloCompletudeOutboxRepository outboxRepository;
+    private final LaianePeticaoInicialDraftSessionRepository draftSessionRepository;
     private final ObjectMapper objectMapper;
 
     public ProtocoloPendenciaApplicationService(ProtocoloPendenciaRepository pendenciaRepository,
                                                 ProtocoloValidacaoHistoricoRepository historicoRepository,
                                                 ProtocoloCompletudeOutboxRepository outboxRepository,
+                                                LaianePeticaoInicialDraftSessionRepository draftSessionRepository,
                                                 ObjectMapper objectMapper) {
         this.pendenciaRepository = Objects.requireNonNull(pendenciaRepository);
         this.historicoRepository = Objects.requireNonNull(historicoRepository);
         this.outboxRepository = Objects.requireNonNull(outboxRepository);
+        this.draftSessionRepository = Objects.requireNonNull(draftSessionRepository);
         this.objectMapper = Objects.requireNonNull(objectMapper);
     }
 
@@ -89,8 +94,10 @@ public class ProtocoloPendenciaApplicationService {
         }
 
         gravarHistorico(protocoloId, resultado, docHash, origem, executadoPor);
-        gravarOutbox(protocoloId, "PROTOCOLO_PENDENTE_DOCUMENTACAO",
-                salva.getPrazoRegularizacao() != null ? salva.getPrazoRegularizacao().toString() : null);
+        Long solicitanteId = resolverSolicitante(protocoloId);
+        gravarOutbox(protocoloId, ProtocoloCompletudeEventoTipo.PROTOCOLO_PENDENTE_DOCUMENTACAO,
+                salva.getPrazoRegularizacao() != null ? salva.getPrazoRegularizacao().toString() : null,
+                solicitanteId);
         return salva;
     }
 
@@ -108,7 +115,9 @@ public class ProtocoloPendenciaApplicationService {
     public void escalarExpirada(Long pendenciaId) {
         pendenciaRepository.findById(pendenciaId).ifPresent(p -> {
             if (p.getStatus() == ProtocoloCompletudeStatus.PENDENTE_DOCUMENTACAO) {
-                gravarOutbox(p.getProtocoloId(), "PROTOCOLO_EXPIRADO", null);
+                Long solicitanteId = resolverSolicitante(p.getProtocoloId());
+                gravarOutbox(p.getProtocoloId(), ProtocoloCompletudeEventoTipo.PROTOCOLO_EXPIRADO,
+                        null, solicitanteId);
             }
         });
     }
@@ -128,12 +137,19 @@ public class ProtocoloPendenciaApplicationService {
         historicoRepository.save(historico);
     }
 
-    private void gravarOutbox(Long protocoloId, String tipo, String prazo) {
+    private Long resolverSolicitante(Long protocoloId) {
+        return draftSessionRepository.findById(protocoloId)
+                .map(d -> d.getSolicitante() != null ? d.getSolicitante().getId() : null)
+                .orElse(null);
+    }
+
+    private void gravarOutbox(Long protocoloId, ProtocoloCompletudeEventoTipo tipo, String prazo, Long solicitanteId) {
         try {
             ObjectNode node = objectMapper.createObjectNode();
             node.put("protocoloId", protocoloId);
-            node.put("tipo", tipo);
+            node.put("tipo", tipo.name());
             if (prazo != null) node.put("prazoRegularizacao", prazo);
+            if (solicitanteId != null) node.put("solicitanteId", solicitanteId);
             ProtocoloCompletudeOutboxEntity entry = new ProtocoloCompletudeOutboxEntity();
             entry.setId(PjbUuidV7Generator.generate());
             entry.setProtocoloId(protocoloId);

@@ -3,8 +3,11 @@ package com.tcc.pjb.backend.model.entity.protocolo;
 import com.tcc.pjb.backend.core.modularity.PjbModuleId;
 import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
 import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
+import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeEventoTipo;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -22,8 +25,9 @@ public class ProtocoloCompletudeOutboxEntity {
     @Column(name = "protocolo_id", nullable = false)
     private Long protocoloId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo", nullable = false, length = 60)
-    private String tipo;
+    private ProtocoloCompletudeEventoTipo tipo;
 
     @Column(name = "payload", nullable = false, columnDefinition = "jsonb")
     private String payload;
@@ -44,8 +48,8 @@ public class ProtocoloCompletudeOutboxEntity {
     public void setId(UUID id) { this.id = id; }
     public Long getProtocoloId() { return protocoloId; }
     public void setProtocoloId(Long protocoloId) { this.protocoloId = protocoloId; }
-    public String getTipo() { return tipo; }
-    public void setTipo(String tipo) { this.tipo = tipo; }
+    public ProtocoloCompletudeEventoTipo getTipo() { return tipo; }
+    public void setTipo(ProtocoloCompletudeEventoTipo tipo) { this.tipo = tipo; }
     public String getPayload() { return payload; }
     public void setPayload(String payload) { this.payload = payload; }
     public boolean isProcessado() { return processado; }

@@ -1,7 +1,9 @@
 package com.tcc.pjb.backend.core.protocolo.completude;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeEventoTipo;
 import com.tcc.pjb.backend.model.entity.protocolo.ProtocoloCompletudeOutboxEntity;
+import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.protocolo.ProtocoloCompletudeOutboxRepository;
 import com.tcc.pjb.backend.service.notification.NotificationService;
 import java.time.Instant;
@@ -23,13 +25,16 @@ public class ProtocoloCompletudeNotificationScheduler {
 
     private final ProtocoloCompletudeOutboxRepository outboxRepository;
     private final NotificationService notificationService;
+    private final UsuarioRepository usuarioRepository;
     private final ObjectMapper objectMapper;
 
     public ProtocoloCompletudeNotificationScheduler(ProtocoloCompletudeOutboxRepository outboxRepository,
                                                     NotificationService notificationService,
+                                                    UsuarioRepository usuarioRepository,
                                                     ObjectMapper objectMapper) {
         this.outboxRepository = Objects.requireNonNull(outboxRepository);
         this.notificationService = Objects.requireNonNull(notificationService);
+        this.usuarioRepository = Objects.requireNonNull(usuarioRepository);
         this.objectMapper = Objects.requireNonNull(objectMapper);
     }
 
@@ -61,17 +66,18 @@ public class ProtocoloCompletudeNotificationScheduler {
 
     private void enviarNotificacao(ProtocoloCompletudeOutboxEntity entry) throws Exception {
         com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(entry.getPayload());
-        String tipo = node.path("tipo").asText();
         String prazo = node.path("prazoRegularizacao").asText(null);
+        long solicitanteIdRaw = node.path("solicitanteId").asLong(0);
 
+        ProtocoloCompletudeEventoTipo tipo = entry.getTipo();
         String titulo;
         String mensagem;
-        if ("PROTOCOLO_PENDENTE_DOCUMENTACAO".equals(tipo)) {
+        if (tipo == ProtocoloCompletudeEventoTipo.PROTOCOLO_PENDENTE_DOCUMENTACAO) {
             titulo = "Documentação pendente — protocolo bloqueado";
             mensagem = "Seu protocolo foi retido por documentação insuficiente."
                     + (prazo != null ? " Prazo para regularização: " + prazo + "." : "")
                     + " Acesse o sistema para verificar os documentos necessários.";
-        } else if ("PROTOCOLO_EXPIRADO".equals(tipo)) {
+        } else if (tipo == ProtocoloCompletudeEventoTipo.PROTOCOLO_EXPIRADO) {
             titulo = "Prazo de regularização expirado";
             mensagem = "O prazo para regularização da documentação expirou. Protocolo encaminhado para análise da secretaria.";
         } else {
@@ -79,11 +85,16 @@ public class ProtocoloCompletudeNotificationScheduler {
             mensagem = "Seu protocolo foi atualizado. Acesse o sistema para verificar.";
         }
 
-        notificationService.notifyUsers(
-                java.util.List.of(),
-                null,
-                titulo,
-                mensagem,
-                "/peticionamento/completude/" + entry.getProtocoloId());
+        if (solicitanteIdRaw > 0) {
+            usuarioRepository.findById(solicitanteIdRaw).ifPresentOrElse(
+                    usuario -> notificationService.notifyUser(usuario, null, titulo, mensagem,
+                            "/peticionamento/completude/" + entry.getProtocoloId()),
+                    () -> log.warn("Outbox completude: solicitante nao encontrado id={} protocolo={}",
+                            solicitanteIdRaw, entry.getProtocoloId())
+            );
+        } else {
+            log.warn("Outbox completude sem solicitanteId resolvido: id={} protocolo={}",
+                    entry.getId(), entry.getProtocoloId());
+        }
     }
 }
