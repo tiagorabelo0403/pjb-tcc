@@ -9,8 +9,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.protocolo.completude.ContextoValidacaoCompletude;
+import com.tcc.pjb.backend.core.protocolo.completude.DetectorInteligenteCompletude;
+import com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeMetrics;
 import com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeValidator;
 import com.tcc.pjb.backend.core.protocolo.completude.ProtocoloPendenciaApplicationService;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.FundamentoNormativo;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.ResultadoValidacao;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.ViolacaoCompletude;
@@ -44,7 +47,9 @@ class PjbProtocoloCompletudeFase2Test {
     void setUp() {
         requisitoRepo = mock(RequisitoDocumentalRepository.class);
         equivalenciaRepo = mock(RequisitoDocumentalEquivalenciaRepository.class);
-        validator = new ProtocoloCompletudeValidator(requisitoRepo, equivalenciaRepo);
+        DetectorInteligenteCompletude detector = mock(DetectorInteligenteCompletude.class);
+        ProtocoloCompletudeMetrics metrics = new ProtocoloCompletudeMetrics(new SimpleMeterRegistry());
+        validator = new ProtocoloCompletudeValidator(requisitoRepo, equivalenciaRepo, detector, metrics);
     }
 
     @Test

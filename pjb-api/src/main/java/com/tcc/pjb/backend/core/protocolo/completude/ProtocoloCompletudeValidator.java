@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.protocolo.completude;
 
+import com.tcc.pjb.backend.core.protocolo.completude.domain.DocumentoAnalisavel;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.FundamentoNormativo;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.ResultadoValidacao;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.ViolacaoCompletude;
@@ -21,15 +22,27 @@ public class ProtocoloCompletudeValidator {
 
     private final RequisitoDocumentalRepository requisitoRepository;
     private final RequisitoDocumentalEquivalenciaRepository equivalenciaRepository;
+    private final DetectorInteligenteCompletude detector;
+    private final ProtocoloCompletudeMetrics metrics;
 
     public ProtocoloCompletudeValidator(RequisitoDocumentalRepository requisitoRepository,
-                                        RequisitoDocumentalEquivalenciaRepository equivalenciaRepository) {
+                                        RequisitoDocumentalEquivalenciaRepository equivalenciaRepository,
+                                        DetectorInteligenteCompletude detector,
+                                        ProtocoloCompletudeMetrics metrics) {
         this.requisitoRepository = Objects.requireNonNull(requisitoRepository);
         this.equivalenciaRepository = Objects.requireNonNull(equivalenciaRepository);
+        this.detector = Objects.requireNonNull(detector);
+        this.metrics = Objects.requireNonNull(metrics);
     }
 
     @Transactional(readOnly = true)
     public ResultadoValidacao validar(ContextoValidacaoCompletude contexto) {
+        return validar(contexto, List.of());
+    }
+
+    @Transactional(readOnly = true)
+    public ResultadoValidacao validar(ContextoValidacaoCompletude contexto,
+                                      List<DocumentoAnalisavel> documentos) {
         List<RequisitoDocumental> requisitos = requisitoRepository
                 .findVigentesNaData(contexto.rito(), contexto.dataProtocolo());
 
@@ -62,6 +75,14 @@ public class ProtocoloCompletudeValidator {
 
             violacoes.add(new ViolacaoCompletude.DocumentoObrigatorioAusente(
                     requisito.getTipoDocumento(), fundamento(requisito), requisito.getNivelSensibilidade()));
+        }
+
+        if (!documentos.isEmpty()) {
+            if (detector.disponivel()) {
+                violacoes.addAll(detector.analisar(contexto, documentos));
+            } else {
+                metrics.registrarFalhaOcr();
+            }
         }
 
         boolean temBloqueante = violacoes.stream()
