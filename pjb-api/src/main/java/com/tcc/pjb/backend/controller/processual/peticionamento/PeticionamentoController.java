@@ -150,7 +150,12 @@ public class PeticionamentoController {
                                                                                                  @PathVariable Long draftId,
                                                                                                  @RequestBody(required = false) LaianePeticaoInicialProtocolarRequest request) {
         enforce(authentication, "peticionamento_rascunho_protocolar");
-        return ResponseEntity.ok(draftService.protocolar(draftId, request == null ? null : new LaianePeticaoInicialDraftService.ProtocolarRequest(request.tipoJustica())));
+        return ResponseEntity.ok(draftService.protocolar(draftId, request == null ? null :
+                new LaianePeticaoInicialDraftService.ProtocolarRequest(
+                        request.tipoJustica(),
+                        request.tipoPartePrincipal(),
+                        request.condicoesAplicaveis(),
+                        request.documentosAnexados())));
     }
 
     private void enforce(Authentication authentication, String capability) {

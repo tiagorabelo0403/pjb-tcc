@@ -62,6 +62,8 @@ public class LaianePeticaoInicialDraftService {
     private final PeticionamentoInicialPolosService peticionamentoInicialPolosService;
     private final ProtocoloReciboService protocoloReciboService;
     private final MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine;
+    private final com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeValidator completudeValidator;
+    private final com.tcc.pjb.backend.core.protocolo.completude.ProtocoloPendenciaApplicationService completudeService;
 
     public LaianePeticaoInicialDraftService(LaianePeticaoInicialDraftSessionRepository repository,
                                             ProcessoRepository processoRepository,
@@ -75,7 +77,9 @@ public class LaianePeticaoInicialDraftService {
                                             NumeroProcessoCnjService numeroProcessoCnjService,
                                             PeticionamentoInicialPolosService peticionamentoInicialPolosService,
                                             ProtocoloReciboService protocoloReciboService,
-                                            MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine) {
+                                            MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine,
+                                            com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeValidator completudeValidator,
+                                            com.tcc.pjb.backend.core.protocolo.completude.ProtocoloPendenciaApplicationService completudeService) {
         this.repository = Objects.requireNonNull(repository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.ajuizamentoService = Objects.requireNonNull(ajuizamentoService);
@@ -89,6 +93,8 @@ public class LaianePeticaoInicialDraftService {
         this.peticionamentoInicialPolosService = Objects.requireNonNull(peticionamentoInicialPolosService);
         this.protocoloReciboService = Objects.requireNonNull(protocoloReciboService);
         this.mapaCompetenciaDinamicoEngine = Objects.requireNonNull(mapaCompetenciaDinamicoEngine);
+        this.completudeValidator = Objects.requireNonNull(completudeValidator);
+        this.completudeService = Objects.requireNonNull(completudeService);
     }
 
     @Transactional(readOnly = true)
@@ -193,6 +199,34 @@ public class LaianePeticaoInicialDraftService {
         processo.setConnectorSubmissionMessage("Draft da petição inicial convertido em ajuizamento real.");
         processo.setConnectorSubmissionProcessedAt(java.time.LocalDateTime.now());
         processo.setRito(RitoProcessual.tryParse(entity.getRitoSugerido()).orElse(RitoProcessual.COMUM_ORDINARIO));
+
+        java.util.List<String> docNomes = request != null && request.documentosAnexados() != null
+                ? request.documentosAnexados().stream().map(Enum::name).toList()
+                : java.util.List.of();
+        com.tcc.pjb.backend.core.protocolo.completude.ContextoValidacaoCompletude contextoGate =
+                new com.tcc.pjb.backend.core.protocolo.completude.ContextoValidacaoCompletude(
+                        processo.getRito(),
+                        resolveRepresentanteCompletude(usuario),
+                        request != null ? request.tipoPartePrincipal() : null,
+                        request != null && request.condicoesAplicaveis() != null
+                                ? request.condicoesAplicaveis() : java.util.Set.of(),
+                        request != null && request.documentosAnexados() != null
+                                ? request.documentosAnexados() : java.util.List.of(),
+                        java.time.LocalDate.now());
+        com.tcc.pjb.backend.core.protocolo.completude.domain.ResultadoValidacao resultadoGate =
+                completudeValidator.validar(contextoGate);
+        if (resultadoGate.temBloqueante()) {
+            com.tcc.pjb.backend.model.entity.protocolo.ProtocoloPendencia pendencia =
+                    completudeService.registrarPendencia(entity.getId(), resultadoGate, docNomes,
+                            com.tcc.pjb.backend.model.entity.enums.processual.completude.OrigemValidacao.PROTOCOLO,
+                            usuario.getId());
+            throw new com.tcc.pjb.backend.core.protocolo.completude.ProtocoloPendenteException(
+                    entity.getId(), resultadoGate, pendencia.getPrazoRegularizacao());
+        }
+        completudeService.registrarCompleto(entity.getId(), resultadoGate, docNomes,
+                com.tcc.pjb.backend.model.entity.enums.processual.completude.OrigemValidacao.PROTOCOLO,
+                usuario.getId());
+
         Processo salvo = ajuizamentoService.ajuizar(processo);
         salvo.setTipoJustica(tipoJusticaProtocolo);
         salvo.setRamoDireito(ramoDireitoProtocolo);
@@ -972,6 +1006,15 @@ public class LaianePeticaoInicialDraftService {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    private com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoRepresentanteProcessual resolveRepresentanteCompletude(Usuario usuario) {
+        TipoUsuario tipo = usuario.getTipoUsuario();
+        if (tipo == null) return com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoRepresentanteProcessual.PARTE_SEM_ADVOGADO;
+        if (tipo.isDefensoriaPublica()) return com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoRepresentanteProcessual.DEFENSOR_PUBLICO;
+        if (tipo.isMinisterioPublico() || tipo.isProcuradoria()) return com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoRepresentanteProcessual.MINISTERIO_PUBLICO;
+        if (tipo.isAdvocacia()) return com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoRepresentanteProcessual.ADVOGADO_PRIVADO;
+        return com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoRepresentanteProcessual.PARTE_SEM_ADVOGADO;
+    }
+
     public record EstruturarRequest(
             Long processoId,
             @NotBlank String tituloCaso,
@@ -1014,8 +1057,14 @@ public class LaianePeticaoInicialDraftService {
     }
 
     public record ProtocolarRequest(
-            String tipoJustica
+            String tipoJustica,
+            com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoParteProcessual tipoPartePrincipal,
+            java.util.Set<com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoCondicaoRequisito> condicoesAplicaveis,
+            java.util.List<com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual> documentosAnexados
     ) {
+        public ProtocolarRequest(String tipoJustica) {
+            this(tipoJustica, null, java.util.Set.of(), java.util.List.of());
+        }
     }
 
     public record ProtocolarResult(

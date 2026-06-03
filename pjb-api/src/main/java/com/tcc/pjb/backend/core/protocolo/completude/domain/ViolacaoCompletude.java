@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.protocolo.completude.domain;
 
+import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.SeveridadeCompletude;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
 
@@ -16,11 +17,16 @@ public sealed interface ViolacaoCompletude
     String campo();
     String acaoCorretiva();
     FundamentoNormativo fundamento();
+    default NivelSigilo nivelSensibilidade() { return NivelSigilo.PUBLICO; }
 
     record DocumentoObrigatorioAusente(
             TipoDocumentoProcessual tipoDocumento,
-            FundamentoNormativo fundamento
+            FundamentoNormativo fundamento,
+            NivelSigilo nivelSensibilidade
     ) implements ViolacaoCompletude {
+        public DocumentoObrigatorioAusente(TipoDocumentoProcessual tipoDocumento, FundamentoNormativo fundamento) {
+            this(tipoDocumento, fundamento, NivelSigilo.PUBLICO);
+        }
         public String codigo() { return "DOC_OBRIGATORIO_AUSENTE"; }
         public SeveridadeCompletude severidade() { return SeveridadeCompletude.BLOQUEANTE; }
         public String campo() { return tipoDocumento.name(); }
