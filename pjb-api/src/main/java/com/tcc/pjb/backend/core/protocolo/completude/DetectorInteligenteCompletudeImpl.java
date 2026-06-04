@@ -22,10 +22,16 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 @Service
+@ConditionalOnProperty(
+        prefix = "pjb.runtime.barrier.integrations",
+        name = "digitalizacao",
+        havingValue = "true",
+        matchIfMissing = true)
 public class DetectorInteligenteCompletudeImpl implements DetectorInteligenteCompletude {
 
     private static final String VETOR_MODE_PROPERTY = "pjb.ai.vector.mode";
