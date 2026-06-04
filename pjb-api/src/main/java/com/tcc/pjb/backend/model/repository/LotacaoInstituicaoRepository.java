@@ -9,6 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface LotacaoInstituicaoRepository extends JpaRepository<LotacaoInstituicao, Long> {
 
-    @Query("SELECT l FROM LotacaoInstituicao l WHERE l.usuario = :usuario AND l.fim IS NULL")
+    @Query("SELECT l FROM LotacaoInstituicao l JOIN FETCH l.unidade WHERE l.usuario = :usuario AND l.fim IS NULL")
     List<LotacaoInstituicao> findAtivasByUsuario(@Param("usuario") Usuario usuario);
 }

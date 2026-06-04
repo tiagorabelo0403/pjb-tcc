@@ -14,6 +14,7 @@ import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
+import com.tcc.pjb.backend.model.repository.LotacaoInstituicaoRepository;
 import com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,7 @@ class PjbObjectScopeGuardBolaTest {
     private PjbObjectScopeGuardImpl guard(SecretariatInstitutionalVisibilityService vis,
                                           CurrentUserService cur,
                                           AuditLedgerService audit) {
-        return new PjbObjectScopeGuardImpl(vis, cur, audit);
+        return new PjbObjectScopeGuardImpl(vis, cur, audit, mock(LotacaoInstituicaoRepository.class));
     }
 
     @Test
