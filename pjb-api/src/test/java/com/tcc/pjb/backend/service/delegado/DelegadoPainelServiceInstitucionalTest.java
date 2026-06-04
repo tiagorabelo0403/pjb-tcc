@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
 import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoDiligenciaRequest;
 import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -66,6 +67,10 @@ class DelegadoPainelServiceInstitucionalTest {
     private final LotacaoInstituicaoRepository lotacaoRepository = mock(LotacaoInstituicaoRepository.class);
     private final InstitutionalActorRoutingService routingService = mock(InstitutionalActorRoutingService.class);
     private final InstitutionalMaterialActionGuardService materialGuard = mock(InstitutionalMaterialActionGuardService.class);
+    private final DelegaciaInstitucionalScopeService delegaciaScopeService = new DelegaciaInstitucionalScopeService(
+            unidadeRepository,
+            lotacaoRepository
+    );
 
     private final DelegadoPainelService service = new DelegadoPainelService(
             contextFactory,
@@ -74,8 +79,7 @@ class DelegadoPainelServiceInstitucionalTest {
             workItemRepository,
             inqueritoRepository,
             mock(BoletimOcorrenciaDigitalService.class),
-            unidadeRepository,
-            lotacaoRepository,
+            delegaciaScopeService,
             mock(com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService.class),
             mock(PerfilCapabilityMatrixService.class),
             mock(PessoaLocalizacaoIntelligenceSummaryService.class),

@@ -2,22 +2,18 @@ package com.tcc.pjb.backend.service.criminal;
 
 import com.tcc.pjb.backend.core.id.PjbUuidV7Generator;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
 import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.model.entity.Instituicao;
-import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.criminal.BoletimOcorrenciaDigital;
 import com.tcc.pjb.backend.model.entity.criminal.BoletimOcorrenciaInqueritoVinculo;
 import com.tcc.pjb.backend.model.entity.criminal.InqueritoPolicialDigital;
 import com.tcc.pjb.backend.model.entity.enums.StatusBoletimOcorrenciaDigital;
-import com.tcc.pjb.backend.model.entity.enums.StatusUnidadeInstitucional;
-import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
 import com.tcc.pjb.backend.model.repository.BoletimOcorrenciaDigitalRepository;
 import com.tcc.pjb.backend.model.repository.BoletimOcorrenciaInqueritoVinculoRepository;
 import com.tcc.pjb.backend.model.repository.InqueritoPolicialDigitalRepository;
-import com.tcc.pjb.backend.model.repository.LotacaoInstituicaoRepository;
-import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import java.nio.charset.StandardCharsets;
@@ -40,23 +36,20 @@ public class BoletimOcorrenciaDigitalService {
 
     private final BoletimOcorrenciaDigitalRepository repository;
     private final BoletimOcorrenciaInqueritoVinculoRepository vinculoRepository;
-    private final UnidadeInstituicaoRepository unidadeInstituicaoRepository;
-    private final LotacaoInstituicaoRepository lotacaoInstituicaoRepository;
+    private final DelegaciaInstitucionalScopeService delegaciaScopeService;
     private final InqueritoPolicialDigitalRepository inqueritoRepository;
     private final CurrentUserService currentUserService;
     private final OutboxPublisher outboxPublisher;
 
     public BoletimOcorrenciaDigitalService(BoletimOcorrenciaDigitalRepository repository,
                                            BoletimOcorrenciaInqueritoVinculoRepository vinculoRepository,
-                                           UnidadeInstituicaoRepository unidadeInstituicaoRepository,
-                                           LotacaoInstituicaoRepository lotacaoInstituicaoRepository,
+                                           DelegaciaInstitucionalScopeService delegaciaScopeService,
                                            InqueritoPolicialDigitalRepository inqueritoRepository,
                                            CurrentUserService currentUserService,
                                            OutboxPublisher outboxPublisher) {
         this.repository = Objects.requireNonNull(repository);
         this.vinculoRepository = Objects.requireNonNull(vinculoRepository);
-        this.unidadeInstituicaoRepository = Objects.requireNonNull(unidadeInstituicaoRepository);
-        this.lotacaoInstituicaoRepository = Objects.requireNonNull(lotacaoInstituicaoRepository);
+        this.delegaciaScopeService = Objects.requireNonNull(delegaciaScopeService);
         this.inqueritoRepository = Objects.requireNonNull(inqueritoRepository);
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.outboxPublisher = Objects.requireNonNull(outboxPublisher);
@@ -65,7 +58,7 @@ public class BoletimOcorrenciaDigitalService {
     @Transactional(readOnly = true)
     public List<BoletimOcorrenciaView> listarMeus() {
         Usuario usuario = requireSegurancaPublica();
-        List<Long> unidadeIds = delegaciasAtivasDoUsuario(usuario).stream()
+        List<Long> unidadeIds = delegaciaScopeService.delegaciasAtivasComTerritorioDoUsuario(usuario).stream()
                 .map(UnidadeInstituicao::getId)
                 .filter(Objects::nonNull)
                 .toList();
@@ -82,7 +75,7 @@ public class BoletimOcorrenciaDigitalService {
         Usuario usuario = requireSegurancaPublica();
         BoletimOcorrenciaDigital boletim = repository.findByUuid(uuid)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("BoletimOcorrenciaDigital", uuid));
-        requireLotacaoAtivaNaUnidade(usuario, boletim.getUnidadeRegistro());
+        delegaciaScopeService.requireLotacaoDiretaNaDelegaciaComTerritorio(usuario, boletim.getUnidadeRegistro());
         return toView(boletim);
     }
 
@@ -90,7 +83,7 @@ public class BoletimOcorrenciaDigitalService {
     public BoletimOcorrenciaView registrar(BoletimOcorrenciaCadastroCommand request) {
         Objects.requireNonNull(request);
         Usuario usuario = requireSegurancaPublica();
-        UnidadeInstituicao unidade = requireDelegaciaLotada(usuario, request.unidadeRegistroId());
+        UnidadeInstituicao unidade = delegaciaScopeService.requireDelegaciaRegistroLotada(usuario, request.unidadeRegistroId());
         UUID uuid = PjbUuidV7Generator.generate();
         Instant now = Instant.now();
         BoletimOcorrenciaDigital boletim = new BoletimOcorrenciaDigital();
@@ -120,10 +113,10 @@ public class BoletimOcorrenciaDigitalService {
         Usuario usuario = requireSegurancaPublica();
         BoletimOcorrenciaDigital boletim = repository.findByUuid(boletimUuid)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("BoletimOcorrenciaDigital", boletimUuid));
-        requireLotacaoAtivaNaUnidade(usuario, boletim.getUnidadeRegistro());
+        delegaciaScopeService.requireLotacaoDiretaNaDelegaciaComTerritorio(usuario, boletim.getUnidadeRegistro());
         InqueritoPolicialDigital inquerito = inqueritoRepository.findById(inqueritoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("InqueritoPolicialDigital", inqueritoId));
-        requireMesmoRegistroInstitucional(boletim, inquerito);
+        delegaciaScopeService.requireMesmoRegistroInstitucional(boletim, inquerito);
         var existente = vinculoRepository.findByBoletim_Id(boletim.getId());
         if (existente.isPresent()) {
             BoletimOcorrenciaInqueritoVinculo vinculoExistente = existente.get();
@@ -153,7 +146,7 @@ public class BoletimOcorrenciaDigitalService {
         if (usuario == null || usuario.getTipoUsuario() == null || !usuario.getTipoUsuario().isSegurancaPublica()) {
             return List.of();
         }
-        List<Long> unidadeIds = delegaciasAtivasDoUsuario(usuario).stream()
+        List<Long> unidadeIds = delegaciaScopeService.delegaciasAtivasComTerritorioDoUsuario(usuario).stream()
                 .map(UnidadeInstituicao::getId)
                 .filter(Objects::nonNull)
                 .toList();
@@ -173,59 +166,6 @@ public class BoletimOcorrenciaDigitalService {
             throw new IllegalStateException("Operacao exclusiva de autoridade policial ou equipe investigativa.");
         }
         return usuario;
-    }
-
-    private UnidadeInstituicao requireDelegaciaLotada(Usuario usuario, Long unidadeId) {
-        if (unidadeId == null) {
-            throw new IllegalArgumentException("unidadeRegistroId e obrigatorio para boletim de ocorrencia digital.");
-        }
-        UnidadeInstituicao unidade = unidadeInstituicaoRepository.findById(unidadeId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("UnidadeInstituicao", unidadeId));
-        requireDelegaciaAtiva(unidade);
-        requireLotacaoAtivaNaUnidade(usuario, unidade);
-        return unidade;
-    }
-
-    private void requireDelegaciaAtiva(UnidadeInstituicao unidade) {
-        if (unidade == null
-                || unidade.getTipo() != TipoUnidadeInstitucional.DELEGACIA
-                || unidade.getStatusUnidade() != StatusUnidadeInstitucional.ATIVA
-                || !hasText(unidade.getUf())
-                || !hasText(unidade.getComarca())) {
-            throw new IllegalStateException("A unidade de registro deve ser uma delegacia institucional ativa com UF e comarca.");
-        }
-    }
-
-    private void requireLotacaoAtivaNaUnidade(Usuario usuario, UnidadeInstituicao unidade) {
-        requireDelegaciaAtiva(unidade);
-        boolean lotado = delegaciasAtivasDoUsuario(usuario).stream()
-                .anyMatch(ativa -> Objects.equals(ativa.getId(), unidade.getId()));
-        if (!lotado) {
-            throw new IllegalStateException("Usuario sem lotacao ativa na delegacia informada.");
-        }
-    }
-
-    private List<UnidadeInstituicao> delegaciasAtivasDoUsuario(Usuario usuario) {
-        return lotacaoInstituicaoRepository.findAtivasByUsuario(usuario).stream()
-                .map(LotacaoInstituicao::getUnidade)
-                .filter(Objects::nonNull)
-                .filter(this::isDelegaciaAtiva)
-                .toList();
-    }
-
-    private boolean isDelegaciaAtiva(UnidadeInstituicao unidade) {
-        return unidade.getTipo() == TipoUnidadeInstitucional.DELEGACIA
-                && unidade.getStatusUnidade() == StatusUnidadeInstitucional.ATIVA
-                && hasText(unidade.getUf())
-                && hasText(unidade.getComarca());
-    }
-
-    private void requireMesmoRegistroInstitucional(BoletimOcorrenciaDigital boletim, InqueritoPolicialDigital inquerito) {
-        UnidadeInstituicao unidadeBoletim = boletim.getUnidadeRegistro();
-        UnidadeInstituicao unidadeInquerito = inquerito.getUnidadeApuracao();
-        if (unidadeBoletim == null || unidadeInquerito == null || !Objects.equals(unidadeBoletim.getId(), unidadeInquerito.getId())) {
-            throw new IllegalStateException("Boletim e inquerito devem pertencer a mesma delegacia institucional.");
-        }
     }
 
     private void publicarEvento(BoletimOcorrenciaDigital boletim, String eventCode, BoletimOcorrenciaView view) {

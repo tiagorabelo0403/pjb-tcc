@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
 import com.tcc.pjb.backend.model.entity.Instituicao;
 import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
@@ -47,12 +48,15 @@ class BoletimOcorrenciaDigitalServiceInstitucionalTest {
     private final InqueritoPolicialDigitalRepository inqueritoRepository = mock(InqueritoPolicialDigitalRepository.class);
     private final CurrentUserService currentUserService = mock(CurrentUserService.class);
     private final OutboxPublisher outboxPublisher = mock(OutboxPublisher.class);
+    private final DelegaciaInstitucionalScopeService delegaciaScopeService = new DelegaciaInstitucionalScopeService(
+            unidadeRepository,
+            lotacaoRepository
+    );
 
     private final BoletimOcorrenciaDigitalService service = new BoletimOcorrenciaDigitalService(
             repository,
             vinculoRepository,
-            unidadeRepository,
-            lotacaoRepository,
+            delegaciaScopeService,
             inqueritoRepository,
             currentUserService,
             outboxPublisher

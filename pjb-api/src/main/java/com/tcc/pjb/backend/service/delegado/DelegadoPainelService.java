@@ -1,24 +1,20 @@
 package com.tcc.pjb.backend.service.delegado;
 
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
+import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
 import com.tcc.pjb.backend.model.dto.dashboard.PerfilDashboardPayload;
 import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoDiligenciaRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoInqueritoMultimidiaRequest;
-import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.criminal.InqueritoPolicialDigital;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
-import com.tcc.pjb.backend.model.entity.enums.StatusUnidadeInstitucional;
-import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.InqueritoPolicialDigitalRepository;
-import com.tcc.pjb.backend.model.repository.LotacaoInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
-import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.criminal.BoletimOcorrenciaDigitalService;
 import com.tcc.pjb.backend.service.criminal.InqueritoMultimidiaWorkspaceService;
@@ -65,8 +61,7 @@ public class DelegadoPainelService {
     private final WorkItemRepository workItemRepository;
     private final InqueritoPolicialDigitalRepository inqueritoRepository;
     private final BoletimOcorrenciaDigitalService boletimOcorrenciaDigitalService;
-    private final UnidadeInstituicaoRepository unidadeInstituicaoRepository;
-    private final LotacaoInstituicaoRepository lotacaoInstituicaoRepository;
+    private final DelegaciaInstitucionalScopeService delegaciaScopeService;
     private final PjbAuthorizationService authorizationService;
     private final PerfilCapabilityMatrixService capabilityMatrixService;
     private final PessoaLocalizacaoIntelligenceSummaryService intelligenceSummaryService;
@@ -94,8 +89,7 @@ public class DelegadoPainelService {
                                  WorkItemRepository workItemRepository,
                                  InqueritoPolicialDigitalRepository inqueritoRepository,
                                  BoletimOcorrenciaDigitalService boletimOcorrenciaDigitalService,
-                                 UnidadeInstituicaoRepository unidadeInstituicaoRepository,
-                                 LotacaoInstituicaoRepository lotacaoInstituicaoRepository,
+                                 DelegaciaInstitucionalScopeService delegaciaScopeService,
                                  PjbAuthorizationService authorizationService,
                                  PerfilCapabilityMatrixService capabilityMatrixService,
                                  PessoaLocalizacaoIntelligenceSummaryService intelligenceSummaryService,
@@ -122,8 +116,7 @@ public class DelegadoPainelService {
         this.workItemRepository = workItemRepository;
         this.inqueritoRepository = inqueritoRepository;
         this.boletimOcorrenciaDigitalService = boletimOcorrenciaDigitalService;
-        this.unidadeInstituicaoRepository = unidadeInstituicaoRepository;
-        this.lotacaoInstituicaoRepository = lotacaoInstituicaoRepository;
+        this.delegaciaScopeService = delegaciaScopeService;
         this.authorizationService = authorizationService;
         this.capabilityMatrixService = capabilityMatrixService;
         this.intelligenceSummaryService = intelligenceSummaryService;
@@ -258,10 +251,10 @@ public class DelegadoPainelService {
     public Map<String, Object> registrarDiligencia(DelegadoDiligenciaRequest request) {
         Objects.requireNonNull(request);
         Usuario usuario = contextFactory.build().usuario();
-        UnidadeInstituicao unidadeApuracao = requireDelegaciaLotada(usuario, request.unidadeApuracaoId());
+        UnidadeInstituicao unidadeApuracao = delegaciaScopeService.requireDelegaciaDiligenciaLotada(usuario, request.unidadeApuracaoId());
         InqueritoPolicialDigital inquerito = inqueritoRepository.findById(request.inqueritoId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("InqueritoPolicialDigital", request.inqueritoId()));
-        requireInqueritoDaDelegacia(inquerito, unidadeApuracao);
+        delegaciaScopeService.requireInqueritoDaDelegacia(inquerito, unidadeApuracao);
         Processo processo = requireProcessoVinculado(inquerito, request.processoId());
         String resumo = resumoDiligencia(request, unidadeApuracao, inquerito, processo);
         institutionalMaterialActionGuardService.requireAllowedForProcessAction(processo, InstitutionalMaterialActionGuardService.MaterialAction.DELEGADO_DILIGENCIA);
@@ -417,30 +410,6 @@ public class DelegadoPainelService {
         return commons.titleContains(item, "MANDADO", "PRISAO", "BUSCA", "APREENSAO");
     }
 
-    private UnidadeInstituicao requireDelegaciaLotada(Usuario usuario, Long unidadeApuracaoId) {
-        UnidadeInstituicao unidade = unidadeInstituicaoRepository.findById(unidadeApuracaoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("UnidadeInstituicao", unidadeApuracaoId));
-        if (unidade.getTipo() != TipoUnidadeInstitucional.DELEGACIA
-                || unidade.getStatusUnidade() != StatusUnidadeInstitucional.ATIVA
-                || !hasText(unidade.getUf())
-                || !hasText(unidade.getComarca())) {
-            throw new IllegalStateException("A diligência deve partir de delegacia institucional ativa com UF e comarca.");
-        }
-        boolean lotado = lotacaoInstituicaoRepository.findAtivasByUsuario(usuario).stream()
-                .map(LotacaoInstituicao::getUnidade)
-                .anyMatch(ativa -> ativa != null && unidade.getId().equals(ativa.getId()));
-        if (!lotado) {
-            throw new IllegalStateException("Usuário sem lotação ativa na delegacia informada.");
-        }
-        return unidade;
-    }
-
-    private void requireInqueritoDaDelegacia(InqueritoPolicialDigital inquerito, UnidadeInstituicao unidadeApuracao) {
-        if (inquerito.getUnidadeApuracao() == null || !unidadeApuracao.getId().equals(inquerito.getUnidadeApuracao().getId())) {
-            throw new IllegalStateException("Inquérito não pertence à delegacia informada.");
-        }
-    }
-
     private Processo requireProcessoVinculado(InqueritoPolicialDigital inquerito, Long processoId) {
         if (inquerito.getProcessoVinculado() == null || !processoId.equals(inquerito.getProcessoVinculado().getId())) {
             throw new IllegalStateException("Inquérito não está vinculado ao processo informado.");
@@ -459,10 +428,6 @@ public class DelegadoPainelService {
                 "descricao=" + request.descricao(),
                 "fundamento=" + normalizeFreeText(request.fundamentoOperacional()),
                 "prioridade=" + normalizeToken(request.prioridade()));
-    }
-
-    private boolean hasText(String value) {
-        return value != null && !value.isBlank();
     }
 
     @SuppressWarnings("unchecked")

@@ -14,24 +14,20 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
 import com.tcc.pjb.backend.core.util.Hashes;
-import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.criminal.InqueritoPolicialDigital;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
-import com.tcc.pjb.backend.model.entity.enums.StatusUnidadeInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
-import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.InqueritoPolicialDigitalRepository;
-import com.tcc.pjb.backend.model.repository.LotacaoInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
-import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 
@@ -41,21 +37,18 @@ public class InqueritoPolicialDigitalService {
     private final InqueritoPolicialDigitalRepository repository;
     private final ProcessoRepository processoRepository;
     private final WorkItemRepository workItemRepository;
-    private final UnidadeInstituicaoRepository unidadeInstituicaoRepository;
-    private final LotacaoInstituicaoRepository lotacaoInstituicaoRepository;
+    private final DelegaciaInstitucionalScopeService delegaciaScopeService;
     private final CurrentUserService currentUserService;
 
     public InqueritoPolicialDigitalService(InqueritoPolicialDigitalRepository repository,
                                            ProcessoRepository processoRepository,
                                            WorkItemRepository workItemRepository,
-                                           UnidadeInstituicaoRepository unidadeInstituicaoRepository,
-                                           LotacaoInstituicaoRepository lotacaoInstituicaoRepository,
+                                           DelegaciaInstitucionalScopeService delegaciaScopeService,
                                            CurrentUserService currentUserService) {
         this.repository = Objects.requireNonNull(repository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
-        this.unidadeInstituicaoRepository = Objects.requireNonNull(unidadeInstituicaoRepository);
-        this.lotacaoInstituicaoRepository = Objects.requireNonNull(lotacaoInstituicaoRepository);
+        this.delegaciaScopeService = Objects.requireNonNull(delegaciaScopeService);
         this.currentUserService = Objects.requireNonNull(currentUserService);
     }
 
@@ -85,7 +78,7 @@ public class InqueritoPolicialDigitalService {
     @Transactional
     public InqueritoView registrar(InqueritoCadastroRequest request) {
         Usuario usuario = requireInvestigativeActor();
-        UnidadeInstituicao unidadeApuracao = resolveUnidadeApuracao(usuario, request.unidadeApuracaoId());
+        UnidadeInstituicao unidadeApuracao = delegaciaScopeService.requireDelegaciaApuracaoLotada(usuario, request.unidadeApuracaoId());
         InqueritoPolicialDigital inquerito = new InqueritoPolicialDigital();
         inquerito.setNumeroProcedimento(resolveNumeroProcedimento(request.numeroProcedimento()));
         inquerito.setTipo(normalizeUpper(request.tipo(), "INQUERITO_POLICIAL"));
@@ -200,14 +193,14 @@ public class InqueritoPolicialDigitalService {
             return true;
         }
         if (usuario.getTipoUsuario().isSegurancaPublica()) {
-            return inquerito.getUnidadeApuracao() != null && hasLotacaoAtivaNaUnidade(usuario, inquerito.getUnidadeApuracao());
+            return inquerito.getUnidadeApuracao() != null && delegaciaScopeService.hasLotacaoDiretaNaUnidadeAtual(usuario, inquerito.getUnidadeApuracao());
         }
         return usuario.getTipoUsuario().isMinisterioPublico() || usuario.getTipoUsuario().isMagistratura();
     }
 
     private List<InqueritoPolicialDigital> listarInqueritosSegurancaPublica(Usuario usuario) {
         LinkedHashMap<Long, InqueritoPolicialDigital> merged = new LinkedHashMap<>();
-        List<Long> unidadeIds = unidadesAtivasDoUsuario(usuario).stream()
+        List<Long> unidadeIds = delegaciaScopeService.unidadesAtivasDoUsuarioAtual(usuario).stream()
                 .map(UnidadeInstituicao::getId)
                 .filter(Objects::nonNull)
                 .toList();
@@ -226,51 +219,6 @@ public class InqueritoPolicialDigitalService {
             key = (long) System.identityHashCode(item);
         }
         merged.putIfAbsent(key, item);
-    }
-
-    private UnidadeInstituicao resolveUnidadeApuracao(Usuario usuario, Long unidadeApuracaoId) {
-        if (unidadeApuracaoId == null) {
-            throw new IllegalArgumentException("unidadeApuracaoId é obrigatório para inquérito policial digital.");
-        }
-        UnidadeInstituicao unidade = unidadeInstituicaoRepository.findById(unidadeApuracaoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("UnidadeInstituicao", unidadeApuracaoId));
-        requireDelegaciaAtiva(unidade);
-        requireLotacaoAtivaNaUnidade(usuario, unidade);
-        return unidade;
-    }
-
-    private void requireDelegaciaAtiva(UnidadeInstituicao unidade) {
-        if (!isDelegaciaAtiva(unidade)) {
-            throw new IllegalArgumentException("A unidade de apuração deve ser uma delegacia institucional ativa.");
-        }
-    }
-
-    private boolean isDelegaciaAtiva(UnidadeInstituicao unidade) {
-        return unidade.getTipo() == TipoUnidadeInstitucional.DELEGACIA
-                && unidade.getStatusUnidade() == StatusUnidadeInstitucional.ATIVA
-                && hasText(unidade.getUf())
-                && hasText(unidade.getComarca());
-    }
-
-    private void requireLotacaoAtivaNaUnidade(Usuario usuario, UnidadeInstituicao unidade) {
-        if (!hasLotacaoAtivaNaUnidade(usuario, unidade)) {
-            throw new IllegalStateException("Usuário sem lotação ativa na delegacia informada.");
-        }
-    }
-
-    private boolean hasLotacaoAtivaNaUnidade(Usuario usuario, UnidadeInstituicao unidade) {
-        if (unidade.getId() == null) {
-            return false;
-        }
-        return unidadesAtivasDoUsuario(usuario).stream()
-                .anyMatch(ativa -> Objects.equals(ativa.getId(), unidade.getId()));
-    }
-
-    private List<UnidadeInstituicao> unidadesAtivasDoUsuario(Usuario usuario) {
-        return lotacaoInstituicaoRepository.findAtivasByUsuario(usuario).stream()
-                .map(LotacaoInstituicao::getUnidade)
-                .filter(Objects::nonNull)
-                .toList();
     }
 
     private void sincronizarResumoProcesso(Processo processo, InqueritoPolicialDigital inquerito, String marcador) {
