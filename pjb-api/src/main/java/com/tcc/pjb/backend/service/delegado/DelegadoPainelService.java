@@ -20,6 +20,7 @@ import com.tcc.pjb.backend.model.repository.LotacaoInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
+import com.tcc.pjb.backend.service.criminal.BoletimOcorrenciaDigitalService;
 import com.tcc.pjb.backend.service.criminal.InqueritoMultimidiaWorkspaceService;
 import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeExecutionService;
 import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeToolbeltService;
@@ -63,6 +64,7 @@ public class DelegadoPainelService {
     private final ProcessoRepository processoRepository;
     private final WorkItemRepository workItemRepository;
     private final InqueritoPolicialDigitalRepository inqueritoRepository;
+    private final BoletimOcorrenciaDigitalService boletimOcorrenciaDigitalService;
     private final UnidadeInstituicaoRepository unidadeInstituicaoRepository;
     private final LotacaoInstituicaoRepository lotacaoInstituicaoRepository;
     private final PjbAuthorizationService authorizationService;
@@ -91,6 +93,7 @@ public class DelegadoPainelService {
                                  ProcessoRepository processoRepository,
                                  WorkItemRepository workItemRepository,
                                  InqueritoPolicialDigitalRepository inqueritoRepository,
+                                 BoletimOcorrenciaDigitalService boletimOcorrenciaDigitalService,
                                  UnidadeInstituicaoRepository unidadeInstituicaoRepository,
                                  LotacaoInstituicaoRepository lotacaoInstituicaoRepository,
                                  PjbAuthorizationService authorizationService,
@@ -118,6 +121,7 @@ public class DelegadoPainelService {
         this.processoRepository = processoRepository;
         this.workItemRepository = workItemRepository;
         this.inqueritoRepository = inqueritoRepository;
+        this.boletimOcorrenciaDigitalService = boletimOcorrenciaDigitalService;
         this.unidadeInstituicaoRepository = unidadeInstituicaoRepository;
         this.lotacaoInstituicaoRepository = lotacaoInstituicaoRepository;
         this.authorizationService = authorizationService;
@@ -149,7 +153,7 @@ public class DelegadoPainelService {
         int inqueritos = (int) inbox.stream().filter(this::isInquerito).count();
         int tcos = (int) inbox.stream().filter(this::isTco).count();
         int mandados = (int) inbox.stream().filter(this::isMandado).count();
-        List<String> bos = inbox.stream().filter(this::isInquerito).limit(8).map(commons::resumo).toList();
+        List<String> bos = boletimOcorrenciaDigitalService.resumosPainel(usuario, 8);
         List<String> alertas = listarAlertasCrime();
         PerfilDashboardPayload.LocalizadorGovernadoResumo localizadorGovernado = new PerfilDashboardPayload.LocalizadorGovernadoResumo(
                 authorizationService.canLocatePessoaByCpf(usuario),

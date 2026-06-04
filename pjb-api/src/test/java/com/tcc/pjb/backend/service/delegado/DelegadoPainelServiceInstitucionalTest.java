@@ -24,6 +24,7 @@ import com.tcc.pjb.backend.model.repository.LotacaoInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
+import com.tcc.pjb.backend.service.criminal.BoletimOcorrenciaDigitalService;
 import com.tcc.pjb.backend.service.criminal.InqueritoMultimidiaWorkspaceService;
 import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeExecutionService;
 import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeToolbeltService;
@@ -72,6 +73,7 @@ class DelegadoPainelServiceInstitucionalTest {
             processoRepository,
             workItemRepository,
             inqueritoRepository,
+            mock(BoletimOcorrenciaDigitalService.class),
             unidadeRepository,
             lotacaoRepository,
             mock(com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService.class),
