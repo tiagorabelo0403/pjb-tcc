@@ -56,6 +56,7 @@ import com.tcc.pjb.backend.model.dto.profile.DiligenceProcessFormalizationReques
 import com.tcc.pjb.backend.model.dto.profile.DiligenceProcessFormalizationResponse;
 import com.tcc.pjb.backend.model.dto.profile.DiligenceCheckpointResponse;
 import com.tcc.pjb.backend.model.dto.profile.DiligenceRouteOptimizationRequest;
+import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoDiligenciaRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoInqueritoMultimidiaRequest;
 import com.tcc.pjb.backend.model.dto.profile.DiligenceRouteOptimizationResponse;
 import com.tcc.pjb.backend.model.dto.profile.RouteTelemetryBatchSyncRequest;
@@ -207,7 +208,7 @@ public class DelegadoPainelController {
 
     @PostMapping("/requisicao/diligencia")
     @PreAuthorize("hasAnyRole('DELEGADO_POLICIA','DELEGADO_POLICIA_FEDERAL')")
-    public ResponseEntity<SurfaceActionResponse> requisitarDiligencia(@RequestBody Object request, Authentication authentication) {
+    public ResponseEntity<SurfaceActionResponse> requisitarDiligencia(@Valid @RequestBody DelegadoDiligenciaRequest request, Authentication authentication) {
         rateLimiter.enforce(CapabilityRateLimitDomain.INSTITUCIONAL, authentication, "delegado_diligencia", ApiVersion.V1);
         return ResponseEntity.status(HttpStatus.CREATED).body(facadeService.delegadoRequisitarDiligencia(request));
     }

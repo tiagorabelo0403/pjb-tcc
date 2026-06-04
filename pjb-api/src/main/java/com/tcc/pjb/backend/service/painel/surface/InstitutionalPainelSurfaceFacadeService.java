@@ -17,6 +17,7 @@ import com.tcc.pjb.backend.model.dto.profile.operational.OficialJusticaOficioReq
 import com.tcc.pjb.backend.model.dto.profile.operational.OficialJusticaOficioRetryRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.PsicossocialParecerRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.PsicossocialRelatorioRequest;
+import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoDiligenciaRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoInqueritoMultimidiaRequest;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceCollectionResponse;
@@ -161,7 +162,10 @@ public class InstitutionalPainelSurfaceFacadeService {
     public SurfaceCollectionResponse delegadoInqueritosPendentes() { return projectionSupport.collection("delegado.inqueritos-pendentes", delegadoService.listarInqueritosPendentes()); }
     public SurfaceCollectionResponse delegadoMandadosPendentes() { return projectionSupport.collection("delegado.mandados-pendentes", delegadoService.listarMandadosPendentes()); }
     public SurfaceActionResponse delegadoSolicitarAcessoProcesso(Long processoId) { return projectionSupport.action("delegado.processo", "solicitar-acesso", processoId, delegadoService.solicitarAcessoProcesso(processoId)); }
-    public SurfaceActionResponse delegadoRequisitarDiligencia(Object request) { return projectionSupport.action("delegado.diligencia", "requisitar", null, delegadoService.registrarDiligencia(request)); }
+    public SurfaceActionResponse delegadoRequisitarDiligencia(DelegadoDiligenciaRequest request) {
+        Objects.requireNonNull(request);
+        return projectionSupport.action("delegado.diligencia", "requisitar", request.processoId(), delegadoService.registrarDiligencia(request));
+    }
     public SurfaceActionResponse delegadoRegistrarPecaInquerito(Long inqueritoId, DelegadoInqueritoMultimidiaRequest request) { return projectionSupport.action("delegado.inquerito", "registrar-peca-multimidia", inqueritoId, delegadoService.registrarPecaInquerito(inqueritoId, request)); }
     public SurfaceCollectionResponse delegadoAlertas() { return projectionSupport.collection("delegado.alertas", delegadoService.listarAlertasCrime()); }
     public SurfaceCollectionResponse delegadoConsultasRecentes() { return projectionSupport.collection("delegado.localizador.consultas-recentes", pessoaLocalizacaoService.listarRecentes(PessoaLocalizacaoService.CanalConsulta.DELEGADO, 20)); }

@@ -2,14 +2,23 @@ package com.tcc.pjb.backend.service.delegado;
 
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.dto.dashboard.PerfilDashboardPayload;
+import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoDiligenciaRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoInqueritoMultimidiaRequest;
+import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.criminal.InqueritoPolicialDigital;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
+import com.tcc.pjb.backend.model.entity.enums.StatusUnidadeInstitucional;
+import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
+import com.tcc.pjb.backend.model.repository.InqueritoPolicialDigitalRepository;
+import com.tcc.pjb.backend.model.repository.LotacaoInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.criminal.InqueritoMultimidiaWorkspaceService;
 import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeExecutionService;
@@ -42,6 +51,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +62,9 @@ public class DelegadoPainelService {
     private final PainelServiceCommons commons;
     private final ProcessoRepository processoRepository;
     private final WorkItemRepository workItemRepository;
+    private final InqueritoPolicialDigitalRepository inqueritoRepository;
+    private final UnidadeInstituicaoRepository unidadeInstituicaoRepository;
+    private final LotacaoInstituicaoRepository lotacaoInstituicaoRepository;
     private final PjbAuthorizationService authorizationService;
     private final PerfilCapabilityMatrixService capabilityMatrixService;
     private final PessoaLocalizacaoIntelligenceSummaryService intelligenceSummaryService;
@@ -77,6 +90,9 @@ public class DelegadoPainelService {
                                  PainelServiceCommons commons,
                                  ProcessoRepository processoRepository,
                                  WorkItemRepository workItemRepository,
+                                 InqueritoPolicialDigitalRepository inqueritoRepository,
+                                 UnidadeInstituicaoRepository unidadeInstituicaoRepository,
+                                 LotacaoInstituicaoRepository lotacaoInstituicaoRepository,
                                  PjbAuthorizationService authorizationService,
                                  PerfilCapabilityMatrixService capabilityMatrixService,
                                  PessoaLocalizacaoIntelligenceSummaryService intelligenceSummaryService,
@@ -101,6 +117,9 @@ public class DelegadoPainelService {
         this.commons = commons;
         this.processoRepository = processoRepository;
         this.workItemRepository = workItemRepository;
+        this.inqueritoRepository = inqueritoRepository;
+        this.unidadeInstituicaoRepository = unidadeInstituicaoRepository;
+        this.lotacaoInstituicaoRepository = lotacaoInstituicaoRepository;
         this.authorizationService = authorizationService;
         this.capabilityMatrixService = capabilityMatrixService;
         this.intelligenceSummaryService = intelligenceSummaryService;
@@ -232,46 +251,33 @@ public class DelegadoPainelService {
     }
 
     @Transactional
-    public Map<String, Object> registrarDiligencia(Object request) {
+    public Map<String, Object> registrarDiligencia(DelegadoDiligenciaRequest request) {
+        Objects.requireNonNull(request);
         Usuario usuario = contextFactory.build().usuario();
-        String resumo = String.valueOf(request);
-        Processo processo = resolveProcessoFromRequest(request);
-        if (processo != null) {
-            institutionalMaterialActionGuardService.requireAllowedForProcessAction(processo, InstitutionalMaterialActionGuardService.MaterialAction.DELEGADO_DILIGENCIA);
-        }
-        else {
-            institutionalMaterialActionGuardService.requireAllowedForCatalogAction(
-                    InstitutionalMaterialActionGuardService.MaterialAction.DELEGADO_DILIGENCIA,
-                    new InstitutionalMaterialActionGuardService.CatalogActionContext(
-                            InstitutionalMaterialActionGuardService.TargetSphere.INDETERMINADA,
-                            null,
-                            RamoDireito.PENAL,
-                            null,
-                            "DILIGENCIA_INVESTIGATIVA",
-                            resumo,
-                            true
-                    )
-            );
-        }
-        InstitutionalActorRoutingService.InstitutionalRoute route = processo != null
-                ? institutionalActorRoutingService.ministerioPublico(processo.getId(), "DILIGENCIA_REQUISITADA")
-                : null;
+        UnidadeInstituicao unidadeApuracao = requireDelegaciaLotada(usuario, request.unidadeApuracaoId());
+        InqueritoPolicialDigital inquerito = inqueritoRepository.findById(request.inqueritoId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("InqueritoPolicialDigital", request.inqueritoId()));
+        requireInqueritoDaDelegacia(inquerito, unidadeApuracao);
+        Processo processo = requireProcessoVinculado(inquerito, request.processoId());
+        String resumo = resumoDiligencia(request, unidadeApuracao, inquerito, processo);
+        institutionalMaterialActionGuardService.requireAllowedForProcessAction(processo, InstitutionalMaterialActionGuardService.MaterialAction.DELEGADO_DILIGENCIA);
+        InstitutionalActorRoutingService.InstitutionalRoute route = institutionalActorRoutingService.ministerioPublico(processo.getId(), "DILIGENCIA_REQUISITADA");
         WorkItem workItem = WorkItem.builder()
                 .processo(processo)
-                .faseOrigem(processo != null ? processo.getFaseAtual() : null)
+                .faseOrigem(processo.getFaseAtual())
                 .templateCode("MP_DILIGENCIA:" + Instant.now().toEpochMilli())
                 .type(WorkItemType.DILIGENCIA)
                 .titulo("Analisar diligência requisitada pelo delegado")
                 .descricao(resumo)
-                .queueCode(route == null ? "MP_DILIGENCIA" : route.queueCode())
-                .inboxKey(route == null ? "MP_DILIGENCIA" : route.inboxKey())
-                .assignedRole(route == null ? com.tcc.pjb.backend.model.entity.enums.TipoUsuario.MEMBRO_MINISTERIO_PUBLICO : route.assignedRole())
+                .queueCode(route.queueCode())
+                .inboxKey(route.inboxKey())
+                .assignedRole(route.assignedRole())
                 .status(WorkItemStatus.PENDENTE)
                 .prioridade(1)
                 .blocking(false)
                 .dueAt(Instant.now().plus(48, ChronoUnit.HOURS))
-                .uf(usuario.getUf())
-                .comarca(usuario.getComarca())
+                .uf(unidadeApuracao.getUf())
+                .comarca(unidadeApuracao.getComarca())
                 .baseLegal("CPP e diligências investigativas")
                 .build();
         workItem = workItemRepository.save(workItem);
@@ -279,6 +285,10 @@ public class DelegadoPainelService {
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "CRIADO");
         out.put("workItemId", workItem.getId());
+        out.put("processoId", processo.getId());
+        out.put("inqueritoId", inquerito.getId());
+        out.put("unidadeApuracaoId", unidadeApuracao.getId());
+        out.put("unidadeApuracaoNome", unidadeApuracao.getNome());
         out.put("assignedRole", workItem.getAssignedRole());
         out.put("dueAt", workItem.getDueAt());
         out.put("encaminhadoPara", workItem.getInboxKey());
@@ -403,20 +413,52 @@ public class DelegadoPainelService {
         return commons.titleContains(item, "MANDADO", "PRISAO", "BUSCA", "APREENSAO");
     }
 
-    private Processo resolveProcessoFromRequest(Object request) {
-        if (request instanceof Map<?, ?> map) {
-            Object v = map.get("processoId");
-            if (v instanceof Number n) {
-                return processoRepository.findById(n.longValue()).orElse(null);
-            }
-            if (v != null) {
-                try {
-                    return processoRepository.findById(Long.parseLong(String.valueOf(v))).orElse(null);
-                } catch (Exception ignored) {
-                }
-            }
+    private UnidadeInstituicao requireDelegaciaLotada(Usuario usuario, Long unidadeApuracaoId) {
+        UnidadeInstituicao unidade = unidadeInstituicaoRepository.findById(unidadeApuracaoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("UnidadeInstituicao", unidadeApuracaoId));
+        if (unidade.getTipo() != TipoUnidadeInstitucional.DELEGACIA
+                || unidade.getStatusUnidade() != StatusUnidadeInstitucional.ATIVA
+                || !hasText(unidade.getUf())
+                || !hasText(unidade.getComarca())) {
+            throw new IllegalStateException("A diligência deve partir de delegacia institucional ativa com UF e comarca.");
         }
-        return null;
+        boolean lotado = lotacaoInstituicaoRepository.findAtivasByUsuario(usuario).stream()
+                .map(LotacaoInstituicao::getUnidade)
+                .anyMatch(ativa -> ativa != null && unidade.getId().equals(ativa.getId()));
+        if (!lotado) {
+            throw new IllegalStateException("Usuário sem lotação ativa na delegacia informada.");
+        }
+        return unidade;
+    }
+
+    private void requireInqueritoDaDelegacia(InqueritoPolicialDigital inquerito, UnidadeInstituicao unidadeApuracao) {
+        if (inquerito.getUnidadeApuracao() == null || !unidadeApuracao.getId().equals(inquerito.getUnidadeApuracao().getId())) {
+            throw new IllegalStateException("Inquérito não pertence à delegacia informada.");
+        }
+    }
+
+    private Processo requireProcessoVinculado(InqueritoPolicialDigital inquerito, Long processoId) {
+        if (inquerito.getProcessoVinculado() == null || !processoId.equals(inquerito.getProcessoVinculado().getId())) {
+            throw new IllegalStateException("Inquérito não está vinculado ao processo informado.");
+        }
+        return inquerito.getProcessoVinculado();
+    }
+
+    private String resumoDiligencia(DelegadoDiligenciaRequest request,
+                                    UnidadeInstituicao unidadeApuracao,
+                                    InqueritoPolicialDigital inquerito,
+                                    Processo processo) {
+        return String.join(" | ",
+                "processoId=" + processo.getId(),
+                "inqueritoId=" + inquerito.getId(),
+                "unidadeApuracaoId=" + unidadeApuracao.getId(),
+                "descricao=" + request.descricao(),
+                "fundamento=" + normalizeFreeText(request.fundamentoOperacional()),
+                "prioridade=" + normalizeToken(request.prioridade()));
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     @SuppressWarnings("unchecked")

@@ -17,5 +17,7 @@ public interface InqueritoPolicialDigitalRepository extends JpaRepository<Inquer
 
     List<InqueritoPolicialDigital> findTop100ByAutoridadeResponsavel_IdOrderByUpdatedAtDesc(Long autoridadeResponsavelId);
 
+    List<InqueritoPolicialDigital> findTop100ByUnidadeApuracao_IdInOrderByUpdatedAtDesc(List<Long> unidadeApuracaoIds);
+
     List<InqueritoPolicialDigital> findTop100ByProcessoVinculado_IdOrderByUpdatedAtDesc(Long processoId);
 }
