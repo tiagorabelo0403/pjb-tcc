@@ -23,13 +23,13 @@ class InstituicaoArvoreFase1Test {
         inst.setNome("Ministério Público Estadual — FICTÍCIO");
         inst.setStatus(StatusInstituicao.ATIVA);
 
-        UnidadeInstitucional raiz = new UnidadeInstitucional();
+        UnidadeInstituicao raiz = new UnidadeInstituicao();
         raiz.setInstituicao(inst);
         raiz.setTipo(TipoUnidadeInstitucional.PROMOTORIA);
         raiz.setNome("Promotoria Capital");
         raiz.setStatusUnidade(StatusUnidadeInstitucional.ATIVA);
 
-        UnidadeInstitucional filha = new UnidadeInstitucional();
+        UnidadeInstituicao filha = new UnidadeInstituicao();
         filha.setInstituicao(inst);
         filha.setParent(raiz);
         filha.setTipo(TipoUnidadeInstitucional.GENERICO);
@@ -42,7 +42,7 @@ class InstituicaoArvoreFase1Test {
 
     @Test
     void lotacao_sem_fim_eh_ativa() {
-        LotacaoInstitucional lotacao = new LotacaoInstitucional();
+        LotacaoInstituicao lotacao = new LotacaoInstituicao();
         lotacao.setInicio(LocalDate.of(2024, 1, 1));
         lotacao.setFim(null);
         assertTrue(lotacao.isAtiva());
@@ -50,7 +50,7 @@ class InstituicaoArvoreFase1Test {
 
     @Test
     void lotacao_com_fim_nao_eh_ativa() {
-        LotacaoInstitucional lotacao = new LotacaoInstitucional();
+        LotacaoInstituicao lotacao = new LotacaoInstituicao();
         lotacao.setInicio(LocalDate.of(2023, 1, 1));
         lotacao.setFim(LocalDate.of(2024, 12, 31));
         assertFalse(lotacao.isAtiva());
@@ -74,7 +74,7 @@ class InstituicaoArvoreFase1Test {
 
     @Test
     void unidade_inativa_distingue_de_ativa() {
-        UnidadeInstitucional unidade = new UnidadeInstitucional();
+        UnidadeInstituicao unidade = new UnidadeInstituicao();
         unidade.setStatusUnidade(StatusUnidadeInstitucional.INATIVA);
         assertNotEquals(StatusUnidadeInstitucional.ATIVA, unidade.getStatusUnidade());
     }
@@ -85,7 +85,7 @@ class InstituicaoArvoreFase1Test {
         inst.setTipo(TipoInstituicao.DEFENSORIA_PUBLICA);
         inst.setNome("Defensoria Pública Estadual — FICTÍCIO");
 
-        UnidadeInstitucional raiz = new UnidadeInstitucional();
+        UnidadeInstituicao raiz = new UnidadeInstituicao();
         raiz.setInstituicao(inst);
         raiz.setParent(null);
         raiz.setTipo(TipoUnidadeInstitucional.NUCLEO_DEFENSORIA);
@@ -98,7 +98,7 @@ class InstituicaoArvoreFase1Test {
 
     @Test
     void tipo_unidade_cobre_casos_necessarios() {
-        UnidadeInstitucional u = new UnidadeInstitucional();
+        UnidadeInstituicao u = new UnidadeInstituicao();
         u.setTipo(TipoUnidadeInstitucional.DELEGACIA);
         assertEquals(TipoUnidadeInstitucional.DELEGACIA, u.getTipo());
 
@@ -114,12 +114,12 @@ class InstituicaoArvoreFase1Test {
         Usuario usuario = new Usuario();
         usuario.setTipoUsuario(com.tcc.pjb.backend.model.entity.enums.TipoUsuario.MEMBRO_MINISTERIO_PUBLICO);
 
-        UnidadeInstitucional unidade = new UnidadeInstitucional();
+        UnidadeInstituicao unidade = new UnidadeInstituicao();
         unidade.setTipo(TipoUnidadeInstitucional.PROMOTORIA);
         unidade.setNome("Promotoria de Teste");
         unidade.setStatusUnidade(StatusUnidadeInstitucional.ATIVA);
 
-        LotacaoInstitucional lotacao = new LotacaoInstitucional();
+        LotacaoInstituicao lotacao = new LotacaoInstituicao();
         lotacao.setUsuario(usuario);
         lotacao.setUnidade(unidade);
         lotacao.setInicio(LocalDate.of(2024, 1, 1));

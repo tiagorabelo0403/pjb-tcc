@@ -12,13 +12,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "tb_unidade_institucional")
-public class UnidadeInstitucional {
+public class UnidadeInstituicao {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +34,7 @@ public class UnidadeInstitucional {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    private UnidadeInstitucional parent;
+    private UnidadeInstituicao parent;
 
     @Column(nullable = false, length = 255)
     private String nome;
@@ -59,8 +60,8 @@ public class UnidadeInstitucional {
     public UUID getUuid() { return uuid; }
     public Instituicao getInstituicao() { return instituicao; }
     public void setInstituicao(Instituicao instituicao) { this.instituicao = instituicao; }
-    public UnidadeInstitucional getParent() { return parent; }
-    public void setParent(UnidadeInstitucional parent) { this.parent = parent; }
+    public UnidadeInstituicao getParent() { return parent; }
+    public void setParent(UnidadeInstituicao parent) { this.parent = parent; }
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     public TipoUnidadeInstitucional getTipo() { return tipo; }
@@ -73,7 +74,7 @@ public class UnidadeInstitucional {
     public void setUf(String uf) { this.uf = uf; }
     public OffsetDateTime getCriadoEm() { return criadoEm; }
 
-    @jakarta.persistence.PrePersist
+    @PrePersist
     void inicializar() {
         if (uuid == null) uuid = com.tcc.pjb.backend.core.id.PjbUuidV7Generator.generate();
         if (criadoEm == null) criadoEm = OffsetDateTime.now();

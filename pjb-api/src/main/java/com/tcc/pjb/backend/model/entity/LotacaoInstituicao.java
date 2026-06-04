@@ -13,7 +13,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "tb_lotacao_institucional")
-public class LotacaoInstitucional {
+public class LotacaoInstituicao {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +25,7 @@ public class LotacaoInstitucional {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "unidade_id", nullable = false)
-    private UnidadeInstitucional unidade;
+    private UnidadeInstituicao unidade;
 
     @Column(nullable = false)
     private LocalDate inicio;
@@ -43,8 +43,8 @@ public class LotacaoInstitucional {
     public Long getId() { return id; }
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
-    public UnidadeInstitucional getUnidade() { return unidade; }
-    public void setUnidade(UnidadeInstitucional unidade) { this.unidade = unidade; }
+    public UnidadeInstituicao getUnidade() { return unidade; }
+    public void setUnidade(UnidadeInstituicao unidade) { this.unidade = unidade; }
     public LocalDate getInicio() { return inicio; }
     public void setInicio(LocalDate inicio) { this.inicio = inicio; }
     public LocalDate getFim() { return fim; }
