@@ -1,0 +1,20 @@
+package com.tcc.pjb.backend.model.entity.enums;
+
+public enum TipoUnidadeInstitucional {
+    FORUM,
+    PROMOTORIA,
+    NUCLEO_DEFENSORIA,
+    DELEGACIA,
+    CARTORIO,
+    CENTRAL_AUDIENCIAS,
+    CENTRAL_MANDADOS,
+    CEJUSC,
+    CONTADORIA,
+    EQUIPE_PSICOSSOCIAL,
+    PROCURADORIA_PUBLICA,
+    POLICIA_PENAL,
+    UNIDADE_PRISIONAL,
+    CONSELHO_TUTELAR,
+    ORGAO_TECNICO,
+    GENERICO
+}
