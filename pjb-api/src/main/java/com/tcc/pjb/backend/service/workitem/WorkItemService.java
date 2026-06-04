@@ -15,6 +15,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.scope.AcaoEscopo;
+import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuard;
+import com.tcc.pjb.backend.core.security.scope.TipoObjetoProtegido;
 import com.tcc.pjb.backend.model.dto.workitem.WorkItemDto;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -37,6 +40,7 @@ public class WorkItemService {
     private final UiHistoryService uiHistory;
     private final SecretariatQueueProjectionService secretariatProjection;
     private final OutboxPublisher outbox;
+    private final PjbObjectScopeGuard scopeGuard;
 
     public WorkItemService(
         WorkItemRepository workItemRepository,
@@ -44,7 +48,8 @@ public class WorkItemService {
         UiHistoryService uiHistory,
         UiHintService uiHints,
         SecretariatQueueProjectionService secretariatProjection,
-        OutboxPublisher outbox
+        OutboxPublisher outbox,
+        PjbObjectScopeGuard scopeGuard
     ) {
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
         this.currentUserService = Objects.requireNonNull(currentUserService);
@@ -52,6 +57,7 @@ public class WorkItemService {
         this.uiHistory = Objects.requireNonNull(uiHistory);
         this.secretariatProjection = Objects.requireNonNull(secretariatProjection);
         this.outbox = Objects.requireNonNull(outbox);
+        this.scopeGuard = Objects.requireNonNull(scopeGuard);
     }
 
     public Page<WorkItemDto> inbox(int page, int size) {
@@ -72,12 +78,14 @@ public class WorkItemService {
     }
 
     public WorkItemDto get(Long id) {
+        scopeGuard.requireAccess(TipoObjetoProtegido.WORK_ITEM, id, AcaoEscopo.LER);
         return workItemRepository.findById(id).map(this::toDto)
                 .orElseThrow(() -> new IllegalArgumentException("WorkItem não encontrado: " + id));
     }
 
     @Transactional
     public WorkItemDto claim(Long id) {
+        scopeGuard.requireAccess(TipoObjetoProtegido.WORK_ITEM, id, AcaoEscopo.CAPTURAR);
         Usuario u = currentUserService.getRequired();
         WorkItem wi = workItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("WorkItem não encontrado: " + id));
@@ -100,11 +108,11 @@ public class WorkItemService {
 
     @Transactional
     public WorkItemDto done(Long id, String observacao) {
+        scopeGuard.requireAccess(TipoObjetoProtegido.WORK_ITEM, id, AcaoEscopo.MOVIMENTAR);
         Usuario u = currentUserService.getRequired();
         WorkItem wi = workItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("WorkItem não encontrado: " + id));
 
-        
         if (wi.getAssignedUser() != null && !wi.getAssignedUser().getId().equals(u.getId())) {
             throw new IllegalStateException("Somente o responsável pode concluir esta tarefa.");
         }

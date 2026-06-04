@@ -31,6 +31,7 @@ import com.tcc.pjb.backend.adapter.factory.PJeAdapterNotFoundException;
 import com.tcc.pjb.backend.core.governance.idempotency.IdempotencyInProgressException;
 import com.tcc.pjb.backend.core.observability.RequestContext;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
+import com.tcc.pjb.backend.core.security.scope.AcessoForaDeEscopoException;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitExceededException;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalConstraintViolationException;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalRevisionConflictException;
@@ -137,6 +138,13 @@ public class ApiExceptionHandler {
     @ExceptionHandler(AccessDeniedPjbException.class)
     public ResponseEntity<ProblemDetail> handleAccessDenied(AccessDeniedPjbException ex, HttpServletRequest request) {
         return build(HttpStatus.FORBIDDEN, "forbidden", "Acesso negado.", request, null);
+    }
+
+    @ExceptionHandler(AcessoForaDeEscopoException.class)
+    public ResponseEntity<ProblemDetail> handleAcessoForaDeEscopo(AcessoForaDeEscopoException ex, HttpServletRequest request) {
+        Map<String, Object> extra = new LinkedHashMap<>();
+        extra.put("motivo", ex.getMotivo().name());
+        return build(HttpStatus.FORBIDDEN, "fora_de_escopo", "Acesso negado.", request, extra);
     }
 
     @ExceptionHandler(CalculoJudicialUnsupportedDomainException.class)
