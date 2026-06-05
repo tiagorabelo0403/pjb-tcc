@@ -16,6 +16,26 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Serviço único de escopo institucional para objetos policiais.
+ *
+ * A hierarquia de escopo é Secretaria de Segurança, Departamento de Polícia, Delegacia e Setor,
+ * resolvida por ancestralidade na árvore parent de UnidadeInstituicao.
+ *
+ * Boletim de Ocorrência tem escopo rigoroso: o acesso exige lotação ativa diretamente na delegacia
+ * que registrou o BO, ou em unidade ancestral hierárquica dessa delegacia. O BO é o ato originário
+ * de registro, com titularidade institucional territorial e atrelada à unidade emissora.
+ *
+ * Inquérito Policial tem escopo mais amplo: o acesso exige lotação ativa na delegacia ou em
+ * ancestral hierárquico, mas o guard central concede dois bypass adicionais que não passam por
+ * este serviço, para autoridade responsável e para Ministério Público ou magistratura. O inquérito
+ * é processo dinâmico, pode migrar entre delegacias, tem autoridade responsável nominal e está sob
+ * controle externo do Ministério Público.
+ *
+ * Este serviço responde apenas pela checagem institucional e territorial. Bypass de autoria e
+ * bypass de controle externo são responsabilidade do PjbObjectScopeGuardImpl. Qualquer pedido para
+ * unificar tudo aqui deve ser recusado sem ADR, porque a separação é deliberada.
+ */
 @Service
 @Transactional(readOnly = true)
 public class DelegaciaInstitucionalScopeService {

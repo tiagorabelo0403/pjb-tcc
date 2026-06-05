@@ -20,8 +20,23 @@ import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityService;
 
 /**
- * A checagem institucional desta fase é territorial (comarca/uf da lotação); distinção por
- * instituição na mesma comarca exige instituicao_id no WorkItem — fase futura.
+ * Fonte única de autorização de escopo de objeto protegido.
+ *
+ * Para os tipos PROCESSO, WORK_ITEM, AUDIENCIA, CITACAO, PRAZO, PENDENCIA_COMPLETUDE e
+ * BOLETIM_OCORRENCIA, a checagem é roteamento puro para o serviço de escopo correspondente.
+ * No WORK_ITEM, a checagem institucional ainda é territorial, por uf e comarca da lotação;
+ * distinção fina por instituição na mesma comarca exige instituicao_id no WorkItem e permanece
+ * como limitação arquitetural aberta.
+ *
+ * Para INQUERITO, além do roteamento ao DelegaciaInstitucionalScopeService, há dois bypass
+ * contratuais sem exigência de lotação institucional: a autoridade responsável pelo inquérito
+ * conserva acesso enquanto o inquérito existir, porque a autoria do ato investigativo é vínculo
+ * jurídico anterior à estrutura administrativa; Ministério Público e magistratura têm acesso
+ * transversal por dever institucional de controle externo da atividade policial, nos termos do
+ * art. 129 da CF.
+ *
+ * Esses bypass são contrato, não acidente. Qualquer alteração exige decisão arquitetural
+ * explícita registrada em ADR.
  */
 @Service
 public class PjbObjectScopeGuardImpl implements PjbObjectScopeGuard {

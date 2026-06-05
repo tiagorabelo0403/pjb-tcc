@@ -9,11 +9,14 @@ import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuard;
 import com.tcc.pjb.backend.model.dto.workitem.WorkItemDto;
+import com.tcc.pjb.backend.model.repository.BoletimOcorrenciaDigitalRepository;
+import com.tcc.pjb.backend.model.repository.InqueritoPolicialDigitalRepository;
 import com.tcc.pjb.backend.service.workitem.WorkItemService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 /**
  * Regressão BOLA — WorkItem (P0, SENTINEL ONDA 1 / BLOCO 1).
@@ -77,6 +80,32 @@ class PjbBolaRegressionGuardTest {
                 .because("todo método de WorkItemService que expõe WorkItem por ID deve "
                         + "verificar escopo via PjbObjectScopeGuard antes de acessar o repositório "
                         + "(OWASP API Top 10 — Broken Object Level Authorization)");
+
+        rule.check(classes);
+    }
+
+    @Test
+    void boletimOcorrenciaDigitalRepository_nao_deve_ser_acessado_fora_do_fluxo_policial_guardado() {
+        ArchRule rule = noClasses()
+                .that().resideOutsideOfPackages(
+                        "com.tcc.pjb.backend.service.criminal..",
+                        "com.tcc.pjb.backend.core.security.scope..",
+                        "com.tcc.pjb.backend.model.repository..")
+                .should().dependOnClassesThat().areAssignableTo(BoletimOcorrenciaDigitalRepository.class)
+                .because("BoletimOcorrenciaDigitalRepository só pode ser acessado por services criminais, guard de escopo ou pela própria camada de repositório");
+
+        rule.check(classes);
+    }
+
+    @Test
+    void inqueritoPolicialDigitalRepository_nao_deve_ser_acessado_fora_do_fluxo_policial_guardado() {
+        ArchRule rule = noClasses()
+                .that().resideOutsideOfPackages(
+                        "com.tcc.pjb.backend.service.criminal..",
+                        "com.tcc.pjb.backend.core.security.scope..",
+                        "com.tcc.pjb.backend.model.repository..")
+                .should().dependOnClassesThat().areAssignableTo(InqueritoPolicialDigitalRepository.class)
+                .because("InqueritoPolicialDigitalRepository só pode ser acessado por services criminais, guard de escopo ou pela própria camada de repositório");
 
         rule.check(classes);
     }

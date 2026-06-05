@@ -81,6 +81,12 @@ public class InqueritoPolicialDigitalService {
         return repository.findTop100ByProcessoVinculado_IdOrderByUpdatedAtDesc(processoId).stream().map(this::toView).toList();
     }
 
+    @Transactional(readOnly = true)
+    public InqueritoPolicialDigital carregar(Long inqueritoId) {
+        return repository.findById(inqueritoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("InqueritoPolicialDigital", inqueritoId));
+    }
+
     @Transactional
     public InqueritoView registrar(InqueritoCadastroRequest request) {
         Usuario usuario = requireInvestigativeActor();

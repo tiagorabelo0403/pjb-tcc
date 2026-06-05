@@ -3,12 +3,20 @@ package com.tcc.pjb.backend.service.delegado;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.tcc.pjb.backend.core.security.scope.AcaoEscopo;
+import com.tcc.pjb.backend.core.security.scope.AcessoForaDeEscopoException;
 import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
+import com.tcc.pjb.backend.core.security.scope.MotivoNegacaoEscopo;
+import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuard;
+import com.tcc.pjb.backend.core.security.scope.TipoObjetoProtegido;
 import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoDiligenciaRequest;
 import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -20,12 +28,12 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
-import com.tcc.pjb.backend.model.repository.InqueritoPolicialDigitalRepository;
 import com.tcc.pjb.backend.model.repository.LotacaoInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.criminal.BoletimOcorrenciaDigitalService;
+import com.tcc.pjb.backend.service.criminal.InqueritoPolicialDigitalService;
 import com.tcc.pjb.backend.service.criminal.InqueritoMultimidiaWorkspaceService;
 import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeExecutionService;
 import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeToolbeltService;
@@ -62,11 +70,12 @@ class DelegadoPainelServiceInstitucionalTest {
     private final PainelServiceCommons commons = mock(PainelServiceCommons.class);
     private final ProcessoRepository processoRepository = mock(ProcessoRepository.class);
     private final WorkItemRepository workItemRepository = mock(WorkItemRepository.class);
-    private final InqueritoPolicialDigitalRepository inqueritoRepository = mock(InqueritoPolicialDigitalRepository.class);
+    private final InqueritoPolicialDigitalService inqueritoPolicialDigitalService = mock(InqueritoPolicialDigitalService.class);
     private final UnidadeInstituicaoRepository unidadeRepository = mock(UnidadeInstituicaoRepository.class);
     private final LotacaoInstituicaoRepository lotacaoRepository = mock(LotacaoInstituicaoRepository.class);
     private final InstitutionalActorRoutingService routingService = mock(InstitutionalActorRoutingService.class);
     private final InstitutionalMaterialActionGuardService materialGuard = mock(InstitutionalMaterialActionGuardService.class);
+    private final PjbObjectScopeGuard scopeGuard = mock(PjbObjectScopeGuard.class);
     private final DelegaciaInstitucionalScopeService delegaciaScopeService = new DelegaciaInstitucionalScopeService(
             unidadeRepository,
             lotacaoRepository
@@ -77,9 +86,10 @@ class DelegadoPainelServiceInstitucionalTest {
             commons,
             processoRepository,
             workItemRepository,
-            inqueritoRepository,
+            inqueritoPolicialDigitalService,
             mock(BoletimOcorrenciaDigitalService.class),
             delegaciaScopeService,
+            scopeGuard,
             mock(com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService.class),
             mock(PerfilCapabilityMatrixService.class),
             mock(PessoaLocalizacaoIntelligenceSummaryService.class),
@@ -111,7 +121,7 @@ class DelegadoPainelServiceInstitucionalTest {
         when(contextFactory.build()).thenReturn(contexto(delegado));
         when(unidadeRepository.findById(10L)).thenReturn(Optional.of(delegacia));
         when(lotacaoRepository.findAtivasByUsuario(delegado)).thenReturn(List.of(lotacao(delegacia)));
-        when(inqueritoRepository.findById(30L)).thenReturn(Optional.of(inquerito));
+        when(inqueritoPolicialDigitalService.carregar(30L)).thenReturn(inquerito);
         when(routingService.ministerioPublico(20L, "DILIGENCIA_REQUISITADA")).thenReturn(route());
         when(workItemRepository.save(any())).thenAnswer(invocation -> {
             WorkItem item = invocation.getArgument(0);
@@ -122,6 +132,7 @@ class DelegadoPainelServiceInstitucionalTest {
         Map<String, Object> out = service.registrarDiligencia(new DelegadoDiligenciaRequest(
                 20L, 30L, 10L, "Ouvir testemunha presencial", "CPP art. 6", "ALTA"));
 
+        verify(scopeGuard).requireAccess(TipoObjetoProtegido.INQUERITO, 30L, AcaoEscopo.MOVIMENTAR);
         ArgumentCaptor<WorkItem> captor = ArgumentCaptor.forClass(WorkItem.class);
         verify(workItemRepository).save(captor.capture());
         WorkItem saved = captor.getValue();
@@ -144,15 +155,14 @@ class DelegadoPainelServiceInstitucionalTest {
         UnidadeInstituicao delegaciaRequisitada = delegacia(10L);
         UnidadeInstituicao outraDelegacia = delegacia(11L);
         Processo processo = Processo.builder().id(20L).numeroProcesso("000020").faseAtual(FaseProcessual.CONHECIMENTO).build();
-        InqueritoPolicialDigital inquerito = inquerito(30L, outraDelegacia, processo);
-        when(contextFactory.build()).thenReturn(contexto(delegado));
-        when(unidadeRepository.findById(10L)).thenReturn(Optional.of(delegaciaRequisitada));
-        when(lotacaoRepository.findAtivasByUsuario(delegado)).thenReturn(List.of(lotacao(delegaciaRequisitada)));
-        when(inqueritoRepository.findById(30L)).thenReturn(Optional.of(inquerito));
+        inquerito(30L, outraDelegacia, processo);
+        doThrow(new AcessoForaDeEscopoException(MotivoNegacaoEscopo.SEM_ATRIBUICAO, TipoObjetoProtegido.INQUERITO, 30L))
+                .when(scopeGuard).requireAccess(eq(TipoObjetoProtegido.INQUERITO), eq(30L), eq(AcaoEscopo.MOVIMENTAR));
 
-        assertThrows(IllegalStateException.class, () -> service.registrarDiligencia(new DelegadoDiligenciaRequest(
+        assertThrows(AcessoForaDeEscopoException.class, () -> service.registrarDiligencia(new DelegadoDiligenciaRequest(
                 20L, 30L, 10L, "Ouvir testemunha presencial", "CPP art. 6", "ALTA")));
 
+        verify(inqueritoPolicialDigitalService, never()).carregar(anyLong());
         verify(workItemRepository, never()).save(any());
         verify(materialGuard, never()).requireAllowedForProcessAction(any(), any());
     }

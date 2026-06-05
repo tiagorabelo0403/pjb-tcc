@@ -1,7 +1,10 @@
 package com.tcc.pjb.backend.service.delegado;
 
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
+import com.tcc.pjb.backend.core.security.scope.AcaoEscopo;
 import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
+import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuard;
+import com.tcc.pjb.backend.core.security.scope.TipoObjetoProtegido;
 import com.tcc.pjb.backend.model.dto.dashboard.PerfilDashboardPayload;
 import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoDiligenciaRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoInqueritoMultimidiaRequest;
@@ -13,10 +16,10 @@ import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
-import com.tcc.pjb.backend.model.repository.InqueritoPolicialDigitalRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.criminal.BoletimOcorrenciaDigitalService;
+import com.tcc.pjb.backend.service.criminal.InqueritoPolicialDigitalService;
 import com.tcc.pjb.backend.service.criminal.InqueritoMultimidiaWorkspaceService;
 import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeExecutionService;
 import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeToolbeltService;
@@ -59,9 +62,10 @@ public class DelegadoPainelService {
     private final PainelServiceCommons commons;
     private final ProcessoRepository processoRepository;
     private final WorkItemRepository workItemRepository;
-    private final InqueritoPolicialDigitalRepository inqueritoRepository;
+    private final InqueritoPolicialDigitalService inqueritoPolicialDigitalService;
     private final BoletimOcorrenciaDigitalService boletimOcorrenciaDigitalService;
     private final DelegaciaInstitucionalScopeService delegaciaScopeService;
+    private final PjbObjectScopeGuard scopeGuard;
     private final PjbAuthorizationService authorizationService;
     private final PerfilCapabilityMatrixService capabilityMatrixService;
     private final PessoaLocalizacaoIntelligenceSummaryService intelligenceSummaryService;
@@ -87,9 +91,10 @@ public class DelegadoPainelService {
                                  PainelServiceCommons commons,
                                  ProcessoRepository processoRepository,
                                  WorkItemRepository workItemRepository,
-                                 InqueritoPolicialDigitalRepository inqueritoRepository,
+                                 InqueritoPolicialDigitalService inqueritoPolicialDigitalService,
                                  BoletimOcorrenciaDigitalService boletimOcorrenciaDigitalService,
                                  DelegaciaInstitucionalScopeService delegaciaScopeService,
+                                 PjbObjectScopeGuard scopeGuard,
                                  PjbAuthorizationService authorizationService,
                                  PerfilCapabilityMatrixService capabilityMatrixService,
                                  PessoaLocalizacaoIntelligenceSummaryService intelligenceSummaryService,
@@ -114,9 +119,10 @@ public class DelegadoPainelService {
         this.commons = commons;
         this.processoRepository = processoRepository;
         this.workItemRepository = workItemRepository;
-        this.inqueritoRepository = inqueritoRepository;
+        this.inqueritoPolicialDigitalService = inqueritoPolicialDigitalService;
         this.boletimOcorrenciaDigitalService = boletimOcorrenciaDigitalService;
         this.delegaciaScopeService = delegaciaScopeService;
+        this.scopeGuard = scopeGuard;
         this.authorizationService = authorizationService;
         this.capabilityMatrixService = capabilityMatrixService;
         this.intelligenceSummaryService = intelligenceSummaryService;
@@ -250,11 +256,10 @@ public class DelegadoPainelService {
     @Transactional
     public Map<String, Object> registrarDiligencia(DelegadoDiligenciaRequest request) {
         Objects.requireNonNull(request);
+        scopeGuard.requireAccess(TipoObjetoProtegido.INQUERITO, request.inqueritoId(), AcaoEscopo.MOVIMENTAR);
         Usuario usuario = contextFactory.build().usuario();
         UnidadeInstituicao unidadeApuracao = delegaciaScopeService.requireDelegaciaDiligenciaLotada(usuario, request.unidadeApuracaoId());
-        InqueritoPolicialDigital inquerito = inqueritoRepository.findById(request.inqueritoId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("InqueritoPolicialDigital", request.inqueritoId()));
-        delegaciaScopeService.requireInqueritoDaDelegacia(inquerito, unidadeApuracao);
+        InqueritoPolicialDigital inquerito = inqueritoPolicialDigitalService.carregar(request.inqueritoId());
         Processo processo = requireProcessoVinculado(inquerito, request.processoId());
         String resumo = resumoDiligencia(request, unidadeApuracao, inquerito, processo);
         institutionalMaterialActionGuardService.requireAllowedForProcessAction(processo, InstitutionalMaterialActionGuardService.MaterialAction.DELEGADO_DILIGENCIA);
