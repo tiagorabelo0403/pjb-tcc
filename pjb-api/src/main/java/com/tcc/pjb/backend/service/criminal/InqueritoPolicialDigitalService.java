@@ -193,7 +193,7 @@ public class InqueritoPolicialDigitalService {
             return true;
         }
         if (usuario.getTipoUsuario().isSegurancaPublica()) {
-            return inquerito.getUnidadeApuracao() != null && delegaciaScopeService.hasLotacaoDiretaNaUnidadeAtual(usuario, inquerito.getUnidadeApuracao());
+            return inquerito.getUnidadeApuracao() != null && delegaciaScopeService.hasEscopoPolicialNaUnidadeAtual(usuario, inquerito.getUnidadeApuracao());
         }
         return usuario.getTipoUsuario().isMinisterioPublico() || usuario.getTipoUsuario().isMagistratura();
     }

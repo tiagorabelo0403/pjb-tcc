@@ -75,7 +75,7 @@ public class BoletimOcorrenciaDigitalService {
         Usuario usuario = requireSegurancaPublica();
         BoletimOcorrenciaDigital boletim = repository.findByUuid(uuid)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("BoletimOcorrenciaDigital", uuid));
-        delegaciaScopeService.requireLotacaoDiretaNaDelegaciaComTerritorio(usuario, boletim.getUnidadeRegistro());
+        delegaciaScopeService.requireEscopoPolicialNaDelegaciaComTerritorio(usuario, boletim.getUnidadeRegistro());
         return toView(boletim);
     }
 
@@ -113,7 +113,7 @@ public class BoletimOcorrenciaDigitalService {
         Usuario usuario = requireSegurancaPublica();
         BoletimOcorrenciaDigital boletim = repository.findByUuid(boletimUuid)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("BoletimOcorrenciaDigital", boletimUuid));
-        delegaciaScopeService.requireLotacaoDiretaNaDelegaciaComTerritorio(usuario, boletim.getUnidadeRegistro());
+        delegaciaScopeService.requireEscopoPolicialNaDelegaciaComTerritorio(usuario, boletim.getUnidadeRegistro());
         InqueritoPolicialDigital inquerito = inqueritoRepository.findById(inqueritoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("InqueritoPolicialDigital", inqueritoId));
         delegaciaScopeService.requireMesmoRegistroInstitucional(boletim, inquerito);

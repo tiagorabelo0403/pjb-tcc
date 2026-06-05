@@ -12,9 +12,12 @@ import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class DelegaciaInstitucionalScopeService {
 
     private final UnidadeInstituicaoRepository unidadeInstituicaoRepository;
@@ -34,7 +37,7 @@ public class DelegaciaInstitucionalScopeService {
         if (!isDelegaciaAtivaComTerritorio(unidade)) {
             throw new IllegalStateException("A unidade de registro deve ser uma delegacia institucional ativa com UF e comarca.");
         }
-        requireLotacaoDiretaNaDelegaciaComTerritorio(usuario, unidade);
+        requireEscopoPolicialNaDelegaciaComTerritorio(usuario, unidade);
         return unidade;
     }
 
@@ -46,7 +49,7 @@ public class DelegaciaInstitucionalScopeService {
         if (!isDelegaciaAtivaComTerritorio(unidade)) {
             throw new IllegalArgumentException("A unidade de apuração deve ser uma delegacia institucional ativa.");
         }
-        requireLotacaoDiretaNaUnidadeAtual(usuario, unidade);
+        requireEscopoPolicialNaUnidadeAtual(usuario, unidade);
         return unidade;
     }
 
@@ -55,7 +58,7 @@ public class DelegaciaInstitucionalScopeService {
         if (!isDelegaciaAtivaComTerritorio(unidade)) {
             throw new IllegalStateException("A diligência deve partir de delegacia institucional ativa com UF e comarca.");
         }
-        requireLotacaoDiretaNaDelegaciaComTerritorio(usuario, unidade);
+        requireEscopoPolicialNaDelegaciaComTerritorio(usuario, unidade);
         return unidade;
     }
 
@@ -65,17 +68,19 @@ public class DelegaciaInstitucionalScopeService {
         }
     }
 
-    public void requireLotacaoDiretaNaDelegaciaComTerritorio(Usuario usuario, UnidadeInstituicao unidade) {
+    public void requireEscopoPolicialNaDelegaciaComTerritorio(Usuario usuario, UnidadeInstituicao unidade) {
         requireDelegaciaAtivaComTerritorio(unidade);
-        boolean lotado = delegaciasAtivasComTerritorioDoUsuario(usuario).stream()
-                .anyMatch(ativa -> Objects.equals(ativa.getId(), unidade.getId()));
-        if (!lotado) {
-            throw new IllegalStateException("Usuario sem lotacao ativa na delegacia informada.");
+        if (hasLotacaoDiretaNaDelegaciaComTerritorio(usuario, unidade)) {
+            return;
         }
+        if (hasEscopoHierarquico(usuario, unidade)) {
+            return;
+        }
+        throw new IllegalStateException("Usuario sem lotacao ativa na delegacia informada.");
     }
 
     public List<UnidadeInstituicao> delegaciasAtivasComTerritorioDoUsuario(Usuario usuario) {
-        return lotacaoInstituicaoRepository.findAtivasByUsuario(usuario).stream()
+        return lotacoesAtivasDoUsuario(usuario).stream()
                 .map(LotacaoInstituicao::getUnidade)
                 .filter(Objects::nonNull)
                 .filter(this::isDelegaciaAtivaComTerritorio)
@@ -90,14 +95,40 @@ public class DelegaciaInstitucionalScopeService {
                 .anyMatch(ativa -> Objects.equals(ativa.getId(), unidade.getId()));
     }
 
-    public void requireLotacaoDiretaNaUnidadeAtual(Usuario usuario, UnidadeInstituicao unidade) {
-        if (!hasLotacaoDiretaNaUnidadeAtual(usuario, unidade)) {
+    public boolean hasEscopoPolicialNaUnidadeAtual(Usuario usuario, UnidadeInstituicao unidade) {
+        if (hasLotacaoDiretaNaUnidadeAtual(usuario, unidade)) {
+            return true;
+        }
+        return hasEscopoHierarquico(usuario, unidade);
+    }
+
+    public void requireEscopoPolicialNaUnidadeAtual(Usuario usuario, UnidadeInstituicao unidade) {
+        if (!hasEscopoPolicialNaUnidadeAtual(usuario, unidade)) {
             throw new IllegalStateException("Usuário sem lotação ativa na delegacia informada.");
         }
     }
 
+    public boolean hasEscopoHierarquico(Usuario usuario, UnidadeInstituicao unidadeAlvo) {
+        if (unidadeAlvo == null || unidadeAlvo.getId() == null) {
+            return false;
+        }
+        List<UnidadeInstituicao> opinantes = unidadesOpinantesParaEscopoHierarquico(usuario);
+        if (opinantes.isEmpty()) {
+            return false;
+        }
+        List<Long> ancestrais = unidadeInstituicaoRepository.findAncestorIdsInclusive(unidadeAlvo.getId());
+        if (ancestrais == null || ancestrais.isEmpty()) {
+            return false;
+        }
+        Set<Long> ancestorIds = Set.copyOf(ancestrais);
+        return opinantes.stream()
+                .map(UnidadeInstituicao::getId)
+                .filter(Objects::nonNull)
+                .anyMatch(ancestorIds::contains);
+    }
+
     public List<UnidadeInstituicao> unidadesAtivasDoUsuarioAtual(Usuario usuario) {
-        return lotacaoInstituicaoRepository.findAtivasByUsuario(usuario).stream()
+        return lotacoesAtivasDoUsuario(usuario).stream()
                 .map(LotacaoInstituicao::getUnidade)
                 .filter(Objects::nonNull)
                 .toList();
@@ -121,6 +152,35 @@ public class DelegaciaInstitucionalScopeService {
                 && hasText(unidade.getComarca());
     }
 
+    private boolean hasLotacaoDiretaNaDelegaciaComTerritorio(Usuario usuario, UnidadeInstituicao unidade) {
+        if (unidade == null || unidade.getId() == null) {
+            return false;
+        }
+        return delegaciasAtivasComTerritorioDoUsuario(usuario).stream()
+                .anyMatch(ativa -> Objects.equals(ativa.getId(), unidade.getId()));
+    }
+
+    private List<UnidadeInstituicao> unidadesOpinantesParaEscopoHierarquico(Usuario usuario) {
+        return unidadesAtivasDoUsuarioAtual(usuario).stream()
+                .filter(this::isUnidadePolicialHierarquicaOpinante)
+                .toList();
+    }
+
+    private boolean isUnidadePolicialHierarquicaOpinante(UnidadeInstituicao unidade) {
+        return unidade != null
+                && unidade.getStatusUnidade() == StatusUnidadeInstitucional.ATIVA
+                && isTipoPolicialHierarquico(unidade.getTipo())
+                && hasText(unidade.getUf())
+                && hasText(unidade.getComarca());
+    }
+
+    private boolean isTipoPolicialHierarquico(TipoUnidadeInstitucional tipo) {
+        return tipo == TipoUnidadeInstitucional.SECRETARIA_SEGURANCA
+                || tipo == TipoUnidadeInstitucional.DEPARTAMENTO_POLICIA
+                || tipo == TipoUnidadeInstitucional.DELEGACIA
+                || tipo == TipoUnidadeInstitucional.SETOR;
+    }
+
     private void requireMesmaDelegacia(UnidadeInstituicao primeira, UnidadeInstituicao segunda, String mensagem) {
         if (primeira == null || segunda == null || !Objects.equals(primeira.getId(), segunda.getId())) {
             throw new IllegalStateException(mensagem);
@@ -130,6 +190,11 @@ public class DelegaciaInstitucionalScopeService {
     private UnidadeInstituicao findUnidade(Long unidadeId) {
         return unidadeInstituicaoRepository.findById(unidadeId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("UnidadeInstituicao", unidadeId));
+    }
+
+    private List<LotacaoInstituicao> lotacoesAtivasDoUsuario(Usuario usuario) {
+        List<LotacaoInstituicao> ativas = lotacaoInstituicaoRepository.findAtivasByUsuario(usuario);
+        return ativas == null ? List.of() : ativas;
     }
 
     private static boolean hasText(String value) {
