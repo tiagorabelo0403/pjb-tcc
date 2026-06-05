@@ -10,7 +10,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.scope.AcessoForaDeEscopoException;
 import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
+import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuard;
+import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuardImpl;
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
@@ -24,6 +28,8 @@ import com.tcc.pjb.backend.model.repository.LotacaoInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
+import com.tcc.pjb.backend.model.repository.BoletimOcorrenciaDigitalRepository;
+import com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityService;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -37,10 +43,20 @@ class InqueritoPolicialDigitalServiceInstitucionalTest {
     private final WorkItemRepository workItemRepository = mock(WorkItemRepository.class);
     private final UnidadeInstituicaoRepository unidadeRepository = mock(UnidadeInstituicaoRepository.class);
     private final LotacaoInstituicaoRepository lotacaoRepository = mock(LotacaoInstituicaoRepository.class);
+    private final BoletimOcorrenciaDigitalRepository boletimRepository = mock(BoletimOcorrenciaDigitalRepository.class);
     private final CurrentUserService currentUserService = mock(CurrentUserService.class);
     private final DelegaciaInstitucionalScopeService delegaciaScopeService = new DelegaciaInstitucionalScopeService(
             unidadeRepository,
             lotacaoRepository
+    );
+    private final PjbObjectScopeGuard scopeGuard = new PjbObjectScopeGuardImpl(
+            mock(SecretariatInstitutionalVisibilityService.class),
+            currentUserService,
+            mock(AuditLedgerService.class),
+            lotacaoRepository,
+            delegaciaScopeService,
+            boletimRepository,
+            repository
     );
 
     private final InqueritoPolicialDigitalService service = new InqueritoPolicialDigitalService(
@@ -48,6 +64,7 @@ class InqueritoPolicialDigitalServiceInstitucionalTest {
             processoRepository,
             workItemRepository,
             delegaciaScopeService,
+            scopeGuard,
             currentUserService
     );
 
@@ -153,7 +170,7 @@ class InqueritoPolicialDigitalServiceInstitucionalTest {
         when(repository.findById(44L)).thenReturn(Optional.of(inquerito));
         when(lotacaoRepository.findAtivasByUsuario(escrivao)).thenReturn(List.of());
 
-        assertThrows(IllegalStateException.class, () -> service.movimentar(
+        assertThrows(AcessoForaDeEscopoException.class, () -> service.movimentar(
                 44L,
                 new InqueritoPolicialDigitalService.InqueritoMovimentacaoRequest(
                         "RELATADO", null, null, null, "Relatório final", null, false, false)

@@ -14,7 +14,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.scope.AcaoEscopo;
 import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
+import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuard;
+import com.tcc.pjb.backend.core.security.scope.TipoObjetoProtegido;
 import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
@@ -38,17 +41,20 @@ public class InqueritoPolicialDigitalService {
     private final ProcessoRepository processoRepository;
     private final WorkItemRepository workItemRepository;
     private final DelegaciaInstitucionalScopeService delegaciaScopeService;
+    private final PjbObjectScopeGuard scopeGuard;
     private final CurrentUserService currentUserService;
 
     public InqueritoPolicialDigitalService(InqueritoPolicialDigitalRepository repository,
                                            ProcessoRepository processoRepository,
                                            WorkItemRepository workItemRepository,
                                            DelegaciaInstitucionalScopeService delegaciaScopeService,
+                                           PjbObjectScopeGuard scopeGuard,
                                            CurrentUserService currentUserService) {
         this.repository = Objects.requireNonNull(repository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
         this.delegaciaScopeService = Objects.requireNonNull(delegaciaScopeService);
+        this.scopeGuard = Objects.requireNonNull(scopeGuard);
         this.currentUserService = Objects.requireNonNull(currentUserService);
     }
 
@@ -113,12 +119,9 @@ public class InqueritoPolicialDigitalService {
 
     @Transactional
     public InqueritoView movimentar(Long inqueritoId, InqueritoMovimentacaoRequest request) {
+        scopeGuard.requireAccess(TipoObjetoProtegido.INQUERITO, inqueritoId, AcaoEscopo.MOVIMENTAR);
         InqueritoPolicialDigital inquerito = repository.findById(inqueritoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("InqueritoPolicialDigital", inqueritoId));
-        Usuario usuario = currentUserService.getRequired();
-        if (!canAct(usuario, inquerito)) {
-            throw new IllegalStateException("Usuário sem permissão para movimentar o inquérito.");
-        }
 
         if (request.status() != null && !request.status().isBlank()) {
             inquerito.setStatus(request.status().trim().toUpperCase(Locale.ROOT));
@@ -163,6 +166,7 @@ public class InqueritoPolicialDigitalService {
 
     @Transactional
     public InqueritoView vincularProcesso(Long inqueritoId, Long processoId) {
+        scopeGuard.requireAccess(TipoObjetoProtegido.INQUERITO, inqueritoId, AcaoEscopo.MOVIMENTAR);
         InqueritoPolicialDigital inquerito = repository.findById(inqueritoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("InqueritoPolicialDigital", inqueritoId));
         Processo processo = processoRepository.findById(processoId)
@@ -182,20 +186,6 @@ public class InqueritoPolicialDigitalService {
             throw new IllegalStateException("Operação exclusiva de autoridade policial ou equipe investigativa.");
         }
         return usuario;
-    }
-
-    private boolean canAct(Usuario usuario, InqueritoPolicialDigital inquerito) {
-        if (usuario.getTipoUsuario() == null) {
-            return false;
-        }
-        if (usuario.getTipoUsuario().isSegurancaPublica() && inquerito.getAutoridadeResponsavel() != null
-                && Objects.equals(inquerito.getAutoridadeResponsavel().getId(), usuario.getId())) {
-            return true;
-        }
-        if (usuario.getTipoUsuario().isSegurancaPublica()) {
-            return inquerito.getUnidadeApuracao() != null && delegaciaScopeService.hasEscopoPolicialNaUnidadeAtual(usuario, inquerito.getUnidadeApuracao());
-        }
-        return usuario.getTipoUsuario().isMinisterioPublico() || usuario.getTipoUsuario().isMagistratura();
     }
 
     private List<InqueritoPolicialDigital> listarInqueritosSegurancaPublica(Usuario usuario) {

@@ -13,6 +13,8 @@ import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
+import com.tcc.pjb.backend.model.repository.BoletimOcorrenciaDigitalRepository;
+import com.tcc.pjb.backend.model.repository.InqueritoPolicialDigitalRepository;
 import com.tcc.pjb.backend.model.repository.LotacaoInstituicaoRepository;
 import com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityService;
 import java.util.List;
@@ -23,7 +25,15 @@ class PjbObjectScopeGuardInstitucionalTest {
     private PjbObjectScopeGuardImpl guard(SecretariatInstitutionalVisibilityService vis,
                                           CurrentUserService cur,
                                           LotacaoInstituicaoRepository lotacaoRepo) {
-        return new PjbObjectScopeGuardImpl(vis, cur, mock(AuditLedgerService.class), lotacaoRepo);
+        return new PjbObjectScopeGuardImpl(
+                vis,
+                cur,
+                mock(AuditLedgerService.class),
+                lotacaoRepo,
+                mock(DelegaciaInstitucionalScopeService.class),
+                mock(BoletimOcorrenciaDigitalRepository.class),
+                mock(InqueritoPolicialDigitalRepository.class)
+        );
     }
 
     private LotacaoInstituicao lotacao(String comarca, String uf) {

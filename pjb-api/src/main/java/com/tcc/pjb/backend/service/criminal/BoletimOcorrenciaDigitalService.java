@@ -2,7 +2,10 @@ package com.tcc.pjb.backend.service.criminal;
 
 import com.tcc.pjb.backend.core.id.PjbUuidV7Generator;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.scope.AcaoEscopo;
 import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
+import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuard;
+import com.tcc.pjb.backend.core.security.scope.TipoObjetoProtegido;
 import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.model.entity.Instituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
@@ -37,6 +40,7 @@ public class BoletimOcorrenciaDigitalService {
     private final BoletimOcorrenciaDigitalRepository repository;
     private final BoletimOcorrenciaInqueritoVinculoRepository vinculoRepository;
     private final DelegaciaInstitucionalScopeService delegaciaScopeService;
+    private final PjbObjectScopeGuard scopeGuard;
     private final InqueritoPolicialDigitalRepository inqueritoRepository;
     private final CurrentUserService currentUserService;
     private final OutboxPublisher outboxPublisher;
@@ -44,12 +48,14 @@ public class BoletimOcorrenciaDigitalService {
     public BoletimOcorrenciaDigitalService(BoletimOcorrenciaDigitalRepository repository,
                                            BoletimOcorrenciaInqueritoVinculoRepository vinculoRepository,
                                            DelegaciaInstitucionalScopeService delegaciaScopeService,
+                                           PjbObjectScopeGuard scopeGuard,
                                            InqueritoPolicialDigitalRepository inqueritoRepository,
                                            CurrentUserService currentUserService,
                                            OutboxPublisher outboxPublisher) {
         this.repository = Objects.requireNonNull(repository);
         this.vinculoRepository = Objects.requireNonNull(vinculoRepository);
         this.delegaciaScopeService = Objects.requireNonNull(delegaciaScopeService);
+        this.scopeGuard = Objects.requireNonNull(scopeGuard);
         this.inqueritoRepository = Objects.requireNonNull(inqueritoRepository);
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.outboxPublisher = Objects.requireNonNull(outboxPublisher);
@@ -72,10 +78,10 @@ public class BoletimOcorrenciaDigitalService {
 
     @Transactional(readOnly = true)
     public BoletimOcorrenciaView buscar(UUID uuid) {
-        Usuario usuario = requireSegurancaPublica();
+        requireSegurancaPublica();
         BoletimOcorrenciaDigital boletim = repository.findByUuid(uuid)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("BoletimOcorrenciaDigital", uuid));
-        delegaciaScopeService.requireEscopoPolicialNaDelegaciaComTerritorio(usuario, boletim.getUnidadeRegistro());
+        scopeGuard.requireAccess(TipoObjetoProtegido.BOLETIM_OCORRENCIA, boletim.getId(), AcaoEscopo.LER);
         return toView(boletim);
     }
 
@@ -113,9 +119,10 @@ public class BoletimOcorrenciaDigitalService {
         Usuario usuario = requireSegurancaPublica();
         BoletimOcorrenciaDigital boletim = repository.findByUuid(boletimUuid)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("BoletimOcorrenciaDigital", boletimUuid));
-        delegaciaScopeService.requireEscopoPolicialNaDelegaciaComTerritorio(usuario, boletim.getUnidadeRegistro());
+        scopeGuard.requireAccess(TipoObjetoProtegido.BOLETIM_OCORRENCIA, boletim.getId(), AcaoEscopo.MOVIMENTAR);
         InqueritoPolicialDigital inquerito = inqueritoRepository.findById(inqueritoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("InqueritoPolicialDigital", inqueritoId));
+        scopeGuard.requireAccess(TipoObjetoProtegido.INQUERITO, inquerito.getId(), AcaoEscopo.MOVIMENTAR);
         delegaciaScopeService.requireMesmoRegistroInstitucional(boletim, inquerito);
         var existente = vinculoRepository.findByBoletim_Id(boletim.getId());
         if (existente.isPresent()) {

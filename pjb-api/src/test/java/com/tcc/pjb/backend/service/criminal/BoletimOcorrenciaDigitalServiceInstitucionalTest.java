@@ -12,7 +12,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.scope.AcessoForaDeEscopoException;
 import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
+import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuard;
+import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuardImpl;
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.model.entity.Instituicao;
 import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
@@ -30,6 +34,7 @@ import com.tcc.pjb.backend.model.repository.BoletimOcorrenciaInqueritoVinculoRep
 import com.tcc.pjb.backend.model.repository.InqueritoPolicialDigitalRepository;
 import com.tcc.pjb.backend.model.repository.LotacaoInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
+import com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityService;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import java.time.Instant;
 import java.util.List;
@@ -52,11 +57,21 @@ class BoletimOcorrenciaDigitalServiceInstitucionalTest {
             unidadeRepository,
             lotacaoRepository
     );
+    private final PjbObjectScopeGuard scopeGuard = new PjbObjectScopeGuardImpl(
+            mock(SecretariatInstitutionalVisibilityService.class),
+            currentUserService,
+            mock(AuditLedgerService.class),
+            lotacaoRepository,
+            delegaciaScopeService,
+            repository,
+            inqueritoRepository
+    );
 
     private final BoletimOcorrenciaDigitalService service = new BoletimOcorrenciaDigitalService(
             repository,
             vinculoRepository,
             delegaciaScopeService,
+            scopeGuard,
             inqueritoRepository,
             currentUserService,
             outboxPublisher
@@ -154,6 +169,7 @@ class BoletimOcorrenciaDigitalServiceInstitucionalTest {
         InqueritoPolicialDigital inquerito = inquerito(30L, delegacia);
         when(currentUserService.getRequired()).thenReturn(delegado);
         when(repository.findByUuid(uuid)).thenReturn(Optional.of(boletim));
+        when(repository.findById(100L)).thenReturn(Optional.of(boletim));
         when(lotacaoRepository.findAtivasByUsuario(delegado)).thenReturn(List.of(lotacao(delegacia)));
         when(inqueritoRepository.findById(30L)).thenReturn(Optional.of(inquerito));
         when(vinculoRepository.findByBoletim_Id(100L)).thenReturn(Optional.empty());
@@ -197,11 +213,12 @@ class BoletimOcorrenciaDigitalServiceInstitucionalTest {
         InqueritoPolicialDigital inquerito = inquerito(30L, outraDelegacia);
         when(currentUserService.getRequired()).thenReturn(delegado);
         when(repository.findByUuid(uuid)).thenReturn(Optional.of(boletim));
+        when(repository.findById(100L)).thenReturn(Optional.of(boletim));
         when(lotacaoRepository.findAtivasByUsuario(delegado)).thenReturn(List.of(lotacao(delegacia)));
         when(inqueritoRepository.findById(30L)).thenReturn(Optional.of(inquerito));
         when(vinculoRepository.findByBoletim_Id(100L)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalStateException.class, () -> service.vincularInquerito(uuid, 30L));
+        assertThrows(AcessoForaDeEscopoException.class, () -> service.vincularInquerito(uuid, 30L));
 
         verify(repository, never()).save(any());
         verify(vinculoRepository, never()).save(any());
@@ -214,11 +231,13 @@ class BoletimOcorrenciaDigitalServiceInstitucionalTest {
         UnidadeInstituicao delegacia = delegacia(10L);
         UnidadeInstituicao outraDelegacia = delegacia(11L);
         UUID uuid = UUID.randomUUID();
+        BoletimOcorrenciaDigital boletim = boletim(uuid, outraDelegacia, usuario(2L, TipoUsuario.DELEGADO_POLICIA));
         when(currentUserService.getRequired()).thenReturn(delegado);
-        when(repository.findByUuid(uuid)).thenReturn(Optional.of(boletim(uuid, outraDelegacia, usuario(2L, TipoUsuario.DELEGADO_POLICIA))));
+        when(repository.findByUuid(uuid)).thenReturn(Optional.of(boletim));
+        when(repository.findById(100L)).thenReturn(Optional.of(boletim));
         when(lotacaoRepository.findAtivasByUsuario(delegado)).thenReturn(List.of(lotacao(delegacia)));
 
-        assertThrows(IllegalStateException.class, () -> service.buscar(uuid));
+        assertThrows(AcessoForaDeEscopoException.class, () -> service.buscar(uuid));
     }
 
     private BoletimOcorrenciaDigitalService.BoletimOcorrenciaCadastroCommand cadastro(Long unidadeRegistroId) {
