@@ -109,4 +109,15 @@ class PjbBolaRegressionGuardTest {
 
         rule.check(classes);
     }
+
+    @Test
+    void coreSecurityIdentity_nao_deve_depender_de_afiliacao_institucional() {
+        ArchRule rule = noClasses()
+                .that().resideInAPackage("com.tcc.pjb.backend.core.security.identity..")
+                .should().dependOnClassesThat().resideInAPackage(
+                        "com.tcc.pjb.backend.core.comunicacao.institucional.affiliation..")
+                .because("o módulo de identidade institucional não pode depender da afiliação antes da consolidação canônica");
+
+        rule.check(classes);
+    }
 }
