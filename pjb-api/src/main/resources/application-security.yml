@@ -13,6 +13,10 @@ pjb:
     policy:
       version: ${PJB_SECURITY_POLICY_VERSION:v1}
       descriptor-resource: ${PJB_SECURITY_POLICY_DESCRIPTOR_RESOURCE:classpath:policies/security/pjb-access-policy.json}
+    auth:
+      certificado:
+        nonce-ttl: ${PJB_SECURITY_AUTH_CERTIFICADO_NONCE_TTL:120s}
+        enforce-icp-real-em-prod: ${PJB_SECURITY_AUTH_CERTIFICADO_ENFORCE_ICP_REAL_EM_PROD:true}
     perimeter:
       enabled: ${PJB_SECURITY_PERIMETER_ENABLED:true}
       trust-proxy-headers: ${PJB_SECURITY_PERIMETER_TRUST_PROXY_HEADERS:false}
