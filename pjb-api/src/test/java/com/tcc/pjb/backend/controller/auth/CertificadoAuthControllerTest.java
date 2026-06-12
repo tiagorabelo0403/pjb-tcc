@@ -17,6 +17,7 @@ import com.tcc.pjb.backend.core.icp.IcpBrasilChainValidator;
 import com.tcc.pjb.backend.core.icp.domain.IcpBrasilChainValidationDetails;
 import com.tcc.pjb.backend.core.icp.domain.IcpBrasilSignaturePolicySnapshot;
 import com.tcc.pjb.backend.core.icp.domain.IcpBrasilValidationResult;
+import com.tcc.pjb.backend.configs.security.perimeter.ClientIpResolver;
 import com.tcc.pjb.backend.core.security.identity.CertificadoAuthAuditService;
 import com.tcc.pjb.backend.core.security.identity.CertificadoAuthPolicy;
 import com.tcc.pjb.backend.core.security.identity.CertificadoIdentidadeResolver;
@@ -30,6 +31,7 @@ import com.tcc.pjb.backend.core.security.identity.IdentidadeResolvida;
 import com.tcc.pjb.backend.core.security.identity.MotivoIdentidade;
 import com.tcc.pjb.backend.core.security.identity.PendenteSelecao;
 import com.tcc.pjb.backend.core.security.identity.VerificadorAssinaturaCertificado;
+import com.tcc.pjb.backend.core.security.webauthn.PasskeySessionService;
 import com.tcc.pjb.backend.model.dto.security.CertificadoAuthDtos;
 import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
@@ -47,6 +49,7 @@ import java.security.Signature;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
@@ -68,6 +71,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class CertificadoAuthControllerTest {
 
     private static final String NONCE = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    private static final LocalDateTime EXPIRES_AT = LocalDateTime.of(2026, 6, 7, 12, 0);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final CertificadoX509Support x509Support = new CertificadoX509Support();
@@ -76,6 +80,8 @@ class CertificadoAuthControllerTest {
     private final CertificadoIdentidadeResolver identidadeResolver = mock(CertificadoIdentidadeResolver.class);
     private final ContextoInstitucionalResolver contextoResolver = mock(ContextoInstitucionalResolver.class);
     private final CertificadoAuthAuditService auditService = mock(CertificadoAuthAuditService.class);
+    private final PasskeySessionService passkeySessionService = mock(PasskeySessionService.class);
+    private final ClientIpResolver clientIpResolver = mock(ClientIpResolver.class);
     private final MockEnvironment environment = new MockEnvironment();
     private final CertificadoAuthPolicy policy = new CertificadoAuthPolicy(Duration.ofSeconds(120), true);
     private final Map<String, String> nonces = new HashMap<>();
@@ -109,6 +115,10 @@ class CertificadoAuthControllerTest {
                 .thenReturn(new IcpBrasilSignaturePolicySnapshot(true, true, "LTA"));
         when(chainValidator.detailsFor(isNull(), isNull()))
                 .thenReturn(new IcpBrasilChainValidationDetails(true, true, null, null));
+        when(clientIpResolver.resolve(any()))
+                .thenReturn("127.0.0.1");
+        when(passkeySessionService.issue(any(Usuario.class), isNull(), any(String.class)))
+                .thenReturn(new PasskeySessionService.IssuedPasskeySession("cert-token-1", EXPIRES_AT, 41L));
         CertificadoAuthFacadeService facadeService = new CertificadoAuthFacadeService(
                 chainValidator,
                 nonceStore,
@@ -118,6 +128,8 @@ class CertificadoAuthControllerTest {
                 policy,
                 x509Support,
                 auditService,
+                passkeySessionService,
+                clientIpResolver,
                 environment);
         mockMvc = MockMvcBuilders.standaloneSetup(new CertificadoAuthController(facadeService)).build();
     }
@@ -140,6 +152,7 @@ class CertificadoAuthControllerTest {
         responder(titular, assinatura(titular, NONCE), "SHA256withRSA")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("AUTENTICADO"))
+                .andExpect(jsonPath("$.token").value("cert-token-1"))
                 .andExpect(jsonPath("$.contexto.unidadeNome").value("Delegacia Centro"))
                 .andExpect(jsonPath("$.contexto.papelNaUnidade").value("DELEGADO"));
     }
@@ -233,6 +246,7 @@ class CertificadoAuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PENDENTE_SELECAO"))
                 .andExpect(jsonPath("$.lotacoes", hasSize(2)));
+        verify(passkeySessionService, never()).issue(any(Usuario.class), isNull(), any(String.class));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.model.dto.security;
 
 import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -95,10 +96,13 @@ public final class CertificadoAuthDtos {
 
     public record AutenticadoResponse(
             Status status,
+            String token,
+            LocalDateTime expiresAt,
             ContextoResponse contexto
     ) implements Resposta {
         public AutenticadoResponse {
             Objects.requireNonNull(status);
+            token = token == null ? "" : token;
             Objects.requireNonNull(contexto);
         }
     }

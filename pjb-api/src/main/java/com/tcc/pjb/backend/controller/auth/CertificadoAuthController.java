@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.controller.auth;
 
 import com.tcc.pjb.backend.model.dto.security.CertificadoAuthDtos;
 import com.tcc.pjb.backend.service.auth.surface.CertificadoAuthFacadeService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Objects;
 import org.springframework.http.HttpStatus;
@@ -33,9 +34,10 @@ public class CertificadoAuthController {
 
     @PostMapping("/resposta")
     public ResponseEntity<CertificadoAuthDtos.Resposta> resposta(
-            @Valid @RequestBody CertificadoAuthDtos.RespostaRequest request
+            @Valid @RequestBody CertificadoAuthDtos.RespostaRequest request,
+            HttpServletRequest servletRequest
     ) {
-        CertificadoAuthDtos.Resposta response = facadeService.responder(request);
+        CertificadoAuthDtos.Resposta response = facadeService.responder(request, servletRequest);
         return ResponseEntity.status(status(response.status())).body(response);
     }
 

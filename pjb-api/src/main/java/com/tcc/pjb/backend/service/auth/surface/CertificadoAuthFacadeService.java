@@ -22,9 +22,12 @@ import com.tcc.pjb.backend.core.security.identity.IdentidadeResolvida;
 import com.tcc.pjb.backend.core.security.identity.PendenteSelecao;
 import com.tcc.pjb.backend.core.security.identity.ResultadoVerificacaoAssinatura;
 import com.tcc.pjb.backend.core.security.identity.VerificadorAssinaturaCertificado;
+import com.tcc.pjb.backend.core.security.webauthn.PasskeySessionService;
+import com.tcc.pjb.backend.configs.security.perimeter.ClientIpResolver;
 import com.tcc.pjb.backend.model.dto.security.CertificadoAuthDtos;
 import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.List;
@@ -34,7 +37,7 @@ import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Service;
 
 /**
- * Orquestra o login institucional por certificado ate o resultado estruturado, sem emitir token.
+ * Orquestra o login institucional por certificado e emite sessao opaca pelo mecanismo do passkey.
  * A ordem de resposta e contrato de seguranca: validar ICP, recalcular fingerprint server-side,
  * consumir nonce amarrado ao fingerprint, verificar assinatura do nonce e resolver identidade/contexto.
  */
@@ -52,6 +55,8 @@ public class CertificadoAuthFacadeService {
     private final CertificadoAuthPolicy policy;
     private final CertificadoX509Support x509Support;
     private final CertificadoAuthAuditService auditService;
+    private final PasskeySessionService passkeySessionService;
+    private final ClientIpResolver clientIpResolver;
     private final Environment environment;
 
     public CertificadoAuthFacadeService(
@@ -63,6 +68,8 @@ public class CertificadoAuthFacadeService {
             CertificadoAuthPolicy policy,
             CertificadoX509Support x509Support,
             CertificadoAuthAuditService auditService,
+            PasskeySessionService passkeySessionService,
+            ClientIpResolver clientIpResolver,
             Environment environment
     ) {
         this.chainValidator = Objects.requireNonNull(chainValidator);
@@ -73,6 +80,8 @@ public class CertificadoAuthFacadeService {
         this.policy = Objects.requireNonNull(policy);
         this.x509Support = Objects.requireNonNull(x509Support);
         this.auditService = Objects.requireNonNull(auditService);
+        this.passkeySessionService = Objects.requireNonNull(passkeySessionService);
+        this.clientIpResolver = Objects.requireNonNull(clientIpResolver);
         this.environment = Objects.requireNonNull(environment);
     }
 
@@ -109,7 +118,10 @@ public class CertificadoAuthFacadeService {
                 "");
     }
 
-    public CertificadoAuthDtos.Resposta responder(CertificadoAuthDtos.RespostaRequest request) {
+    public CertificadoAuthDtos.Resposta responder(
+            CertificadoAuthDtos.RespostaRequest request,
+            HttpServletRequest servletRequest
+    ) {
         X509Certificate certificado = parseCertificado(request.getCertificado());
         if (certificado == null) {
             return respostaNegada("CERTIFICADO_INVALIDO");
@@ -141,11 +153,18 @@ public class CertificadoAuthFacadeService {
         if (identidade instanceof IdentidadeNaoResolvida naoResolvida) {
             return respostaNegada("IDENTIDADE_" + naoResolvida.motivo().name());
         }
-        ContextoResolucao contexto = contextoResolver.resolver(((IdentidadeResolvida) identidade).usuario());
+        IdentidadeResolvida resolvida = (IdentidadeResolvida) identidade;
+        ContextoResolucao contexto = contextoResolver.resolver(resolvida.usuario());
         if (contexto instanceof ContextoResolvido resolvido) {
+            PasskeySessionService.IssuedPasskeySession sessao = passkeySessionService.issue(
+                    resolvida.usuario(),
+                    null,
+                    clientIpResolver.resolve(servletRequest));
             auditService.registrar(ETAPA_RESPOSTA, true, "AUTENTICADO");
             return new CertificadoAuthDtos.AutenticadoResponse(
                     CertificadoAuthDtos.Status.AUTENTICADO,
+                    sessao.token(),
+                    sessao.expiresAt(),
                     contexto(resolvido.contexto().unidade(), resolvido.contexto().papelNaUnidade()));
         }
         if (contexto instanceof PendenteSelecao pendenteSelecao) {
