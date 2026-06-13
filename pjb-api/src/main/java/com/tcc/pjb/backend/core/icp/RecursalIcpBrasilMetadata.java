@@ -14,8 +14,6 @@ public record RecursalIcpBrasilMetadata(
         String profileAchieved,
         String certType,
         String acSigla,
-        String cpfTitular,
-        String cnpjTitular,
         String serialHex,
         Long signerUserId,
         String mode) {
@@ -30,8 +28,6 @@ public record RecursalIcpBrasilMetadata(
         put(out, "profileAchieved", profileAchieved);
         put(out, "certType", certType);
         put(out, "acSigla", acSigla);
-        put(out, "cpfTitular", cpfTitular);
-        put(out, "cnpjTitular", cnpjTitular);
         put(out, "serialHex", serialHex);
         put(out, "signerUserId", signerUserId);
         put(out, "mode", mode);
