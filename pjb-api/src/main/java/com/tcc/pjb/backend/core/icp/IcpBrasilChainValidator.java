@@ -164,7 +164,6 @@ public class IcpBrasilChainValidator {
                 .processoId(processoId)
                 .docHash(docHash)
                 .certSerialHex(profile.serialHex())
-                .cpfSignatario(profile.cpfTitular())
                 .profileCandidate(profileCandidate)
                 .profileAchieved(profileAchieved)
                 .tsRfc3161Embedded(tsRfc3161Embedded)

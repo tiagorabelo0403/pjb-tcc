@@ -19,8 +19,7 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "pjb_icp_signature_event", indexes = {
-        @Index(name = "idx_icp_sig_evento_processo", columnList = "processo_id"),
-        @Index(name = "idx_icp_sig_evento_cpf", columnList = "cpf_signatario")
+        @Index(name = "idx_icp_sig_evento_processo", columnList = "processo_id")
 })
 @PjbDataOwnership(module = PjbModuleId.PROCESSO_LIFECYCLE, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
 @Getter
@@ -42,9 +41,6 @@ public class IcpSignatureEvent {
 
     @Column(name = "cert_serial_hex", length = 128)
     private String certSerialHex;
-
-    @Column(name = "cpf_signatario", length = 11)
-    private String cpfSignatario;
 
     @Column(name = "profile_candidate", nullable = false, length = 8)
     private String profileCandidate;
