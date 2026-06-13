@@ -183,8 +183,6 @@ public class IcpBrasilChainValidator {
         entity.setSubjectDn(profile.subjectDn());
         entity.setIssuerDn(profile.issuerDn());
         entity.setSerialHex(profile.serialHex());
-        entity.setCpfTitular(profile.cpfTitular());
-        entity.setCnpjTitular(profile.cnpjTitular());
         entity.setCertType(profile.certType());
         entity.setAcSigla(profile.acSigla());
         entity.setValidFrom(profile.validFrom());
