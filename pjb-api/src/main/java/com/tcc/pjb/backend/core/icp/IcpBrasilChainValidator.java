@@ -138,7 +138,7 @@ public class IcpBrasilChainValidator {
             return IcpBrasilValidationResult.fail("ac não aceita: " + profile.acSigla());
         }
         cache(profile, cert);
-        auditLedger.appendSafely("ICP_CHAIN_OK", "ICP", profile.serialHex(), "cpf=" + profile.cpfTitular() + " tipo=" + profile.certType());
+        auditLedger.appendSafely("ICP_CHAIN_OK", "ICP", profile.serialHex(), "tipo=" + profile.certType());
         return IcpBrasilValidationResult.ok(profile);
     }
 
