@@ -3,6 +3,10 @@ package com.tcc.pjb.backend.configs.datasource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tcc.pjb.backend.configs.datasource.PjbAdaptiveDataPlaneService.AdaptiveMode;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +28,7 @@ class PjbAdaptiveDataPlaneServiceRawPreferenceTest {
         PjbDataSourceRoutingProperties properties = new PjbDataSourceRoutingProperties();
         properties.getAdaptivePlane().setEnabled(true);
         PjbPrimaryReadPreferenceContext primaryReadPreferenceContext = new PjbPrimaryReadPreferenceContext();
-        ReadAfterWriteConsistencyPolicy rawPolicy = new ReadAfterWriteConsistencyPolicy();
+        ReadAfterWriteConsistencyPolicy rawPolicy = new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5));
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/processual/consulta");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
         rawPolicy.markWrite();

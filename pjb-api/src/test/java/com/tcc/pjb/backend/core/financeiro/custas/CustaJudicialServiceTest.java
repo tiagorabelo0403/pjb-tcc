@@ -12,6 +12,10 @@ import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.repository.CustaJudicialRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import com.tcc.pjb.backend.core.financeiro.custas.domain.GruResult;
@@ -33,7 +37,7 @@ class CustaJudicialServiceTest {
                 (valor, processoId, tipo) -> new PixResult("payload", "tx123"),
                 (p, tipo) -> com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult.naoIsento(),
                 mock(AuditLedgerService.class),
-                new ReadAfterWriteConsistencyPolicy()
+                new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5))
         );
         var result = service.gerarCustas(99L, "CUSTAS_INICIAIS", new BigDecimal("100.00"));
         assertThat(result.isento()).isFalse();
@@ -55,7 +59,7 @@ class CustaJudicialServiceTest {
                 (valor, processoId, tipo) -> new PixResult("payload", "tx123"),
                 (p, tipo) -> com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult.isento("gratuidade"),
                 mock(AuditLedgerService.class),
-                new ReadAfterWriteConsistencyPolicy()
+                new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5))
         );
         var result = service.gerarCustas(100L, "CUSTAS_INICIAIS", new BigDecimal("100.00"));
         assertThat(result.isento()).isTrue();

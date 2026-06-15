@@ -15,8 +15,11 @@ import com.tcc.pjb.backend.model.entity.financeiro.CustaJudicial;
 import com.tcc.pjb.backend.model.repository.CustaJudicialRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +39,7 @@ class CustaJudicialServicePagamentoTest {
                 (valor, processoId, tipo) -> new PixResult("payload", "tx"),
                 (p, tipo) -> com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult.naoIsento(),
                 mock(AuditLedgerService.class),
-                new ReadAfterWriteConsistencyPolicy()
+                new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5))
         );
         var pago = service.registrarPagamento(new RegistrarPagamentoCustaCommand(5L, new BigDecimal("10.00"), Instant.parse("2026-04-12T10:00:00Z")));
         assertThat(pago.quitada()).isTrue();

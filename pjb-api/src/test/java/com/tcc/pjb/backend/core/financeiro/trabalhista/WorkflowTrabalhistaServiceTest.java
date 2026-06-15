@@ -14,6 +14,10 @@ import com.tcc.pjb.backend.model.repository.DepositoRecursalRepository;
 import com.tcc.pjb.backend.model.repository.GruJudicialTrabalhistaRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import com.tcc.pjb.backend.core.financeiro.custas.domain.GruResult;
@@ -34,7 +38,7 @@ class WorkflowTrabalhistaServiceTest {
                 (tipo, valor, uf) -> new GruResult("TRAB", "linha", "barra", "nosso"),
                 new TrabalhistaWorkflowProperties(true, "IPCA-E", 8, new BigDecimal("15000.00")),
                 mock(AuditLedgerService.class),
-                new ReadAfterWriteConsistencyPolicy()
+                new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5))
         );
         var result = service.gerarGruRecursal(15L, "PREPARO_RECURSAL", new BigDecimal("1000.00"));
         assertThat(result.linhaDigitavel()).isEqualTo("linha");
@@ -55,7 +59,7 @@ class WorkflowTrabalhistaServiceTest {
                 (tipo, valor, uf) -> new GruResult("TRAB", "linha", "barra", "nosso"),
                 new TrabalhistaWorkflowProperties(true, "IPCA-E", 8, new BigDecimal("15000.00")),
                 mock(AuditLedgerService.class),
-                new ReadAfterWriteConsistencyPolicy()
+                new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5))
         );
         var result = service.registrarDepositoRecursal(16L, "TRT", new BigDecimal("15000.00"), "HASH");
         assertThat(result.status()).isEqualTo("CONFIRMADO");

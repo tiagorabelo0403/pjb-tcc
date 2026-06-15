@@ -17,6 +17,10 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.SisbajudOperacaoRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +34,7 @@ class SisbajudBloqueioServiceFailureModesTest {
         PjbAuthorizationService authorizationService = mock(PjbAuthorizationService.class);
         when(processoRepository.findById(9L)).thenReturn(Optional.of(Processo.builder().id(9L).build()));
         when(currentUserService.getRequired()).thenReturn(Usuario.builder().id(5L).build());
-        SisbajudBloqueioService service = new SisbajudBloqueioService(processoRepository, operacaoRepository, (cpf, valor, oficio) -> new com.tcc.pjb.backend.integration.judicial.financeiro.domain.SisbajudHttpResponse("PROTO", "ok"), currentUserService, authorizationService, mock(AuditLedgerService.class), new ReadAfterWriteConsistencyPolicy());
+        SisbajudBloqueioService service = new SisbajudBloqueioService(processoRepository, operacaoRepository, (cpf, valor, oficio) -> new com.tcc.pjb.backend.integration.judicial.financeiro.domain.SisbajudHttpResponse("PROTO", "ok"), currentUserService, authorizationService, mock(AuditLedgerService.class), new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5)));
         assertThatThrownBy(() -> service.solicitarBloqueio(new SisbajudBloqueioRequest(9L, "123", new BigDecimal("10.00"), "OF", false), null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("authzTrailId");

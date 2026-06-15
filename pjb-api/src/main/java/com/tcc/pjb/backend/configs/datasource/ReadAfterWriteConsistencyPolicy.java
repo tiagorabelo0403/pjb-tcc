@@ -1,6 +1,8 @@
 package com.tcc.pjb.backend.configs.datasource;
 
-import java.time.Instant;
+import java.time.Clock;
+import java.time.Duration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -9,12 +11,21 @@ import org.springframework.web.context.request.RequestContextHolder;
 public class ReadAfterWriteConsistencyPolicy {
 
     private static final String ATTR_KEY = "pjb.raw.write.at";
-    private static final long WINDOW_MS = 2_000L;
+
+    private final Clock clock;
+    private final long windowMs;
+
+    public ReadAfterWriteConsistencyPolicy(
+            Clock clock,
+            @Value("${pjb.datasource.routing.read-your-writes-window:5s}") Duration readYourWritesWindow) {
+        this.clock = clock;
+        this.windowMs = readYourWritesWindow.toMillis();
+    }
 
     public void markWrite() {
         RequestAttributes attrs = RequestContextHolder.getRequestAttributes();
         if (attrs != null) {
-            attrs.setAttribute(ATTR_KEY, Instant.now().toEpochMilli(), RequestAttributes.SCOPE_REQUEST);
+            attrs.setAttribute(ATTR_KEY, clock.millis(), RequestAttributes.SCOPE_REQUEST);
         }
     }
 
@@ -23,7 +34,7 @@ public class ReadAfterWriteConsistencyPolicy {
         if (writeAt == null) {
             return false;
         }
-        return (System.currentTimeMillis() - writeAt) < WINDOW_MS;
+        return (clock.millis() - writeAt) < windowMs;
     }
 
     public Long lastWriteAtEpochMillis() {
@@ -39,6 +50,6 @@ public class ReadAfterWriteConsistencyPolicy {
     }
 
     public long windowMillis() {
-        return WINDOW_MS;
+        return windowMs;
     }
 }
