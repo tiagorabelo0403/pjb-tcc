@@ -6,14 +6,18 @@ import static org.mockito.BDDMockito.given;
 
 import com.tcc.pjb.backend.PjbIntegrationTestBase;
 import com.tcc.pjb.backend.model.entity.outbox.OutboxEvent;
+import com.tcc.pjb.backend.model.entity.outbox.OutboxEventId;
 import com.tcc.pjb.backend.model.entity.outbox.OutboxStatus;
 import com.tcc.pjb.backend.repository.outbox.OutboxEventRepository;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -34,6 +38,9 @@ class OutboxRelayWorkerFlowIT extends PjbIntegrationTestBase {
 
     @Autowired
     private OutboxEventRepository outboxEventRepository;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @MockitoBean
     private KafkaTemplate<String, String> kafkaTemplate;
@@ -61,7 +68,7 @@ class OutboxRelayWorkerFlowIT extends PjbIntegrationTestBase {
 
         rawWorker.relay();
 
-        OutboxEvent result = outboxEventRepository.findById(event.getId()).orElseThrow();
+        OutboxEvent result = outboxEventRepository.findById(new OutboxEventId(event.getId(), event.getCreatedMonth())).orElseThrow();
         assertThat(result.getStatus()).isEqualTo(OutboxStatus.DONE);
         assertThat(result.getLockedBy()).isNull();
         assertThat(result.getLockedAt()).isNull();
@@ -86,7 +93,7 @@ class OutboxRelayWorkerFlowIT extends PjbIntegrationTestBase {
 
         rawWorker.relay();
 
-        OutboxEvent result = outboxEventRepository.findById(event.getId()).orElseThrow();
+        OutboxEvent result = outboxEventRepository.findById(new OutboxEventId(event.getId(), event.getCreatedMonth())).orElseThrow();
         assertThat(result.getStatus()).isEqualTo(OutboxStatus.PENDING);
         assertThat(result.getAttempts()).isEqualTo(1);
         assertThat(result.getLastError()).contains("kafka-unavailable");
@@ -114,8 +121,30 @@ class OutboxRelayWorkerFlowIT extends PjbIntegrationTestBase {
 
         rawWorker.relay();
 
-        OutboxEvent result = outboxEventRepository.findById(event.getId()).orElseThrow();
+        OutboxEvent result = outboxEventRepository.findById(new OutboxEventId(event.getId(), event.getCreatedMonth())).orElseThrow();
         assertThat(result.getStatus()).isEqualTo(OutboxStatus.FAILED);
         assertThat(result.getLastError()).contains("kafka-permanently-down");
+    }
+
+    @Test
+    void deveDerivarcreatedMonthEPersistirNaParticaoCorreta() {
+        OutboxEvent event = outboxEventRepository.save(new OutboxEvent(
+                UUID.randomUUID(),
+                "processo:derivacao-it",
+                "pjb.processo.criado",
+                "{\"processoId\":99}",
+                Instant.now()
+        ));
+
+        ZonedDateTime zdt = event.getCreatedAt().atZone(ZoneOffset.UTC);
+        int expectedMonth = zdt.getYear() * 100 + zdt.getMonthValue();
+        assertThat(event.getCreatedMonth()).isEqualTo(expectedMonth);
+
+        String partitionName = String.format("tb_outbox_event_y%04dm%02d", zdt.getYear(), zdt.getMonthValue());
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM " + partitionName + " WHERE id = ?",
+                Integer.class, event.getId()
+        );
+        assertThat(count).isEqualTo(1);
     }
 }

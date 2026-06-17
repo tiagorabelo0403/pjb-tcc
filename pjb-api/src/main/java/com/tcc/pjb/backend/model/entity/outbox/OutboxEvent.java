@@ -5,6 +5,8 @@ import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
 import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.UUID;
 import jakarta.persistence.Column;
@@ -12,12 +14,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @PjbDataOwnership(module = PjbModuleId.AUDITORIA_OBSERVABILIDADE, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
 @Entity
+@IdClass(OutboxEventId.class)
 @Table(name = "tb_outbox_event")
 public class OutboxEvent {
 
@@ -65,13 +69,25 @@ public class OutboxEvent {
   @Column(name = "last_error", columnDefinition = "TEXT")
   private String lastError;
 
-  @CreationTimestamp
+  @Id
+  @Column(name = "created_month", nullable = false, updatable = false)
+  private int createdMonth;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
+
+  @PrePersist
+  private void initFields() {
+    if (createdAt == null) {
+      createdAt = Instant.now();
+    }
+    ZonedDateTime zdt = createdAt.atZone(ZoneOffset.UTC);
+    createdMonth = zdt.getYear() * 100 + zdt.getMonthValue();
+  }
 
   protected OutboxEvent() {
   }
@@ -166,6 +182,10 @@ public class OutboxEvent {
 
   public String getLastError() {
     return lastError;
+  }
+
+  public int getCreatedMonth() {
+    return createdMonth;
   }
 
   public Instant getCreatedAt() {

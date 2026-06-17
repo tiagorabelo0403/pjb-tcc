@@ -36,7 +36,7 @@ class CargaProcessoRepositoryIT extends PjbIntegrationTestBase {
                 String.format("%011d", Long.parseUnsignedLong(s, 16)));
         unidadeId = jdbcTemplate.queryForObject(
                 "INSERT INTO tb_unidade_judiciaria_competencia (codigo, tribunal_codigo, tipo_vara) " +
-                "VALUES (?, 'TJCE', 'CRIMINAL') RETURNING id",
+                "VALUES (?, 'TJCE', 'CRIMINAL_GERAL') RETURNING id",
                 Long.class, "VARA-CG-" + s);
         processoId = jdbcTemplate.queryForObject(
                 "INSERT INTO tb_processo (numero_processo, status_processo) " +

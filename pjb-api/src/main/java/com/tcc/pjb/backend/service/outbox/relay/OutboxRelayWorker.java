@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.outbox.relay;
 
 import com.tcc.pjb.backend.model.entity.outbox.OutboxEvent;
+import com.tcc.pjb.backend.model.entity.outbox.OutboxEventId;
 import com.tcc.pjb.backend.model.entity.outbox.OutboxStatus;
 import com.tcc.pjb.backend.repository.outbox.OutboxEventRepository;
 import java.time.Instant;
@@ -45,33 +46,36 @@ public class OutboxRelayWorker {
 
     @Scheduled(fixedDelayString = "${pjb.outbox.relay.poll-interval:500ms}")
     public void relay() {
-        List<UUID> claimed = claimBatch();
-        for (UUID id : claimed) {
-            dispatch(id);
+        List<OutboxEventId> claimed = claimBatch();
+        for (OutboxEventId eventId : claimed) {
+            dispatch(eventId);
         }
     }
 
-    private List<UUID> claimBatch() {
-        List<UUID> result = tx.execute(status -> {
-            List<UUID> ids = repository.claimIdsForUpdate(
+    private List<OutboxEventId> claimBatch() {
+        List<OutboxEventId> result = tx.execute(status -> {
+            List<Object[]> rows = repository.claimRawForUpdate(
                     OutboxStatus.PENDING.name(), properties.batchSize());
-            if (ids.isEmpty()) {
-                return ids;
+            if (rows.isEmpty()) {
+                return List.of();
             }
-            List<OutboxEvent> events = repository.findAllById(ids);
+            List<OutboxEventId> keys = rows.stream()
+                    .map(OutboxEventId::fromRow)
+                    .toList();
+            List<OutboxEvent> events = repository.findAllById(keys);
             Instant now = Instant.now();
             for (OutboxEvent event : events) {
                 event.markInflight(workerId, now);
             }
             repository.saveAll(events);
-            return ids;
+            return keys;
         });
         return result != null ? result : List.of();
     }
 
-    private void dispatch(UUID id) {
+    private void dispatch(OutboxEventId eventId) {
         tx.execute(status -> {
-            OutboxEvent event = repository.findById(id).orElse(null);
+            OutboxEvent event = repository.findById(eventId).orElse(null);
             if (event == null || event.getStatus() != OutboxStatus.INFLIGHT) {
                 return null;
             }
@@ -82,14 +86,14 @@ public class OutboxRelayWorker {
                         event.getPayloadJson()
                 ).get(properties.sendTimeoutMs(), TimeUnit.MILLISECONDS);
                 event.markDone();
-                log.debug("[OUTBOX] dispatched id={} type={}", id, event.getEventType());
+                log.debug("[OUTBOX] dispatched id={} type={}", eventId.getId(), event.getEventType());
             } catch (Exception e) {
                 if (event.getAttempts() >= properties.maxAttempts()) {
                     event.markFailed(truncate(e.getMessage()));
-                    log.warn("[OUTBOX] failed permanently id={} type={} err={}", id, event.getEventType(), e.getMessage());
+                    log.warn("[OUTBOX] failed permanently id={} type={} err={}", eventId.getId(), event.getEventType(), e.getMessage());
                 } else {
                     event.markRetry(Instant.now().plus(properties.retryBackoff()), truncate(e.getMessage()));
-                    log.debug("[OUTBOX] scheduled retry id={} attempt={}", id, event.getAttempts());
+                    log.debug("[OUTBOX] scheduled retry id={} attempt={}", eventId.getId(), event.getAttempts());
                 }
             }
             repository.save(event);

@@ -3,22 +3,23 @@ package com.tcc.pjb.backend.repository.outbox;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import com.tcc.pjb.backend.model.entity.outbox.OutboxEventId;
 import com.tcc.pjb.backend.model.entity.outbox.OutboxStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.tcc.pjb.backend.model.entity.outbox.OutboxEvent;
 
-public interface OutboxEventRepository extends JpaRepository<OutboxEvent, UUID> {
+public interface OutboxEventRepository extends JpaRepository<OutboxEvent, OutboxEventId> {
 
   @Query(
-      value = "select id from tb_outbox_event "
+      value = "select id, created_month from tb_outbox_event "
           + "where status = :status and available_at <= now() "
-          + "order by created_at asc "
+          + "order by available_at asc, created_at asc "
           + "limit :limit "
           + "for update skip locked",
       nativeQuery = true)
-  List<UUID> claimIdsForUpdate(
+  List<Object[]> claimRawForUpdate(
       @Param("status") String status,
       @Param("limit") int limit);
 

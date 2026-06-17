@@ -3,6 +3,9 @@ package com.tcc.pjb.backend.service.ops;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +39,8 @@ public class OpsPruningScheduler {
     Instant cutoff = Instant.now().minus(retention);
     Timestamp ts = Timestamp.from(cutoff);
 
+    dropExpiredOutboxPartitions(cutoff);
+
     try {
       int outbox = jdbc.update(
           "delete from tb_outbox_event where status in ('DONE','FAILED') and created_at < ?",
@@ -48,6 +53,23 @@ public class OpsPruningScheduler {
       log.info("Prune ok: outbox={} idempotency={} retentionDays={}", outbox, idem, retention.toDays());
     } catch (Exception ex) {
       log.warn("Prune failed: {}", ex.getMessage());
+    }
+  }
+
+  private void dropExpiredOutboxPartitions(Instant cutoff) {
+    LocalDate cutoffDate = cutoff.atZone(ZoneOffset.UTC).toLocalDate();
+    YearMonth current = YearMonth.now(ZoneOffset.UTC);
+    for (YearMonth ym = YearMonth.of(2024, 1); ym.isBefore(current.minusMonths(1)); ym = ym.plusMonths(1)) {
+      LocalDate partitionEnd = ym.plusMonths(1).atDay(1);
+      if (!partitionEnd.isAfter(cutoffDate)) {
+        String partitionName = OutboxPartitionScheduler.partitionName(ym);
+        try {
+          jdbc.execute("DROP TABLE IF EXISTS " + partitionName);
+          log.info("[OUTBOX-PARTITION] dropped expired partition {}", partitionName);
+        } catch (Exception e) {
+          log.warn("[OUTBOX-PARTITION] failed to drop partition {}: {}", partitionName, e.getMessage());
+        }
+      }
     }
   }
 }
