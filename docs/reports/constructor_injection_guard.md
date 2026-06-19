@@ -1,7 +1,7 @@
 # Constructor Injection Guard
 
 - Base analisada: `C:\PJB\pjb-api\src\main\java\com\tcc\pjb\backend`
-- Construtores analisados: **2110**
+- Construtores analisados: **2148**
 - Hotspots detectados: **48**
 
 ## Hotspots
@@ -13,12 +13,12 @@
 - `pjb-api\src\main\java\com\tcc\pjb\backend\core\kernel\twin\ProcessDigitalTwinService.java` -> 33 dependências, 569 linhas (service)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\model\dto\processual\comunicacao\institutional\panel\NationalCommunicationInstitutionalInboxItemResponse.java` -> 31 dependências, 104 linhas (other)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\modules\laiane\service\LaianePeticaoAssistService.java` -> 29 dependências, 1145 linhas (service)
+- `pjb-api\src\main\java\com\tcc\pjb\backend\service\delegado\DelegadoPainelService.java` -> 28 dependências, 446 linhas (service)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\core\processo\unificado\domain\ProcessoUnificadoCompetencia.java` -> 27 dependências, 85 linhas (other)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\ai\juridica\conversation\LegalAiConversationOrchestrator.java` -> 26 dependências, 274 linhas (other)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\core\frontend\app\application\PjbFrontendAppApplicationService.java` -> 25 dependências, 832 linhas (service)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\model\dto\processual\recursal\automation\RecursalAutomationRequest.java` -> 25 dependências, 200 linhas (other)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\service\processual\surface\ProcessoSurfaceFacadeService.java` -> 24 dependências, 728 linhas (facade_service)
-- `pjb-api\src\main\java\com\tcc\pjb\backend\service\delegado\DelegadoPainelService.java` -> 24 dependências, 430 linhas (service)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\service\processual\comunicacao\flow\NationalCommunicationFlowService.java` -> 24 dependências, 281 linhas (service)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\integration\judicial\JudicialConnectorPolicyOverlay.java` -> 24 dependências, 99 linhas (other)
 - `pjb-api\src\main\java\com\tcc\pjb\backend\service\processual\peticionamento\PeticionamentoSessaoFacadeService.java` -> 23 dependências, 1068 linhas (facade_service)

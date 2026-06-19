@@ -165,9 +165,10 @@ pjb/
 | Cache | Redis 7.4 |
 | Busca | Elasticsearch 8.15 |
 | Segurança | Spring Security, ABAC, Gov.br, ICP-Brasil, Passkey/WebAuthn |
-| Resiliência | Resilience4j — Circuit Breaker, Bulkhead, Retry, Timeout |
+| Resiliência | Resilience4j — Circuit Breaker auditável, Bulkhead, Retry, Timeout |
+| Análise estática | Qodana (JetBrains), JaCoCo, Checkstyle, SpotBugs, ArchUnit |
 | Contratos | Pact — Consumer-Driven Contract Testing |
-| Qualidade | JaCoCo, Checkstyle, SpotBugs, ArchUnit |
+| Qualidade | Qodana, JaCoCo, Checkstyle, SpotBugs, ArchUnit |
 | IA Jurídica | Anthropic Claude API — Memory Stores, Dreams, síntese reflexiva |
 | Observabilidade | Micrometer, Spring Actuator, Process Mining materializado |
 | Guards estruturais | 20+ scripts Python + ArchUnit em CI |
@@ -314,6 +315,9 @@ O modelo de segurança é orientado por identidade, papel, lotação, órgão, u
 | **Sanitização ICP-Brasil** | CPF e CNPJ removidos de respostas de API, cache de certificados, eventos de assinatura e entradas do audit ledger ICP. Onde a correlação é necessária, o identificador é hasheado — jamais em claro |
 | **Login por certificado ICP-Brasil** | Fluxo desafio-resposta completo: nonce criptográfico emitido pelo servidor, assinatura pelo certificado do usuário, verificação da cadeia ICP-Brasil, extração de identidade do subject DN e resolução de contexto institucional por lotação. A sessão de certificado é emitida como tipo distinto da sessão de senha — sem mistura de níveis de garantia |
 | **BOLA guard (WorkItemScopeGuard)** | Impede que qualquer ator acesse item de trabalho de unidade ou lotação diferente da sua. Aplicado como controle P0 — ArchUnit garante em tempo de build que não existe caminho de código capaz de bypassar o guard |
+| **Rate limiting** | Rotas críticas protegidas contra abuso com limite de requisições por período. Resposta padronizada RFC 7807. `createOficio` e endpoints de comunicação têm orçamento próprio, separado do tráfego geral |
+| **Security event logger** | Todo evento de segurança relevante — autenticação, autorização negada, step-up, bypass tentado — produz entrada em log estruturado separado do log de aplicação, auditável de forma independente e sem mistura com ruído operacional |
+| **Circuit breaker auditável** | Estado de abertura/fechamento de cada circuit breaker é registrado com timestamp, causa e contagem de falhas — a história de degradação de uma integração é rastreável, não apenas o estado atual |
 | **LGPD** | Dados sigilosos nunca enviados a serviços externos; redact auditável por versão |
 | **Dual approval** | Operações críticas exigem confirmação de segundo ator autorizado |
 
@@ -360,7 +364,7 @@ CREATE POLICY processo_sigilo ON processo
 
 A suíte conta com **4.112 testes · 0 falhas · 0 erros**. Toda alteração só é aceita quando melhora comportamento verificável sem reduzir maturidade arquitetural.
 
-55 ADRs documentam cada decisão arquitetural com motivação, consequências e alternativas consideradas. Devem ser lidos antes de alterar qualquer estrutura de pacote, padrão de concorrência ou política de segurança.
+57 ADRs documentam cada decisão arquitetural com motivação, consequências e alternativas consideradas. Devem ser lidos antes de alterar qualquer estrutura de pacote, padrão de concorrência ou política de segurança.
 
 O pipeline gera automaticamente um SBOM CycloneDX a cada build, mantendo inventário auditável de todas as dependências com versão e licença. O evidence gate de CI rejeita merges sem cobertura de guarda estrutural completa. Correlation ID obrigatório em toda requisição — propagado via contexto e registrado em cada entrada de log, permitindo rastreamento ponta a ponta sem agregador externo.
 

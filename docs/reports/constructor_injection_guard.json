@@ -5,7 +5,7 @@
     "hotspotParameterCount": 16,
     "lineCount": 900
   },
-  "totalConstructors": 2110,
+  "totalConstructors": 2148,
   "hotspotCount": 48,
   "topConstructors": [
     {
@@ -310,6 +310,43 @@
       ]
     },
     {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\delegado\\DelegadoPainelService.java",
+      "className": "DelegadoPainelService",
+      "kind": "service",
+      "lineCount": 446,
+      "constructorParameterCount": 28,
+      "constructorParameterTypes": [
+        "PerfilDashboardContextFactory",
+        "PainelServiceCommons",
+        "ProcessoRepository",
+        "WorkItemRepository",
+        "InqueritoPolicialDigitalService",
+        "BoletimOcorrenciaDigitalService",
+        "DelegaciaInstitucionalScopeService",
+        "PjbObjectScopeGuard",
+        "PjbAuthorizationService",
+        "PerfilCapabilityMatrixService",
+        "PessoaLocalizacaoIntelligenceSummaryService",
+        "InstitutionalActorTopologyMeshService",
+        "InstitutionalActorRoutingService",
+        "InstitutionalPanelBrandingService",
+        "InqueritoMultimidiaWorkspaceService",
+        "PoliceInvestigationSystemLandscapeService",
+        "PjbPoliceNativeToolbeltService",
+        "PoliceTransactionalAdapterMeshService",
+        "PoliceSovereignOperationalWorkbenchService",
+        "PjbPoliceNativeExecutionService",
+        "PoliceTraceableExecutionLedgerService",
+        "QualifiedDocumentSignatureEnvelopeService",
+        "PainelSharedExperienceService",
+        "PainelSignalReflectionService",
+        "PainelNativeCollectionCompositionService",
+        "PainelActionSurfaceCompositionService",
+        "PainelExecutionSurfaceCompositionService",
+        "InstitutionalMaterialActionGuardService"
+      ]
+    },
+    {
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\unificado\\domain\\ProcessoUnificadoCompetencia.java",
       "className": "ProcessoUnificadoCompetencia",
       "kind": "other",
@@ -479,39 +516,6 @@
         "ProcessoHardeningFinalApplicationService",
         "ProcessoSigiloInteligenteApplicationService",
         "ProcessoSigiloNotificacaoApplicationService"
-      ]
-    },
-    {
-      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\delegado\\DelegadoPainelService.java",
-      "className": "DelegadoPainelService",
-      "kind": "service",
-      "lineCount": 430,
-      "constructorParameterCount": 24,
-      "constructorParameterTypes": [
-        "PerfilDashboardContextFactory",
-        "PainelServiceCommons",
-        "ProcessoRepository",
-        "WorkItemRepository",
-        "PjbAuthorizationService",
-        "PerfilCapabilityMatrixService",
-        "PessoaLocalizacaoIntelligenceSummaryService",
-        "InstitutionalActorTopologyMeshService",
-        "InstitutionalActorRoutingService",
-        "InstitutionalPanelBrandingService",
-        "InqueritoMultimidiaWorkspaceService",
-        "PoliceInvestigationSystemLandscapeService",
-        "PjbPoliceNativeToolbeltService",
-        "PoliceTransactionalAdapterMeshService",
-        "PoliceSovereignOperationalWorkbenchService",
-        "PjbPoliceNativeExecutionService",
-        "PoliceTraceableExecutionLedgerService",
-        "QualifiedDocumentSignatureEnvelopeService",
-        "PainelSharedExperienceService",
-        "PainelSignalReflectionService",
-        "PainelNativeCollectionCompositionService",
-        "PainelActionSurfaceCompositionService",
-        "PainelExecutionSurfaceCompositionService",
-        "InstitutionalMaterialActionGuardService"
       ]
     },
     {
@@ -741,7 +745,7 @@
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\controller\\delegado\\DelegadoPainelController.java",
       "className": "DelegadoPainelController",
       "kind": "controller",
-      "lineCount": 547,
+      "lineCount": 548,
       "constructorParameterCount": 21,
       "constructorParameterTypes": [
         "DelegadoPainelService",
@@ -771,7 +775,7 @@
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\modules\\advocacia\\office\\service\\OfficeGovernedProcessOperationService.java",
       "className": "OfficeGovernedProcessOperationService",
       "kind": "service",
-      "lineCount": 599,
+      "lineCount": 600,
       "constructorParameterCount": 20,
       "constructorParameterTypes": [
         "CurrentUserService",
@@ -1590,6 +1594,43 @@
       ]
     },
     {
+      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\delegado\\DelegadoPainelService.java",
+      "className": "DelegadoPainelService",
+      "kind": "service",
+      "lineCount": 446,
+      "constructorParameterCount": 28,
+      "constructorParameterTypes": [
+        "PerfilDashboardContextFactory",
+        "PainelServiceCommons",
+        "ProcessoRepository",
+        "WorkItemRepository",
+        "InqueritoPolicialDigitalService",
+        "BoletimOcorrenciaDigitalService",
+        "DelegaciaInstitucionalScopeService",
+        "PjbObjectScopeGuard",
+        "PjbAuthorizationService",
+        "PerfilCapabilityMatrixService",
+        "PessoaLocalizacaoIntelligenceSummaryService",
+        "InstitutionalActorTopologyMeshService",
+        "InstitutionalActorRoutingService",
+        "InstitutionalPanelBrandingService",
+        "InqueritoMultimidiaWorkspaceService",
+        "PoliceInvestigationSystemLandscapeService",
+        "PjbPoliceNativeToolbeltService",
+        "PoliceTransactionalAdapterMeshService",
+        "PoliceSovereignOperationalWorkbenchService",
+        "PjbPoliceNativeExecutionService",
+        "PoliceTraceableExecutionLedgerService",
+        "QualifiedDocumentSignatureEnvelopeService",
+        "PainelSharedExperienceService",
+        "PainelSignalReflectionService",
+        "PainelNativeCollectionCompositionService",
+        "PainelActionSurfaceCompositionService",
+        "PainelExecutionSurfaceCompositionService",
+        "InstitutionalMaterialActionGuardService"
+      ]
+    },
+    {
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\processo\\unificado\\domain\\ProcessoUnificadoCompetencia.java",
       "className": "ProcessoUnificadoCompetencia",
       "kind": "other",
@@ -1759,39 +1800,6 @@
         "ProcessoHardeningFinalApplicationService",
         "ProcessoSigiloInteligenteApplicationService",
         "ProcessoSigiloNotificacaoApplicationService"
-      ]
-    },
-    {
-      "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\delegado\\DelegadoPainelService.java",
-      "className": "DelegadoPainelService",
-      "kind": "service",
-      "lineCount": 430,
-      "constructorParameterCount": 24,
-      "constructorParameterTypes": [
-        "PerfilDashboardContextFactory",
-        "PainelServiceCommons",
-        "ProcessoRepository",
-        "WorkItemRepository",
-        "PjbAuthorizationService",
-        "PerfilCapabilityMatrixService",
-        "PessoaLocalizacaoIntelligenceSummaryService",
-        "InstitutionalActorTopologyMeshService",
-        "InstitutionalActorRoutingService",
-        "InstitutionalPanelBrandingService",
-        "InqueritoMultimidiaWorkspaceService",
-        "PoliceInvestigationSystemLandscapeService",
-        "PjbPoliceNativeToolbeltService",
-        "PoliceTransactionalAdapterMeshService",
-        "PoliceSovereignOperationalWorkbenchService",
-        "PjbPoliceNativeExecutionService",
-        "PoliceTraceableExecutionLedgerService",
-        "QualifiedDocumentSignatureEnvelopeService",
-        "PainelSharedExperienceService",
-        "PainelSignalReflectionService",
-        "PainelNativeCollectionCompositionService",
-        "PainelActionSurfaceCompositionService",
-        "PainelExecutionSurfaceCompositionService",
-        "InstitutionalMaterialActionGuardService"
       ]
     },
     {
@@ -2021,7 +2029,7 @@
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\controller\\delegado\\DelegadoPainelController.java",
       "className": "DelegadoPainelController",
       "kind": "controller",
-      "lineCount": 547,
+      "lineCount": 548,
       "constructorParameterCount": 21,
       "constructorParameterTypes": [
         "DelegadoPainelService",
@@ -2051,7 +2059,7 @@
       "file": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\modules\\advocacia\\office\\service\\OfficeGovernedProcessOperationService.java",
       "className": "OfficeGovernedProcessOperationService",
       "kind": "service",
-      "lineCount": 599,
+      "lineCount": 600,
       "constructorParameterCount": 20,
       "constructorParameterTypes": [
         "CurrentUserService",

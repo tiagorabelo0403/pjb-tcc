@@ -1,14 +1,14 @@
 {
   "base": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend",
   "totals": {
-    "javaFiles": 7865,
+    "javaFiles": 8052,
     "rootPackages": 26,
-    "oversizedClasses": 19,
+    "oversizedClasses": 20,
     "oversizedServicesOrEngines": 31,
     "oversizedControllers": 0,
     "controllerNestedDtoFiles": 0,
     "duplicatedSemanticRoots": 0,
-    "sprawledPackages": 1
+    "sprawledPackages": 2
   },
   "thresholds": {
     "classHotspotLines": 1000,
@@ -22,23 +22,23 @@
     "ai": 300,
     "bootstrap": 1,
     "command": 3,
-    "configs": 104,
-    "controller": 357,
-    "core": 2738,
+    "configs": 107,
+    "controller": 383,
+    "core": 2807,
     "demo": 1,
     "domain": 2,
     "financial": 8,
     "inovacao": 4,
-    "integration": 404,
+    "integration": 420,
     "judicial": 7,
     "legal": 20,
     "mapper": 5,
-    "model": 1901,
-    "modules": 386,
+    "model": 1950,
+    "modules": 393,
     "platform": 148,
     "query": 11,
     "repository": 19,
-    "service": 1390,
+    "service": 1407,
     "shared": 4,
     "tracker": 1,
     "tribunal": 39,
@@ -49,9 +49,19 @@
     {
       "package": "core.procedural",
       "files": 159
+    },
+    {
+      "package": "model.repository",
+      "files": 151
     }
   ],
   "topOversizedClasses": [
+    {
+      "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\competencia\\MapaCompetenciaDinamicoEngine.java",
+      "lines": 1196,
+      "kind": "service_or_engine",
+      "package": "service.competencia"
+    },
     {
       "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\comunicacao\\judicial\\CitacaoIntimacaoEngine.java",
       "lines": 1186,
@@ -83,6 +93,12 @@
       "package": "modules.laiane.service"
     },
     {
+      "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\advogado\\LaianePeticaoInicialDraftService.java",
+      "lines": 1129,
+      "kind": "service_or_engine",
+      "package": "service.advogado"
+    },
+    {
       "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\recursal\\ia\\RecursalIaPlannerService.java",
       "lines": 1119,
       "kind": "service_or_engine",
@@ -114,7 +130,7 @@
     },
     {
       "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\peticionamento\\PeticionamentoSessaoFacadeService.java",
-      "lines": 1063,
+      "lines": 1068,
       "kind": "service_or_engine",
       "package": "service.processual.peticionamento"
     },
@@ -143,12 +159,6 @@
       "package": "inovacao.radar"
     },
     {
-      "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\competencia\\MapaCompetenciaDinamicoEngine.java",
-      "lines": 1028,
-      "kind": "service_or_engine",
-      "package": "service.competencia"
-    },
-    {
       "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\peticionamento\\workspace\\PeticionamentoInitialIntakeWorkspaceService.java",
       "lines": 1027,
       "kind": "service_or_engine",
@@ -161,13 +171,19 @@
       "package": "core.comunicacao.institucional"
     },
     {
-      "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\advogado\\LaianePeticaoInicialDraftService.java",
-      "lines": 1016,
+      "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\tribunal\\distribuicao\\ConfiguracaoDistribuicaoVaraService.java",
+      "lines": 1000,
       "kind": "service_or_engine",
-      "package": "service.advogado"
+      "package": "tribunal.distribuicao"
     }
   ],
   "topOversizedServicesOrEngines": [
+    {
+      "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\competencia\\MapaCompetenciaDinamicoEngine.java",
+      "lines": 1196,
+      "kind": "service_or_engine",
+      "package": "service.competencia"
+    },
     {
       "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\core\\comunicacao\\judicial\\CitacaoIntimacaoEngine.java",
       "lines": 1186,
@@ -193,6 +209,12 @@
       "package": "modules.laiane.service"
     },
     {
+      "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\advogado\\LaianePeticaoInicialDraftService.java",
+      "lines": 1129,
+      "kind": "service_or_engine",
+      "package": "service.advogado"
+    },
+    {
       "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\recursal\\ia\\RecursalIaPlannerService.java",
       "lines": 1119,
       "kind": "service_or_engine",
@@ -224,7 +246,7 @@
     },
     {
       "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\peticionamento\\PeticionamentoSessaoFacadeService.java",
-      "lines": 1063,
+      "lines": 1068,
       "kind": "service_or_engine",
       "package": "service.processual.peticionamento"
     },
@@ -253,12 +275,6 @@
       "package": "inovacao.radar"
     },
     {
-      "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\competencia\\MapaCompetenciaDinamicoEngine.java",
-      "lines": 1028,
-      "kind": "service_or_engine",
-      "package": "service.competencia"
-    },
-    {
       "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\processual\\peticionamento\\workspace\\PeticionamentoInitialIntakeWorkspaceService.java",
       "lines": 1027,
       "kind": "service_or_engine",
@@ -271,10 +287,10 @@
       "package": "core.comunicacao.institucional"
     },
     {
-      "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\advogado\\LaianePeticaoInicialDraftService.java",
-      "lines": 1016,
+      "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\tribunal\\distribuicao\\ConfiguracaoDistribuicaoVaraService.java",
+      "lines": 1000,
       "kind": "service_or_engine",
-      "package": "service.advogado"
+      "package": "tribunal.distribuicao"
     },
     {
       "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\platform\\jusos\\v2\\impedimento\\ImpedimentoSuspeicaoEngine.java",
@@ -301,12 +317,6 @@
       "package": "service.infra"
     },
     {
-      "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\tribunal\\distribuicao\\ConfiguracaoDistribuicaoVaraService.java",
-      "lines": 981,
-      "kind": "service_or_engine",
-      "package": "tribunal.distribuicao"
-    },
-    {
       "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\inovacao\\batna\\FacilitadorBatnaService.java",
       "lines": 972,
       "kind": "service_or_engine",
@@ -314,7 +324,7 @@
     },
     {
       "path": "pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend\\service\\document\\reading\\ProcessReadingWorkspaceFacade.java",
-      "lines": 971,
+      "lines": 972,
       "kind": "service_or_engine",
       "package": "service.document.reading"
     }
