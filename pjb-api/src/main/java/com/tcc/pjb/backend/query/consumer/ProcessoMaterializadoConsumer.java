@@ -35,6 +35,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ProcessoMaterializadoConsumer {
 
+    public static final String TOPIC = "evento.processo.materializado.v1";
+    public static final String GROUP_ID = "grupo-query-materializer";
+
     private static final Duration MATERIALIZATION_TX_BUDGET = Duration.ofSeconds(20);
 
     private final ProcessoRepository processoWriteRepository;
@@ -46,7 +49,7 @@ public class ProcessoMaterializadoConsumer {
     private final PjbProcessoSigiloRlsEntryPointSupport processoSigiloRlsEntryPointSupport;
     private final PjbTransactionalExecutionSupport transactionalExecutionSupport;
 
-    @KafkaListener(containerFactory = "pjbKafkaListenerContainerFactory", topics = "evento.processo.materializado.v1", groupId = "grupo-query-materializer")
+    @KafkaListener(containerFactory = "pjbKafkaListenerContainerFactory", topics = ProcessoMaterializadoConsumer.TOPIC, groupId = ProcessoMaterializadoConsumer.GROUP_ID)
     public void handleProcessoMaterializado(@Payload Map<String, Object> evento) {
         String correlationId = evento != null && evento.get("correlationId") != null
                 ? String.valueOf(evento.get("correlationId"))
