@@ -71,6 +71,7 @@ O PJB foi projetado do zero com três compromissos inegociáveis:
 | `documentos` | Documentos, dossiê, cadeia de custódia, assinaturas |
 | `comunicacao` | Mandados, certidões, domicílio eletrônico, intimações |
 | `seguranca` | ABAC, autenticação, auditoria, sigilo, Gov.br, ICP-Brasil |
+| `criminal` | Boletins de ocorrência, inquéritos policiais, delegacias institucionais, escopo policial hierárquico por lotação |
 | `analytics` | Process mining, gargalos, Justiça em Números, relatórios |
 | `ia` | IA jurídica auditável, Memory Stores, Dreams, síntese reflexiva |
 | `integracao` | Envelope canônico PDPJ/MNI, normalizadores PJe/e-SAJ/eProc |
@@ -230,6 +231,8 @@ A IA opera como camada de suporte — nunca substitui decisão humana. Toda inte
 
 **Dreams:** jobs assíncronos que consolidam transcrições de sessão, eliminam contradições e extraem padrões por rito processual. Operam via outbox pattern com Virtual Threads dedicadas e janela de silêncio configurável.
 
+**Gate de completude processual:** verifica se o pacote documental está completo antes de permitir que o processo avance de fase. A validação tem duas camadas: estrutural (checklists configuráveis por rito, com pendências tipificadas e prazo de resolução) e semântica (OCR + VectorSearch detecta a presença efetiva de conteúdo exigido em documentos já anexados, não apenas a existência do arquivo). Pendências são notificadas via outbox com ciclo de resolução rastreável. O processo não avança enquanto houver lacuna de completude — e a secretaria pode fazer override com justificativa mínima auditável.
+
 ### 13 — Relatórios e analytics sem ranking punitivo
 
 Relatórios de gargalo, tempo médio por rito, taxa de retrabalho e taxa de conciliação. Exportação Justiça em Números para o CNJ. Nenhum relatório identifica magistrado por desempenho individual — os dados servem à melhoria sistêmica, não à pressão sobre pessoas.
@@ -237,6 +240,14 @@ Relatórios de gargalo, tempo médio por rito, taxa de retrabalho e taxa de conc
 ### 14 — Envelope de integração PDPJ/MNI/API
 
 Envelope canônico `PjbIntegrationEventEnvelope` com UUID, hash de payload, routing key e versão semântica. Mapeamento de eventos judiciais para rota canônica `judicial.{sistema}.{tipo}.{rito}`. Suporta emissão e consumo de eventos com garantia de at-least-once via outbox.
+
+### 15 — Módulo criminal e investigação policial
+
+A delegacia é modelada como unidade institucional de primeira linha, com lotação, competência territorial e grade de plantão — não como um papel genérico, mas como uma entidade com identidade e hierarquia própria dentro do bounded context criminal.
+
+Boletins de ocorrência produzem inquéritos rastreáveis. Cada BO tem tipificação, envolvidos, cadeia de custódia de documentos e vínculo automático ao processo penal quando há autuação. O inquérito acompanha o processo desde a fase policial até a fase judicial, sem quebra de rastreabilidade.
+
+O escopo policial é resolvido por lotação, não por papel. O que um delegado enxerga e movimenta é determinado pela delegacia onde está lotado. O DelegadoPainel materializa exatamente essa visão restrita — sem exposição de dados de outra unidade. O `WorkItemScopeGuard` aplica essa restrição como P0: qualquer acesso a item de trabalho fora do escopo de lotação é bloqueado no guard central, e o ArchUnit garante em tempo de build que não existe caminho de código que consiga contorná-lo.
 
 ---
 
@@ -301,6 +312,8 @@ O modelo de segurança é orientado por identidade, papel, lotação, órgão, u
 | **Auditoria materializada** | Toda operação sobre dado sigiloso — sem log de conteúdo, só metadado |
 | **AuthzTrail materializado** | Toda decisão de autorização produz registro imutável em `tb_authz_trail`, deduplicado por chave semântica — hash compacto de ator, recurso e efeito. Entradas idênticas colapsam; o ledger é consultável por padrão de acesso, não apenas por janela de tempo |
 | **Sanitização ICP-Brasil** | CPF e CNPJ removidos de respostas de API, cache de certificados, eventos de assinatura e entradas do audit ledger ICP. Onde a correlação é necessária, o identificador é hasheado — jamais em claro |
+| **Login por certificado ICP-Brasil** | Fluxo desafio-resposta completo: nonce criptográfico emitido pelo servidor, assinatura pelo certificado do usuário, verificação da cadeia ICP-Brasil, extração de identidade do subject DN e resolução de contexto institucional por lotação. A sessão de certificado é emitida como tipo distinto da sessão de senha — sem mistura de níveis de garantia |
+| **BOLA guard (WorkItemScopeGuard)** | Impede que qualquer ator acesse item de trabalho de unidade ou lotação diferente da sua. Aplicado como controle P0 — ArchUnit garante em tempo de build que não existe caminho de código capaz de bypassar o guard |
 | **LGPD** | Dados sigilosos nunca enviados a serviços externos; redact auditável por versão |
 | **Dual approval** | Operações críticas exigem confirmação de segundo ator autorizado |
 
@@ -349,6 +362,8 @@ A suíte conta com **4.112 testes · 0 falhas · 0 erros**. Toda alteração só
 
 55 ADRs documentam cada decisão arquitetural com motivação, consequências e alternativas consideradas. Devem ser lidos antes de alterar qualquer estrutura de pacote, padrão de concorrência ou política de segurança.
 
+O pipeline gera automaticamente um SBOM CycloneDX a cada build, mantendo inventário auditável de todas as dependências com versão e licença. O evidence gate de CI rejeita merges sem cobertura de guarda estrutural completa. Correlation ID obrigatório em toda requisição — propagado via contexto e registrado em cada entrada de log, permitindo rastreamento ponta a ponta sem agregador externo.
+
 ### Guards estruturais
 
 Executáveis localmente antes de qualquer commit:
@@ -376,6 +391,8 @@ python scripts/runtime_concurrency_guard.py
 | `runtime_concurrency_guard` | Zero executor criado fora da governança `PjbVirtualThreadSpine` |
 | `transactional_hotspot_guard` | `@Transactional` apenas em ApplicationService, sem I/O externo |
 | `config_taxonomy_guard` | Propriedades de configuração dentro da taxonomia definida |
+| `anti_mock_prod_guard` | Bloqueia se mocks de integração crítica estiverem ativos em produção: Gov.br, ICP-Brasil, Kafka, Elasticsearch, IA |
+| `openapi_weakness_detector` | Detecta `Map<String,Object>` sem schema tipado, campos sem `format: date-time` e rotas sem contrato OpenAPI registrado |
 
 ---
 
