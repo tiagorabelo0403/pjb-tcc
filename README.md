@@ -600,6 +600,8 @@ A tabela `tb_outbox_event` é particionada mensalmente por `created_month`. Even
 
 A trilha de autorização (`tb_authz_trail`) materializa toda decisão de acesso com uma chave semântica: hash compacto de ator, recurso e decisão, não UUID. Decisões idênticas repetidas colapsam na mesma entrada — sem duplicação silenciosa de registros para o mesmo par (sujeito, objeto, efeito). O ledger permanece consultável por padrão de acesso, não apenas por janela temporal.
 
+Os 7 tópicos Kafka são criados com **3 partições cada**, alinhado ao `listenerConcurrency: 3` do `PjbKafkaScaleConfig`. Com 1 partição, o Kafka limita a 1 consumer ativo por grupo independente da concorrência configurada — as outras threads ficam ociosas. Com 3 partições, os 3 consumer threads podem processar em paralelo, distribuindo a carga de eventos judiciais sem coordenação extra no código. Retenção de log explícita em 7 dias com segmentos de 512 MB — nenhum default silencioso de broker.
+
 Dados pessoais sensíveis — CPF e CNPJ — foram removidos de todas as camadas onde não precisam estar: resposta de API de metadados ICP-Brasil, cache de certificados, eventos de assinatura e entradas do audit ledger de cadeia ICP. Onde o identificador é necessário para correlação, é armazenado como referência hasheada, nunca em claro.
 
 ---

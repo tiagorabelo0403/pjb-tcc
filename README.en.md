@@ -600,6 +600,8 @@ The `tb_outbox_event` table is partitioned monthly by `created_month`. Processed
 
 The authorization trail (`tb_authz_trail`) materializes every access decision with a semantic key: compact hash of actor, resource, and decision — not a UUID. Identical repeated decisions collapse into the same entry — no silent duplication of records for the same (subject, object, effect) pair. The ledger remains queryable by access pattern, not just time window.
 
+All 7 Kafka topics are created with **3 partitions each**, aligned with the `listenerConcurrency: 3` setting in `PjbKafkaScaleConfig`. With 1 partition, Kafka limits each consumer group to 1 active consumer regardless of configured concurrency — the remaining threads stay idle. With 3 partitions, all 3 consumer threads can process in parallel, distributing the judicial event load without any extra coordination in application code. Log retention is explicitly set to 7 days with 512 MB segments — no silent broker defaults.
+
 Sensitive personal data — CPF and CNPJ — have been removed from every layer where they are not needed: ICP-Brasil API metadata responses, certificate cache, signature events, and ICP chain audit ledger entries. Where the identifier is needed for correlation, it is stored as a hashed reference, never in clear text.
 
 ---
