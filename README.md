@@ -158,7 +158,7 @@ pjb/
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Banco | PostgreSQL 17 com Row Level Security por operação |
 | Banco de testes | H2 em memória |
-| Migrations | Flyway — 243 migrations (V0–V280) |
+| Migrations | Flyway — V0–V296, com particionamento mensal em tabelas de evento |
 | Persistência | JPA / Hibernate com `ddl-auto: validate` em produção |
 | Mensageria | Apache Kafka 3.8 — eventos judiciais e outbox |
 | Cache | Redis 7.4 |
@@ -299,6 +299,8 @@ O modelo de segurança é orientado por identidade, papel, lotação, órgão, u
 | **Scoped Values (Java 21)** | Propagação de contexto sigiloso em Virtual Threads — sem vazamento |
 | **AnthropicInputSanitizer** | Prevenção de prompt injection nas interações com IA |
 | **Auditoria materializada** | Toda operação sobre dado sigiloso — sem log de conteúdo, só metadado |
+| **AuthzTrail materializado** | Toda decisão de autorização produz registro imutável em `tb_authz_trail`, deduplicado por chave semântica — hash compacto de ator, recurso e efeito. Entradas idênticas colapsam; o ledger é consultável por padrão de acesso, não apenas por janela de tempo |
+| **Sanitização ICP-Brasil** | CPF e CNPJ removidos de respostas de API, cache de certificados, eventos de assinatura e entradas do audit ledger ICP. Onde a correlação é necessária, o identificador é hasheado — jamais em claro |
 | **LGPD** | Dados sigilosos nunca enviados a serviços externos; redact auditável por versão |
 | **Dual approval** | Operações críticas exigem confirmação de segundo ator autorizado |
 
@@ -316,11 +318,23 @@ Zero `CompletableFuture` solto no código de produção. O ADR-0051 define o mod
 
 ---
 
+## Escalabilidade e resiliência operacional
+
+Não carregar dados desnecessariamente no JVM é tratado como restrição de projeto, não sugestão. O motor de redistribuição federativa calcula carga por jurisdição inteiramente no banco: uma única query com `GROUP BY jurisdicao_id` e dois `SUM(CASE WHEN...)` retorna os valores agregados diretamente. Nenhuma instância de `Processo` é construída, nenhuma lista é materializada, nenhum acumulador Java acumula o que o executor do PostgreSQL já sabe calcular.
+
+A tabela `tb_outbox_event` é particionada mensalmente por `created_month`. Eventos processados não são deletados em linha — a partição inteira é descartada via `DROP TABLE` quando o mês vira. O custo de expurgo é O(1) independente do volume. Um tribunal com um milhão de eventos por mês tem exatamente o mesmo custo de limpeza que um com cem.
+
+A trilha de autorização (`tb_authz_trail`) materializa toda decisão de acesso com uma chave semântica: hash compacto de ator, recurso e decisão, não UUID. Decisões idênticas repetidas colapsam na mesma entrada — sem duplicação silenciosa de registros para o mesmo par (sujeito, objeto, efeito). O ledger permanece consultável por padrão de acesso, não apenas por janela temporal.
+
+Dados pessoais sensíveis — CPF e CNPJ — foram removidos de todas as camadas onde não precisam estar: resposta de API de metadados ICP-Brasil, cache de certificados, eventos de assinatura e entradas do audit ledger de cadeia ICP. Onde o identificador é necessário para correlação, é armazenado como referência hasheada, nunca em claro.
+
+---
+
 ## Banco de dados
 
-243 migrations Flyway (V0–V280), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
+296 migrations Flyway (V0–V296), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
 
-Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação.
+Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
 
 ```sql
 CREATE POLICY processo_sigilo ON processo
@@ -331,7 +345,7 @@ CREATE POLICY processo_sigilo ON processo
 
 ## Qualidade executável
 
-A suíte conta com **3.699 testes · 0 falhas · 0 erros**. Toda alteração só é aceita quando melhora comportamento verificável sem reduzir maturidade arquitetural.
+A suíte conta com **4.112 testes · 0 falhas · 0 erros**. Toda alteração só é aceita quando melhora comportamento verificável sem reduzir maturidade arquitetural.
 
 55 ADRs documentam cada decisão arquitetural com motivação, consequências e alternativas consideradas. Devem ser lidos antes de alterar qualquer estrutura de pacote, padrão de concorrência ou política de segurança.
 
@@ -379,7 +393,7 @@ O script realiza automaticamente:
 1. Copia `.env.example` → `.env` com valores de demonstração (se não existir)
 2. Compila `pjb-core` e `pjb-api` via Maven
 3. Sobe PostgreSQL, Kafka, Elasticsearch e Redis via Docker Compose
-4. Aplica todas as 243 migrations Flyway
+4. Aplica todas as migrations Flyway (V0–V296)
 5. Aguarda o backend ficar saudável
 6. Exibe os endpoints disponíveis
 
