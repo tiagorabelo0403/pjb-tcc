@@ -18,6 +18,7 @@
 
 - [Sobre o projeto](#sobre-o-projeto)
 - [O problema](#o-problema)
+- [A proposta](#a-proposta)
 - [Pré-requisitos](#pré-requisitos)
 - [Instalação e configuração](#instalação-e-configuração)
 - [Como executar](#como-executar)
@@ -29,6 +30,8 @@
 - [Banco de dados](#banco-de-dados)
 - [Qualidade executável](#qualidade-executável)
 - [Contribuindo](#contribuindo)
+- [Autor](#autor)
+- [Licença](#licença)
 - [Glossário](#glossário)
 
 ---
@@ -52,6 +55,18 @@ O PJB foi construído do zero com três compromissos inegociáveis: rastreabilid
 | Projudi | Tribunais estaduais menores | Débito técnico crítico, sem path de migração |
 
 Nenhum dos cinco foi projetado com escalabilidade horizontal, auditoria de acesso granular ou suporte completo às classes processuais do CPC/2015 e das reformas trabalhistas. O PJB não é uma reescrita deles. É uma ruptura deliberada com esse modelo.
+
+---
+
+## A proposta
+
+O PJB foi projetado do zero com três compromissos inegociáveis:
+
+**1. Rastreabilidade total.** Toda decisão de acesso, distribuição, movimentação e comunicação produz uma trilha auditável, imutável e explicável. Não existe ação no sistema que não possa ser reconstituída — quem fez, quando fez, com qual autoridade e qual foi o efeito.
+
+**2. Testabilidade como critério de aceite.** Nenhuma funcionalidade existe sem comportamento verificável. A suíte de testes é o contrato executável do sistema — se o teste passa, o comportamento está garantido. Funcionalidade sem teste não é funcionalidade: é intenção.
+
+**3. Segurança por construção.** ABAC, RLS por operação, propagação governada de contexto sigiloso e Step-up Gov.br não são camadas adicionadas depois. São restrições que guiam cada decisão arquitetural desde o início — antes do primeiro endpoint, antes da primeira migration, antes da primeira linha de código de domínio.
 
 ---
 
@@ -107,7 +122,30 @@ docker compose up -d
 
 Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (V0–V296) são aplicadas automaticamente na primeira conexão do backend.
 
-### 4. Compilar
+### 4. Verificar os profiles Spring
+
+O projeto usa profiles Spring Boot separados por ambiente. O arquivo base é `application.yml`; cada profile sobrescreve apenas o que muda:
+
+| Profile | Arquivo | Quando usar |
+|---------|---------|------------|
+| `dev` | `application-dev.yml` | Desenvolvimento local com infraestrutura no Docker |
+| `local` | `application-local.yml` | Banco e serviços rodando diretamente no host |
+| `docker` | `application-docker.yml` | Backend dentro de container Docker |
+| `prod` | `application-prod.yml` | Produção — exige todas as variáveis de ambiente |
+| `k8s` | `application-k8s.yml` | Kubernetes |
+
+Para rodar localmente, o profile `dev` é o recomendado. Ele é ativado automaticamente pelo `demo.sh` / `demo.cmd`. Para ativar manualmente:
+
+```bash
+# Via Maven
+./mvnw spring-boot:run -pl pjb-api -Dspring-boot.run.profiles=dev
+
+# Via variável de ambiente
+export SPRING_PROFILES_ACTIVE=dev
+java -jar pjb-api/target/pjb-api.jar
+```
+
+### 5. Compilar
 
 ```bash
 # Compilar o módulo de domínio
@@ -202,6 +240,14 @@ docker compose down
 | Skipped | 5 |
 
 A suíte cobre unitários com Mockito, testes de integração com H2 em memória e integration tests contra schema PostgreSQL via Testcontainers. Toda alteração só é aceita quando melhora comportamento verificável sem reduzir maturidade arquitetural — sem regressão é critério de merge, não meta.
+
+### Relatório de cobertura (JaCoCo)
+
+```bash
+./mvnw test -pl pjb-api
+# Relatório gerado em:
+# pjb-api/target/site/jacoco/index.html
+```
 
 ---
 
@@ -697,6 +743,36 @@ A matriz de substituição compara capacidades do PJB frente a PJe, e-SAJ, eProc
 ```
 docs/product/NATIONAL_JUDICIAL_SYSTEM_REPLACEMENT_MATRIX.md
 docs/product/NATIONAL_JUDICIAL_SYSTEM_REPLACEMENT_INDEX.json
+```
+
+---
+
+## Autor
+
+**Tiago Rabelo**
+Engenharia de Software — Universidade Católica de Quixadá (Unicatólica)
+Trabalho de Conclusão de Curso — 2024/2025
+
+🔗 [github.com/tiagorabelo0403](https://github.com/tiagorabelo0403)
+
+---
+
+## Licença
+
+Este projeto está licenciado sob a [MIT License](./LICENSE).
+
+```
+MIT License — Copyright (c) 2025 Tiago Rabelo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 ```
 
 ---

@@ -18,6 +18,7 @@
 
 - [About the Project](#about-the-project)
 - [The Problem](#the-problem)
+- [The Proposal](#the-proposal)
 - [Prerequisites](#prerequisites)
 - [Installation & Setup](#installation--setup)
 - [Running the Application](#running-the-application)
@@ -29,6 +30,8 @@
 - [Database](#database)
 - [Code Quality](#code-quality)
 - [Contributing](#contributing)
+- [Author](#author)
+- [License](#license)
 - [Glossary](#glossary)
 
 ---
@@ -52,6 +55,18 @@ PJB was built from scratch to solve this problem properly. It is not a wrapper a
 | Projudi | Smaller state courts | Critical technical debt; no migration path |
 
 None of the five were designed for horizontal scalability, granular access auditing, or complete support for all procedural classes under the CPC/2015 and labor reforms. PJB does not attempt to rewrite them. It replaces the entire model.
+
+---
+
+## The Proposal
+
+PJB was designed from scratch around three non-negotiable commitments:
+
+**1. Total traceability.** Every decision involving access, distribution, movement, or communication produces an auditable, immutable, and explainable trail. There is no action in the system that cannot be reconstructed — who did it, when, under what authority, and what the effect was.
+
+**2. Testability as acceptance criteria.** No feature exists without verifiable behavior. The test suite is the system's executable contract — if the test passes, the behavior is guaranteed. A feature without a test is not a feature: it is intent.
+
+**3. Security by construction.** ABAC, per-operation RLS, governed propagation of confidential context, and Step-up Gov.br are not layers added afterward. They are constraints that guide every architectural decision from the start — before the first endpoint, before the first migration, before the first line of domain code.
 
 ---
 
@@ -107,7 +122,30 @@ docker compose up -d
 
 This starts PostgreSQL 17, Apache Kafka 3.8, Redis 7.4, and Elasticsearch 8.15. Flyway migrations (V0–V296) are applied automatically on the first backend connection.
 
-### 4. Build
+### 4. Check Spring Profiles
+
+The project uses separate Spring Boot profiles per environment. The base file is `application.yml`; each profile overrides only what changes:
+
+| Profile | File | When to Use |
+|---------|------|------------|
+| `dev` | `application-dev.yml` | Local development with infrastructure in Docker |
+| `local` | `application-local.yml` | Database and services running directly on the host |
+| `docker` | `application-docker.yml` | Backend inside a Docker container |
+| `prod` | `application-prod.yml` | Production — requires all environment variables |
+| `k8s` | `application-k8s.yml` | Kubernetes |
+
+For local development, the `dev` profile is recommended. It is activated automatically by `demo.sh` / `demo.cmd`. To activate manually:
+
+```bash
+# Via Maven
+./mvnw spring-boot:run -pl pjb-api -Dspring-boot.run.profiles=dev
+
+# Via environment variable
+export SPRING_PROFILES_ACTIVE=dev
+java -jar pjb-api/target/pjb-api.jar
+```
+
+### 5. Build
 
 ```bash
 # Build the domain module
@@ -202,6 +240,14 @@ docker compose down
 | Skipped | 5 |
 
 The suite covers unit tests with Mockito, integration tests with in-memory H2, and full integration tests against a PostgreSQL schema via Testcontainers. Zero regression is a merge requirement, not a goal.
+
+### Coverage Report (JaCoCo)
+
+```bash
+./mvnw test -pl pjb-api
+# Report generated at:
+# pjb-api/target/site/jacoco/index.html
+```
 
 ---
 
@@ -695,6 +741,36 @@ The replacement matrix compares PJB capabilities against PJe, e-SAJ, eProc, Cret
 ```
 docs/product/NATIONAL_JUDICIAL_SYSTEM_REPLACEMENT_MATRIX.md
 docs/product/NATIONAL_JUDICIAL_SYSTEM_REPLACEMENT_INDEX.json
+```
+
+---
+
+## Author
+
+**Tiago Rabelo**
+Software Engineering — Universidade Católica de Quixadá (Unicatólica), Brazil
+Final Undergraduate Thesis (TCC) — 2024/2025
+
+🔗 [github.com/tiagorabelo0403](https://github.com/tiagorabelo0403)
+
+---
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE).
+
+```
+MIT License — Copyright (c) 2025 Tiago Rabelo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 ```
 
 ---
