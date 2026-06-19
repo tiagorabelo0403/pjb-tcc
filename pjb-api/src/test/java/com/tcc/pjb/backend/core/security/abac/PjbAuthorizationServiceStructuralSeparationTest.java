@@ -115,7 +115,8 @@ class PjbAuthorizationServiceStructuralSeparationTest {
         assertTrue(trailAnalyticsRefreshQueueService.contains("public PjbAuthorizationTrailAnalyticsRefreshQueueOperationResponse cleanupCompleted("));
         assertTrue(trailAnalyticsRefreshScheduler.contains("@Scheduled(fixedDelayString = \"${pjb.authz.analytics.refresh.fixed-delay-ms:5000}\")"));
         assertTrue(trailAnalyticsRefreshScheduler.contains("@Scheduled(fixedDelayString = \"${pjb.authz.analytics.refresh.cleanup-fixed-delay-ms:3600000}\")"));
-        assertTrue(trailReadModelRepository.contains("boolean existsByPayloadHash(String payloadHash)"));
-        assertTrue(trailReadModelRepository.contains("findByOccurredAtGreaterThanEqualAndOccurredAtLessThanOrderByOccurredAtAscIdAsc"));
+        assertFalse(trailReadModelRepository.contains("existsByPayloadHash"));
+        assertTrue(trailReadModelRepository.contains("findByOccurredAtWindowWithMonthRange"));
+        assertTrue(trailReadModelRepository.contains("searchForensics"));
     }
 }

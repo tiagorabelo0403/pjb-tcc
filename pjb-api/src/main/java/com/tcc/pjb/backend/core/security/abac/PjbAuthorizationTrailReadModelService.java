@@ -3,33 +3,44 @@ package com.tcc.pjb.backend.core.security.abac;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service
 public class PjbAuthorizationTrailReadModelService {
 
     private final PjbAuthorizationTrailReadModelRepository repository;
+    private final PjbAuthzTrailDedupRepository dedupRepository;
 
-    public PjbAuthorizationTrailReadModelService(PjbAuthorizationTrailReadModelRepository repository) {
+    public PjbAuthorizationTrailReadModelService(PjbAuthorizationTrailReadModelRepository repository,
+                                                 PjbAuthzTrailDedupRepository dedupRepository) {
         this.repository = repository;
+        this.dedupRepository = dedupRepository;
     }
 
     public void materialize(PjbAuthorizationDecisionTrail trail) {
         materializeReturningSnapshot(trail);
     }
 
+    @Transactional
     public PjbAuthorizationTrailSnapshot materializeReturningSnapshot(PjbAuthorizationDecisionTrail trail) {
         PjbAuthorizationTrailSnapshot snapshot = PjbAuthorizationTrailSnapshot.from(trail);
-        if (snapshot == null || repository.existsByPayloadHash(snapshot.payloadHash())) {
+        if (snapshot == null) {
             return null;
         }
         try {
-            repository.save(PjbAuthorizationTrailReadModelEntry.from(snapshot));
+            PjbAuthorizationTrailReadModelEntry entry = repository.save(
+                    PjbAuthorizationTrailReadModelEntry.from(snapshot));
+            dedupRepository.saveAndFlush(
+                    new PjbAuthzTrailDedup(snapshot.payloadHash(), entry.getId(), entry.getOccurredMonth()));
             return snapshot;
-        } catch (DataIntegrityViolationException ignored) {
+        } catch (DataIntegrityViolationException e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return null;
         }
     }
@@ -94,7 +105,9 @@ public class PjbAuthorizationTrailReadModelService {
                 ? PjbAuthorizationTrailQueryCriteria.defaults()
                 : criteria;
         int effectiveLimit = Math.min(10000, Math.max(1, limit <= 0 ? effectiveCriteria.limit() : limit));
-        return repository.search(
+        int startMonth = toStartMonth(effectiveCriteria.occurredAfter());
+        int endMonth = toEndMonth(effectiveCriteria.occurredBefore());
+        return repository.searchForensics(
                         effectiveCriteria.actionPrefix(),
                         effectiveCriteria.resourceType(),
                         effectiveCriteria.resourceId(),
@@ -115,6 +128,8 @@ public class PjbAuthorizationTrailReadModelService {
                         effectiveCriteria.stepUpSatisfied(),
                         toLocalDateTime(effectiveCriteria.occurredAfter()),
                         toLocalDateTime(effectiveCriteria.occurredBefore()),
+                        startMonth,
+                        endMonth,
                         PageRequest.of(0, effectiveLimit)
                 )
                 .stream()
@@ -126,9 +141,13 @@ public class PjbAuthorizationTrailReadModelService {
         if (occurredAfterInclusive == null || occurredBeforeExclusive == null || !occurredBeforeExclusive.isAfter(occurredAfterInclusive)) {
             return List.of();
         }
-        return repository.findByOccurredAtGreaterThanEqualAndOccurredAtLessThanOrderByOccurredAtAscIdAsc(
+        int startMonth = toMonth(occurredAfterInclusive);
+        int endMonth = toMonth(occurredBeforeExclusive);
+        return repository.findByOccurredAtWindowWithMonthRange(
                         toLocalDateTime(occurredAfterInclusive),
-                        toLocalDateTime(occurredBeforeExclusive)
+                        toLocalDateTime(occurredBeforeExclusive),
+                        startMonth,
+                        endMonth
                 )
                 .stream()
                 .map(PjbAuthorizationTrailReadModelEntry::toSnapshot)
@@ -137,5 +156,18 @@ public class PjbAuthorizationTrailReadModelService {
 
     private static LocalDateTime toLocalDateTime(Instant value) {
         return value == null ? null : LocalDateTime.ofInstant(value, ZoneOffset.UTC);
+    }
+
+    private static int toMonth(Instant instant) {
+        ZonedDateTime zdt = instant.atZone(ZoneOffset.UTC);
+        return zdt.getYear() * 100 + zdt.getMonthValue();
+    }
+
+    private static int toStartMonth(Instant instant) {
+        return instant == null ? 0 : toMonth(instant);
+    }
+
+    private static int toEndMonth(Instant instant) {
+        return instant == null ? 999999 : toMonth(instant);
     }
 }

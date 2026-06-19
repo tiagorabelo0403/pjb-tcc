@@ -62,7 +62,7 @@ public record PjbAuthorizationTrailSnapshot(
         institutionalBoxCode = normalize(institutionalBoxCode);
         institutionalCapabilityCode = normalize(institutionalCapabilityCode);
         expedicaoUuid = normalize(expedicaoUuid);
-        payloadHash = normalize(payloadHash);
+        payloadHash = (payloadHash == null || payloadHash.isBlank()) ? "NONE" : payloadHash.trim();
         auditDescription = sanitize(auditDescription);
     }
 
