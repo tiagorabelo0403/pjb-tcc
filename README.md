@@ -1,12 +1,47 @@
+![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
+![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
+![Testes](https://img.shields.io/badge/Testes-4.112%20%7C%200%20falhas-brightgreen)
+![ADRs](https://img.shields.io/badge/ADRs-57-informational)
+![Licença](https://img.shields.io/badge/Licença-MIT-blue)
+
 # PJB — Plataforma Judicial Brasileira
 
-> Sistema judicial eletrônico de nova geração, construído em Java 21 e Spring Boot 3.5, para substituir integralmente PJe, e-SAJ, eProc, Creta e Projudi em todos os segmentos da Justiça brasileira.
+> Sistema judicial eletrônico de nova geração, construído em Java 21 e Spring Boot 3.5, projetado para substituir integralmente PJe, e-SAJ, eProc, Creta e Projudi em todos os segmentos da Justiça brasileira.
+
+**Idiomas / Languages:** [🇧🇷 Português (este arquivo)](./README.md) · [🇬🇧 English](./README.en.md)
+
+---
+
+## Navegação rápida
+
+- [Sobre o projeto](#sobre-o-projeto)
+- [O problema](#o-problema)
+- [Pré-requisitos](#pré-requisitos)
+- [Instalação e configuração](#instalação-e-configuração)
+- [Como executar](#como-executar)
+- [Testes](#testes)
+- [Documentação da API](#documentação-da-api)
+- [Arquitetura](#arquitetura)
+- [Módulos funcionais](#módulos-funcionais)
+- [Segurança e conformidade](#segurança-e-conformidade)
+- [Banco de dados](#banco-de-dados)
+- [Qualidade executável](#qualidade-executável)
+- [Contribuindo](#contribuindo)
+- [Glossário](#glossário)
+
+---
+
+## Sobre o projeto
+
+O PJB é uma plataforma de substituição total — não incremental — dos sistemas judiciais eletrônicos em uso no Brasil. Cinco sistemas foram construídos ao longo de décadas por entidades diferentes, sem nenhuma coordenação de protocolo, modelo de dados ou interface. O resultado é uma infraestrutura que hoje suporta mais de **80 milhões de processos ativos**, **91 tribunais** e **cerca de 30 mil magistrados**, mas que não foi projetada para escalar, auditar ou integrar com o rigor que a legislação e a sociedade passaram a exigir.
+
+O PJB foi construído do zero com três compromissos inegociáveis: rastreabilidade total em cada ação do sistema, testabilidade como critério de aceite de qualquer funcionalidade e segurança por construção — ABAC, RLS e propagação governada de sigilo não são camadas adicionadas depois, são restrições que guiam cada decisão arquitetural.
 
 ---
 
 ## O problema
-
-O Judiciário brasileiro opera sobre cinco sistemas legados desenvolvidos por diferentes entidades ao longo de décadas, sem coordenação de interface, protocolo ou modelo de dados. O resultado é uma infraestrutura fraturada:
 
 | Sistema | Tribunal principal | Problema central |
 |---------|-------------------|-----------------|
@@ -16,21 +51,181 @@ O Judiciário brasileiro opera sobre cinco sistemas legados desenvolvidos por di
 | Creta | Justiça do Trabalho | Baixa observabilidade, sem suporte a novos ritos |
 | Projudi | Tribunais estaduais menores | Débito técnico crítico, sem path de migração |
 
-O Brasil tem hoje mais de **80 milhões de processos ativos**, distribuídos por **91 tribunais**, atendendo **cerca de 30 mil magistrados** e milhões de advogados, partes e servidores. Nenhum dos cinco sistemas foi projetado com escalabilidade horizontal, auditoria de acesso granular ou suporte a todas as classes processuais do CPC/2015 e das reformas trabalhistas.
-
-O PJB não é uma reescrita incremental. É uma ruptura deliberada com esse modelo.
+Nenhum dos cinco foi projetado com escalabilidade horizontal, auditoria de acesso granular ou suporte completo às classes processuais do CPC/2015 e das reformas trabalhistas. O PJB não é uma reescrita deles. É uma ruptura deliberada com esse modelo.
 
 ---
 
-## A proposta
+## Pré-requisitos
 
-O PJB foi projetado do zero com três compromissos inegociáveis:
+Antes de clonar e rodar o projeto, certifique-se de ter instalado:
 
-**1. Rastreabilidade total.** Toda decisão de acesso, distribuição, movimentação e comunicação produz uma trilha auditável, imutável e explicável. Não existe ação no sistema que não possa ser reconstituída.
+| Ferramenta | Versão mínima | Finalidade |
+|------------|--------------|-----------|
+| **JDK** | 21 | Compilação e execução (Virtual Threads obrigatórias) |
+| **Maven** | 3.9+ | Build multi-module (`pjb-core` + `pjb-api`) |
+| **Docker** | 24+ | PostgreSQL, Kafka, Redis, Elasticsearch via Compose |
+| **Docker Compose** | v2 (plugin) | Orquestração da infraestrutura local |
+| **Python** | 3.10+ | Guards estruturais em `scripts/` |
 
-**2. Testabilidade como critério de aceite.** Nenhuma funcionalidade existe sem comportamento verificável. A suíte de testes é o contrato executável do sistema — se o teste passa, o comportamento está garantido.
+> **IDE recomendada:** IntelliJ IDEA 2024+ com os plugins Checkstyle e SonarLint ativos. O projeto usa records, sealed classes e pattern matching do Java 21 — versões anteriores da IDE não reconhecem toda a sintaxe.
 
-**3. Segurança por construção.** ABAC, RLS por operação, propagação governada de contexto sigiloso e Step-up Gov.br não são camadas adicionadas depois. São restrições que guiam cada decisão arquitetural desde o início.
+---
+
+## Instalação e configuração
+
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/tiagorabelo0403/pjb-tcc.git
+cd pjb-tcc
+```
+
+### 2. Configurar variáveis de ambiente
+
+```bash
+cp .env.example .env
+```
+
+Abra o `.env` e preencha as variáveis obrigatórias:
+
+| Variável | Descrição | Exemplo |
+|----------|-----------|---------|
+| `PJB_PG_HOST` | Host do PostgreSQL | `localhost` |
+| `PJB_PG_PORT` | Porta do PostgreSQL | `5432` |
+| `PJB_PG_PASSWORD` | Senha do banco | `pgpassword` |
+| `PJB_MASTER_KEY_BASE64` | Chave mestra de criptografia (Base64, 32 bytes) | gerada pelo script |
+| `PJB_ANTHROPIC_API_KEY` | Chave da API Anthropic para módulos de IA | `sk-ant-...` |
+| `PJB_KAFKA_BOOTSTRAP` | Endereço do broker Kafka | `localhost:9092` |
+
+> Para ambientes de demonstração, o `.env.example` já contém valores funcionais que o `demo.sh` / `demo.cmd` usa automaticamente.
+
+### 3. Subir a infraestrutura
+
+```bash
+docker compose up -d
+```
+
+Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (V0–V296) são aplicadas automaticamente na primeira conexão do backend.
+
+### 4. Compilar
+
+```bash
+# Compilar o módulo de domínio
+./mvnw install -pl pjb-core -DskipTests
+
+# Compilar o módulo de API (inclui geração de classes de teste)
+./mvnw test-compile -pl pjb-api
+```
+
+---
+
+## Como executar
+
+### Quickstart completo (recomendado)
+
+O script de demonstração faz tudo em sequência: copia o `.env`, compila, sobe a infraestrutura, aplica as migrations e aguarda o backend ficar saudável.
+
+```bash
+# Linux / macOS
+bash demo.sh
+
+# Windows
+demo.cmd
+```
+
+### Executar apenas o backend (infraestrutura já no ar)
+
+```bash
+# Via Maven Wrapper (recomendado em desenvolvimento)
+./mvnw spring-boot:run -pl pjb-api
+
+# Via JAR empacotado
+./mvnw package -pl pjb-api -DskipTests
+java -jar pjb-api/target/pjb-api.jar
+```
+
+### Backend completo via Docker (build + infra juntos)
+
+```bash
+docker compose --profile app up -d --build
+```
+
+O serviço `backend` está no profile `app`. Sem ele, o Compose sobe apenas a infraestrutura de suporte. Se a porta `5432` já estiver em uso localmente, defina `PJB_PG_PORT=5433` no `.env` — o backend em Docker continua acessando `postgres:5432` pela rede interna do Compose.
+
+### Endpoints após subir
+
+| Endpoint | Descrição |
+|----------|-----------|
+| `http://localhost:8080/livez` | Liveness check |
+| `http://localhost:8080/demo/status` | Estatísticas em tempo real |
+| `http://localhost:8080/swagger-ui/index.html` | Documentação interativa da API |
+| `http://localhost:8080/v3/api-docs` | Especificação OpenAPI 3.1 (JSON) |
+| `http://localhost:8080/actuator/health` | Health check completo |
+| `http://localhost:8080/actuator/metrics` | Métricas Micrometer |
+
+Com o profile `docker`, o sistema semeia automaticamente usuários e processos de demonstração.
+
+**Para encerrar:**
+```bash
+docker compose down
+```
+
+---
+
+## Testes
+
+### Rodar a suíte completa
+
+```bash
+./mvnw test -pl pjb-api
+```
+
+### Rodar um teste específico com stack trace completo
+
+```bash
+./mvnw test -pl pjb-api -Dtest=NomeDoTeste -DtrimStackTrace=false
+```
+
+### Rodar apenas testes de integração
+
+```bash
+./mvnw test -pl pjb-api -Dgroups=integration
+```
+
+### Métricas atuais
+
+| Métrica | Valor |
+|---------|-------|
+| Total de testes | **4.112** |
+| Falhas | **0** |
+| Erros | **0** |
+| Skipped | 5 |
+
+A suíte cobre unitários com Mockito, testes de integração com H2 em memória e integration tests contra schema PostgreSQL via Testcontainers. Toda alteração só é aceita quando melhora comportamento verificável sem reduzir maturidade arquitetural — sem regressão é critério de merge, não meta.
+
+---
+
+## Documentação da API
+
+O PJB expõe documentação interativa completa via **Swagger UI**, disponível após subir o backend:
+
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+A especificação OpenAPI 3.1 está disponível em:
+
+```
+http://localhost:8080/v3/api-docs
+```
+
+Os contratos versionados também estão documentados estaticamente em:
+
+```
+docs/openapi/
+```
+
+Toda rota REST é registrada no registry canônico de bounded contexts. O `PjbOpenApiContractWeaknessDetectorTest` valida automaticamente que nenhuma rota existe sem contrato OpenAPI registrado, que nenhum campo usa `Map<String,Object>` sem schema tipado e que datas seguem `format: date-time`.
 
 ---
 
@@ -54,7 +249,7 @@ O PJB foi projetado do zero com três compromissos inegociáveis:
 
 **Rito processual** define o fluxo obrigatório: quais fases existem, quais prazos se aplicam, quais atos são possíveis em cada fase. O catálogo é selado — nenhum rito pode ser inventado em runtime. Isso impede que o sistema aceite configurações inválidas.
 
-**Distribuição** é o ato de atribuir um processo a uma vara. O motor de distribuição avalia natureza, competência, rito, comarca, carga da unidade e regras do tribunal. Cada decisão de distribuição produz uma explicação auditável com todos os critérios avaliados.
+**Distribuição** é o ato de atribuir um processo a uma vara. O motor de distribuição avalia natureza, competência, rito, comarca, carga da unidade e regras do tribunal. Cada decisão produz uma explicação auditável com todos os critérios avaliados.
 
 **Movimentação** é qualquer ato sobre o processo: despacho, decisão interlocutória, sentença, acórdão, certidão, mandado. Cada movimentação tem autor, timestamp, hash de integridade e vínculo com o ato processual correspondente.
 
@@ -107,7 +302,7 @@ pjb/
 │           └── modules/              módulos especializados (laiane, advocacia)
 │
 ├── docs/
-│   ├── adr/                          55 Architecture Decision Records
+│   ├── adr/                          57 Architecture Decision Records
 │   ├── database/                     esquemas e políticas RLS
 │   ├── openapi/                      contratos de API pública
 │   ├── security/                     políticas LGPD e Gov.br
@@ -158,7 +353,7 @@ pjb/
 | Framework | Spring Boot 3.5, Spring Framework 6 |
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Banco | PostgreSQL 17 com Row Level Security por operação |
-| Banco de testes | H2 em memória |
+| Banco de testes | H2 em memória + Testcontainers |
 | Migrations | Flyway — V0–V296, com particionamento mensal em tabelas de evento |
 | Persistência | JPA / Hibernate com `ddl-auto: validate` em produção |
 | Mensageria | Apache Kafka 3.8 — eventos judiciais e outbox |
@@ -166,12 +361,11 @@ pjb/
 | Busca | Elasticsearch 8.15 |
 | Segurança | Spring Security, ABAC, Gov.br, ICP-Brasil, Passkey/WebAuthn |
 | Resiliência | Resilience4j — Circuit Breaker auditável, Bulkhead, Retry, Timeout |
-| Análise estática | Qodana (JetBrains), JaCoCo, Checkstyle, SpotBugs, ArchUnit |
 | Contratos | Pact — Consumer-Driven Contract Testing |
-| Qualidade | Qodana, JaCoCo, Checkstyle, SpotBugs, ArchUnit |
 | IA Jurídica | Anthropic Claude API — Memory Stores, Dreams, síntese reflexiva |
 | Observabilidade | Micrometer, Spring Actuator, Process Mining materializado |
-| Guards estruturais | 20+ scripts Python + ArchUnit em CI |
+| Análise estática | Qodana (JetBrains), JaCoCo, Checkstyle, SpotBugs, ArchUnit |
+| Guards estruturais | 7 scripts Python + ArchUnit integrados ao CI |
 | Containerização | Docker Compose (dev/test), Kubernetes (produção) |
 
 ---
@@ -308,12 +502,12 @@ O modelo de segurança é orientado por identidade, papel, lotação, órgão, u
 | **Step-up Gov.br** | Atos que exigem nível de autenticação elevado (prata/ouro) |
 | **ICP-Brasil** | Assinatura digital qualificada de documentos e atos jurisdicionais |
 | **Passkey / WebAuthn** | Autenticação sem senha para servidores e advogados |
+| **Login por certificado ICP-Brasil** | Fluxo desafio-resposta completo: nonce criptográfico emitido pelo servidor, assinatura pelo certificado do usuário, verificação da cadeia ICP-Brasil, extração de identidade do subject DN e resolução de contexto institucional por lotação. A sessão de certificado é emitida como tipo distinto da sessão de senha — sem mistura de níveis de garantia |
 | **Scoped Values (Java 21)** | Propagação de contexto sigiloso em Virtual Threads — sem vazamento |
 | **AnthropicInputSanitizer** | Prevenção de prompt injection nas interações com IA |
 | **Auditoria materializada** | Toda operação sobre dado sigiloso — sem log de conteúdo, só metadado |
 | **AuthzTrail materializado** | Toda decisão de autorização produz registro imutável em `tb_authz_trail`, deduplicado por chave semântica — hash compacto de ator, recurso e efeito. Entradas idênticas colapsam; o ledger é consultável por padrão de acesso, não apenas por janela de tempo |
 | **Sanitização ICP-Brasil** | CPF e CNPJ removidos de respostas de API, cache de certificados, eventos de assinatura e entradas do audit ledger ICP. Onde a correlação é necessária, o identificador é hasheado — jamais em claro |
-| **Login por certificado ICP-Brasil** | Fluxo desafio-resposta completo: nonce criptográfico emitido pelo servidor, assinatura pelo certificado do usuário, verificação da cadeia ICP-Brasil, extração de identidade do subject DN e resolução de contexto institucional por lotação. A sessão de certificado é emitida como tipo distinto da sessão de senha — sem mistura de níveis de garantia |
 | **BOLA guard (WorkItemScopeGuard)** | Impede que qualquer ator acesse item de trabalho de unidade ou lotação diferente da sua. Aplicado como controle P0 — ArchUnit garante em tempo de build que não existe caminho de código capaz de bypassar o guard |
 | **Rate limiting** | Rotas críticas protegidas contra abuso com limite de requisições por período. Resposta padronizada RFC 7807. `createOficio` e endpoints de comunicação têm orçamento próprio, separado do tráfego geral |
 | **Security event logger** | Todo evento de segurança relevante — autenticação, autorização negada, step-up, bypass tentado — produz entrada em log estruturado separado do log de aplicação, auditável de forma independente e sem mistura com ruído operacional |
@@ -354,6 +548,7 @@ Dados pessoais sensíveis — CPF e CNPJ — foram removidos de todas as camadas
 Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
 
 ```sql
+-- Exemplo de política RLS para processos sigilosos
 CREATE POLICY processo_sigilo ON processo
     USING (sigilo = false OR current_setting('app.papel') IN ('JUIZ', 'PROMOTOR'));
 ```
@@ -362,7 +557,13 @@ CREATE POLICY processo_sigilo ON processo
 
 ## Qualidade executável
 
-A suíte conta com **4.112 testes · 0 falhas · 0 erros**. Toda alteração só é aceita quando melhora comportamento verificável sem reduzir maturidade arquitetural.
+| Métrica | Estado |
+|---------|--------|
+| Testes | **4.112 · 0 falhas · 0 erros** |
+| ADRs | 57 decisões arquiteturais documentadas |
+| Guards Python | 7 scripts ativos em CI |
+| SBOM | CycloneDX gerado a cada build |
+| Correlation ID | Obrigatório em toda requisição |
 
 57 ADRs documentam cada decisão arquitetural com motivação, consequências e alternativas consideradas. Devem ser lidos antes de alterar qualquer estrutura de pacote, padrão de concorrência ou política de segurança.
 
@@ -400,100 +601,62 @@ python scripts/runtime_concurrency_guard.py
 
 ---
 
-## Quickstart
+## Observabilidade
 
-```bash
-# Linux / macOS
-bash demo.sh
-
-# Windows
-demo.cmd
+```
+GET /admin/governance/codebase-learning
+GET /admin/governance/codebase-learning?refresh=true
+GET /admin/governance/sanidade-aprendizado
+GET /admin/governance/health-matrix
+GET /actuator/health
+GET /actuator/metrics
 ```
 
-O script realiza automaticamente:
-1. Copia `.env.example` → `.env` com valores de demonstração (se não existir)
-2. Compila `pjb-core` e `pjb-api` via Maven
-3. Sobe PostgreSQL, Kafka, Elasticsearch e Redis via Docker Compose
-4. Aplica todas as migrations Flyway (V0–V296)
-5. Aguarda o backend ficar saudável
-6. Exibe os endpoints disponíveis
-
-**Após subir:**
-
-| Endpoint | Descrição |
-|----------|-----------|
-| `http://localhost:8080/livez` | Liveness check |
-| `http://localhost:8080/demo/status` | Estatísticas em tempo real |
-| `http://localhost:8080/swagger-ui/index.html` | Documentação de API completa |
-
-Com o profile `docker`, o sistema semeia automaticamente usuários e processos de demonstração para que os dados apareçam imediatamente.
-
-**Para parar:**
-```bash
-docker compose down
-```
+Expõe leitura viva do estado estrutural: hotspots do core, trilhas internas de extração do core, blueprints de extração, fluxos críticos ponta a ponta e razão de cobertura por bounded context. O snapshot em memória tem TTL curto; use `refresh=true` para forçar revarredura sem reiniciar a aplicação.
 
 ---
 
-## Como rodar
+## Contribuindo
 
-### Compilar
+### Estratégia de branches
 
-```bash
-./mvnw install -pl pjb-core -DskipTests
-./mvnw test-compile -pl pjb-api
+| Branch | Finalidade |
+|--------|-----------|
+| `master` | Branch principal — sempre estável, reflete produção |
+| `feature/nome-da-feature` | Novas funcionalidades |
+| `fix/descricao-do-bug` | Correções de bug |
+| `refactor/escopo` | Refatorações sem mudança de comportamento |
+| `docs/escopo` | Atualizações de documentação |
+
+### Padrão de commits (Conventional Commits)
+
+Este projeto adota [Conventional Commits](https://www.conventionalcommits.org/pt-br/v1.0.0/):
+
+```
+<tipo>(escopo opcional): descrição em minúsculas
+
+Corpo opcional explicando o "por quê", não o "o quê".
 ```
 
-### Testes
+| Tipo | Quando usar |
+|------|-------------|
+| `feat` | Nova funcionalidade |
+| `fix` | Correção de bug |
+| `refactor` | Refatoração sem mudança de comportamento externo |
+| `test` | Adição ou correção de testes |
+| `docs` | Documentação |
+| `chore` | Manutenção de build, CI, dependências |
+| `perf` | Melhoria de performance |
 
-```bash
-# Suite completa
-./mvnw test -pl pjb-api
+### Abrindo um Pull Request
 
-# Teste específico com stack trace completo
-./mvnw test -pl pjb-api -Dtest=NomeDoTeste -DtrimStackTrace=false
-```
+1. Crie uma branch a partir de `master` com o padrão acima
+2. Rode os guards Python e confirme que passam localmente
+3. Rode a suíte de testes e confirme 0 regressões: `./mvnw test -pl pjb-api`
+4. Abra o PR com título seguindo Conventional Commits
+5. Descreva o que mudou, por que mudou e quais testes cobrem a mudança
 
-### Infraestrutura local (sem backend)
-
-```bash
-docker compose up -d
-```
-
-### Backend completo via Docker
-
-```bash
-docker compose --profile app up -d --build
-```
-
-O serviço `backend` está no profile `app`. Sem ele, o Compose sobe apenas a infraestrutura de suporte. Se a porta `5432` já estiver em uso localmente, defina `PJB_PG_PORT=5433` no `.env` — o backend em Docker continua acessando `postgres:5432` pela rede interna do Compose.
-
-### Variáveis de ambiente necessárias
-
-| Variável | Descrição |
-|----------|-----------|
-| `PJB_PG_HOST` | Host do PostgreSQL (default: `localhost`) |
-| `PJB_PG_PORT` | Porta do PostgreSQL (default: `5432`) |
-| `PJB_PG_PASSWORD` | Senha do banco |
-| `PJB_MASTER_KEY_BASE64` | Chave mestra de criptografia (Base64, 32 bytes) |
-| `PJB_ANTHROPIC_API_KEY` | Chave da API Anthropic para módulos de IA |
-| `PJB_KAFKA_BOOTSTRAP` | Endereço do broker Kafka |
-
----
-
-## Sincronização Git segura
-
-```powershell
-.\scripts\git-sync-safe.ps1 "descrição da mudança"
-```
-
-A barreira local inspeciona o diff antes de qualquer commit e bloqueia chaves de API, senhas, tokens JWT, certificados e qualquer padrão de segredo conhecido. Detalhes em `docs/security/GIT_SAFE_SYNC.md`.
-
----
-
-## Critérios de contribuição
-
-### Obrigatórios
+### Regras invioláveis
 
 - Constructor injection em todas as classes de produção — zero `@Autowired` em fields
 - `@Inject` (Jakarta) nos construtores — nunca `@Autowired` Spring em campos
@@ -517,21 +680,13 @@ Compilar + guards Python verdes + suíte sem regressão + contratos públicos pr
 
 ---
 
-## Observabilidade
+## Sincronização Git segura
 
-```
-GET /admin/governance/codebase-learning
-GET /admin/governance/codebase-learning?refresh=true
-GET /admin/governance/sanidade-aprendizado
+```powershell
+.\scripts\git-sync-safe.ps1 "descrição da mudança"
 ```
 
-Expõe leitura viva do estado estrutural: hotspots do core, trilhas internas de extração do core, blueprints de extração e fluxos críticos ponta a ponta e razão de cobertura por bounded context. O snapshot em memória tem TTL curto; use `refresh=true` para forçar revarredura sem reiniciar a aplicação.
-
-```
-GET /admin/governance/health-matrix
-GET /actuator/health
-GET /actuator/metrics
-```
+A barreira local inspeciona o diff antes de qualquer commit e bloqueia chaves de API, senhas, tokens JWT, certificados e qualquer padrão de segredo conhecido. Detalhes em `docs/security/GIT_SAFE_SYNC.md`.
 
 ---
 
@@ -569,6 +724,8 @@ docs/product/NATIONAL_JUDICIAL_SYSTEM_REPLACEMENT_INDEX.json
 | **JEC** | Juizado Especial Cível |
 | **JEF** | Juizado Especial Federal |
 | **JEFP** | Juizado Especial da Fazenda Pública |
+| **BO** | Boletim de Ocorrência |
+| **SBOM** | Software Bill of Materials — inventário auditável de dependências |
 
 ---
 
