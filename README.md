@@ -255,6 +255,7 @@ docker compose down
 | Falhas | **0** |
 | Erros | **0** |
 | Skipped | 5 |
+| Tempo de execução (suite completa) | **~15 min** (914 s em hardware local) |
 
 A suíte cobre unitários com Mockito, testes de integração com H2 em memória e integration tests contra schema PostgreSQL via Testcontainers. Toda alteração só é aceita quando melhora comportamento verificável sem reduzir maturidade arquitetural — sem regressão é critério de merge, não meta.
 

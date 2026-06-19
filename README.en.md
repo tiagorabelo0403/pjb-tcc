@@ -255,6 +255,7 @@ docker compose down
 | Failures | **0** |
 | Errors | **0** |
 | Skipped | 5 |
+| Full suite execution time | **~15 min** (914 s on local hardware) |
 
 The suite covers unit tests with Mockito, integration tests with in-memory H2, and full integration tests against a PostgreSQL schema via Testcontainers. Zero regression is a merge requirement, not a goal.
 
