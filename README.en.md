@@ -16,6 +16,7 @@
 
 ## Quick Navigation
 
+**Quick Start**
 - [About the Project](#about-the-project)
 - [The Problem](#the-problem)
 - [The Proposal](#the-proposal)
@@ -24,12 +25,28 @@
 - [Running the Application](#running-the-application)
 - [Tests](#tests)
 - [API Documentation](#api-documentation)
+
+**Architecture & Domain**
+- [Domain](#domain)
 - [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
 - [Functional Modules](#functional-modules)
+- [Smart Accelerators](#smart-accelerators)
+- [Procedural Types Covered](#procedural-types-covered)
+
+**Infrastructure & Quality**
 - [Security & Compliance](#security--compliance)
+- [Concurrency and Async Execution](#concurrency-and-async-execution)
+- [Scalability and Operational Resilience](#scalability-and-operational-resilience)
 - [Database](#database)
 - [Code Quality](#code-quality)
+- [Observability](#observability)
+- [National Replacement](#national-replacement)
+
+**Contribution & Project**
 - [Contributing](#contributing)
+- [Safe Git Sync](#safe-git-sync)
+- [Next Steps](#next-steps)
 - [Author](#author)
 - [License](#license)
 - [Glossary](#glossary)
@@ -807,4 +824,22 @@ copies or substantial portions of the Software.
 
 ## Next Steps
 
-The backend fully covers the bounded contexts described in this document. The frontend layer — a web interface for judges, court staff, lawyers, and parties — is under development and will be integrated with the backend via the APIs documented at `/swagger-ui/index.html` and `/v3/api-docs`.
+### Backend
+
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 4,112 tests, and 296 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+
+### Frontend — Under Analysis and Planning
+
+The presentation layer is in an architectural analysis and decision phase. The backend was built from the start with the assumption that frontend and backend would be fully separated — all communication happens via REST with versioned OpenAPI contracts, which gives complete freedom of choice on the client side.
+
+The questions currently being evaluated before development begins:
+
+**Rendering model:** Pure SPA (React, Vue, Angular) or SSR/SSG (Next.js, Nuxt) — the choice directly impacts SEO, load times on slow connections (common in smaller Brazilian courts), and session cache strategy.
+
+**Interface profiles:** the system has actors with radically different workflows — judge, court clerk, lawyer, party, police chief, institutional administrator. The decision is between a single SPA with role-protected routes or separate interfaces per profile, each optimized for that specific actor's workflow.
+
+**Client-side authentication:** the backend already implements Gov.br (bronze/silver/gold), ICP-Brasil with certificate challenge-response, Passkey/WebAuthn, and contextual step-up. The frontend will need to handle this diversity of authentication flows in a cohesive way — the choice of framework impacts how this is managed in application state.
+
+**OpenAPI contract integration:** the `/v3/api-docs` contract is already available and stable. Automatic typed client generation (via OpenAPI Generator or similar) is being evaluated to eliminate the need to maintain duplicate DTOs between backend and frontend.
+
+The final decision will be recorded in a dedicated ADR before any line of frontend code is written.

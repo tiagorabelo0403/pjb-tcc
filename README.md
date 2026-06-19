@@ -16,6 +16,7 @@
 
 ## Navegação rápida
 
+**Início rápido**
 - [Sobre o projeto](#sobre-o-projeto)
 - [O problema](#o-problema)
 - [A proposta](#a-proposta)
@@ -24,12 +25,28 @@
 - [Como executar](#como-executar)
 - [Testes](#testes)
 - [Documentação da API](#documentação-da-api)
+
+**Arquitetura e domínio**
+- [Domínio](#domínio)
 - [Arquitetura](#arquitetura)
+- [Stack técnica](#stack-técnica)
 - [Módulos funcionais](#módulos-funcionais)
+- [Aceleradores inteligentes](#aceleradores-inteligentes)
+- [Ritos processuais cobertos](#ritos-processuais-cobertos)
+
+**Infraestrutura e qualidade**
 - [Segurança e conformidade](#segurança-e-conformidade)
+- [Concorrência e execução assíncrona](#concorrência-e-execução-assíncrona)
+- [Escalabilidade e resiliência operacional](#escalabilidade-e-resiliência-operacional)
 - [Banco de dados](#banco-de-dados)
 - [Qualidade executável](#qualidade-executável)
+- [Observabilidade](#observabilidade)
+- [Substituição nacional](#substituição-nacional)
+
+**Contribuição e projeto**
 - [Contribuindo](#contribuindo)
+- [Sincronização Git segura](#sincronização-git-segura)
+- [Próximos passos](#próximos-passos)
 - [Autor](#autor)
 - [Licença](#licença)
 - [Glossário](#glossário)
@@ -807,4 +824,22 @@ copies or substantial portions of the Software.
 
 ## Próximos passos
 
-O backend cobre integralmente os bounded contexts descritos neste documento. A camada de frontend — interface web para magistrados, servidores, advogados e partes — está em desenvolvimento e será integrada ao backend via as APIs documentadas em `/swagger-ui/index.html` e `/v3/api-docs`.
+### Backend
+
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.112 testes e 296 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+
+### Frontend — em análise e planejamento
+
+A camada de apresentação está em fase de análise e decisão arquitetural. O backend foi construído desde o início com a separação de frontend e backend como premissa — toda a comunicação acontece via REST com contratos OpenAPI versionados, o que dá liberdade total de escolha de tecnologia no lado do cliente.
+
+As questões que estão sendo avaliadas antes de iniciar o desenvolvimento:
+
+**Modelo de renderização:** SPA puro (React, Vue, Angular) ou SSR/SSG (Next.js, Nuxt) — a escolha impacta diretamente o SEO, o tempo de carregamento em conexões lentas (frequentes nos tribunais do interior) e a estratégia de cache de sessão.
+
+**Perfis de interface:** o sistema tem atores com fluxos radicalmente diferentes — magistrado, servidor de secretaria, advogado, parte, delegado, administrador institucional. A decisão é entre uma SPA única com rotas protegidas por papel ou interfaces separadas por perfil, cada uma otimizada para o fluxo daquele ator específico.
+
+**Autenticação no cliente:** o backend já implementa Gov.br (bronze/prata/ouro), ICP-Brasil com desafio-resposta por certificado, Passkey/WebAuthn e step-up contextual. O frontend precisará lidar com essa diversidade de flows de autenticação de forma coesa — a escolha de framework impacta como isso será gerenciado no estado da aplicação.
+
+**Integração com o contrato OpenAPI:** o contrato `/v3/api-docs` já está disponível e estável. A geração automática de cliente tipado (via OpenAPI Generator ou similar) está sendo avaliada para eliminar a necessidade de manter DTOs duplicados entre backend e frontend.
+
+A decisão final será registrada em um ADR dedicado antes de qualquer linha de código de frontend ser escrita.
