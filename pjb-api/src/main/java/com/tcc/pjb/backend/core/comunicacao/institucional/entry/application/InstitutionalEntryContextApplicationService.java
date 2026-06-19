@@ -107,11 +107,6 @@ public class InstitutionalEntryContextApplicationService {
                 .filter(Objects::nonNull)
                 .collect(java.util.stream.Collectors.toSet());
         List<InstitutionalAffiliation> afiliacoes = affiliationRepository.findByAffiliationIds(affiliationIds);
-        if (afiliacoes.isEmpty() && !affiliationIds.isEmpty()) {
-            afiliacoes = affiliationRepository.findAll().stream()
-                    .filter(item -> affiliationIds.contains(item.affiliationId()))
-                    .toList();
-        }
         Map<String, InstitutionalAffiliation> afiliacoesPorId = afiliacoes.stream()
                 .collect(java.util.stream.Collectors.toMap(InstitutionalAffiliation::affiliationId, java.util.function.Function.identity(), (left, right) -> right));
         Map<String, List<InstitutionalInboxItem>> inboxPorCaixa = new java.util.concurrent.ConcurrentHashMap<>();

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -191,7 +192,7 @@ class InstitutionalEntryContextApplicationServiceTest {
         when(delegationRepository.findAll()).thenReturn(List.of());
         when(coverageRepository.findAll()).thenReturn(List.of());
         when(nominationRepository.findByNominatedUserId(usuario.getId())).thenReturn(List.of(nomination));
-        when(affiliationRepository.findAll()).thenReturn(List.of(affiliation));
+        when(affiliationRepository.findByAffiliationIds(anyCollection())).thenReturn(List.of(affiliation));
         when(vinculoResolver.resolver(eq(usuario), any(DestinatarioInstitucionalKind.class), eq("CE"), eq("Fortaleza"))).thenReturn(List.of());
         when(vinculoResolver.resolver(eq(usuario), eq(DestinatarioInstitucionalKind.UNIDADE_PRISIONAL), eq("CE"), eq("Fortaleza"))).thenReturn(List.of(vinculo));
 

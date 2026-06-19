@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.model.repository;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -302,6 +303,26 @@ Optional<Processo> findMagistraturaActsScopedById(@Param("id") Long id);
                 .or(() -> findById(id));
     }
 
+    interface JurisdicaoLoadProjection {
+        Long getJurisdicaoId();
+        Long getTotalAtivos();
+        Long getAtrasoEstrutural();
+    }
+
+    @Query(value = """
+            SELECT
+                p.jurisdicao_id AS jurisdicaoId,
+                SUM(CASE WHEN p.status_processo IS NOT NULL
+                              AND p.status_processo <> 'ARQUIVADO'
+                         THEN 1 ELSE 0 END) AS totalAtivos,
+                SUM(CASE WHEN p.data_ultima_movimentacao IS NOT NULL
+                              AND p.data_ultima_movimentacao < :staleThreshold
+                         THEN 1 ELSE 0 END) AS atrasoEstrutural
+            FROM tb_processo p
+            WHERE p.jurisdicao_id IS NOT NULL
+            GROUP BY p.jurisdicao_id
+            """, nativeQuery = true)
+    List<JurisdicaoLoadProjection> computeLoadByJurisdicao(@Param("staleThreshold") LocalDateTime staleThreshold);
 
     @Query("""
             SELECT p.id FROM Processo p
