@@ -16,8 +16,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
+/**
+ * Repo IT — @Transactional garante rollback automático por método de teste.
+ * Padrão válido para ITs de repositório que não commitam (flush() dispara constraint dentro do TX).
+ * Não aplicável a flow ITs com requisição HTTP real (thread separada).
+ */
+@Transactional
 class FuncaoServidorJudiciarioRepositoryIT extends PjbIntegrationTestBase {
 
     @Autowired private FuncaoServidorJudiciarioRepository repository;
@@ -37,7 +44,7 @@ class FuncaoServidorJudiciarioRepositoryIT extends PjbIntegrationTestBase {
                 String.format("%011d", Long.parseUnsignedLong(s, 16)));
         unidadeId = jdbcTemplate.queryForObject(
                 "INSERT INTO tb_unidade_judiciaria_competencia (codigo, tribunal_codigo, tipo_vara) " +
-                "VALUES (?, 'TJCE', 'CIVEL') RETURNING id",
+                "VALUES (?, 'TJCE', 'CIVEL_GERAL') RETURNING id",
                 Long.class, "VARA-" + s);
     }
 
@@ -57,7 +64,7 @@ class FuncaoServidorJudiciarioRepositoryIT extends PjbIntegrationTestBase {
         transactionTemplate.execute(st -> {
             FuncaoServidorJudiciarioEntity e = repository.save(
                     new FuncaoServidorJudiciarioEntity(usuarioId, unidadeId,
-                            FuncaoServidorJudiciario.TECNICO_JUDICIARIO, LocalDate.now(), null, null));
+                            FuncaoServidorJudiciario.TECNICO_JUDICIARIO, LocalDate.now().minusDays(1), null, null));
             e.encerrar(LocalDate.now());
             return repository.save(e);
         });

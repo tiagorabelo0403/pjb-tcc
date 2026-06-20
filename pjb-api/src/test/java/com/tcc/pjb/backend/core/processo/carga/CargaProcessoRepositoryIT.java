@@ -14,8 +14,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
+/**
+ * Repo IT — @Transactional garante rollback automático por método de teste.
+ * Padrão válido para ITs de repositório que não commitam (flush() dispara constraint dentro do TX).
+ * Não aplicável a flow ITs com requisição HTTP real (thread separada).
+ */
+@Transactional
 class CargaProcessoRepositoryIT extends PjbIntegrationTestBase {
 
     @Autowired private CargaProcessoRepository repository;
@@ -112,7 +119,9 @@ class CargaProcessoRepositoryIT extends PjbIntegrationTestBase {
         transactionTemplate.execute(st -> {
             CargaProcesso c = repository.findById(c1.getId()).orElseThrow();
             c.registrarRetorno();
-            return repository.save(c);
+            CargaProcesso saved = repository.save(c);
+            repository.flush();
+            return saved;
         });
         criarCargaAtiva();
 
