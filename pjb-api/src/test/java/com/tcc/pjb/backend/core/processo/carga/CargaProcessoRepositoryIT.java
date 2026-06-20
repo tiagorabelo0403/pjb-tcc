@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.core.processo.carga;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbTransactionalRepositoryItBase;
 import com.tcc.pjb.backend.model.entity.processo.CargaProcesso;
 import com.tcc.pjb.backend.model.repository.CargaProcessoRepository;
 import java.util.List;
@@ -14,16 +14,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Repo IT — @Transactional garante rollback automático por método de teste.
+ * Repo IT — rollback automático herdado de PjbTransactionalRepositoryItBase.
  * Padrão válido para ITs de repositório que não commitam (flush() dispara constraint dentro do TX).
  * Não aplicável a flow ITs com requisição HTTP real (thread separada).
  */
-@Transactional
-class CargaProcessoRepositoryIT extends PjbIntegrationTestBase {
+class CargaProcessoRepositoryIT extends PjbTransactionalRepositoryItBase {
 
     @Autowired private CargaProcessoRepository repository;
     @Autowired private JdbcTemplate jdbcTemplate;
