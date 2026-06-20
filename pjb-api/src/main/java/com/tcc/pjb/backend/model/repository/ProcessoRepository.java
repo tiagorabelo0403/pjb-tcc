@@ -125,6 +125,34 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
     @Query("SELECT COUNT(p) FROM Processo p WHERE p.jurisdicao.id = :jurisdicaoId AND p.statusProcesso <> 'ARQUIVADO'")
     long countByJurisdicaoIdAndStatusAtivo(@Param("jurisdicaoId") Long jurisdicaoId);
 
+    long countByStatusProcesso(StatusProcesso status);
+
+    @Query("""
+            SELECT COUNT(p) FROM Processo p
+            WHERE p.statusProcesso = :recursalStatus
+               OR p.faseAtual IN :recursalPhases
+            """)
+    long countRecursais(@Param("recursalStatus") StatusProcesso recursalStatus,
+                        @Param("recursalPhases") Collection<FaseProcessual> recursalPhases);
+
+    @Query(value = """
+            SELECT COALESCE(p.ramo_direito, 'NAO_CLASSIFICADO') AS ramo,
+                   COUNT(*) AS total
+            FROM tb_processo p
+            GROUP BY COALESCE(p.ramo_direito, 'NAO_CLASSIFICADO')
+            ORDER BY ramo ASC
+            """, nativeQuery = true)
+    List<Object[]> countPorRamo();
+
+    @Query(value = """
+            SELECT COALESCE(p.status_processo, 'NAO_CLASSIFICADO') AS status,
+                   COUNT(*) AS total
+            FROM tb_processo p
+            GROUP BY COALESCE(p.status_processo, 'NAO_CLASSIFICADO')
+            ORDER BY status ASC
+            """, nativeQuery = true)
+    List<Object[]> countPorStatus();
+
     
 
     

@@ -4,13 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.tcc.pjb.backend.core.comunicacao.judicial.ExpedicaoJudicial;
 import com.tcc.pjb.backend.core.comunicacao.judicial.ExpedicaoJudicialRepository;
 import com.tcc.pjb.backend.core.kernel.recursal.InstanceLevel;
 import com.tcc.pjb.backend.core.kernel.recursal.LegalIntegrationSystem;
-import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.casefile.CaseContinuityTrack;
 import com.tcc.pjb.backend.model.entity.casefile.CaseProceeding;
 import com.tcc.pjb.backend.model.entity.casefile.CaseProceedingRole;
@@ -28,7 +28,9 @@ import com.tcc.pjb.backend.repository.outbox.OutboxEventRepository;
 import com.tcc.pjb.backend.service.processual.observability.metrics.ProcessBusinessMetrics;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class ProcessBusinessObservabilityServiceTest {
@@ -54,14 +56,29 @@ class ProcessBusinessObservabilityServiceTest {
                 metrics
         );
 
-        Processo processo = new Processo();
-        processo.setFaseAtual(FaseProcessual.RECURSAL);
-        processo.setStatusProcesso(StatusProcesso.RECURSO_INTERPOSTO);
-        when(processoRepository.findAll()).thenReturn(List.of(processo));
+        List<FaseProcessual> recursalPhases = Arrays.stream(FaseProcessual.values())
+                .filter(FaseProcessual::isRecursal)
+                .toList();
+
+        when(processoRepository.count()).thenReturn(1L);
+        when(processoRepository.countByStatusProcesso(eq(StatusProcesso.ARQUIVADO))).thenReturn(0L);
+        when(processoRepository.countByStatusProcesso(eq(StatusProcesso.TRANSITO_EM_JULGADO))).thenReturn(0L);
+        when(processoRepository.countRecursais(eq(StatusProcesso.RECURSO_INTERPOSTO), eq(recursalPhases))).thenReturn(1L);
+        when(processoRepository.countPorRamo()).thenReturn(List.of(
+                new Object[]{"CIVIL", 2L},
+                new Object[]{"NAO_CLASSIFICADO", 1L},
+                new Object[]{"PENAL", 1L}
+        ));
+        when(processoRepository.countPorStatus()).thenReturn(List.of(
+                new Object[]{"ARQUIVADO", 1L},
+                new Object[]{"EM_ANDAMENTO", 1L},
+                new Object[]{"NAO_CLASSIFICADO", 1L},
+                new Object[]{"RECURSO_INTERPOSTO", 1L}
+        ));
         when(workItemRepository.countByStatus(WorkItemStatus.PENDENTE)).thenReturn(0L);
         when(workItemRepository.countByStatus(WorkItemStatus.EM_EXECUCAO)).thenReturn(0L);
-        when(workItemRepository.countByStatusAndDueAtBefore(org.mockito.ArgumentMatchers.eq(WorkItemStatus.PENDENTE), any())).thenReturn(0L);
-        when(workItemRepository.countByStatusAndDueAtBefore(org.mockito.ArgumentMatchers.eq(WorkItemStatus.EM_EXECUCAO), any())).thenReturn(0L);
+        when(workItemRepository.countByStatusAndDueAtBefore(eq(WorkItemStatus.PENDENTE), any())).thenReturn(0L);
+        when(workItemRepository.countByStatusAndDueAtBefore(eq(WorkItemStatus.EM_EXECUCAO), any())).thenReturn(0L);
         when(outboxEventRepository.peekIds(anyString(), any(), anyInt())).thenReturn(List.of());
         when(expedicaoJudicialRepository.countByStatus(ExpedicaoJudicial.StatusExpedicao.EXPEDIDA)).thenReturn(0L);
         when(expedicaoJudicialRepository.countByStatus(ExpedicaoJudicial.StatusExpedicao.FRUSTRADA_DEFINITIVA)).thenReturn(0L);
@@ -84,6 +101,14 @@ class ProcessBusinessObservabilityServiceTest {
 
         var response = service.snapshot();
 
+        assertEquals(1L, response.totalProcessos());
+        assertEquals(0L, response.arquivados());
+        assertEquals(0L, response.transitoJulgado());
+        assertEquals(1L, response.recursais());
+        assertEquals(Map.of("CIVIL", 2L, "NAO_CLASSIFICADO", 1L, "PENAL", 1L), response.processosPorRamo());
+        assertEquals(
+                Map.of("ARQUIVADO", 1L, "EM_ANDAMENTO", 1L, "NAO_CLASSIFICADO", 1L, "RECURSO_INTERPOSTO", 1L),
+                response.processosPorStatus());
         assertEquals(3L, response.caseFilesUnificados());
         assertEquals(9L, response.proceedingsMaterializados());
         assertEquals(1L, response.proceedingsRecursais());

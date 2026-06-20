@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.service.processual.observability.business;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -16,11 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.comunicacao.judicial.ExpedicaoJudicial;
 import com.tcc.pjb.backend.core.comunicacao.judicial.ExpedicaoJudicialRepository;
 import com.tcc.pjb.backend.model.dto.processual.observability.business.ProcessBusinessObservabilityResponse;
-import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.casefile.CaseContinuityTrack;
 import com.tcc.pjb.backend.model.entity.casefile.CaseProceeding;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
+import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.repository.CaseFileEventRepository;
 import com.tcc.pjb.backend.model.repository.CaseFileRepository;
 import com.tcc.pjb.backend.model.repository.CaseProceedingRepository;
@@ -33,6 +33,9 @@ import com.tcc.pjb.backend.service.processual.observability.metrics.ProcessBusin
 public class ProcessBusinessObservabilityService {
 
     private static final Duration SNAPSHOT_CACHE_TTL = Duration.ofSeconds(20);
+    private static final List<FaseProcessual> RECURSAIS_PHASES = Arrays.stream(FaseProcessual.values())
+            .filter(FaseProcessual::isRecursal)
+            .toList();
 
     private final ProcessoRepository processoRepository;
     private final WorkItemRepository workItemRepository;
@@ -69,14 +72,15 @@ public class ProcessBusinessObservabilityService {
             return cached.response();
         }
         Instant reference = Instant.now();
-        List<Processo> processos = processoRepository.findAll();
         List<CaseProceeding> proceedings = caseProceedingRepository.findAll();
         Map<Long, List<CaseProceeding>> proceedingsByCase = groupProceedingsByCase(proceedings);
 
-        long total = processos.size();
-        long arquivados = processos.stream().filter(p -> p.getStatusProcesso() == StatusProcesso.ARQUIVADO).count();
-        long transito = processos.stream().filter(p -> p.getStatusProcesso() == StatusProcesso.TRANSITO_EM_JULGADO).count();
-        long recursais = processos.stream().filter(this::isRecursal).count();
+        long total = processoRepository.count();
+        long arquivados = processoRepository.countByStatusProcesso(StatusProcesso.ARQUIVADO);
+        long transito = processoRepository.countByStatusProcesso(StatusProcesso.TRANSITO_EM_JULGADO);
+        long recursais = RECURSAIS_PHASES.isEmpty()
+                ? processoRepository.countByStatusProcesso(StatusProcesso.RECURSO_INTERPOSTO)
+                : processoRepository.countRecursais(StatusProcesso.RECURSO_INTERPOSTO, RECURSAIS_PHASES);
         long ativos = Math.max(0L, total - arquivados);
         long workItemsPendentes = workItemRepository.countByStatus(WorkItemStatus.PENDENTE);
         long workItemsEmExecucao = workItemRepository.countByStatus(WorkItemStatus.EM_EXECUCAO);
@@ -119,8 +123,8 @@ public class ProcessBusinessObservabilityService {
             }
         }
 
-        Map<String, Long> porRamo = aggregate(processos, processo -> processo.getRamoDireito() != null ? processo.getRamoDireito().name() : "NAO_CLASSIFICADO");
-        Map<String, Long> porStatus = aggregate(processos, processo -> processo.getStatusProcesso() != null ? processo.getStatusProcesso().name() : "NAO_CLASSIFICADO");
+        Map<String, Long> porRamo = toLinkedMap(processoRepository.countPorRamo());
+        Map<String, Long> porStatus = toLinkedMap(processoRepository.countPorStatus());
         List<String> filasCriticas = workItemRepository.findFilasComMaisDe(25L);
         List<String> alertas = buildAlerts(ativos, recursais, workItemsVencidos, outboxPendentes, comunicacoesFrustradas, comunicacoesEvasao, filasCriticas, staleProceedings, proceedingsExecutorios, caseFilesAttentionRequired, orphanProceedingParents, divergentRootProceedings);
 
@@ -162,11 +166,6 @@ public class ProcessBusinessObservabilityService {
         return cache != null && cache.expiresAt() != null && cache.expiresAt().isAfter(Instant.now());
     }
 
-    private boolean isRecursal(Processo processo) {
-        return processo.getStatusProcesso() == StatusProcesso.RECURSO_INTERPOSTO
-                || (processo.getFaseAtual() != null && processo.getFaseAtual().name().contains("RECURSAL"));
-    }
-
     private Map<Long, List<CaseProceeding>> groupProceedingsByCase(List<CaseProceeding> proceedings) {
         LinkedHashMap<Long, List<CaseProceeding>> out = new LinkedHashMap<>();
         proceedings.stream()
@@ -175,13 +174,11 @@ public class ProcessBusinessObservabilityService {
         return out;
     }
 
-    private Map<String, Long> aggregate(List<Processo> processos, java.util.function.Function<Processo, String> classifier) {
+    private static Map<String, Long> toLinkedMap(List<Object[]> rows) {
         LinkedHashMap<String, Long> out = new LinkedHashMap<>();
-        processos.stream()
-                .map(classifier)
-                .filter(Objects::nonNull)
-                .sorted(Comparator.naturalOrder())
-                .forEach(key -> out.merge(key, 1L, Long::sum));
+        for (Object[] row : rows) {
+            out.put((String) row[0], ((Number) row[1]).longValue());
+        }
         return out.isEmpty() ? Map.of() : Collections.unmodifiableMap(out);
     }
 
