@@ -55,3 +55,26 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
+    # ── Egress HTTPS externo ─────────────────────────────────────────────────
+    # CIDRs abaixo são TEST-NET RFC 5737 (não roteam) — substituir antes do deploy.
+    # Para cada destino: resolver via dig <hostname> e obter o /24 ou /16 do bloco.
+    # D-K-egress (ALTA): CIDR estático é ponte; produção real exige FQDN-aware egress
+    # (Cilium NetworkPolicy com matchNames FQDN ou egress-gateway dedicado).
+    - to:
+        - ipBlock:
+            cidr: 203.0.113.0/32  # REPLACE: Serpro Gov.br OAuth2 — dig portalseguro.estaleiro.serpro.gov.br
+        - ipBlock:
+            cidr: 203.0.113.1/32  # REPLACE: CNJ SISBAJUD — dig <endpoint-sisbajud.cnj.jus.br>
+        - ipBlock:
+            cidr: 203.0.113.2/32  # REPLACE: CNJ RENAJUD — dig <endpoint-renajud.cnj.jus.br>
+        - ipBlock:
+            cidr: 203.0.113.3/32  # REPLACE: CNJ INFOJUD — dig <endpoint-infojud.cnj.jus.br>
+        - ipBlock:
+            cidr: 203.0.113.4/32  # REPLACE: Anthropic API — dig api.anthropic.com
+        - ipBlock:
+            cidr: 203.0.113.5/32  # REPLACE: OpenAI API — dig api.openai.com
+        - ipBlock:
+            cidr: 203.0.113.6/32  # REPLACE: Google AI Gemini — dig generativelanguage.googleapis.com
+      ports:
+        - protocol: TCP
+          port: 443

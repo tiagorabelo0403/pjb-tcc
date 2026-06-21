@@ -55,3 +55,20 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
+    # ── Egress HTTPS externo (AI providers, integrações judiciais) ───────────
+    # CIDRs abaixo são TEST-NET RFC 5737 (não roteam) — substituir antes do deploy.
+    # Para cada destino: resolver via dig <hostname> e obter o bloco /24 ou /16.
+    # D-K-egress (ALTA): CIDR estático é ponte; produção real exige FQDN-aware egress
+    # (Cilium NetworkPolicy com matchNames FQDN ou egress-gateway dedicado).
+    - to:
+        - ipBlock:
+            cidr: 203.0.113.4/32  # REPLACE: Anthropic API — dig api.anthropic.com
+        - ipBlock:
+            cidr: 203.0.113.5/32  # REPLACE: OpenAI API — dig api.openai.com
+        - ipBlock:
+            cidr: 203.0.113.6/32  # REPLACE: Google AI Gemini — dig generativelanguage.googleapis.com
+        - ipBlock:
+            cidr: 203.0.113.7/32  # REPLACE: n8n dispatch externo (se não for serviço interno do cluster)
+      ports:
+        - protocol: TCP
+          port: 443
