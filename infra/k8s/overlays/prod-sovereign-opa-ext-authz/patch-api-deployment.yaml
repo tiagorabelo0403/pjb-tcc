@@ -17,7 +17,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - name: api
+        - name: backend
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -33,7 +33,7 @@ spec:
             - name: PJB_EDGE_AUTHZ_DRY_RUN
               value: "true"
         - name: opa-envoy
-          image: openpolicyagent/opa:latest-envoy
+          image: openpolicyagent/opa:0.68.0-envoy
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
