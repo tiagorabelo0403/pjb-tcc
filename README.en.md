@@ -2,7 +2,8 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-4%2C112%20%7C%200%20failures-brightgreen)
+![Unit Tests](https://img.shields.io/badge/Unit%20Tests-4%2C112%20%7C%200%20failures-brightgreen)
+![Integration Tests](https://img.shields.io/badge/IT%20Tests-182%20%7C%2022%20stabilizing-yellow)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -229,11 +230,28 @@ docker compose down
 
 ## Tests
 
-### Run the Full Suite
+The project has two test levels with very different characteristics:
+
+- **Unit tests (Surefire):** 4,112 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Integration tests (Failsafe):** 182 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Significantly slower.
+
+### Run Unit Tests Only (fast)
 
 ```bash
 ./mvnw test -pl pjb-api
 ```
+
+Expected time: **~15 min** on local hardware. Does not require Docker.
+
+### Run the Full Suite Including Integration Tests (official gate)
+
+```bash
+./mvnw verify -pl pjb-api
+```
+
+This is the official project gate. It runs all 4,112 unit tests (Surefire) and then the 182 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+
+Expected time: **~45 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
 
 ### Run a Specific Test with Full Stack Trace
 
@@ -241,23 +259,18 @@ docker compose down
 ./mvnw test -pl pjb-api -Dtest=TestClassName -DtrimStackTrace=false
 ```
 
-### Run Integration Tests Only
-
-```bash
-./mvnw test -pl pjb-api -Dgroups=integration
-```
-
 ### Current Metrics
 
-| Metric | Value |
-|--------|-------|
-| Total tests | **4,112** |
-| Failures | **0** |
-| Errors | **0** |
-| Skipped | 5 |
-| Full suite execution time | **~15 min** (914 s on local hardware) |
+| Metric | Phase | Value |
+|--------|-------|-------|
+| Unit tests | Surefire | **4,112 · 0 failures** |
+| Skipped | Surefire | 5 |
+| Unit test execution time | Surefire | **~15 min** |
+| Integration tests | Failsafe | **182** |
+| IT failures (stabilizing) | Failsafe | **22** (12E + 10F) |
+| Full verify execution time | Surefire + Failsafe | **~45 min** |
 
-The suite covers unit tests with Mockito, integration tests with in-memory H2, and full integration tests against a PostgreSQL schema via Testcontainers. Zero regression is a merge requirement, not a goal.
+The integration test suite is under active stabilization. Starting from 49 failures, it reached 22 after eliminating clusters CG-1 (22E — wrong environment variable), CG-2-Postgres (5E — test data contamination), CG-3 (3E — hardcoded IDs without seeds), and CG-7 (1E — same root as CG-1). The remaining 22 are real product bugs and two Mockito/H2 setup clusters, all mapped and being addressed.
 
 ### Coverage Report (JaCoCo)
 
@@ -625,7 +638,9 @@ CREATE POLICY processo_sigilo ON processo
 
 | Metric | Status |
 |--------|--------|
-| Tests | **4,112 · 0 failures · 0 errors** |
+| Unit tests (Surefire) | **4,112 · 0 failures · 0 errors** |
+| Integration tests (Failsafe) | **182 · 22 failures stabilizing** (from 49 → 22) |
+| K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
 | Python Guards | 7 scripts active in CI |
 | SBOM | CycloneDX generated on every build |
@@ -634,6 +649,19 @@ CREATE POLICY processo_sigilo ON processo
 57 ADRs document each architectural decision with motivation, consequences, and alternatives considered. They must be read before altering any package structure, concurrency pattern, or security policy.
 
 The pipeline automatically generates a CycloneDX SBOM on every build, maintaining an auditable inventory of all dependencies with version and license. The CI evidence gate rejects merges without full structural guard coverage. Correlation ID mandatory on every request — propagated via context and recorded in every log entry, enabling end-to-end tracing without an external aggregator.
+
+### Kubernetes Manifest Validation
+
+Manifests in `infra/k8s/` are schema-validated before every commit using `kubernetes-validate` with bundled schemas (no network dependency):
+
+```bash
+pip install kubernetes-validate pyyaml --break-system-packages
+python infra/k8s_schema_validate.py
+```
+
+The script validates all core K8s resources across four main overlays (`base`, `prod`, `prod-sovereign-fapi-gateway`, `prod-sovereign-opa-ext-authz`). CRDs without bundled schemas (VPA, Gateway API, KEDA ScaledObject) are listed by name as skipped — equivalent to kubeconform's `-ignore-missing-schemas`.
+
+> **Registered production debts:** CIDR-based egress is unworkable for AI destinations behind CDN (Anthropic/OpenAI/Google AI) — requires Cilium FQDN NetworkPolicy or an egress gateway. The `legalai/dreams` subsystem will not function in production without this layer. Real cluster secrets (Gateway TLS, database credentials) must be provisioned externally (cert-manager, ICP-Brasil, vault) — never versioned in the repository.
 
 ### Structural Guards
 

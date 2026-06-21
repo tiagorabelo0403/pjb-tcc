@@ -2,7 +2,8 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.112%20%7C%200%20falhas-brightgreen)
+![Testes unitários](https://img.shields.io/badge/Testes%20unit%C3%A1rios-4.112%20%7C%200%20falhas-brightgreen)
+![Testes de integração](https://img.shields.io/badge/Testes%20IT-182%20%7C%2022%20em%20estabiliza%C3%A7%C3%A3o-yellow)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -229,11 +230,30 @@ docker compose down
 
 ## Testes
 
-### Rodar a suíte completa
+O projeto tem dois níveis de teste com características bem diferentes:
+
+- **Testes unitários (Surefire):** 4.112 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes de integração (Failsafe):** 182 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+
+### Rodar apenas os testes unitários (rápido)
 
 ```bash
 ./mvnw test -pl pjb-api
 ```
+
+Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
+
+### Rodar a suíte completa com integração (portão oficial)
+
+```bash
+./mvnw verify -pl pjb-api
+```
+
+Esse comando é o portão oficial do projeto. Ele roda os 4.112 unitários (Surefire) e depois os 182 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+
+Tempo esperado: **~45 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
+
+> **Por que tão demorado?** Cada classe de IT sobe um contexto Spring completo com PostgreSQL real, aplica as migrations Flyway e executa as requests HTTP como um cliente externo faria. Isso dá confiança total de que o que passou em teste vai passar em produção — mas tem um custo de tempo.
 
 ### Rodar um teste específico com stack trace completo
 
@@ -241,23 +261,19 @@ docker compose down
 ./mvnw test -pl pjb-api -Dtest=NomeDoTeste -DtrimStackTrace=false
 ```
 
-### Rodar apenas testes de integração
-
-```bash
-./mvnw test -pl pjb-api -Dgroups=integration
-```
-
 ### Métricas atuais
 
-| Métrica | Valor |
-|---------|-------|
-| Total de testes | **4.112** |
-| Falhas | **0** |
-| Erros | **0** |
-| Skipped | 5 |
-| Tempo de execução (suite completa) | **~15 min** (914 s em hardware local) |
+| Métrica | Fase | Valor |
+|---------|------|-------|
+| Total de testes unitários | Surefire | **4.112** |
+| Falhas unitários | Surefire | **0** |
+| Skipped | Surefire | 5 |
+| Tempo unitários | Surefire | **~15 min** |
+| Total de testes de integração | Failsafe | **182** |
+| Falhas IT (em estabilização) | Failsafe | **22** (12E + 10F) |
+| Tempo verify completo | Surefire + Failsafe | **~45 min** |
 
-A suíte cobre unitários com Mockito, testes de integração com H2 em memória e integration tests contra schema PostgreSQL via Testcontainers. Toda alteração só é aceita quando melhora comportamento verificável sem reduzir maturidade arquitetural — sem regressão é critério de merge, não meta.
+A suíte de integração está em processo ativo de estabilização. O ponto de partida era 49 falhas; chegou a 22 após eliminação dos clusters CG-1 (22E — variável de ambiente errada), CG-2-Postgres (5E — contaminação entre testes por dados não limpos), CG-3 (3E — IDs hardcoded sem seed), CG-7 (1E — mesmo grupo do CG-1). Os 22 restantes são bugs de produto real (não de ambiente) e mais dois clusters de setup Mockito e H2, que estão mapeados e sendo atacados.
 
 ### Relatório de cobertura (JaCoCo)
 
@@ -625,7 +641,9 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes | **4.112 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.112 · 0 falhas · 0 erros** |
+| Testes de integração (Failsafe) | **182 · 22 falhas em estabilização** (de 49 → 22) |
+| Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
 | SBOM | CycloneDX gerado a cada build |
@@ -634,6 +652,19 @@ CREATE POLICY processo_sigilo ON processo
 57 ADRs documentam cada decisão arquitetural com motivação, consequências e alternativas consideradas. Devem ser lidos antes de alterar qualquer estrutura de pacote, padrão de concorrência ou política de segurança.
 
 O pipeline gera automaticamente um SBOM CycloneDX a cada build, mantendo inventário auditável de todas as dependências com versão e licença. O evidence gate de CI rejeita merges sem cobertura de guarda estrutural completa. Correlation ID obrigatório em toda requisição — propagado via contexto e registrado em cada entrada de log, permitindo rastreamento ponta a ponta sem agregador externo.
+
+### Validação de manifestos Kubernetes
+
+Os manifestos em `infra/k8s/` são validados por schema antes de qualquer commit usando `kubernetes-validate` com schemas embarcados (sem dependência de rede):
+
+```bash
+pip install kubernetes-validate pyyaml --break-system-packages
+python infra/k8s_schema_validate.py
+```
+
+O script valida estrutura de todos os recursos K8s core nos quatro overlays principais (`base`, `prod`, `prod-sovereign-fapi-gateway`, `prod-sovereign-opa-ext-authz`). CRDs sem schema embarcado (VPA, Gateway API, KEDA ScaledObject) são listados nominalmente como pulados — equivalente ao `-ignore-missing-schemas` do kubeconform.
+
+> **Dívidas de produção registradas:** egress por CIDR estático é inviável para destinos de IA atrás de CDN (Anthropic/OpenAI/Google AI) — exige Cilium FQDN NetworkPolicy ou egress-gateway. O subsistema `legalai/dreams` não funciona em produção sem essa camada. Secrets reais do cluster (TLS do Gateway, credenciais do banco) devem ser provisionados externamente (cert-manager, ICP-Brasil, vault) — nunca versionados no repositório.
 
 ### Guards estruturais
 

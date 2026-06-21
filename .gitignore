@@ -98,6 +98,13 @@ secret*.txt
 prompt-round*.txt
 prompt*.txt
 
+# Kubernetes — evitar commit acidental de secrets K8s preenchidos com valores reais
+# (arquivos template com REPLACE_ME são intencionais e pertencem ao repo)
+infra/k8s/**/*-real.yaml
+infra/k8s/**/*-filled.yaml
+infra/k8s/**/*-local.yaml
+infra/k8s/**/*.kubeconfig
+
 # Data exports that may carry personal or procedural data
 *.csv
 *.tsv
