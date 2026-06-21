@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.ai.contract.IAResponse;
 import com.tcc.pjb.backend.ai.orchestrator.IAOrchestrator;
 import com.tcc.pjb.backend.integration.judicial.JudicialConnectorLifecycleService;
@@ -51,7 +51,7 @@ import org.springframework.test.web.servlet.MockMvc;
         "spring.cache.type=none",
         "pjb.workflow.enabled=false"
 })
-class ProcessoCommandControllerIT extends PjbIntegrationTestBase {
+class ProcessoCommandControllerIT extends PjbFlowItBase {
 
     @Autowired
     private MockMvc mockMvc;
@@ -76,9 +76,6 @@ class ProcessoCommandControllerIT extends PjbIntegrationTestBase {
 
     @BeforeEach
     void setup() {
-        processoRepository.deleteAll();
-        auditoriaRepository.deleteAll();
-        usuarioRepository.deleteAll();
         usuarioRepository.save(novoAdvogado());
         when(judicialConnectorLifecycleService.submitAndSynchronize(any(), any(), any(), anyBoolean())).thenReturn(Optional.empty());
         when(iaOrchestrator.processar(any())).thenReturn(IAResponse.builder()
