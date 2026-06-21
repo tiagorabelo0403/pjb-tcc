@@ -1,22 +1,30 @@
 package com.tcc.pjb.backend.core.criminal.custodia;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
+import com.tcc.pjb.backend.core.criminal.custodia.domain.BnmpConsultaResult;
+import com.tcc.pjb.backend.core.criminal.custodia.domain.ConcluirAudienciaCommand;
+import com.tcc.pjb.backend.core.criminal.custodia.domain.RegistrarPrisaoCommand;
+import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.AudienciaCustodiaRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import java.time.Instant;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import com.tcc.pjb.backend.core.criminal.custodia.domain.ConcluirAudienciaCommand;
-import com.tcc.pjb.backend.core.criminal.custodia.domain.RegistrarPrisaoCommand;
 
-class AudienciaCustodiaFlowIT extends PjbIntegrationTestBase {
+class AudienciaCustodiaFlowIT extends PjbFlowItBase {
 
     @Autowired
     private ProcessoRepository processoRepository;
@@ -24,18 +32,34 @@ class AudienciaCustodiaFlowIT extends PjbIntegrationTestBase {
     private AudienciaCustodiaService audienciaCustodiaService;
     @Autowired
     private AudienciaCustodiaRepository audRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @MockitoBean
     private BnmpConsultaService bnmpConsultaService;
 
     @MockitoBean
-    private com.tcc.pjb.backend.core.security.CurrentUserService currentUserService;
+    private CurrentUserService currentUserService;
+
+    @BeforeEach
+    void setup() {
+        Usuario operador = new Usuario();
+        operador.setNome("Operador Custodia");
+        operador.setEmail("operador.custodia@test.local");
+        operador.setSenha("x");
+        operador.setCpf("11122233344");
+        operador.setTipoUsuario(TipoUsuario.ADVOGADO);
+        operador.setPerfil(TipoUsuario.ADVOGADO.name());
+        operador.setAtivo(true);
+        Long operadorId = usuarioRepository.save(operador).getId();
+
+        when(currentUserService.currentUserIdOrZero()).thenReturn(operadorId);
+        when(bnmpConsultaService.consultarMandadoAtivo(any()))
+                .thenReturn(new BnmpConsultaResult(false, null));
+    }
 
     @Test
     void deveRegistrarPrisaoEConcluirAudiencia() {
-        org.mockito.Mockito.when(currentUserService.currentUserIdOrZero()).thenReturn(77L);
-        org.mockito.Mockito.when(bnmpConsultaService.consultarMandadoAtivo(org.mockito.ArgumentMatchers.any()))
-                .thenReturn(new com.tcc.pjb.backend.core.criminal.custodia.domain.BnmpConsultaResult(false, null));
         Processo processo = processoRepository.save(Processo.builder()
                 .numeroProcesso("CUST-1")
                 .numeroUnificado("CUST-U-1")

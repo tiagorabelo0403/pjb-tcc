@@ -2,20 +2,43 @@ package com.tcc.pjb.backend.core.comunicacao.judicial;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbTransactionalRepositoryItBase;
+import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
+import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
+import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.time.Instant;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class ExpedicaoJudicialRepositoryIT extends PjbIntegrationTestBase {
+class ExpedicaoJudicialRepositoryIT extends PjbTransactionalRepositoryItBase {
 
     @Autowired
     private ExpedicaoJudicialRepository repository;
 
+    @Autowired
+    private ProcessoRepository processoRepository;
+
+    private Long processoId;
+
+    @BeforeEach
+    void seed() {
+        processoId = processoRepository.save(Processo.builder()
+                .numeroProcesso("EXP-SEED-1")
+                .numeroUnificado("EXP-UNIF-1")
+                .tribunal("TJCE")
+                .uf("CE")
+                .comarca("Fortaleza")
+                .ramoDireito(RamoDireito.PENAL)
+                .statusProcesso(StatusProcesso.EM_ANDAMENTO)
+                .build()).getId();
+    }
+
     @Test
     void devePromoverPresuncaoERecuperarHistoricoDigitalConfirmado() {
         ExpedicaoJudicial presumida = repository.save(new ExpedicaoJudicial(
-                91L,
+                processoId,
                 "0001111-22.2026.8.06.0001",
                 TipoComunicacaoJudicial.INTIMACAO_ADVOGADO,
                 ModalidadeExpedicaoJudicial.DIGITAL_GOVBR_PUSH,
@@ -33,7 +56,7 @@ class ExpedicaoJudicialRepositoryIT extends PjbIntegrationTestBase {
         presumida.setCanalDigitalUtilizado("GOVBR_PUSH");
         repository.save(presumida);
 
-        assertThat(repository.atualizarPresuncoesPendentes(Instant.now().plusSeconds(60))).isGreaterThanOrEqualTo(1);
+        assertThat(repository.atualizarPresuncoesPendentes(Instant.now().plusSeconds(25L * 3600))).isGreaterThanOrEqualTo(1);
 
         ExpedicaoJudicial atualizada = repository.findById(presumida.getId()).orElseThrow();
         assertThat(atualizada.getStatus()).isEqualTo(ExpedicaoJudicial.StatusExpedicao.PRESUMIDA_ENTREGUE);
@@ -49,7 +72,7 @@ class ExpedicaoJudicialRepositoryIT extends PjbIntegrationTestBase {
     @Test
     void deveFiltrarEvasoesNaoEscalonadasSemMisturarCanceladas() {
         ExpedicaoJudicial pendente = repository.save(new ExpedicaoJudicial(
-                92L,
+                processoId,
                 "0002222-33.2026.8.06.0001",
                 TipoComunicacaoJudicial.CITACAO_INICIAL,
                 ModalidadeExpedicaoJudicial.OFICIAL_JUSTICA_ROTA_OTIMIZADA,
@@ -66,7 +89,7 @@ class ExpedicaoJudicialRepositoryIT extends PjbIntegrationTestBase {
         repository.save(pendente);
 
         ExpedicaoJudicial cancelada = repository.save(new ExpedicaoJudicial(
-                93L,
+                processoId,
                 "0003333-44.2026.8.06.0001",
                 TipoComunicacaoJudicial.CITACAO_INICIAL,
                 ModalidadeExpedicaoJudicial.OFICIAL_JUSTICA_ROTA_OTIMIZADA,
