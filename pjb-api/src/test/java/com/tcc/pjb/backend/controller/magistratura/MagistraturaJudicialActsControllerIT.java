@@ -16,6 +16,9 @@ import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.core.security.persona.PersonaKey;
 import com.tcc.pjb.backend.core.security.persona.UserPersona;
 import com.tcc.pjb.backend.core.security.persona.UserPersonaService;
+import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenPayload;
+import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenService;
+import com.tcc.pjb.backend.core.security.stepup.web.MinisterStepUpFilter;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.dto.magistratura.MagistraturaJudicialActCode;
 import com.tcc.pjb.backend.model.dto.magistratura.MagistraturaJudicialActCommandRequest;
@@ -132,7 +135,11 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
     @MockitoBean
     private MagistraturaJudicialProvidenceAutomationService providenceAutomationService;
 
+    @MockitoBean
+    private FaceReauthTokenService faceReauthTokenService;
+
     private Processo processo;
+    private Usuario ministro;
 
     @BeforeEach
     void setup() {
@@ -142,11 +149,11 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
 
         Usuario juiz = usuarioRepository.save(novoJuiz());
         Usuario desembargador = usuarioRepository.save(novoDesembargador());
-        Usuario ministro = usuarioRepository.save(novoMinistro());
+        this.ministro = usuarioRepository.save(novoMinistro());
 
         registrarPasskey(juiz, "cred-juiz-atos-it");
         registrarPasskey(desembargador, "cred-desemb-atos-it");
-        registrarPasskey(ministro, "cred-ministro-atos-it");
+        registrarPasskey(this.ministro, "cred-ministro-atos-it");
         processo = processoRepository.save(Processo.builder()
                 .numeroProcesso("MAG-ATOS-2026-01")
                 .numeroUnificado("0009001-11.2026.8.06.0001")
@@ -167,7 +174,8 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
         when(personaService.getRequiredPersona()).thenReturn(personaJuiz());
         doNothing().when(authorizationService).requireReadProcesso(any());
         when(capabilityRateLimiter.enforce(any(), any(), any(), any())).thenReturn(new CapabilityRateLimitDecision(true, 100L, 99L, 0L, 60, 1));
-        when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(guardAllow());
+        JuizProcessoGuardRailService.GuardRailSnapshot allowSnapshot = guardAllow();
+        when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(allowSnapshot);
         when(juizGabineteDecisionalService.assinarDespacho(eq(processo.getId()), eq("Intime-se."), eq("CPC")))
                 .thenReturn(Map.of("status", "ASSINADO", "processoId", processo.getId(), "documentoId", "DOC-9001"));
         when(providenceAutomationService.preview(any(), any(), any(), any())).thenReturn(List.of());
@@ -223,7 +231,7 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
                 .andExpect(jsonPath("$.processoNumero").value("MAG-ATOS-2026-01"))
                 .andExpect(jsonPath("$.acts[0].code").value("DESPACHO"))
                 .andExpect(jsonPath("$.acts[0].enabled").value(true))
-                .andExpect(jsonPath("$.acts[0].nativeRoute").value("/api/v1/magistratura/processos/" + processo.getId() + "/atos"));
+                .andExpect(jsonPath("$.acts[0].nativeRoute").value("/api/v1/juiz/gabinete-decisoes/processos/" + processo.getId() + "/despacho"));
     }
 
     @Test
@@ -235,7 +243,7 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
                 .andExpect(jsonPath("$.processoId").value(processo.getId()))
                 .andExpect(jsonPath("$.action").value("DESPACHO"))
                 .andExpect(jsonPath("$.allowed").value(true))
-                .andExpect(jsonPath("$.nativeRoute").value("/api/v1/magistratura/processos/" + processo.getId() + "/atos"))
+                .andExpect(jsonPath("$.nativeRoute").value("/api/v1/juiz/gabinete-decisoes/processos/" + processo.getId() + "/despacho"))
                 .andExpect(jsonPath("$.providences[0].code").value("PROVIDENCIAR_PUBLICACAO"))
                 .andExpect(jsonPath("$.providences[0].targetQueueCode").value("PUB:DESPACHO"));
     }
@@ -243,7 +251,8 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
     @Test
     @WithMockUser(username = "juiz@test.local", roles = "JUIZ_ESTADUAL")
     void deveProjetarPreviewBloqueadoQuandoGuardRailNegarAto() throws Exception {
-        when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(guardBlock());
+        JuizProcessoGuardRailService.GuardRailSnapshot blockSnapshot = guardBlock();
+        when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(blockSnapshot);
 
         mockMvc.perform(get("/api/v1/magistratura/processos/{processoId}/atos/preview", processo.getId())
                         .param("action", "SENTENCA"))
@@ -332,7 +341,8 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
     @Test
     @WithMockUser(username = "juiz@test.local", roles = "JUIZ_ESTADUAL")
     void deveNegarExecucaoQuandoGuardRailBloquearAto() throws Exception {
-        when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(guardBlock());
+        JuizProcessoGuardRailService.GuardRailSnapshot blockSnapshot = guardBlock();
+        when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(blockSnapshot);
         MagistraturaJudicialActCommandRequest request = new MagistraturaJudicialActCommandRequest(
                 "DESPACHO",
                 "Intime-se.",
@@ -424,6 +434,9 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
     @Test
     @WithMockUser(username = "ministro@test.local", roles = "MINISTRO")
     void deveExecutarDecisaoPlenariaEmTrilhaSuperior() throws Exception {
+        long nowSec = Instant.now().getEpochSecond();
+        when(faceReauthTokenService.verifyAndDecode(any()))
+                .thenReturn(new FaceReauthTokenPayload("jti-it-ministro", ministro.getId(), nowSec - 100L, nowSec + 7200L, "FACE_HIGH"));
         when(personaService.getRequiredPersona()).thenReturn(personaMinistro());
         when(ministroPlenarioService.registrarDecisaoPlenaria(eq(processo.getId()), eq("MAIORIA"), eq("Tema constitucional fixado."), eq("Fixada a tese.")))
                 .thenReturn(Map.of("status", "DECISAO_PLENARIA_REGISTRADA", "processoId", processo.getId(), "sessaoId", 1201L));
@@ -470,6 +483,7 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
         );
 
         mockMvc.perform(post("/api/v1/magistratura/processos/{processoId}/atos", processo.getId())
+                        .header(MinisterStepUpFilter.HEADER_FACE_TOKEN, "test-face-token-ministro")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isCreated())
