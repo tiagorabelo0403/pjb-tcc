@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.modules.advocacia.controller;
 
 import com.tcc.pjb.backend.BackendApplication;
+import com.tcc.pjb.backend.PjbH2ItBase;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -42,7 +43,7 @@ import org.springframework.test.web.servlet.MvcResult;
         }
 )
 @AutoConfigureMockMvc
-class ClienteCrudIT {
+class ClienteCrudIT extends PjbH2ItBase {
 
     @Autowired
     private MockMvc mockMvc;
@@ -64,9 +65,6 @@ class ClienteCrudIT {
 
     @BeforeEach
     void setup() {
-        clienteRepository.deleteAll();
-        usuarioRepository.deleteAll();
-
         advA = usuarioRepository.save(Usuario.builder()
                 .nome("Adv A")
                 .email("adva@test.local")

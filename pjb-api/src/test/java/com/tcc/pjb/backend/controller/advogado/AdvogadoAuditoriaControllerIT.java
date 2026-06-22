@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.controller.advogado;
 
 import com.tcc.pjb.backend.BackendApplication;
+import com.tcc.pjb.backend.PjbH2ItBase;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,7 +34,7 @@ import org.springframework.test.web.servlet.MvcResult;
         }
 )
 @AutoConfigureMockMvc
-class AdvogadoAuditoriaControllerIT {
+class AdvogadoAuditoriaControllerIT extends PjbH2ItBase {
 
     @Autowired
     private MockMvc mockMvc;
@@ -52,9 +53,6 @@ class AdvogadoAuditoriaControllerIT {
 
     @BeforeEach
     void setup() {
-        auditLedgerRepository.deleteAll();
-        usuarioRepository.deleteAll();
-
         Usuario adv = Usuario.builder()
                 .nome("Adv")
                 .email("advogado@test.local")
