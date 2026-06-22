@@ -44,7 +44,7 @@ class PjbExecutionOrchestratorTest {
     }
 
     @Test
-    void deveMarcarTimeoutQuandoOperacaoExcederBudget() {
+    void deveMarcarTimeoutQuandoOperacaoExcederBudget() throws Exception {
         PjbBoundedExecutorService io = new PjbBoundedExecutorService("test-io-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
         PjbBoundedExecutorService burst = new PjbBoundedExecutorService("test-burst-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
         PjbBoundedExecutorService externalIo = new PjbBoundedExecutorService("test-ext-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
@@ -63,6 +63,7 @@ class PjbExecutionOrchestratorTest {
                         return "LATE";
                     }).get(1, TimeUnit.SECONDS));
             assertTrue(ex.getCause() instanceof PjbExecutionTimedOutException);
+            drainScheduler(scheduler);
             var snapshot = orchestrator.snapshot();
             assertTrue(snapshot.operations().stream().anyMatch(operation -> operation.operationName().equals("timeout-op") && operation.timedOutTasks() >= 1L));
         } finally {
@@ -161,6 +162,10 @@ class PjbExecutionOrchestratorTest {
             live.close();
             job.close();
         }
+    }
+
+    private static void drainScheduler(ScheduledExecutorService scheduler) throws Exception {
+        scheduler.submit(() -> {}).get(1, TimeUnit.SECONDS);
     }
 
 }
