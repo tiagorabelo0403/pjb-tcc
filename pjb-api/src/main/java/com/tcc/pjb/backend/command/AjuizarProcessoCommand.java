@@ -8,6 +8,7 @@ import com.tcc.pjb.backend.core.procedural.ProceduralRoutingReport;
 import com.tcc.pjb.backend.core.procedural.ProceduralSubmissionBlueprintReport;
 import com.tcc.pjb.backend.core.procedural.ProceduralSubmissionBlueprintService;
 import com.tcc.pjb.backend.model.dto.Attachment;
+import com.tcc.pjb.backend.model.dto.ProcessoRequest;
 import com.tcc.pjb.backend.model.dto.event.ProcessoAjuizadoEvent;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -54,6 +55,7 @@ public class AjuizarProcessoCommand {
     @PjbTransactionalBudget(operation = "ajuizamento.command.persist", maxMillis = 3200, critical = true)
     public Processo execute(Processo processo,
                             Usuario advogado,
+                            ProcessoRequest request,
                             List<Attachment> anexos,
                             boolean juizo100Digital) {
 
@@ -76,7 +78,7 @@ public class AjuizarProcessoCommand {
         validateCpfIfPresent(processo.getParteAutoraCpf(), "parteAutoraCpf");
         validateCpfIfPresent(processo.getParteReuCpf(), "parteReuCpf");
 
-        ProceduralRoutingReport routing = nationalProceduralRoutingService.analyzeProcess(processo);
+        ProceduralRoutingReport routing = nationalProceduralRoutingService.analyzeProcess(processo, request);
         ajuizamentoCanonicalContextService.consolidate(processo, compiled, routing);
         var diagnosticoTerritorial = territorialProcessualService.diagnosticar(processo, routing);
         if (diagnosticoTerritorial.bloqueante()) {

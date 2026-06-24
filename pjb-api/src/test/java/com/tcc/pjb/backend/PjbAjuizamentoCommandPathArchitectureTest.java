@@ -7,6 +7,7 @@ import com.tcc.pjb.backend.command.AjuizarProcessoCommand;
 import com.tcc.pjb.backend.command.ajuizamento.AjuizarProcessoCommandPostCommitEffectsService;
 import com.tcc.pjb.backend.integration.judicial.JudicialConnectorLifecycleService;
 import com.tcc.pjb.backend.model.dto.event.ProcessoAjuizadoEvent;
+import com.tcc.pjb.backend.model.dto.ProcessoRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaInteligenteService;
@@ -24,7 +25,7 @@ class PjbAjuizamentoCommandPathArchitectureTest {
     void commandPathCentralDoAjuizamentoDeveDeclararBudgetsExplicitos() throws NoSuchMethodException {
         List<Method> methods = List.of(
                 AjuizamentoService.class.getDeclaredMethod("ajuizar", Processo.class),
-                AjuizarProcessoCommand.class.getDeclaredMethod("execute", Processo.class, Usuario.class, List.class, boolean.class),
+                AjuizarProcessoCommand.class.getDeclaredMethod("execute", Processo.class, Usuario.class, ProcessoRequest.class, List.class, boolean.class),
                 ProcessoPostAjuizamentoOrchestratorService.class.getDeclaredMethod("onProcessoAjuizado", ProcessoAjuizadoEvent.class),
                 AjuizarProcessoCommandPostCommitEffectsService.class.getDeclaredMethod("onProcessoAjuizado", ProcessoAjuizadoEvent.class)
         );

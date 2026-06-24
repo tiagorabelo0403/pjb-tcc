@@ -110,6 +110,8 @@ class ProcessoCommandControllerIT extends PjbFlowItBase {
         );
 
         assertThat(processo.getUsuario().getEmail()).isEqualTo("advogado@test.local");
+        assertThat(processo.getTribunalCodigoRoteado()).isEqualTo("TJCE");
+        assertThat(processo.getUf()).isEqualTo("CE");
         verify(judicialConnectorLifecycleService, timeout(5000)).submitAndSynchronize(any(), any(), any(), org.mockito.ArgumentMatchers.eq(true));
 
         AuditoriaEventoComportamental audit = awaitAtMost(

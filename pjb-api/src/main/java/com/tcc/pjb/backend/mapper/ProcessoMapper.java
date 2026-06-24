@@ -43,6 +43,7 @@ public abstract class ProcessoMapper {
     @Mapping(target = "ramoDireito", expression = "java(resolveRamoDireito(request))")
     @Mapping(target = "tipoJustica", expression = "java(resolveTipoJustica(request))")
     @Mapping(target = "rito", expression = "java(resolveRito(request))")
+    @Mapping(target = "tribunal", source = "tribunalPretendido")
     public abstract Processo toEntity(ProcessoRequest request);
 
     @Mapping(target = "numeroProcesso", expression = "java(processo.getNumeroProcesso())")
