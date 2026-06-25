@@ -484,6 +484,8 @@ Cada documento tem origem, estado operacional, hash de integridade e cadeia de c
 
 O vocabulário documental é canônico e selado: `TipoDocumento` (~105 valores) carrega uma `CategoriaDocumento` (`PECA_INAUGURAL`, `PECA_RECURSAL`, `DOC_INSTRUCAO`, `DOC_QUALIFICACAO`). Sobre esse vocabulário está sendo construído um gate de completude documental por rito/classe, que lerá categoria e tipo para decidir a aptidão ao protocolo — substituindo a contagem de anexos atual por validação tipada. A meta de design é que ausência de tipo seja rejeição explícita, nunca passagem silenciosa.
 
+**Borda HTTP (fatia 1b' — concluída):** o advogado declara `TipoDocumento` por anexo via `AnexoDeclarado { nomeArquivo, tipo }` no multipart de ajuizamento. O `SmartFileSplitter` valida a correlação (nome ↔ declaração, bidirecional) com 400 explícito em quatro casos: nome ausente, nomes duplicados, arquivo sem declaração correspondente e declaração sem arquivo correspondente. Quando a correlação fecha, `Attachment.tipoDocumento` é preenchido. O gate de completude (fatia 1c) lerá esse campo para enforçar obrigatoriedade por rito/classe — a decisão de política (anexo sem tipo = rejeição ou tolerância) é responsabilidade do gate, não da borda.
+
 ### 8 — Autuação, retificação e qualidade de metadados
 
 Retificação governada com diff jurídico — cada alteração passa por política, avaliação de impacto e aprovação explícita. Score de qualidade de metadados detecta classes ausentes, partes sem documento e rito incompatível antes que o processo avance para a fase seguinte.
