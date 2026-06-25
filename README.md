@@ -3,7 +3,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
 ![Testes unitários](https://img.shields.io/badge/Testes%20unit%C3%A1rios-4.112%20%7C%200%20falhas-brightgreen)
-![Testes de integração](https://img.shields.io/badge/Testes%20IT-182%20%7C%2022%20em%20estabiliza%C3%A7%C3%A3o-yellow)
+![Testes de integração](https://img.shields.io/badge/Testes%20IT-182%20%7C%2013%20em%20estabiliza%C3%A7%C3%A3o-yellow)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -270,10 +270,10 @@ Tempo esperado: **~45 min** em hardware local (a maior parte é o boot do Spring
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~15 min** |
 | Total de testes de integração | Failsafe | **182** |
-| Falhas IT (em estabilização) | Failsafe | **22** (12E + 10F) |
+| Falhas IT (em estabilização) | Failsafe | **13** (0E + 13F) |
 | Tempo verify completo | Surefire + Failsafe | **~45 min** |
 
-A suíte de integração está em processo ativo de estabilização. O ponto de partida era 49 falhas; chegou a 22 após eliminação dos clusters CG-1 (22E — variável de ambiente errada), CG-2-Postgres (5E — contaminação entre testes por dados não limpos), CG-3 (3E — IDs hardcoded sem seed), CG-7 (1E — mesmo grupo do CG-1). Os 22 restantes são bugs de produto real (não de ambiente) e mais dois clusters de setup Mockito e H2, que estão mapeados e sendo atacados.
+A suíte de integração está em processo ativo de estabilização. O ponto de partida era 49 falhas; chegou a 13 após eliminação dos clusters CG-1 (22E — variável de ambiente errada), CG-2-Postgres (5E — contaminação entre testes por dados não limpos), CG-3 (3E — IDs hardcoded sem seed), CG-7 (1E — mesmo grupo do CG-1), e demais clusters mapeados. As 13 falhas restantes são conhecidas: 3 aguardam gate documental por rito/classe (Onda de Submissão em andamento) e 10 pré-existentes não relacionadas à onda.
 
 ### Relatório de cobertura (JaCoCo)
 
@@ -482,6 +482,8 @@ Marcadores semânticos de processo para priorização automática por urgência,
 
 Cada documento tem origem, estado operacional, hash de integridade e cadeia de confiança verificável. O dossiê documental consolida todos os artefatos de um processo com rastreabilidade completa desde a criação até o arquivamento.
 
+O vocabulário documental é canônico e selado: `TipoDocumento` (~105 valores) carrega uma `CategoriaDocumento` (`PECA_INAUGURAL`, `PECA_RECURSAL`, `DOC_INSTRUCAO`, `DOC_QUALIFICACAO`). Sobre esse vocabulário está sendo construído um gate de completude documental por rito/classe, que lerá categoria e tipo para decidir a aptidão ao protocolo — substituindo a contagem de anexos atual por validação tipada. A meta de design é que ausência de tipo seja rejeição explícita, nunca passagem silenciosa.
+
 ### 8 — Autuação, retificação e qualidade de metadados
 
 Retificação governada com diff jurídico — cada alteração passa por política, avaliação de impacto e aprovação explícita. Score de qualidade de metadados detecta classes ausentes, partes sem documento e rito incompatível antes que o processo avance para a fase seguinte.
@@ -642,7 +644,7 @@ CREATE POLICY processo_sigilo ON processo
 | Métrica | Estado |
 |---------|--------|
 | Testes unitários (Surefire) | **4.112 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **182 · 22 falhas em estabilização** (de 49 → 22) |
+| Testes de integração (Failsafe) | **182 · 13 falhas conhecidas** (de 49 → 13; 3 por design + 10 pré-existentes) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
