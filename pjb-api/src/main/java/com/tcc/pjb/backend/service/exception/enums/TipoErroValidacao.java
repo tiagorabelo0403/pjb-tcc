@@ -12,8 +12,11 @@ public enum TipoErroValidacao {
     FORMATO_INVALIDO("VAL-102", "Formato não suportado. Apenas PDF/A é aceito."),
     TAMANHO_EXCEDIDO("VAL-103", "O arquivo excede o limite de tamanho permitido (5MB)."),
     ARQUIVO_PROTEGIDO("VAL-104", "O arquivo possui senha ou restrições de DRM."),
+    NOME_ARQUIVO_AUSENTE("VAL-105", "Nome do arquivo ausente ou vazio."),
+    NOME_ARQUIVO_DUPLICADO("VAL-106", "Nomes de arquivo duplicados detectados."),
+    CORRELACAO_ARQUIVO_TIPO("VAL-107", "Incompatibilidade entre arquivos enviados e tipos declarados."),
 
-    
+
     CPF_INVALIDO("VAL-201", "O CPF informado não passa na validação da Receita Federal."),
     EMAIL_INVALIDO("VAL-202", "Formato de e-mail incorreto."),
     DATA_FUTURA("VAL-203", "A data informada não pode ser futura."),

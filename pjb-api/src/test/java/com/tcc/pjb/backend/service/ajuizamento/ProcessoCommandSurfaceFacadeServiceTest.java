@@ -66,14 +66,14 @@ class ProcessoCommandSurfaceFacadeServiceTest {
 
         when(currentUserService.getRequired()).thenReturn(advogado);
         when(processoMapper.toEntity(request)).thenReturn(mapped);
-        when(smartFileSplitter.processarArquivos(any())).thenReturn(anexos);
+        when(smartFileSplitter.processarArquivos(any(), any())).thenReturn(anexos);
         when(ajuizarProcessoCommand.execute(mapped, advogado, request, anexos, true)).thenReturn(salvo);
         when(processoResponseAssemblerService.toResponse(salvo, request)).thenReturn(response);
 
         ProcessoResponse actual = service.ajuizar(request, Arrays.asList(anexoValido, anexoVazio, null));
 
         ArgumentCaptor<List<MultipartFile>> captor = ArgumentCaptor.forClass(List.class);
-        verify(smartFileSplitter).processarArquivos(captor.capture());
+        verify(smartFileSplitter).processarArquivos(captor.capture(), any());
         verify(ajuizarProcessoCommand).execute(mapped, advogado, request, anexos, true);
         verify(processoResponseAssemblerService).toResponse(salvo, request);
         assertThat(captor.getValue()).hasSize(1);
@@ -95,13 +95,13 @@ class ProcessoCommandSurfaceFacadeServiceTest {
 
         when(currentUserService.getRequired()).thenReturn(advogado);
         when(processoMapper.toEntity(request)).thenReturn(mapped);
-        when(smartFileSplitter.processarArquivos(eq(List.of()))).thenReturn(List.of());
+        when(smartFileSplitter.processarArquivos(eq(List.of()), any())).thenReturn(List.of());
         when(ajuizarProcessoCommand.execute(mapped, advogado, request, List.of(), false)).thenReturn(salvo);
         when(processoResponseAssemblerService.toResponse(salvo, request)).thenReturn(response);
 
         ProcessoResponse actual = service.ajuizar(request, null);
 
-        verify(smartFileSplitter).processarArquivos(eq(List.of()));
+        verify(smartFileSplitter).processarArquivos(eq(List.of()), any());
         verify(ajuizarProcessoCommand).execute(mapped, advogado, request, List.of(), false);
         assertThat(actual.getId()).isEqualTo(91L);
     }
