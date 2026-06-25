@@ -5,7 +5,7 @@ import com.tcc.pjb.backend.core.protocolo.completude.domain.FundamentoNormativo;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.ResultadoValidacao;
 import com.tcc.pjb.backend.core.protocolo.completude.domain.ViolacaoCompletude;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeStatus;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.entity.protocolo.RequisitoDocumental;
 import com.tcc.pjb.backend.model.entity.protocolo.RequisitoDocumentalEquivalencia;
 import com.tcc.pjb.backend.model.repository.protocolo.RequisitoDocumentalEquivalenciaRepository;

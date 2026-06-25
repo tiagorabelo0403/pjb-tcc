@@ -29,7 +29,7 @@ import com.tcc.pjb.backend.model.entity.enums.processual.completude.GrauExigibil
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeStatus;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.SeveridadeCompletude;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoCondicaoRequisito;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoRepresentanteProcessual;
 import com.tcc.pjb.backend.model.repository.protocolo.RequisitoDocumentalEquivalenciaRepository;
 import com.tcc.pjb.backend.model.repository.protocolo.RequisitoDocumentalRepository;
@@ -85,7 +85,7 @@ class PjbProtocoloCompletudeFase4Test {
     @Test
     void ia_score_alto_gera_bloqueante() {
         ViolacaoCompletude bloqueante = new ViolacaoCompletude.AssinaturaAusente(
-                TipoDocumentoProcessual.PROCURACAO, FUND_IA);
+                TipoDocumento.PROCURACAO, FUND_IA);
         DocumentoAnalisavel doc = docProcuracao();
 
         when(detectorMock.disponivel()).thenReturn(true);
@@ -102,7 +102,7 @@ class PjbProtocoloCompletudeFase4Test {
     @Test
     void ia_score_baixo_gera_advertencia_nao_bloqueia() {
         ViolacaoCompletude advertencia = new ViolacaoCompletude.QualidadeDigitalizacaoBaixa(
-                TipoDocumentoProcessual.PROCURACAO, 0.60, FUND_IA);
+                TipoDocumento.PROCURACAO, 0.60, FUND_IA);
         DocumentoAnalisavel doc = docProcuracao();
 
         when(detectorMock.disponivel()).thenReturn(true);
@@ -134,7 +134,7 @@ class PjbProtocoloCompletudeFase4Test {
     @Test
     void documento_tipo_incorreto_detectado_rg_onde_pede_cnh() {
         ViolacaoCompletude tipoIncorreto = new ViolacaoCompletude.DocumentoTipoIncorreto(
-                TipoDocumentoProcessual.DOCUMENTO_IDENTIDADE,
+                TipoDocumento.DOCUMENTO_IDENTIDADE,
                 "DOCUMENTO_IDENTIDADE",
                 SeveridadeCompletude.BLOQUEANTE,
                 FUND_IA);
@@ -152,7 +152,7 @@ class PjbProtocoloCompletudeFase4Test {
     @Test
     void titularidade_inconsistente_detectada_nome_diverge() {
         ViolacaoCompletude titular = new ViolacaoCompletude.TitularidadeInconsistente(
-                TipoDocumentoProcessual.PROCURACAO, "FULANO DA SILVA", FUND_IA);
+                TipoDocumento.PROCURACAO, "FULANO DA SILVA", FUND_IA);
         DocumentoAnalisavel doc = docProcuracao();
 
         when(detectorMock.disponivel()).thenReturn(true);
@@ -181,7 +181,7 @@ class PjbProtocoloCompletudeFase4Test {
                 ocrMock, vectorMock, ocrProps, envMock, iaProps);
 
         DocumentoAnalisavel docSensivel = new DocumentoAnalisavel(
-                TipoDocumentoProcessual.LAUDO_MEDICO,
+                TipoDocumento.LAUDO_MEDICO,
                 pdfSensivel,
                 NivelSigilo.SEGREDO_JUSTICA,
                 null,
@@ -230,7 +230,7 @@ class PjbProtocoloCompletudeFase4Test {
 
     private DocumentoAnalisavel docProcuracao() {
         return new DocumentoAnalisavel(
-                TipoDocumentoProcessual.PROCURACAO,
+                TipoDocumento.PROCURACAO,
                 "PROCURACAO".getBytes(),
                 NivelSigilo.PUBLICO,
                 null,
@@ -239,7 +239,7 @@ class PjbProtocoloCompletudeFase4Test {
 
     private DocumentoAnalisavel docIdentidade() {
         return new DocumentoAnalisavel(
-                TipoDocumentoProcessual.DOCUMENTO_IDENTIDADE,
+                TipoDocumento.DOCUMENTO_IDENTIDADE,
                 "IDENTIDADE".getBytes(),
                 NivelSigilo.PUBLICO,
                 null,

@@ -4,7 +4,7 @@ import com.tcc.pjb.backend.core.modularity.PjbModuleId;
 import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
 import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.SeveridadeCompletude;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -54,7 +54,7 @@ public class RequisitoDocumentalEquivalencia {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_documento_aceito", nullable = false, length = 120)
-    private TipoDocumentoProcessual tipoDocumentoAceito;
+    private TipoDocumento tipoDocumentoAceito;
 
     @Column(name = "justificativa", length = 300)
     private String justificativa;

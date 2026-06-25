@@ -1,7 +1,7 @@
 package com.tcc.pjb.backend.model.dto.advogado;
 
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoCondicaoRequisito;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoParteProcessual;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
@@ -22,5 +22,5 @@ public record LaianePeticaoInicialProtocolarRequest(
 
         @Size(max = 50)
         @Schema(description = "Tipos de documentos que serão anexados ao protocolo")
-        List<TipoDocumentoProcessual> documentosAnexados
+        List<TipoDocumento> documentosAnexados
 ) {}

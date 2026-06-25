@@ -11,7 +11,7 @@ import com.tcc.pjb.backend.model.entity.enums.processual.completude.FonteNormati
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.GrauExigibilidade;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeStatus;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.SeveridadeCompletude;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -77,7 +77,7 @@ class PjbProtocoloCompletudeFase1Test {
                 FonteNormativaTipo.LEI, "CPC art. 319, II",
                 "Qualificação das partes obrigatória", GrauExigibilidade.ABSOLUTO, "CPC");
         ViolacaoCompletude violacao = new ViolacaoCompletude.DocumentoObrigatorioAusente(
-                TipoDocumentoProcessual.DOCUMENTO_IDENTIDADE, fundamento);
+                TipoDocumento.DOCUMENTO_IDENTIDADE, fundamento);
 
         ResultadoValidacao resultado = new ResultadoValidacao(
                 ProtocoloCompletudeStatus.PENDENTE_DOCUMENTACAO, List.of(violacao), "v1.0");
@@ -94,7 +94,7 @@ class PjbProtocoloCompletudeFase1Test {
                 FonteNormativaTipo.REGRA_INTERNA, null,
                 "Qualidade de digitalização recomendada", GrauExigibilidade.DISPENSAVEL_COM_JUSTIFICATIVA, null);
         ViolacaoCompletude advertencia = new ViolacaoCompletude.QualidadeDigitalizacaoBaixa(
-                TipoDocumentoProcessual.DOCUMENTO_IDENTIDADE, 0.45, fundamento);
+                TipoDocumento.DOCUMENTO_IDENTIDADE, 0.45, fundamento);
 
         ResultadoValidacao resultado = new ResultadoValidacao(
                 ProtocoloCompletudeStatus.COMPLETO, List.of(advertencia), "v1.0");
@@ -110,7 +110,7 @@ class PjbProtocoloCompletudeFase1Test {
                 FonteNormativaTipo.LEI, "CPC art. 287", "Procuração obrigatória",
                 GrauExigibilidade.DISPENSAVEL_COM_JUSTIFICATIVA, "CPC");
         ViolacaoCompletude violacao = new ViolacaoCompletude.DocumentoObrigatorioAusente(
-                TipoDocumentoProcessual.PROCURACAO, fundamento);
+                TipoDocumento.PROCURACAO, fundamento);
 
         assertThat(violacao.codigo()).isEqualTo("DOC_OBRIGATORIO_AUSENTE");
         assertThat(violacao.severidade()).isEqualTo(SeveridadeCompletude.BLOQUEANTE);

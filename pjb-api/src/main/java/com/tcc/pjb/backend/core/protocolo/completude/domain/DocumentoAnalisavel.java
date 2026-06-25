@@ -1,10 +1,10 @@
 package com.tcc.pjb.backend.core.protocolo.completude.domain;
 
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 
 public record DocumentoAnalisavel(
-        TipoDocumentoProcessual tipo,
+        TipoDocumento tipo,
         byte[] pdf,
         NivelSigilo nivelSigilo,
         String storageUri,

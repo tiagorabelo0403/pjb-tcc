@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.core.protocolo.completude.domain;
 
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.SeveridadeCompletude;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 
 public sealed interface ViolacaoCompletude
         permits ViolacaoCompletude.DocumentoObrigatorioAusente,
@@ -20,11 +20,11 @@ public sealed interface ViolacaoCompletude
     default NivelSigilo nivelSensibilidade() { return NivelSigilo.PUBLICO; }
 
     record DocumentoObrigatorioAusente(
-            TipoDocumentoProcessual tipoDocumento,
+            TipoDocumento tipoDocumento,
             FundamentoNormativo fundamento,
             NivelSigilo nivelSensibilidade
     ) implements ViolacaoCompletude {
-        public DocumentoObrigatorioAusente(TipoDocumentoProcessual tipoDocumento, FundamentoNormativo fundamento) {
+        public DocumentoObrigatorioAusente(TipoDocumento tipoDocumento, FundamentoNormativo fundamento) {
             this(tipoDocumento, fundamento, NivelSigilo.PUBLICO);
         }
         public String codigo() { return "DOC_OBRIGATORIO_AUSENTE"; }
@@ -34,7 +34,7 @@ public sealed interface ViolacaoCompletude
     }
 
     record DocumentoTipoIncorreto(
-            TipoDocumentoProcessual tipoEsperado,
+            TipoDocumento tipoEsperado,
             String tipoDetectado,
             SeveridadeCompletude severidade,
             FundamentoNormativo fundamento
@@ -45,7 +45,7 @@ public sealed interface ViolacaoCompletude
     }
 
     record DocumentoVencido(
-            TipoDocumentoProcessual tipoDocumento,
+            TipoDocumento tipoDocumento,
             String dataVencimentoDetectada,
             FundamentoNormativo fundamento
     ) implements ViolacaoCompletude {
@@ -56,7 +56,7 @@ public sealed interface ViolacaoCompletude
     }
 
     record AssinaturaAusente(
-            TipoDocumentoProcessual tipoDocumento,
+            TipoDocumento tipoDocumento,
             FundamentoNormativo fundamento
     ) implements ViolacaoCompletude {
         public String codigo() { return "ASSINATURA_AUSENTE"; }
@@ -66,7 +66,7 @@ public sealed interface ViolacaoCompletude
     }
 
     record TitularidadeInconsistente(
-            TipoDocumentoProcessual tipoDocumento,
+            TipoDocumento tipoDocumento,
             String titularDetectado,
             FundamentoNormativo fundamento
     ) implements ViolacaoCompletude {
@@ -77,7 +77,7 @@ public sealed interface ViolacaoCompletude
     }
 
     record QualidadeDigitalizacaoBaixa(
-            TipoDocumentoProcessual tipoDocumento,
+            TipoDocumento tipoDocumento,
             double confiancaOcr,
             FundamentoNormativo fundamento
     ) implements ViolacaoCompletude {

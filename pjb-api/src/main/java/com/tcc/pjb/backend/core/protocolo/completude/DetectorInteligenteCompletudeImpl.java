@@ -10,7 +10,7 @@ import com.tcc.pjb.backend.core.protocolo.completude.domain.ViolacaoCompletude;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.FonteNormativaTipo;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.GrauExigibilidade;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.SeveridadeCompletude;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -45,12 +45,12 @@ public class DetectorInteligenteCompletudeImpl implements DetectorInteligenteCom
             "PJB-IA"
     );
 
-    private static final Set<TipoDocumentoProcessual> TIPOS_QUE_EXIGEM_ASSINATURA = Set.of(
-            TipoDocumentoProcessual.PROCURACAO,
-            TipoDocumentoProcessual.DECLARACAO_HIPOSSUFICIENCIA,
-            TipoDocumentoProcessual.TITULO_EXECUTIVO,
-            TipoDocumentoProcessual.CONTRATO_TRABALHO,
-            TipoDocumentoProcessual.CONTRATO_LOCACAO
+    private static final Set<TipoDocumento> TIPOS_QUE_EXIGEM_ASSINATURA = Set.of(
+            TipoDocumento.PROCURACAO,
+            TipoDocumento.DECLARACAO_HIPOSSUFICIENCIA,
+            TipoDocumento.TITULO_EXECUTIVO,
+            TipoDocumento.CONTRATO_TRABALHO,
+            TipoDocumento.CONTRATO_LOCACAO
     );
 
     private static final Pattern PADRAO_DATA = Pattern.compile(
@@ -112,7 +112,7 @@ public class DetectorInteligenteCompletudeImpl implements DetectorInteligenteCom
     private void analisarTipoDocumento(DocumentoAnalisavel doc, String texto,
                                         double score, double limiar,
                                         List<ViolacaoCompletude> violacoes) {
-        TipoDocumentoProcessual tipoDetectado = detectarTipoDocumento(texto);
+        TipoDocumento tipoDetectado = detectarTipoDocumento(texto);
         if (tipoDetectado == null || tipoDetectado == doc.tipo()) return;
 
         SeveridadeCompletude severidade = score >= limiar
@@ -172,22 +172,22 @@ public class DetectorInteligenteCompletudeImpl implements DetectorInteligenteCom
         }
     }
 
-    private TipoDocumentoProcessual detectarTipoDocumento(String texto) {
+    private TipoDocumento detectarTipoDocumento(String texto) {
         if (texto == null || texto.isBlank()) return null;
         String norm = texto.toUpperCase(Locale.ROOT);
         if (norm.contains("CARTEIRA NACIONAL DE HABILITACAO")
                 || norm.contains("HABILITACAO") && norm.contains("MOTORISTA")) {
-            return TipoDocumentoProcessual.DOCUMENTO_IDENTIDADE;
+            return TipoDocumento.DOCUMENTO_IDENTIDADE;
         }
         if (norm.contains("REGISTRO GERAL") || norm.contains("IDENTIDADE")
                 && !norm.contains("HABILITACAO")) {
-            return TipoDocumentoProcessual.DOCUMENTO_IDENTIDADE;
+            return TipoDocumento.DOCUMENTO_IDENTIDADE;
         }
         if (norm.contains("PROCURACAO") || norm.contains("PROCURADOR")) {
-            return TipoDocumentoProcessual.PROCURACAO;
+            return TipoDocumento.PROCURACAO;
         }
         if (norm.contains("CONTRATO DE TRABALHO") || norm.contains("CTPS")) {
-            return TipoDocumentoProcessual.CONTRATO_TRABALHO;
+            return TipoDocumento.CONTRATO_TRABALHO;
         }
         return null;
     }

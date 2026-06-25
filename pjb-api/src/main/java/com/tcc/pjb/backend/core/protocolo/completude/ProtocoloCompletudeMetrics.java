@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.core.protocolo.completude;
 
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.OrigemValidacao;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -35,7 +35,7 @@ public class ProtocoloCompletudeMetrics {
                 .increment();
     }
 
-    public void registrarViolacaoTipoDoc(TipoDocumentoProcessual tipo) {
+    public void registrarViolacaoTipoDoc(TipoDocumento tipo) {
         Counter.builder("pjb.protocolo.completude.pendencia_tipo_doc")
                 .description("Violações por tipo de documento faltante")
                 .tag("tipo_documento", tipo != null ? tipo.name() : "DESCONHECIDO")

@@ -8,6 +8,7 @@ import com.tcc.pjb.backend.core.procedural.ProceduralCatalogSupport.PartyRoleSpe
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.service.rito.model.RitoStage;
@@ -94,12 +95,12 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.CIVIL.name(),
                 parties(role("AUTOR", true, true), role("REU", true, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("DOCUMENTO_IDENTIFICACAO", true, "Identificação da parte"),
-                        doc("COMPROVANTE_ENDERECO", true, "Competência territorial e intimações"),
-                        doc("PROVAS_DOCUMENTAIS_BASICAS", true, "Lastro mínimo da causa"),
-                        doc("MEMORIA_CALCULO_VALOR_CAUSA", false, "Compatibilização do valor atribuído")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.DOCUMENTO_IDENTIDADE, true, "Identificação da parte"),
+                        doc(TipoDocumento.COMPROVANTE_ENDERECO, true, "Competência territorial e intimações"),
+                        doc(TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS, true, "Lastro mínimo da causa"),
+                        doc(TipoDocumento.MEMORIA_CALCULO_VALOR_CAUSA, false, "Compatibilização do valor atribuído")
                 ),
                 macroStages(rito, true, false, false),
                 BASE_CIVIL_COMPETENCE
@@ -114,10 +115,10 @@ final class ProceduralCatalogDefinitionSupport {
                     RamoDireito.CONSTITUCIONAL.name(),
                     parties(role("AUTOR_POPULAR", true, true), role("REU", true, true), role("MINISTERIO_PUBLICO", false, true)),
                     documents(
-                            doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                            doc("PROVA_CIDADANIA_ATIVA", true, "Legitimidade ativa"),
-                            doc("PROVA_PRE_CONSTITUIDA", true, "Demonstração do ato impugnado"),
-                            doc("DOCUMENTOS_ADMINISTRATIVOS", false, "Instrução probatória inicial")
+                            doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                            doc(TipoDocumento.PROVA_CIDADANIA_ATIVA, true, "Legitimidade ativa"),
+                            doc(TipoDocumento.PROVA_PRE_CONSTITUIDA, true, "Demonstração do ato impugnado"),
+                            doc(TipoDocumento.DOCUMENTOS_ADMINISTRATIVOS, false, "Instrução probatória inicial")
                     ),
                     macroStages(rito, true, false, false),
                     List.of("vara da fazenda publica", "tribunal competente", "stf ou stj quando cabível")
@@ -129,10 +130,10 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.CONSTITUCIONAL.name(),
                 parties(role("REQUERENTE", true, true), role("REQUERIDO", false, true), role("MINISTERIO_PUBLICO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROVA_PRE_CONSTITUIDA", true, "Demonstração do direito invocado"),
-                        doc("PARECER_TECNICO", false, "Material técnico de suporte"),
-                        doc("LEGISLACAO_PERTINENTE", false, "Normas questionadas ou aplicáveis")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROVA_PRE_CONSTITUIDA, true, "Demonstração do direito invocado"),
+                        doc(TipoDocumento.PARECER_TECNICO, false, "Material técnico de suporte"),
+                        doc(TipoDocumento.LEGISLACAO_PERTINENTE, false, "Normas questionadas ou aplicáveis")
                 ),
                 macroStages(rito, true, false, false),
                 List.of("tribunal competente", "stf", "stj", "vara ou juizado competente")
@@ -146,13 +147,13 @@ final class ProceduralCatalogDefinitionSupport {
                 rito == RitoProcessual.TRABALHISTA_MANDADO_SEGURANCA ? RamoDireito.TRABALHISTA.name() : rito == RitoProcessual.TRIBUTARIO_MANDADO_SEGURANCA ? RamoDireito.TRIBUTARIO.name() : RamoDireito.CONSTITUCIONAL.name(),
                 parties(role("IMPETRANTE", true, true), role("AUTORIDADE_COATORA", true, false), role("IMPETRADO", true, true), role("MINISTERIO_PUBLICO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("PROVA_PRE_CONSTITUIDA", true, "Direito líquido e certo"),
-                        doc("ATO_COATOR", true, "Identificação do ato impugnado"),
-                        doc("DOCUMENTO_AUTORIDADE_COATORA", true, "Qualificação da autoridade coatora"),
-                        doc("PEDIDO_LIMINAR_FUNDAMENTADO", false, "Tutela de urgência em writ"),
-                        doc("COMPROVANTE_ENDERECO", false, "Competência territorial")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.PROVA_PRE_CONSTITUIDA, true, "Direito líquido e certo"),
+                        doc(TipoDocumento.ATO_COATOR, true, "Identificação do ato impugnado"),
+                        doc(TipoDocumento.DOCUMENTO_AUTORIDADE_COATORA, true, "Qualificação da autoridade coatora"),
+                        doc(TipoDocumento.PEDIDO_LIMINAR_FUNDAMENTADO, false, "Tutela de urgência em writ"),
+                        doc(TipoDocumento.COMPROVANTE_ENDERECO, false, "Competência territorial")
                 ),
                 stagesForWrit(rito),
                 List.of("vara competente", "tribunal competente", "gabinete originário", "colegiado recursal")
@@ -166,12 +167,12 @@ final class ProceduralCatalogDefinitionSupport {
                 rito.isMilitar() ? RamoDireito.MILITAR.name() : RamoDireito.PENAL.name(),
                 parties(role("IMPETRANTE", true, true), role("PACIENTE", true, true), role("AUTORIDADE_COATORA", true, false), role("MINISTERIO_PUBLICO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça de impetração"),
-                        doc("DOCUMENTO_PACIENTE", false, "Qualificação do paciente"),
-                        doc("DECISAO_COATORA", false, "Ato impugnado"),
-                        doc("PECAS_RELEVANTES", true, "Lastro mínimo para exame da coação"),
-                        doc("PROVA_ILEGALIDADE", true, "Constrangimento ilegal demonstrado"),
-                        doc("PEDIDO_LIMINAR", false, "Pedido liminar quando houver urgência")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça de impetração"),
+                        doc(TipoDocumento.DOCUMENTO_PACIENTE, false, "Qualificação do paciente"),
+                        doc(TipoDocumento.DECISAO_COATORA, false, "Ato impugnado"),
+                        doc(TipoDocumento.PECAS_RELEVANTES, true, "Lastro mínimo para exame da coação"),
+                        doc(TipoDocumento.PROVA_ILEGALIDADE, true, "Constrangimento ilegal demonstrado"),
+                        doc(TipoDocumento.PEDIDO_LIMINAR, false, "Pedido liminar quando houver urgência")
                 ),
                 stagesForHabeasCorpus(rito),
                 rito.isMilitar() ? BASE_MILITAR_COMPETENCE : BASE_PENAL_COMPETENCE
@@ -185,13 +186,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.PENAL.name(),
                 parties(role("ACUSACAO", true, true), role("ACUSADO", true, true), role("VITIMA", false, true), role("MINISTERIO_PUBLICO", false, true), role("ASSISTENTE_ACUSACAO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça acusatória ou defensiva inaugural"),
-                        doc("PROCURACAO", false, "Representação defensiva"),
-                        doc("BOLETIM_OCORRENCIA", false, "Notícia-crime"),
-                        doc("LAUDO_PERICIAL", false, "Prova técnica"),
-                        doc("ROL_TESTEMUNHAS", false, "Organização da instrução"),
-                        doc("MIDIA_PROBATORIA", false, "Suporte audiovisual ou digital"),
-                        doc("CADEIA_CUSTODIA_DIGITAL", false, "Integridade da prova eletrônica")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça acusatória ou defensiva inaugural"),
+                        doc(TipoDocumento.PROCURACAO, false, "Representação defensiva"),
+                        doc(TipoDocumento.BOLETIM_OCORRENCIA, false, "Notícia-crime"),
+                        doc(TipoDocumento.LAUDO_PERICIAL, false, "Prova técnica"),
+                        doc(TipoDocumento.ROL_TESTEMUNHAS, false, "Organização da instrução"),
+                        doc(TipoDocumento.MIDIA_PROBATORIA, false, "Suporte audiovisual ou digital"),
+                        doc(TipoDocumento.CADEIA_CUSTODIA_DIGITAL, false, "Integridade da prova eletrônica")
                 ),
                 macroStages(rito, true, true, true),
                 BASE_PENAL_COMPETENCE
@@ -226,11 +227,11 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.PENAL.name(),
                 parties(role("ACUSACAO", true, true), role("ACUSADO", true, true), role("VITIMA", false, true), role("MINISTERIO_PUBLICO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("ROL_TESTEMUNHAS", true, "Instrução e plenário"),
-                        doc("LAUDO_PERICIAL", true, "Prova material"),
-                        doc("QUESITACAO_SUGERIDA", false, "Organização do plenário"),
-                        doc("MIDIA_PROBATORIA", false, "Provas digitais e audiovisuais")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.ROL_TESTEMUNHAS, true, "Instrução e plenário"),
+                        doc(TipoDocumento.LAUDO_PERICIAL, true, "Prova material"),
+                        doc(TipoDocumento.QUESITACAO_SUGERIDA, false, "Organização do plenário"),
+                        doc(TipoDocumento.MIDIA_PROBATORIA, false, "Provas digitais e audiovisuais")
                 ),
                 stages,
                 BASE_PENAL_COMPETENCE
@@ -244,11 +245,11 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.PENAL.name(),
                 parties(role("EXECUTADO", true, true), role("DEFESA", false, true), role("MINISTERIO_PUBLICO", false, true), role("ADMINISTRACAO_PRISIONAL", false, false)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("GUIA_EXECUCAO", true, "Guia e cálculo de pena"),
-                        doc("ATESTADO_CONDUTA", false, "Avaliação de progressão ou benefícios"),
-                        doc("BOLETIM_DISCIPLINAR", false, "Acompanhamento da execução"),
-                        doc("CALCULO_PENA", true, "Controle de remição e progressão")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.GUIA_EXECUCAO, true, "Guia e cálculo de pena"),
+                        doc(TipoDocumento.ATESTADO_CONDUTA, false, "Avaliação de progressão ou benefícios"),
+                        doc(TipoDocumento.BOLETIM_DISCIPLINAR, false, "Acompanhamento da execução"),
+                        doc(TipoDocumento.CALCULO_PENA, true, "Controle de remição e progressão")
                 ),
                 List.of(
                         stage(FaseProcessual.EXECUCAO, List.of(FaseProcessual.RECURSAL), List.of(
@@ -272,13 +273,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.TRABALHISTA.name(),
                 parties(role("RECLAMANTE", true, true), role("RECLAMADA", true, true), role("MINISTERIO_PUBLICO_TRABALHO", false, true), role("TERCEIRO_INTERESSADO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("CTPS", true, "Vínculo laboral"),
-                        doc("CONTRATO_TRABALHO", false, "Relação contratual"),
-                        doc("HOLERITES", false, "Prova de remuneração"),
-                        doc("CARTAO_PONTO", false, "Prova de jornada"),
-                        doc("CALCULO_INICIAL", true, "Liquidação estimada dos pedidos")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.CTPS, true, "Vínculo laboral"),
+                        doc(TipoDocumento.CONTRATO_TRABALHO, false, "Relação contratual"),
+                        doc(TipoDocumento.HOLERITES, false, "Prova de remuneração"),
+                        doc(TipoDocumento.CARTAO_PONTO, false, "Prova de jornada"),
+                        doc(TipoDocumento.CALCULO_INICIAL, true, "Liquidação estimada dos pedidos")
                 ),
                 macroStages(rito, true, true, false),
                 BASE_TRABALHO_COMPETENCE
@@ -292,12 +293,12 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.TRABALHISTA.name(),
                 parties(role("RECLAMANTE", true, true), role("RECLAMADA", true, true), role("MINISTERIO_PUBLICO_TRABALHO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("CTPS", true, "Vínculo laboral"),
-                        doc("MEMORIA_VALOR_CAUSA", true, "Fixação da alçada do art. 2º da Lei 5.584/1970"),
-                        doc("ATA_AUDIENCIA", false, "Suporte para eventual revisão do valor da causa"),
-                        doc("DOCUMENTOS_LIQUIDEZ_PEDIDOS", true, "Liquidez mínima dos pedidos e alçada reduzida")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.CTPS, true, "Vínculo laboral"),
+                        doc(TipoDocumento.MEMORIA_VALOR_CAUSA, true, "Fixação da alçada do art. 2º da Lei 5.584/1970"),
+                        doc(TipoDocumento.ATA_AUDIENCIA, false, "Suporte para eventual revisão do valor da causa"),
+                        doc(TipoDocumento.DOCUMENTOS_LIQUIDEZ_PEDIDOS, true, "Liquidez mínima dos pedidos e alçada reduzida")
                 ),
                 List.of(
                         stage(FaseProcessual.CONHECIMENTO, List.of(FaseProcessual.RECURSAL), List.of(
@@ -321,12 +322,12 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.TRABALHISTA.name(),
                 parties(role("EMPREGADOR", true, true), role("EMPREGADO_ESTAVEL", true, true), role("MINISTERIO_PUBLICO_TRABALHO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("DOCUMENTO_ESTABILIDADE", true, "Comprovação da estabilidade do empregado"),
-                        doc("ATO_SUSPENSAO", true, "Suspensão do empregado com marco temporal certo"),
-                        doc("PROVA_FALTA_GRAVE", true, "Lastro documental da falta imputada"),
-                        doc("CONTROLE_PRAZO_DECADENCIAL", true, "Contagem do prazo decadencial de 30 dias"),
-                        doc("ROL_TESTEMUNHAS", false, "Planejamento da instrução")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.DOCUMENTO_ESTABILIDADE, true, "Comprovação da estabilidade do empregado"),
+                        doc(TipoDocumento.ATO_SUSPENSAO, true, "Suspensão do empregado com marco temporal certo"),
+                        doc(TipoDocumento.PROVA_FALTA_GRAVE, true, "Lastro documental da falta imputada"),
+                        doc(TipoDocumento.CONTROLE_PRAZO_DECADENCIAL, true, "Contagem do prazo decadencial de 30 dias"),
+                        doc(TipoDocumento.ROL_TESTEMUNHAS, false, "Planejamento da instrução")
                 ),
                 List.of(
                         stage(FaseProcessual.CONHECIMENTO, List.of(FaseProcessual.RECURSAL), List.of(
@@ -350,11 +351,11 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.TRABALHISTA.name(),
                 parties(role("SUBSTITUTO_PROCESSUAL", true, true), role("EMPREGADOR", true, true), role("TRABALHADOR_BENEFICIARIO", false, true), role("MINISTERIO_PUBLICO_TRABALHO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("INSTRUMENTO_COLETIVO", true, "Convenção, acordo ou sentença normativa"),
-                        doc("CLAUSULA_DESCUMPRIDA", true, "Delimitação da obrigação descumprida"),
-                        doc("PROVAS_DESCUMPRIMENTO", true, "Documentação mínima do inadimplemento"),
-                        doc("DOCUMENTOS_SINDICAIS", false, "Representação coletiva ou substituição processual")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.INSTRUMENTO_COLETIVO, true, "Convenção, acordo ou sentença normativa"),
+                        doc(TipoDocumento.CLAUSULA_DESCUMPRIDA, true, "Delimitação da obrigação descumprida"),
+                        doc(TipoDocumento.PROVAS_DESCUMPRIMENTO, true, "Documentação mínima do inadimplemento"),
+                        doc(TipoDocumento.DOCUMENTOS_SINDICAIS, false, "Representação coletiva ou substituição processual")
                 ),
                 List.of(
                         stage(FaseProcessual.CONHECIMENTO, List.of(FaseProcessual.CUMPRIMENTO_SENTENCA, FaseProcessual.RECURSAL), List.of(
@@ -382,11 +383,11 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.TRABALHISTA.name(),
                 parties(role("SUSCITANTE", true, true), role("SUSCITADO", true, true), role("MINISTERIO_PUBLICO_TRABALHO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("ATA_ASSEMBLEIA", true, "Deliberação da categoria"),
-                        doc("PAUTA_REIVINDICACOES", true, "Objeto do dissídio"),
-                        doc("COMPROVACAO_NEGOCIACAO_PREVIA", true, "Tentativa de autocomposição"),
-                        doc("INSTRUMENTOS_COLETIVOS_ANTERIORES", false, "Contextualização histórica")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.ATA_ASSEMBLEIA, true, "Deliberação da categoria"),
+                        doc(TipoDocumento.PAUTA_REIVINDICACOES, true, "Objeto do dissídio"),
+                        doc(TipoDocumento.COMPROVACAO_NEGOCIACAO_PREVIA, true, "Tentativa de autocomposição"),
+                        doc(TipoDocumento.INSTRUMENTOS_COLETIVOS_ANTERIORES, false, "Contextualização histórica")
                 ),
                 List.of(
                         stage(FaseProcessual.CONHECIMENTO, List.of(FaseProcessual.RECURSAL), List.of(
@@ -410,15 +411,15 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.PREVIDENCIARIO.name(),
                 parties(role("SEGURADO", true, true), role("INSS", true, false), role("DEPENDENTE", false, true), role("MINISTERIO_PUBLICO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("DOCUMENTO_IDENTIFICACAO", true, "Identificação do segurado"),
-                        doc("CNIS", true, "Histórico contributivo"),
-                        doc("REQUERIMENTO_ADMINISTRATIVO", true, "Prévio requerimento"),
-                        doc("CARTA_INDEFERIMENTO", false, "Motivação administrativa"),
-                        doc("LAUDO_MEDICO", rito == RitoProcessual.PREVIDENCIARIO_AUXILIO_INCAPACIDADE || rito == RitoProcessual.PREVIDENCIARIO_ACIDENTARIO, "Prova médica especializada"),
-                        doc("EXAMES", rito == RitoProcessual.PREVIDENCIARIO_AUXILIO_INCAPACIDADE || rito == RitoProcessual.PREVIDENCIARIO_ACIDENTARIO, "Apoio pericial"),
-                        doc("DOCUMENTOS_RURAIS", rito == RitoProcessual.PREVIDENCIARIO_RURAL, "Comprovação de labor rural")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.DOCUMENTO_IDENTIDADE, true, "Identificação do segurado"),
+                        doc(TipoDocumento.CNIS, true, "Histórico contributivo"),
+                        doc(TipoDocumento.REQUERIMENTO_ADMINISTRATIVO, true, "Prévio requerimento"),
+                        doc(TipoDocumento.CARTA_INDEFERIMENTO, false, "Motivação administrativa"),
+                        doc(TipoDocumento.LAUDO_MEDICO, rito == RitoProcessual.PREVIDENCIARIO_AUXILIO_INCAPACIDADE || rito == RitoProcessual.PREVIDENCIARIO_ACIDENTARIO, "Prova médica especializada"),
+                        doc(TipoDocumento.EXAMES, rito == RitoProcessual.PREVIDENCIARIO_AUXILIO_INCAPACIDADE || rito == RitoProcessual.PREVIDENCIARIO_ACIDENTARIO, "Apoio pericial"),
+                        doc(TipoDocumento.DOCUMENTOS_RURAIS, rito == RitoProcessual.PREVIDENCIARIO_RURAL, "Comprovação de labor rural")
                 ),
                 macroStages(rito, true, true, false),
                 BASE_PREVIDENCIARIO_COMPETENCE
@@ -432,14 +433,14 @@ final class ProceduralCatalogDefinitionSupport {
                 rito == RitoProcessual.IMPROBIDADE_ADMINISTRATIVA || rito.name().startsWith("ADMINISTRATIVO") ? RamoDireito.ADMINISTRATIVO.name() : RamoDireito.TRIBUTARIO.name(),
                 parties(role("AUTOR", true, true), role("REU", true, true), role("FAZENDA_PUBLICA", false, false), role("MINISTERIO_PUBLICO", false, true), role("EXEQUENTE", false, true), role("EXECUTADO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("DOCUMENTO_IDENTIFICACAO", true, "Qualificação da parte"),
-                        doc("ATO_ADMINISTRATIVO_OU_TRIBUTARIO", true, "Ato impugnado ou título executivo"),
-                        doc("AUTO_INFRACAO_OU_CDA", rito == RitoProcessual.EXECUCAO_FISCAL || rito == RitoProcessual.TRIBUTARIO_EMBARGOS_EXECUCAO_FISCAL || rito == RitoProcessual.TRIBUTARIO_CAUTELAR_FISCAL, "Título administrativo-fiscal"),
-                        doc("PLANILHA_DEBITO", rito == RitoProcessual.EXECUCAO_FISCAL || rito == RitoProcessual.FAZENDA_PUBLICA_EXECUCAO, "Memória do crédito"),
-                        doc("COMPROVANTE_RECOLHIMENTO", false, "Prova de pagamento ou depósito"),
-                        doc("PROVA_PRE_CONSTITUIDA", true, "Documentação mínima da controvérsia")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.DOCUMENTO_IDENTIDADE, true, "Qualificação da parte"),
+                        doc(TipoDocumento.ATO_ADMINISTRATIVO_OU_TRIBUTARIO, true, "Ato impugnado ou título executivo"),
+                        doc(TipoDocumento.AUTO_INFRACAO_OU_CDA, rito == RitoProcessual.EXECUCAO_FISCAL || rito == RitoProcessual.TRIBUTARIO_EMBARGOS_EXECUCAO_FISCAL || rito == RitoProcessual.TRIBUTARIO_CAUTELAR_FISCAL, "Título administrativo-fiscal"),
+                        doc(TipoDocumento.PLANILHA_DEBITO, rito == RitoProcessual.EXECUCAO_FISCAL || rito == RitoProcessual.FAZENDA_PUBLICA_EXECUCAO, "Memória do crédito"),
+                        doc(TipoDocumento.COMPROVANTE_RECOLHIMENTO, false, "Prova de pagamento ou depósito"),
+                        doc(TipoDocumento.PROVA_PRE_CONSTITUIDA, true, "Documentação mínima da controvérsia")
                 ),
                 macroStages(rito, true, true, false),
                 BASE_TRIBUTARIO_COMPETENCE
@@ -453,15 +454,15 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.ADMINISTRATIVO.name(),
                 parties(role("AUTOR", true, true), role("REU", true, true), role("AUTORIDADE_DISCIPLINAR", false, false), role("COMISSAO_PROCESSANTE", false, false), role("MINISTERIO_PUBLICO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("PORTARIA_INSTAURACAO", true, "Ato formal de instauração do PAD"),
-                        doc("DESIGNACAO_COMISSAO", true, "Comissão processante e competência"),
-                        doc("TERMO_CITACAO_ACUSADO", true, "Ciência e contraditório do acusado"),
-                        doc("PECAS_INSTRUTORIAS_PAD", true, "Autos essenciais do procedimento disciplinar"),
-                        doc("CRONOLOGIA_DISCIPLINAR", false, "Linha do tempo dos atos do PAD"),
-                        doc("PROVA_PRE_CONSTITUIDA", false, "Suporte documental mínimo da infração"),
-                        doc("DECISAO_AUTORIDADE_DISCIPLINAR", false, "Ato final ou decisão impugnada")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.PORTARIA_INSTAURACAO, true, "Ato formal de instauração do PAD"),
+                        doc(TipoDocumento.DESIGNACAO_COMISSAO, true, "Comissão processante e competência"),
+                        doc(TipoDocumento.TERMO_CITACAO_ACUSADO, true, "Ciência e contraditório do acusado"),
+                        doc(TipoDocumento.PECAS_INSTRUTORIAS_PAD, true, "Autos essenciais do procedimento disciplinar"),
+                        doc(TipoDocumento.CRONOLOGIA_DISCIPLINAR, false, "Linha do tempo dos atos do PAD"),
+                        doc(TipoDocumento.PROVA_PRE_CONSTITUIDA, false, "Suporte documental mínimo da infração"),
+                        doc(TipoDocumento.DECISAO_AUTORIDADE_DISCIPLINAR, false, "Ato final ou decisão impugnada")
                 ),
                 List.of(
                         stage(FaseProcessual.CONHECIMENTO, List.of(FaseProcessual.RECURSAL), List.of(
@@ -485,13 +486,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.ADMINISTRATIVO.name(),
                 parties(role("CANDIDATO", true, true), role("ENTE_PUBLICO", true, false), role("BANCA_EXAMINADORA", false, false), role("MINISTERIO_PUBLICO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("EDITAL_CONCURSO", true, "Regra vinculante do certame"),
-                        doc("ATO_IMPUGNADO", true, "Resultado, eliminação ou indeferimento questionado"),
-                        doc("COMPROVANTES_INSCRICAO_RESULTADO", true, "Vínculo do candidato com o certame"),
-                        doc("ESPELHO_CORRECAO_OU_NOTAS", false, "Material probatório do concurso"),
-                        doc("CRONOLOGIA_CERTAME", false, "Linha do tempo do concurso")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.EDITAL_CONCURSO, true, "Regra vinculante do certame"),
+                        doc(TipoDocumento.ATO_IMPUGNADO, true, "Resultado, eliminação ou indeferimento questionado"),
+                        doc(TipoDocumento.COMPROVANTES_INSCRICAO_RESULTADO, true, "Vínculo do candidato com o certame"),
+                        doc(TipoDocumento.ESPELHO_CORRECAO_OU_NOTAS, false, "Material probatório do concurso"),
+                        doc(TipoDocumento.CRONOLOGIA_CERTAME, false, "Linha do tempo do concurso")
                 ),
                 macroStages(rito, true, true, false),
                 BASE_TRIBUTARIO_COMPETENCE
@@ -505,13 +506,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.ADMINISTRATIVO.name(),
                 parties(role("SERVIDOR", true, true), role("ENTE_PUBLICO", true, false), role("ORGAO_GESTOR", false, false), role("MINISTERIO_PUBLICO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("ATO_FUNCIONAL_IMPUGNADO", true, "Ato administrativo questionado"),
-                        doc("FICHA_FUNCIONAL", true, "Histórico funcional do servidor"),
-                        doc("COMPROVANTES_REMUNERATORIOS", false, "Contracheques e reflexos"),
-                        doc("REQUERIMENTO_ADMINISTRATIVO", false, "Prévio requerimento quando cabível"),
-                        doc("PLANILHA_VALORES", false, "Cálculo funcional ou remuneratório")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.ATO_FUNCIONAL_IMPUGNADO, true, "Ato administrativo questionado"),
+                        doc(TipoDocumento.FICHA_FUNCIONAL, true, "Histórico funcional do servidor"),
+                        doc(TipoDocumento.COMPROVANTES_REMUNERATORIOS, false, "Contracheques e reflexos"),
+                        doc(TipoDocumento.REQUERIMENTO_ADMINISTRATIVO, false, "Prévio requerimento quando cabível"),
+                        doc(TipoDocumento.PLANILHA_VALORES, false, "Cálculo funcional ou remuneratório")
                 ),
                 macroStages(rito, true, true, false),
                 BASE_TRIBUTARIO_COMPETENCE
@@ -525,12 +526,12 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.ELEITORAL.name(),
                 parties(role("REPRESENTANTE", true, true), role("REPRESENTADO", true, true), role("MINISTERIO_PUBLICO_ELEITORAL", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("PROVA_PRE_CONSTITUIDA", true, "Lastro probatório inicial"),
-                        doc("MIDIA_DIGITAL", false, "Conteúdo audiovisual ou eletrônico"),
-                        doc("ATA_NOTARIAL_OU_HASH", false, "Integridade da prova digital"),
-                        doc("CRONOLOGIA_FATOS", false, "Linha do tempo eleitoral")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.PROVA_PRE_CONSTITUIDA, true, "Lastro probatório inicial"),
+                        doc(TipoDocumento.MIDIA_DIGITAL, false, "Conteúdo audiovisual ou eletrônico"),
+                        doc(TipoDocumento.ATA_NOTARIAL_OU_HASH, false, "Integridade da prova digital"),
+                        doc(TipoDocumento.CRONOLOGIA_FATOS, false, "Linha do tempo eleitoral")
                 ),
                 macroStagesEleitorais(rito),
                 BASE_ELEITORAL_COMPETENCE
@@ -544,13 +545,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.ELEITORAL.name(),
                 parties(role("REPRESENTANTE", true, true), role("REPRESENTADO", true, true), role("MINISTERIO_PUBLICO_ELEITORAL", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("PROVA_PRE_CONSTITUIDA", true, "Conteúdo impugnado"),
-                        doc("MIDIA_PROPAGANDA", true, "Peça publicitária ou mídia da publicação"),
-                        doc("ATA_NOTARIAL_OU_HASH", true, "Integridade da prova digital"),
-                        doc("URL_IDENTIFICADA", false, "Localização exata da propaganda"),
-                        doc("PEDIDO_TUTELA_URGENTE", false, "Remoção ou direito de resposta imediato")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.PROVA_PRE_CONSTITUIDA, true, "Conteúdo impugnado"),
+                        doc(TipoDocumento.MIDIA_PROPAGANDA, true, "Peça publicitária ou mídia da publicação"),
+                        doc(TipoDocumento.ATA_NOTARIAL_OU_HASH, true, "Integridade da prova digital"),
+                        doc(TipoDocumento.URL_IDENTIFICADA, false, "Localização exata da propaganda"),
+                        doc(TipoDocumento.PEDIDO_TUTELA_URGENTE, false, "Remoção ou direito de resposta imediato")
                 ),
                 macroStagesEleitorais(rito),
                 BASE_ELEITORAL_COMPETENCE
@@ -564,13 +565,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.ELEITORAL.name(),
                 parties(role("REQUERENTE", true, true), role("CANDIDATO", true, true), role("PARTIDO_FEDERACAO_COLIGACAO", true, true), role("MINISTERIO_PUBLICO_ELEITORAL", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("DRAP", true, "Demonstrativo de regularidade do partido ou federação"),
-                        doc("ATA_CONVENCAO", true, "Escolha em convenção"),
-                        doc("FILIACAO_PARTIDARIA", true, "Comprovação de filiação"),
-                        doc("CERTIDAO_QUITACAO_ELEITORAL", true, "Condição de elegibilidade"),
-                        doc("CERTIDOES_CRIMINAIS", true, "Verificação de inelegibilidades"),
-                        doc("DOCUMENTOS_PESSOAIS_CANDIDATO", true, "Qualificação do candidato")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.DRAP, true, "Demonstrativo de regularidade do partido ou federação"),
+                        doc(TipoDocumento.ATA_CONVENCAO, true, "Escolha em convenção"),
+                        doc(TipoDocumento.FILIACAO_PARTIDARIA, true, "Comprovação de filiação"),
+                        doc(TipoDocumento.CERTIDAO_QUITACAO_ELEITORAL, true, "Condição de elegibilidade"),
+                        doc(TipoDocumento.CERTIDOES_CRIMINAIS, true, "Verificação de inelegibilidades"),
+                        doc(TipoDocumento.DOCUMENTOS_PESSOAIS_CANDIDATO, true, "Qualificação do candidato")
                 ),
                 macroStagesEleitorais(rito),
                 BASE_ELEITORAL_COMPETENCE
@@ -584,13 +585,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.ELEITORAL.name(),
                 parties(role("IMPUGNANTE", true, true), role("IMPUGNADO", true, true), role("CANDIDATO", false, true), role("PARTIDO_FEDERACAO_COLIGACAO", false, true), role("MINISTERIO_PUBLICO_ELEITORAL", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("PROVA_PRE_CONSTITUIDA", true, "Demonstração da causa de inelegibilidade ou ausência de condição"),
-                        doc("FILIACAO_PARTIDARIA", false, "Quando a impugnação envolver filiação"),
-                        doc("CERTIDOES_ELEGIBILIDADE", false, "Prova documental de elegibilidade ou inelegibilidade"),
-                        doc("DRAP_E_DOCUMENTOS_CANDIDATURA", false, "Contexto do registro"),
-                        doc("CRONOLOGIA_ELEITORAL", false, "Linha do tempo do caso")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.PROVA_PRE_CONSTITUIDA, true, "Demonstração da causa de inelegibilidade ou ausência de condição"),
+                        doc(TipoDocumento.FILIACAO_PARTIDARIA, false, "Quando a impugnação envolver filiação"),
+                        doc(TipoDocumento.CERTIDOES_ELEGIBILIDADE, false, "Prova documental de elegibilidade ou inelegibilidade"),
+                        doc(TipoDocumento.DRAP_E_DOCUMENTOS_CANDIDATURA, false, "Contexto do registro"),
+                        doc(TipoDocumento.CRONOLOGIA_ELEITORAL, false, "Linha do tempo do caso")
                 ),
                 macroStagesEleitorais(rito),
                 BASE_ELEITORAL_COMPETENCE
@@ -604,13 +605,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.ELEITORAL.name(),
                 parties(role("AUTOR", true, true), role("INVESTIGADO", true, true), role("BENEFICIARIO", false, true), role("MINISTERIO_PUBLICO_ELEITORAL", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("PROVA_PRE_CONSTITUIDA", true, "Fatos e abuso narrados"),
-                        doc("MIDIA_PROPAGANDA", false, "Mídias audiovisuais e digitais"),
-                        doc("ATA_NOTARIAL_OU_HASH", false, "Integridade da prova eletrônica"),
-                        doc("RELATORIO_ANALITICO", false, "Organização técnica dos fatos"),
-                        doc("FILIACAO_PARTIDARIA", false, "Quando necessário ao enquadramento")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.PROVA_PRE_CONSTITUIDA, true, "Fatos e abuso narrados"),
+                        doc(TipoDocumento.MIDIA_PROPAGANDA, false, "Mídias audiovisuais e digitais"),
+                        doc(TipoDocumento.ATA_NOTARIAL_OU_HASH, false, "Integridade da prova eletrônica"),
+                        doc(TipoDocumento.RELATORIO_ANALITICO, false, "Organização técnica dos fatos"),
+                        doc(TipoDocumento.FILIACAO_PARTIDARIA, false, "Quando necessário ao enquadramento")
                 ),
                 macroStagesEleitorais(rito),
                 BASE_ELEITORAL_COMPETENCE
@@ -624,12 +625,12 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.ELEITORAL.name(),
                 parties(role("AUTOR", true, true), role("IMPUGNADO", true, true), role("BENEFICIARIO", false, true), role("MINISTERIO_PUBLICO_ELEITORAL", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("PROVA_PRE_CONSTITUIDA", true, "Prova do ilícito eleitoral"),
-                        doc("DIPLOMA_OU_MANDATO", false, "Comprovação da diplomação ou exercício do mandato"),
-                        doc("ATA_NOTARIAL_OU_HASH", false, "Integridade da prova digital"),
-                        doc("CRONOLOGIA_ELEITORAL", false, "Linha do tempo dos fatos")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.PROVA_PRE_CONSTITUIDA, true, "Prova do ilícito eleitoral"),
+                        doc(TipoDocumento.DIPLOMA_OU_MANDATO, false, "Comprovação da diplomação ou exercício do mandato"),
+                        doc(TipoDocumento.ATA_NOTARIAL_OU_HASH, false, "Integridade da prova digital"),
+                        doc(TipoDocumento.CRONOLOGIA_ELEITORAL, false, "Linha do tempo dos fatos")
                 ),
                 macroStagesEleitorais(rito),
                 BASE_ELEITORAL_COMPETENCE
@@ -643,13 +644,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.ELEITORAL.name(),
                 parties(role("PRESTADOR_CONTAS", true, true), role("MINISTERIO_PUBLICO_ELEITORAL", false, true), role("ORGAO_TECNICO", false, false)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural ou requerimento"),
-                        doc("EXTRATOS_BANCARIOS", true, "Movimentação financeira da campanha"),
-                        doc("RECIBOS_ELEITORAIS", true, "Documentação financeira"),
-                        doc("RELACAO_RECEITAS_DESPESAS", true, "Consolidação das contas"),
-                        doc("NOTAS_FISCAIS", false, "Suporte dos gastos"),
-                        doc("PARECER_TECNICO_CONTAS", false, "Análise técnica"),
-                        doc("MIDIA_DIGITAL", false, "Arquivos eletrônicos das contas")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural ou requerimento"),
+                        doc(TipoDocumento.EXTRATOS_BANCARIOS, true, "Movimentação financeira da campanha"),
+                        doc(TipoDocumento.RECIBOS_ELEITORAIS, true, "Documentação financeira"),
+                        doc(TipoDocumento.RELACAO_RECEITAS_DESPESAS, true, "Consolidação das contas"),
+                        doc(TipoDocumento.NOTAS_FISCAIS, false, "Suporte dos gastos"),
+                        doc(TipoDocumento.PARECER_TECNICO_CONTAS, false, "Análise técnica"),
+                        doc(TipoDocumento.MIDIA_DIGITAL, false, "Arquivos eletrônicos das contas")
                 ),
                 macroStagesEleitorais(rito),
                 BASE_ELEITORAL_COMPETENCE
@@ -663,13 +664,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.MILITAR.name(),
                 parties(role("AUTORIDADE_MILITAR", true, false), role("INVESTIGADO", true, true), role("OFENDIDO", false, true), role("MINISTERIO_PUBLICO_MILITAR", false, true), role("DEFESA", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Requerimento, notícia ou requerimento incidente"),
-                        doc("PORTARIA_INSTAURACAO", true, "Formalização do IPM"),
-                        doc("DESIGNACAO_AUTORIDADE", true, "Competência da autoridade instauradora"),
-                        doc("PECAS_IPM", true, "Autos essenciais do procedimento"),
-                        doc("ASSENTAMENTOS_FUNCIONAIS", false, "Dados funcionais do militar"),
-                        doc("LAUDO_PERICIAL", false, "Prova técnica"),
-                        doc("CADEIA_CUSTODIA_DIGITAL", false, "Integridade da prova eletrônica")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Requerimento, notícia ou requerimento incidente"),
+                        doc(TipoDocumento.PORTARIA_INSTAURACAO, true, "Formalização do IPM"),
+                        doc(TipoDocumento.DESIGNACAO_AUTORIDADE, true, "Competência da autoridade instauradora"),
+                        doc(TipoDocumento.PECAS_IPM, true, "Autos essenciais do procedimento"),
+                        doc(TipoDocumento.ASSENTAMENTOS_FUNCIONAIS, false, "Dados funcionais do militar"),
+                        doc(TipoDocumento.LAUDO_PERICIAL, false, "Prova técnica"),
+                        doc(TipoDocumento.CADEIA_CUSTODIA_DIGITAL, false, "Integridade da prova eletrônica")
                 ),
                 List.of(
                         stage(FaseProcessual.CONHECIMENTO, List.of(FaseProcessual.RECURSAL), List.of(
@@ -693,14 +694,14 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.MILITAR.name(),
                 parties(role("ACUSACAO", true, true), role("ACUSADO", true, true), role("OFENDIDO", false, true), role("MINISTERIO_PUBLICO_MILITAR", false, true), role("AUTORIDADE_MILITAR", false, false)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação defensiva"),
-                        doc("PORTARIA_INSTAURACAO", false, "Contexto do fato militar"),
-                        doc("DESIGNACAO_AUTORIDADE", false, "Competência da autoridade militar"),
-                        doc("PECAS_IPM", true, "Elementos informativos do procedimento militar"),
-                        doc("ASSENTAMENTOS_FUNCIONAIS", false, "Histórico funcional do militar"),
-                        doc("LAUDO_PERICIAL", false, "Prova técnica"),
-                        doc("ROL_TESTEMUNHAS", false, "Planejamento da instrução")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação defensiva"),
+                        doc(TipoDocumento.PORTARIA_INSTAURACAO, false, "Contexto do fato militar"),
+                        doc(TipoDocumento.DESIGNACAO_AUTORIDADE, false, "Competência da autoridade militar"),
+                        doc(TipoDocumento.PECAS_IPM, true, "Elementos informativos do procedimento militar"),
+                        doc(TipoDocumento.ASSENTAMENTOS_FUNCIONAIS, false, "Histórico funcional do militar"),
+                        doc(TipoDocumento.LAUDO_PERICIAL, false, "Prova técnica"),
+                        doc(TipoDocumento.ROL_TESTEMUNHAS, false, "Planejamento da instrução")
                 ),
                 macroStagesMilitares(rito),
                 BASE_MILITAR_COMPETENCE
@@ -714,12 +715,12 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.MILITAR.name(),
                 parties(role("AUTORIDADE_MILITAR", true, false), role("INVESTIGADO", true, true), role("DEFESA", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural ou requerimento defensivo"),
-                        doc("PORTARIA_INSTAURACAO", true, "Ato de instauração"),
-                        doc("DESIGNACAO_COMISSAO", true, "Comissão disciplinar competente"),
-                        doc("ASSENTAMENTOS_FUNCIONAIS", true, "Dados funcionais do militar"),
-                        doc("LAUDO_PERICIAL", false, "Prova técnica"),
-                        doc("ATA_ATOS_DISCIPLINARES", false, "Registro dos atos apuratórios")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural ou requerimento defensivo"),
+                        doc(TipoDocumento.PORTARIA_INSTAURACAO, true, "Ato de instauração"),
+                        doc(TipoDocumento.DESIGNACAO_COMISSAO, true, "Comissão disciplinar competente"),
+                        doc(TipoDocumento.ASSENTAMENTOS_FUNCIONAIS, true, "Dados funcionais do militar"),
+                        doc(TipoDocumento.LAUDO_PERICIAL, false, "Prova técnica"),
+                        doc(TipoDocumento.ATA_ATOS_DISCIPLINARES, false, "Registro dos atos apuratórios")
                 ),
                 List.of(
                         stage(FaseProcessual.CONHECIMENTO, List.of(FaseProcessual.RECURSAL), List.of(
@@ -743,13 +744,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.EMPRESARIAL.name(),
                 parties(role("DEVEDOR", true, true), role("CREDOR", false, true), role("ADMINISTRADOR_JUDICIAL", false, false), role("MINISTERIO_PUBLICO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("BALANCOS_DEMONSTRACOES", true, "Situação econômica da empresa"),
-                        doc("RELACAO_CREDORES", true, "Quadro de credores"),
-                        doc("FLUXO_CAIXA", false, "Planejamento econômico"),
-                        doc("PLANO_RECUPERACAO", rito == RitoProcessual.RECUPERACAO_JUDICIAL || rito == RitoProcessual.RECUPERACAO_EXTRAJUDICIAL, "Plano de soerguimento"),
-                        doc("CONTRATOS_ESSENCIAIS", false, "Continuidade empresarial")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.BALANCOS_DEMONSTRACOES, true, "Situação econômica da empresa"),
+                        doc(TipoDocumento.RELACAO_CREDORES, true, "Quadro de credores"),
+                        doc(TipoDocumento.FLUXO_CAIXA, false, "Planejamento econômico"),
+                        doc(TipoDocumento.PLANO_RECUPERACAO, rito == RitoProcessual.RECUPERACAO_JUDICIAL || rito == RitoProcessual.RECUPERACAO_EXTRAJUDICIAL, "Plano de soerguimento"),
+                        doc(TipoDocumento.CONTRATOS_ESSENCIAIS, false, "Continuidade empresarial")
                 ),
                 macroStages(rito, true, true, false),
                 List.of("vara empresarial", "vara de falencias e recuperacoes", "camara empresarial")
@@ -765,36 +766,36 @@ final class ProceduralCatalogDefinitionSupport {
         };
         List<DocumentSpec> documents = switch (rito) {
             case INFANCIA_JUVENTUDE_INFRACIONAL -> documents(
-                    doc("PETICAO_INICIAL", true, "Representação ou peça inaugural"),
-                    doc("BOLETIM_OU_REPRESENTACAO", true, "Notícia do ato infracional"),
-                    doc("QUALIFICACAO_ADOLESCENTE", true, "Identificação do adolescente"),
-                    doc("RELATORIO_SOCIOEDUCATIVO", false, "Subsídio técnico inicial"),
-                    doc("PROVA_PRE_CONSTITUIDA", false, "Mídias, laudos e documentos mínimos"),
-                    doc("RESPONSAVEIS_LEGAIS", false, "Dados para intimação e acompanhamento")
+                    doc(TipoDocumento.PETICAO_INICIAL, true, "Representação ou peça inaugural"),
+                    doc(TipoDocumento.BOLETIM_OU_REPRESENTACAO, true, "Notícia do ato infracional"),
+                    doc(TipoDocumento.QUALIFICACAO_ADOLESCENTE, true, "Identificação do adolescente"),
+                    doc(TipoDocumento.RELATORIO_SOCIOEDUCATIVO, false, "Subsídio técnico inicial"),
+                    doc(TipoDocumento.PROVA_PRE_CONSTITUIDA, false, "Mídias, laudos e documentos mínimos"),
+                    doc(TipoDocumento.RESPONSAVEIS_LEGAIS, false, "Dados para intimação e acompanhamento")
             );
             case INFANCIA_JUVENTUDE_ADOCAO -> documents(
-                    doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                    doc("DOCUMENTOS_PESSOAIS", true, "Qualificação dos envolvidos"),
-                    doc("HABILITACAO_ADOTANTE", true, "Habilitação ou status do cadastro de adoção"),
-                    doc("ESTUDO_PSICOSSOCIAL", true, "Estudo psicossocial ou social"),
-                    doc("CERTIDAO_NASCIMENTO", true, "Identificação civil da criança ou adolescente"),
-                    doc("RELATORIO_ESTAGIO_CONVIVENCIA", false, "Quando já iniciada a convivência")
+                    doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                    doc(TipoDocumento.DOCUMENTOS_PESSOAIS, true, "Qualificação dos envolvidos"),
+                    doc(TipoDocumento.HABILITACAO_ADOTANTE, true, "Habilitação ou status do cadastro de adoção"),
+                    doc(TipoDocumento.ESTUDO_PSICOSSOCIAL, true, "Estudo psicossocial ou social"),
+                    doc(TipoDocumento.CERTIDAO_NASCIMENTO, true, "Identificação civil da criança ou adolescente"),
+                    doc(TipoDocumento.RELATORIO_ESTAGIO_CONVIVENCIA, false, "Quando já iniciada a convivência")
             );
             case INFANCIA_JUVENTUDE_TUTELA_CURATELA_MENOR -> documents(
-                    doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                    doc("DOCUMENTOS_PESSOAIS", true, "Qualificação das partes"),
-                    doc("CERTIDAO_NASCIMENTO", true, "Identificação do menor"),
-                    doc("ESTUDO_SOCIAL", false, "Avaliação protetiva ou sociofamiliar"),
-                    doc("COMPROVANTE_VINCULO_FAMILIAR", false, "Relação ou responsabilidade invocada"),
-                    doc("PARECER_CONSELHO_TUTELAR", false, "Apoio técnico protetivo")
+                    doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                    doc(TipoDocumento.DOCUMENTOS_PESSOAIS, true, "Qualificação das partes"),
+                    doc(TipoDocumento.CERTIDAO_NASCIMENTO, true, "Identificação do menor"),
+                    doc(TipoDocumento.ESTUDO_SOCIAL, false, "Avaliação protetiva ou sociofamiliar"),
+                    doc(TipoDocumento.COMPROVANTE_VINCULO_FAMILIAR, false, "Relação ou responsabilidade invocada"),
+                    doc(TipoDocumento.PARECER_CONSELHO_TUTELAR, false, "Apoio técnico protetivo")
             );
             default -> documents(
-                    doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                    doc("DOCUMENTOS_PESSOAIS", true, "Qualificação dos envolvidos"),
-                    doc("ESTUDO_SOCIAL", false, "Avaliação técnica psicossocial"),
-                    doc("PARECER_CONSELHO_TUTELAR", false, "Informações protetivas"),
-                    doc("RELATORIO_ESCOLAR_MEDICO", false, "Evidências complementares"),
-                    doc("PROCURACAO", false, "Representação técnica")
+                    doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                    doc(TipoDocumento.DOCUMENTOS_PESSOAIS, true, "Qualificação dos envolvidos"),
+                    doc(TipoDocumento.ESTUDO_SOCIAL, false, "Avaliação técnica psicossocial"),
+                    doc(TipoDocumento.PARECER_CONSELHO_TUTELAR, false, "Informações protetivas"),
+                    doc(TipoDocumento.RELATORIO_ESCOLAR_MEDICO, false, "Evidências complementares"),
+                    doc(TipoDocumento.PROCURACAO, false, "Representação técnica")
             );
         };
         return definition(
@@ -815,13 +816,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.AGRARIO.name(),
                 parties(role("AUTOR", true, true), role("REU", true, true), role("INCRA", false, false), role("MINISTERIO_PUBLICO", false, true), role("COMUNIDADE_TRADICIONAL", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("MATRICULA_IMOVEL", true, "Titularidade ou registro do imóvel"),
-                        doc("MAPA_GEOREFERENCIADO", false, "Delimitação da área"),
-                        doc("CADEIA_DOMINIAL", false, "Histórico da propriedade"),
-                        doc("LAUDO_SOCIOAMBIENTAL", false, "Contexto coletivo e territorial"),
-                        doc("DOCUMENTOS_POSSE", true, "Comprovação possessória")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.MATRICULA_IMOVEL, true, "Titularidade ou registro do imóvel"),
+                        doc(TipoDocumento.MAPA_GEOREFERENCIADO, false, "Delimitação da área"),
+                        doc(TipoDocumento.CADEIA_DOMINIAL, false, "Histórico da propriedade"),
+                        doc(TipoDocumento.LAUDO_SOCIOAMBIENTAL, false, "Contexto coletivo e territorial"),
+                        doc(TipoDocumento.DOCUMENTOS_POSSE, true, "Comprovação possessória")
                 ),
                 macroStages(rito, true, true, false),
                 List.of("vara agraria", "vara civel especializada", "vara federal quando houver ente federal")
@@ -835,13 +836,13 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.AMBIENTAL.name(),
                 parties(role("AUTOR", true, true), role("REU", true, true), role("MINISTERIO_PUBLICO", false, true), role("ORGAO_AMBIENTAL", false, false)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("PROCURACAO", true, "Representação processual"),
-                        doc("AUTO_INFRACAO_AMBIENTAL", false, "Contexto administrativo"),
-                        doc("LAUDO_TECNICO_AMBIENTAL", true, "Demonstração do dano"),
-                        doc("MAPA_AREA_AFETADA", false, "Delimitação do dano"),
-                        doc("FOTOGRAFIAS_MIDIAS", false, "Registro visual"),
-                        doc("PLANO_RECUPERACAO_AREA", false, "Medidas de recomposição")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.PROCURACAO, true, "Representação processual"),
+                        doc(TipoDocumento.AUTO_INFRACAO_AMBIENTAL, false, "Contexto administrativo"),
+                        doc(TipoDocumento.LAUDO_TECNICO_AMBIENTAL, true, "Demonstração do dano"),
+                        doc(TipoDocumento.MAPA_AREA_AFETADA, false, "Delimitação do dano"),
+                        doc(TipoDocumento.FOTOGRAFIAS_MIDIAS, false, "Registro visual"),
+                        doc(TipoDocumento.PLANO_RECUPERACAO_AREA, false, "Medidas de recomposição")
                 ),
                 macroStages(rito, true, true, false),
                 List.of("vara ambiental", "vara federal ambiental", "camara especializada")
@@ -855,12 +856,12 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.INTERNACIONAL.name(),
                 parties(role("REQUERENTE", true, true), role("REQUERIDO", false, true), role("AUTORIDADE_CENTRAL", false, false), role("MINISTERIO_PUBLICO", false, true)),
                 documents(
-                        doc("PETICAO_INICIAL", true, "Peça inaugural"),
-                        doc("TRADUCAO_JURAMENTADA", true, "Documentos estrangeiros"),
-                        doc("DECISAO_ESTRANGEIRA", rito == RitoProcessual.HOMOLOGACAO_SENTENCA_ESTRANGEIRA, "Título estrangeiro"),
-                        doc("CARTA_ROGATORIA", rito == RitoProcessual.CARTA_ROGATORIA, "Pedido de cooperação"),
-                        doc("PROVA_AUTENTICIDADE", true, "Validação documental"),
-                        doc("COMPROVANTE_CITACAO_OU_DEFESA", false, "Garantias do contraditório")
+                        doc(TipoDocumento.PETICAO_INICIAL, true, "Peça inaugural"),
+                        doc(TipoDocumento.TRADUCAO_JURAMENTADA, true, "Documentos estrangeiros"),
+                        doc(TipoDocumento.DECISAO_ESTRANGEIRA, rito == RitoProcessual.HOMOLOGACAO_SENTENCA_ESTRANGEIRA, "Título estrangeiro"),
+                        doc(TipoDocumento.CARTA_ROGATORIA, rito == RitoProcessual.CARTA_ROGATORIA, "Pedido de cooperação"),
+                        doc(TipoDocumento.PROVA_AUTENTICIDADE, true, "Validação documental"),
+                        doc(TipoDocumento.COMPROVANTE_CITACAO_OU_DEFESA, false, "Garantias do contraditório")
                 ),
                 macroStages(rito, true, false, false),
                 List.of("stj", "autoridade central", "tribunal competente")
@@ -874,10 +875,10 @@ final class ProceduralCatalogDefinitionSupport {
                 RamoDireito.CIVIL.name(),
                 parties(role("REQUERENTE", true, true), role("REQUERIDO", true, true), role("MEDIADOR_ARBITRO", false, false)),
                 documents(
-                        doc("REQUERIMENTO_INICIAL", true, "Pedido de instauração"),
-                        doc("CONVENCAO_ARBITRAGEM_OU_TERMO", false, "Base consensual do procedimento"),
-                        doc("PROPOSTA_ACORDO", false, "Material negocial"),
-                        doc("DOCUMENTOS_SUPORTE", false, "Subsídios documentais")
+                        doc(TipoDocumento.REQUERIMENTO_INICIAL, true, "Pedido de instauração"),
+                        doc(TipoDocumento.CONVENCAO_ARBITRAGEM_OU_TERMO, false, "Base consensual do procedimento"),
+                        doc(TipoDocumento.PROPOSTA_ACORDO, false, "Material negocial"),
+                        doc(TipoDocumento.DOCUMENTOS_SUPORTE, false, "Subsídios documentais")
                 ),
                 List.of(
                         stage(FaseProcessual.CONHECIMENTO, List.of(FaseProcessual.RECURSAL), List.of(

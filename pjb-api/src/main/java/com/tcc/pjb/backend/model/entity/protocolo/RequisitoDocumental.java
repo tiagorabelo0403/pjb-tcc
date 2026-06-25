@@ -9,7 +9,7 @@ import com.tcc.pjb.backend.model.entity.enums.processual.completude.FonteNormati
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.GrauExigibilidade;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.SeveridadeCompletude;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoCondicaoRequisito;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoParteProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoRepresentanteProcessual;
 import jakarta.persistence.Column;
@@ -65,7 +65,7 @@ public class RequisitoDocumental {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_documento", nullable = false, length = 120)
-    private TipoDocumentoProcessual tipoDocumento;
+    private TipoDocumento tipoDocumento;
 
     @Column(name = "obrigatorio", nullable = false)
     private boolean obrigatorio;

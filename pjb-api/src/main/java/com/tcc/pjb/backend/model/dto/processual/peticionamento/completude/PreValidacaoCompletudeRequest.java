@@ -1,7 +1,7 @@
 package com.tcc.pjb.backend.model.dto.processual.peticionamento.completude;
 
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoCondicaoRequisito;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoParteProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,5 +26,5 @@ public record PreValidacaoCompletudeRequest(
 
         @Size(max = 50)
         @Schema(description = "Tipos de documentos que serão anexados ao protocolo")
-        List<TipoDocumentoProcessual> documentosAnexados
+        List<TipoDocumento> documentosAnexados
 ) {}

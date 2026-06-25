@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.core.protocolo.completude;
 
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoCondicaoRequisito;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoParteProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoRepresentanteProcessual;
 import java.time.LocalDate;
@@ -14,7 +14,7 @@ public record ContextoValidacaoCompletude(
         TipoRepresentanteProcessual representante,
         TipoParteProcessual tipoPartePrincipal,
         Set<TipoCondicaoRequisito> condicoesAplicaveis,
-        List<TipoDocumentoProcessual> documentosAnexados,
+        List<TipoDocumento> documentosAnexados,
         LocalDate dataProtocolo
 ) {
     public boolean condicaoPresente(TipoCondicaoRequisito condicao) {
@@ -22,7 +22,7 @@ public record ContextoValidacaoCompletude(
         return condicoesAplicaveis != null && condicoesAplicaveis.contains(condicao);
     }
 
-    public boolean possuiDocumento(TipoDocumentoProcessual tipo) {
+    public boolean possuiDocumento(TipoDocumento tipo) {
         return documentosAnexados != null && documentosAnexados.contains(tipo);
     }
 }

@@ -24,7 +24,7 @@ import com.tcc.pjb.backend.model.entity.enums.processual.completude.GrauExigibil
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.OrigemValidacao;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeStatus;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoCondicaoRequisito;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoRepresentanteProcessual;
 import com.tcc.pjb.backend.model.entity.protocolo.RequisitoDocumental;
 import com.tcc.pjb.backend.model.entity.protocolo.RequisitoDocumentalEquivalencia;
@@ -61,7 +61,7 @@ class PjbProtocoloCompletudeFase2Test {
 
         ContextoValidacaoCompletude ctx = new ContextoValidacaoCompletude(
                 RitoProcessual.COMUM_ORDINARIO, TipoRepresentanteProcessual.ADVOGADO_PRIVADO,
-                null, Set.of(), List.of(TipoDocumentoProcessual.DOCUMENTO_IDENTIDADE), LocalDate.now());
+                null, Set.of(), List.of(TipoDocumento.DOCUMENTO_IDENTIDADE), LocalDate.now());
 
         ResultadoValidacao resultado = validator.validar(ctx);
 
@@ -99,7 +99,7 @@ class PjbProtocoloCompletudeFase2Test {
 
         ContextoValidacaoCompletude ctx = new ContextoValidacaoCompletude(
                 RitoProcessual.TRABALHISTA_ORDINARIO, TipoRepresentanteProcessual.ADVOGADO_PRIVADO,
-                null, Set.of(), List.of(TipoDocumentoProcessual.CONTRATO_TRABALHO), LocalDate.now());
+                null, Set.of(), List.of(TipoDocumento.CONTRATO_TRABALHO), LocalDate.now());
 
         ResultadoValidacao resultado = validator.validar(ctx);
 
@@ -175,7 +175,7 @@ class PjbProtocoloCompletudeFase2Test {
     private RequisitoDocumental requisitoIdentidade() {
         return RequisitoDocumental.builder()
                 .id(1L)
-                .tipoDocumento(TipoDocumentoProcessual.DOCUMENTO_IDENTIDADE)
+                .tipoDocumento(TipoDocumento.DOCUMENTO_IDENTIDADE)
                 .severidade(SeveridadeCompletude.BLOQUEANTE)
                 .obrigatorio(true)
                 .tipoCondicao(TipoCondicaoRequisito.SEMPRE)
@@ -191,7 +191,7 @@ class PjbProtocoloCompletudeFase2Test {
     private RequisitoDocumental requisitoCtps() {
         return RequisitoDocumental.builder()
                 .id(2L)
-                .tipoDocumento(TipoDocumentoProcessual.CTPS)
+                .tipoDocumento(TipoDocumento.CTPS)
                 .severidade(SeveridadeCompletude.BLOQUEANTE)
                 .obrigatorio(true)
                 .tipoCondicao(TipoCondicaoRequisito.SEMPRE)
@@ -207,7 +207,7 @@ class PjbProtocoloCompletudeFase2Test {
     private RequisitoDocumental requisitoProcuracao() {
         return RequisitoDocumental.builder()
                 .id(3L)
-                .tipoDocumento(TipoDocumentoProcessual.PROCURACAO)
+                .tipoDocumento(TipoDocumento.PROCURACAO)
                 .severidade(SeveridadeCompletude.BLOQUEANTE)
                 .obrigatorio(true)
                 .tipoCondicao(TipoCondicaoRequisito.ADVOGADO_CONSTITUIDO)
@@ -224,7 +224,7 @@ class PjbProtocoloCompletudeFase2Test {
     private RequisitoDocumental requisitoSensivel() {
         return RequisitoDocumental.builder()
                 .id(4L)
-                .tipoDocumento(TipoDocumentoProcessual.LAUDO_MEDICO)
+                .tipoDocumento(TipoDocumento.LAUDO_MEDICO)
                 .severidade(SeveridadeCompletude.BLOQUEANTE)
                 .obrigatorio(true)
                 .tipoCondicao(TipoCondicaoRequisito.SEMPRE)
@@ -240,7 +240,7 @@ class PjbProtocoloCompletudeFase2Test {
         return RequisitoDocumentalEquivalencia.builder()
                 .id(1L)
                 .requisito(req)
-                .tipoDocumentoAceito(TipoDocumentoProcessual.CONTRATO_TRABALHO)
+                .tipoDocumentoAceito(TipoDocumento.CONTRATO_TRABALHO)
                 .justificativa("Contrato de trabalho substitui CTPS")
                 .severidadeSeSubstituto(SeveridadeCompletude.ADVERTENCIA)
                 .build();

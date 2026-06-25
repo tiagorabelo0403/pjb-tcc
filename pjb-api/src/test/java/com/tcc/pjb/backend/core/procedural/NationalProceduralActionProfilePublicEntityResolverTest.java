@@ -92,8 +92,8 @@ class NationalProceduralActionProfilePublicEntityResolverTest {
     @Test
     void catalogMustExposeAdministrativePadDocuments() {
         var snapshot = ProceduralCatalogSupport.snapshot(com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual.ADMINISTRATIVO_PAD);
-        assertTrue(snapshot.documents().stream().anyMatch(doc -> doc.code().equals("PORTARIA_INSTAURACAO") && doc.required()));
-        assertTrue(snapshot.documents().stream().anyMatch(doc -> doc.code().equals("DESIGNACAO_COMISSAO") && doc.required()));
+        assertTrue(snapshot.documents().stream().anyMatch(doc -> doc.code().name().equals("PORTARIA_INSTAURACAO") && doc.required()));
+        assertTrue(snapshot.documents().stream().anyMatch(doc -> doc.code().name().equals("DESIGNACAO_COMISSAO") && doc.required()));
     }
 
 }

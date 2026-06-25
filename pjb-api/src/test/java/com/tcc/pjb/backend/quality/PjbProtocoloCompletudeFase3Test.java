@@ -28,7 +28,7 @@ import com.tcc.pjb.backend.model.entity.enums.processual.completude.GrauExigibil
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.OrigemValidacao;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeEventoTipo;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeStatus;
-import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.entity.intelligence.LaianePeticaoInicialDraftSession;
 import com.tcc.pjb.backend.model.entity.protocolo.ProtocoloCompletudeOutboxEntity;
 import com.tcc.pjb.backend.model.entity.protocolo.ProtocoloPendencia;
@@ -373,11 +373,11 @@ class PjbProtocoloCompletudeFase3Test {
         SimpleMeterRegistry registry = new SimpleMeterRegistry();
         ProtocoloCompletudeMetrics metrics = new ProtocoloCompletudeMetrics(registry);
 
-        metrics.registrarViolacaoTipoDoc(TipoDocumentoProcessual.PROCURACAO);
-        metrics.registrarViolacaoTipoDoc(TipoDocumentoProcessual.PROCURACAO);
+        metrics.registrarViolacaoTipoDoc(TipoDocumento.PROCURACAO);
+        metrics.registrarViolacaoTipoDoc(TipoDocumento.PROCURACAO);
 
         double count = registry.counter("pjb.protocolo.completude.pendencia_tipo_doc",
-                "tipo_documento", TipoDocumentoProcessual.PROCURACAO.name()).count();
+                "tipo_documento", TipoDocumento.PROCURACAO.name()).count();
         assertThat(count).isEqualTo(2.0);
     }
 
@@ -425,7 +425,7 @@ class PjbProtocoloCompletudeFase3Test {
                 FonteNormativaTipo.LEI, "CPC art. 287", "Procuracao obrigatoria",
                 GrauExigibilidade.DISPENSAVEL_COM_JUSTIFICATIVA, null);
         ViolacaoCompletude violacao = new ViolacaoCompletude.DocumentoObrigatorioAusente(
-                TipoDocumentoProcessual.PROCURACAO, fund);
+                TipoDocumento.PROCURACAO, fund);
         return new ResultadoValidacao(
                 ProtocoloCompletudeStatus.PENDENTE_DOCUMENTACAO, List.of(violacao), "v1.0");
     }

@@ -1072,7 +1072,7 @@ public class LaianePeticaoInicialDraftService {
             String tipoJustica,
             com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoParteProcessual tipoPartePrincipal,
             java.util.Set<com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoCondicaoRequisito> condicoesAplicaveis,
-            java.util.List<com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoDocumentoProcessual> documentosAnexados
+            java.util.List<com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento> documentosAnexados
     ) {
         public ProtocolarRequest(String tipoJustica) {
             this(tipoJustica, null, java.util.Set.of(), java.util.List.of());

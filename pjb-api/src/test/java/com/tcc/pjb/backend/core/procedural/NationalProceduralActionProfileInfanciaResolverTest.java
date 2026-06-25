@@ -48,8 +48,8 @@ class NationalProceduralActionProfileInfanciaResolverTest {
         var adocao = ProceduralCatalogSupport.snapshot(com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual.INFANCIA_JUVENTUDE_ADOCAO);
         var infracional = ProceduralCatalogSupport.snapshot(com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual.INFANCIA_JUVENTUDE_INFRACIONAL);
 
-        assertTrue(adocao.documents().stream().anyMatch(doc -> doc.code().equals("HABILITACAO_ADOTANTE") && doc.required()));
-        assertTrue(infracional.documents().stream().anyMatch(doc -> doc.code().equals("BOLETIM_OU_REPRESENTACAO") && doc.required()));
+        assertTrue(adocao.documents().stream().anyMatch(doc -> doc.code().name().equals("HABILITACAO_ADOTANTE") && doc.required()));
+        assertTrue(infracional.documents().stream().anyMatch(doc -> doc.code().name().equals("BOLETIM_OU_REPRESENTACAO") && doc.required()));
     }
 
 }
