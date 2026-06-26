@@ -19,6 +19,7 @@ import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 import com.tcc.pjb.backend.service.casefile.CaseContinuityOrchestratorService;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
 import com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao;
+import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
 import com.tcc.pjb.backend.service.policy.SigiloPolicyFactory;
 import com.tcc.pjb.backend.service.procedural.AjuizamentoCanonicalContextService;
 import com.tcc.pjb.backend.service.processo.ProcessoMaterialObjetoEnrichmentService;
@@ -50,6 +51,7 @@ public class AjuizarProcessoCommand {
     private final AjuizamentoCanonicalContextService ajuizamentoCanonicalContextService;
     private final TetoProcessualService tetoProcessualService;
     private final TerritorialProcessualService territorialProcessualService;
+    private final CompletudeDocumentalPolicyService completudeDocumentalPolicyService;
 
     @Transactional
     @PjbTransactionalBudget(operation = "ajuizamento.command.persist", maxMillis = 3200, critical = true)
@@ -95,6 +97,11 @@ public class AjuizarProcessoCommand {
         validateNationalRouting(routing);
         validateSubmissionBlueprint(submissionBlueprint);
         validateConnectorExecution(connectorExecution);
+
+        var diagnosticoCompl = completudeDocumentalPolicyService.diagnosticar(processo.getRito(), anexos);
+        if (diagnosticoCompl.bloqueante()) {
+            throw completudeDocumentalPolicyService.toException(diagnosticoCompl);
+        }
 
         NivelSigilo nivel = sigiloPolicyFactory
                 .obterPoliticaDeSigilo(processo)
