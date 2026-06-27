@@ -64,6 +64,18 @@ public class PoloProcessual {
     @Column(name = "ordem_polo", nullable = false)
     private int ordemPolo;
 
+    @Column(name = "uf_domicilio", length = 2)
+    private String ufDomicilio;
+
+    @Column(name = "comarca_domicilio", length = 120)
+    private String comarcaDomicilio;
+
+    @Column(name = "municipio_domicilio", length = 120)
+    private String municipioDomicilio;
+
+    @Column(name = "razao_social", length = 300)
+    private String razaoSocial;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -77,6 +89,17 @@ public class PoloProcessual {
                           String nomeCompleto, String documento, String documentoTipo,
                           String oabNumero, String oabUf, Long usuarioId,
                           UUID identidadeId, Long representadoPorId, int ordemPolo) {
+        this(processoId, tipoPolo, tipoParte, nomeCompleto, documento, documentoTipo,
+                oabNumero, oabUf, usuarioId, identidadeId, representadoPorId, ordemPolo,
+                null, null, null, null);
+    }
+
+    public PoloProcessual(Long processoId, TipoPolo tipoPolo, TipoParte tipoParte,
+                          String nomeCompleto, String documento, String documentoTipo,
+                          String oabNumero, String oabUf, Long usuarioId,
+                          UUID identidadeId, Long representadoPorId, int ordemPolo,
+                          String ufDomicilio, String comarcaDomicilio, String municipioDomicilio,
+                          String razaoSocial) {
         this.processoId = processoId;
         this.tipoPolo = tipoPolo;
         this.tipoParte = tipoParte;
@@ -89,6 +112,10 @@ public class PoloProcessual {
         this.identidadeId = identidadeId;
         this.representadoPorId = representadoPorId;
         this.ordemPolo = ordemPolo;
+        this.ufDomicilio = ufDomicilio;
+        this.comarcaDomicilio = comarcaDomicilio;
+        this.municipioDomicilio = municipioDomicilio;
+        this.razaoSocial = razaoSocial;
         this.ativo = true;
         Instant now = Instant.now();
         this.createdAt = now;
