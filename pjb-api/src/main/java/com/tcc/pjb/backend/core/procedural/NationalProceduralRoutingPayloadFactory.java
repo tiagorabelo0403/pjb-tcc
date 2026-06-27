@@ -1,9 +1,11 @@
 package com.tcc.pjb.backend.core.procedural;
 
+import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.dto.ProcessoRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.modules.laiane.dto.legal.LaianePeticaoAssistRequest;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Component;
@@ -35,7 +37,11 @@ public class NationalProceduralRoutingPayloadFactory {
     }
 
     public LinkedHashMap<String, Object> fromProcesso(Processo processo, ProcessoRequest request) {
-        return payloadSecurityPolicy.snapshot(processoEntityPayloadAssembler.assemble(processo, request));
+        return fromProcesso(processo, request, List.of());
+    }
+
+    public LinkedHashMap<String, Object> fromProcesso(Processo processo, ProcessoRequest request, List<Attachment> anexos) {
+        return payloadSecurityPolicy.snapshot(processoEntityPayloadAssembler.assemble(processo, request, anexos));
     }
 
     public LinkedHashMap<String, Object> copyOf(Map<String, Object> source) {

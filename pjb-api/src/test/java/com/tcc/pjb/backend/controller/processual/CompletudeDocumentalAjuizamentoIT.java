@@ -90,9 +90,12 @@ class CompletudeDocumentalAjuizamentoIT extends PjbFlowItBase {
 
         // Routing mock: gate passes (forumAllocation=null, blockingIssues=[]).
         // Retorna rito canônico do processo para applyRoutingSnapshot preservá-lo.
-        // ufSugerida/cidadeSugerida alimentam processo.uf/comarca via consolidate() (linha 82),
+        // ufSugerida/cidadeSugerida alimentam processo.uf/comarca via consolidate(),
         // garantindo que TerritorialProcessualService não bloqueie por base territorial vazia.
-        when(nationalProceduralRoutingService.analyzeProcess(any(Processo.class), any()))
+        // Stub intercepta a sobrecarga 3-arg porque AjuizarProcessoCommand (pós-1d) passa
+        // List<Attachment> como terceiro parâmetro; a sobrecarga 2-arg existe para callers
+        // anteriores à 1d que não têm List<Attachment> disponível.
+        when(nationalProceduralRoutingService.analyzeProcess(any(Processo.class), any(), any()))
                 .thenAnswer(inv -> {
                     Processo p = inv.getArgument(0);
                     String ritoSugerido = p.getRito() != null ? p.getRito().name() : "TRABALHISTA_ORDINARIO";

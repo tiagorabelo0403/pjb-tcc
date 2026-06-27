@@ -1,14 +1,21 @@
 package com.tcc.pjb.backend.core.procedural;
 
+import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.dto.ProcessoRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import java.util.LinkedHashMap;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
 public class NationalProceduralProcessoEntityPayloadAssembler {
 
     LinkedHashMap<String, Object> assemble(Processo processo, ProcessoRequest request) {
+        return assemble(processo, request, List.of());
+    }
+
+    LinkedHashMap<String, Object> assemble(Processo processo, ProcessoRequest request, List<Attachment> anexos) {
         LinkedHashMap<String, Object> payload = new LinkedHashMap<>();
         if (processo != null) {
             payload.put("classe", processo.getClasseProcessual());
@@ -73,6 +80,15 @@ public class NationalProceduralProcessoEntityPayloadAssembler {
             if (request.getTipoJusticaPretendida() != null) {
                 payload.put("tipoJustica", request.getTipoJusticaPretendida());
             }
+        }
+        List<Attachment> anexosSafe = anexos == null ? List.of() : anexos;
+        List<String> tipados = anexosSafe.stream()
+                .map(Attachment::getTipoDocumento)
+                .filter(t -> t != null)
+                .map(TipoDocumento::name)
+                .toList();
+        if (!tipados.isEmpty()) {
+            payload.put("documentosTipados", tipados);
         }
         return payload;
     }

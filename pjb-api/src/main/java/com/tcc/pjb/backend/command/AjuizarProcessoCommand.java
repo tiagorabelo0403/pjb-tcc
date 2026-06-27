@@ -80,7 +80,7 @@ public class AjuizarProcessoCommand {
         validateCpfIfPresent(processo.getParteAutoraCpf(), "parteAutoraCpf");
         validateCpfIfPresent(processo.getParteReuCpf(), "parteReuCpf");
 
-        ProceduralRoutingReport routing = nationalProceduralRoutingService.analyzeProcess(processo, request);
+        ProceduralRoutingReport routing = nationalProceduralRoutingService.analyzeProcess(processo, request, anexos);
         ajuizamentoCanonicalContextService.consolidate(processo, compiled, routing);
         var diagnosticoTerritorial = territorialProcessualService.diagnosticar(processo, routing);
         if (diagnosticoTerritorial.bloqueante()) {

@@ -1,9 +1,11 @@
 package com.tcc.pjb.backend.core.procedural;
 
+import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.dto.ProcessoRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.modules.laiane.dto.legal.LaianePeticaoAssistRequest;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
@@ -39,7 +41,11 @@ public class NationalProceduralRoutingService {
     }
 
     public ProceduralRoutingReport analyzeProcess(Processo processo, ProcessoRequest request) {
-        return analyzePayload(payloadFactory.fromProcesso(processo, request), "processo_entity");
+        return analyzeProcess(processo, request, List.of());
+    }
+
+    public ProceduralRoutingReport analyzeProcess(Processo processo, ProcessoRequest request, List<Attachment> anexos) {
+        return analyzePayload(payloadFactory.fromProcesso(processo, request, anexos), "processo_entity");
     }
 
     public ProceduralRoutingReport analyzeContext(Map<String, Object> payload) {
