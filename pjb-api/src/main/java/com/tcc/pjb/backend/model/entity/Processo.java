@@ -182,6 +182,24 @@ public class Processo {
     @Column(name = "parte_reu_cpf")
     private String parteReuCpf;
 
+    @Column(name = "uf_autor", length = 2)
+    private String ufAutor;
+
+    @Column(name = "comarca_autor", length = 120)
+    private String comarcaAutor;
+
+    @Column(name = "cidade_autor", length = 120)
+    private String cidadeAutor;
+
+    @Column(name = "uf_reu", length = 2)
+    private String ufReu;
+
+    @Column(name = "comarca_reu", length = 120)
+    private String comarcaReu;
+
+    @Column(name = "cidade_reu", length = 120)
+    private String cidadeReu;
+
     @Column(name = "parte_autora_nome")
     private String parteAutoraNome;
 
