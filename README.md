@@ -3,7 +3,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
 ![Testes unitários](https://img.shields.io/badge/Testes%20unit%C3%A1rios-4.112%20%7C%200%20falhas-brightgreen)
-![Testes de integração](https://img.shields.io/badge/Testes%20IT-182%20%7C%2013%20em%20estabiliza%C3%A7%C3%A3o-yellow)
+![Testes de integração](https://img.shields.io/badge/Testes%20IT-196%20%7C%2014%20em%20estabiliza%C3%A7%C3%A3o-yellow)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -138,7 +138,7 @@ Abra o `.env` e preencha as variáveis obrigatórias:
 docker compose up -d
 ```
 
-Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (V0–V296) são aplicadas automaticamente na primeira conexão do backend.
+Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (V0–V298) são aplicadas automaticamente na primeira conexão do backend.
 
 ### 4. Verificar os profiles Spring
 
@@ -233,7 +233,7 @@ docker compose down
 O projeto tem dois níveis de teste com características bem diferentes:
 
 - **Testes unitários (Surefire):** 4.112 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 182 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes de integração (Failsafe):** 196 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -249,9 +249,9 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.112 unitários (Surefire) e depois os 182 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.112 unitários (Surefire) e depois os 196 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
-Tempo esperado: **~45 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
+Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
 > **Por que tão demorado?** Cada classe de IT sobe um contexto Spring completo com PostgreSQL real, aplica as migrations Flyway e executa as requests HTTP como um cliente externo faria. Isso dá confiança total de que o que passou em teste vai passar em produção — mas tem um custo de tempo.
 
@@ -269,11 +269,12 @@ Tempo esperado: **~45 min** em hardware local (a maior parte é o boot do Spring
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~15 min** |
-| Total de testes de integração | Failsafe | **182** |
-| Falhas IT (em estabilização) | Failsafe | **13** (0E + 13F) |
-| Tempo verify completo | Surefire + Failsafe | **~45 min** |
+| Total de testes de integração | Failsafe | **196** |
+| Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
+| Falhas IT (em estabilização) | Failsafe | **14** (0E + 14F) |
+| Tempo verify completo | Surefire + Failsafe | **~50 min** |
 
-A suíte de integração está em processo ativo de estabilização. O ponto de partida era 49 falhas; chegou a 13 após eliminação dos clusters CG-1 (22E — variável de ambiente errada), CG-2-Postgres (5E — contaminação entre testes por dados não limpos), CG-3 (3E — IDs hardcoded sem seed), CG-7 (1E — mesmo grupo do CG-1), e demais clusters mapeados. As 13 falhas restantes são conhecidas: 3 aguardam gate documental por rito/classe (Onda de Submissão em andamento) e 10 pré-existentes não relacionadas à onda.
+A suíte de integração está em processo ativo de estabilização. O ponto de partida era 49 falhas; chegou a 14 após eliminação dos clusters CG-1 (22E — variável de ambiente errada), CG-2-Postgres (5E — contaminação entre testes por dados não limpos), CG-3 (3E — IDs hardcoded sem seed), CG-7 (1E — mesmo grupo do CG-1), e demais clusters mapeados. As 14 falhas restantes são conhecidas e estão mapeadas: 10 pré-existentes sem relação com a Onda de Submissão; 3 D25 (ProcessoCommandControllerIT × 3) que dependem de os testes enviarem AnexoDeclarado para exercitar o canal tipado construído na 1d (dívida D-d25-testes-anexo); 1 CanalTipadoAjuizamentoIT que expõe bug de routing — forumAllocation.preProtocoloApto=false para TRT2+TRABALHISTA_ORDINARIO apesar de TRT2 estar na NationalCompetenceMatrix com supportsProtocolo()=true (dívida D-routing-preprotocolo). Os 10 testes do motor de composição de polos por rito são todos verdes e não compõem as 14 falhas.
 
 ### Relatório de cobertura (JaCoCo)
 
@@ -434,7 +435,7 @@ pjb/
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Banco | PostgreSQL 17 com Row Level Security por operação |
 | Banco de testes | H2 em memória + Testcontainers |
-| Migrations | Flyway — V0–V296, com particionamento mensal em tabelas de evento |
+| Migrations | Flyway — V0–V298, com particionamento mensal em tabelas de evento |
 | Persistência | JPA / Hibernate com `ddl-auto: validate` em produção |
 | Mensageria | Apache Kafka 3.8 — eventos judiciais e outbox |
 | Cache | Redis 7.4 |
@@ -485,6 +486,10 @@ Cada documento tem origem, estado operacional, hash de integridade e cadeia de c
 O vocabulário documental é canônico e selado: `TipoDocumento` (~105 valores) carrega uma `CategoriaDocumento` (`PECA_INAUGURAL`, `PECA_RECURSAL`, `DOC_INSTRUCAO`, `DOC_QUALIFICACAO`). Sobre esse vocabulário está sendo construído um gate de completude documental por rito/classe, que lerá categoria e tipo para decidir a aptidão ao protocolo — substituindo a contagem de anexos atual por validação tipada. A meta de design é que ausência de tipo seja rejeição explícita, nunca passagem silenciosa.
 
 **Borda HTTP (fatia 1b' — concluída):** o advogado pode declarar `TipoDocumento` por anexo via `AnexoDeclarado { nomeArquivo, tipo }` no multipart de ajuizamento. O `SmartFileSplitter` valida a correlação (nome ↔ declaração, bidirecional) com 400 explícito em quatro casos: nome ausente, nomes duplicados, arquivo sem declaração correspondente e declaração sem arquivo correspondente. Quando declarado e a correlação fecha, `Attachment.tipoDocumento` é preenchido; declarar é opcional nesta fatia — a obrigatoriedade por rito é decisão do gate (1c). O gate de completude (fatia 1c) lerá esse campo para enforçar obrigatoriedade por rito/classe — a decisão de política (anexo sem tipo = rejeição ou tolerância) é responsabilidade do gate, não da borda.
+
+**Canal tipado (fatia 1d — concluída):** `Attachment.tipoDocumento` é propagado do `SmartFileSplitter` até o payload de routing via `NationalProceduralProcessoEntityPayloadAssembler` (chave `documentosTipados`) e consumido por `NationalProceduralPreflightPayloadFactory.extractPresentDocuments`. Fronteira 2 protegida: a chave só é adicionada ao payload quando pelo menos um `tipoDocumento` não-nulo está presente (`!tipados.isEmpty()`), evitando que lista vazia ative o canal tipado em callers sem declaração. Os 3 ProcessoCommandControllerIT que exercitam o ajuizamento civil sem `AnexoDeclarado` seguem vermelhos por design (D-d25-testes-anexo) — a infraestrutura existe, os testes ainda não a exercitam.
+
+**Composição de partes por rito:** o ajuizamento não impõe o molde cível a todos os segmentos. O sistema lê o catálogo por rito e materializa o papel processual correto: `ACUSACAO`/`ACUSADO` no penal, `RECLAMANTE`/`RECLAMADA` no trabalhista, `IMPETRANTE`/`IMPETRADO` no mandado de segurança, `SEGURADO` no previdenciário (o INSS não vira polo automático — é ponto de extensão para integração futura), `INVESTIGADO` no IPM militar. Onde a dicotomia ativo/passivo não existe juridicamente — no habeas corpus o paciente não é parte adversarial —, nenhum polo é criado. Ritos não cobertos pelo catálogo mantêm composição nula até que seus perfis de partes sejam especificados. O catálogo por rito é a única fonte de verdade: o mesmo que define quais documentos são exigidos define quem são as partes. `PoloProcessual` também registra o domicílio processual da parte (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`) e razão social para pessoas jurídicas, separados do território de roteamento — este fica em `tb_processo` (`uf_autor`, `comarca_autor`, `uf_reu`, `comarca_reu`) e é auditável pelo próprio registro, sem precisar reconstruir o request original.
 
 ### 8 — Autuação, retificação e qualidade de metadados
 
@@ -629,7 +634,7 @@ Dados pessoais sensíveis — CPF e CNPJ — foram removidos de todas as camadas
 
 ## Banco de dados
 
-296 migrations Flyway (V0–V296), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
+298 migrations Flyway (V0–V298), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
 
 Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
 
@@ -646,7 +651,7 @@ CREATE POLICY processo_sigilo ON processo
 | Métrica | Estado |
 |---------|--------|
 | Testes unitários (Surefire) | **4.112 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **182 · 13 falhas conhecidas** (de 49 → 13; 3 por design + 10 pré-existentes) |
+| Testes de integração (Failsafe) | **196 · 14 falhas conhecidas** (de 49 → 14; 3 D25 + 1 D-routing-preprotocolo + 10 pré-existentes; +10 motor de polos verdes) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
@@ -864,7 +869,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.112 testes e 296 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.112 testes e 298 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
