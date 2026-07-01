@@ -111,3 +111,24 @@ infra/k8s/**/*.kubeconfig
 *.xls
 *.xlsx
 *.ods
+
+# Guard reports — regenerados a cada run de script, não têm valor histórico
+docs/reports/architecture_hygiene_guard.json
+docs/reports/architecture_hygiene_guard.md
+docs/reports/constructor_injection_guard.json
+docs/reports/constructor_injection_guard.md
+docs/reports/transactional_hotspot_guard.json
+docs/reports/transactional_hotspot_guard.md
+docs/reports/repository_layout_guard.json
+docs/reports/repository_layout_guard.md
+docs/reports/internal_reference_drift_guard.json
+docs/reports/internal_reference_drift_guard.md
+docs/reports/internal_type_hygiene_guard.json
+docs/reports/internal_type_hygiene_guard.md
+docs/reports/config_taxonomy_guard.json
+docs/reports/config_taxonomy_guard.md
+docs/reports/docker_compose_guard.json
+docs/reports/docker_compose_guard.md
+
+# Build artifacts do compilador Java
+pjb-api/javac.*.args
