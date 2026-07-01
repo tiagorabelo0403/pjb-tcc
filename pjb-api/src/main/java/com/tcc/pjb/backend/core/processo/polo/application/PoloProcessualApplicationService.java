@@ -39,6 +39,24 @@ public class PoloProcessualApplicationService {
     }
 
     @Transactional
+    public PoloProcessual incluir(Long processoId, TipoPolo tipoPolo, TipoParte tipoParte,
+                                   String nomeCompleto, String documento, String documentoTipo,
+                                   String oabNumero, String oabUf, Long usuarioId,
+                                   UUID identidadeId, Long representadoPorId,
+                                   String ufDomicilio, String comarcaDomicilio, String municipioDomicilio) {
+        int ordemPolo = poloRepository.findByProcessoIdAndAtivo(processoId, true)
+                .stream()
+                .filter(p -> p.getTipoPolo() == tipoPolo)
+                .mapToInt(PoloProcessual::getOrdemPolo)
+                .max()
+                .orElse(-1) + 1;
+        PoloProcessual polo = new PoloProcessual(processoId, tipoPolo, tipoParte, nomeCompleto,
+                documento, documentoTipo, oabNumero, oabUf, usuarioId, identidadeId,
+                representadoPorId, ordemPolo, ufDomicilio, comarcaDomicilio, municipioDomicilio, null);
+        return poloRepository.save(polo);
+    }
+
+    @Transactional
     public void excluir(Long poloId, Long operadorId) {
         PoloProcessual polo = poloRepository.findById(poloId)
                 .orElseThrow(() -> new EntityNotFoundException("Polo não encontrado: " + poloId));

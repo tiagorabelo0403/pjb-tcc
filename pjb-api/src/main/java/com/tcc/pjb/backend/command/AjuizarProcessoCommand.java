@@ -7,12 +7,17 @@ import com.tcc.pjb.backend.core.procedural.ProceduralConnectorExecutionService;
 import com.tcc.pjb.backend.core.procedural.ProceduralRoutingReport;
 import com.tcc.pjb.backend.core.procedural.ProceduralSubmissionBlueprintReport;
 import com.tcc.pjb.backend.core.procedural.ProceduralSubmissionBlueprintService;
+import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloCompositionPolicy;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloComposto;
 import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.dto.ProcessoRequest;
 import com.tcc.pjb.backend.model.dto.event.ProcessoAjuizadoEvent;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
+import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
@@ -52,6 +57,8 @@ public class AjuizarProcessoCommand {
     private final TetoProcessualService tetoProcessualService;
     private final TerritorialProcessualService territorialProcessualService;
     private final CompletudeDocumentalPolicyService completudeDocumentalPolicyService;
+    private final PoloProcessualApplicationService poloProcessualApplicationService;
+    private final PoloCompositionPolicy poloCompositionPolicy;
 
     @Transactional
     @PjbTransactionalBudget(operation = "ajuizamento.command.persist", maxMillis = 3200, critical = true)
@@ -109,6 +116,7 @@ public class AjuizarProcessoCommand {
         processo.setNivelSigilo(nivel);
 
         Processo salvo = processoRepository.save(processo);
+        materializarPolosIniciais(salvo, advogado);
         caseContinuityOrchestratorService.ensureRootCase(salvo.getId(), "AJUIZAMENTO_INICIAL");
 
         try {
@@ -214,6 +222,38 @@ public class AjuizarProcessoCommand {
                     .addMetadado("blockingIssues", routing.blockingIssues())
                     .addMetadado("reviewChecklist", routing.reviewChecklist());
         }
+    }
+
+    private void materializarPolosIniciais(Processo processo, Usuario advogado) {
+        if (processo == null || processo.getId() == null) {
+            return;
+        }
+        Long usuarioIdRepresentante = resolveUsuarioIdDestinatario(advogado);
+        List<PoloComposto> composicao = poloCompositionPolicy.compor(processo);
+        for (PoloComposto pc : composicao) {
+            poloProcessualApplicationService.incluir(
+                    processo.getId(),
+                    pc.tipoPolo(),
+                    pc.tipoParte(),
+                    pc.nome(),
+                    pc.cpf(),
+                    pc.cpf() != null ? "CPF" : null,
+                    null, null,
+                    pc.tipoPolo() == TipoPolo.ATIVO ? usuarioIdRepresentante : null,
+                    null, null,
+                    pc.ufDomicilio(), pc.comarcaDomicilio(), pc.municipioDomicilio());
+        }
+    }
+
+    private Long resolveUsuarioIdDestinatario(Usuario usuario) {
+        if (usuario == null || usuario.getTipoUsuario() == null) {
+            return null;
+        }
+        TipoUsuario tipo = usuario.getTipoUsuario();
+        if (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isMinisterioPublico() || tipo.isProcuradoria()) {
+            return usuario.getId();
+        }
+        return null;
     }
 
     private static String firstNonBlank(String... values) {
