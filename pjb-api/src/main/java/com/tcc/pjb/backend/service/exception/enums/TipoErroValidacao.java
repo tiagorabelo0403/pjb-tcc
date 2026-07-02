@@ -21,8 +21,10 @@ public enum TipoErroValidacao {
     EMAIL_INVALIDO("VAL-202", "Formato de e-mail incorreto."),
     DATA_FUTURA("VAL-203", "A data informada não pode ser futura."),
     CAMPO_OBRIGATORIO("VAL-204", "Campo obrigatório ausente ou inválido."),
+    CNPJ_INVALIDO("VAL-205", "O CNPJ informado não passa na validação dos dígitos verificadores."),
+    DOCUMENTO_INVALIDO("VAL-206", "O documento deve ter 11 dígitos (CPF) ou 14 dígitos (CNPJ)."),
 
-    
+
     DUPLICIDADE_DETECTADA("VAL-301", "Registro duplicado detectado no banco de dados."),
     VINCULO_INVALIDO("VAL-302", "A entidade referenciada não pertence ao contexto atual."),
 

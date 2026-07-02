@@ -140,4 +140,59 @@ class DocumentoNacionalValidatorTest {
     void buildSearchKey_normalizeMultiplosEspacos() {
         assertThat(validator.buildSearchKey("Maria  José")).isEqualTo("MARIA JOSE");
     }
+
+    @Test
+    void validar_null_retornaAusente() {
+        assertThat(validator.validar(null)).isInstanceOf(DocumentoValidado.Ausente.class);
+    }
+
+    @Test
+    void validar_vazio_retornaAusente() {
+        assertThat(validator.validar("")).isInstanceOf(DocumentoValidado.Ausente.class);
+    }
+
+    @Test
+    void validar_cpfValido_retornaValidoComTipoCpf() {
+        DocumentoValidado result = validator.validar(CPF_VALIDO_FORMATADO);
+        assertThat(result).isInstanceOf(DocumentoValidado.Valido.class);
+        assertThat(((DocumentoValidado.Valido) result).tipo())
+                .isEqualTo(DocumentoNacionalValidator.TipoDocumento.CPF);
+    }
+
+    @Test
+    void validar_cnpjValido_retornaValidoComTipoCnpj() {
+        DocumentoValidado result = validator.validar(CNPJ_VALIDO_FORMATADO);
+        assertThat(result).isInstanceOf(DocumentoValidado.Valido.class);
+        assertThat(((DocumentoValidado.Valido) result).tipo())
+                .isEqualTo(DocumentoNacionalValidator.TipoDocumento.CNPJ);
+    }
+
+    @Test
+    void validar_cpfInvalido_retornaInvalidoComTipoCpf() {
+        // troca o último dígito para gerar CPF inválido sem literal de 11 dígitos no fonte
+        String cpfInvalido = CPF_VALIDO.substring(0, 10) + "0";
+        DocumentoValidado result = validator.validar(cpfInvalido);
+        assertThat(result).isInstanceOf(DocumentoValidado.Invalido.class);
+        assertThat(((DocumentoValidado.Invalido) result).tipo())
+                .isEqualTo(DocumentoNacionalValidator.TipoDocumento.CPF);
+        assertThat(((DocumentoValidado.Invalido) result).motivo()).isNotBlank();
+    }
+
+    @Test
+    void validar_cnpjInvalido_retornaInvalidoComTipoCnpj() {
+        String cnpjInvalido = CNPJ_VALIDO.substring(0, 13) + "0";
+        DocumentoValidado result = validator.validar(cnpjInvalido);
+        assertThat(result).isInstanceOf(DocumentoValidado.Invalido.class);
+        assertThat(((DocumentoValidado.Invalido) result).tipo())
+                .isEqualTo(DocumentoNacionalValidator.TipoDocumento.CNPJ);
+        assertThat(((DocumentoValidado.Invalido) result).motivo()).isNotBlank();
+    }
+
+    @Test
+    void validar_comprimentoErrado_retornaInvalidoComTipoNull() {
+        DocumentoValidado result = validator.validar("1234567890");
+        assertThat(result).isInstanceOf(DocumentoValidado.Invalido.class);
+        assertThat(((DocumentoValidado.Invalido) result).tipo()).isNull();
+        assertThat(((DocumentoValidado.Invalido) result).motivo()).isNotBlank();
+    }
 }
