@@ -380,7 +380,7 @@ class MotorComposicaoPolosAjuizamentoIT extends PjbFlowItBase {
 
         PoloProcessual autor = polos.stream().filter(p -> p.getTipoPolo() == TipoPolo.ATIVO).findFirst().orElseThrow();
         assertThat(autor.getTipoParte()).isEqualTo(TipoParte.AUTOR);
-        assertThat(autor.getNomeCompleto()).isEqualTo("Ana Autora Da Silva");
+        assertThat(autor.getNomeCompleto()).isEqualTo("Ana Autora da Silva");
         assertThat(autor.getDocumento()).isEqualTo("12345678909");
         assertThat(autor.getUfDomicilio()).isEqualTo("CE");
         assertThat(autor.getComarcaDomicilio()).isEqualTo("Fortaleza");

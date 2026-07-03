@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import com.tcc.pjb.backend.core.procedural.CanonicalSanityGate;
 import com.tcc.pjb.backend.core.procedural.CanonicalSanityGate.GateResult;
@@ -343,19 +344,25 @@ public class LegalCompilerService {
     }
 
 
+    private static final Set<String> PARTICULAS_NOME = Set.of("da", "de", "do", "das", "dos", "e");
+
     private String normalizeHumanName(String s) {
         if (s == null) return null;
         String t = s.trim().replaceAll("\\s+", " ");
         if (t.isBlank()) return null;
-
-        
         String[] parts = t.split(" ");
         StringBuilder sb = new StringBuilder();
+        boolean primeiro = true;
         for (String p : parts) {
             if (p.isBlank()) continue;
             String x = p.toLowerCase(Locale.ROOT);
-            sb.append(Character.toUpperCase(x.charAt(0))).append(x.substring(1));
+            if (!primeiro && PARTICULAS_NOME.contains(x)) {
+                sb.append(x);
+            } else {
+                sb.append(Character.toUpperCase(x.charAt(0))).append(x.substring(1));
+            }
             sb.append(' ');
+            primeiro = false;
         }
         return sb.toString().trim();
     }
