@@ -790,9 +790,6 @@ public class AjuizamentoCanonicalContextService {
         if (current == null) {
             return true;
         }
-        if (current == RitoProcessual.COMUM_ORDINARIO && candidate != RitoProcessual.COMUM_ORDINARIO) {
-            return true;
-        }
         if (current == RitoProcessual.JUIZADO_ESPECIAL && candidate.isJuizado() && candidate != RitoProcessual.JUIZADO_ESPECIAL) {
             return true;
         }
