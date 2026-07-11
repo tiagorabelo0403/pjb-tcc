@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -32,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ProtocoloPendenciaApplicationService {
 
+    private static final Logger log = LoggerFactory.getLogger(ProtocoloPendenciaApplicationService.class);
     private static final int PRAZO_REGULARIZACAO_DIAS = 10;
 
     private final ProtocoloPendenciaRepository pendenciaRepository;
@@ -159,7 +162,8 @@ public class ProtocoloPendenciaApplicationService {
             entry.setTentativas(0);
             entry.setCriadoEm(Instant.now());
             outboxRepository.save(entry);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            log.error("Falha ao gravar evento de outbox de completude: protocoloId={} tipo={}", protocoloId, tipo, e);
         }
     }
 

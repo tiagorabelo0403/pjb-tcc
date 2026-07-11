@@ -14,6 +14,8 @@ import java.time.Instant;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(
@@ -42,6 +44,7 @@ public class AcordoAuditoriaEntity {
     @Column(name = "evento", nullable = false, length = 40)
     private AcordoAuditoriaEvento evento;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "detalhes_json", nullable = false, columnDefinition = "jsonb")
     private String detalhesJson;
 

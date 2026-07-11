@@ -23,6 +23,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @PjbDataOwnership(module = PjbModuleId.AJUIZAMENTO, mode = PjbOwnershipMode.OWNER_ONLY)
 @Entity
@@ -57,6 +59,7 @@ public class ProtocoloValidacaoHistorico {
     @Column(name = "versao_regra_aplicada", nullable = false, length = 40)
     private String versaoRegraAplicada;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "violacoes_json", nullable = false, columnDefinition = "jsonb")
     private String violacoesJson;
 

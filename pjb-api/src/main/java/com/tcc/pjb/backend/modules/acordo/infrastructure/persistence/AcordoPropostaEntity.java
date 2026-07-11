@@ -16,6 +16,8 @@ import java.time.Instant;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(
@@ -47,6 +49,7 @@ public class AcordoPropostaEntity {
     @Column(name = "valor", precision = 19, scale = 2)
     private BigDecimal valor;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "termos_json", nullable = false, columnDefinition = "jsonb")
     private String termosJson;
 

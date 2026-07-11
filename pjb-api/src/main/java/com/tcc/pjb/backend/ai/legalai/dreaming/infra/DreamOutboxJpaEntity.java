@@ -7,6 +7,8 @@ import jakarta.persistence.Table;
 
 import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "dream_outbox")
@@ -19,6 +21,7 @@ public class DreamOutboxJpaEntity {
     @Column(name = "dream_id", columnDefinition = "uuid", nullable = false)
     private UUID dreamId;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "payload", nullable = false, columnDefinition = "jsonb")
     private String payload;
 
