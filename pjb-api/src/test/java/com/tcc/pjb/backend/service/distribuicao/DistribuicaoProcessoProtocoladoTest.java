@@ -90,7 +90,8 @@ class DistribuicaoProcessoProtocoladoTest extends PjbIntegrationTestBase {
                 null
         ));
 
-        LaianePeticaoInicialDraftService.ProtocolarResult result = peticaoInicialDraftService.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL"));
+        LaianePeticaoInicialDraftService.ProtocolarResult result = peticaoInicialDraftService.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
 
         Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
         Processo processoDistribuido = processoRepository.findById(result.processoId()).orElseThrow();

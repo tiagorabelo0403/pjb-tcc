@@ -89,7 +89,8 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
         when(oabValidationClient.validate(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.same(advogado)))
                 .thenReturn(OabValidationResult.apto("test"));
 
-        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL"));
+        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
 
         assertThat(result.processoId()).isNotNull();
         Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
@@ -114,7 +115,8 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
         when(oabValidationClient.validate(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.same(advogado)))
                 .thenReturn(OabValidationResult.inapto("OAB_SUSPENSA", "test"));
 
-        assertThatThrownBy(() -> service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL")))
+        assertThatThrownBy(() -> service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE))))
                 .isInstanceOf(RegraNegocioException.class)
                 .hasMessageContaining("inapta");
 
@@ -133,7 +135,8 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
         when(oabValidationClient.validate(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.same(advogado)))
                 .thenReturn(OabValidationResult.indeterminado("OAB_CNA_INDISPONIVEL", "test"));
 
-        assertThatCode(() -> service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL")))
+        assertThatCode(() -> service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE))))
                 .doesNotThrowAnyException();
     }
 
@@ -143,7 +146,8 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
         LaianePeticaoInicialDraftSession draft = salvarDraft(defensor);
         when(currentUserService.getRequired()).thenReturn(defensor);
 
-        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL"));
+        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
 
         assertThat(result.processoId()).isNotNull();
         verifyNoInteractions(oabValidationClient);
@@ -177,7 +181,8 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
                 null
         ));
 
-        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL"));
+        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
 
         Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
         assertThat(processo.getParteAutoraNome()).isEqualTo("Maria Cliente");

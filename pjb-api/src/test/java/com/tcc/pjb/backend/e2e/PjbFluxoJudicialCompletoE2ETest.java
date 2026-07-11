@@ -251,7 +251,8 @@ class PjbFluxoJudicialCompletoE2ETest extends PjbIntegrationTestBase {
 
         LaianePeticaoInicialDraftService.ProtocolarResult protocolo = peticaoInicialDraftService.protocolar(
                 draft.id(),
-                new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL")
+                new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE))
         );
 
         Processo processo = processoRepository.findById(protocolo.processoId()).orElseThrow();
