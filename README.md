@@ -2,8 +2,8 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
-![Testes unitários](https://img.shields.io/badge/Testes%20unit%C3%A1rios-4.112%20%7C%200%20falhas-brightgreen)
-![Testes de integração](https://img.shields.io/badge/Testes%20IT-196%20%7C%2014%20em%20estabiliza%C3%A7%C3%A3o-yellow)
+![Testes unitários](https://img.shields.io/badge/Testes%20unit%C3%A1rios-4.134%20%7C%200%20falhas-brightgreen)
+![Testes de integração](https://img.shields.io/badge/Testes%20IT-206%20%7C%2014%20em%20estabiliza%C3%A7%C3%A3o-yellow)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -232,8 +232,8 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.112 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 196 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes unitários (Surefire):** 4.134 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes de integração (Failsafe):** 206 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -249,7 +249,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.112 unitários (Surefire) e depois os 196 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.134 unitários (Surefire) e depois os 206 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -265,16 +265,18 @@ Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.112** |
+| Total de testes unitários | Surefire | **4.134** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~15 min** |
-| Total de testes de integração | Failsafe | **196** |
+| Total de testes de integração | Failsafe | **206** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT (em estabilização) | Failsafe | **14** (0E + 14F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
 
 A suíte de integração está em processo ativo de estabilização. O ponto de partida era 49 falhas; chegou a 14 após eliminação dos clusters CG-1 (22E — variável de ambiente errada), CG-2-Postgres (5E — contaminação entre testes por dados não limpos), CG-3 (3E — IDs hardcoded sem seed), CG-7 (1E — mesmo grupo do CG-1), e demais clusters mapeados. As 14 falhas restantes são conhecidas e estão mapeadas: 10 pré-existentes sem relação com a Onda de Submissão; 3 D25 (ProcessoCommandControllerIT × 3) que dependem de os testes enviarem AnexoDeclarado para exercitar o canal tipado construído na 1d (dívida D-d25-testes-anexo); 1 CanalTipadoAjuizamentoIT que expõe bug de routing — forumAllocation.preProtocoloApto=false para TRT2+TRABALHISTA_ORDINARIO apesar de TRT2 estar na NationalCompetenceMatrix com supportsProtocolo()=true (dívida D-routing-preprotocolo). Os 10 testes do motor de composição de polos por rito são todos verdes e não compõem as 14 falhas.
+
+¹ O `verify` padrão (Failsafe) não alcança 9 métodos de teste distribuídos em 4 classes (`OabLegitimidadePeticionamentoTest`, `PjbFluxoJudicialCompletoE2ETest`, `DistribuicaoProcessoProtocoladoTest`, `ConsultaPublicaProcessoProtocoladoTest`) — nome `*Test.java` combinado com `@Tag("integration")` faz o Surefire excluir por tag e o Failsafe não reconhecer pelo padrão de arquivo. Os 9 já foram confirmados verdes individualmente (`-Dit.test=`), mas não entram nesta contagem por rodarem fora do `verify` de rotina.
 
 ### Relatório de cobertura (JaCoCo)
 
@@ -489,7 +491,7 @@ O vocabulário documental é canônico e selado: `TipoDocumento` (~105 valores) 
 
 **Canal tipado (fatia 1d — concluída):** `Attachment.tipoDocumento` é propagado do `SmartFileSplitter` até o payload de routing via `NationalProceduralProcessoEntityPayloadAssembler` (chave `documentosTipados`) e consumido por `NationalProceduralPreflightPayloadFactory.extractPresentDocuments`. Fronteira 2 protegida: a chave só é adicionada ao payload quando pelo menos um `tipoDocumento` não-nulo está presente (`!tipados.isEmpty()`), evitando que lista vazia ative o canal tipado em callers sem declaração. Os 3 ProcessoCommandControllerIT que exercitam o ajuizamento civil sem `AnexoDeclarado` seguem vermelhos por design (D-d25-testes-anexo) — a infraestrutura existe, os testes ainda não a exercitam.
 
-**Composição de partes por rito:** o ajuizamento não impõe o molde cível a todos os segmentos. O sistema lê o catálogo por rito e materializa o papel processual correto: `ACUSACAO`/`ACUSADO` no penal, `RECLAMANTE`/`RECLAMADA` no trabalhista, `IMPETRANTE`/`IMPETRADO` no mandado de segurança, `SEGURADO` no previdenciário (o INSS não vira polo automático — é ponto de extensão para integração futura), `INVESTIGADO` no IPM militar. Onde a dicotomia ativo/passivo não existe juridicamente — no habeas corpus o paciente não é parte adversarial —, nenhum polo é criado. Ritos não cobertos pelo catálogo mantêm composição nula até que seus perfis de partes sejam especificados. O catálogo por rito é a única fonte de verdade: o mesmo que define quais documentos são exigidos define quem são as partes. `PoloProcessual` também registra o domicílio processual da parte (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`) e razão social para pessoas jurídicas, separados do território de roteamento — este fica em `tb_processo` (`uf_autor`, `comarca_autor`, `uf_reu`, `comarca_reu`) e é auditável pelo próprio registro, sem precisar reconstruir o request original.
+**Composição de partes por rito:** o ajuizamento não impõe o molde cível a todos os segmentos. O sistema lê o catálogo por rito e materializa o papel processual correto: `ACUSACAO`/`ACUSADO` no penal, `RECLAMANTE`/`RECLAMADA` no trabalhista, `IMPETRANTE`/`IMPETRADO` no mandado de segurança, `SEGURADO` no previdenciário (o INSS não vira polo automático — é ponto de extensão para integração futura), `INVESTIGADO` no IPM militar. Onde a dicotomia ativo/passivo não existe juridicamente — no habeas corpus o paciente não é parte adversarial —, nenhum polo é criado. Ritos não cobertos pelo catálogo mantêm composição nula até que seus perfis de partes sejam especificados. O catálogo por rito é a única fonte de verdade: o mesmo que define quais documentos são exigidos define quem são as partes. `PoloProcessual` também registra o domicílio processual da parte (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`) e razão social para pessoas jurídicas, separados do território de roteamento — este fica em `tb_processo` (`uf_autor`, `comarca_autor`, `uf_reu`, `comarca_reu`) e é auditável pelo próprio registro, sem precisar reconstruir o request original. O motor (`PoloCompositionPolicy` + `PoloRoleMappingTable`) é o único funil de materialização de polo — ajuizamento via REST, o assistente de petição inicial (Laiane) e a importação MNI convergem para o mesmo mecanismo, sem caminhos divergentes que produzam rótulo genérico (`AUTOR`/`REU`) onde o rito exige papel específico.
 
 ### 8 — Autuação, retificação e qualidade de metadados
 
@@ -498,6 +500,8 @@ Retificação governada com diff jurídico — cada alteração passa por polít
 ### 9 — Importação e normalização de processos externos
 
 Ingesta processos de PJe, e-SAJ, eProc, Projudi, Creta, MNI e PDPJ. Cada sistema externo tem normalizador específico que padroniza NPU, classe processual CNJ e rito antes de persistir. Conflitos de importação são registrados com diff auditável.
+
+O adapter MNI (`intercomunicacao-2.2.2`, atributos `polo`/`parte`/`pessoa` do schema oficial do CNJ) materializa autor e réu do processo importado, incluindo o polo processual pelo mesmo motor de composição por rito usado no ajuizamento direto — processo importado via MNI não fica mais sem partes identificadas.
 
 ### 10 — Mandados, certidões e comunicação resiliente
 
@@ -650,8 +654,8 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.112 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **196 · 14 falhas conhecidas** (de 49 → 14; 3 D25 + 1 D-routing-preprotocolo + 10 pré-existentes; +10 motor de polos verdes) |
+| Testes unitários (Surefire) | **4.134 · 0 falhas · 0 erros** |
+| Testes de integração (Failsafe) | **206 · 14 falhas conhecidas** (de 49 → 14; 3 D25 + 1 D-routing-preprotocolo + 10 pré-existentes; +10 motor de polos verdes — ver nota¹ na seção Testes sobre 9 testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
@@ -869,7 +873,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.112 testes e 298 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.134 testes e 298 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
