@@ -2,7 +2,12 @@ package com.tcc.pjb.backend.integration.mni.application;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloCompositionPolicy;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloComposto;
 import com.tcc.pjb.backend.core.util.Hashes;
+import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
+import com.tcc.pjb.backend.core.validation.document.DocumentoValidado;
 import com.tcc.pjb.backend.integration.mni.adapter.MniXmlToProcessoAdapter;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoAtoSummary;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoEnvelope;
@@ -30,17 +35,26 @@ public class MniRecepcaoService {
     private final MniXmlToProcessoAdapter xmlToProcessoAdapter;
     private final ReadAfterWriteConsistencyPolicy readAfterWriteConsistencyPolicy;
     private final AuditLedgerService auditLedger;
+    private final PoloCompositionPolicy poloCompositionPolicy;
+    private final PoloProcessualApplicationService poloProcessualApplicationService;
+    private final DocumentoNacionalValidator documentoNacionalValidator;
 
     public MniRecepcaoService(ProcessoRepository processoRepository,
                               MniRecepcaoRepository recepcaoRepository,
                               MniXmlToProcessoAdapter xmlToProcessoAdapter,
                               ReadAfterWriteConsistencyPolicy readAfterWriteConsistencyPolicy,
-                              AuditLedgerService auditLedger) {
+                              AuditLedgerService auditLedger,
+                              PoloCompositionPolicy poloCompositionPolicy,
+                              PoloProcessualApplicationService poloProcessualApplicationService,
+                              DocumentoNacionalValidator documentoNacionalValidator) {
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.recepcaoRepository = Objects.requireNonNull(recepcaoRepository);
         this.xmlToProcessoAdapter = Objects.requireNonNull(xmlToProcessoAdapter);
         this.readAfterWriteConsistencyPolicy = Objects.requireNonNull(readAfterWriteConsistencyPolicy);
         this.auditLedger = Objects.requireNonNull(auditLedger);
+        this.poloCompositionPolicy = Objects.requireNonNull(poloCompositionPolicy);
+        this.poloProcessualApplicationService = Objects.requireNonNull(poloProcessualApplicationService);
+        this.documentoNacionalValidator = Objects.requireNonNull(documentoNacionalValidator);
     }
 
     @Transactional
@@ -61,6 +75,7 @@ public class MniRecepcaoService {
         }
         Processo processo = xmlToProcessoAdapter.fromXml(xml, tribunalOrigem, motivo);
         Processo salvo = processoRepository.save(processo);
+        materializarPolosIniciais(salvo);
         MniRecepcao recepcao = MniRecepcao.builder()
                 .tribunalOrigem(tribunalOrigem)
                 .numeroUnificado(salvo.getNumeroUnificado())
@@ -77,6 +92,26 @@ public class MniRecepcaoService {
         return toResult(persisted);
     }
 
+
+    private void materializarPolosIniciais(Processo processo) {
+        if (processo == null || processo.getId() == null) {
+            return;
+        }
+        java.util.List<PoloComposto> composicao = poloCompositionPolicy.compor(processo);
+        for (PoloComposto pc : composicao) {
+            poloProcessualApplicationService.incluir(
+                    processo.getId(),
+                    pc.tipoPolo(),
+                    pc.tipoParte(),
+                    pc.nome(),
+                    pc.cpf(),
+                    documentoNacionalValidator.validar(pc.cpf()) instanceof DocumentoValidado.Valido v ? v.tipo().name() : null,
+                    null, null,
+                    null,
+                    null, null,
+                    pc.ufDomicilio(), pc.comarcaDomicilio(), pc.municipioDomicilio());
+        }
+    }
 
     @Transactional(readOnly = true)
     public MniRecepcaoEnvelope envelope(Long recepcaoId) {

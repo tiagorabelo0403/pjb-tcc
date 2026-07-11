@@ -9,6 +9,9 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloCompositionPolicy;
+import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
 import com.tcc.pjb.backend.integration.mni.adapter.MniXmlToProcessoAdapter;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoCommand;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -43,7 +46,10 @@ class MniRecepcaoServiceFailureAndIdempotencyTest {
                 recepcaoRepository,
                 mock(MniXmlToProcessoAdapter.class),
                 rawPolicy,
-                mock(AuditLedgerService.class));
+                mock(AuditLedgerService.class),
+                new PoloCompositionPolicy(),
+                mock(PoloProcessualApplicationService.class),
+                new DocumentoNacionalValidator());
 
         var result = service.receberAutos(new MniRecepcaoCommand("TJSP", "CARTA", "<mni/>"));
 
@@ -64,7 +70,10 @@ class MniRecepcaoServiceFailureAndIdempotencyTest {
                 recepcaoRepository,
                 adapter,
                 mock(ReadAfterWriteConsistencyPolicy.class),
-                mock(AuditLedgerService.class));
+                mock(AuditLedgerService.class),
+                new PoloCompositionPolicy(),
+                mock(PoloProcessualApplicationService.class),
+                new DocumentoNacionalValidator());
 
         assertThatThrownBy(() -> service.receberAutos(new MniRecepcaoCommand("TJSP", "CARTA", "<broken>")))
                 .isInstanceOf(IllegalStateException.class)

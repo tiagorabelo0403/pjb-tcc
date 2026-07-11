@@ -6,6 +6,9 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloCompositionPolicy;
+import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
 import com.tcc.pjb.backend.integration.mni.adapter.MniXmlToProcessoAdapter;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoCommand;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -45,7 +48,8 @@ class MniRecepcaoServiceExtendedViewsTest {
                     .build();
         });
 
-        MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger);
+        MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
+                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator());
         var result = service.receberAutos(new MniRecepcaoCommand("TJCE", "CARTA_PRECATORIA", "<mni/>"));
         when(recepcaoRepository.findById(101L)).thenReturn(Optional.of(MniRecepcao.builder()
                 .id(101L)

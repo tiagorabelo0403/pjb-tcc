@@ -7,6 +7,9 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloCompositionPolicy;
+import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
 import com.tcc.pjb.backend.integration.mni.adapter.MniXmlToProcessoAdapter;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoCommand;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoQuery;
@@ -52,7 +55,8 @@ class MniRecepcaoServiceViewsTest {
         });
         when(recepcaoRepository.findById(77L)).thenAnswer(invocation -> Optional.ofNullable(savedRecepcao.get()));
 
-        MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger);
+        MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
+                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator());
 
         var result = service.receberAutos(new MniRecepcaoCommand("TJCE", "DECLINIO_COMPETENCIA", "<mni/>"));
         var query = service.consultar(new MniRecepcaoQuery(77L));
@@ -90,7 +94,8 @@ class MniRecepcaoServiceViewsTest {
         when(recepcaoRepository.findByMniPayloadHash(org.mockito.ArgumentMatchers.anyString())).thenReturn(Optional.of(existing));
         when(recepcaoRepository.findById(90L)).thenReturn(Optional.of(existing));
 
-        MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger);
+        MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
+                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator());
 
         var result = service.receberAutos(new MniRecepcaoCommand("TJCE", "CARTA_PRECATORIA", "<same/>"));
         var audit = service.audit(90L);

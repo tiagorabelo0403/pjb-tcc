@@ -9,6 +9,8 @@ import java.util.Locale;
 import java.util.Objects;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -17,6 +19,8 @@ import org.xml.sax.InputSource;
 
 @Component
 public class MniXmlToProcessoAdapter {
+
+    private static final Logger log = LoggerFactory.getLogger(MniXmlToProcessoAdapter.class);
 
     public Processo fromXml(String xml, String tribunalOrigem, String motivo) {
         Objects.requireNonNull(xml, "xml");
@@ -37,7 +41,63 @@ public class MniXmlToProcessoAdapter {
         processo.setRamoDireito(resolveRamo(tag(doc, "ramoDireito")));
         processo.setRito(resolveRito(tag(doc, "rito")));
         processo.setStatusProcesso(StatusProcesso.EM_ANDAMENTO);
+        resolvePartes(doc, processo);
         return processo;
+    }
+
+    private void resolvePartes(Document doc, Processo processo) {
+        NodeList all = doc.getElementsByTagName("*");
+        for (int i = 0; i < all.getLength(); i++) {
+            Node n = all.item(i);
+            if (n.getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            }
+            String local = n.getLocalName() != null ? n.getLocalName() : n.getNodeName();
+            if (!"polo".equalsIgnoreCase(local)) {
+                continue;
+            }
+            String tipoPolo = attr(n, "polo");
+            Node pessoa = firstDescendant(n, "pessoa");
+            if (pessoa == null) {
+                continue;
+            }
+            String nome = attr(pessoa, "nome");
+            String documento = attr(pessoa, "numeroDocumentoPrincipal");
+            if ("AT".equalsIgnoreCase(tipoPolo)) {
+                processo.setParteAutoraNome(nome);
+                processo.setParteAutoraCpf(documento);
+            } else if ("PA".equalsIgnoreCase(tipoPolo)) {
+                processo.setParteReuNome(nome);
+                processo.setParteReuCpf(documento);
+            }
+        }
+    }
+
+    private static String attr(Node node, String name) {
+        if (node == null || node.getAttributes() == null) {
+            return null;
+        }
+        Node a = node.getAttributes().getNamedItem(name);
+        return a == null ? null : a.getNodeValue();
+    }
+
+    private static Node firstDescendant(Node parent, String tagName) {
+        NodeList children = parent.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (child.getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            }
+            String local = child.getLocalName() != null ? child.getLocalName() : child.getNodeName();
+            if (tagName.equalsIgnoreCase(local)) {
+                return child;
+            }
+            Node deeper = firstDescendant(child, tagName);
+            if (deeper != null) {
+                return deeper;
+            }
+        }
+        return null;
     }
 
     private static Document parseSecure(String xml) {
@@ -84,7 +144,10 @@ public class MniXmlToProcessoAdapter {
     }
 
     private RitoProcessual resolveRito(String raw) {
-        return RitoProcessual.tryParse(raw).orElse(RitoProcessual.COMUM_ORDINARIO);
+        return RitoProcessual.tryParse(raw).orElseGet(() -> {
+            log.warn("Rito MNI não reconhecido, aplicando fallback COMUM_ORDINARIO: raw={}", raw);
+            return RitoProcessual.COMUM_ORDINARIO;
+        });
     }
 
     private String inferUf(String tribunalOrigem) {

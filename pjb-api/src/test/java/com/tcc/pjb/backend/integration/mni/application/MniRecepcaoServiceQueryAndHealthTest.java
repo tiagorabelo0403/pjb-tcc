@@ -7,6 +7,9 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloCompositionPolicy;
+import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
 import com.tcc.pjb.backend.integration.mni.adapter.MniXmlToProcessoAdapter;
 import com.tcc.pjb.backend.integration.mni.domain.MniConsultaRecepcaoCommand;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoCommand;
@@ -42,7 +45,8 @@ class MniRecepcaoServiceQueryAndHealthTest {
                 .build();
         when(recepcaoRepository.findById(44L)).thenReturn(Optional.of(recepcao));
 
-        MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger);
+        MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
+                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator());
 
         var consulta = service.consultar(new MniConsultaRecepcaoCommand(44L));
         var query = service.consultar(new MniRecepcaoQuery(44L));
@@ -68,7 +72,8 @@ class MniRecepcaoServiceQueryAndHealthTest {
         AuditLedgerService auditLedger = mock(AuditLedgerService.class);
         when(recepcaoRepository.findById(999L)).thenReturn(Optional.empty());
 
-        MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger);
+        MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
+                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator());
 
         assertThatThrownBy(() -> service.envelope(999L))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -113,7 +118,8 @@ class MniRecepcaoServiceQueryAndHealthTest {
                 .status("PROCESSED")
                 .build()));
 
-        MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger);
+        MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
+                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator());
         var result = service.receberAutos(new MniRecepcaoCommand("TJCE", "COOPERACAO", "<xml/>"));
         var timeline = service.timeline(82L);
 
