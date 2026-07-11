@@ -1,12 +1,16 @@
 package com.tcc.pjb.backend.service.processual.polo;
 
 import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloCompositionPolicy;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloComposto;
+import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
+import com.tcc.pjb.backend.core.validation.document.DocumentoValidado;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoParte;
 import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
-import java.util.Locale;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,9 +19,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class PeticionamentoInicialPolosService {
 
     private final PoloProcessualApplicationService poloProcessualApplicationService;
+    private final PoloCompositionPolicy poloCompositionPolicy;
+    private final DocumentoNacionalValidator documentoNacionalValidator;
 
-    public PeticionamentoInicialPolosService(PoloProcessualApplicationService poloProcessualApplicationService) {
+    public PeticionamentoInicialPolosService(PoloProcessualApplicationService poloProcessualApplicationService,
+                                              PoloCompositionPolicy poloCompositionPolicy,
+                                              DocumentoNacionalValidator documentoNacionalValidator) {
         this.poloProcessualApplicationService = Objects.requireNonNull(poloProcessualApplicationService);
+        this.poloCompositionPolicy = Objects.requireNonNull(poloCompositionPolicy);
+        this.documentoNacionalValidator = Objects.requireNonNull(documentoNacionalValidator);
     }
 
     @Transactional
@@ -26,36 +36,23 @@ public class PeticionamentoInicialPolosService {
             return;
         }
         TipoUsuario tipoUsuario = peticionante == null ? null : peticionante.getTipoUsuario();
-        String autora = trimToNull(processo.getParteAutoraNome());
-        String reu = trimToNull(processo.getParteReuNome());
-        if (autora != null) {
+        List<PoloComposto> composicao = poloCompositionPolicy.compor(processo);
+        for (PoloComposto pc : composicao) {
             poloProcessualApplicationService.incluir(
                     processo.getId(),
-                    TipoPolo.ATIVO,
-                    TipoParte.AUTOR,
-                    autora,
-                    documentoAutor(peticionante, tipoUsuario, autora),
-                    documentoTipo(documentoAutor(peticionante, tipoUsuario, autora)),
-                    oabNumero(peticionante, tipoUsuario),
-                    oabUf(peticionante, tipoUsuario),
-                    usuarioIdRepresentante(peticionante, tipoUsuario),
-                    null,
-                    null
-            );
-        }
-        if (reu != null) {
-            poloProcessualApplicationService.incluir(
-                    processo.getId(),
-                    TipoPolo.PASSIVO,
-                    TipoParte.REU,
-                    reu,
+                    pc.tipoPolo(),
+                    pc.tipoParte(),
+                    pc.nome(),
+                    pc.cpf(),
+                    documentoNacionalValidator.validar(pc.cpf()) instanceof DocumentoValidado.Valido v ? v.tipo().name() : null,
+                    pc.tipoPolo() == TipoPolo.ATIVO ? oabNumero(peticionante, tipoUsuario) : null,
+                    pc.tipoPolo() == TipoPolo.ATIVO ? oabUf(peticionante, tipoUsuario) : null,
+                    pc.tipoPolo() == TipoPolo.ATIVO ? usuarioIdRepresentante(peticionante, tipoUsuario) : null,
                     null,
                     null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
+                    pc.ufDomicilio(),
+                    pc.comarcaDomicilio(),
+                    pc.municipioDomicilio()
             );
         }
         registrarInstitucional(processo, peticionante, tipoUsuario);
@@ -107,16 +104,6 @@ public class PeticionamentoInicialPolosService {
         return null;
     }
 
-    private String documentoAutor(Usuario peticionante, TipoUsuario tipoUsuario, String autora) {
-        if (peticionante == null || tipoUsuario == null || tipoUsuario.isAdvocacia()) {
-            return null;
-        }
-        if (!sameName(autora, peticionante.getNome())) {
-            return null;
-        }
-        return documentoInstitucional(peticionante);
-    }
-
     private String documentoInstitucional(Usuario peticionante) {
         return digits(trimToNull(peticionante == null ? null : peticionante.getCpf()));
     }
@@ -140,17 +127,6 @@ public class PeticionamentoInicialPolosService {
             return null;
         }
         return documento.length() == 14 ? "CNPJ" : documento.length() == 11 ? "CPF" : null;
-    }
-
-    private boolean sameName(String first, String second) {
-        String a = normalizeName(first);
-        String b = normalizeName(second);
-        return a != null && a.equals(b);
-    }
-
-    private String normalizeName(String value) {
-        String normalized = trimToNull(value);
-        return normalized == null ? null : normalized.toUpperCase(Locale.ROOT).replaceAll("\\s+", " ");
     }
 
     private String digits(String value) {
