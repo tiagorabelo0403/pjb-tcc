@@ -271,10 +271,10 @@ Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring
 | Tempo unitários | Surefire | **~15 min** |
 | Total de testes de integração | Failsafe | **206** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
-| Falhas IT (em estabilização) | Failsafe | **14** (0E + 14F) |
+| Falhas IT (em estabilização) | Failsafe | **10** (0E + 10F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
 
-A suíte de integração está em processo ativo de estabilização. O ponto de partida era 49 falhas; chegou a 14 após eliminação dos clusters CG-1 (22E — variável de ambiente errada), CG-2-Postgres (5E — contaminação entre testes por dados não limpos), CG-3 (3E — IDs hardcoded sem seed), CG-7 (1E — mesmo grupo do CG-1), e demais clusters mapeados. As 14 falhas restantes são conhecidas e estão mapeadas: 10 pré-existentes sem relação com a Onda de Submissão; 3 D25 (ProcessoCommandControllerIT × 3) que dependem de os testes enviarem AnexoDeclarado para exercitar o canal tipado construído na 1d (dívida D-d25-testes-anexo); 1 CanalTipadoAjuizamentoIT que expõe bug de routing — forumAllocation.preProtocoloApto=false para TRT2+TRABALHISTA_ORDINARIO apesar de TRT2 estar na NationalCompetenceMatrix com supportsProtocolo()=true (dívida D-routing-preprotocolo). Os 10 testes do motor de composição de polos por rito são todos verdes e não compõem as 14 falhas.
+A suíte de integração está em processo ativo de estabilização. O ponto de partida era 49 falhas; chegou a 14 após eliminação dos clusters CG-1 (22E — variável de ambiente errada), CG-2-Postgres (5E — contaminação entre testes por dados não limpos), CG-3 (3E — IDs hardcoded sem seed), CG-7 (1E — mesmo grupo do CG-1), e demais clusters mapeados; e a 10 após o fechamento de `ConsultaPublicaSearchFlowIT` (vazamento residual de `AjuizamentoServiceFlowIT`, commit 5586eec) e das 3 `ProcessoCommandControllerIT` — dívida D-d25-testes-anexo, commit 6461810 (a causa real não foi ausência de `AnexoDeclarado` como a dívida original supunha, mas três gates independentes: motor real de roteamento/preflight, `CompletudeDocumentalPolicyService` e um `LazyInitializationException` nunca antes exercitado). As 10 falhas restantes são conhecidas e estão mapeadas: 9 pré-existentes sem relação com a Onda de Submissão; 1 CanalTipadoAjuizamentoIT que expõe bug de routing — forumAllocation.preProtocoloApto=false para TRT2+TRABALHISTA_ORDINARIO apesar de TRT2 estar na NationalCompetenceMatrix com supportsProtocolo()=true (dívida D-routing-preprotocolo). Os 10 testes do motor de composição de polos por rito são todos verdes e não compõem essas 10 falhas.
 
 ¹ O `verify` padrão (Failsafe) não alcança 10 métodos de teste distribuídos em 5 classes (`OabLegitimidadePeticionamentoTest`, `PjbFluxoJudicialCompletoE2ETest`, `DistribuicaoProcessoProtocoladoTest`, `ConsultaPublicaProcessoProtocoladoTest`, `ApiMarketplaceServicePoloMaterializacaoTest`) — nome `*Test.java` combinado com `@Tag("integration")` faz o Surefire excluir por tag e o Failsafe não reconhecer pelo padrão de arquivo. Os 10 já foram confirmados verdes individualmente (`-Dit.test=`), mas não entram nesta contagem por rodarem fora do `verify` de rotina.
 
@@ -655,7 +655,7 @@ CREATE POLICY processo_sigilo ON processo
 | Métrica | Estado |
 |---------|--------|
 | Testes unitários (Surefire) | **4.134 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **206 · 14 falhas conhecidas** (de 49 → 14; 3 D25 + 1 D-routing-preprotocolo + 10 pré-existentes; +10 motor de polos verdes — ver nota¹ na seção Testes sobre 10 testes confirmados fora desta contagem) |
+| Testes de integração (Failsafe) | **206 · 10 falhas conhecidas** (de 49 → 14 → 10; 1 D-routing-preprotocolo + 9 pré-existentes; D25×3 e ConsultaPublicaSearchFlowIT fechadas; +10 motor de polos verdes — ver nota¹ na seção Testes sobre 10 testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
