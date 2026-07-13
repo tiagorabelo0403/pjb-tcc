@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.service.ajuizamento;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
@@ -26,17 +26,21 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestPropertySource(properties = {
         "spring.cache.type=none",
         "pjb.workflow.enabled=false",
         "pjb.outbox.ingress.enabled=false"
 })
-class AjuizamentoServiceFlowIT extends PjbIntegrationTestBase {
+class AjuizamentoServiceFlowIT extends PjbFlowItBase {
 
     @Autowired
     private AjuizamentoService ajuizamentoService;
@@ -50,8 +54,33 @@ class AjuizamentoServiceFlowIT extends PjbIntegrationTestBase {
     @Autowired
     private OutboxEventRepository outboxEventRepository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @MockitoBean
     private TriagemNacionalIAEngine triagemNacionalIAEngine;
+
+    @AfterAll
+    void truncateAfterAll() {
+        List<String> tables = jdbcTemplate.queryForList(
+                """
+                SELECT t.tablename
+                FROM pg_tables t
+                WHERE t.schemaname = 'public'
+                  AND t.tablename NOT IN ('flyway_schema_history')
+                  AND t.tablename NOT IN (
+                      SELECT c.relname FROM pg_inherits i
+                      JOIN pg_class c ON i.inhrelid = c.oid
+                      JOIN pg_namespace n ON c.relnamespace = n.oid
+                      WHERE n.nspname = 'public'
+                  )
+                """,
+                String.class);
+        if (!tables.isEmpty()) {
+            String tableList = String.join(", ", tables.stream().map(t -> "\"" + t + "\"").toList());
+            jdbcTemplate.execute("TRUNCATE " + tableList + " RESTART IDENTITY CASCADE");
+        }
+    }
 
     @Test
     void deveAjuizarEmitirOutboxECriarFilaDeRevisaoDaSecretariaQuandoHouverPendenciaInicial() {
