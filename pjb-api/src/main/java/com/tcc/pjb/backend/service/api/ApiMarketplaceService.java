@@ -36,6 +36,8 @@ public class ApiMarketplaceService {
         processo.setTipoJustica(TipoJustica.fromString(request.tipoJustica()) == null ? TipoJustica.ESTADUAL : TipoJustica.fromString(request.tipoJustica()));
         processo.setRamoDireito(RamoDireito.fromString(request.ramoDireito()) == null ? RamoDireito.CIVIL : RamoDireito.fromString(request.ramoDireito()));
         processo.setMateria(MateriaJurisdicao.fromRamo(processo.getRamoDireito()));
+        processo.setUf(request.uf());
+        processo.setComarca(request.comarca());
         processo.setClasseProcessual(request.classeProcessual());
         processo.setAssunto(request.assunto());
         processo.setPedidoPrincipal(request.pedidoPrincipal());
@@ -77,6 +79,8 @@ public class ApiMarketplaceService {
             @NotBlank String numeroExterno,
             String tipoJustica,
             String ramoDireito,
+            @NotBlank String uf,
+            String comarca,
             @NotBlank String classeProcessual,
             String assunto,
             @NotBlank String pedidoPrincipal,

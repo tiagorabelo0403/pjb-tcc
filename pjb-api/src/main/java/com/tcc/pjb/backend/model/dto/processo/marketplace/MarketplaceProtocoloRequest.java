@@ -8,6 +8,8 @@ public record MarketplaceProtocoloRequest(
         @NotBlank String numeroExterno,
         String tipoJustica,
         String ramoDireito,
+        @NotBlank String uf,
+        String comarca,
         @NotBlank String classeProcessual,
         String assunto,
         @NotBlank String pedidoPrincipal,

@@ -55,6 +55,8 @@ public class MarketplaceSurfaceFacadeService {
                 request.numeroExterno(),
                 request.tipoJustica(),
                 request.ramoDireito(),
+                request.uf(),
+                request.comarca(),
                 request.classeProcessual(),
                 request.assunto(),
                 request.pedidoPrincipal(),
