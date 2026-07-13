@@ -20,9 +20,12 @@ import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.MateriaJurisdicao;
+import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
+import com.tcc.pjb.backend.model.entity.enums.TipoParte;
+import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.intelligence.LaianePeticaoInicialDraftSession;
@@ -60,6 +63,7 @@ public class LaianePeticaoInicialDraftService {
     private final OabValidationService oabValidationService;
     private final NumeroProcessoCnjService numeroProcessoCnjService;
     private final PeticionamentoInicialPolosService peticionamentoInicialPolosService;
+    private final PoloProcessualApplicationService poloProcessualApplicationService;
     private final ProtocoloReciboService protocoloReciboService;
     private final MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine;
     private final com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeValidator completudeValidator;
@@ -77,6 +81,7 @@ public class LaianePeticaoInicialDraftService {
                                             OabValidationService oabValidationService,
                                             NumeroProcessoCnjService numeroProcessoCnjService,
                                             PeticionamentoInicialPolosService peticionamentoInicialPolosService,
+                                            PoloProcessualApplicationService poloProcessualApplicationService,
                                             ProtocoloReciboService protocoloReciboService,
                                             MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine,
                                             com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeValidator completudeValidator,
@@ -93,6 +98,7 @@ public class LaianePeticaoInicialDraftService {
         this.oabValidationService = Objects.requireNonNull(oabValidationService);
         this.numeroProcessoCnjService = Objects.requireNonNull(numeroProcessoCnjService);
         this.peticionamentoInicialPolosService = Objects.requireNonNull(peticionamentoInicialPolosService);
+        this.poloProcessualApplicationService = Objects.requireNonNull(poloProcessualApplicationService);
         this.protocoloReciboService = Objects.requireNonNull(protocoloReciboService);
         this.mapaCompetenciaDinamicoEngine = Objects.requireNonNull(mapaCompetenciaDinamicoEngine);
         this.completudeValidator = Objects.requireNonNull(completudeValidator);
@@ -246,6 +252,7 @@ public class LaianePeticaoInicialDraftService {
         processoRepository.saveAndFlush(salvo);
         mapaCompetenciaDinamicoEngine.registrarDistribuicaoInicial(salvo);
         peticionamentoInicialPolosService.registrar(salvo, usuario);
+        registrarInstitucional(salvo, usuario, usuario.getTipoUsuario());
         protocoloReciboService.emitirReciboPeticaoInicial(salvo, usuario, entity.getHashIntegridade());
 
         entity.setProcesso(salvo);
@@ -261,6 +268,67 @@ public class LaianePeticaoInicialDraftService {
                 saved.getHashIntegridade(),
                 salvo.getConnectorProtocolReference()
         );
+    }
+
+    private void registrarInstitucional(Processo processo, Usuario peticionante, TipoUsuario tipoUsuario) {
+        TipoPolo tipoPolo = tipoPoloInstitucional(tipoUsuario);
+        if (tipoPolo == null || peticionante == null) {
+            return;
+        }
+        poloProcessualApplicationService.incluir(
+                processo.getId(),
+                tipoPolo,
+                tipoPolo == TipoPolo.MINISTERIO_PUBLICO ? TipoParte.MINISTERIO_PUBLICO : TipoParte.TERCEIRO_INTERESSADO,
+                firstNonBlank(peticionante.getNome(), tipoPolo.label()),
+                documentoInstitucional(peticionante),
+                documentoTipo(documentoInstitucional(peticionante)),
+                null,
+                null,
+                peticionante.getId(),
+                null,
+                null
+        );
+    }
+
+    private TipoPolo tipoPoloInstitucional(TipoUsuario tipoUsuario) {
+        if (tipoUsuario == null) {
+            return null;
+        }
+        if (tipoUsuario.isDefensoriaPublica()) {
+            return TipoPolo.DEFENSORIA;
+        }
+        if (tipoUsuario.isMinisterioPublico()) {
+            return TipoPolo.MINISTERIO_PUBLICO;
+        }
+        if (tipoUsuario.isProcuradoria()) {
+            return TipoPolo.PROCURADORIA;
+        }
+        return null;
+    }
+
+    private String documentoInstitucional(Usuario peticionante) {
+        return digits(trimToNull(peticionante == null ? null : peticionante.getCpf()));
+    }
+
+    private String documentoTipo(String documento) {
+        if (documento == null) {
+            return null;
+        }
+        return documento.length() == 14 ? "CNPJ" : documento.length() == 11 ? "CPF" : null;
+    }
+
+    private String digits(String value) {
+        String normalized = trimToNull(value);
+        if (normalized == null) {
+            return null;
+        }
+        String onlyDigits = normalized.replaceAll("\\D+", "");
+        return onlyDigits.isBlank() ? null : onlyDigits;
+    }
+
+    private String firstNonBlank(String first, String second) {
+        String a = trimToNull(first);
+        return a == null ? trimToNull(second) : a;
     }
 
     private Usuario requirePeticionante() {

@@ -7,7 +7,6 @@ import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
 import com.tcc.pjb.backend.core.validation.document.DocumentoValidado;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
-import com.tcc.pjb.backend.model.entity.enums.TipoParte;
 import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import java.util.List;
@@ -55,43 +54,6 @@ public class PeticionamentoInicialPolosService {
                     pc.municipioDomicilio()
             );
         }
-        registrarInstitucional(processo, peticionante, tipoUsuario);
-    }
-
-    private void registrarInstitucional(Processo processo, Usuario peticionante, TipoUsuario tipoUsuario) {
-        TipoPolo tipoPolo = tipoPoloInstitucional(tipoUsuario);
-        if (tipoPolo == null || peticionante == null) {
-            return;
-        }
-        poloProcessualApplicationService.incluir(
-                processo.getId(),
-                tipoPolo,
-                tipoPolo == TipoPolo.MINISTERIO_PUBLICO ? TipoParte.MINISTERIO_PUBLICO : TipoParte.TERCEIRO_INTERESSADO,
-                firstNonBlank(peticionante.getNome(), tipoPolo.label()),
-                documentoInstitucional(peticionante),
-                documentoTipo(documentoInstitucional(peticionante)),
-                null,
-                null,
-                peticionante.getId(),
-                null,
-                null
-        );
-    }
-
-    private TipoPolo tipoPoloInstitucional(TipoUsuario tipoUsuario) {
-        if (tipoUsuario == null) {
-            return null;
-        }
-        if (tipoUsuario.isDefensoriaPublica()) {
-            return TipoPolo.DEFENSORIA;
-        }
-        if (tipoUsuario.isMinisterioPublico()) {
-            return TipoPolo.MINISTERIO_PUBLICO;
-        }
-        if (tipoUsuario.isProcuradoria()) {
-            return TipoPolo.PROCURADORIA;
-        }
-        return null;
     }
 
     private Long usuarioIdRepresentante(Usuario peticionante, TipoUsuario tipoUsuario) {
@@ -102,10 +64,6 @@ public class PeticionamentoInicialPolosService {
             return peticionante.getId();
         }
         return null;
-    }
-
-    private String documentoInstitucional(Usuario peticionante) {
-        return digits(trimToNull(peticionante == null ? null : peticionante.getCpf()));
     }
 
     private String oabNumero(Usuario peticionante, TipoUsuario tipoUsuario) {
@@ -120,13 +78,6 @@ public class PeticionamentoInicialPolosService {
             return null;
         }
         return trimToNull(peticionante.getOabUf());
-    }
-
-    private String documentoTipo(String documento) {
-        if (documento == null) {
-            return null;
-        }
-        return documento.length() == 14 ? "CNPJ" : documento.length() == 11 ? "CPF" : null;
     }
 
     private String digits(String value) {

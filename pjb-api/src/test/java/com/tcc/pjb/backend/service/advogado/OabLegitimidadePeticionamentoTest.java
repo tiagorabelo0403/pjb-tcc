@@ -151,6 +151,14 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
 
         assertThat(result.processoId()).isNotNull();
         verifyNoInteractions(oabValidationClient);
+
+        List<PoloProcessual> polos = poloProcessualRepository.findByProcessoIdAndAtivo(result.processoId(), true);
+        assertThat(polos).anySatisfy(polo -> {
+            assertThat(polo.getTipoPolo()).isEqualTo(TipoPolo.DEFENSORIA);
+            assertThat(polo.getTipoParte()).isEqualTo(TipoParte.TERCEIRO_INTERESSADO);
+            assertThat(polo.getNomeCompleto()).isEqualTo(defensor.getNome());
+            assertThat(polo.getUsuarioId()).isEqualTo(defensor.getId());
+        });
     }
 
     @Test
