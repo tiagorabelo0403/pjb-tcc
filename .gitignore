@@ -129,6 +129,8 @@ docs/reports/config_taxonomy_guard.json
 docs/reports/config_taxonomy_guard.md
 docs/reports/docker_compose_guard.json
 docs/reports/docker_compose_guard.md
+docs/reports/test_isolation_guard.json
+docs/reports/test_isolation_guard.md
 
 # Build artifacts do compilador Java
 pjb-api/javac.*.args
