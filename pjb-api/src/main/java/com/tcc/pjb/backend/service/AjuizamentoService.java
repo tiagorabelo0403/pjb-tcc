@@ -3,9 +3,17 @@ package com.tcc.pjb.backend.service;
 import com.tcc.pjb.backend.core.compiler.LegalCompilerService;
 import com.tcc.pjb.backend.core.modularity.PjbModuleId;
 import com.tcc.pjb.backend.core.modularity.PjbPublicApi;
+import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloCompositionPolicy;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloComposto;
+import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
+import com.tcc.pjb.backend.core.validation.document.DocumentoValidado;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.dto.event.ProcessoAjuizadoEvent;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
@@ -40,6 +48,9 @@ public class AjuizamentoService {
     private final TetoProcessualService tetoProcessualService;
     private final LegalCompilerService legalCompilerService;
     private final AjuizamentoProceduralContextService ajuizamentoProceduralContextService;
+    private final PoloCompositionPolicy poloCompositionPolicy;
+    private final PoloProcessualApplicationService poloProcessualApplicationService;
+    private final DocumentoNacionalValidator documentoNacionalValidator;
 
     public AjuizamentoService(ProcessoRepository processoRepo,
                               ApplicationEventPublisher eventPublisher,
@@ -48,7 +59,10 @@ public class AjuizamentoService {
                               TriagemNacionalIAEngine triagemNacionalIAEngine,
                               TetoProcessualService tetoProcessualService,
                               LegalCompilerService legalCompilerService,
-                              AjuizamentoProceduralContextService ajuizamentoProceduralContextService) {
+                              AjuizamentoProceduralContextService ajuizamentoProceduralContextService,
+                              PoloCompositionPolicy poloCompositionPolicy,
+                              PoloProcessualApplicationService poloProcessualApplicationService,
+                              DocumentoNacionalValidator documentoNacionalValidator) {
         this.processoRepo = Objects.requireNonNull(processoRepo);
         this.eventPublisher = Objects.requireNonNull(eventPublisher);
         this.orgaoOficialService = Objects.requireNonNull(orgaoOficialService);
@@ -57,6 +71,9 @@ public class AjuizamentoService {
         this.tetoProcessualService = Objects.requireNonNull(tetoProcessualService);
         this.legalCompilerService = Objects.requireNonNull(legalCompilerService);
         this.ajuizamentoProceduralContextService = Objects.requireNonNull(ajuizamentoProceduralContextService);
+        this.poloCompositionPolicy = Objects.requireNonNull(poloCompositionPolicy);
+        this.poloProcessualApplicationService = Objects.requireNonNull(poloProcessualApplicationService);
+        this.documentoNacionalValidator = Objects.requireNonNull(documentoNacionalValidator);
     }
 
     @Transactional
@@ -75,9 +92,80 @@ public class AjuizamentoService {
         orgaoOficialService.ensureDefaults(processo);
 
         Processo saved = processoRepo.save(processo);
+        materializarPolosIniciais(saved);
         emitOutbox(saved);
         publishAjuizamentoEvent(saved);
         return saved;
+    }
+
+    private void materializarPolosIniciais(Processo salvo) {
+        Usuario usuario = salvo.getUsuario();
+        TipoUsuario tipoUsuario = usuario == null ? null : usuario.getTipoUsuario();
+        List<PoloComposto> composicao = poloCompositionPolicy.compor(salvo);
+        for (PoloComposto pc : composicao) {
+            poloProcessualApplicationService.incluir(
+                    salvo.getId(),
+                    pc.tipoPolo(),
+                    pc.tipoParte(),
+                    pc.nome(),
+                    pc.cpf(),
+                    documentoNacionalValidator.validar(pc.cpf()) instanceof DocumentoValidado.Valido v ? v.tipo().name() : null,
+                    pc.tipoPolo() == TipoPolo.ATIVO ? oabNumero(usuario, tipoUsuario) : null,
+                    pc.tipoPolo() == TipoPolo.ATIVO ? oabUf(usuario, tipoUsuario) : null,
+                    pc.tipoPolo() == TipoPolo.ATIVO ? usuarioIdRepresentante(usuario, tipoUsuario) : null,
+                    null,
+                    null,
+                    pc.ufDomicilio(),
+                    pc.comarcaDomicilio(),
+                    pc.municipioDomicilio()
+            );
+        }
+    }
+
+    private Long usuarioIdRepresentante(Usuario usuario, TipoUsuario tipoUsuario) {
+        if (usuario == null || tipoUsuario == null) {
+            return null;
+        }
+        if (tipoUsuario.isAdvocacia() || tipoUsuario.isDefensoriaPublica() || tipoUsuario.isMinisterioPublico() || tipoUsuario.isProcuradoria()) {
+            return usuario.getId();
+        }
+        return null;
+    }
+
+    private String oabNumero(Usuario usuario, TipoUsuario tipoUsuario) {
+        if (usuario == null || tipoUsuario == null || !tipoUsuario.isAdvocacia()) {
+            return null;
+        }
+        return digits(firstNonBlank(usuario.getOabNormalizada(), usuario.getOab()));
+    }
+
+    private String oabUf(Usuario usuario, TipoUsuario tipoUsuario) {
+        if (usuario == null || tipoUsuario == null || !tipoUsuario.isAdvocacia()) {
+            return null;
+        }
+        return trimToNull(usuario.getOabUf());
+    }
+
+    private String digits(String value) {
+        String normalized = trimToNull(value);
+        if (normalized == null) {
+            return null;
+        }
+        String onlyDigits = normalized.replaceAll("\\D+", "");
+        return onlyDigits.isBlank() ? null : onlyDigits;
+    }
+
+    private String firstNonBlank(String first, String second) {
+        String a = trimToNull(first);
+        return a == null ? trimToNull(second) : a;
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isBlank() ? null : trimmed;
     }
 
     public Processo carregarProcesso(Long processoId) {

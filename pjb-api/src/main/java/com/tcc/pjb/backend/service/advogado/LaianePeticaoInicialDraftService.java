@@ -39,7 +39,6 @@ import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.processual.guard.DefensoriaInstitutionalCompetenceGuardService;
 import com.tcc.pjb.backend.service.processual.legitimidade.OabValidationService;
 import com.tcc.pjb.backend.service.processual.numero.NumeroProcessoCnjService;
-import com.tcc.pjb.backend.service.processual.polo.PeticionamentoInicialPolosService;
 import com.tcc.pjb.backend.service.processual.protocolo.ProtocoloReciboService;
 import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -62,7 +61,6 @@ public class LaianePeticaoInicialDraftService {
     private final DefensoriaInstitutionalCompetenceGuardService defensoriaInstitutionalCompetenceGuardService;
     private final OabValidationService oabValidationService;
     private final NumeroProcessoCnjService numeroProcessoCnjService;
-    private final PeticionamentoInicialPolosService peticionamentoInicialPolosService;
     private final PoloProcessualApplicationService poloProcessualApplicationService;
     private final ProtocoloReciboService protocoloReciboService;
     private final MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine;
@@ -80,7 +78,6 @@ public class LaianePeticaoInicialDraftService {
                                             DefensoriaInstitutionalCompetenceGuardService defensoriaInstitutionalCompetenceGuardService,
                                             OabValidationService oabValidationService,
                                             NumeroProcessoCnjService numeroProcessoCnjService,
-                                            PeticionamentoInicialPolosService peticionamentoInicialPolosService,
                                             PoloProcessualApplicationService poloProcessualApplicationService,
                                             ProtocoloReciboService protocoloReciboService,
                                             MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine,
@@ -97,7 +94,6 @@ public class LaianePeticaoInicialDraftService {
         this.defensoriaInstitutionalCompetenceGuardService = Objects.requireNonNull(defensoriaInstitutionalCompetenceGuardService);
         this.oabValidationService = Objects.requireNonNull(oabValidationService);
         this.numeroProcessoCnjService = Objects.requireNonNull(numeroProcessoCnjService);
-        this.peticionamentoInicialPolosService = Objects.requireNonNull(peticionamentoInicialPolosService);
         this.poloProcessualApplicationService = Objects.requireNonNull(poloProcessualApplicationService);
         this.protocoloReciboService = Objects.requireNonNull(protocoloReciboService);
         this.mapaCompetenciaDinamicoEngine = Objects.requireNonNull(mapaCompetenciaDinamicoEngine);
@@ -251,7 +247,6 @@ public class LaianePeticaoInicialDraftService {
         salvo.setMateria(MateriaJurisdicao.fromRamo(ramoDireitoProtocolo));
         processoRepository.saveAndFlush(salvo);
         mapaCompetenciaDinamicoEngine.registrarDistribuicaoInicial(salvo);
-        peticionamentoInicialPolosService.registrar(salvo, usuario);
         registrarInstitucional(salvo, usuario, usuario.getTipoUsuario());
         protocoloReciboService.emitirReciboPeticaoInicial(salvo, usuario, entity.getHashIntegridade());
 
