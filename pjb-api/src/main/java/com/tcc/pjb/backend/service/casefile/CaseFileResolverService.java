@@ -98,7 +98,7 @@ public class CaseFileResolverService {
     }
 
     private CaseProceeding assureRootProceeding(CaseFile caseFile, Processo processo, ProceduralContext ctx) {
-        CaseProceeding existing = proceedingRepository.findFirstByCaseFileIdAndLinkedProcessoId(caseFile.getId(), processo.getId()).orElse(null);
+        CaseProceeding existing = proceedingRepository.findFirstByCaseFileIdAndLinkedProcessoIdAndParentProceedingKeyIsNull(caseFile.getId(), processo.getId()).orElse(null);
         if (existing != null) return existing;
 
         String tribunal = ctx.tribunal();

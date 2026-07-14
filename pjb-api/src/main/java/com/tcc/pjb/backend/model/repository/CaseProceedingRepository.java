@@ -34,6 +34,8 @@ public interface CaseProceedingRepository extends JpaRepository<CaseProceeding, 
         return findByCaseFileIdAndLinkedProcessoIdOrderByUpdatedAtDescIdDesc(caseFileId, linkedProcessoId, PageRequest.of(0, 1)).stream().findFirst();
     }
 
+    Optional<CaseProceeding> findFirstByCaseFileIdAndLinkedProcessoIdAndParentProceedingKeyIsNull(Long caseFileId, Long linkedProcessoId);
+
     @Query("""
             select p from CaseProceeding p
             where p.linkedProcessoId = :linkedProcessoId

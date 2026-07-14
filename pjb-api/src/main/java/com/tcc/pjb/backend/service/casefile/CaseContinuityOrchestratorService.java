@@ -346,7 +346,7 @@ public class CaseContinuityOrchestratorService {
     }
 
     private CaseProceeding refreshAnchor(Long caseFileId, Long processoId) {
-        return caseProceedingRepository.findFirstByCaseFileIdAndLinkedProcessoId(caseFileId, processoId).orElse(null);
+        return caseProceedingRepository.findFirstByCaseFileIdAndLinkedProcessoIdAndParentProceedingKeyIsNull(caseFileId, processoId).orElse(null);
     }
 
     private boolean syncAnchor(CaseProceeding anchor, Processo processo, CaseProceedingRole role, String parentProceedingKey, CaseContinuityTrack track) {
