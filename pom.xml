@@ -582,6 +582,12 @@
                         <include>**/Test*.java</include>
                         <include>**/*TestCase.java</include>
                     </includes>
+                    <properties>
+                        <property>
+                            <name>junit.jupiter.execution.timeout.default</name>
+                            <value>10 m</value>
+                        </property>
+                    </properties>
                 </configuration>
             </plugin>
             <plugin>
