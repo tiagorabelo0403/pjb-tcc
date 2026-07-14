@@ -14,8 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.tcc.pjb.backend.core.icp.IcpBrasilOcspVerifier;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
@@ -30,6 +32,9 @@ class OfficeEquipeRequiredIT {
 
     @Autowired
     UsuarioRepository usuarioRepository;
+
+    @MockitoBean
+    IcpBrasilOcspVerifier icpBrasilOcspVerifier;
 
     @Test
     void semEquipeSelecionada_retorna428ComPayload() throws Exception {
