@@ -1,7 +1,6 @@
 package com.tcc.pjb.backend.controller.advogado;
 
-import com.tcc.pjb.backend.BackendApplication;
-import com.tcc.pjb.backend.PjbH2ItBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -18,23 +17,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-@SpringBootTest(
-        classes = BackendApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {
-                "spring.profiles.active=test",
-                "spring.task.scheduling.enabled=false",
-                "spring.main.lazy-initialization=true"
-        }
-)
 @AutoConfigureMockMvc
-class AdvogadoAuditoriaControllerIT extends PjbH2ItBase {
+class AdvogadoAuditoriaControllerIT extends PjbFlowItBase {
 
     @Autowired
     private MockMvc mockMvc;
