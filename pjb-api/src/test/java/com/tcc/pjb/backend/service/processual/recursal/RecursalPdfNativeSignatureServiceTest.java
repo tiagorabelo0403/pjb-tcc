@@ -2,7 +2,9 @@ package com.tcc.pjb.backend.service.processual.recursal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerRepository;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.HsmTestFactory;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHardwareSecurityModule;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHsmProperties;
@@ -54,7 +56,7 @@ class RecursalPdfNativeSignatureServiceTest {
         exportService = new RecursalPdfExportService();
         nativeSignatureService = new RecursalPdfNativeSignatureService(
                 hsm,
-                new AuditLedgerService(),
+                new AuditLedgerService(Mockito.mock(AuditLedgerRepository.class), Mockito.mock(CurrentUserService.class)),
                 Mockito.mock(JudicialKeyStoreLoader.class),
                 new RecursalNativePdfSignatureProperties(true, null, null, null, null, null, null)
         );

@@ -5,8 +5,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerRepository;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerEntry;
+import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.repository.IcpCertificateCacheRepository;
 import com.tcc.pjb.backend.model.repository.IcpSignatureEventRepository;
 import java.math.BigInteger;
@@ -46,7 +48,7 @@ class IcpBrasilChainValidatorTest {
         IcpSignatureEventRepository eventRepository = mock(IcpSignatureEventRepository.class);
         when(cacheRepository.findByIssuerDnAndSerialHex(any(), any())).thenReturn(java.util.Optional.empty());
         when(cacheRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        AuditLedgerService auditLedger = new AuditLedgerService();
+        AuditLedgerService auditLedger = new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class));
         IcpBrasilChainValidator validator = new IcpBrasilChainValidator(
                 cacheRepository,
                 eventRepository,

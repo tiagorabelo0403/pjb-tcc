@@ -25,7 +25,10 @@ public class AuditLedgerEntry {
         this.payloadHash = payloadHash;
         this.justificativa = justificativa;
         this.createdAt = createdAt == null ? null : java.time.LocalDateTime.ofInstant(createdAt, java.time.ZoneOffset.UTC);
-        this.entryHash = payloadHash;
+        this.entryHash = com.tcc.pjb.backend.core.util.Hashes.sha256Hex(String.join("#",
+                String.valueOf(action), String.valueOf(resourceType), String.valueOf(resourceId),
+                String.valueOf(payloadHash), String.valueOf(createdAt),
+                String.valueOf(System.nanoTime()), java.util.UUID.randomUUID().toString()));
     }
 
     @Id

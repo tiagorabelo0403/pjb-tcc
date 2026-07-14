@@ -7,7 +7,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerRepository;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.HsmTestFactory;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHardwareSecurityModule;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHsmProperties;
@@ -52,7 +54,7 @@ class BnmpIntegracaoServiceRegistrarBranchesTest {
         return new BnmpIntegracaoService(
                 bnmpApiGateway, hsm,
                 mock(ProcessoRepository.class),
-                new AuditLedgerService(),
+                new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class)),
                 mock(NotificacaoInteligentePJB.class),
                 stateStore,
                 executionOrchestrator,

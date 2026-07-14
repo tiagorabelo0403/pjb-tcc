@@ -1,13 +1,17 @@
 package com.tcc.pjb.backend.core.audit.ledger;
 
+import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.util.Hashes;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class AuditLedgerService {
 
@@ -15,6 +19,15 @@ public class AuditLedgerService {
 
     private final ConcurrentLinkedDeque<AuditLedgerEntry> entries = new ConcurrentLinkedDeque<>();
     private final AtomicInteger entryCount = new AtomicInteger();
+    private final AuditLedgerRepository auditLedgerRepository;
+    private final CurrentUserService currentUserService;
+
+    public AuditLedgerService(AuditLedgerRepository auditLedgerRepository, CurrentUserService currentUserService) {
+        this.auditLedgerRepository = Objects.requireNonNull(auditLedgerRepository);
+        this.currentUserService = Objects.requireNonNull(currentUserService);
+    }
+
+    private static final int PAYLOAD_HASH_MAX_LENGTH = 64;
 
     public AuditLedgerEntry append(String eventCode,
                                    String resourceType,
@@ -25,14 +38,37 @@ public class AuditLedgerService {
                 eventCode,
                 resourceType,
                 resourceId,
-                payloadHash == null || payloadHash.isBlank() ? Hashes.sha256Hex(String.join("#", String.valueOf(eventCode), String.valueOf(resourceType), String.valueOf(resourceId), String.valueOf(description), String.valueOf(Instant.now()))) : payloadHash,
+                safePayloadHash(eventCode, resourceType, resourceId, payloadHash, description),
                 description,
                 Instant.now()
         );
         entries.addLast(entry);
         int size = entryCount.incrementAndGet();
         trimOverflow(size);
+        persistSafely(entry);
         return entry;
+    }
+
+    private String safePayloadHash(String eventCode, String resourceType, String resourceId, String payloadHash, String description) {
+        if (payloadHash == null || payloadHash.isBlank()) {
+            return Hashes.sha256Hex(String.join("#", String.valueOf(eventCode), String.valueOf(resourceType), String.valueOf(resourceId), String.valueOf(description), String.valueOf(Instant.now())));
+        }
+        if (payloadHash.length() > PAYLOAD_HASH_MAX_LENGTH) {
+            return Hashes.sha256Hex(payloadHash);
+        }
+        return payloadHash;
+    }
+
+    private void persistSafely(AuditLedgerEntry entry) {
+        try {
+            var usuario = currentUserService.getOrNull();
+            if (usuario != null) {
+                entry.setActorUserId(usuario.getId());
+            }
+            auditLedgerRepository.save(entry);
+        } catch (Exception e) {
+            log.warn("Falha ao persistir entrada de auditoria (não bloqueante): action={} erro={}", entry.getAction(), e.getMessage());
+        }
     }
 
     public AuditLedgerEntry appendSafely(String eventCode, String resourceType, String resourceId, String payloadHash) {

@@ -30,7 +30,8 @@ public class ActionIdempotencyService {
         try {
             jdbc.update(
                     "INSERT INTO tb_idempotency(scope, idempotency_key, status, request_hash, lock_until, created_at, updated_at) VALUES (?,?,?,?,?,?,?)",
-                    scope, idempotencyKey, IdempotencyStatus.IN_PROGRESS.name(), requestHash, lockUntil, now, now
+                    scope, idempotencyKey, IdempotencyStatus.IN_PROGRESS.name(), requestHash,
+                    java.sql.Timestamp.from(lockUntil), java.sql.Timestamp.from(now), java.sql.Timestamp.from(now)
             );
             return new IdempotencyBeginResult(IdempotencyDecision.NEW, IdempotencyStatus.IN_PROGRESS, scope, idempotencyKey, requestHash, null, null, null);
         } catch (DataIntegrityViolationException dup) {
@@ -66,7 +67,8 @@ public class ActionIdempotencyService {
                         if (lockUntil != null && lockUntil.isBefore(now)) {
                             int updated = jdbc.update(
                                     "UPDATE tb_idempotency SET request_hash=?, lock_until=?, updated_at=? WHERE scope=? AND idempotency_key=? AND status='IN_PROGRESS' AND (lock_until IS NULL OR lock_until < ?)",
-                                    requestHash, newLockUntil, now, scope, idempotencyKey, now
+                                    requestHash, java.sql.Timestamp.from(newLockUntil), java.sql.Timestamp.from(now),
+                                    scope, idempotencyKey, java.sql.Timestamp.from(now)
                             );
                             if (updated > 0) {
                                 return new IdempotencyBeginResult(IdempotencyDecision.NEW, IdempotencyStatus.IN_PROGRESS, scope, idempotencyKey, requestHash, null, null, null);
@@ -79,7 +81,7 @@ public class ActionIdempotencyService {
                     if (lockUntil != null && lockUntil.isBefore(now)) {
                         int updated = jdbc.update(
                                 "UPDATE tb_idempotency SET status='IN_PROGRESS', request_hash=?, lock_until=?, updated_at=? WHERE scope=? AND idempotency_key=? AND status='FAILED'",
-                                requestHash, newLockUntil, now, scope, idempotencyKey
+                                requestHash, java.sql.Timestamp.from(newLockUntil), java.sql.Timestamp.from(now), scope, idempotencyKey
                         );
                         if (updated > 0) {
                             return new IdempotencyBeginResult(IdempotencyDecision.NEW, IdempotencyStatus.IN_PROGRESS, scope, idempotencyKey, requestHash, null, null, null);
@@ -95,7 +97,7 @@ public class ActionIdempotencyService {
         Instant now = Instant.now();
         jdbc.update(
                 "UPDATE tb_idempotency SET status='COMPLETED', response_hash=?, resource_type=?, resource_id=?, response_json=?, lock_until=NULL, updated_at=? WHERE scope=? AND idempotency_key=?",
-                responseHash, resourceType, resourceId, responseJson, now, scope, idempotencyKey
+                responseHash, resourceType, resourceId, responseJson, java.sql.Timestamp.from(now), scope, idempotencyKey
         );
     }
 
@@ -104,7 +106,7 @@ public class ActionIdempotencyService {
         Instant now = Instant.now();
         jdbc.update(
                 "UPDATE tb_idempotency SET status='FAILED', response_hash=?, response_json=?, lock_until=NULL, updated_at=? WHERE scope=? AND idempotency_key=?",
-                responseHash, responseJson, now, scope, idempotencyKey
+                responseHash, responseJson, java.sql.Timestamp.from(now), scope, idempotencyKey
         );
     }
 }
