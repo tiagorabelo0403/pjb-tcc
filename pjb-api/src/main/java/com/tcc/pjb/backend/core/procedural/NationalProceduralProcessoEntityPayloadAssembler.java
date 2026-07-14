@@ -62,6 +62,15 @@ public class NationalProceduralProcessoEntityPayloadAssembler {
             if (request.getComarcaAutor() != null) {
                 payload.put("comarcaAutor", request.getComarcaAutor());
             }
+            if (request.getCidadeAutor() != null) {
+                payload.put("cidadeAutor", request.getCidadeAutor());
+            }
+            if (request.getCidadeFato() != null) {
+                payload.put("cidadeFato", request.getCidadeFato());
+            }
+            if (request.getMunicipioFato() != null) {
+                payload.put("municipioFato", request.getMunicipioFato());
+            }
             if (request.getUfReu() != null) {
                 payload.put("ufReu", request.getUfReu());
             }

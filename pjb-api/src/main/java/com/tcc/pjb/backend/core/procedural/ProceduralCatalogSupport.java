@@ -441,8 +441,8 @@ public final class ProceduralCatalogSupport {
         register(raw, "PACIENTE", "paciente");
         register(raw, "SEGURADO", "segurado", "beneficiário", "beneficiario");
         register(raw, "INSS", "inss");
-        register(raw, "RECLAMANTE", "reclamante", "empregado");
-        register(raw, "RECLAMADA", "reclamada", "empregador");
+        register(raw, "RECLAMANTE", "reclamante", "empregado", "autor");
+        register(raw, "RECLAMADA", "reclamada", "empregador", "reu", "réu");
         register(raw, "SUSCITANTE", "suscitante");
         register(raw, "SUSCITADO", "suscitado");
         register(raw, "FAZENDA_PUBLICA", "fazenda pública", "fazenda publica", "ente público", "ente publico");
