@@ -279,6 +279,7 @@ public class QualifiedDocumentSignatureEnvelopeService {
         boolean rubricaDataHoraLocalPresentes = rubrica != null && !rubrica.isBlank()
                 && localTime.toLocalDate() != null
                 && localTime.toLocalTime() != null;
+        boolean classificacaoContextualCoerente = resolveClassificacaoContextualCoerente(normalize(papelAssinante), identity);
 
         LinkedHashMap<String, Object> validacaoSoberana = new LinkedHashMap<>();
         validacaoSoberana.put("status", "VALIDO");
@@ -287,7 +288,7 @@ public class QualifiedDocumentSignatureEnvelopeService {
         validacaoSoberana.put("cadeiaCustodiaElegivel", cadeiaCustodiaElegivel);
         validacaoSoberana.put("assinaturaCompletaMaterializada", assinaturaCompletaMaterializada);
         validacaoSoberana.put("rubricaDataHoraLocalPresentes", rubricaDataHoraLocalPresentes);
-        validacaoSoberana.put("classificacaoContextualCoerente", Boolean.TRUE);
+        validacaoSoberana.put("classificacaoContextualCoerente", classificacaoContextualCoerente);
         validacaoSoberana.put("certificadoEntradaVinculado", identity.entryCertificate() != null && identity.entryCertificate().presente());
         validacaoSoberana.put("papelAssinanteDetalhado", identity.papelDetalhado());
         validacaoSoberana.put("ramoJustica", identity.ramoJustica());
@@ -315,7 +316,7 @@ public class QualifiedDocumentSignatureEnvelopeService {
                 cadeiaCustodiaElegivel,
                 assinaturaCompletaMaterializada,
                 rubricaDataHoraLocalPresentes,
-                true,
+                classificacaoContextualCoerente,
                 identity.entryCertificate() != null && identity.entryCertificate().presente(),
                 identity.papelDetalhado(),
                 identity.ramoJustica(),
@@ -371,6 +372,23 @@ public class QualifiedDocumentSignatureEnvelopeService {
         return rules.stream()
                 .map(rule -> new ValidationRule(rule, null, null))
                 .toList();
+    }
+
+    private boolean resolveClassificacaoContextualCoerente(String papelAssinante, ResolvedSignatureIdentity identity) {
+        if (papelAssinante == null || papelAssinante.isBlank()) {
+            return false;
+        }
+        String segmento = identity.segmentoInstitucional();
+        return switch (papelAssinante) {
+            case "MINISTERIO_PUBLICO", "MEMBRO_MINISTERIO_PUBLICO", "PROMOTOR_ELEITORAL",
+                 "PROMOTOR_TRABALHISTA", "PROCURADOR_GERAL_REPUBLICA" -> "MINISTERIO_PUBLICO".equals(segmento);
+            case "DELEGADO_POLICIA", "DELEGADO_POLICIA_FEDERAL", "AGENTE_POLICIAL",
+                 "ESCRIVAO_POLICIAL" -> "POLICIA_JUDICIARIA".equals(segmento);
+            case "ADVOGADO", "ADVOGADO_PATRONO" -> "ADVOCACIA".equals(segmento);
+            case "OFICIAL_JUSTICA" -> "OFICIAL_JUSTICA".equals(segmento);
+            case "UNIDADE_JUDICIAL" -> "UNIDADE_JUDICIAL".equals(segmento);
+            default -> true;
+        };
     }
 
     private String renderSignatureIdentityLine(String label, Object value) {

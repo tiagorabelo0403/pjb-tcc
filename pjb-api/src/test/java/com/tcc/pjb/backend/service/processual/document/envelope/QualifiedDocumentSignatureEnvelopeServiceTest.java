@@ -428,6 +428,105 @@ class QualifiedDocumentSignatureEnvelopeServiceTest {
         verify(officeProcessWorkspaceScopeService).requireAccess(Mockito.eq(55L), Mockito.any(), Mockito.any());
     }
 
+    @Test
+    void signFreeContent_papelMinisterioPublicoComTipoUsuarioReal_classificacaoContextualCoerenteTrue() {
+        InstitutionalSessionSecuritySignalService securitySignalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        when(securitySignalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of("govbr=OURO")
+        ));
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Promotor");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Ofício",
+                "Conteúdo oficial",
+                "MINISTERIO_PUBLICO",
+                "MINISTERIO_PUBLICO_QUALIFICADA_SOBERANA",
+                true,
+                List.of("LAIANE_MP")
+        );
+
+        assertTrue(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
+    @Test
+    void signFreeContent_papelUnidadeJudicialComTipoUsuarioCidadao_classificacaoContextualCoerenteFalse() {
+        InstitutionalSessionSecuritySignalService securitySignalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        when(securitySignalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of("govbr=OURO")
+        ));
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Cidadão Qualquer");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.CIDADAO);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Minuta",
+                "Conteúdo",
+                "UNIDADE_JUDICIAL",
+                "ATO_OFICIAL_QUALIFICADO_SOBERANO",
+                true,
+                List.of("minuta")
+        );
+
+        assertFalse(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
+    @Test
+    void signFreeContent_papelForaDoSwitchMapeado_classificacaoContextualCoerenteTrueSemChecagem() {
+        InstitutionalSessionSecuritySignalService securitySignalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        when(securitySignalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of("govbr=OURO")
+        ));
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Cidadão Parte");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.CIDADAO);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Termo de acordo",
+                "Conteúdo",
+                "CIDADAO",
+                "CIDADAO_QUALIFICADA_SOBERANA",
+                true,
+                List.of("termo_acordo")
+        );
+
+        assertTrue(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
     private static ObjectProvider<OfficeProcessWorkspaceScopeService> officeScopeProvider(OfficeProcessWorkspaceScopeService service) {
         if (service == null) {
             return new StaticListableBeanFactory().getBeanProvider(OfficeProcessWorkspaceScopeService.class);
