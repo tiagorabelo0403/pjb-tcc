@@ -33,3 +33,25 @@ ausência de comparação contra `segmentoInstitucional()`, como os outros 12 ch
 
 **Quando revisitar:** se o motor de afiliação institucional for mapeado por outro motivo, ou se a política
 de assinatura de TERMO_ACORDO precisar de auditoria mais rígida.
+
+## D-domicilio-parte-tres-canais-nao-populam
+
+**Status:** aberta
+
+**Contexto:** `Processo.ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu` só são populados pelo canal REST
+(via `ProcessoMapper`). Marketplace (`ApiMarketplaceService`), MNI (`MniXmlToProcessoAdapter`) e Laiane
+(`LaianePeticaoInicialDraftService`) deixam os 4 campos nulos — cada um seta apenas `uf`/`comarca`
+(competência), não domicílio de parte. `PoloCompositionPolicy` deriva `ufDomicilio`/`comarcaDomicilio`
+diretamente desses 4 campos sem fallback, então o domicílio de parte fica nulo em `PoloProcessual`
+nesses 3 canais também.
+
+**Risco:** três correções de tamanho e natureza diferentes, não uma correção uniforme:
+- Marketplace exige mudança de contrato público (`MarketplaceProtocoloRequest` não expõe esses campos
+  hoje — afeta integradores externos já conectados).
+- Laiane precisa de investigação prévia: não confirmado se a informação de domicílio da parte ré existe
+  em algum lugar acessível no fluxo de draft.
+- MNI exige parsing de endereço por parte no XML (`resolvePartes()` hoje só extrai nome e documento) —
+  é extensão de parsing de formato externo, não ajuste pontual.
+
+**Quando revisitar:** ao decidir prioridade de cada um dos três separadamente — não tratar como um único
+item de trabalho.
