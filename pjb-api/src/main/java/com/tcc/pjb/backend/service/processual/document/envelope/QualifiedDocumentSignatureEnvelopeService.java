@@ -268,13 +268,25 @@ public class QualifiedDocumentSignatureEnvelopeService {
                 "ANTI_REPLAY_ATIVO"
         );
 
+        boolean certificadoPresente = identity.entryCertificate() != null && identity.entryCertificate().presente();
+        boolean cadeiaCustodiaElegivel = certificadoPresente
+                && identity.entryCertificate().issuerRfc2253() != null
+                && !identity.entryCertificate().issuerRfc2253().isBlank();
+        boolean assinaturaCompletaMaterializada = envelopeId != null && !envelopeId.isBlank()
+                && assinaturaHash != null && !assinaturaHash.isBlank()
+                && signedHash != null && !signedHash.isBlank()
+                && rubrica != null && !rubrica.isBlank();
+        boolean rubricaDataHoraLocalPresentes = rubrica != null && !rubrica.isBlank()
+                && localTime.toLocalDate() != null
+                && localTime.toLocalTime() != null;
+
         LinkedHashMap<String, Object> validacaoSoberana = new LinkedHashMap<>();
         validacaoSoberana.put("status", "VALIDO");
         validacaoSoberana.put("fonte", "PJB_QUALIFIED_SIGNATURE_SPINE");
         validacaoSoberana.put("politicaAssinatura", normalize(politicaAssinatura));
-        validacaoSoberana.put("cadeiaCustodiaElegivel", Boolean.TRUE);
-        validacaoSoberana.put("assinaturaCompletaMaterializada", Boolean.TRUE);
-        validacaoSoberana.put("rubricaDataHoraLocalPresentes", Boolean.TRUE);
+        validacaoSoberana.put("cadeiaCustodiaElegivel", cadeiaCustodiaElegivel);
+        validacaoSoberana.put("assinaturaCompletaMaterializada", assinaturaCompletaMaterializada);
+        validacaoSoberana.put("rubricaDataHoraLocalPresentes", rubricaDataHoraLocalPresentes);
         validacaoSoberana.put("classificacaoContextualCoerente", Boolean.TRUE);
         validacaoSoberana.put("certificadoEntradaVinculado", identity.entryCertificate() != null && identity.entryCertificate().presente());
         validacaoSoberana.put("papelAssinanteDetalhado", identity.papelDetalhado());
@@ -300,9 +312,9 @@ public class QualifiedDocumentSignatureEnvelopeService {
                 "VALIDO",
                 "PJB_QUALIFIED_SIGNATURE_SPINE",
                 normalize(politicaAssinatura),
-                true,
-                true,
-                true,
+                cadeiaCustodiaElegivel,
+                assinaturaCompletaMaterializada,
+                rubricaDataHoraLocalPresentes,
                 true,
                 identity.entryCertificate() != null && identity.entryCertificate().presente(),
                 identity.papelDetalhado(),

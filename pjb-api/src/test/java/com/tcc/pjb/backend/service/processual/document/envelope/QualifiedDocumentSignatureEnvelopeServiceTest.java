@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.processual.document.envelope;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -138,6 +139,38 @@ class QualifiedDocumentSignatureEnvelopeServiceTest {
         assertNotNull(signed.assinaturaQualificada().envelopeId());
         assertNotNull(signed.assinaturaQualificada().documentoAssinadoHash());
         assertNotNull(signed.validacaoSoberana().documentoAssinadoHash());
+    }
+
+    @Test
+    void signFreeContent_semCertificadoEntrada_cadeiaCustodiaElegivelFalse() {
+        InstitutionalSessionSecuritySignalService securitySignalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        when(securitySignalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of("govbr=OURO")
+        ));
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Promotor");
+        usuario.setCpf("12345678901");
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Ofício",
+                "Conteúdo oficial",
+                "MINISTERIO_PUBLICO",
+                "MINISTERIO_PUBLICO_QUALIFICADA_SOBERANA",
+                true,
+                List.of("LAIANE_MP")
+        );
+
+        assertFalse(signed.validacaoSoberana().cadeiaCustodiaElegivel());
     }
 
     @Test
