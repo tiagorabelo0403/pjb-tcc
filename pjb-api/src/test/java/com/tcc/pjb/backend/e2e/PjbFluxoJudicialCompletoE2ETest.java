@@ -246,7 +246,12 @@ class PjbFluxoJudicialCompletoE2ETest extends PjbIntegrationTestBase {
                 null,
                 null,
                 null,
-                null
+                null,
+                null,
+                null,
+                null,
+                null,
+                false
         ));
 
         LaianePeticaoInicialDraftService.ProtocolarResult protocolo = peticaoInicialDraftService.protocolar(

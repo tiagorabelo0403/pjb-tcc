@@ -34,27 +34,44 @@ ausência de comparação contra `segmentoInstitucional()`, como os outros 12 ch
 **Quando revisitar:** se o motor de afiliação institucional for mapeado por outro motivo, ou se a política
 de assinatura de TERMO_ACORDO precisar de auditoria mais rígida.
 
-## D-domicilio-parte-tres-canais-nao-populam
+## D-domicilio-parte-dois-canais-nao-populam
 
-**Status:** aberta
+**Status:** aberta (parcialmente fechada — Laiane resolvido)
 
-**Contexto:** `Processo.ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu` só são populados pelo canal REST
-(via `ProcessoMapper`). Marketplace (`ApiMarketplaceService`), MNI (`MniXmlToProcessoAdapter`) e Laiane
-(`LaianePeticaoInicialDraftService`) deixam os 4 campos nulos — cada um seta apenas `uf`/`comarca`
-(competência), não domicílio de parte. `PoloCompositionPolicy` deriva `ufDomicilio`/`comarcaDomicilio`
-diretamente desses 4 campos sem fallback, então o domicílio de parte fica nulo em `PoloProcessual`
-nesses 3 canais também.
+**Contexto:** `Processo.ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu` eram populados só pelo canal REST
+(via `ProcessoMapper`). **Laiane já foi corrigido**: `EstruturarRequest` captura os 4 campos +
+`enderecoReuDesconhecido`, a sessão (`LaianePeticaoInicialDraftSession`, migration V301) os carrega até
+`protocolar()`, que os aplica ao `Processo` (flag vence os valores quando o réu é desconhecido).
+Marketplace (`ApiMarketplaceService`) e MNI (`MniXmlToProcessoAdapter`) continuam deixando os 4 campos
+nulos — cada um seta apenas `uf`/`comarca` (competência), não domicílio de parte. `PoloCompositionPolicy`
+deriva `ufDomicilio`/`comarcaDomicilio` diretamente desses 4 campos sem fallback, então o domicílio de
+parte fica nulo em `PoloProcessual` nesses 2 canais restantes também.
 
-**Risco:** três correções de tamanho e natureza diferentes, não uma correção uniforme:
+**Risco:** duas correções de tamanho e natureza diferentes, não uma correção uniforme:
 - Marketplace exige mudança de contrato público (`MarketplaceProtocoloRequest` não expõe esses campos
   hoje — afeta integradores externos já conectados).
-- Laiane precisa de investigação prévia: não confirmado se a informação de domicílio da parte ré existe
-  em algum lugar acessível no fluxo de draft.
 - MNI exige parsing de endereço por parte no XML (`resolvePartes()` hoje só extrai nome e documento) —
   é extensão de parsing de formato externo, não ajuste pontual.
 
-**Quando revisitar:** ao decidir prioridade de cada um dos três separadamente — não tratar como um único
+**Quando revisitar:** ao decidir prioridade de cada um dos dois separadamente — não tratar como um único
 item de trabalho.
+
+## D-intake-workspace-endereco-nao-wireado
+
+**Status:** aberta
+
+**Contexto:** `PeticionamentoInitialIntakeWorkspaceService` tem `enderecoAutor`/`enderecoReu`
+estruturados (com `uf`/`cidade`) em `PeticionamentoSessaoRequest` — inclusive já lê
+`getEnderecoAutor().getUf()` para resolver `ufFato` — mas passa `null` para os 4 campos territoriais
+de parte do `EstruturarRequest`.
+
+**Risco:** baixo hoje. Wirear `cidade` → `comarca` seria aproximação (comarca é circunscrição
+judiciária; município não é comarca — município pequeno pertence à comarca sede vizinha). Decisão
+tomada: não aproximar. A resolução correta virá do catálogo de jurisdição territorial chaveado por
+código IBGE (iniciativa de competência territorial por rito, Fatia 6 — adapter ViaCEP).
+
+**Quando revisitar:** quando a Fatia 6 entregar CEP → código IBGE; aí o wiring vira exato, não
+aproximado.
 
 ## D-advisory-modos-nao-implementados
 

@@ -87,7 +87,12 @@ class DistribuicaoProcessoProtocoladoTest extends PjbIntegrationTestBase {
                 null,
                 null,
                 null,
-                null
+                null,
+                null,
+                null,
+                null,
+                null,
+                false
         ));
 
         LaianePeticaoInicialDraftService.ProtocolarResult result = peticaoInicialDraftService.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),

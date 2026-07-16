@@ -129,6 +129,11 @@ public class LaianePeticaoInicialDraftService {
         entity.setFundamentosJson(writeList(draft.view().fundamentosEstruturados()));
         entity.setProvasJson(writeList(draft.view().provasIndicadas()));
         entity.setChecklistJson(writeList(draft.view().checklistDocumental()));
+        entity.setUfAutor(request.ufAutor());
+        entity.setComarcaAutor(request.comarcaAutor());
+        entity.setUfReu(request.ufReu());
+        entity.setComarcaReu(request.comarcaReu());
+        entity.setEnderecoReuDesconhecido(request.enderecoReuDesconhecido());
         entity.setMinutaInicial(draft.view().minutaInicial());
         entity.setHashIntegridade(draft.view().hashIntegridade());
         entity.setStatus("RASCUNHO");
@@ -198,6 +203,12 @@ public class LaianePeticaoInicialDraftService {
         processo.setNumeroProcesso(processo.getNumeroUnificado());
         processo.setParteAutoraNome(partes.autoraNome());
         processo.setParteReuNome(partes.reuNome());
+        processo.setUfAutor(entity.getUfAutor());
+        processo.setComarcaAutor(entity.getComarcaAutor());
+        if (!entity.isEnderecoReuDesconhecido()) {
+            processo.setUfReu(entity.getUfReu());
+            processo.setComarcaReu(entity.getComarcaReu());
+        }
         processo.setConnectorSystem("LAIANE_PETICAO_INICIAL");
         processo.setConnectorProtocolReference("LAIANE-DRAFT:" + entity.getId());
         processo.setConnectorSubmissionStatus("PROTOCOLO_REALIZADO");
@@ -1109,7 +1120,12 @@ public class LaianePeticaoInicialDraftService {
             String ufFato,
             String cidadeProtocolo,
             String ufProtocolo,
-            String naturezaJuridica
+            String naturezaJuridica,
+            String ufAutor,
+            String comarcaAutor,
+            String ufReu,
+            String comarcaReu,
+            boolean enderecoReuDesconhecido
     ) {
         public EstruturarRequest {
             tituloCaso = trimToNull(tituloCaso);
@@ -1128,6 +1144,10 @@ public class LaianePeticaoInicialDraftService {
             cidadeProtocolo = trimToNull(cidadeProtocolo);
             ufProtocolo = trimToNull(ufProtocolo);
             naturezaJuridica = trimToNull(naturezaJuridica);
+            ufAutor = trimToNull(ufAutor);
+            comarcaAutor = trimToNull(comarcaAutor);
+            ufReu = trimToNull(ufReu);
+            comarcaReu = trimToNull(comarcaReu);
         }
     }
 

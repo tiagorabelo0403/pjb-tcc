@@ -88,7 +88,12 @@ public class PeticionamentoInitialIntakeWorkspaceService {
                 resolvedUfFato,
                 resolvedCidadeProtocolo,
                 resolvedUfProtocolo,
-                resolvedNatureza
+                resolvedNatureza,
+                null,
+                null,
+                null,
+                null,
+                false
         );
 
         ArrayList<String> automations = new ArrayList<>();

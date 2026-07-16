@@ -186,7 +186,12 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
                 null,
                 null,
                 null,
-                null
+                null,
+                null,
+                null,
+                null,
+                null,
+                false
         ));
 
         LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
@@ -231,6 +236,135 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
                 "Hash do conteudo: " + draft.hashIntegridade(),
                 "Status: PROTOCOLO_REALIZADO"
         );
+    }
+
+    @Test
+    void peticionamentoPersisteDomicilioDePartesQuandoInformado() {
+        Usuario advogado = salvarUsuario(TipoUsuario.ADVOGADO, "OAB/CE 12345");
+        when(currentUserService.getRequired()).thenReturn(advogado);
+        when(oabValidationClient.validate(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.same(advogado)))
+                .thenReturn(OabValidationResult.apto("test"));
+        LaianePeticaoInicialDraftService.DraftView draft = service.salvar(new LaianePeticaoInicialDraftService.EstruturarRequest(
+                null,
+                "Cobranca contratual com domicilio de partes",
+                "Maria Cliente",
+                "Empresa Re Ltda",
+                "CIVIL",
+                "COMUM_ORDINARIO",
+                "ACAO_DE_COBRANCA",
+                List.of("Contrato inadimplido"),
+                List.of("Obrigacao contratual vencida"),
+                List.of("Condenacao ao pagamento"),
+                List.of("Contrato assinado"),
+                BigDecimal.valueOf(9500),
+                false,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "CE",
+                "Fortaleza",
+                "SP",
+                "Sao Paulo",
+                false
+        ));
+
+        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
+
+        Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
+        assertThat(processo.getUfAutor()).isEqualTo("CE");
+        assertThat(processo.getComarcaAutor()).isEqualTo("Fortaleza");
+        assertThat(processo.getUfReu()).isEqualTo("SP");
+        assertThat(processo.getComarcaReu()).isEqualTo("Sao Paulo");
+    }
+
+    @Test
+    void peticionamentoIgnoraDomicilioDoReuQuandoMarcadoComoDesconhecido() {
+        Usuario advogado = salvarUsuario(TipoUsuario.ADVOGADO, "OAB/CE 12345");
+        when(currentUserService.getRequired()).thenReturn(advogado);
+        when(oabValidationClient.validate(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.same(advogado)))
+                .thenReturn(OabValidationResult.apto("test"));
+        LaianePeticaoInicialDraftService.DraftView draft = service.salvar(new LaianePeticaoInicialDraftService.EstruturarRequest(
+                null,
+                "Cobranca contratual com reu de endereco desconhecido",
+                "Maria Cliente",
+                "Empresa Re Ltda",
+                "CIVIL",
+                "COMUM_ORDINARIO",
+                "ACAO_DE_COBRANCA",
+                List.of("Contrato inadimplido"),
+                List.of("Obrigacao contratual vencida"),
+                List.of("Condenacao ao pagamento"),
+                List.of("Contrato assinado"),
+                BigDecimal.valueOf(9500),
+                false,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "CE",
+                "Fortaleza",
+                "SP",
+                "Sao Paulo",
+                true
+        ));
+
+        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
+
+        Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
+        assertThat(processo.getUfAutor()).isEqualTo("CE");
+        assertThat(processo.getComarcaAutor()).isEqualTo("Fortaleza");
+        assertThat(processo.getUfReu()).isNull();
+        assertThat(processo.getComarcaReu()).isNull();
+    }
+
+    @Test
+    void peticionamentoSemDomicilioDePartesContinuaFuncionandoComoAntes() {
+        Usuario advogado = salvarUsuario(TipoUsuario.ADVOGADO, "OAB/CE 12345");
+        when(currentUserService.getRequired()).thenReturn(advogado);
+        when(oabValidationClient.validate(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.same(advogado)))
+                .thenReturn(OabValidationResult.apto("test"));
+        LaianePeticaoInicialDraftService.DraftView draft = service.salvar(new LaianePeticaoInicialDraftService.EstruturarRequest(
+                null,
+                "Cobranca contratual sem domicilio de partes informado",
+                "Maria Cliente",
+                "Empresa Re Ltda",
+                "CIVIL",
+                "COMUM_ORDINARIO",
+                "ACAO_DE_COBRANCA",
+                List.of("Contrato inadimplido"),
+                List.of("Obrigacao contratual vencida"),
+                List.of("Condenacao ao pagamento"),
+                List.of("Contrato assinado"),
+                BigDecimal.valueOf(9500),
+                false,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false
+        ));
+
+        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
+
+        Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
+        assertThat(processo.getUfAutor()).isNull();
+        assertThat(processo.getComarcaAutor()).isNull();
+        assertThat(processo.getUfReu()).isNull();
+        assertThat(processo.getComarcaReu()).isNull();
     }
 
     private Usuario salvarUsuario(TipoUsuario tipo, String oab) {

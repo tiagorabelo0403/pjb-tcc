@@ -29,7 +29,12 @@ public final class LaianePeticaoInicialDraftRequestMapper {
                 null,
                 null,
                 null,
-                null
+                null,
+                null,
+                null,
+                null,
+                null,
+                false
         );
     }
 }
