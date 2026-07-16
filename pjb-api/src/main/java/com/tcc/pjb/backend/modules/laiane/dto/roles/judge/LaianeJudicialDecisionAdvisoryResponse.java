@@ -9,11 +9,11 @@ import java.util.Map;
 public record LaianeJudicialDecisionAdvisoryResponse(
         @Schema(description = "Código do template de decisão judicial aplicável",
                 example = "SENTENCA_PENAL_CONDENATORIA") JudicialDecisionTemplateCode templateCode,
-        @Schema(description = "Modo de consultoria (SUGESTIVO, RESTRITIVO, BLOQUEADOR)",
-                example = "SUGESTIVO",
-                allowableValues = {"SUGESTIVO", "RESTRITIVO", "BLOQUEADOR"}) String advisoryMode,
-        @Schema(description = "Indica se a revisão humana é obrigatória antes da publicação", example = "true") boolean reviewRequired,
-        @Schema(description = "Indica se a publicação está bloqueada por inconsistência", example = "false") boolean publicationLocked,
+        @Schema(description = "Modo de consultoria. Nesta versão, sempre \"ADVISORY_DRAFT_ONLY\" — a Laiane produz apenas minuta assistida sujeita a revisão humana integral, sem modos alternativos de consultoria implementados.",
+                example = "ADVISORY_DRAFT_ONLY",
+                allowableValues = {"ADVISORY_DRAFT_ONLY"}) String advisoryMode,
+        @Schema(description = "Sempre true, por política de segurança: toda consultoria de decisão judicial exige revisão humana antes da publicação, independente do template ou do caso", example = "true") boolean reviewRequired,
+        @Schema(description = "Sempre true, por política de segurança: a Laiane nunca publica decisão automaticamente — apenas gera minuta assistida sob revisão judicial integral", example = "true") boolean publicationLocked,
         @Size(max = 5000)
         @Schema(description = "Sumário do raciocínio jurídico da consultoria",
                 example = "Tipicidade confirmada; dosimetria sugere regime inicial semiaberto") String rationaleSummary,

@@ -55,3 +55,16 @@ nesses 3 canais também.
 
 **Quando revisitar:** ao decidir prioridade de cada um dos três separadamente — não tratar como um único
 item de trabalho.
+
+## D-advisory-modos-nao-implementados
+
+**Status:** aberta (não bloqueia nada — documentação corrigida para refletir o comportamento real)
+
+**Contexto:** `LaianeJudicialDecisionAdvisoryService` sempre bloqueia publicação e exige revisão humana
+(`publicationLocked`/`reviewRequired` sempre `true`, por política de segurança deliberada — não é bug) e
+sempre opera em modo único (`advisoryMode = "ADVISORY_DRAFT_ONLY"`). Os 3 modos originalmente
+documentados (`SUGESTIVO`/`RESTRITIVO`/`BLOQUEADOR`) nunca foram implementados.
+
+**Quando revisitar:** se o produto decidir que a Laiane deve diferenciar níveis de consultoria (ex.:
+permitir publicação sem revisão em casos de baixíssimo risco) — isso exigiria definir critério jurídico
+de classificação por template, trabalho substantivo, não uma correção pontual.
