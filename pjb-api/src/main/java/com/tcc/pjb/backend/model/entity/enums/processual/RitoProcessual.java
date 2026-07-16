@@ -269,6 +269,35 @@ public boolean isExecucaoFiscalEstrita() {
     return this == EXECUCAO_FISCAL || this == TRIBUTARIO_EMBARGOS_EXECUCAO_FISCAL;
 }
 
+public boolean isDireitoRealImovel() {
+    return this == CIVIL_USUCAPIAO
+            || this == CIVIL_POSSESSORIA
+            || this == CIVIL_INTERDITO_PROIBITORIO
+            || this == CIVIL_DIVISAO_DEMARCACAO
+            || this == CIVIL_NUNCIACAO_OBRA_NOVA
+            || this == AGRARIO_USUCAPIAO_RURAL
+            || this == AGRARIO_POSSE_TERRA;
+}
+
+public Optional<CriterioTerritorial> criterioTerritorial() {
+    if (isTrabalhista()) {
+        return Optional.of(CriterioTerritorial.LOCAL_PRESTACAO_SERVICO);
+    }
+    if (isPenal() || isMilitar()) {
+        return Optional.of(CriterioTerritorial.LOCAL_DO_FATO);
+    }
+    if (isDireitoRealImovel()) {
+        return Optional.of(CriterioTerritorial.SITUACAO_DA_COISA);
+    }
+    if (this == CIVIL_INVENTARIO_ARROLAMENTO) {
+        return Optional.of(CriterioTerritorial.DOMICILIO_AUTOR_HERANCA);
+    }
+    if (this == CIVIL_FAMILIA_ALIMENTOS) {
+        return Optional.of(CriterioTerritorial.DOMICILIO_ALIMENTANDO);
+    }
+    return Optional.empty();
+}
+
 public RitoGrupoPrincipal getGrupoPrincipal() {
     if (isExecucaoFiscalEstrita()) return RitoGrupoPrincipal.EXECUCAO_FISCAL;
     if (this == EXECUCAO_PENAL) return RitoGrupoPrincipal.EXECUCAO_PENAL;

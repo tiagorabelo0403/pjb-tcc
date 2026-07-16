@@ -85,3 +85,20 @@ documentados (`SUGESTIVO`/`RESTRITIVO`/`BLOQUEADOR`) nunca foram implementados.
 **Quando revisitar:** se o produto decidir que a Laiane deve diferenciar níveis de consultoria (ex.:
 permitir publicação sem revisão em casos de baixíssimo risco) — isso exigiria definir critério jurídico
 de classificação por template, trabalho substantivo, não uma correção pontual.
+
+## D-rito-retificacao-registro-nome-ambiguo
+
+**Status:** aberta
+
+**Contexto:** `RitoProcessual.CIVIL_RETIFICACAO_REGISTRO` não desambigua entre retificação de registro
+de imóvel (foro da situação da coisa, CPC art. 47) e retificação de registro civil de pessoa natural
+(nome, nascimento — critério territorial distinto). Isso impediu o mapeamento em
+`criterioTerritorial()`, que devolve `Optional.empty()` para este rito.
+
+**Risco:** o problema não é a lacuna de mapeamento — é o nome do enum carregar dois institutos
+jurídicos diferentes sob um rótulo só. Qualquer regra por rito (documentos exigidos, partes, foro)
+herda a mesma ambiguidade. Dividir em dois valores distintos é mudança de vocabulário canônico, com
+efeito cascata sobre catálogo e dados já gravados.
+
+**Quando revisitar:** ao mapear o critério territorial dos ritos civis residuais (CPC art. 46), ou se
+alguma regra por rito precisar tratar os dois institutos de forma diferente.
