@@ -77,13 +77,21 @@ class JurisdicaoTerritorialCatalogoConstraintIT extends PjbIntegrationTestBase {
     private void inserir(String municipioIbge, String municipioNome, String uf, String tipoJustica,
             String modoCompetencia, String unidadeCodigo, String tribunalCodigo, String fonteNormativa,
             String vigenciaInicio, String vigenciaFim) {
-        jdbcTemplate.update("""
+        Long jurisdicaoId = jdbcTemplate.queryForObject("""
                 INSERT INTO tb_jurisdicao_territorial
-                    (municipio_ibge, municipio_nome, uf, tipo_justica, modo_competencia, unidade_codigo,
+                    (municipio_ibge, municipio_nome, uf, tipo_justica, modo_competencia,
                      tribunal_codigo, fonte_normativa, vigencia_inicio, vigencia_fim)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, CAST(? AS DATE), CAST(? AS DATE))
+                VALUES (?, ?, ?, ?, ?, ?, ?, CAST(? AS DATE), CAST(? AS DATE))
+                RETURNING id
                 """,
-                municipioIbge, municipioNome, uf, tipoJustica, modoCompetencia, unidadeCodigo,
+                Long.class,
+                municipioIbge, municipioNome, uf, tipoJustica, modoCompetencia,
                 tribunalCodigo, fonteNormativa, vigenciaInicio, vigenciaFim);
+
+        jdbcTemplate.update("""
+                INSERT INTO tb_jurisdicao_territorial_unidade (jurisdicao_territorial_id, unidade_codigo)
+                VALUES (?, ?)
+                """,
+                jurisdicaoId, unidadeCodigo);
     }
 }

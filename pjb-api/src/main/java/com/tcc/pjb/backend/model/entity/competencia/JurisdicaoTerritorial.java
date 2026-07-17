@@ -5,13 +5,20 @@ import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
 import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 
 @PjbDataOwnership(module = PjbModuleId.COMPETENCIA_ROTEAMENTO, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
@@ -43,8 +50,10 @@ public class JurisdicaoTerritorial {
     @Column(name = "modo_competencia", length = 30, nullable = false)
     private String modoCompetencia;
 
-    @Column(name = "unidade_codigo", length = 80, nullable = false)
-    private String unidadeCodigo;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "tb_jurisdicao_territorial_unidade", joinColumns = @JoinColumn(name = "jurisdicao_territorial_id"))
+    @Column(name = "unidade_codigo", nullable = false, length = 80)
+    private Set<String> unidadesElegiveis = new LinkedHashSet<>();
 
     @Column(name = "tribunal_codigo", length = 20, nullable = false)
     private String tribunalCodigo;
@@ -62,14 +71,18 @@ public class JurisdicaoTerritorial {
     }
 
     public JurisdicaoTerritorial(String municipioIbge, String municipioNome, String uf, String tipoJustica,
-            String modoCompetencia, String unidadeCodigo, String tribunalCodigo, String fonteNormativa,
+            String modoCompetencia, Set<String> unidadesElegiveis, String tribunalCodigo, String fonteNormativa,
             LocalDate vigenciaInicio, LocalDate vigenciaFim) {
         this.municipioIbge = Objects.requireNonNull(municipioIbge, "municipioIbge");
         this.municipioNome = Objects.requireNonNull(municipioNome, "municipioNome");
         this.uf = Objects.requireNonNull(uf, "uf");
         this.tipoJustica = Objects.requireNonNull(tipoJustica, "tipoJustica");
         this.modoCompetencia = Objects.requireNonNull(modoCompetencia, "modoCompetencia");
-        this.unidadeCodigo = Objects.requireNonNull(unidadeCodigo, "unidadeCodigo");
+        Objects.requireNonNull(unidadesElegiveis, "unidadesElegiveis");
+        if (unidadesElegiveis.isEmpty()) {
+            throw new IllegalArgumentException("unidadesElegiveis não pode ser vazio");
+        }
+        this.unidadesElegiveis = new LinkedHashSet<>(unidadesElegiveis);
         this.tribunalCodigo = Objects.requireNonNull(tribunalCodigo, "tribunalCodigo");
         this.fonteNormativa = Objects.requireNonNull(fonteNormativa, "fonteNormativa");
         this.vigenciaInicio = Objects.requireNonNull(vigenciaInicio, "vigenciaInicio");
@@ -100,8 +113,8 @@ public class JurisdicaoTerritorial {
         return modoCompetencia;
     }
 
-    public String getUnidadeCodigo() {
-        return unidadeCodigo;
+    public Set<String> getUnidadesElegiveis() {
+        return Collections.unmodifiableSet(unidadesElegiveis);
     }
 
     public String getTribunalCodigo() {

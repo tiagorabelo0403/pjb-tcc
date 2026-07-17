@@ -8,6 +8,7 @@ import com.tcc.pjb.backend.model.entity.enums.processual.CriterioTerritorial;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.repository.JurisdicaoTerritorialRepository;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +39,7 @@ public class CompetenciaTerritorialResolver {
                         j.getMunicipioIbge(),
                         criterio,
                         ModoCompetencia.valueOf(j.getModoCompetencia()),
-                        j.getUnidadeCodigo(),
+                        List.copyOf(j.getUnidadesElegiveis()),
                         j.getTribunalCodigo(),
                         criterio.fundamentoLegal(),
                         j.getFonteNormativa(),

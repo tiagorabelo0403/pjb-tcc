@@ -5,6 +5,7 @@ import com.tcc.pjb.backend.model.entity.competencia.ModoCompetencia;
 import com.tcc.pjb.backend.model.entity.enums.processual.CriterioTerritorial;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import java.time.LocalDate;
+import java.util.List;
 
 public sealed interface ResolucaoTerritorial {
 
@@ -12,7 +13,7 @@ public sealed interface ResolucaoTerritorial {
             String municipioIbge,
             CriterioTerritorial criterio,
             ModoCompetencia modo,
-            String unidadeCodigo,
+            List<String> unidadesElegiveis,
             String tribunalCodigo,
             String fundamentoLegal,
             String fonteNormativa,
