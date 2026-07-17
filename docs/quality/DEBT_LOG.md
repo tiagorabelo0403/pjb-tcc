@@ -102,3 +102,19 @@ efeito cascata sobre catálogo e dados já gravados.
 
 **Quando revisitar:** ao mapear o critério territorial dos ritos civis residuais (CPC art. 46), ou se
 alguma regra por rito precisar tratar os dois institutos de forma diferente.
+
+## D-vigencia-trt7-e-futuras-regioes-presumida-nao-documentada
+
+**Status:** aberta
+
+**Contexto:** `vigencia_inicio` das 37 unidades do TRT7/CE (e, por padrão, das demais 23 regiões quando
+carregadas) usa uma data conservadora presumida (CF/88), não a data real de criação de cada vara — essa
+informação não está no documento-fonte usado (que só confirma jurisdição vigente na data de publicação).
+
+**Risco:** nenhum falso-negativo pra frente (o sistema não nega competência que existe), mas não há
+precisão sobre desde quando cada configuração específica de jurisdição vale — se uma vara foi criada em
+2015, casos de 2010 continuam resolvendo pra ela mesmo sem essa vara ter existido ainda.
+
+**Quando revisitar:** se algum caso de uso exigir precisão histórica real (ex.: litígio sobre qual vara
+era competente numa data específica no passado), buscar a resolução/lei de criação de cada vara
+individualmente.
