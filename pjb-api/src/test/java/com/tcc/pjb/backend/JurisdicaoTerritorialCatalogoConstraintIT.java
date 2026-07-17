@@ -16,61 +16,61 @@ class JurisdicaoTerritorialCatalogoConstraintIT extends PjbIntegrationTestBase {
 
     @BeforeEach
     void limparCatalogo() {
-        jdbcTemplate.update("DELETE FROM tb_jurisdicao_territorial");
+        jdbcTemplate.update("DELETE FROM tb_jurisdicao_territorial WHERE municipio_ibge = ?", "0000001");
     }
 
     @Test
     void exclusaoRejeitaSobreposicaoRealDeJurisdicao() {
-        inserir("2307304", "Morada Nova", "CE", "TRABALHO", "ORIGINARIA", "VT-LIMOEIRO-0023", "TRT7",
+        inserir("0000001", "Municipio Teste", "CE", "TRABALHO", "ORIGINARIA", "TRT7-0023", "TESTE",
                 "TRT7, jurisdicao de unidades", "2010-01-01", null);
 
-        assertThatThrownBy(() -> inserir("2307304", "Morada Nova", "CE", "TRABALHO", "ORIGINARIA",
-                "VT-OUTRA-0099", "TRT7", "TRT7, jurisdicao de unidades", "2015-01-01", null))
+        assertThatThrownBy(() -> inserir("0000001", "Municipio Teste", "CE", "TRABALHO", "ORIGINARIA",
+                "TRT7-0099", "TESTE", "TRT7, jurisdicao de unidades", "2015-01-01", null))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void exclusaoAceitaContinuidadeLegitimaNaFronteiraDeVigencia() {
-        inserir("2307304", "Morada Nova", "CE", "TRABALHO", "ORIGINARIA", "VT-LIMOEIRO-0023", "TRT7",
+        inserir("0000001", "Municipio Teste", "CE", "TRABALHO", "ORIGINARIA", "TRT7-0023", "TESTE",
                 "TRT7, jurisdicao de unidades", "2010-01-01", "2020-06-30");
 
-        assertThatCode(() -> inserir("2307304", "Morada Nova", "CE", "TRABALHO", "ORIGINARIA",
-                "VT-LIMOEIRO-0024", "TRT7", "TRT7, jurisdicao de unidades", "2020-06-30", null))
+        assertThatCode(() -> inserir("0000001", "Municipio Teste", "CE", "TRABALHO", "ORIGINARIA",
+                "TRT7-0024", "TESTE", "TRT7, jurisdicao de unidades", "2020-06-30", null))
                 .doesNotThrowAnyException();
     }
 
     @Test
     void checkIbgeRejeitaFormatoInvalido() {
         assertThatThrownBy(() -> inserir("123", "Morada Nova", "CE", "TRABALHO", "ORIGINARIA",
-                "VT-LIMOEIRO-0023", "TRT7", "TRT7, jurisdicao de unidades", "2010-01-01", null))
+                "TRT7-0023", "TESTE", "TRT7, jurisdicao de unidades", "2010-01-01", null))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void checkUfRejeitaFormatoInvalido() {
-        assertThatThrownBy(() -> inserir("2307304", "Morada Nova", "ce", "TRABALHO", "ORIGINARIA",
-                "VT-LIMOEIRO-0023", "TRT7", "TRT7, jurisdicao de unidades", "2010-01-01", null))
+        assertThatThrownBy(() -> inserir("0000001", "Municipio Teste", "ce", "TRABALHO", "ORIGINARIA",
+                "TRT7-0023", "TESTE", "TRT7, jurisdicao de unidades", "2010-01-01", null))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void checkTipoJusticaRejeitaValorForaDaLista() {
-        assertThatThrownBy(() -> inserir("2307304", "Morada Nova", "CE", "INEXISTENTE", "ORIGINARIA",
-                "VT-LIMOEIRO-0023", "TRT7", "TRT7, jurisdicao de unidades", "2010-01-01", null))
+        assertThatThrownBy(() -> inserir("0000001", "Municipio Teste", "CE", "INEXISTENTE", "ORIGINARIA",
+                "TRT7-0023", "TESTE", "TRT7, jurisdicao de unidades", "2010-01-01", null))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void checkModoCompetenciaRejeitaValorForaDaLista() {
-        assertThatThrownBy(() -> inserir("2307304", "Morada Nova", "CE", "TRABALHO", "INEXISTENTE",
-                "VT-LIMOEIRO-0023", "TRT7", "TRT7, jurisdicao de unidades", "2010-01-01", null))
+        assertThatThrownBy(() -> inserir("0000001", "Municipio Teste", "CE", "TRABALHO", "INEXISTENTE",
+                "TRT7-0023", "TESTE", "TRT7, jurisdicao de unidades", "2010-01-01", null))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void checkVigenciaRejeitaFimAnteriorOuIgualAoInicio() {
-        assertThatThrownBy(() -> inserir("2307304", "Morada Nova", "CE", "TRABALHO", "ORIGINARIA",
-                "VT-LIMOEIRO-0023", "TRT7", "TRT7, jurisdicao de unidades", "2010-01-01", "2010-01-01"))
+        assertThatThrownBy(() -> inserir("0000001", "Municipio Teste", "CE", "TRABALHO", "ORIGINARIA",
+                "TRT7-0023", "TESTE", "TRT7, jurisdicao de unidades", "2010-01-01", "2010-01-01"))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 

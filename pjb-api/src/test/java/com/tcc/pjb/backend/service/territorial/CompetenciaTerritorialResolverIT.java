@@ -16,8 +16,13 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 class CompetenciaTerritorialResolverIT extends PjbIntegrationTestBase {
+
+    private static final String IBGE_TESTE_UNIDADE_UNICA = "0000001";
+    private static final String IBGE_TESTE_UNIDADES_CONCORRENTES = "0000002";
+    private static final String IBGE_TESTE_FORA_DO_CATALOGO = "0000003";
 
     @Autowired
     private CompetenciaTerritorialResolver resolver;
@@ -25,51 +30,58 @@ class CompetenciaTerritorialResolverIT extends PjbIntegrationTestBase {
     @Autowired
     private JurisdicaoTerritorialRepository repository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @BeforeEach
     void limparCatalogo() {
-        repository.deleteAll();
+        jdbcTemplate.update("DELETE FROM tb_jurisdicao_territorial WHERE municipio_ibge IN (?, ?, ?)",
+                IBGE_TESTE_UNIDADE_UNICA, IBGE_TESTE_UNIDADES_CONCORRENTES, IBGE_TESTE_FORA_DO_CATALOGO);
     }
 
     @Test
     void ritoTrabalhistaComMunicipioNoCatalogoResolveParaUnidadeCorreta() {
-        repository.save(new JurisdicaoTerritorial("2307304", "Morada Nova", "CE", "TRABALHO", "ORIGINARIA",
-                Set.of("VT-LIMOEIRO-0023"), "TRT7", "TRT7, jurisdicao de unidades", LocalDate.of(2010, 1, 1), null));
+        repository.save(new JurisdicaoTerritorial(IBGE_TESTE_UNIDADE_UNICA, "Municipio Teste Unidade Unica", "CE",
+                "TRABALHO", "ORIGINARIA", Set.of("TRT7-0023"), "TESTE", "TRT7, jurisdicao de unidades",
+                LocalDate.of(2010, 1, 1), null));
 
         EnderecosProcessuaisRequest enderecos = new EnderecosProcessuaisRequest(
-                null, null, new AncoraTerritorial("2307304", "Morada Nova", "CE"), null, false);
+                null, null, new AncoraTerritorial(IBGE_TESTE_UNIDADE_UNICA, "Municipio Teste Unidade Unica", "CE"),
+                null, false);
 
         ResolucaoTerritorial resolucao = resolver.resolver(RitoProcessual.TRABALHISTA_ORDINARIO,
                 TipoJustica.TRABALHO, enderecos, LocalDate.of(2026, 1, 1));
 
         assertThat(resolucao).isInstanceOfSatisfying(ResolucaoTerritorial.Resolvida.class, resolvida -> {
             assertThat(resolvida.criterio()).isEqualTo(CriterioTerritorial.LOCAL_PRESTACAO_SERVICO);
-            assertThat(resolvida.unidadesElegiveis()).containsExactly("VT-LIMOEIRO-0023");
+            assertThat(resolvida.unidadesElegiveis()).containsExactly("TRT7-0023");
             assertThat(resolvida.modo()).isEqualTo(ModoCompetencia.ORIGINARIA);
-            assertThat(resolvida.tribunalCodigo()).isEqualTo("TRT7");
+            assertThat(resolvida.tribunalCodigo()).isEqualTo("TESTE");
         });
     }
 
     @Test
     void municipioComMultiplasUnidadesConcorrentesResolveTodasSemViolarExclusao() {
-        Set<String> varasDoTrabalhoFortaleza = Set.of(
-                "VT-FORTALEZA-0001", "VT-FORTALEZA-0002", "VT-FORTALEZA-0003", "VT-FORTALEZA-0004",
-                "VT-FORTALEZA-0005", "VT-FORTALEZA-0006", "VT-FORTALEZA-0007", "VT-FORTALEZA-0008",
-                "VT-FORTALEZA-0009", "VT-FORTALEZA-0010", "VT-FORTALEZA-0011", "VT-FORTALEZA-0012",
-                "VT-FORTALEZA-0013", "VT-FORTALEZA-0014", "VT-FORTALEZA-0015", "VT-FORTALEZA-0016",
-                "VT-FORTALEZA-0017", "VT-FORTALEZA-0018");
-        repository.save(new JurisdicaoTerritorial("2304400", "Fortaleza", "CE", "TRABALHO", "ORIGINARIA",
-                varasDoTrabalhoFortaleza, "TRT7", "TST, mapa de jurisdicao das Varas do Trabalho do Ceara",
-                LocalDate.of(2010, 1, 1), null));
+        Set<String> unidadesConcorrentes = Set.of(
+                "TESTE-CONC-0001", "TESTE-CONC-0002", "TESTE-CONC-0003", "TESTE-CONC-0004",
+                "TESTE-CONC-0005", "TESTE-CONC-0006", "TESTE-CONC-0007", "TESTE-CONC-0008",
+                "TESTE-CONC-0009", "TESTE-CONC-0010", "TESTE-CONC-0011", "TESTE-CONC-0012",
+                "TESTE-CONC-0013", "TESTE-CONC-0014", "TESTE-CONC-0015", "TESTE-CONC-0016",
+                "TESTE-CONC-0017", "TESTE-CONC-0018");
+        repository.save(new JurisdicaoTerritorial(IBGE_TESTE_UNIDADES_CONCORRENTES, "Municipio Teste Concorrente",
+                "CE", "TRABALHO", "ORIGINARIA", unidadesConcorrentes, "TESTE",
+                "Fixture sintetica, prova de suporte a unidades concorrentes no schema", LocalDate.of(2010, 1, 1), null));
 
         EnderecosProcessuaisRequest enderecos = new EnderecosProcessuaisRequest(
-                null, null, new AncoraTerritorial("2304400", "Fortaleza", "CE"), null, false);
+                null, null, new AncoraTerritorial(IBGE_TESTE_UNIDADES_CONCORRENTES, "Municipio Teste Concorrente", "CE"),
+                null, false);
 
         ResolucaoTerritorial resolucao = resolver.resolver(RitoProcessual.TRABALHISTA_ORDINARIO,
                 TipoJustica.TRABALHO, enderecos, LocalDate.of(2026, 1, 1));
 
         assertThat(resolucao).isInstanceOfSatisfying(ResolucaoTerritorial.Resolvida.class,
                 resolvida -> assertThat(resolvida.unidadesElegiveis())
-                        .containsExactlyInAnyOrderElementsOf(varasDoTrabalhoFortaleza));
+                        .containsExactlyInAnyOrderElementsOf(unidadesConcorrentes));
     }
 
     @Test
@@ -86,13 +98,14 @@ class CompetenciaTerritorialResolverIT extends PjbIntegrationTestBase {
     @Test
     void ritoTrabalhistaComMunicipioValidoForaDoCatalogoRetornaMunicipioForaDoCatalogo() {
         EnderecosProcessuaisRequest enderecos = new EnderecosProcessuaisRequest(
-                null, null, new AncoraTerritorial("2304400", "Fortaleza", "CE"), null, false);
+                null, null, new AncoraTerritorial(IBGE_TESTE_FORA_DO_CATALOGO, "Municipio Teste Fora Do Catalogo", "CE"),
+                null, false);
 
         ResolucaoTerritorial resolucao = resolver.resolver(RitoProcessual.TRABALHISTA_ORDINARIO,
                 TipoJustica.TRABALHO, enderecos, LocalDate.of(2026, 1, 1));
 
         assertThat(resolucao).isInstanceOfSatisfying(ResolucaoTerritorial.MunicipioForaDoCatalogo.class, foraDoCatalogo -> {
-            assertThat(foraDoCatalogo.municipioIbge()).isEqualTo("2304400");
+            assertThat(foraDoCatalogo.municipioIbge()).isEqualTo(IBGE_TESTE_FORA_DO_CATALOGO);
             assertThat(foraDoCatalogo.tipoJustica()).isEqualTo(TipoJustica.TRABALHO);
         });
     }
