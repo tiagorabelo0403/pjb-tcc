@@ -10,6 +10,8 @@ import com.tcc.pjb.backend.PjbIntegrationTestBase;
 import com.tcc.pjb.backend.domain.valueobject.NumeroProcesso;
 import com.tcc.pjb.backend.integration.oab.OabValidationClient;
 import com.tcc.pjb.backend.integration.oab.OabValidationResult;
+import com.tcc.pjb.backend.model.dto.processual.AncoraTerritorial;
+import com.tcc.pjb.backend.model.dto.processual.EnderecosProcessuaisRequest;
 import com.tcc.pjb.backend.model.dto.publico.PublicProcessoConsultaResponse;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -187,11 +189,7 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
-                false
+                EnderecosProcessuaisRequest.vazio()
         ));
 
         LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
@@ -264,11 +262,12 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
                 null,
                 null,
                 null,
-                "CE",
-                "Fortaleza",
-                "SP",
-                "Sao Paulo",
-                false
+                new EnderecosProcessuaisRequest(
+                        new AncoraTerritorial(null, "Fortaleza", "CE"),
+                        new AncoraTerritorial(null, "Sao Paulo", "SP"),
+                        null,
+                        null,
+                        false)
         ));
 
         LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
@@ -307,11 +306,12 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
                 null,
                 null,
                 null,
-                "CE",
-                "Fortaleza",
-                "SP",
-                "Sao Paulo",
-                true
+                new EnderecosProcessuaisRequest(
+                        new AncoraTerritorial(null, "Fortaleza", "CE"),
+                        new AncoraTerritorial(null, "Sao Paulo", "SP"),
+                        null,
+                        null,
+                        true)
         ));
 
         LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
@@ -350,11 +350,7 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
-                false
+                EnderecosProcessuaisRequest.vazio()
         ));
 
         LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),

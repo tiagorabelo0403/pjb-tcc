@@ -9,6 +9,7 @@ import com.tcc.pjb.backend.PjbIntegrationTestBase;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.integration.oab.OabValidationClient;
 import com.tcc.pjb.backend.integration.oab.OabValidationResult;
+import com.tcc.pjb.backend.model.dto.processual.EnderecosProcessuaisRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.competencia.ProcessoDistribuicaoCompetencia;
@@ -88,11 +89,7 @@ class DistribuicaoProcessoProtocoladoTest extends PjbIntegrationTestBase {
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
-                false
+                EnderecosProcessuaisRequest.vazio()
         ));
 
         LaianePeticaoInicialDraftService.ProtocolarResult result = peticaoInicialDraftService.protocolar(draft.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),

@@ -28,6 +28,7 @@ import com.tcc.pjb.backend.integration.mni.domain.MniStatusRemessa;
 import com.tcc.pjb.backend.integration.oab.OabValidationClient;
 import com.tcc.pjb.backend.integration.oab.OabValidationResult;
 import com.tcc.pjb.backend.model.dto.intelligence.recursal.mesh.RecursalMeshPlanRequest;
+import com.tcc.pjb.backend.model.dto.processual.EnderecosProcessuaisRequest;
 import com.tcc.pjb.backend.model.dto.processual.recursal.formalizacao.RecursalFormalizacaoCommand;
 import com.tcc.pjb.backend.model.dto.processual.recursal.formalizacao.RecursalFormalizacaoResult;
 import com.tcc.pjb.backend.model.dto.publico.PublicProcessoConsultaResponse;
@@ -247,11 +248,7 @@ class PjbFluxoJudicialCompletoE2ETest extends PjbIntegrationTestBase {
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
-                false
+                EnderecosProcessuaisRequest.vazio()
         ));
 
         LaianePeticaoInicialDraftService.ProtocolarResult protocolo = peticaoInicialDraftService.protocolar(

@@ -21,6 +21,8 @@ import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.MateriaJurisdicao;
 import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
+import com.tcc.pjb.backend.model.dto.processual.AncoraTerritorial;
+import com.tcc.pjb.backend.model.dto.processual.EnderecosProcessuaisRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
@@ -129,11 +131,13 @@ public class LaianePeticaoInicialDraftService {
         entity.setFundamentosJson(writeList(draft.view().fundamentosEstruturados()));
         entity.setProvasJson(writeList(draft.view().provasIndicadas()));
         entity.setChecklistJson(writeList(draft.view().checklistDocumental()));
-        entity.setUfAutor(request.ufAutor());
-        entity.setComarcaAutor(request.comarcaAutor());
-        entity.setUfReu(request.ufReu());
-        entity.setComarcaReu(request.comarcaReu());
-        entity.setEnderecoReuDesconhecido(request.enderecoReuDesconhecido());
+        AncoraTerritorial domicilioAutor = request.enderecos().domicilioAutor();
+        AncoraTerritorial domicilioReu = request.enderecos().domicilioReu();
+        entity.setUfAutor(domicilioAutor == null ? null : domicilioAutor.uf());
+        entity.setComarcaAutor(domicilioAutor == null ? null : domicilioAutor.municipio());
+        entity.setUfReu(domicilioReu == null ? null : domicilioReu.uf());
+        entity.setComarcaReu(domicilioReu == null ? null : domicilioReu.municipio());
+        entity.setEnderecoReuDesconhecido(request.enderecos().domicilioReuDesconhecido());
         entity.setMinutaInicial(draft.view().minutaInicial());
         entity.setHashIntegridade(draft.view().hashIntegridade());
         entity.setStatus("RASCUNHO");
@@ -1121,11 +1125,7 @@ public class LaianePeticaoInicialDraftService {
             String cidadeProtocolo,
             String ufProtocolo,
             String naturezaJuridica,
-            String ufAutor,
-            String comarcaAutor,
-            String ufReu,
-            String comarcaReu,
-            boolean enderecoReuDesconhecido
+            EnderecosProcessuaisRequest enderecos
     ) {
         public EstruturarRequest {
             tituloCaso = trimToNull(tituloCaso);
@@ -1144,10 +1144,7 @@ public class LaianePeticaoInicialDraftService {
             cidadeProtocolo = trimToNull(cidadeProtocolo);
             ufProtocolo = trimToNull(ufProtocolo);
             naturezaJuridica = trimToNull(naturezaJuridica);
-            ufAutor = trimToNull(ufAutor);
-            comarcaAutor = trimToNull(comarcaAutor);
-            ufReu = trimToNull(ufReu);
-            comarcaReu = trimToNull(comarcaReu);
+            enderecos = enderecos == null ? EnderecosProcessuaisRequest.vazio() : enderecos;
         }
     }
 
