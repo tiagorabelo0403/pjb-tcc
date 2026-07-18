@@ -217,3 +217,35 @@ padrão `TRT{N}-{código}`).
 caso de uso exigir cobertura desses 38 municípios — nesse caso, decidir entre buscar o código em fonte
 primária adicional (site do TRT21) ou adotar convenção própria de identificador não oficial, com anotação
 explícita distinguindo-o de um "Código atribuído pelo TRT" real (decisão de produto, não técnica).
+
+## D-drain-coordinator-fork-exit-sem-guarda-regressao
+
+**Status:** aberta (fix aplicado e validado 2x; falta blindagem contra regressão)
+
+**Contexto:** `PjbRuntimeDrainCoordinator` (`SmartLifecycle`, fase `Integer.MAX_VALUE`) dorme
+`pjb.runtime.lifecycle.drain-quiet-period` (default de produção: 20s) a cada fechamento de contexto
+Spring, inclusive em JVMs de teste. Numa rodada completa de `verify`/`test` (fork único reutilizado,
+`reuseForks=true`), esse sleep somado à pressão de GC acumulada estourava o watchdog de 30s do próprio
+Surefire (`forkedProcessExitTimeoutInSeconds`), matando a JVM forkada à força no encerramento — confirmado
+por thread dump (`main` preso em `ApplicationShutdownHooks.runHooks()` → `SpringApplicationShutdownHook`
+→ `DefaultLifecycleProcessor$LifecycleGroup.stop()` → `CountDownLatch.await()`, com a thread
+`pjb-drain-coordinator` ainda em `Thread.sleep()`). Corrigido via
+`-Dpjb.runtime.lifecycle.drain-quiet-period=10ms` no `argLine` de Surefire e Failsafe (`pom.xml`).
+
+**Risco:** o fix depende de duas linhas de `argLine` no `pom.xml` permanecerem intactas — sem elas, o
+sintoma volta. É silencioso em rodadas curtas ou isoladas (uma classe sozinha nunca acumula GC suficiente
+pra estourar os 30s) e só se manifesta em `verify`/`test` completo sob carga.
+
+`PjbRuntimeDrainService.sanitizeDuration()` trata `Duration.ZERO` como valor inválido e substitui
+silenciosamente pelo fallback de produção (20s/30s) — `-Dpjb.runtime.lifecycle.drain-quiet-period=0s`
+não gera erro nem log, simplesmente não tem efeito algum; só um valor pequeno e não-zero (ex.: `10ms`)
+neutraliza a espera de fato.
+
+**Cobertura de teste:** nenhuma. Não existe teste que falhe se a flag for removida do `pom.xml`, nem
+teste que exercite `sanitizeDuration()` com `Duration.ZERO` pra documentar o comportamento de fallback
+silencioso.
+
+**Quando revisitar:** ao mexer no `<argLine>` do Surefire/Failsafe por qualquer outro motivo — conferir
+que a flag continua presente. Candidato a guard Python dedicado (verifica que o argLine de teste sempre
+inclui esse override), já que a ausência da flag só se manifesta em rodada completa, nunca em execução
+isolada de uma classe.
