@@ -3,7 +3,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
 ![Testes unitários](https://img.shields.io/badge/Testes%20unit%C3%A1rios-4.134%20%7C%200%20falhas-brightgreen)
-![Testes de integração](https://img.shields.io/badge/Testes%20IT-206%20%7C%200%20falhas%20conhecidas-brightgreen)
+![Testes de integração](https://img.shields.io/badge/Testes%20IT-230%20%7C%200%20falhas%20conhecidas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -138,7 +138,7 @@ Abra o `.env` e preencha as variáveis obrigatórias:
 docker compose up -d
 ```
 
-Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (V0–V298) são aplicadas automaticamente na primeira conexão do backend.
+Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V306) são aplicadas automaticamente na primeira conexão do backend.
 
 ### 4. Verificar os profiles Spring
 
@@ -233,7 +233,7 @@ docker compose down
 O projeto tem dois níveis de teste com características bem diferentes:
 
 - **Testes unitários (Surefire):** 4.134 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 206 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes de integração (Failsafe):** 230 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -249,7 +249,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.134 unitários (Surefire) e depois os 206 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.134 unitários (Surefire) e depois os 230 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -269,12 +269,12 @@ Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~15 min** |
-| Total de testes de integração | Failsafe | **206** ¹ |
+| Total de testes de integração | Failsafe | **230** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
 
-A suíte de integração passou por um processo de estabilização completo: 49 falhas no início, 14 depois da eliminação dos clusters CG-1 (22E — variável de ambiente errada), CG-2-Postgres (5E — contaminação entre testes por dados não limpos), CG-3 (3E — IDs hardcoded sem seed) e CG-7 (1E), 10 depois do fechamento de `ConsultaPublicaSearchFlowIT` e das 3 `ProcessoCommandControllerIT` (dívida D-d25-testes-anexo), e **0** depois de fechar `D-routing-preprotocolo` e as 9 falhas pré-existentes restantes. Duas dessas correções tocaram bugs de produção, não só de teste: `AuditLedgerService` gravava eventos de auditoria só em memória, sem persistir no repositório que os endpoints de auditoria consultam; e a resolução do proceeding raiz em `CaseContinuityOrchestratorService` usava um campo que muda de estado durante o ciclo de vida do processo, causando ambiguidade entre o proceeding raiz e seus branches (ex.: cumprimento de sentença) após arquivamento. Os 10 testes do motor de composição de polos por rito são todos verdes e não compõem o histórico de falhas.
+A suíte de integração passou por um processo de estabilização completo: 49 falhas no início, 14 depois da eliminação dos clusters CG-1 (22E — variável de ambiente errada), CG-2-Postgres (5E — contaminação entre testes por dados não limpos), CG-3 (3E — IDs hardcoded sem seed) e CG-7 (1E), 10 depois do fechamento de `ConsultaPublicaSearchFlowIT` e das 3 `ProcessoCommandControllerIT` (dívida D-d25-testes-anexo), e **0** depois de fechar `D-routing-preprotocolo` e as 9 falhas pré-existentes restantes. Duas dessas correções tocaram bugs de produção, não só de teste: `AuditLedgerService` gravava eventos de auditoria só em memória, sem persistir no repositório que os endpoints de auditoria consultam; e a resolução do proceeding raiz em `CaseContinuityOrchestratorService` usava um campo que muda de estado durante o ciclo de vida do processo, causando ambiguidade entre o proceeding raiz e seus branches (ex.: cumprimento de sentença) após arquivamento. Os 10 testes do motor de composição de polos por rito são todos verdes e não compõem o histórico de falhas. A fatia de competência territorial somou mais 24 testes depois da zeragem, verdes desde a criação — 9 de `Trt7CearaJurisdicaoCargaIT` (TRT7/CE), 7 de `Trt3MgJurisdicaoCargaIT` (TRT3/MG) e 8 de `Trt21RnJurisdicaoCargaIT` (TRT21/RN) — também fora do histórico de falhas.
 
 As 206 confirmadas em 5 lotes via `-Dtest=` explícito (goal `test`/Surefire, não `verify`/Failsafe) — mesmo `argLine` e mesmo timeout default de 10min entre os dois plugins, mas identidade de goal diferente da que o CI usa no portão oficial.
 
@@ -439,7 +439,7 @@ pjb/
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Banco | PostgreSQL 17 com Row Level Security por operação |
 | Banco de testes | H2 em memória + Testcontainers |
-| Migrations | Flyway — V0–V298, com particionamento mensal em tabelas de evento |
+| Migrations | Flyway — numeração até V306, com particionamento mensal em tabelas de evento |
 | Persistência | JPA / Hibernate com `ddl-auto: validate` em produção |
 | Mensageria | Apache Kafka 3.8 — eventos judiciais e outbox |
 | Cache | Redis 7.4 |
@@ -467,6 +467,23 @@ Inclui gestão de afiliações, credenciais institucionais, atestação de fonte
 
 Distribui processos por natureza, competência, rito e comarca. Suporta vara única, comarca do interior, JEC itinerante e qualquer configuração de tribunal. O engine explainável documenta cada critério avaliado na decisão de distribuição — nenhuma distribuição é uma caixa-preta.
 
+O critério de competência territorial é propriedade do rito (`CriterioTerritorial` mapeia CPC art. 47/48/53-II, CLT art. 651 e CPP art. 70) — rito sem critério verificado devolve ausência explícita, nunca presume o domicílio do réu por padrão. O catálogo `tb_jurisdicao_territorial` resolve o município (por código IBGE) na(s) unidade(s) competente(s) via `CompetenciaTerritorialResolver`, com exclusão de sobreposição temporal garantida pelo próprio schema (constraint `EXCLUDE` do PostgreSQL, não validação de aplicação) e suporte nativo a município com competência concorrente entre varas — Belo Horizonte tem 48 varas trabalhistas concorrentes numa única linha de catálogo, Fortaleza 18, Natal 13.
+
+Três regiões da Justiça do Trabalho foram carregadas com dado real, extraído de PDF oficial do TST e cruzado contra a API de localidades do IBGE — não como cobertura nacional, como demonstração de que o motor funciona de ponta a ponta sem redesenho de schema entre regiões:
+
+| Região | Municípios | Unidades (varas) | Pares município-vara | Fonte |
+|--------|-----------|-------------------|----------------------|-------|
+| TRT7 — Ceará | 184 | 37 | 288 | `End07.pdf` |
+| TRT3 — Minas Gerais | 847 | 155 | 1.498 | `End03.pdf` |
+| TRT21 — Rio Grande do Norte | 129 | 20 | 411 | `End21.pdf` |
+| **Total** | **1.160** | **212** | **2.197** | — |
+
+Cada carga cruzou o nome do município do PDF contra a lista oficial do IBGE por código de 7 dígitos e UF — nunca por nome isolado. Homônimos entre estados existem de verdade e foram provados, não hipotetizados: São Gonçalo do Amarante (RN e CE) e Ouro Branco (RN e MG) resolvem para tribunais diferentes a partir do mesmo nome em testes dedicados — é o código IBGE que garante a resolução correta, não o texto do nome. Divergências de grafia entre o PDF e o cadastro oficial (acento, hífen, "de/do/dos" trocado, e um caso de nome popular que o IBGE nunca formalizou — Boa Saúde, cadastrada desde 1953 como Januário Cicco) foram resolvidas por correspondência única confirmada contra a lista completa de cada estado, nunca por aproximação; nome que não bateu ficou de fora e está documentado.
+
+`vigencia_inicio` usa uma data presumida (promulgação da CF/88) por continuidade nas três regiões — decisão mantida mesmo quando o documento-fonte trazia data de instalação real por vara (caso do TRT3/MG, com varas de Belo Horizonte instaladas entre 1941 e 2013), porque o schema atual só suporta um `vigencia_inicio` por linha de município, não por vara individual (`D-vigencia-trt7-e-futuras-regioes-presumida-nao-documentada`, `docs/quality/DEBT_LOG.md`). Duas inconsistências recorrentes na fonte primária do TST ficaram registradas como dívida em vez de contornadas silenciosamente: código de vara duplicado entre unidades fisicamente distintas (3 pares no MG, 3 pares no RN, por causas diferentes em cada região — `D-trt3-codigo-unidade-duplicado-fonte`) e municípios sem nenhuma vara documentada (6 no MG por provável competência delegada ao juiz de direito da comarca, 38 no RN cobertos por um Posto Avançado sem código formal atribuído — `D-trt3-municipios-sem-vara-competencia-delegada`, `D-trt21-posto-avancado-sem-codigo`).
+
+Cada uma das três cargas é travada por teste de regressão permanente contra o documento-fonte — a distribuição de varas por município é reparseada de forma independente do script que gerou a migration antes de virar `assert`, para que uma alteração futura na migration ou uma migration de outra região que corrompa dado por acidente de nome de tabela seja detectada, não silenciosamente aceita.
+
 ### 3 — Motor de celeridade constitucional
 
 Monitora prazos constitucionais por rito, calcula gargalos sistêmicos e sugere aceleradores por área do direito. Não pressiona magistrados individualmente — identifica onde o sistema está lento e por quê, com dados agregados e anônimos.
@@ -487,13 +504,15 @@ Marcadores semânticos de processo para priorização automática por urgência,
 
 Cada documento tem origem, estado operacional, hash de integridade e cadeia de confiança verificável. O dossiê documental consolida todos os artefatos de um processo com rastreabilidade completa desde a criação até o arquivamento.
 
+O envelope de assinatura qualificada (`QualifiedDocumentSignatureEnvelopeService`) calcula `cadeiaCustodiaElegivel`, `assinaturaCompletaMaterializada` e `rubricaDataHoraLocalPresentes` a partir do certificado de entrada e do envelope já materializado — os três eram `true` fixo, sem verificação real, até serem corrigidos. `classificacaoContextualCoerente` compara o papel de quem assina contra o segmento institucional real em 12 dos 14 chamadores (`resolveSegmentoInstitucional` deixou de usar fallback tautológico e passou a reconhecer escrivão de polícia via `isSegurancaPublica()`); os 2 chamadores restantes ainda caem no `true` de default por ausência de mapeamento de capacidade institucional — dívida registrada (`D-classificacao-contextual-default-permissivo`), não regressão silenciosa.
+
 O vocabulário documental é canônico e selado: `TipoDocumento` (~105 valores) carrega uma `CategoriaDocumento` (`PECA_INAUGURAL`, `PECA_RECURSAL`, `DOC_INSTRUCAO`, `DOC_QUALIFICACAO`). Sobre esse vocabulário está sendo construído um gate de completude documental por rito/classe, que lerá categoria e tipo para decidir a aptidão ao protocolo — substituindo a contagem de anexos atual por validação tipada. A meta de design é que ausência de tipo seja rejeição explícita, nunca passagem silenciosa.
 
 **Borda HTTP (fatia 1b' — concluída):** o advogado pode declarar `TipoDocumento` por anexo via `AnexoDeclarado { nomeArquivo, tipo }` no multipart de ajuizamento. O `SmartFileSplitter` valida a correlação (nome ↔ declaração, bidirecional) com 400 explícito em quatro casos: nome ausente, nomes duplicados, arquivo sem declaração correspondente e declaração sem arquivo correspondente. Quando declarado e a correlação fecha, `Attachment.tipoDocumento` é preenchido; declarar é opcional nesta fatia — a obrigatoriedade por rito é decisão do gate (1c). O gate de completude (fatia 1c) lerá esse campo para enforçar obrigatoriedade por rito/classe — a decisão de política (anexo sem tipo = rejeição ou tolerância) é responsabilidade do gate, não da borda.
 
 **Canal tipado (fatia 1d — concluída):** `Attachment.tipoDocumento` é propagado do `SmartFileSplitter` até o payload de routing via `NationalProceduralProcessoEntityPayloadAssembler` (chave `documentosTipados`) e consumido por `NationalProceduralPreflightPayloadFactory.extractPresentDocuments`. Fronteira 2 protegida: a chave só é adicionada ao payload quando pelo menos um `tipoDocumento` não-nulo está presente (`!tipados.isEmpty()`), evitando que lista vazia ative o canal tipado em callers sem declaração. Os 3 `ProcessoCommandControllerIT` que exercitam o ajuizamento civil sem `AnexoDeclarado` foram fechados (D-d25-testes-anexo): isolados do motor real de roteamento/completude documental, cobertura que já existe em `ValidacaoDocumentoAjuizamentoIT` e `CompletudeDocumentalAjuizamentoIT`.
 
-**Composição de partes por rito:** o ajuizamento não impõe o molde cível a todos os segmentos. O sistema lê o catálogo por rito e materializa o papel processual correto: `ACUSACAO`/`ACUSADO` no penal, `RECLAMANTE`/`RECLAMADA` no trabalhista, `IMPETRANTE`/`IMPETRADO` no mandado de segurança, `SEGURADO` no previdenciário (o INSS não vira polo automático — é ponto de extensão para integração futura), `INVESTIGADO` no IPM militar. Onde a dicotomia ativo/passivo não existe juridicamente — no habeas corpus o paciente não é parte adversarial —, nenhum polo é criado. Ritos não cobertos pelo catálogo mantêm composição nula até que seus perfis de partes sejam especificados. O catálogo por rito é a única fonte de verdade: o mesmo que define quais documentos são exigidos define quem são as partes. `PoloProcessual` também registra o domicílio processual da parte (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`) e razão social para pessoas jurídicas, separados do território de roteamento — este fica em `tb_processo` (`uf_autor`, `comarca_autor`, `uf_reu`, `comarca_reu`). Hoje isso é auditável pelo próprio registro apenas no ajuizamento via REST — Laiane, MNI e o marketplace de integradores ainda não capturam essa informação na entrada, então esses campos ficam nulos nesses três canais (dívida registrada como D-domicilio-parte-tres-canais-nao-populam). O motor (`PoloCompositionPolicy` + `PoloRoleMappingTable`) é o único funil de materialização de polo — ajuizamento via REST, o assistente de petição inicial (Laiane), a importação MNI e o marketplace de integradores convergem para o mesmo mecanismo (para Laiane e marketplace, materializado dentro de `AjuizamentoService.ajuizar()`; MNI materializa via método próprio equivalente em `MniRecepcaoService`, sem cada chamador precisar lembrar de acionar o motor), sem caminhos divergentes que produzam rótulo genérico (`AUTOR`/`REU`) onde o rito exige papel específico.
+**Composição de partes por rito:** o ajuizamento não impõe o molde cível a todos os segmentos. O sistema lê o catálogo por rito e materializa o papel processual correto: `ACUSACAO`/`ACUSADO` no penal, `RECLAMANTE`/`RECLAMADA` no trabalhista, `IMPETRANTE`/`IMPETRADO` no mandado de segurança, `SEGURADO` no previdenciário (o INSS não vira polo automático — é ponto de extensão para integração futura), `INVESTIGADO` no IPM militar. Onde a dicotomia ativo/passivo não existe juridicamente — no habeas corpus o paciente não é parte adversarial —, nenhum polo é criado. Ritos não cobertos pelo catálogo mantêm composição nula até que seus perfis de partes sejam especificados. O catálogo por rito é a única fonte de verdade: o mesmo que define quais documentos são exigidos define quem são as partes. `PoloProcessual` também registra o domicílio processual da parte (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`) e razão social para pessoas jurídicas, separados do território de roteamento — este fica em `tb_processo` (`uf_autor`, `comarca_autor`, `uf_reu`, `comarca_reu`). O ajuizamento via REST e o assistente de petição inicial (Laiane) já capturam essa informação na entrada: `EstruturarRequest` recebe `ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu`, a sessão de draft os carrega até `protocolar()` e o `Processo` os persiste, com a flag `enderecoReuDesconhecido` seguindo o mesmo padrão do PJe — endereço do réu frequentemente desconhecido no ajuizamento — e vencendo os valores informados quando marcada. MNI e o marketplace de integradores ainda não capturam essa informação na entrada, então esses campos ficam nulos nesses dois canais restantes (dívida registrada como D-domicilio-parte-dois-canais-nao-populam). O motor (`PoloCompositionPolicy` + `PoloRoleMappingTable`) é o único funil de materialização de polo — ajuizamento via REST, o assistente de petição inicial (Laiane), a importação MNI e o marketplace de integradores convergem para o mesmo mecanismo (para Laiane e marketplace, materializado dentro de `AjuizamentoService.ajuizar()`; MNI materializa via método próprio equivalente em `MniRecepcaoService`, sem cada chamador precisar lembrar de acionar o motor), sem caminhos divergentes que produzam rótulo genérico (`AUTOR`/`REU`) onde o rito exige papel específico.
 
 ### 8 — Autuação, retificação e qualidade de metadados
 
@@ -522,6 +541,8 @@ A IA opera como camada de suporte — nunca substitui decisão humana. Toda inte
 **Dreams:** jobs assíncronos que consolidam transcrições de sessão, eliminam contradições e extraem padrões por rito processual. Operam via outbox pattern com Virtual Threads dedicadas e janela de silêncio configurável.
 
 **Gate de completude processual:** verifica se o pacote documental está completo antes de permitir que o processo avance de fase. A validação tem duas camadas: estrutural (checklists configuráveis por rito, com pendências tipificadas e prazo de resolução) e semântica (OCR + VectorSearch detecta a presença efetiva de conteúdo exigido em documentos já anexados, não apenas a existência do arquivo). Pendências são notificadas via outbox com ciclo de resolução rastreável. O processo não avança enquanto houver lacuna de completude — e a secretaria pode fazer override com justificativa mínima auditável.
+
+**Consultoria de decisão judicial:** `advisoryMode` sempre retorna `ADVISORY_DRAFT_ONLY` — a Laiane produz apenas minuta assistida, nunca decide. `reviewRequired` e `publicationLocked` são sempre `true`: toda consultoria exige revisão humana integral antes de publicação, sem exceção por template ou caso. Não é comportamento condicional, é política de segurança deliberada — os três modos de consultoria (`SUGESTIVO`, `RESTRITIVO`, `BLOQUEADOR`) documentados numa versão anterior da API nunca chegaram a ser implementados, e a diferenciação de níveis de consultoria fica registrada como decisão de produto em aberto (`D-advisory-modos-nao-implementados`), não como funcionalidade pendente de bug fix.
 
 ### 13 — Relatórios e analytics sem ranking punitivo
 
@@ -640,7 +661,7 @@ Dados pessoais sensíveis — CPF e CNPJ — foram removidos de todas as camadas
 
 ## Banco de dados
 
-298 migrations Flyway (V0–V298), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
+269 migrations Flyway (numeração não contígua até V306 — 38 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
 
 Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
 
@@ -657,7 +678,7 @@ CREATE POLICY processo_sigilo ON processo
 | Métrica | Estado |
 |---------|--------|
 | Testes unitários (Surefire) | **4.134 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **206 · 0 falhas conhecidas** (de 49 → 14 → 10 → 0; D-routing-preprotocolo e as 9 pré-existentes fechadas; +10 motor de polos verdes — ver nota¹ na seção Testes sobre 10 testes confirmados fora desta contagem) |
+| Testes de integração (Failsafe) | **230 · 0 falhas conhecidas** (de 49 → 14 → 10 → 0; D-routing-preprotocolo e as 9 pré-existentes fechadas; +10 motor de polos verdes; +24 da fatia de competência territorial — CE, MG e RN — verdes desde a criação — ver nota¹ na seção Testes sobre 10 testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
@@ -875,7 +896,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.134 testes e 298 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.134 testes e 269 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
