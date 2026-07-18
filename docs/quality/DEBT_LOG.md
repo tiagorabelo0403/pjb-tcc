@@ -107,9 +107,9 @@ alguma regra por rito precisar tratar os dois institutos de forma diferente.
 
 **Status:** aberta
 
-**Contexto:** `vigencia_inicio` das 37 unidades do TRT7/CE e das 155 unidades do TRT3/MG (e, por padrão,
-das demais 22 regiões quando carregadas) usa uma data conservadora presumida (CF/88), não a data real
-de criação de cada vara.
+**Contexto:** `vigencia_inicio` das 37 unidades do TRT7/CE, das 155 unidades do TRT3/MG e das 20 unidades
+do TRT21/RN (e, por padrão, das demais 21 regiões quando carregadas) usa uma data conservadora presumida
+(CF/88), não a data real de criação de cada vara.
 
 No TRT7/CE essa presunção era a única opção — o documento-fonte só confirmava jurisdição vigente na
 data de publicação, sem histórico individual. No TRT3/MG **a informação real existe**: o documento
@@ -135,22 +135,38 @@ pronto pra popular esse redesenho quando ele acontecer, sem nova extração de P
 
 **Status:** aberta
 
-**Contexto:** o documento-fonte do TRT3/MG (`End03.pdf`) atribui o mesmo "Código atribuído pelo TRT" a
-3 pares de varas fisicamente distintas: `0031` (3ª e 5ª VT de Contagem), `0070` (2ª VT de Ouro Preto e
-1ª VT de Passos) e `0142` (5ª VT de Betim e 2ª VT de Uberaba). Confirmado por leitura direta do texto
-extraído — os 6 registros são completos e bem formados, com endereço, e-mail e data de instalação
-distintos entre si; não é artefato de parsing. Carregado como está, decisão consciente do usuário.
+**Contexto:** o problema apareceu duas vezes em duas regiões distintas, cada vez por uma causa
+diferente — não é um incidente isolado do TRT3, é um padrão de qualidade do dado que se repete e deve
+ser esperado nas próximas regiões.
 
-**Risco:** `TRT3-0070` (por exemplo) aponta simultaneamente para Ouro Preto e para Passos —
-identificador de vara ambíguo nesses 3 casos específicos. Para Contagem (0031) o efeito é mais sutil:
-como as duas varas com código duplicado atendem exatamente o mesmo conjunto de municípios, o
+No TRT3/MG (`End03.pdf`), 3 pares de varas fisicamente distintas compartilham o mesmo "Código atribuído
+pelo TRT": `0031` (3ª e 5ª VT de Contagem), `0070` (2ª VT de Ouro Preto e 1ª VT de Passos) e `0142`
+(5ª VT de Betim e 2ª VT de Uberaba) — sem causa aparente, parece erro pontual de atribuição.
+
+No TRT21/RN (`End21.pdf`), mais 3 pares: `0011` (1ª VT de Mossoró e 11ª VT de Natal), `0012` (2ª VT de
+Mossoró e 12ª VT de Natal) e `0013` (3ª VT de Mossoró e 13ª VT de Natal) — aqui a causa é identificável:
+Natal numera suas 13 varas sequencialmente (0001–0013) e Mossoró numera as suas 4 (0011–0014) na mesma
+faixa, sem que as duas séries tenham sido unificadas.
+
+Em ambos os casos, confirmado por leitura direta do texto extraído — os registros são completos e bem
+formados, com endereço e e-mail institucional distintos entre si; não é artefato de parsing. Carregado
+como está nas duas regiões, decisão consciente do usuário nos dois casos.
+
+**Risco:** `TRT3-0070` e `TRT21-0011` (por exemplo) apontam simultaneamente para duas varas físicas
+diferentes — identificador de vara ambíguo nesses casos específicos. Onde as duas varas com código
+duplicado atendem exatamente o mesmo conjunto de municípios (caso de Contagem no MG), o
 `Set<String> unidadesElegiveis` colapsa as duas em uma entrada só — a carga não perde competência
 territorial nenhuma, mas perde a informação de que existiam originalmente 2 varas ali com códigos que
-deveriam ser distintos.
+deveriam ser distintos. Onde os conjuntos de municípios diferem (caso de Mossoró/Natal no RN), o código
+duplicado aparece nas duas linhas de município normalmente, cada uma com seu próprio conjunto de
+unidades — a ambiguidade fica restrita a "qual vara física esse código identifica", não à cobertura
+territorial.
 
-**Quando revisitar:** se o TST/TRT3 publicar uma revisão do documento-fonte corrigindo a duplicidade,
-ou se algum fluxo precisar citar univocamente uma dessas 6 varas (ex.: intimação, mandado) — nesse caso
-a resolução exige fonte primária adicional (ex.: consulta direta ao TRT3), não inferência.
+**Quando revisitar:** se o TST/TRT3/TRT21 publicar uma revisão do documento-fonte corrigindo a
+duplicidade, ou se algum fluxo precisar citar univocamente uma dessas varas (ex.: intimação, mandado) —
+nesse caso a resolução exige fonte primária adicional (ex.: consulta direta ao tribunal), não inferência.
+Ao carregar as próximas regiões, checar duplicidade de código já na primeira rodada de auditoria, não
+como complemento posterior.
 
 ## D-trt3-municipios-sem-vara-competencia-delegada
 
@@ -169,3 +185,35 @@ esse tipo de competência delegada por desenho — não é uma lacuna de extraç
 **Quando revisitar:** se a Fatia territorial precisar cobrir `modo_competencia = 'DELEGADA_JUIZ_DIREITO'`
 (já suportado pelo schema desde a V302) — nesse caso, buscar fonte específica de comarcas com
 competência trabalhista delegada, provavelmente no TJMG, não no TST.
+
+## D-trt21-posto-avancado-sem-codigo
+
+**Status:** aberta
+
+**Contexto:** o documento-fonte do TRT21/RN (`End21.pdf`) cadastra 2 unidades do tipo "Posto Avançado",
+categoricamente diferentes de Vara do Trabalho, e nenhuma das duas recebe "Código atribuído pelo TRT" —
+esse campo, no documento, só existe para VTs.
+
+O "Posto Avançado da Justiça do Trabalho em Pau dos Ferros" tem endereço, e-mail e jurisdição própria e
+exclusiva (38 municípios — Pau dos Ferros e mais 37 — confirmados por busca textual como não citados em
+nenhuma outra unidade do documento), mas sem código, sem "Criação" e sem "Data de Instalação". Não foi
+carregado na V306; os 38 municípios não entram no catálogo.
+
+O "Posto de Atendimento Avançado da Zona Norte" também não tem código, mas sua jurisdição não gera a
+mesma lacuna: cobre bairros específicos de Natal (Igapó, Salinas, Potengi, Nossa Senhora da Apresentação,
+Lagoa Azul, Pajuçara, Redinha) — granularidade abaixo de município, que `tb_jurisdicao_territorial`
+(chaveada por `municipio_ibge`) não tem como representar independente de o código existir ou não — mais
+os municípios Extremoz e São Gonçalo do Amarante, que já estão cobertos pelas 13 VTs regulares de Natal
+(confirmado: as 13 compartilham jurisdição idêntica). Nenhuma cobertura de município se perde ao não
+carregar este segundo Posto.
+
+**Risco:** consulta territorial para os 38 municípios da jurisdição de Pau dos Ferros devolve
+`MunicipioForaDoCatalogo`, apesar de existir unidade real, documentada e endereçada atendendo-os —
+diferente do caso dos 6 municípios do MG (lá não havia nenhuma unidade documentada), aqui a unidade
+existe mas não tem o identificador que o resto do catálogo usa como chave (`unidade_codigo` no
+padrão `TRT{N}-{código}`).
+
+**Quando revisitar:** se o TRT21 publicar cadastro com código formal para Postos Avançados, ou se algum
+caso de uso exigir cobertura desses 38 municípios — nesse caso, decidir entre buscar o código em fonte
+primária adicional (site do TRT21) ou adotar convenção própria de identificador não oficial, com anotação
+explícita distinguindo-o de um "Código atribuído pelo TRT" real (decisão de produto, não técnica).
