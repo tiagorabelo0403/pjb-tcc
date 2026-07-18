@@ -2,8 +2,8 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
-![Unit Tests](https://img.shields.io/badge/Unit%20Tests-4%2C112%20%7C%200%20failures-brightgreen)
-![Integration Tests](https://img.shields.io/badge/IT%20Tests-182%20%7C%2022%20stabilizing-yellow)
+![Unit Tests](https://img.shields.io/badge/Unit%20Tests-4%2C134%20%7C%200%20failures-brightgreen)
+![Integration Tests](https://img.shields.io/badge/IT%20Tests-230%20%7C%200%20known%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -138,7 +138,7 @@ Open `.env` and fill in the required variables:
 docker compose up -d
 ```
 
-This starts PostgreSQL 17, Apache Kafka 3.8, Redis 7.4, and Elasticsearch 8.15. Flyway migrations (V0–V296) are applied automatically on the first backend connection.
+This starts PostgreSQL 17, Apache Kafka 3.8, Redis 7.4, and Elasticsearch 8.15. Flyway migrations (numbered up to V306) are applied automatically on the first backend connection.
 
 ### 4. Check Spring Profiles
 
@@ -232,8 +232,8 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 4,112 tests with Mockito and in-memory H2. Fast, no Docker required.
-- **Integration tests (Failsafe):** 182 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Significantly slower.
+- **Unit tests (Surefire):** 4,134 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Integration tests (Failsafe):** 230 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 ### Run Unit Tests Only (fast)
 
@@ -249,9 +249,13 @@ Expected time: **~15 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api
 ```
 
-This is the official project gate. It runs all 4,112 unit tests (Surefire) and then the 182 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 4,134 unit tests (Surefire) and then the 230 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
-Expected time: **~45 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
+Expected time: **~50 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
+
+> **Why so slow?** Each IT class boots a full Spring context with a real PostgreSQL, applies the Flyway migrations, and executes requests the way an external client would. That gives full confidence that what passed in test will pass in production — but it costs time.
+
+The Surefire/Failsafe `argLine` sets `-Dpjb.runtime.lifecycle.drain-quiet-period=10ms`. The graceful drain coordinator (`PjbRuntimeDrainCoordinator`) sleeps 20s by default on every Spring context close — correct in production, where there is real traffic to drain before shutdown, but pure waste in a test JVM. Without this override, a full `verify` run can exceed Surefire's own 30s fork-exit watchdog (`forkedProcessExitTimeoutInSeconds`) and force-kill the forked JVM at teardown, even with every test already green — a symptom that only shows up on long full-suite runs, never in an isolated class.
 
 ### Run a Specific Test with Full Stack Trace
 
@@ -263,14 +267,20 @@ Expected time: **~45 min** on local hardware. Most of this time is the Spring co
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Unit tests | Surefire | **4,112 · 0 failures** |
+| Total unit tests | Surefire | **4,134** |
+| Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~15 min** |
-| Integration tests | Failsafe | **182** |
-| IT failures (stabilizing) | Failsafe | **22** (12E + 10F) |
-| Full verify execution time | Surefire + Failsafe | **~45 min** |
+| Total integration tests | Failsafe | **230** ¹ |
+| Polo-composition-engine tests | Failsafe | **+10 green** (role by procedural type: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
+| IT failures | Failsafe | **0** (0E + 0F) |
+| Full verify execution time | Surefire + Failsafe | **~50 min** |
 
-The integration test suite is under active stabilization. Starting from 49 failures, it reached 22 after eliminating clusters CG-1 (22E — wrong environment variable), CG-2-Postgres (5E — test data contamination), CG-3 (3E — hardcoded IDs without seeds), and CG-7 (1E — same root as CG-1). The remaining 22 are real product bugs and two Mockito/H2 setup clusters, all mapped and being addressed.
+The integration suite went through a full stabilization process: 49 failures at the start, 14 after eliminating clusters CG-1 (22E — wrong environment variable), CG-2-Postgres (5E — cross-test data contamination from unclean fixtures), CG-3 (3E — hardcoded IDs without seeding), and CG-7 (1E); 10 after closing `ConsultaPublicaSearchFlowIT` and the 3 `ProcessoCommandControllerIT` (debt D-d25-testes-anexo); and **0** after closing `D-routing-preprotocolo` and the remaining 9 pre-existing failures. Two of those fixes touched production bugs, not just test setup: `AuditLedgerService` recorded audit events only in memory, without persisting to the repository the audit endpoints actually query; and root-proceeding resolution in `CaseContinuityOrchestratorService` used a field that changes state during the case lifecycle, causing ambiguity between the root proceeding and its branches (e.g., judgment enforcement) after archiving. The 10 polo-composition-by-procedural-type tests are all green and are not part of the failure history. The territorial competence slice added 24 more tests after reaching zero, green since creation — 9 from `Trt7CearaJurisdicaoCargaIT` (TRT7/CE), 7 from `Trt3MgJurisdicaoCargaIT` (TRT3/MG), and 8 from `Trt21RnJurisdicaoCargaIT` (TRT21/RN) — also outside the failure history.
+
+The 206 confirmed across 5 batches via explicit `-Dtest=` (goal `test`/Surefire, not `verify`/Failsafe) — same `argLine` and same default 10-minute timeout between the two plugins, but a different goal identity than the one CI uses in the official gate.
+
+¹ The default `verify` (Failsafe) does not reach 10 test methods spread across 5 classes (`OabLegitimidadePeticionamentoTest`, `PjbFluxoJudicialCompletoE2ETest`, `DistribuicaoProcessoProtocoladoTest`, `ConsultaPublicaProcessoProtocoladoTest`, `ApiMarketplaceServicePoloMaterializacaoTest`) — the `*Test.java` name combined with `@Tag("integration")` makes Surefire exclude by tag while Failsafe does not recognize the file pattern. The 10 have already been confirmed green individually (`-Dit.test=`), but do not enter this count since they run outside the routine `verify`.
 
 ### Coverage Report (JaCoCo)
 
@@ -459,6 +469,23 @@ Includes management of affiliations, institutional credentials, official source 
 
 Distributes cases by nature, competence, procedural type, and district. Supports single courts, small-town districts, itinerant Small Claims Courts, and any tribunal configuration. The explainable engine documents every criterion evaluated in the distribution decision — no distribution is a black box.
 
+Territorial competence is a property of the procedural type (`CriterioTerritorial` maps CPC art. 47/48/53-II, CLT art. 651, and CPP art. 70) — a procedural type without a verified criterion returns an explicit absence, it never assumes the defendant's domicile by default. The `tb_jurisdicao_territorial` catalog resolves the municipality (by IBGE code) to the competent unit(s) via `CompetenciaTerritorialResolver`, with temporal-overlap exclusion guaranteed by the schema itself (a PostgreSQL `EXCLUDE` constraint, not application-level validation) and native support for a municipality with concurrent competence across courts — Belo Horizonte has 48 concurrent labor courts in a single catalog row, Fortaleza 18, Natal 13.
+
+Three Labor Justice regions were loaded with real data, extracted from an official TST PDF and cross-checked against the IBGE locality API — not as national coverage, but as a demonstration that the engine works end to end without a schema redesign between regions:
+
+| Region | Municipalities | Units (courts) | Municipality-court pairs | Source |
+|--------|-----------|-------------------|----------------------|-------|
+| TRT7 — Ceará | 184 | 37 | 288 | `End07.pdf` |
+| TRT3 — Minas Gerais | 847 | 155 | 1,498 | `End03.pdf` |
+| TRT21 — Rio Grande do Norte | 129 | 20 | 411 | `End21.pdf` |
+| **Total** | **1,160** | **212** | **2,197** | — |
+
+Each load matched the municipality name from the PDF against the official IBGE list by 7-digit code and state — never by name alone. Cross-state homonyms are real and were proven, not hypothesized: São Gonçalo do Amarante (RN and CE) and Ouro Branco (RN and MG) resolve to different courts from the same name in dedicated tests — it is the IBGE code that guarantees correct resolution, not the name text. Spelling divergences between the PDF and the official registry (accents, hyphens, swapped "de/do/dos", and one popular name IBGE never formalized — Boa Saúde, registered since 1953 as Januário Cicco) were resolved by a single confirmed match against each state's full list, never by approximation; a name that did not match was left out and is documented.
+
+`vigencia_inicio` uses a presumed date (the 1988 Constitution's promulgation) for continuity across all three regions — a decision kept even where the source document carried a real per-court installation date (the TRT3/MG case, with Belo Horizonte courts installed between 1941 and 2013), because the current schema only supports one `vigencia_inicio` per municipality row, not per individual court (`D-vigencia-trt7-e-futuras-regioes-presumida-nao-documentada`, `docs/quality/DEBT_LOG.md`). Two recurring inconsistencies in the TST's primary source were recorded as debt instead of being silently worked around: duplicate court codes between physically distinct units (3 pairs in MG, 3 pairs in RN, for different reasons in each region — `D-trt3-codigo-unidade-duplicado-fonte`) and municipalities with no documented court (6 in MG, likely delegated to the district's judge; 38 in RN covered by an Advanced Post with no formally assigned code — `D-trt3-municipios-sem-vara-competencia-delegada`, `D-trt21-posto-avancado-sem-codigo`).
+
+Each of the three loads is locked by a permanent regression test against the source document — the municipality-to-court distribution is re-parsed independently of the script that generated the migration before it becomes an `assert`, so a future migration change, or a migration from another region that accidentally corrupts data via a table-name mistake, gets caught instead of silently accepted.
+
 ### 3 — Constitutional Timeliness Engine
 
 Monitors constitutional deadlines by procedural type, calculates systemic bottlenecks, and suggests accelerators by area of law. It does not put pressure on individual judges — it identifies where the system is slow and why, using aggregated and anonymous data.
@@ -479,6 +506,16 @@ Semantic case markers for automatic prioritization by urgency, complexity, and s
 
 Each document has origin, operational state, integrity hash, and a verifiable chain of trust. The documentary dossier consolidates all artifacts of a case with complete traceability from creation to archiving.
 
+The qualified signature envelope (`QualifiedDocumentSignatureEnvelopeService`) computes `cadeiaCustodiaElegivel`, `assinaturaCompletaMaterializada`, and `rubricaDataHoraLocalPresentes` from the input certificate and the already-materialized envelope — all three were hardcoded `true`, with no real verification, until they were fixed. `classificacaoContextualCoerente` compares the signer's role against the actual institutional segment in 12 of 14 callers (`resolveSegmentoInstitucional` stopped using a tautological fallback and now recognizes police clerks via `isSegurancaPublica()`); the 2 remaining callers still fall back to the permissive `true` default for lack of institutional-capacity mapping — a registered debt (`D-classificacao-contextual-default-permissivo`), not a silent regression.
+
+The document vocabulary is canonical and sealed: `TipoDocumento` (~105 values) carries a `CategoriaDocumento` (`PECA_INAUGURAL`, `PECA_RECURSAL`, `DOC_INSTRUCAO`, `DOC_QUALIFICACAO`). Built on top of that vocabulary is a document-completeness gate by procedural type/class, which will read category and type to decide protocol eligibility — replacing today's attachment-count check with typed validation. The design goal is that a missing type is an explicit rejection, never a silent pass-through.
+
+**HTTP boundary (slice 1b′ — done):** the lawyer can declare a `TipoDocumento` per attachment via `AnexoDeclarado { nomeArquivo, tipo }` in the filing multipart request. `SmartFileSplitter` validates the correlation (name ↔ declaration, bidirectionally) with an explicit 400 in four cases: missing name, duplicate names, a file without a matching declaration, and a declaration without a matching file. When declared and the correlation matches, `Attachment.tipoDocumento` is populated; declaring is optional in this slice — mandating it by procedural type is a decision for the gate (1c). The completeness gate (slice 1c) will read this field to enforce the requirement by procedural type/class — the policy decision (undeclared attachment = rejection or tolerance) belongs to the gate, not to the boundary.
+
+**Typed channel (slice 1d — done):** `Attachment.tipoDocumento` is propagated from `SmartFileSplitter` all the way to the routing payload via `NationalProceduralProcessoEntityPayloadAssembler` (key `documentosTipados`) and consumed by `NationalProceduralPreflightPayloadFactory.extractPresentDocuments`. Boundary 2 is protected: the key is only added to the payload when at least one non-null `tipoDocumento` is present (`!tipados.isEmpty()`), preventing an empty list from activating the typed channel for callers without a declaration. The 3 `ProcessoCommandControllerIT` classes that exercise civil filing without `AnexoDeclarado` were closed (D-d25-testes-anexo): isolated from the real routing/completeness engine, coverage that already exists in `ValidacaoDocumentoAjuizamentoIT` and `CompletudeDocumentalAjuizamentoIT`.
+
+**Party composition by procedural type:** filing does not force the civil mold onto every segment. The system reads the catalog by procedural type and materializes the correct procedural role: `ACUSACAO`/`ACUSADO` in criminal cases, `RECLAMANTE`/`RECLAMADA` in labor cases, `IMPETRANTE`/`IMPETRADO` in writs of mandamus, `SEGURADO` in social-security cases (the INSS does not automatically become a party — it is an extension point for future integration), `INVESTIGADO` in military inquiries. Where the active/passive dichotomy does not legally exist — in habeas corpus, the patient is not an adversarial party — no party is created. Procedural types not covered by the catalog keep null composition until their party profiles are specified. The catalog by procedural type is the single source of truth: the same catalog that defines which documents are required also defines who the parties are. `PoloProcessual` also records the party's procedural domicile (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`) and corporate name for legal entities, kept separate from the routing territory — which lives in `tb_processo` (`uf_autor`, `comarca_autor`, `uf_reu`, `comarca_reu`). Filing via REST and the initial-petition assistant (Laiane) already capture this information at input time: `EstruturarRequest` receives `ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu`, the draft session carries them through to `protocolar()`, and `Processo` persists them, with the `enderecoReuDesconhecido` flag following the same pattern as PJe — the defendant's address is often unknown at filing time — and overriding the informed values when set. MNI and the integrator marketplace do not yet capture this information at input, so these fields remain null on those two remaining channels (registered debt D-domicilio-parte-dois-canais-nao-populam). The engine (`PoloCompositionPolicy` + `PoloRoleMappingTable`) is the single funnel for party materialization — filing via REST, the initial-petition assistant (Laiane), MNI import, and the integrator marketplace all converge on the same mechanism (for Laiane and the marketplace, materialized inside `AjuizamentoService.ajuizar()`; MNI materializes via an equivalent dedicated method in `MniRecepcaoService`, so no caller needs to remember to invoke the engine), with no divergent path producing a generic label (`AUTOR`/`REU`) where the procedural type requires a specific role.
+
 ### 8 — Filing, Correction, and Metadata Quality
 
 Governed correction with legal diff — every change goes through policy, impact assessment, and explicit approval. The metadata quality score detects missing classes, parties without documents, and incompatible procedural types before the case advances.
@@ -486,6 +523,8 @@ Governed correction with legal diff — every change goes through policy, impact
 ### 9 — Import and Normalization of External Cases
 
 Ingests cases from PJe, e-SAJ, eProc, Projudi, Creta, MNI, and PDPJ. Each external system has a specific normalizer that standardizes NPU, CNJ procedural class, and type before persisting. Import conflicts are recorded with auditable diffs.
+
+The MNI adapter (`intercomunicacao-2.2.2`, the `polo`/`parte`/`pessoa` attributes from the CNJ's official schema) materializes the plaintiff and defendant of the imported case, including the party record, through the same procedural-type composition engine used for direct filing — a case imported via MNI is no longer left without identified parties.
 
 ### 10 — Court Orders, Certificates, and Resilient Communication
 
@@ -504,6 +543,8 @@ AI operates as a support layer — it never replaces human decision-making. Ever
 **Dreams:** asynchronous jobs that consolidate session transcripts, eliminate contradictions, and extract patterns by procedural type. They operate via outbox pattern with dedicated Virtual Threads and a configurable silence window.
 
 **Process Completeness Gate:** verifies that the document package is complete before allowing the case to advance to the next phase. Validation has two layers: structural (configurable checklists per procedural type, with typed pending items and resolution deadlines) and semantic (OCR + VectorSearch detects the actual presence of required content in already-attached documents, not just the existence of the file). Pending items are notified via outbox with a traceable resolution cycle. The case does not advance while there is a completeness gap — and the clerk can override with a minimum auditable justification.
+
+**Judicial decision advisory:** `advisoryMode` always returns `ADVISORY_DRAFT_ONLY` — Laiane produces only an assisted draft, it never decides. `reviewRequired` and `publicationLocked` are always `true`: every consultation requires full human review before publication, with no exception per template or case. This is not conditional behavior, it is a deliberate security policy — the three advisory modes (`SUGESTIVO`, `RESTRITIVO`, `BLOQUEADOR`) documented in an earlier version of the API were never actually implemented, and differentiating advisory levels remains an open product decision (`D-advisory-modos-nao-implementados`), not a pending bug fix.
 
 ### 13 — Reports and Analytics Without Punitive Rankings
 
@@ -622,7 +663,7 @@ Sensitive personal data — CPF and CNPJ — have been removed from every layer 
 
 ## Database
 
-296 Flyway migrations (V0–V296), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
+269 Flyway migrations (non-contiguous numbering up to V306 — 38 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
 
 Row Level Security active per operation for confidential data. Materialized tables with asynchronous refresh for analytics (ADR-0053). Outbox pattern for post-commit effects with no risk of event loss on transaction failure. The outbox table is partitioned monthly — entire partition purge via `DROP TABLE`, no row scanning.
 
@@ -638,8 +679,8 @@ CREATE POLICY processo_sigilo ON processo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **4,112 · 0 failures · 0 errors** |
-| Integration tests (Failsafe) | **182 · 22 failures stabilizing** (from 49 → 22) |
+| Unit tests (Surefire) | **4,134 · 0 failures · 0 errors** |
+| Integration tests (Failsafe) | **230 · 0 known failures** (from 49 → 14 → 10 → 0; D-routing-preprotocolo and the 9 remaining pre-existing failures closed; +10 polo-composition-engine green; +24 from the territorial competence slice — CE, MG and RN — green since creation — see note¹ in the Tests section about 10 tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
 | Python Guards | 7 scripts active in CI |
@@ -857,7 +898,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 4,112 tests, and 296 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 4,134 unit tests plus 230 integration tests, and 269 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 
