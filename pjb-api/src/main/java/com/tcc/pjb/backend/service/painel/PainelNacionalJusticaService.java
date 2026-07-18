@@ -320,9 +320,7 @@ public class PainelNacionalJusticaService {
         entity.setAtivo(alerta.diasExcedidos() > 0L);
         PainelAlertaPrazo salvo = alertaRepository.save(entity);
         tribunalRepository.findByCodigoTribunal(salvo.getTribunalCodigo()).ifPresent(tribunal -> {
-            long ativos = alertaRepository.findAllByAtivoTrueOrderByDiasExcedidosDesc().stream()
-                    .filter(item -> Objects.equals(item.getTribunalCodigo(), salvo.getTribunalCodigo()))
-                    .count();
+            long ativos = alertaRepository.countByAtivoTrueAndTribunalCodigo(salvo.getTribunalCodigo());
             tribunal.setProcessosComPrazoExcedido(ativos);
             tribunal.setClassificacaoDesempenho(classificacao(tribunal, disponibilidadeFederativa(tribunal.getCodigoTribunal())));
             tribunalRepository.save(tribunal);

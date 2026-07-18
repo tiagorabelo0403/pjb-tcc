@@ -249,3 +249,47 @@ silencioso.
 que a flag continua presente. Candidato a guard Python dedicado (verifica que o argLine de teste sempre
 inclui esse override), já que a ausência da flag só se manifesta em rodada completa, nunca em execução
 isolada de uma classe.
+
+## D-transactional-hotspot-guard-49-achados-nao-triados
+
+**Status:** aberta
+
+**Contexto:** `transactional_hotspot_guard.py --fail-on-findings` chegou a acusar 750 métodos
+`@Transactional` com token suspeito (`findAll(`, `saveAll(`, `outboxPublisher.enqueue(`,
+`processUnified(`, `iaOrchestrator.`, e — antes do ajuste abaixo — `.stream()`/`for (`/`appendSafely(`
+mesmo sozinhos, sem nenhum outro sinal de I/O real). Triagem manual de uma amostra de 27 achados
+(os de maior contagem de sinais) confirmou 6 riscos reais (N+1 de banco, full-table-scan pra contar
+linha) e uma quantidade grande de ruído puro: `.stream()`/`for (` sobre coleção já carregada em
+memória, e `appendSafely(` sozinho (uma escrita de auditoria isolada, não um loop).
+
+Os 6 riscos reais foram corrigidos (bulk pre-check em vez de query por item, `COUNT` no banco em vez
+de `findAll` + filtro em Java). Três outros achados do mesmo grupo (`issueBatch`/
+`issueBatchFromTemplate`, `DigitalCustodyChainLedgerService.persist`, `reconcileVisibility`) têm
+padrão deliberado (isolamento de erro por item em lote administrativo, lock otimista sob
+concorrência, N já limitado por página) — marcados com `@PjbTransactionalBudget` em vez de
+reestruturados, e o guard passou a respeitar essa anotação também em `--fail-on-findings` (antes só
+valia pra `--fail-on-missing-budgets` nos 4 pacotes hotspot).
+
+O heurístico do guard foi refinado: `.stream()`, `for (` e `appendSafely(` só contam como sinal
+quando aparecem junto de `findAll(`/`saveAll(`/`outboxPublisher.enqueue(`/`processUnified(`/
+`iaOrchestrator.` — isso derrubou o total de 750 para 51 achados, eliminando o ruído comprovado.
+
+**Risco:** os 51 achados restantes (49 sem `@PjbTransactionalBudget`) não foram triados individualmente
+— só a amostra original de 27 (agora reduzida a um subconjunto menor pelo heurístico mais estrito) foi
+lida linha a linha. Entre os 49 há candidatos de aparência genuinamente séria não revisados nesta
+rodada — ex.: `ClienteService.buscarClientes`, `JurisdicaoService.listarPaginado`,
+`OrgaoJudiciarioService.listarTodos`, `UsuarioService.listarTodosUsuarios`, todos com `findAll(` puro
+(possível carga de tabela inteira sem paginação real). `--fail-on-findings` continua retornando 1 no
+CI até que cada um seja revisado (corrigido ou marcado com `@PjbTransactionalBudget`).
+
+**Cobertura de teste:** nenhuma nova — os 3 métodos corrigidos nesta rodada
+(`TemaRecursoRepetitivoService.aplicarResultado`, `ProcessoCumprimentoOperacionalApplicationService.materializar`)
+não têm teste unitário nem de integração no projeto; a correção foi validada só por leitura de código
+e `test-compile`, não por execução automatizada do comportamento específico alterado.
+`PainelNacionalJusticaService.registrarAlertaPrazo` também não tem teste direto — os 9 testes verdes
+de `PainelNacionalJusticaServiceTest` cobrem outros métodos da classe.
+
+**Quando revisitar:** próxima sessão dedicada a triar os 49 achados um por um, no mesmo formato usado
+para os 6 (ler o método completo, classificar como risco real ou padrão deliberado, corrigir ou marcar
+com `@PjbTransactionalBudget`), até `--fail-on-findings` passar limpo no CI. Considerar também escrever
+teste de regressão para os 3 métodos corrigidos sem cobertura antes de fechar esta dívida.

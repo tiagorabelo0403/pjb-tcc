@@ -45,6 +45,8 @@ public interface WorkItemRepository extends JpaRepository<WorkItem, Long> {
         return findByProcessoIdAndTemplateCodeAndStatusNotOrderByCreatedAtDescIdDesc(processoId, templateCode, status, PageRequest.of(0, 1)).stream().findFirst();
     }
 
+    List<WorkItem> findAllByProcesso_IdAndTemplateCodeInAndStatusNot(Long processoId, List<String> templateCodes, WorkItemStatus status);
+
     @Query("""
             select w from WorkItem w
             where w.processo.id = :processoId
@@ -58,6 +60,8 @@ public interface WorkItemRepository extends JpaRepository<WorkItem, Long> {
     default Optional<WorkItem> findLatestByProcessoIdAndTemplateCode(Long processoId, String templateCode) {
         return findByProcessoIdAndTemplateCodeOrderByCreatedAtDescIdDesc(processoId, templateCode, PageRequest.of(0, 1)).stream().findFirst();
     }
+
+    List<WorkItem> findAllByProcesso_IdInAndTemplateCodeIn(List<Long> processoIds, List<String> templateCodes);
 
     @Query("""
             select w from WorkItem w
