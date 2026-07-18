@@ -58,7 +58,7 @@
         <pact.version>4.6.14</pact.version>
         <surefireArgLine></surefireArgLine>
         <failsafeArgLine></failsafeArgLine>
-        <test.forked.jvm.xmx>3g</test.forked.jvm.xmx>
+        <test.forked.jvm.xmx>4g</test.forked.jvm.xmx>
         <commons-compress.version>1.27.1</commons-compress.version>
         <commons-io.version>2.19.0</commons-io.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
@@ -574,7 +574,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.version}</version>
                 <configuration>
-                    <argLine>${surefireArgLine} -Xmx${test.forked.jvm.xmx} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.io.tmpdir=${project.build.directory}</argLine>
+                    <argLine>${surefireArgLine} -Xmx${test.forked.jvm.xmx} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.io.tmpdir=${project.build.directory} -Dpjb.runtime.lifecycle.drain-quiet-period=10ms</argLine>
                     <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
                     <excludedGroups>integration</excludedGroups>
                     <includes>
@@ -596,7 +596,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${maven.failsafe.version}</version>
                 <configuration>
-                    <argLine>${failsafeArgLine} -Xmx${test.forked.jvm.xmx} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.io.tmpdir=${project.build.directory}</argLine>
+                    <argLine>${failsafeArgLine} -Xmx${test.forked.jvm.xmx} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.io.tmpdir=${project.build.directory} -Dpjb.runtime.lifecycle.drain-quiet-period=10ms</argLine>
                     <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
                     <properties>
                         <property>

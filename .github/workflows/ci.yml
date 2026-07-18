@@ -17,7 +17,7 @@ permissions:
 env:
   JAVA_VERSION: '21'
   JAVA_DISTRIBUTION: temurin
-  MAVEN_OPTS: '-Xmx2g'
+  MAVEN_OPTS: '-Xmx1g'
 
 jobs:
   evidence-gate:
