@@ -24,6 +24,7 @@ import java.util.Objects;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ProcessoDistribuicaoMalhaApplicationService {
@@ -126,6 +127,7 @@ public class ProcessoDistribuicaoMalhaApplicationService {
         return aggregate;
     }
 
+    @PjbTransactionalBudget(operation = "processo.distribuicao-malha.propagar", maxMillis = 3000)
     @Transactional
     public ProcessoDistribuicaoMalhaAggregate propagar(Long processoId) {
         ProcessoDistribuicaoMalhaAggregate aggregate = detalhar(processoId);

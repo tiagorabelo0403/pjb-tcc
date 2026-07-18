@@ -25,6 +25,7 @@ import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class InstitutionalOperationalCoverageApplicationService {
@@ -92,6 +93,7 @@ public class InstitutionalOperationalCoverageApplicationService {
         return rule;
     }
 
+    @PjbTransactionalBudget(operation = "institucional.operational-coverage.listar", maxMillis = 3000)
     @Transactional(readOnly = true)
     public List<InstitutionalOperationalCoverageRule> listar(String unidadeCodigo) {
         List<InstitutionalOperationalCoverageRule> rules = unidadeCodigo == null || unidadeCodigo.isBlank() ? repository.findAll() : repository.findByUnidadeCodigo(unidadeCodigo);

@@ -36,6 +36,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ConfiguracaoDistribuicaoVaraService {
@@ -425,6 +426,7 @@ public class ConfiguracaoDistribuicaoVaraService {
         recarregarDoRepositorio();
     }
 
+    @PjbTransactionalBudget(operation = "tribunal.distribuicao-vara.recarregar-repositorio", maxMillis = 8000)
     @Transactional(readOnly = true)
     public int recarregarDoRepositorio() {
         LinkedHashMap<String, PerfilVara> novos = new LinkedHashMap<>();

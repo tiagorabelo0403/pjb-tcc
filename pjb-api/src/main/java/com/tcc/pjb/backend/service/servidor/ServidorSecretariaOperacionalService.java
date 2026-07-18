@@ -40,6 +40,7 @@ import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 import com.tcc.pjb.backend.model.dto.processual.document.template.OfficialDocumentTemplateRenderRequest;
 import com.tcc.pjb.backend.model.dto.processual.document.template.OfficialDocumentTemplateRenderResponse;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 @Service
 public class ServidorSecretariaOperacionalService {
 private final PerfilDashboardContextFactory contextFactory;
@@ -334,6 +335,7 @@ response.put("workItemId", concluso.getId());
 response.put("slaDespachoDiasUteis", sla.prazoDespachoInicialDiasUteis());
 return Map.copyOf(response);
 }
+    @PjbTransactionalBudget(operation = "servidor.secretaria.saneamento-bulk-fila", maxMillis = 5000)
 @Transactional
 public Map<String, Object> saneamentoBulkFila(String queueCode, int limite) {
 PerfilDashboardContext ctx = contextFactory.build();

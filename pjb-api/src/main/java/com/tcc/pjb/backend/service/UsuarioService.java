@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.exception.RecursoJaExistenteException;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.identity.IdentidadeJuridicaNacionalService;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class UsuarioService {
@@ -46,12 +50,13 @@ public class UsuarioService {
         this.auditLedgerService = auditLedgerService;
     }
 
+    @PjbTransactionalBudget(operation = "usuario.listar-todos-paginado", maxMillis = 3000)
     @Transactional(readOnly = true)
-    public List<UsuarioResponse> listarTodosUsuarios() {
-        List<Usuario> entidades = usuarioRepository.findAll();
-        List<UsuarioResponse> responses = usuarioMapper.entidadeParaResponseLista(entidades);
-        enrichResponses(entidades, responses);
-        return responses;
+    public Page<UsuarioResponse> listarTodosUsuarios(Pageable pageable) {
+        Page<Usuario> pagina = usuarioRepository.findAll(pageable);
+        List<UsuarioResponse> responses = usuarioMapper.entidadeParaResponseLista(pagina.getContent());
+        enrichResponses(pagina.getContent(), responses);
+        return new PageImpl<>(responses, pageable, pagina.getTotalElements());
     }
 
     @Transactional(readOnly = true)

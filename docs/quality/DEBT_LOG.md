@@ -252,7 +252,7 @@ isolada de uma classe.
 
 ## D-transactional-hotspot-guard-49-achados-nao-triados
 
-**Status:** aberta
+**Status:** fechada — `--fail-on-findings` passa limpo (`hotspotCount: 51, unreviewed: 0, missingBudgets: 0`)
 
 **Contexto:** `transactional_hotspot_guard.py --fail-on-findings` chegou a acusar 750 métodos
 `@Transactional` com token suspeito (`findAll(`, `saveAll(`, `outboxPublisher.enqueue(`,
@@ -274,22 +274,45 @@ O heurístico do guard foi refinado: `.stream()`, `for (` e `appendSafely(` só 
 quando aparecem junto de `findAll(`/`saveAll(`/`outboxPublisher.enqueue(`/`processUnified(`/
 `iaOrchestrator.` — isso derrubou o total de 750 para 51 achados, eliminando o ruído comprovado.
 
-**Risco:** os 51 achados restantes (49 sem `@PjbTransactionalBudget`) não foram triados individualmente
-— só a amostra original de 27 (agora reduzida a um subconjunto menor pelo heurístico mais estrito) foi
-lida linha a linha. Entre os 49 há candidatos de aparência genuinamente séria não revisados nesta
-rodada — ex.: `ClienteService.buscarClientes`, `JurisdicaoService.listarPaginado`,
-`OrgaoJudiciarioService.listarTodos`, `UsuarioService.listarTodosUsuarios`, todos com `findAll(` puro
-(possível carga de tabela inteira sem paginação real). `--fail-on-findings` continua retornando 1 no
-CI até que cada um seja revisado (corrigido ou marcado com `@PjbTransactionalBudget`).
+**Fechamento:** os 49 achados foram lidos método por método (leitura completa do corpo, não só do
+trecho do regex). Um resultou em correção real: `UsuarioService.listarTodosUsuarios` fazia
+`findAll()` sem paginação nenhuma num endpoint admin (`GET /api/v1/usuarios`, rate-limited mas sem
+limite de tamanho por chamada) — corrigido pra `Page<UsuarioResponse> listarTodosUsuarios(Pageable)`,
+espelhando o padrão já usado em `JurisdicaoService.listarPaginado`. Essa é uma mudança de contrato
+público (`List<UsuarioResponse>` → `Page<UsuarioResponse>`); nenhum teste ou cliente no repositório
+depende do formato antigo (frontend ainda não existe — ver README, seção "Frontend em análise e
+planejamento") e nenhum outro caller da mesma classe precisou mudar.
 
-**Cobertura de teste:** nenhuma nova — os 3 métodos corrigidos nesta rodada
-(`TemaRecursoRepetitivoService.aplicarResultado`, `ProcessoCumprimentoOperacionalApplicationService.materializar`)
-não têm teste unitário nem de integração no projeto; a correção foi validada só por leitura de código
-e `test-compile`, não por execução automatizada do comportamento específico alterado.
-`PainelNacionalJusticaService.registrarAlertaPrazo` também não tem teste direto — os 9 testes verdes
-de `PainelNacionalJusticaServiceTest` cobrem outros métodos da classe.
+Os outros 48 (incluindo o próprio `listarTodosUsuarios` já corrigido, que continua batendo no regex
+via `findAll(pageable)`) foram confirmados falso-positivo ou risco aceitável por leitura: tabela de
+referência pequena (planos de marketplace, clientes OAuth2, órgãos judiciários, planos de partição),
+já em cache com TTL (`FederalismoJudicialEngine.listarNos`/`healthFederacao`,
+`PainelNacionalJusticaService.gerarSnapshot`), já paginado/limitado corretamente
+(`OabInstitucionalService.listarSeccional`, `BulkUploadService.finalizeBatch`,
+`AdvClienteCanonicalizeSensitiveService.canonicalizeBatch`), escopo de um processo/thread só, ou
+já é o padrão correto de lote paginado + `saveAll` único (`CienciaProcessualApplicationService.
+processarExpirados`, `ConclusaoProcessualApplicationService.processarExpiradas`,
+`AdministradorNacionalGovernanceService.executarReconciliacaoGlobal`). Dois casos ficaram como
+"moderado, não bloqueante" — `NationalForumMeshGovernanceService.reconcile` e
+`ConfiguracaoDistribuicaoVaraService.recarregarDoRepositorio` fazem `findAll()` real em
+`UnidadeJudiciariaCompetencia` (varas/unidades — nacionalmente na casa de milhares, não milhões),
+mas são jobs de governança/cache, não hot path.
 
-**Quando revisitar:** próxima sessão dedicada a triar os 49 achados um por um, no mesmo formato usado
-para os 6 (ler o método completo, classificar como risco real ou padrão deliberado, corrigir ou marcar
-com `@PjbTransactionalBudget`), até `--fail-on-findings` passar limpo no CI. Considerar também escrever
-teste de regressão para os 3 métodos corrigidos sem cobertura antes de fechar esta dívida.
+Achado colateral de heurística: `ComunicacaoJudicialStateStore.findAll(String domain, Class<T> type)`
+foi flagado só porque o **nome do próprio método** contém a substring `findAll(` — o corpo é um
+lookup em cache filtrado por domínio, não um scan. O guard casa contra o texto do bloco inteiro,
+inclusive a assinatura do método, e não distingue `repository.findAll()` de
+`repository.findAllByX(...)` (convenção Spring Data pra query filtrada) nem do nome do método
+hospedeiro — não corrigido nesta rodada, fica como limitação conhecida do heurístico.
+
+**Cobertura de teste:** `TemaRecursoRepetitivoService.aplicarResultado` e
+`ProcessoCumprimentoOperacionalApplicationService.materializar` continuam sem teste unitário ou de
+integração no projeto; as correções foram validadas só por leitura de código e `test-compile`.
+`PainelNacionalJusticaService.registrarAlertaPrazo` e o novo `UsuarioService.listarTodosUsuarios(Pageable)`
+também não têm teste direto. Escrever regressão pra esses 4 fica como trabalho futuro, não bloqueia
+o fechamento desta dívida (o guard, que é o que bloqueava o CI, já está limpo).
+
+**Quando revisitar:** se o guard voltar a acusar um achado genuinamente novo (código novo, não
+`@PjbTransactionalBudget` residual), ou se `UnidadeJudiciariaCompetencia` crescer o suficiente pra
+`reconcile`/`recarregarDoRepositorio` deixarem de ser "moderado" e virarem risco real — nesse caso
+paginar como foi feito em `UsuarioService`.

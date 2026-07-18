@@ -40,6 +40,7 @@ import com.tcc.pjb.backend.model.repository.PainelTribunalMetricaRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.service.ajuizamento.federal.FederalismoJudicialEngine;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class PainelNacionalJusticaService {
@@ -302,6 +303,7 @@ public class PainelNacionalJusticaService {
         evictSnapshotCache();
     }
 
+    @PjbTransactionalBudget(operation = "painel.nacional-justica.registrar-alerta-prazo", maxMillis = 3000)
     @Transactional
     public void registrarAlertaPrazo(AlertaPrazo alerta) {
         Objects.requireNonNull(alerta, "alerta");
@@ -348,6 +350,7 @@ public class PainelNacionalJusticaService {
         evictSnapshotCache();
     }
 
+    @PjbTransactionalBudget(operation = "painel.nacional-justica.gerar-snapshot", maxMillis = 5000)
     @Transactional(readOnly = true)
     public SnapshotNacional gerarSnapshot() {
         CachedSnapshot cached = snapshotCache.get();

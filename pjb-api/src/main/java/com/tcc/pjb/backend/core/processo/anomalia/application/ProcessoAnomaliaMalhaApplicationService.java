@@ -21,6 +21,7 @@ import java.util.Objects;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ProcessoAnomaliaMalhaApplicationService {
@@ -149,6 +150,7 @@ public class ProcessoAnomaliaMalhaApplicationService {
         );
     }
 
+    @PjbTransactionalBudget(operation = "processo.anomalia-malha.escalar", maxMillis = 3000)
     @Transactional
     public ProcessoAnomaliaMalhaAggregate escalar(Long processoId) {
         ProcessoAnomaliaMalhaAggregate aggregate = detalhar(processoId);

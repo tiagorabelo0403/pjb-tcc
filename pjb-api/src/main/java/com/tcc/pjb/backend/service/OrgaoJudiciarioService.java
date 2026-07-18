@@ -13,6 +13,7 @@ import com.tcc.pjb.backend.model.repository.OrgaoJudiciarioRepository;
 import com.tcc.pjb.backend.service.exception.RecursoJaExistenteException;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import lombok.RequiredArgsConstructor;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +37,7 @@ public class OrgaoJudiciarioService {
         return orgaoJudiciarioMapper.entidadeParaResponse(entidadeSalva);
     }
 
+    @PjbTransactionalBudget(operation = "orgao-judiciario.listar-todos", maxMillis = 3000)
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "orgaos_judiciarios")
     public List<OrgaoJudiciarioResponse> listarTodos() {

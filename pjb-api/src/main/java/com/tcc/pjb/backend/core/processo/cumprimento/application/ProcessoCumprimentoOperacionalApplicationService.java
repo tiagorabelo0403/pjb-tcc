@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ProcessoCumprimentoOperacionalApplicationService {
@@ -52,6 +53,7 @@ public class ProcessoCumprimentoOperacionalApplicationService {
         this.outboxPublisher = Objects.requireNonNull(outboxPublisher);
     }
 
+    @PjbTransactionalBudget(operation = "processo.cumprimento-operacional.materializar", maxMillis = 5000)
     @Transactional
     public ProcessoCumprimentoOperacionalAggregate materializar(Long processoId) {
         ProcessoRuntimeContext contexto = processoRuntimeResolver.resolver(processoId);

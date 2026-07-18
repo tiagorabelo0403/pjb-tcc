@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class NationalForumMeshGovernanceService {
@@ -51,6 +52,7 @@ public class NationalForumMeshGovernanceService {
         this.cnjTpuSyncService = Objects.requireNonNull(cnjTpuSyncService);
     }
 
+    @PjbTransactionalBudget(operation = "procedural.national-forum-mesh.reconcile", maxMillis = 15000)
     @Transactional
     public MeshGovernanceReport reconcile() {
         CnjTpuSyncService.TpuCatalogSnapshot snapshot = cnjTpuSyncService.currentSnapshot().orElseGet(cnjTpuSyncService::forceSync);

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.model.entity.Jurisdicao;
 import com.tcc.pjb.backend.model.repository.JurisdicaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class FederalismoRedistribuicaoService {
@@ -33,6 +34,7 @@ public class FederalismoRedistribuicaoService {
         this.processoRepository = Objects.requireNonNull(processoRepository);
     }
 
+    @PjbTransactionalBudget(operation = "federalismo.redistribuicao.sugerir", maxMillis = 8000)
     @Transactional(readOnly = true)
     public RedistribuicaoFederativaReport sugerir(double indiceCritico) {
         double corte = indiceCritico <= 0.0d ? 0.85d : Math.min(0.98d, Math.max(0.50d, indiceCritico));

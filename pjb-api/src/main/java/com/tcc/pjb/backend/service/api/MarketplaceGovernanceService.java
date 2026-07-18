@@ -28,6 +28,7 @@ import com.tcc.pjb.backend.model.repository.MarketplaceClientSubscriptionReposit
 import com.tcc.pjb.backend.model.repository.MarketplaceIntegrationPlanRepository;
 import com.tcc.pjb.backend.model.repository.MarketplaceWebhookDeliveryRepository;
 import com.tcc.pjb.backend.model.repository.MarketplaceWebhookEndpointRepository;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class MarketplaceGovernanceService {
@@ -56,6 +57,7 @@ public class MarketplaceGovernanceService {
         this.cryptoVaultService = Objects.requireNonNull(cryptoVaultService);
     }
 
+    @PjbTransactionalBudget(operation = "marketplace.governance.listar-planos", maxMillis = 3000)
     @Transactional(readOnly = true)
     public List<PlanView> listarPlanos() {
         return planRepository.findAll().stream()

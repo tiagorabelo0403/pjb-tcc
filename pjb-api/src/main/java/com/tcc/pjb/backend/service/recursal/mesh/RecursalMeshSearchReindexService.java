@@ -23,6 +23,7 @@ import com.tcc.pjb.backend.model.repository.recursalmesh.RecursalProcessIntegrat
 import com.tcc.pjb.backend.platform.cluster.PjbClusterLockService;
 import com.tcc.pjb.backend.query.recursalmesh.RecursalMeshQueryModel;
 import com.tcc.pjb.backend.query.recursalmesh.RecursalMeshQueryRepository;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class RecursalMeshSearchReindexService {
@@ -74,6 +75,7 @@ public class RecursalMeshSearchReindexService {
         this.retryExecutorProvider = retryExecutorProvider;
     }
 
+    @PjbTransactionalBudget(operation = "recursal.mesh.reindex", maxMillis = 15000)
     @Transactional
     public RecursalMeshReindexResponse reindex(RecursalMeshReindexRequest request) {
         RecursalMeshReindexRequest normalized = request == null

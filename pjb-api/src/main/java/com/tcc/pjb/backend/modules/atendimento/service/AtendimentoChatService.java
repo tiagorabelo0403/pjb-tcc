@@ -49,6 +49,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class AtendimentoChatService {
@@ -291,6 +292,7 @@ public class AtendimentoChatService {
         return messagingSupport.toDtosWithAttachmentsAndReply(all, actor.getId(), otherUserId, otherLastDelivered, otherLastRead);
     }
 
+    @PjbTransactionalBudget(operation = "atendimento.chat.send-message", maxMillis = 3000)
     @Transactional
     public AtendimentoMessageDto sendMessage(Long threadId, AtendimentoSendMessageRequest request) {
         tosService.requireAccepted();

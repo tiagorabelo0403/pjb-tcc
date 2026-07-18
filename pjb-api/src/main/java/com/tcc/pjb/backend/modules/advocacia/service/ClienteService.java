@@ -24,6 +24,7 @@ import com.tcc.pjb.backend.modules.advocacia.mapper.ClienteMapper;
 import com.tcc.pjb.backend.modules.advocacia.repository.ClienteRepository;
 import com.tcc.pjb.backend.service.exception.RecursoJaExistenteException;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ClienteService {
@@ -54,6 +55,7 @@ public class ClienteService {
         this.auditLedgerService = auditLedgerService;
     }
 
+    @PjbTransactionalBudget(operation = "advocacia.cliente.buscar-clientes", maxMillis = 3000)
     @Transactional(readOnly = true)
     public Page<ClienteDTO.ClienteResponse> buscarClientes(ClienteDTO.ClienteQuery query, Pageable pageable) {
         ClienteDTO.ClienteQuery effective = clampQueryToScope(query);

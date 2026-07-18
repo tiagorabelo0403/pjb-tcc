@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 
 @Service
@@ -77,6 +78,7 @@ public class SecretariatOperationalRedistributionService {
         return new RedistributionSnapshot(assignment.stage(), current, recommended, redistributionSuggested, List.copyOf(capacities), List.copyOf(fundamentos), Map.copyOf(metrics), List.copyOf(assignment.targetWorkItemIds()));
     }
 
+    @PjbTransactionalBudget(operation = "secretariat.operational.redistribuir", maxMillis = 3000)
     @Transactional
     public RedistributionSnapshot redistribuir(Processo processo,
                                                Usuario actor,

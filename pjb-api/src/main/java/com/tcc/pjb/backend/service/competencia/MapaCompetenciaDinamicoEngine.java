@@ -42,6 +42,7 @@ import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import com.tcc.pjb.backend.tribunal.distribuicao.ConfiguracaoDistribuicaoVaraService;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class MapaCompetenciaDinamicoEngine {
@@ -110,6 +111,7 @@ public class MapaCompetenciaDinamicoEngine {
         return registrarDistribuicaoMinima(processo);
     }
 
+    @PjbTransactionalBudget(operation = "competencia.mapa-dinamico.analisar-redistribuicao", maxMillis = 8000)
     @Transactional
     public DynamicCompetenceRedistributionResponse analisarRedistribuicao(double limiarCongestionamento) {
         double limiar = Math.max(0.5d, Math.min(0.99d, limiarCongestionamento));

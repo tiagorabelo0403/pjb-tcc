@@ -9,6 +9,8 @@ import com.tcc.pjb.backend.service.UsuarioService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -36,9 +38,9 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UsuarioResponse>> listarTodos(Authentication authentication) {
+    public ResponseEntity<Page<UsuarioResponse>> listarTodos(Authentication authentication, Pageable pageable) {
         rateLimiter.enforce(CapabilityRateLimitDomain.INSTITUCIONAL, authentication, "usuario_listar", ApiVersion.V1);
-        return ResponseEntity.ok(usuarioService.listarTodosUsuarios());
+        return ResponseEntity.ok(usuarioService.listarTodosUsuarios(pageable));
     }
 
     @GetMapping("/{id}")

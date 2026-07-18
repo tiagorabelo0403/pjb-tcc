@@ -16,6 +16,7 @@ import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ConclusaoProcessualApplicationService {
@@ -70,6 +71,7 @@ public class ConclusaoProcessualApplicationService {
                 magistradoId, "Devolução de conclusão");
     }
 
+    @PjbTransactionalBudget(operation = "processo.conclusao.processar-expiradas", maxMillis = 8000)
     @Transactional
     public int processarExpiradas() {
         Instant agora = Instant.now();

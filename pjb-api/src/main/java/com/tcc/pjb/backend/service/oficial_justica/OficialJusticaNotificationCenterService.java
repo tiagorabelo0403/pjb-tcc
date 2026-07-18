@@ -31,6 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class OficialJusticaNotificationCenterService {
@@ -120,6 +121,7 @@ public class OficialJusticaNotificationCenterService {
         return notificationProofService.issueChallenge(item.getProcesso(), processoId, "OFICIAL_CIENTE_INTIMACAO", "OFICIAL_JUSTICA", "OFICIAL_JUSTICA");
     }
 
+    @PjbTransactionalBudget(operation = "oficial-justica.notification-center.confirmar-ciencia", maxMillis = 3000)
     @Transactional
     public Map<String, Object> confirmarCienciaProcessual(Long processoId, OficialJusticaCienciaIntimacaoRequest request) {
         Usuario usuario = requireOfficialUser();

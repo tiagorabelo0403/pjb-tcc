@@ -21,6 +21,7 @@ import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class CienciaProcessualApplicationService {
@@ -127,6 +128,7 @@ public class CienciaProcessualApplicationService {
         return salva;
     }
 
+    @PjbTransactionalBudget(operation = "processo.ciencia.processar-expirados", maxMillis = 8000)
     @Transactional
     public int processarExpirados() {
         int total = 0;

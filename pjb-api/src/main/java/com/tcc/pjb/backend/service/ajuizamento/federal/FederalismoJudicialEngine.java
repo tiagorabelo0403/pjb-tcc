@@ -37,6 +37,7 @@ import com.tcc.pjb.backend.model.repository.FederacaoEventoOutboxRepository;
 import com.tcc.pjb.backend.model.repository.FederacaoLedgerEntryRepository;
 import com.tcc.pjb.backend.model.repository.NoFederacaoJudicialRepository;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class FederalismoJudicialEngine {
@@ -119,6 +120,7 @@ public class FederalismoJudicialEngine {
         return FederalismoNodeResponse.of(salvo);
     }
 
+    @PjbTransactionalBudget(operation = "federalismo.engine.listar-nos", maxMillis = 3000)
     @Transactional(readOnly = true)
     public List<FederalismoNodeResponse> listarNos() {
         CachedNodes cache = nodesCache.get();
@@ -135,6 +137,7 @@ public class FederalismoJudicialEngine {
         return noRepository.findByCodigoTribunal(normalizeUpper(codigoTribunal)).map(FederalismoNodeResponse::of);
     }
 
+    @PjbTransactionalBudget(operation = "federalismo.engine.health", maxMillis = 3000)
     @Transactional(readOnly = true)
     public FederacaoHealth healthFederacao() {
         CachedHealth cache = healthCache.get();

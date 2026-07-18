@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class CalendarNotificationDispatchService {
@@ -40,6 +41,7 @@ public class CalendarNotificationDispatchService {
         this.realtimeTopicService = Objects.requireNonNull(realtimeTopicService);
     }
 
+    @PjbTransactionalBudget(operation = "calendar.notification.dispatch", maxMillis = 3000)
     @Transactional
     public void dispatch(CalendarNotificationEnvelope envelope) {
         if (envelope == null || envelope.usuarioId() == null) {

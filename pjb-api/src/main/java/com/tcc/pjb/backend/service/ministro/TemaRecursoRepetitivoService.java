@@ -34,6 +34,7 @@ import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.processual.document.template.RecursalQualifiedDocumentMaterializerService;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class TemaRecursoRepetitivoService {
@@ -187,6 +188,7 @@ public class TemaRecursoRepetitivoService {
         return toView(saved, documentoFormalAssinado);
     }
 
+    @PjbTransactionalBudget(operation = "ministro.tema-recurso-repetitivo.aplicar-resultado", maxMillis = 8000)
     @Transactional
     public TemaRecursoRepetitivoView aplicarResultado(Long temaId, RelacionarProcessosRequest request) {
         requireMagistradoSuperior();

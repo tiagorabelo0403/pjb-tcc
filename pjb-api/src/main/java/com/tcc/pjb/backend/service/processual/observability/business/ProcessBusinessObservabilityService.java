@@ -28,6 +28,7 @@ import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.repository.outbox.OutboxEventRepository;
 import com.tcc.pjb.backend.service.processual.observability.metrics.ProcessBusinessMetrics;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ProcessBusinessObservabilityService {
@@ -65,6 +66,7 @@ public class ProcessBusinessObservabilityService {
         this.metrics = Objects.requireNonNull(metrics);
     }
 
+    @PjbTransactionalBudget(operation = "processual.business-observability.snapshot", maxMillis = 5000)
     @Transactional(readOnly = true)
     public ProcessBusinessObservabilityResponse snapshot() {
         CachedSnapshot cached = snapshotCache.get();

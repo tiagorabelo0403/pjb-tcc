@@ -31,6 +31,7 @@ import com.tcc.pjb.backend.model.entity.identity.IdentidadeJuridicaNacional;
 import com.tcc.pjb.backend.model.entity.identity.ProntuarioNacionalEntrada;
 import com.tcc.pjb.backend.model.repository.ProntuarioNacionalEntradaRepository;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ProntuarioNacionalService {
@@ -185,6 +186,7 @@ public class ProntuarioNacionalService {
         return salvo;
     }
 
+    @PjbTransactionalBudget(operation = "identity.prontuario-nacional.atualizar-status-nupn", maxMillis = 3000)
     @Transactional
     public int atualizarStatusPorNupn(String nupn, StatusProcesso novoStatus, String fonteEventoId) {
         Objects.requireNonNull(novoStatus, "novoStatus");

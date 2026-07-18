@@ -29,6 +29,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ProcessoAntifraudeOperacionalApplicationService {
@@ -63,6 +64,7 @@ public class ProcessoAntifraudeOperacionalApplicationService {
         this.processoMalhaParallelExecutor = Objects.requireNonNull(processoMalhaParallelExecutor);
     }
 
+    @PjbTransactionalBudget(operation = "processo.antifraude-operacional.acionar", maxMillis = 3000)
     @Transactional
     public ProcessoAntifraudeOperacionalAggregate acionar(Long processoId) {
         Processo processo = processoRuntimeResolver.resolver(processoId).processo();

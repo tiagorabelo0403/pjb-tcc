@@ -27,6 +27,7 @@ import com.tcc.pjb.backend.model.entity.api.MarketplaceClientApp;
 import com.tcc.pjb.backend.model.repository.MarketplaceAccessTokenRecordRepository;
 import com.tcc.pjb.backend.model.repository.MarketplaceAuditEventRepository;
 import com.tcc.pjb.backend.model.repository.MarketplaceClientAppRepository;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class MarketplaceOAuth2Service {
@@ -53,6 +54,7 @@ public class MarketplaceOAuth2Service {
         this.objectMapper = Objects.requireNonNull(objectMapper);
     }
 
+    @PjbTransactionalBudget(operation = "marketplace.oauth2.listar-clientes", maxMillis = 3000)
     @Transactional(readOnly = true)
     public List<ClientView> listarClientes() {
         return clientRepository.findAll().stream()

@@ -21,6 +21,7 @@ import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Slf4j
 @Service
@@ -34,6 +35,7 @@ public class JurisdicaoService {
 
     
 
+    @PjbTransactionalBudget(operation = "jurisdicao.listar-todas", maxMillis = 3000)
     @Transactional(readOnly = true)
     @Cacheable(value = "jurisdicoes")
     public List<JurisdicaoResponse> listarTodas() {
@@ -88,6 +90,7 @@ public class JurisdicaoService {
         return jurisdicaoMapper.toResponse(salvo);
     }
 
+    @PjbTransactionalBudget(operation = "jurisdicao.listar-paginado", maxMillis = 3000)
     @Transactional(readOnly = true)
     public Page<JurisdicaoResponse> listarPaginado(Pageable pageable) {
         return jurisdicaoRepository.findAll(pageable)
