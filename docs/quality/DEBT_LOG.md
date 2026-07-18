@@ -107,14 +107,65 @@ alguma regra por rito precisar tratar os dois institutos de forma diferente.
 
 **Status:** aberta
 
-**Contexto:** `vigencia_inicio` das 37 unidades do TRT7/CE (e, por padrão, das demais 23 regiões quando
-carregadas) usa uma data conservadora presumida (CF/88), não a data real de criação de cada vara — essa
-informação não está no documento-fonte usado (que só confirma jurisdição vigente na data de publicação).
+**Contexto:** `vigencia_inicio` das 37 unidades do TRT7/CE e das 155 unidades do TRT3/MG (e, por padrão,
+das demais 22 regiões quando carregadas) usa uma data conservadora presumida (CF/88), não a data real
+de criação de cada vara.
+
+No TRT7/CE essa presunção era a única opção — o documento-fonte só confirmava jurisdição vigente na
+data de publicação, sem histórico individual. No TRT3/MG **a informação real existe**: o documento
+(`End03.pdf`) traz "Data de Instalação" individual e verificada para as 158 varas (cobertura 100%,
+confirmada por contagem), com casos concretos de dispersão relevante — ex. Belo Horizonte tem varas
+instaladas entre 1941 (1ª VT) e 2013 (45ª VT), 72 anos de diferença dentro do mesmo município. Decisão
+consciente (não lacuna de pesquisa) foi manter a mesma data presumida do Ceará em vez de usar a data
+real, porque o schema atual (`tb_jurisdicao_territorial`) só suporta um `vigencia_inicio` por linha de
+município — não representa "este conjunto de varas cresceu ao longo de décadas", só "desde a data X,
+todo o conjunto é competente" (a constraint `EXCLUDE` do schema proíbe duas linhas do mesmo município
+com intervalos de vigência sobrepostos).
 
 **Risco:** nenhum falso-negativo pra frente (o sistema não nega competência que existe), mas não há
 precisão sobre desde quando cada configuração específica de jurisdição vale — se uma vara foi criada em
 2015, casos de 2010 continuam resolvendo pra ela mesmo sem essa vara ter existido ainda.
 
 **Quando revisitar:** se algum caso de uso exigir precisão histórica real (ex.: litígio sobre qual vara
-era competente numa data específica no passado), buscar a resolução/lei de criação de cada vara
-individualmente.
+era competente numa data específica no passado), considerar redesenho de `vigencia_inicio`/`vigencia_fim`
+para `tb_jurisdicao_territorial_unidade` (por vara, não por município) — o TRT3/MG já tem o dado real
+pronto pra popular esse redesenho quando ele acontecer, sem nova extração de PDF.
+
+## D-trt3-codigo-unidade-duplicado-fonte
+
+**Status:** aberta
+
+**Contexto:** o documento-fonte do TRT3/MG (`End03.pdf`) atribui o mesmo "Código atribuído pelo TRT" a
+3 pares de varas fisicamente distintas: `0031` (3ª e 5ª VT de Contagem), `0070` (2ª VT de Ouro Preto e
+1ª VT de Passos) e `0142` (5ª VT de Betim e 2ª VT de Uberaba). Confirmado por leitura direta do texto
+extraído — os 6 registros são completos e bem formados, com endereço, e-mail e data de instalação
+distintos entre si; não é artefato de parsing. Carregado como está, decisão consciente do usuário.
+
+**Risco:** `TRT3-0070` (por exemplo) aponta simultaneamente para Ouro Preto e para Passos —
+identificador de vara ambíguo nesses 3 casos específicos. Para Contagem (0031) o efeito é mais sutil:
+como as duas varas com código duplicado atendem exatamente o mesmo conjunto de municípios, o
+`Set<String> unidadesElegiveis` colapsa as duas em uma entrada só — a carga não perde competência
+territorial nenhuma, mas perde a informação de que existiam originalmente 2 varas ali com códigos que
+deveriam ser distintos.
+
+**Quando revisitar:** se o TST/TRT3 publicar uma revisão do documento-fonte corrigindo a duplicidade,
+ou se algum fluxo precisar citar univocamente uma dessas 6 varas (ex.: intimação, mandado) — nesse caso
+a resolução exige fonte primária adicional (ex.: consulta direta ao TRT3), não inferência.
+
+## D-trt3-municipios-sem-vara-competencia-delegada
+
+**Status:** aberta
+
+**Contexto:** 6 municípios de MG (Capitólio, Doresópolis, Guapé, Piumhi, São Roque de Minas, Vargem
+Bonita) não aparecem em nenhuma jurisdição de vara no documento-fonte do TRT3 — confirmado por busca
+textual nas 70 páginas do PDF, nenhuma ocorrência. Não foram carregados na V305.
+
+**Risco:** consulta territorial para esses 6 municípios devolve `MunicipioForaDoCatalogo`, quando a
+hipótese mais provável é que exista competência trabalhista real por delegação ao juiz de direito da
+comarca local (CLT art. 668 c/c CF art. 112 — mecanismo usado onde não há Vara do Trabalho instalada),
+não ausência de competência. O documento usado (`End03.pdf`, cadastro de Varas do Trabalho) não cobre
+esse tipo de competência delegada por desenho — não é uma lacuna de extração.
+
+**Quando revisitar:** se a Fatia territorial precisar cobrir `modo_competencia = 'DELEGADA_JUIZ_DIREITO'`
+(já suportado pelo schema desde a V302) — nesse caso, buscar fonte específica de comarcas com
+competência trabalhista delegada, provavelmente no TJMG, não no TST.
