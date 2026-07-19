@@ -651,6 +651,8 @@ Zero loose `CompletableFuture` in production code. ADR-0051 defines the unified 
 
 Not loading data unnecessarily into the JVM is treated as a project constraint, not a suggestion. The federal redistribution engine calculates load per jurisdiction entirely in the database: a single query with `GROUP BY jurisdicao_id` and two `SUM(CASE WHEN...)` expressions returns aggregated values directly. No `Processo` instance is constructed, no list is materialized, no Java accumulator accumulates what the PostgreSQL executor already knows how to calculate.
 
+The `transactional_hotspot_guard` scans every `@Transactional` method in the module for heavy I/O inside the transaction. Of 51 findings individually reviewed, one was a real risk: `UsuarioService.listarTodosUsuarios` loaded the entire user table on every call, with no pagination, on the admin endpoint `GET /api/v1/usuarios` — fixed to return `Page<UsuarioResponse>` via `Pageable`, the same pattern already used by `JurisdicaoService.listarPaginado`. The other 50 were small reference tables, already-cached queries, already-paginated calls, or already the correct paginated-batch-plus-single-`saveAll` pattern — reviewed and annotated with `@PjbTransactionalBudget`, which documents the accepted budget instead of silencing the alert.
+
 The `tb_outbox_event` table is partitioned monthly by `created_month`. Processed events are not deleted row-by-row — the entire partition is dropped via `DROP TABLE` when the month turns. The purge cost is O(1) regardless of volume. A court with one million events per month has exactly the same cleanup cost as one with a hundred.
 
 The authorization trail (`tb_authz_trail`) materializes every access decision with a semantic key: compact hash of actor, resource, and decision — not a UUID. Identical repeated decisions collapse into the same entry — no silent duplication of records for the same (subject, object, effect) pair. The ledger remains queryable by access pattern, not just time window.
@@ -718,7 +720,7 @@ python scripts/runtime_concurrency_guard.py
 python scripts\architecture_hygiene_guard.py
 python scripts\constructor_injection_guard.py
 python scripts\runtime_concurrency_guard.py
-python scripts\transactional_hotspot_guard.py --fail-on-missing-budgets
+python scripts\transactional_hotspot_guard.py --fail-on-findings --fail-on-missing-budgets
 python scripts\config_taxonomy_guard.py
 ```
 
@@ -727,7 +729,7 @@ python scripts\config_taxonomy_guard.py
 | `architecture_hygiene_guard` | Class names, packages, prohibited cross-dependencies |
 | `constructor_injection_guard` | Zero `@Autowired` on fields — constructor injection only |
 | `runtime_concurrency_guard` | Zero executor created outside `PjbVirtualThreadSpine` governance |
-| `transactional_hotspot_guard` | `@Transactional` only on ApplicationService, no external I/O inside transaction |
+| `transactional_hotspot_guard` | Zero unreviewed heavy-I/O finding inside `@Transactional` — a reviewed hotspot requires `@PjbTransactionalBudget` |
 | `config_taxonomy_guard` | Configuration properties within the defined taxonomy |
 | `anti_mock_prod_guard` | Blocks if critical integration mocks are active in production: Gov.br, ICP-Brasil, Kafka, Elasticsearch, AI |
 | `openapi_weakness_detector` | Detects `Map<String,Object>` without typed schema, fields without `format: date-time`, routes without registered OpenAPI contract |

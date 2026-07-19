@@ -651,6 +651,8 @@ Zero `CompletableFuture` solto no código de produção. O ADR-0051 define o mod
 
 Não carregar dados desnecessariamente no JVM é tratado como restrição de projeto, não sugestão. O motor de redistribuição federativa calcula carga por jurisdição inteiramente no banco: uma única query com `GROUP BY jurisdicao_id` e dois `SUM(CASE WHEN...)` retorna os valores agregados diretamente. Nenhuma instância de `Processo` é construída, nenhuma lista é materializada, nenhum acumulador Java acumula o que o executor do PostgreSQL já sabe calcular.
 
+O guard `transactional_hotspot_guard` varre todo `@Transactional` do módulo em busca de I/O pesado dentro da transação. De 51 achados revisados individualmente, um era risco real: `UsuarioService.listarTodosUsuarios` carregava a tabela inteira de usuários por chamada, sem paginação, no endpoint administrativo `GET /api/v1/usuarios` — corrigido para `Page<UsuarioResponse>` via `Pageable`, mesmo padrão já usado em `JurisdicaoService.listarPaginado`. Os outros 50 eram tabela de referência pequena, consulta já em cache, já paginada, ou já o padrão correto de lote paginado com `saveAll` único — revisados e anotados com `@PjbTransactionalBudget`, que documenta o orçamento aceito em vez de silenciar o alerta.
+
 A tabela `tb_outbox_event` é particionada mensalmente por `created_month`. Eventos processados não são deletados em linha — a partição inteira é descartada via `DROP TABLE` quando o mês vira. O custo de expurgo é O(1) independente do volume. Um tribunal com um milhão de eventos por mês tem exatamente o mesmo custo de limpeza que um com cem.
 
 A trilha de autorização (`tb_authz_trail`) materializa toda decisão de acesso com uma chave semântica: hash compacto de ator, recurso e decisão, não UUID. Decisões idênticas repetidas colapsam na mesma entrada — sem duplicação silenciosa de registros para o mesmo par (sujeito, objeto, efeito). O ledger permanece consultável por padrão de acesso, não apenas por janela temporal.
@@ -713,7 +715,7 @@ Executáveis localmente antes de qualquer commit:
 python scripts\architecture_hygiene_guard.py
 python scripts\constructor_injection_guard.py
 python scripts\runtime_concurrency_guard.py
-python scripts\transactional_hotspot_guard.py --fail-on-missing-budgets
+python scripts\transactional_hotspot_guard.py --fail-on-findings --fail-on-missing-budgets
 python scripts\config_taxonomy_guard.py
 ```
 
@@ -729,7 +731,7 @@ python scripts/runtime_concurrency_guard.py
 | `architecture_hygiene_guard` | Nomes de classe, pacotes, dependências cruzadas proibidas |
 | `constructor_injection_guard` | Zero `@Autowired` em fields — apenas injeção por construtor |
 | `runtime_concurrency_guard` | Zero executor criado fora da governança `PjbVirtualThreadSpine` |
-| `transactional_hotspot_guard` | `@Transactional` apenas em ApplicationService, sem I/O externo |
+| `transactional_hotspot_guard` | Zero achado de I/O pesado sem revisão dentro de `@Transactional` — hotspot revisado exige `@PjbTransactionalBudget` |
 | `config_taxonomy_guard` | Propriedades de configuração dentro da taxonomia definida |
 | `anti_mock_prod_guard` | Bloqueia se mocks de integração crítica estiverem ativos em produção: Gov.br, ICP-Brasil, Kafka, Elasticsearch, IA |
 | `openapi_weakness_detector` | Detecta `Map<String,Object>` sem schema tipado, campos sem `format: date-time` e rotas sem contrato OpenAPI registrado |
