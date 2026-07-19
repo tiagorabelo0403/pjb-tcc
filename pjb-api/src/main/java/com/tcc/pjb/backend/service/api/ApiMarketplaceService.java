@@ -38,6 +38,12 @@ public class ApiMarketplaceService {
         processo.setMateria(MateriaJurisdicao.fromRamo(processo.getRamoDireito()));
         processo.setUf(request.uf());
         processo.setComarca(request.comarca());
+        processo.setUfAutor(request.ufAutor());
+        processo.setComarcaAutor(request.comarcaAutor());
+        if (!request.enderecoReuDesconhecido()) {
+            processo.setUfReu(request.ufReu());
+            processo.setComarcaReu(request.comarcaReu());
+        }
         processo.setClasseProcessual(request.classeProcessual());
         processo.setAssunto(request.assunto());
         processo.setPedidoPrincipal(request.pedidoPrincipal());
@@ -89,7 +95,12 @@ public class ApiMarketplaceService {
             String parteAutoraCpf,
             String parteReuNome,
             String parteReuCpf,
-            java.math.BigDecimal valorCausa
+            java.math.BigDecimal valorCausa,
+            String ufAutor,
+            String comarcaAutor,
+            String ufReu,
+            String comarcaReu,
+            boolean enderecoReuDesconhecido
     ) {
     }
 

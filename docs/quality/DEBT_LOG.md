@@ -36,25 +36,32 @@ de assinatura de TERMO_ACORDO precisar de auditoria mais rígida.
 
 ## D-domicilio-parte-dois-canais-nao-populam
 
-**Status:** aberta (parcialmente fechada — Laiane resolvido)
+**Status:** aberta — narrowed para só MNI (Marketplace fechado)
 
 **Contexto:** `Processo.ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu` eram populados só pelo canal REST
 (via `ProcessoMapper`). **Laiane já foi corrigido**: `EstruturarRequest` captura os 4 campos +
 `enderecoReuDesconhecido`, a sessão (`LaianePeticaoInicialDraftSession`, migration V301) os carrega até
 `protocolar()`, que os aplica ao `Processo` (flag vence os valores quando o réu é desconhecido).
-Marketplace (`ApiMarketplaceService`) e MNI (`MniXmlToProcessoAdapter`) continuam deixando os 4 campos
-nulos — cada um seta apenas `uf`/`comarca` (competência), não domicílio de parte. `PoloCompositionPolicy`
-deriva `ufDomicilio`/`comarcaDomicilio` diretamente desses 4 campos sem fallback, então o domicílio de
-parte fica nulo em `PoloProcessual` nesses 2 canais restantes também.
+**Marketplace também foi corrigido** (campo opcional aditivo, sem versionar endpoint):
+`MarketplaceProtocoloRequest` ganhou `ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu`/
+`enderecoReuDesconhecido`, propagados através de `MarketplaceSurfaceFacadeService` até o record interno
+homônimo de `ApiMarketplaceService`, que aplica a mesma regra de precedência do Laiane em `protocolar()`.
+Achado durante a implementação: o contrato público (`model/dto/processo/marketplace/
+MarketplaceProtocoloRequest`) e o parâmetro interno de `ApiMarketplaceService` são dois records distintos
+com os mesmos 15 campos, mapeados posicionalmente pelo facade — não é duplicação indevida (contrato
+público vs. parâmetro interno são propósitos diferentes), mas qualquer campo novo precisa ser adicionado
+nos dois records e no mapeamento do facade na mesma edição, senão a aridade diverge e o projeto para de
+compilar.
 
-**Risco:** duas correções de tamanho e natureza diferentes, não uma correção uniforme:
-- Marketplace exige mudança de contrato público (`MarketplaceProtocoloRequest` não expõe esses campos
-  hoje — afeta integradores externos já conectados).
-- MNI exige parsing de endereço por parte no XML (`resolvePartes()` hoje só extrai nome e documento) —
-  é extensão de parsing de formato externo, não ajuste pontual.
+MNI (`MniXmlToProcessoAdapter`) continua deixando os 4 campos nulos — seta apenas `uf`/`comarca`
+(competência), não domicílio de parte. `PoloCompositionPolicy` deriva `ufDomicilio`/`comarcaDomicilio`
+diretamente desses 4 campos sem fallback, então o domicílio de parte fica nulo em `PoloProcessual`
+nesse canal restante também.
 
-**Quando revisitar:** ao decidir prioridade de cada um dos dois separadamente — não tratar como um único
-item de trabalho.
+**Risco:** MNI exige parsing de endereço por parte no XML (`resolvePartes()` hoje só extrai nome e
+documento) — é extensão de parsing de formato externo, não ajuste pontual.
+
+**Quando revisitar:** ao priorizar o parsing de endereço no adapter MNI.
 
 ## D-intake-workspace-endereco-nao-wireado
 

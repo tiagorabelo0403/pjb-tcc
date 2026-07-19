@@ -1,6 +1,8 @@
 package com.tcc.pjb.backend.model.dto.processo.marketplace;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 public record MarketplaceProtocoloRequest(
@@ -18,6 +20,11 @@ public record MarketplaceProtocoloRequest(
         String parteAutoraCpf,
         String parteReuNome,
         String parteReuCpf,
-        BigDecimal valorCausa
+        BigDecimal valorCausa,
+        @Pattern(regexp = "^$|^[A-Za-z]{2}$") String ufAutor,
+        @Size(max = 160) String comarcaAutor,
+        @Pattern(regexp = "^$|^[A-Za-z]{2}$") String ufReu,
+        @Size(max = 160) String comarcaReu,
+        boolean enderecoReuDesconhecido
 ) {
 }
