@@ -2,7 +2,7 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
-![Unit Tests](https://img.shields.io/badge/Unit%20Tests-4%2C134%20%7C%200%20failures-brightgreen)
+![Unit Tests](https://img.shields.io/badge/Unit%20Tests-4%2C138%20%7C%200%20failures-brightgreen)
 ![Integration Tests](https://img.shields.io/badge/IT%20Tests-230%20%7C%200%20known%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
@@ -232,7 +232,7 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 4,134 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 4,138 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 230 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 ### Run Unit Tests Only (fast)
@@ -249,7 +249,7 @@ Expected time: **~15 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api
 ```
 
-This is the official project gate. It runs the 4,134 unit tests (Surefire) and then the 230 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 4,138 unit tests (Surefire) and then the 230 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 Expected time: **~50 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
 
@@ -267,7 +267,7 @@ The Surefire/Failsafe `argLine` sets `-Dpjb.runtime.lifecycle.drain-quiet-period
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **4,134** |
+| Total unit tests | Surefire | **4,138** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~15 min** |
@@ -514,7 +514,7 @@ The document vocabulary is canonical and sealed: `TipoDocumento` (~105 values) c
 
 **Typed channel (slice 1d — done):** `Attachment.tipoDocumento` is propagated from `SmartFileSplitter` all the way to the routing payload via `NationalProceduralProcessoEntityPayloadAssembler` (key `documentosTipados`) and consumed by `NationalProceduralPreflightPayloadFactory.extractPresentDocuments`. Boundary 2 is protected: the key is only added to the payload when at least one non-null `tipoDocumento` is present (`!tipados.isEmpty()`), preventing an empty list from activating the typed channel for callers without a declaration. The 3 `ProcessoCommandControllerIT` classes that exercise civil filing without `AnexoDeclarado` were closed (D-d25-testes-anexo): isolated from the real routing/completeness engine, coverage that already exists in `ValidacaoDocumentoAjuizamentoIT` and `CompletudeDocumentalAjuizamentoIT`.
 
-**Party composition by procedural type:** filing does not force the civil mold onto every segment. The system reads the catalog by procedural type and materializes the correct procedural role: `ACUSACAO`/`ACUSADO` in criminal cases, `RECLAMANTE`/`RECLAMADA` in labor cases, `IMPETRANTE`/`IMPETRADO` in writs of mandamus, `SEGURADO` in social-security cases (the INSS does not automatically become a party — it is an extension point for future integration), `INVESTIGADO` in military inquiries. Where the active/passive dichotomy does not legally exist — in habeas corpus, the patient is not an adversarial party — no party is created. Procedural types not covered by the catalog keep null composition until their party profiles are specified. The catalog by procedural type is the single source of truth: the same catalog that defines which documents are required also defines who the parties are. `PoloProcessual` also records the party's procedural domicile (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`) and corporate name for legal entities, kept separate from the routing territory — which lives in `tb_processo` (`uf_autor`, `comarca_autor`, `uf_reu`, `comarca_reu`). Filing via REST and the initial-petition assistant (Laiane) already capture this information at input time: `EstruturarRequest` receives `ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu`, the draft session carries them through to `protocolar()`, and `Processo` persists them, with the `enderecoReuDesconhecido` flag following the same pattern as PJe — the defendant's address is often unknown at filing time — and overriding the informed values when set. MNI and the integrator marketplace do not yet capture this information at input, so these fields remain null on those two remaining channels (registered debt D-domicilio-parte-dois-canais-nao-populam). The engine (`PoloCompositionPolicy` + `PoloRoleMappingTable`) is the single funnel for party materialization — filing via REST, the initial-petition assistant (Laiane), MNI import, and the integrator marketplace all converge on the same mechanism (for Laiane and the marketplace, materialized inside `AjuizamentoService.ajuizar()`; MNI materializes via an equivalent dedicated method in `MniRecepcaoService`, so no caller needs to remember to invoke the engine), with no divergent path producing a generic label (`AUTOR`/`REU`) where the procedural type requires a specific role.
+**Party composition by procedural type:** filing does not force the civil mold onto every segment. The system reads the catalog by procedural type and materializes the correct procedural role: `ACUSACAO`/`ACUSADO` in criminal cases, `RECLAMANTE`/`RECLAMADA` in labor cases, `IMPETRANTE`/`IMPETRADO` in writs of mandamus, `SEGURADO` in social-security cases (the INSS does not automatically become a party — it is an extension point for future integration), `INVESTIGADO` in military inquiries. Where the active/passive dichotomy does not legally exist — in habeas corpus, the patient is not an adversarial party — no party is created. Procedural types not covered by the catalog keep null composition until their party profiles are specified. The catalog by procedural type is the single source of truth: the same catalog that defines which documents are required also defines who the parties are. `PoloProcessual` also records the party's procedural domicile (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`) and corporate name for legal entities, kept separate from the routing territory — which lives in `tb_processo` (`uf_autor`, `comarca_autor`, `uf_reu`, `comarca_reu`). Filing via REST and the initial-petition assistant (Laiane) already capture this information at input time: `EstruturarRequest` receives `ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu`, the draft session carries them through to `protocolar()`, and `Processo` persists them, with the `enderecoReuDesconhecido` flag following the same pattern as PJe — the defendant's address is often unknown at filing time — and overriding the informed values when set. The integrator marketplace captures the same 4 fields via `MarketplaceProtocoloRequest`, propagated by `MarketplaceSurfaceFacadeService` to the equivalent internal record in `ApiMarketplaceService`, applying the same precedence rule. The MNI channel captures the party's UF: `MniXmlToProcessoAdapter.resolvePartes` reads the `<estado>` element from the first `<endereco>` of each `<pessoa>` in the XML (the MNI 2.2.2 XSD defines `estado` as a free-text element, with no format restriction), normalizes it to a 2-letter uppercase code, and discards anything outside that format — never persisting raw garbage, never throwing on a missing address. County-equivalent (`comarca`) and municipality remain null on this channel: MNI has no comarca-equivalent element, and the only `codigoMunicipioIBGE` in the standard belongs to `tipoOrgaoJulgador` (the adjudicating court), not to a party's address — confirmed by an exhaustive search of the schema documentation, so as not to assume data the standard does not actually carry. Debt `D-domicilio-parte-dois-canais-nao-populam` documents these residual comarca/municipality gaps in MNI and Marketplace; none of the four channels leaves party domicile entirely null anymore. The engine (`PoloCompositionPolicy` + `PoloRoleMappingTable`) is the single funnel for party materialization — filing via REST, the initial-petition assistant (Laiane), MNI import, and the integrator marketplace all converge on the same mechanism (for Laiane and the marketplace, materialized inside `AjuizamentoService.ajuizar()`; MNI materializes via an equivalent dedicated method in `MniRecepcaoService`, so no caller needs to remember to invoke the engine), with no divergent path producing a generic label (`AUTOR`/`REU`) where the procedural type requires a specific role.
 
 ### 8 — Filing, Correction, and Metadata Quality
 
@@ -681,7 +681,7 @@ CREATE POLICY processo_sigilo ON processo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **4,134 · 0 failures · 0 errors** |
+| Unit tests (Surefire) | **4,138 · 0 failures · 0 errors** |
 | Integration tests (Failsafe) | **230 · 0 known failures** (from 49 → 14 → 10 → 0; D-routing-preprotocolo and the 9 remaining pre-existing failures closed; +10 polo-composition-engine green; +24 from the territorial competence slice — CE, MG and RN — green since creation — see note¹ in the Tests section about 10 tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
@@ -900,7 +900,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 4,134 unit tests plus 230 integration tests, and 269 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 4,138 unit tests plus 230 integration tests, and 269 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

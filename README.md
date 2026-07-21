@@ -2,7 +2,7 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
-![Testes unitários](https://img.shields.io/badge/Testes%20unit%C3%A1rios-4.134%20%7C%200%20falhas-brightgreen)
+![Testes unitários](https://img.shields.io/badge/Testes%20unit%C3%A1rios-4.138%20%7C%200%20falhas-brightgreen)
 ![Testes de integração](https://img.shields.io/badge/Testes%20IT-230%20%7C%200%20falhas%20conhecidas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
@@ -232,7 +232,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.134 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 4.138 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 230 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
@@ -249,7 +249,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.134 unitários (Surefire) e depois os 230 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.138 unitários (Surefire) e depois os 230 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -267,7 +267,7 @@ O `argLine` do Surefire/Failsafe fixa `-Dpjb.runtime.lifecycle.drain-quiet-perio
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.134** |
+| Total de testes unitários | Surefire | **4.138** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~15 min** |
@@ -514,7 +514,7 @@ O vocabulário documental é canônico e selado: `TipoDocumento` (~105 valores) 
 
 **Canal tipado (fatia 1d — concluída):** `Attachment.tipoDocumento` é propagado do `SmartFileSplitter` até o payload de routing via `NationalProceduralProcessoEntityPayloadAssembler` (chave `documentosTipados`) e consumido por `NationalProceduralPreflightPayloadFactory.extractPresentDocuments`. Fronteira 2 protegida: a chave só é adicionada ao payload quando pelo menos um `tipoDocumento` não-nulo está presente (`!tipados.isEmpty()`), evitando que lista vazia ative o canal tipado em callers sem declaração. Os 3 `ProcessoCommandControllerIT` que exercitam o ajuizamento civil sem `AnexoDeclarado` foram fechados (D-d25-testes-anexo): isolados do motor real de roteamento/completude documental, cobertura que já existe em `ValidacaoDocumentoAjuizamentoIT` e `CompletudeDocumentalAjuizamentoIT`.
 
-**Composição de partes por rito:** o ajuizamento não impõe o molde cível a todos os segmentos. O sistema lê o catálogo por rito e materializa o papel processual correto: `ACUSACAO`/`ACUSADO` no penal, `RECLAMANTE`/`RECLAMADA` no trabalhista, `IMPETRANTE`/`IMPETRADO` no mandado de segurança, `SEGURADO` no previdenciário (o INSS não vira polo automático — é ponto de extensão para integração futura), `INVESTIGADO` no IPM militar. Onde a dicotomia ativo/passivo não existe juridicamente — no habeas corpus o paciente não é parte adversarial —, nenhum polo é criado. Ritos não cobertos pelo catálogo mantêm composição nula até que seus perfis de partes sejam especificados. O catálogo por rito é a única fonte de verdade: o mesmo que define quais documentos são exigidos define quem são as partes. `PoloProcessual` também registra o domicílio processual da parte (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`) e razão social para pessoas jurídicas, separados do território de roteamento — este fica em `tb_processo` (`uf_autor`, `comarca_autor`, `uf_reu`, `comarca_reu`). O ajuizamento via REST e o assistente de petição inicial (Laiane) já capturam essa informação na entrada: `EstruturarRequest` recebe `ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu`, a sessão de draft os carrega até `protocolar()` e o `Processo` os persiste, com a flag `enderecoReuDesconhecido` seguindo o mesmo padrão do PJe — endereço do réu frequentemente desconhecido no ajuizamento — e vencendo os valores informados quando marcada. MNI e o marketplace de integradores ainda não capturam essa informação na entrada, então esses campos ficam nulos nesses dois canais restantes (dívida registrada como D-domicilio-parte-dois-canais-nao-populam). O motor (`PoloCompositionPolicy` + `PoloRoleMappingTable`) é o único funil de materialização de polo — ajuizamento via REST, o assistente de petição inicial (Laiane), a importação MNI e o marketplace de integradores convergem para o mesmo mecanismo (para Laiane e marketplace, materializado dentro de `AjuizamentoService.ajuizar()`; MNI materializa via método próprio equivalente em `MniRecepcaoService`, sem cada chamador precisar lembrar de acionar o motor), sem caminhos divergentes que produzam rótulo genérico (`AUTOR`/`REU`) onde o rito exige papel específico.
+**Composição de partes por rito:** o ajuizamento não impõe o molde cível a todos os segmentos. O sistema lê o catálogo por rito e materializa o papel processual correto: `ACUSACAO`/`ACUSADO` no penal, `RECLAMANTE`/`RECLAMADA` no trabalhista, `IMPETRANTE`/`IMPETRADO` no mandado de segurança, `SEGURADO` no previdenciário (o INSS não vira polo automático — é ponto de extensão para integração futura), `INVESTIGADO` no IPM militar. Onde a dicotomia ativo/passivo não existe juridicamente — no habeas corpus o paciente não é parte adversarial —, nenhum polo é criado. Ritos não cobertos pelo catálogo mantêm composição nula até que seus perfis de partes sejam especificados. O catálogo por rito é a única fonte de verdade: o mesmo que define quais documentos são exigidos define quem são as partes. `PoloProcessual` também registra o domicílio processual da parte (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`) e razão social para pessoas jurídicas, separados do território de roteamento — este fica em `tb_processo` (`uf_autor`, `comarca_autor`, `uf_reu`, `comarca_reu`). O ajuizamento via REST e o assistente de petição inicial (Laiane) já capturam essa informação na entrada: `EstruturarRequest` recebe `ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu`, a sessão de draft os carrega até `protocolar()` e o `Processo` os persiste, com a flag `enderecoReuDesconhecido` seguindo o mesmo padrão do PJe — endereço do réu frequentemente desconhecido no ajuizamento — e vencendo os valores informados quando marcada. O marketplace de integradores captura os mesmos 4 campos via `MarketplaceProtocoloRequest`, propagados por `MarketplaceSurfaceFacadeService` até o record interno homônimo de `ApiMarketplaceService`, aplicando a mesma regra de precedência. O canal MNI captura a UF de domicílio: `MniXmlToProcessoAdapter.resolvePartes` lê o elemento `<estado>` do primeiro `<endereco>` de cada `<pessoa>` do XML (o XSD do MNI 2.2.2 define `estado` como elemento de texto livre, sem restrição de formato), normaliza para sigla de 2 letras maiúsculas e descarta qualquer valor fora desse formato — nunca grava dado cru, e nunca lança exceção por endereço ausente. Comarca e município continuam nulos nesse canal: o MNI não tem elemento equivalente a comarca, e o único `codigoMunicipioIBGE` do padrão pertence a `tipoOrgaoJulgador` (órgão julgador), não ao endereço da parte — confirmado por busca exaustiva na documentação do schema, para não presumir um dado que o padrão não carrega. A dívida `D-domicilio-parte-dois-canais-nao-populam` documenta essas limitações residuais de comarca/município em MNI e Marketplace; nenhum dos quatro canais deixa mais o domicílio de parte inteiramente nulo. O motor (`PoloCompositionPolicy` + `PoloRoleMappingTable`) é o único funil de materialização de polo — ajuizamento via REST, o assistente de petição inicial (Laiane), a importação MNI e o marketplace de integradores convergem para o mesmo mecanismo (para Laiane e marketplace, materializado dentro de `AjuizamentoService.ajuizar()`; MNI materializa via método próprio equivalente em `MniRecepcaoService`, sem cada chamador precisar lembrar de acionar o motor), sem caminhos divergentes que produzam rótulo genérico (`AUTOR`/`REU`) onde o rito exige papel específico.
 
 ### 8 — Autuação, retificação e qualidade de metadados
 
@@ -681,7 +681,7 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.134 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.138 · 0 falhas · 0 erros** |
 | Testes de integração (Failsafe) | **230 · 0 falhas conhecidas** (de 49 → 14 → 10 → 0; D-routing-preprotocolo e as 9 pré-existentes fechadas; +10 motor de polos verdes; +24 da fatia de competência territorial — CE, MG e RN — verdes desde a criação — ver nota¹ na seção Testes sobre 10 testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -900,7 +900,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.134 testes e 269 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.138 testes e 269 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
