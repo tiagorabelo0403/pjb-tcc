@@ -63,14 +63,37 @@ public class MniXmlToProcessoAdapter {
             }
             String nome = attr(pessoa, "nome");
             String documento = attr(pessoa, "numeroDocumentoPrincipal");
+            String uf = normalizeUf(elementText(firstDescendant(pessoa, "endereco"), "estado"));
             if ("AT".equalsIgnoreCase(tipoPolo)) {
                 processo.setParteAutoraNome(nome);
                 processo.setParteAutoraCpf(documento);
+                processo.setUfAutor(uf);
             } else if ("PA".equalsIgnoreCase(tipoPolo)) {
                 processo.setParteReuNome(nome);
                 processo.setParteReuCpf(documento);
+                processo.setUfReu(uf);
             }
         }
+    }
+
+    private static String elementText(Node scope, String tagName) {
+        if (scope == null) {
+            return null;
+        }
+        Node match = firstDescendant(scope, tagName);
+        if (match == null) {
+            return null;
+        }
+        String text = match.getTextContent();
+        return text == null ? null : text.trim();
+    }
+
+    private static String normalizeUf(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String trimmed = raw.trim().toUpperCase(Locale.ROOT);
+        return trimmed.length() == 2 ? trimmed : null;
     }
 
     private static String attr(Node node, String name) {

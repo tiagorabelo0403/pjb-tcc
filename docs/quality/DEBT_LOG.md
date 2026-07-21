@@ -36,7 +36,7 @@ de assinatura de TERMO_ACORDO precisar de auditoria mais rígida.
 
 ## D-domicilio-parte-dois-canais-nao-populam
 
-**Status:** aberta — narrowed para só MNI (Marketplace fechado)
+**Status:** aberta — MNI captura UF, comarca e município seguem sem fonte nesse canal
 
 **Contexto:** `Processo.ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu` eram populados só pelo canal REST
 (via `ProcessoMapper`). **Laiane já foi corrigido**: `EstruturarRequest` captura os 4 campos +
@@ -53,15 +53,50 @@ público vs. parâmetro interno são propósitos diferentes), mas qualquer campo
 nos dois records e no mapeamento do facade na mesma edição, senão a aridade diverge e o projeto para de
 compilar.
 
-MNI (`MniXmlToProcessoAdapter`) continua deixando os 4 campos nulos — seta apenas `uf`/`comarca`
-(competência), não domicílio de parte. `PoloCompositionPolicy` deriva `ufDomicilio`/`comarcaDomicilio`
-diretamente desses 4 campos sem fallback, então o domicílio de parte fica nulo em `PoloProcessual`
-nesse canal restante também.
+**MNI passou a capturar UF de domicílio** (`MniXmlToProcessoAdapter.resolvePartes`): extrai `estado`
+do primeiro `<endereco>` de cada `<pessoa>`, normaliza (trim + maiúsculo) e só grava se resultar em
+exatamente 2 letras — valor fora desse formato (nome por extenso, código estranho) fica nulo em vez de
+gravado cru, porque `Processo.ufAutor`/`ufReu` são `@Column(length = 2)` e um valor maior quebraria o
+INSERT no Postgres. `comarcaAutor`/`comarcaReu` continuam nulos nesse canal — **o MNI não tem elemento
+equivalente a comarca** (circunscrição judiciária), e `cidadeAutor`/`cidadeReu` (município) também não
+são capturados nesta fatia, embora o schema tenha um elemento `cidade` livre dentro de `tipoEndereco`
+(texto sem código, sem cruzamento com o catálogo de jurisdição territorial).
 
-**Risco:** MNI exige parsing de endereço por parte no XML (`resolvePartes()` hoje só extrai nome e
-documento) — é extensão de parsing de formato externo, não ajuste pontual.
+**Nota para não confundir no futuro:** o endereço de parte do MNI 2.2.2 **não tem código IBGE de
+município**. Existe um atributo `codigoMunicipioIBGE` no schema, mas ele pertence ao
+`complexType tipoOrgaoJulgador` (órgão julgador/tribunal, usado para outra finalidade já resolvida no
+adapter), não a `tipoEndereco`/pessoa. Confirmado por busca exaustiva na documentação do schema MNI
+2.2.2 (nenhuma outra ocorrência de "municipio"/"IBGE" no documento inteiro). Registrado aqui para que
+uma leitura futura desta dívida não presuma que há um código IBGE de domicílio de parte sendo
+descartado — não há.
 
-**Quando revisitar:** ao priorizar o parsing de endereço no adapter MNI.
+**Risco:** MNI é o único dos 4 canais sem `comarca`/`cidade` de parte capturados; `PoloCompositionPolicy`
+continua derivando `comarcaDomicilio`/`municipioDomicilio` como nulos para processos recebidos por esse
+canal.
+
+**Quando revisitar:** se `cidade` (município, texto livre) precisar ser capturado por paridade com
+REST; e, separadamente, quando o domicílio de parte precisar alimentar `CompetenciaTerritorialResolver`
+(que exige `municipioIbge` — hoje nenhum dos 4 canais de produção alimenta esse resolver, é lacuna
+transversal, não específica do MNI).
+
+## D-mni-litisconsorcio-primeira-pessoa
+
+**Status:** aberta
+
+**Contexto:** `MniXmlToProcessoAdapter.resolvePartes` captura apenas a primeira `<pessoa>` de cada
+`<polo>` (via `firstDescendant`, que retorna o primeiro match). Esse era o comportamento pré-existente
+para nome/documento e agora também vale para a UF de domicílio recém-capturada. Em litisconsórcio
+(múltiplos autores ou múltiplos réus no mesmo polo), as demais pessoas do polo são ignoradas por
+completo — nome, documento e domicílio só da primeira.
+
+**Risco:** processo com litisconsórcio recebido via MNI perde as partes além da primeira de cada polo.
+Não é regressão desta fatia (o comportamento já existia para nome/documento antes de qualquer trabalho
+em domicílio) — mas tocar o método tornou a limitação mais visível e vale documentar explicitamente
+em vez de deixar só implícita no código.
+
+**Quando revisitar:** ao modelar múltiplas partes por polo no canal MNI — depende de estender
+`PoloProcessual`/`resolvePartes` para agregar uma lista, não um único nome/documento/UF por polo;
+fatia própria, maior que ajuste pontual no adapter.
 
 ## D-intake-workspace-endereco-nao-wireado
 
