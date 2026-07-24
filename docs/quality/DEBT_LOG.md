@@ -358,3 +358,26 @@ o fechamento desta dívida (o guard, que é o que bloqueava o CI, já está limp
 `@PjbTransactionalBudget` residual), ou se `UnidadeJudiciariaCompetencia` crescer o suficiente pra
 `reconcile`/`recarregarDoRepositorio` deixarem de ser "moderado" e virarem risco real — nesse caso
 paginar como foi feito em `UsuarioService`.
+
+## D-peticionamento-pessoal-teste-nao-cobre-timing-de-repositorio
+
+**Status:** aberta — nota de cobertura, não bloqueia nada
+
+**Contexto:** `LaianePeticaoInicialDraftService.rejeitarProcessoIdParaPeticionantePessoal` roda antes
+de `resolveProcesso` em `estruturar()`/`salvar()`, evitando por construção que um peticionante
+pessoal consiga fazer o serviço buscar no repositório um `Processo` de terceiro a partir de um
+`processoId` arbitrário. O teste `cidadaoComProcessoIdDeTerceiroEBloqueadoAntesDeCarregarOProcesso`
+prova que a exceção é lançada e que nenhum dado do processo alheio chega ao chamador — mas
+`processoRepository` neste teste é um bean real (`@Autowired`, `PjbIntegrationTestBase`), não um
+mock/spy, então o teste não confirma que `processoRepository.findById` deixa de ser chamado.
+
+**Risco:** a garantia de que não há chamada ao repositório existe hoje só por leitura de código
+(a ordem das chamadas no método), não por teste. Isso importa porque, mesmo sem vazamento de dado,
+uma chamada ao repositório antes do bloqueio poderia, em tese, vazar existência de `processoId` por
+diferença de timing entre "processo existe, barrado depois" e "processo não existe, erro mais
+rápido" — canal lateral de enumeração, não a ausência de dado que o teste atual cobre.
+
+**Quando revisitar:** se este padrão de trava (`rejeitar antes de resolver`) for replicado em canal
+com superfície de ataque maior que o Laiane (ex.: endpoint público REST sem autenticação de
+profissional), vale reforçar com `@SpyBean`/verificação de invocação — não é urgente aqui, porque o
+Laiane já exige usuário autenticado e o request de peticionante pessoal é de baixo volume.

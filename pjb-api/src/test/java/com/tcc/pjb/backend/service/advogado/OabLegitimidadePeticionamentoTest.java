@@ -363,6 +363,173 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
         assertThat(processo.getComarcaReu()).isNull();
     }
 
+    @Test
+    void cidadaoPeticionaEmJuizadoEspecialCivelSemAdvogado() {
+        Usuario cidadao = salvarCidadao();
+        LaianePeticaoInicialDraftSession draft = salvarDraftComRito(cidadao, "JUIZADO_ESPECIAL_CIVEL", "Peticao inicial de juizado especial");
+        when(currentUserService.getRequired()).thenReturn(cidadao);
+
+        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
+
+        assertThat(result.processoId()).isNotNull();
+        verifyNoInteractions(oabValidationClient);
+        Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
+        assertThat(processo.getParteAutoraNome()).isEqualTo(cidadao.getNome());
+        assertThat(processo.getParteAutoraCpf()).isEqualTo(cidadao.getCpf());
+    }
+
+    @Test
+    void cidadaoEForaDoConjuntoPermitidoBloqueiaProtocolo() {
+        Usuario cidadao = salvarCidadao();
+        LaianePeticaoInicialDraftSession draft = salvarDraftComRito(cidadao, "COMUM_ORDINARIO", "Peticao inicial de rito comum");
+        when(currentUserService.getRequired()).thenReturn(cidadao);
+
+        assertThatThrownBy(() -> service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE))))
+                .isInstanceOf(com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException.class);
+    }
+
+    @Test
+    void cidadaoNaoConsegueProtocolarEmNomeDeTerceiro() {
+        Usuario cidadao = salvarCidadao();
+        LaianePeticaoInicialDraftSession draft = salvarDraftComRito(cidadao, "JUIZADO_ESPECIAL_CIVEL",
+                "Joao Terceiro, por intermedio de advogado constituido, apresenta a presente reclamacao em face de Empresa Re Ltda.");
+        when(currentUserService.getRequired()).thenReturn(cidadao);
+
+        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
+
+        Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
+        assertThat(processo.getParteAutoraNome()).isEqualTo(cidadao.getNome());
+        assertThat(processo.getParteAutoraNome()).isNotEqualTo("Joao Terceiro");
+    }
+
+    @Test
+    void cidadaoNaoConsegueEstruturarRascunhoEmNomeDeTerceiro() {
+        Usuario cidadao = salvarCidadao();
+        when(currentUserService.getRequired()).thenReturn(cidadao);
+
+        LaianePeticaoInicialDraftService.DraftView draft = service.salvar(new LaianePeticaoInicialDraftService.EstruturarRequest(
+                null,
+                "Reclamacao trabalhista de juizado",
+                "Joao Terceiro",
+                "Empresa Re Ltda",
+                "CIVIL",
+                "JUIZADO_ESPECIAL_CIVEL",
+                "RECLAMACAO",
+                List.of("Fato relevante"),
+                List.of("Fundamento aplicavel"),
+                List.of("Pedido de condenacao"),
+                List.of("Prova documental"),
+                BigDecimal.valueOf(3000),
+                false,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                EnderecosProcessuaisRequest.vazio()
+        ));
+
+        assertThat(draft.minutaInicial()).contains(cidadao.getNome());
+        assertThat(draft.minutaInicial()).doesNotContain("Joao Terceiro");
+    }
+
+    @Test
+    void cidadaoComProcessoIdDeTerceiroEBloqueadoAntesDeCarregarOProcesso() {
+        Usuario advogado = salvarUsuario(TipoUsuario.ADVOGADO, "OAB/CE 12345");
+        when(currentUserService.getRequired()).thenReturn(advogado);
+        when(oabValidationClient.validate(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.same(advogado)))
+                .thenReturn(OabValidationResult.apto("test"));
+        LaianePeticaoInicialDraftService.DraftView draftDoAdvogado = service.salvar(new LaianePeticaoInicialDraftService.EstruturarRequest(
+                null,
+                "Cobranca de terceiro",
+                "Cliente do Advogado",
+                "Empresa Re Ltda",
+                "CIVIL",
+                "COMUM_ORDINARIO",
+                "ACAO_DE_COBRANCA",
+                List.of("Contrato inadimplido"),
+                List.of("Obrigacao contratual vencida"),
+                List.of("Condenacao ao pagamento"),
+                List.of("Contrato assinado"),
+                BigDecimal.valueOf(9500),
+                false,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                EnderecosProcessuaisRequest.vazio()
+        ));
+        LaianePeticaoInicialDraftService.ProtocolarResult protocoloDeTerceiro = service.protocolar(draftDoAdvogado.id(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
+        Long processoIdDeTerceiro = protocoloDeTerceiro.processoId();
+
+        Usuario cidadao = salvarCidadao();
+        when(currentUserService.getRequired()).thenReturn(cidadao);
+
+        assertThatThrownBy(() -> service.estruturar(new LaianePeticaoInicialDraftService.EstruturarRequest(
+                processoIdDeTerceiro,
+                "Tentativa de referenciar processo alheio",
+                null,
+                null,
+                "CIVIL",
+                "JUIZADO_ESPECIAL_CIVEL",
+                "RECLAMACAO",
+                List.of("Fato relevante"),
+                List.of("Fundamento aplicavel"),
+                List.of("Pedido de condenacao"),
+                List.of("Prova documental"),
+                BigDecimal.valueOf(3000),
+                false,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                EnderecosProcessuaisRequest.vazio()
+        ))).isInstanceOf(com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException.class);
+    }
+
+    private Usuario salvarCidadao() {
+        long unique = Math.abs(System.nanoTime() % 800000L) + 100000L;
+        Usuario usuario = new Usuario();
+        usuario.setNome("Cidadao Teste");
+        usuario.setEmail("cidadao." + System.nanoTime() + "@test.local");
+        usuario.setCpf(String.valueOf(Math.abs(System.nanoTime())).replaceAll("\\D", "").substring(0, 11));
+        usuario.setTipoUsuario(TipoUsuario.CIDADAO);
+        usuario.setPerfil(TipoUsuario.CIDADAO.name());
+        usuario.setAtivo(true);
+        usuario.setUf("CE");
+        usuario.setComarca("Fortaleza");
+        return usuarioRepository.save(usuario);
+    }
+
+    private LaianePeticaoInicialDraftSession salvarDraftComRito(Usuario solicitante, String rito, String minuta) {
+        LaianePeticaoInicialDraftSession draft = new LaianePeticaoInicialDraftSession();
+        draft.setSolicitante(solicitante);
+        draft.setTituloCaso("Peticao de juizado");
+        draft.setRamoDireito("CIVIL");
+        draft.setRitoSugerido(rito);
+        draft.setClasseSugerida("RECLAMACAO");
+        draft.setUrgenciaScore(10);
+        draft.setReadinessScore(90);
+        draft.setFatosJson("[\"Fato relevante\"]");
+        draft.setPedidosJson("[\"Pedido de condenacao\"]");
+        draft.setFundamentosJson("[\"Fundamento aplicavel\"]");
+        draft.setProvasJson("[\"Prova documental\"]");
+        draft.setChecklistJson("[\"Documento de identificacao\"]");
+        draft.setMinutaInicial(minuta);
+        draft.setHashIntegridade("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+        draft.setStatus("RASCUNHO");
+        return draftRepository.save(draft);
+    }
+
     private Usuario salvarUsuario(TipoUsuario tipo, String oab) {
         long unique = Math.abs(System.nanoTime() % 800000L) + 100000L;
         String oabEfetiva = oab == null ? null : "OAB/CE " + unique;

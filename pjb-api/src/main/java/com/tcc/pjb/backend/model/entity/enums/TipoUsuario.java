@@ -248,6 +248,10 @@ public enum TipoUsuario {
         return this == CIDADAO || this == PROFESSOR || this == JURISTA;
     }
 
+    public boolean isPeticionantePessoal() {
+        return this == CIDADAO;
+    }
+
     public static TipoUsuario fromPerfil(String raw) {
         if (raw == null || raw.isBlank()) {
             return null;
