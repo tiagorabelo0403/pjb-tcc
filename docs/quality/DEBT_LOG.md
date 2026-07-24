@@ -381,3 +381,29 @@ rápido" — canal lateral de enumeração, não a ausência de dado que o teste
 com superfície de ataque maior que o Laiane (ex.: endpoint público REST sem autenticação de
 profissional), vale reforçar com `@SpyBean`/verificação de invocação — não é urgente aqui, porque o
 Laiane já exige usuário autenticado e o request de peticionante pessoal é de baixo volume.
+
+## D-resolve-9-params-posicionais
+
+**Status:** aberta — nota de fragilidade, não bloqueia nada
+
+**Contexto:** `RepresentacaoProcessualPolicyService.resolve(Processo, Usuario, String, Long, String,
+boolean, boolean, String, String)` tem 9 parâmetros posicionais. `RecursalValidacaoMinimaService
+.elegivelPorJusPostulandi()` chama essa sobrecarga passando `processo, usuario, null, null, null,
+false, false, null, null` — 7 `null`/`false` seguidos. Hoje isso funciona porque os 10 call sites
+existentes (confirmado por grep: `IAJuridicaV1`, `LaianePeticaoInicialDraftService`,
+`LaianeNationalPreflightService`, `LaianeLawyerService` — 2 call sites —, `JuizGabineteDecisionalService`,
+`ProcessualParticipacaoAtivaWorkspaceSupport`, `PeticionamentoSessaoFacadeService`,
+`RecursalValidacaoMinimaService` e `RecursalFormalizacaoService`) já respeitam a ordem atual, mas o
+método não tem nenhuma proteção de tipo entre os `null` posicionais: se a assinatura for reordenada
+ou ganhar/perder um parâmetro do mesmo tipo (`String`/`boolean`), o compilador não acusa erro — o
+call site continua compilando e passa valor errado para o parâmetro errado, silenciosamente.
+
+**Risco:** regressão silenciosa em qualquer um dos 10 call sites se `resolve()` for refatorado sem
+atualizar todos eles em lockstep. É particularmente provável que uma fatia futura sobre
+representação processual (ex.: adicionar sinal de "é recurso" para fechar o enforcement do art. 41,
+§2º sem depender de allowlist por `LegalAppealType` em `RecursalValidacaoMinimaService`) mexa nesta
+assinatura.
+
+**Quando revisitar:** ao tocar `resolve()` de novo — considerar um `record` de request
+(`RepresentacaoProcessualPolicyRequest`) ou builder no lugar dos parâmetros posicionais, migrando os
+10 call sites de uma vez. Não vale a pena isolado, só quando a assinatura for mexida por outro motivo.

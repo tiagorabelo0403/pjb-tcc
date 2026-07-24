@@ -52,6 +52,7 @@ import com.tcc.pjb.backend.service.processual.recursal.operational.RecursalOpera
 import com.tcc.pjb.backend.service.processual.recursal.operational.RecursalSigiloGovernanceService;
 import com.tcc.pjb.backend.service.processual.recursal.workspace.RecursalDraftPreviewAssembler;
 import com.tcc.pjb.backend.service.processual.recursal.workspace.RecursalProjectionAssembler;
+import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
 import com.tcc.pjb.backend.service.processual.surface.ProcessualOperationalSurfaceFacadeService;
 import com.tcc.pjb.backend.service.recursal.RecursalFactIdempotentIngestService;
 import com.tcc.pjb.backend.service.recursal.RecursalIntelligenceFacadeService;
@@ -151,7 +152,8 @@ class RecursalPeticionamentoFluxoRealTest {
         RecursalValidacaoMinimaService validacaoMinimaService = new RecursalValidacaoMinimaService(
                 new RecursoAdmissibilidadeService(),
                 new RecursoTempestividadeGuardService(new CalendarioUteisService()),
-                workItemRepository
+                workItemRepository,
+                new RepresentacaoProcessualPolicyService()
         );
         RecursalFluxoMinimoPersistenciaService persistenciaService = new RecursalFluxoMinimoPersistenciaService(
                 documentoProcessualRepository,

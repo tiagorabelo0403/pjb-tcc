@@ -1,8 +1,10 @@
 package com.tcc.pjb.backend.service.processual.recursal;
 
 import com.tcc.pjb.backend.core.kernel.recursal.LegalAppealType;
+import com.tcc.pjb.backend.model.dto.processual.representacao.RepresentacaoProcessualPolicyResponse;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.InstrumentoRepresentacaoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
@@ -11,28 +13,42 @@ import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.prazo.CalendarioUteisService;
 import com.tcc.pjb.backend.service.processual.recursal.workspace.PerfilRecursalDescriptor;
+import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
 import com.tcc.pjb.backend.service.recurso.RecursoAdmissibilidadeService;
 import com.tcc.pjb.backend.service.recurso.RecursoProcessualTipo;
 import com.tcc.pjb.backend.service.recurso.RecursoTempestividadeGuardService;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RecursalValidacaoMinimaService {
 
+    private static final Set<LegalAppealType> JUIZADO_JUS_POSTULANDI_APPEAL_TYPES = Set.of(
+            LegalAppealType.EMBARGOS_DECLARACAO
+    );
+
+    private static final Set<LegalAppealType> TRABALHISTA_JUS_POSTULANDI_APPEAL_TYPES = Set.of(
+            LegalAppealType.RECURSO_ORDINARIO_TRABALHISTA,
+            LegalAppealType.EMBARGOS_DECLARACAO
+    );
+
     private final RecursoAdmissibilidadeService admissibilidadeService;
     private final RecursoTempestividadeGuardService tempestividadeService;
     private final WorkItemRepository workItemRepository;
+    private final RepresentacaoProcessualPolicyService representacaoProcessualPolicyService;
 
     public RecursalValidacaoMinimaService(RecursoAdmissibilidadeService admissibilidadeService,
                                           RecursoTempestividadeGuardService tempestividadeService,
-                                          WorkItemRepository workItemRepository) {
+                                          WorkItemRepository workItemRepository,
+                                          RepresentacaoProcessualPolicyService representacaoProcessualPolicyService) {
         this.admissibilidadeService = admissibilidadeService;
         this.tempestividadeService = tempestividadeService;
         this.workItemRepository = workItemRepository;
+        this.representacaoProcessualPolicyService = representacaoProcessualPolicyService;
     }
 
     public RecursalValidacaoMinimaResult validar(Processo processo,
@@ -58,8 +74,9 @@ public class RecursalValidacaoMinimaService {
                 || workItemRepository.findFirstByProcesso_IdAndTemplateCodeAndStatusNot(processo.getId(), recursoTemplateCode, WorkItemStatus.CANCELADO).isEmpty();
         boolean decisaoRecorrivel = decisaoRecorrivel(processo, appealType);
         boolean cabimentoLegal = cabimentoLegal(processo, appealType, decisaoRecorrivel);
-        boolean legitimidade = legitimidade(usuario);
-        boolean representacaoRegular = representacaoRegular(usuario);
+        boolean elegivelPorJusPostulandi = elegivelPorJusPostulandi(usuario, processo, appealType);
+        boolean legitimidade = legitimidade(usuario, elegivelPorJusPostulandi);
+        boolean representacaoRegular = representacaoRegular(usuario, elegivelPorJusPostulandi);
         boolean mandatoJuntado = mandatoJuntado(usuario);
         RecursoAdmissibilidadeService.AdmissibilidadeResult admissibilidade = admissibilidadeService.avaliar(
                 new RecursoAdmissibilidadeService.AdmissibilidadeInput(
@@ -167,20 +184,41 @@ public class RecursalValidacaoMinimaService {
                 || normalized.equals("TSE");
     }
 
-    private boolean legitimidade(Usuario usuario) {
+    private boolean legitimidade(Usuario usuario, boolean elegivelPorJusPostulandi) {
         TipoUsuario tipo = usuario == null ? null : usuario.getTipoUsuario();
-        return tipo != null && (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isMinisterioPublico() || tipo.isProcuradoria());
+        return (tipo != null && (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isMinisterioPublico() || tipo.isProcuradoria()))
+                || elegivelPorJusPostulandi;
     }
 
-    private boolean representacaoRegular(Usuario usuario) {
+    private boolean representacaoRegular(Usuario usuario, boolean elegivelPorJusPostulandi) {
         TipoUsuario tipo = usuario == null ? null : usuario.getTipoUsuario();
         if (tipo == null) {
             return false;
         }
         if (!tipo.isAdvocacia()) {
-            return tipo.isDefensoriaPublica() || tipo.isMinisterioPublico() || tipo.isProcuradoria();
+            return tipo.isDefensoriaPublica() || tipo.isMinisterioPublico() || tipo.isProcuradoria() || elegivelPorJusPostulandi;
         }
         return usuario.getOabNumero() != null && !usuario.getOabNumero().isBlank();
+    }
+
+    private boolean elegivelPorJusPostulandi(Usuario usuario, Processo processo, LegalAppealType appealType) {
+        TipoUsuario tipo = usuario == null ? null : usuario.getTipoUsuario();
+        if (tipo == null || tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isMinisterioPublico() || tipo.isProcuradoria()) {
+            return false;
+        }
+        RepresentacaoProcessualPolicyResponse policy = representacaoProcessualPolicyService.resolve(
+                processo, usuario, null, null, null, false, false, null, null);
+        if (!policy.regularidadeSuficiente()) {
+            return false;
+        }
+        InstrumentoRepresentacaoProcessual instrumento = InstrumentoRepresentacaoProcessual.fromString(policy.resolvedInstrument());
+        if (instrumento == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO) {
+            return JUIZADO_JUS_POSTULANDI_APPEAL_TYPES.contains(appealType);
+        }
+        if (instrumento == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_TRABALHISTA) {
+            return TRABALHISTA_JUS_POSTULANDI_APPEAL_TYPES.contains(appealType);
+        }
+        return false;
     }
 
     private boolean mandatoJuntado(Usuario usuario) {

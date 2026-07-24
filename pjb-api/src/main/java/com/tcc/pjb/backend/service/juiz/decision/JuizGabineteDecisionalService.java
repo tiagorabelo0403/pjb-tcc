@@ -33,6 +33,7 @@ import com.tcc.pjb.backend.model.dto.processual.document.template.OfficialDocume
 import com.tcc.pjb.backend.model.dto.processual.document.template.OfficialDocumentTemplateRenderResponse;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.InstrumentoRepresentacaoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.TemplateDocumentoOficial;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
@@ -591,7 +592,7 @@ public class JuizGabineteDecisionalService {
         var representacaoAudiencia = representacaoProcessualPolicyService.resolve(
                 processo,
                 null,
-                processo != null && processo.getRito() != null && processo.getRito().isTrabalhista() ? "PROCURACAO_APUD_ACTA" : null,
+                processo != null && processo.getRito() != null && processo.getRito().isTrabalhista() ? InstrumentoRepresentacaoProcessual.PROCURACAO_APUD_ACTA.name() : null,
                 audienciaItem.getId(),
                 effectiveTipo,
                 effectiveTipo.toUpperCase(Locale.ROOT).contains("CONCILIACAO") || effectiveTipo.toUpperCase(Locale.ROOT).contains("MEDIACAO"),

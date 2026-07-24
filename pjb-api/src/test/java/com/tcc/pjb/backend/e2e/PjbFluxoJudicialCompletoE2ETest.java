@@ -605,7 +605,8 @@ class PjbFluxoJudicialCompletoE2ETest extends PjbIntegrationTestBase {
         RecursalValidacaoMinimaService validacaoMinimaService = new RecursalValidacaoMinimaService(
                 new RecursoAdmissibilidadeService(),
                 new RecursoTempestividadeGuardService(new CalendarioUteisService()),
-                workItemRepository
+                workItemRepository,
+                new RepresentacaoProcessualPolicyService()
         );
         RecursalFluxoMinimoPersistenciaService persistenciaService = new RecursalFluxoMinimoPersistenciaService(
                 documentoProcessualRepository,
