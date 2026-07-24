@@ -61,12 +61,13 @@ public class RepresentacaoProcessualPolicyService {
         RitoProcessual rito = parseRito(ritoRaw);
         TipoAudiencia tipoAudiencia = parseTipoAudiencia(tipoAudienciaRaw);
         boolean trabalhista = ramo == RamoDireito.TRABALHISTA || (rito != null && rito.isTrabalhista());
+        boolean juizadoEspecialCivel = rito == RitoProcessual.JUIZADO_ESPECIAL_CIVEL;
         boolean contextoAudiencia = audienciaId != null || tipoAudiencia != null || hasText(termoAudienciaReferencia) || hasText(ataAudienciaReferencia);
         boolean consensual = contextoConsensual || isAudienciaConsensual(tipoAudiencia);
         InstrumentoRepresentacaoProcessual requested = InstrumentoRepresentacaoProcessual.fromString(requestedInstrumentRaw);
-        InstrumentoRepresentacaoProcessual resolved = resolveInstrument(perfilAtor, requested, trabalhista, contextoAudiencia);
+        InstrumentoRepresentacaoProcessual resolved = resolveInstrument(perfilAtor, requested, trabalhista, juizadoEspecialCivel, contextoAudiencia);
         boolean admiteApudActa = trabalhista;
-        boolean admiteJusPostulandi = trabalhista && !isTst(tribunalRaw);
+        boolean admiteJusPostulandi = (trabalhista && !isTst(tribunalRaw)) || juizadoEspecialCivel;
         boolean dispensaMandatoPorFuncaoInstitucional = resolved != null && resolved.isInstitucional();
         boolean exigeProcuracaoFormal = resolved == null || !resolved.dispensaMandatoFormal();
         boolean exigePoderesEspeciais = consensual || poderesEspeciaisTransigir || (resolved != null && resolved.exigePoderesEspeciaisTransigirPorNatureza());
@@ -101,6 +102,16 @@ public class RepresentacaoProcessualPolicyService {
             if (isTst(tribunalRaw)) {
                 regularidade = false;
                 alertas.add("A trilha foi marcada como TST; o jus postulandi não deve seguir para recursos ao TST em razão da Súmula 425.");
+            }
+        }
+        if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO) {
+            if (!juizadoEspecialCivel) {
+                regularidade = false;
+                alertas.add("O jus postulandi da Lei 9.099/95 foi modelado apenas para o rito do Juizado Especial Cível.");
+            }
+            if (perfilAtor != null && perfilAtor.isAdvocacia()) {
+                regularidade = false;
+                alertas.add("O jus postulandi é regime de autorrepresentação excepcional da parte e não substitui mandato de advogado já constituído.");
             }
         }
 
@@ -205,6 +216,7 @@ public class RepresentacaoProcessualPolicyService {
     private InstrumentoRepresentacaoProcessual resolveInstrument(TipoUsuario perfilAtor,
                                                                  InstrumentoRepresentacaoProcessual requested,
                                                                  boolean trabalhista,
+                                                                 boolean juizadoEspecialCivel,
                                                                  boolean contextoAudiencia) {
         if (perfilAtor != null) {
             if (perfilAtor.isDefensoriaPublica()) {
@@ -226,6 +238,9 @@ public class RepresentacaoProcessualPolicyService {
         if (perfilAtor == TipoUsuario.CIDADAO && trabalhista) {
             return InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_TRABALHISTA;
         }
+        if (perfilAtor == TipoUsuario.CIDADAO && juizadoEspecialCivel) {
+            return InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO;
+        }
         if (trabalhista && contextoAudiencia && perfilAtor != null && perfilAtor.isAdvocacia()) {
             return InstrumentoRepresentacaoProcessual.MANDATO_AD_JUDICIA;
         }
@@ -244,6 +259,9 @@ public class RepresentacaoProcessualPolicyService {
         }
         if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_TRABALHISTA || trabalhista) {
             fundamentos.add("CLT, art. 791, caput, com limitação recursal da Súmula 425 do TST e Res. 165/2010.");
+        }
+        if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO) {
+            fundamentos.add("Lei 9.099/95, art. 9º, com exigência de advogado no recurso à Turma Recursal nos termos do art. 41, § 2º.");
         }
         if (resolved == InstrumentoRepresentacaoProcessual.DEFENSORIA_PUBLICA_INSTITUCIONAL) {
             fundamentos.add("CF/88, art. 134.");
@@ -288,6 +306,9 @@ public class RepresentacaoProcessualPolicyService {
         if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_TRABALHISTA && trabalhista) {
             documentos.add("Qualificação pessoal da parte, documentos trabalhistas essenciais e ciência das limitações da Súmula 425 do TST.");
         }
+        if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO) {
+            documentos.add("Qualificação pessoal da parte e documento de identificação, com ciência da exigência de advogado em eventual recurso à Turma Recursal.");
+        }
         if (perfilAtor != null && perfilAtor.isAdvocacia()) {
             documentos.add("OAB válida e higidez da cadeia de representação.");
         }
@@ -325,6 +346,9 @@ public class RepresentacaoProcessualPolicyService {
         if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_TRABALHISTA) {
             validacoes.add("Restringir a autorrepresentação às hipóteses admitidas na Justiça do Trabalho e bloquear subida indevida ao TST.");
         }
+        if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO) {
+            validacoes.add("Confirmar que a causa está dentro da competência dos Juizados Especiais Cíveis e alertar sobre a exigência de advogado em eventual recurso à Turma Recursal (Lei 9.099/95, art. 41, § 2º).");
+        }
         if (resolved != null && resolved.isInstitucional()) {
             validacoes.add("Confirmar competência funcional, lotação, legitimidade institucional e ausência de extrapolação de atribuições.");
         }
@@ -346,6 +370,9 @@ public class RepresentacaoProcessualPolicyService {
                                    boolean admiteJusPostulandi) {
         if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_TRABALHISTA && admiteJusPostulandi) {
             atos.add("Reclamar pessoalmente e acompanhar a causa nos limites ordinários da Justiça do Trabalho.");
+        }
+        if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO && admiteJusPostulandi) {
+            atos.add("Reclamar pessoalmente perante o Juizado Especial Cível e acompanhar a causa até a fase recursal, observado o limite de alçada.");
         }
         if (resolved == InstrumentoRepresentacaoProcessual.PROCURACAO_APUD_ACTA) {
             atos.add("Constituição imediata do patrono em audiência com lastro em termo ou ata.");
@@ -379,6 +406,9 @@ public class RepresentacaoProcessualPolicyService {
         }
         if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_TRABALHISTA) {
             return "AUTORREPRESENTACAO_TRABALHISTA_EXCEPCIONAL";
+        }
+        if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO) {
+            return "AUTORREPRESENTACAO_JUIZADO_ESPECIAL";
         }
         if (resolved.isInstitucional()) {
             return "REPRESENTACAO_INSTITUCIONAL";

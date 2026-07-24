@@ -27,6 +27,7 @@ import com.tcc.pjb.backend.modules.laiane.model.LaianeDeadlineDelegationStatus;
 import com.tcc.pjb.backend.modules.laiane.model.LaianeProcuracaoStatus;
 import com.tcc.pjb.backend.modules.laiane.repository.*;
 import com.tcc.pjb.backend.model.dto.processual.representacao.RepresentacaoProcessualPolicyResponse;
+import com.tcc.pjb.backend.model.entity.enums.InstrumentoRepresentacaoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.modules.laiane.util.LaianeRitoAttachmentPolicy;
 import com.tcc.pjb.backend.service.procedural.ProceduralCatalogService;
@@ -609,7 +610,8 @@ public class LaianeLawyerService {
                     .addMetadado("motivo", firstAlert(policy.alertas()))
                     .addMetadado("instrumento", policy.resolvedInstrument());
         }
-        if ("JUS_POSTULANDI_TRABALHISTA".equalsIgnoreCase(policy.resolvedInstrument())) {
+        InstrumentoRepresentacaoProcessual instrumentoResolvido = InstrumentoRepresentacaoProcessual.fromString(policy.resolvedInstrument());
+        if (instrumentoResolvido != null && instrumentoResolvido.isJusPostulandi()) {
             throw new com.tcc.pjb.backend.service.exception.ErroDeValidacaoException(com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao.REGRA_NEGOCIO, "tipoInstrumento")
                     .addMetadado("motivo", "Jus postulandi e regime de autorrepresentacao da parte e nao deve ser cadastrado pela rota exclusiva da advocacia.");
         }
