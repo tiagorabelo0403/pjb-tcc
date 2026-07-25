@@ -570,21 +570,159 @@ e testes; a remoção é etapa posterior, não simultânea. Não fazer dentro de
 
 ## D-custas-jec-isencao-primeiro-grau
 
-**Status:** aberta — incorreção jurídica ativa
+**Status:** parcialmente atendida — a política de isenção passou a existir em
+`CustaIsencaoPorRitoPolicy`, cobrindo JEC (Lei 9.099/95 art. 54), JEF (Lei 10.259/2001) e JEFP
+(Lei 12.153/2009) em primeiro grau, e preservando a regra pré-existente do ramo
+`INFANCIA_JUVENTUDE`. A dívida original visava o efeito patrimonial sobre a parte no ajuizamento,
+que continua não acontecendo porque o motor `CustaJudicialService` segue desconectado do fluxo —
+o que muda a natureza do restante em aberto, agora rastreado por
+`D-motor-custas-nao-integrado-ao-ajuizamento`.
 
-**Contexto:** o art. 54 da Lei 9.099/95 dispensa custas no acesso ao Juizado Especial em primeiro
-grau. Grep por `custas`/`gratuidade`/`preparo`/`isenção` cruzado com o JEC em `service/` e `core/`
-não retorna nenhuma política que modele essa isenção. `preparoDispensado` existe como parâmetro dos
-quatro controllers recursais profissionais, mas nunca é ligado ao fluxo do cidadão;
-`RecursoProcessualTipo.exigePreparo()` já devolve `false` para `RECURSO_INOMINADO_JEC`, o que cobre
-a fase recursal e deixa a inicial descoberta.
+**Contexto original (mantido para rastreabilidade):** o art. 54 da Lei 9.099/95 dispensa custas no
+acesso ao Juizado Especial em primeiro grau. Grep por `custas`/`gratuidade`/`preparo`/`isenção`
+cruzado com o JEC em `service/` e `core/` não retornava nenhuma política que modelasse essa
+isenção. `preparoDispensado` existe como parâmetro dos quatro controllers recursais profissionais,
+mas nunca é ligado ao fluxo do cidadão; `RecursoProcessualTipo.exigePreparo()` já devolve `false`
+para `RECURSO_INOMINADO_JEC`, o que cobre a fase recursal e deixava a inicial descoberta.
 
-**Risco:** o cidadão liberado no JEC pelas fatias de jus postulandi pode receber cobrança indevida
-de custas iniciais numa causa que a lei isenta. Diferente das demais dívidas desta jornada, esta não
-é lacuna de enforcement nem de cobertura futura: é incorreção com efeito patrimonial direto sobre a
-parte, e atinge justamente o público que as fatias anteriores passaram a admitir sem advogado.
+**Risco residual:** o cidadão liberado no JEC pelas fatias de jus postulandi ainda depende da
+integração do motor de custas ao ajuizamento para que a nova política produza efeito prático.
+Enquanto essa integração não acontece, a nova política é defensiva — garante resposta correta
+quando alguém ligar o motor, mas não cobra nem isenta ninguém por si só.
 
-**Quando revisitar:** em fatia própria de política de custas por rito, seguindo o padrão de
-`TetoProcessualService` — regra de rito resolvida por um serviço dedicado, nunca `if` espalhado pelos
-fluxos. Investigar antes se existe emissão de guia ou cálculo de custas em algum ponto do projeto;
-se não existir, a fatia é de modelagem nova, não de correção pontual.
+**Quando revisitar:** ao encaminhar a integração do motor de custas ao ajuizamento
+(`D-motor-custas-nao-integrado-ao-ajuizamento`). Fatias correlatas registradas:
+`D-custas-fazenda-publica-pagamento-diferido`, `D-custas-dois-modulos-nao-integrados`,
+`D-custas-interface-recebe-string-em-vez-de-enum`.
+
+## D-motor-custas-nao-integrado-ao-ajuizamento
+
+**Status:** aberta — motor pronto, integração pendente por decisão de política de negócio
+
+**Contexto:** o módulo `core/financeiro/custas/` tem `CustaJudicialService` com geração de GRU e
+PIX, ledger de auditoria (`CUSTA_GERADA`, `CUSTA_ISENCAO`), tabelas `pjb_custa_judicial` (V196) e
+`pjb_custas_processual` (V247), controller admin (`/api/v1/admin/custas`) com nove endpoints e a
+nova `CustaIsencaoPorRitoPolicy`. Nenhum dos quatro canais de ajuizamento (REST, Laiane,
+Marketplace, MNI) chama esse motor: `AjuizamentoService.ajuizar()` executa `processoRepo.save` +
+polos + outbox + evento e encerra, sem passar por `CustaJudicialService.gerarCustas`.
+
+**Risco:** enquanto o motor não é integrado, ninguém é cobrado pelo ajuizamento — incluindo autor
+de ação cível comum, que deveria pagar. Quando a integração for feita, ela passa a cobrar todos
+os ritos não-isentos ao mesmo tempo. `GruCodigoBarrasGenerator` e `PixPayloadGenerator` atuais
+geram valores simulados (hash + payload EMV mock), não conversam com PSP nem tribunal; ligar ao
+ajuizamento hoje começaria a emitir guias inválidas para todo mundo.
+
+**Quando revisitar:** só depois de acordo/convênio real com PSP e definição do modelo de repasse
+ao tribunal. Não antes. A integração em si é uma linha em `AjuizamentoService.ajuizar()`; o custo
+está no que ela expõe, não na chamada.
+
+## D-custas-fazenda-publica-pagamento-diferido
+
+**Status:** aberta — não é isenção; é modelagem de fluxo de cobrança
+
+**Contexto:** o art. 91 do CPC dispõe que as despesas dos atos processuais praticados a
+requerimento do Ministério Público ou da Fazenda Pública são pagas ao final pelo vencido. Isso é
+**pagamento diferido**, não isenção — a Fazenda não está desobrigada de arcar com o custo se
+sucumbente. Modelar isso dentro de `IsentoCustaPolicy` (retornando `isento(true)`) seria erro
+jurídico com efeito patrimonial: a Fazenda vencida deixaria de pagar o que deve.
+
+**Risco:** quando o motor de custas for integrado ao ajuizamento
+(`D-motor-custas-nao-integrado-ao-ajuizamento`), o fluxo precisa distinguir três casos — isento
+por lei, pagamento adiantado obrigatório e pagamento diferido ao final por sucumbência. Hoje o
+motor só distingue os dois primeiros (via `IsentoCustaPolicy`).
+
+**Quando revisitar:** junto com a integração do motor. Exige campo próprio no domínio de custas
+(`pagamentoDiferido`, `responsavelFinal`) e regra pós-sentença, não vale mexer isolado.
+
+## D-custas-calculator-fazenda-classificada-como-isenta-cita-cpc-91-errado
+
+**Status:** aberta — erro jurídico em código morto
+
+**Contexto:** `CustasProcessuaisCalculatorService`, no módulo paralelo `service/custas/` que não
+tem consumidor no projeto, trata Fazenda Pública e Ministério Público como isentos e cita o CPC
+art. 91 como fundamento: `"Fazenda Pública/MP isentos de custas (CPC, art. 91)."` O art. 91 não é
+fundamento de isenção — trata de pagamento diferido, como descrito em
+`D-custas-fazenda-publica-pagamento-diferido`. Ou seja, o service morto está errado por dois
+motivos independentes: (a) classifica indevidamente Fazenda/MP como isentos e (b) cita artigo que
+não sustenta essa classificação.
+
+**Risco:** se o service morto for reativado sem revisão, propaga o erro para todos os pontos que
+passarem a chamá-lo. Como está morto hoje, o risco é dormente.
+
+**Quando revisitar:** ao decidir o destino do service morto — revitalizar corrigindo, migrar a
+lógica útil (`percentualPreparo` etc.) para o módulo vivo, ou remover. Faz par com
+`D-custas-dois-modulos-nao-integrados`.
+
+## D-custas-dois-modulos-nao-integrados
+
+**Status:** aberta — dívida arquitetural
+
+**Contexto:** o projeto tem dois módulos de custas que não se falam. `core/financeiro/custas/` é
+o vivo: interface `IsentoCustaPolicy`, `CustaJudicialService`, geradores de GRU e PIX, ledger,
+controller admin, migrations `V196` e `V247`. `service/custas/` é o morto: `enum TipoCusta` com
+nove valores tipados (`CUSTAS_INICIAIS`, `PREPARO_RECURSAL`, `MULTA_LITIGANCIA_MA_FE`, etc.),
+`CustasProcessuaisCalculatorService` com percentuais de preparo e multa, sem nenhum call site em
+`main`.
+
+**Risco:** divergência conceitual entre os dois módulos, retrabalho garantido em qualquer fatia
+futura que precise tipar custas ou calcular preparo. O módulo vivo recebe `String tipoCusta` na
+interface; o enum certo mora no módulo morto — foi o que forçou
+`CustaIsencaoPorRitoPolicy` a comparar contra a string literal `"CUSTAS_INICIAIS"`, alimentando
+`D-custas-interface-recebe-string-em-vez-de-enum`.
+
+**Quando revisitar:** em fatia própria de unificação, com decisão prévia sobre qual dos dois é a
+fonte de verdade. Recomendação preliminar: migrar `TipoCusta` e a lógica de percentual para o
+módulo vivo, remover o service morto. Não antes de definir se o motor de custas será integrado
+ao ajuizamento e sob que política de negócio.
+
+## D-custas-interface-recebe-string-em-vez-de-enum
+
+**Status:** aberta — dívida de tipagem
+
+**Contexto:** `IsentoCustaPolicy.verificar(Processo, String tipoCusta)` recebe string livre. Não
+há enum na assinatura, nem validação por parte do consumidor — o service confia que o chamador
+passará o valor certo. Isso é o mesmo padrão frágil já corrigido em outros pontos do projeto
+(compare com o hardening de `LaianeLawyerService` e `JuizGabineteDecisionalService`, que trocaram
+comparação de string por enum tipado). Aqui o enum existe (`service/custas/TipoCusta`), mas está
+no módulo morto — reaproveitá-lo sem antes decidir
+`D-custas-dois-modulos-nao-integrados` reforça a divergência arquitetural em vez de resolvê-la.
+
+**Consumidores atuais dessa string:** `CustaIsencaoPorRitoPolicy` (introduzida nesta fatia,
+compara contra `"CUSTAS_INICIAIS"`), `GerarCustaJudicialCommand` (record do módulo vivo),
+`CustaJudicialService.gerarCustas(Long, String, BigDecimal)`,
+`CustasApplicationService.gerar(Long, String, BigDecimal)`, `AdminCustasController.gerar` (recebe
+`@RequestParam("tipo") String`).
+
+**Risco:** se o valor esperado mudar de string por typo ou renomeação, o call site continua
+compilando e passa a nunca isentar — silencioso. O consumidor introduzido nesta fatia é o mais
+sensível, porque uma comparação `equals` fora do padrão vira "não isento" em vez de erro.
+
+**Quando revisitar:** depois que `D-custas-dois-modulos-nao-integrados` tiver decisão sobre qual
+módulo é fonte de verdade. Aí faz sentido migrar a interface para o enum e propagar aos cinco
+call sites de uma vez.
+
+## D-salario-minimo-hardcoded-em-gratuidade
+
+**Status:** aberta — valor errado + duplicação de motor
+
+**Contexto:** `JusticaGratuidaVerificadorService` mantém a constante
+`private static final BigDecimal SALARIO_MINIMO_2026 = new BigDecimal("1518")`. O valor de 2026 é
+R$ 1.621,00 — registrado corretamente em `SalarioMinimoNacionalService.fallbackOficial()`, que
+tem entradas por ano (2023 → 1320, 2024 → 1412, 2025 → 1518, 2026 → 1621). Ou seja, a constante
+está com o valor de 2025 sob o nome de 2026, e o motor certo já existe e retorna o valor certo.
+
+**Risco:** cálculo de hipossuficiência em 2026 usa referência R\$ 103 menor do que a legal
+(`renda ≤ 5 * 1518 = 7.590` em vez de `5 * 1621 = 8.105`), potencialmente negando gratuidade a
+quem tem direito. Consumidor externo da classe: grep por `JusticaGratuidaVerificadorService`
+fora da própria pasta retorna zero — está desconectada como o resto dos motores de custas, então
+o efeito é latente igual ao motor de custas em si.
+
+**Quando revisitar:** micro-fatia própria — remover a constante e injetar
+`SalarioMinimoNacionalService.valorEm(dataReferencia)`. **Antes de abrir a fatia, verificar se
+`JusticaGratuidaVerificadorService` tem o service disponível via DI** — a classe hoje é
+`@Service` com construtor implícito sem dependência; injetar `SalarioMinimoNacionalService` exige
+adicionar construtor, e nenhum consumidor externo hoje quebra por isso porque a classe não é
+usada, mas o wiring precisa ser confirmado antes de estimar como "micro". Se a alteração
+introduzir dependência transitiva não trivial (por exemplo, se o service de salário mínimo
+precisar de repositório que puxe contexto Spring adicional), a fatia deixa de ser micro e deve
+ser reportada como tal.

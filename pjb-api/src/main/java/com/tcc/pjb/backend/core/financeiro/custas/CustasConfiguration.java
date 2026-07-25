@@ -2,8 +2,6 @@ package com.tcc.pjb.backend.core.financeiro.custas;
 
 import com.tcc.pjb.backend.core.financeiro.custas.domain.GruResult;
 import com.tcc.pjb.backend.core.financeiro.custas.domain.PixResult;
-import com.tcc.pjb.backend.model.entity.Processo;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 import org.springframework.context.annotation.Bean;
@@ -27,21 +25,6 @@ public class CustasConfiguration {
         return (valor, processoId, tipoCusta) -> {
             String txid = ("PJB" + processoId + (tipoCusta == null ? "CUSTA" : tipoCusta)).replaceAll("[^A-Za-z0-9]", "");
             return new PixResult("0002012636PJB." + txid + "." + valor.setScale(2, java.math.RoundingMode.HALF_UP), txid.substring(0, Math.min(35, txid.length())));
-        };
-    }
-
-    @Bean
-    public IsentoCustaPolicy isentoCustaPolicy() {
-        return (processo, tipoCusta) -> isentoByRamo(processo);
-    }
-
-    private static com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult isentoByRamo(Processo processo) {
-        if (processo == null || processo.getRamoDireito() == null) {
-            return com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult.naoIsento();
-        }
-        return switch (processo.getRamoDireito()) {
-            case INFANCIA_JUVENTUDE -> com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult.isento("prioridade protetiva e gratuidade institucional");
-            default -> com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult.naoIsento();
         };
     }
 }
