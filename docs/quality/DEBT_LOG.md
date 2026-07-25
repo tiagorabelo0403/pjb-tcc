@@ -407,3 +407,123 @@ assinatura.
 **Quando revisitar:** ao tocar `resolve()` de novo — considerar um `record` de request
 (`RepresentacaoProcessualPolicyRequest`) ou builder no lugar dos parâmetros posicionais, migrando os
 10 call sites de uma vez. Não vale a pena isolado, só quando a assinatura for mexida por outro motivo.
+
+## D-jus-postulandi-recurso-tst
+
+**Status:** aberta — bloqueio hoje é efeito colateral, não enforcement intencional
+
+**Contexto:** `RecursalValidacaoMinimaService.elegivelPorJusPostulandi()` restringe jus postulandi
+trabalhista a `RECURSO_ORDINARIO_TRABALHISTA` e `EMBARGOS_DECLARACAO` via allowlist de
+`LegalAppealType`. `RECURSO_REVISTA` e `AGRAVO_RECURSO_REVISTA` (recursos de competência do TST,
+onde a Súmula 425/TST expressamente veda jus postulandi) não estão na allowlist — mas também não
+têm entrada em `RecursalValidacaoMinimaService.toRecursoProcessualTipo()` (confirmado por leitura do
+switch: caem no `default -> null`), então `validar()` já lança
+`"Tipo recursal sem correspondencia processual minima."` antes de chegar em qualquer checagem de
+legitimidade, para qualquer ator — advogado incluído.
+
+**Risco:** o bloqueio de jus postulandi no TST hoje existe por acidente (o tipo recursal nem é
+processável nesta service), não por uma regra que leia o tribunal de destino. Se
+`toRecursoProcessualTipo()` ganhar uma entrada para `RECURSO_REVISTA`/`AGRAVO_RECURSO_REVISTA` no
+futuro (para permitir que advogados formalizem esses recursos por aqui), a allowlist atual passa a
+ser a única proteção contra jus postulandi indevido no TST — e ela protege corretamente, porque
+`RECURSO_REVISTA` não está nela. Mas isso não foi testado nem verificado neste momento; é proteção
+por composição de duas lacunas independentes, não por design.
+
+**Quando revisitar:** ao mapear `RECURSO_REVISTA`/`AGRAVO_RECURSO_REVISTA` em
+`toRecursoProcessualTipo()` — adicionar teste explícito confirmando que jus postulandi trabalhista
+continua barrado nesses dois tipos após o mapeamento, não presumir que a allowlist já cobre.
+
+## D-completude-documental-sem-jus-postulandi
+
+**Status:** aberta — achado durante investigação da Fatia 2, pré-existente às fatias de jus
+postulandi, não criado por elas
+
+**Contexto:** `POST /api/v1/processos/ajuizar` (`ProcessoCommandController`, `@PreAuthorize
+("isAuthenticated()")` — aberto a qualquer usuário autenticado, incluindo CIDADAO) roteia para
+`AjuizarProcessoCommand`, que usa `CompletudeDocumentalPolicyService.diagnosticar()` para checar
+documentos obrigatórios. Essa checagem lê `ProceduralCatalogSupport.snapshot(rito).documents()` —
+um catálogo estático por rito (`ProceduralCatalogDefinitionSupport`) que marca `PROCURACAO` como
+`required=true` para `TRABALHISTA_ORDINARIO`/`TRABALHISTA_SUMARIO_ALCADA` (via `trabalhistaIndividual`/
+`trabalhistaAlcada`) e para `JUIZADO_ESPECIAL_CIVEL` (cai no `default -> civilGeral(rito)`, que
+também exige `PROCURACAO`). Esse catálogo é totalmente independente de
+`RepresentacaoProcessualPolicyService` — não sabe o que é jus postulandi.
+
+**Risco:** um CIDADAO que ajuíze via `/api/v1/processos/ajuizar` (não via Laiane) para JEC ou
+qualquer rito trabalhista do jus postulandi esbarra em `"Ajuizamento bloqueado por incompletude
+documental... PROCURACAO"` — o mesmo bug que a Fatia 1/Fatia 2 corrigiram no fluxo do Laiane, intacto
+neste segundo caminho de ajuizamento. Confirmado por leitura de código: `grep` por
+`CompletudeDocumentalPolicyService`/`completudeDocumentalPolicyService` no `pjb-api/src/main` só
+retorna `AjuizarProcessoCommand` como consumidor — `LaianePeticaoInicialDraftService` nunca chama
+essa classe, por isso a Fatia 2 não precisou de correção condicional nela (ver decisão registrada no
+prompt da Fatia 2, item "PRIMEIRO").
+
+**Quando revisitar:** aplicar a mesma correção condicional que
+`RepresentacaoProcessualPolicyService.addDocumentosBase()` já tem: `PROCURACAO` deixa de ser
+`required` quando o instrumento resolvido é `isJusPostulandi()`. Fora de escopo da Fatia 2 por
+instrução explícita do prompt (investigar e reportar, não corrigir).
+
+**Consumidores mapeados (grep, 2026-07-25):** `AjuizarProcessoCommand` — e portanto a checagem de
+`CompletudeDocumentalPolicyService` — é alcançado por exatamente um caminho:
+`ProcessoCommandController` (`POST /api/v1/processos/ajuizar`) → `ProcessoCommandSurfaceFacadeService`
+→ `AjuizarProcessoCommand`. Os outros dois canais de ajuizamento **não** passam por ele: tanto
+`LaianePeticaoInicialDraftService` quanto `ApiMarketplaceService` chamam `AjuizamentoService.ajuizar()`
+diretamente, pulando o command e sua checagem de completude. O Laiane tem gate próprio
+(`ProtocoloCompletudeValidator` + `tb_requisito_documental`, onde a exigência de `PROCURACAO` já está
+corretamente escopada para `ADVOGADO_PRIVADO`/`ADVOGADO_CONSTITUIDO`); o Marketplace não tem
+checagem equivalente — ver `D-marketplace-sem-completude-documental`.
+
+**Urgência:** o endpoint REST não tem consumidor interno no `pjb-api/src/main` — é superfície
+externa (frontend/integrador), governada em `application-api-governance.yml` como
+`processo-ajuizamento` com rate limit de 30 req/min. Não há como afirmar por leitura de código se
+CIDADAO o consome em produção; a única barreira hoje é `@PreAuthorize("isAuthenticated()")`, que
+não filtra perfil. Portanto a urgência é **média, não baixa**: o caminho está aberto a CIDADAO por
+construção, só não há prova de uso.
+
+## D-marketplace-sem-completude-documental
+
+**Status:** aberta — achado colateral do mapeamento de canais de ajuizamento da Fatia 2
+
+**Contexto:** existem três canais que criam processo no PJB, e cada um valida completude documental
+de um jeito diferente. `POST /api/v1/processos/ajuizar` passa por `AjuizarProcessoCommand` e usa
+`CompletudeDocumentalPolicyService` contra o catálogo estático `ProceduralCatalogDefinitionSupport`.
+`LaianePeticaoInicialDraftService.protocolar()` usa `ProtocoloCompletudeValidator` contra a tabela
+`tb_requisito_documental` (migration `V284`), com severidade, condicionalidade por representante e
+registro de pendência. `ApiMarketplaceService.protocolar()` não faz nenhuma das duas: chama
+`ajuizamentoService.ajuizar(processo)` direto, sem consultar catálogo nem tabela de requisitos —
+grep por `completude`/`Completude`/`PROCURACAO`/`TipoDocumento` nessa classe não retorna nada.
+
+**Risco:** processo protocolado por integrador externo via marketplace entra sem nenhuma verificação
+de documento obrigatório, enquanto o mesmo rito protocolado por advogado no Laiane é barrado por
+`ProtocoloPendenteException` se faltar CTPS numa reclamação trabalhista. A assimetria não é de
+severidade, é de existência: o marketplace não tem o conceito. Como o canal é de integração
+sistema-a-sistema (autenticado por `clientId`), o efeito prático é que a qualidade documental do
+acervo depende da disciplina do integrador, não do PJB.
+
+**Quando revisitar:** ao consolidar os três canais numa política única de completude — o candidato
+natural é `ProtocoloCompletudeValidator`, por ser o único orientado a dado (tabela versionada com
+vigência) em vez de catálogo compilado. Não é correção pontual: exige decidir se o marketplace
+rejeita, aceita com pendência registrada, ou aceita e sinaliza ao integrador via response.
+
+## D-jus-postulandi-recurso-jef-turma-recursal
+
+**Status:** aberta — bloqueio por conservadorismo deliberado, não por enforcement verificado
+
+**Contexto:** `RecursalValidacaoMinimaService.JEF_JUS_POSTULANDI_APPEAL_TYPES` contém apenas
+`EMBARGOS_DECLARACAO`. Isso significa que um CIDADAO com `JUS_POSTULANDI_JEF` fica barrado em
+`RECURSO_INOMINADO` (que no catálogo `LegalAppealType` é compartilhado entre JEC estadual e JEF — não
+existe tipo recursal federal separado) e em `PEDIDO_UNIFORMIZACAO` (incidente de uniformização à
+Turma Nacional de Uniformização, específico do microssistema federal e sem equivalente no JEC).
+
+**Risco:** esse bloqueio foi adotado por analogia conservadora ao regime do JEC (Lei 9.099/95,
+art. 41, § 2º), **não** por verificação do que a Lei 10.259/2001 efetivamente exige. A Lei
+10.259/2001 remete subsidiariamente à Lei 9.099/95 (art. 1º), mas tem regime recursal próprio —
+Turma Recursal Federal e incidente de uniformização (arts. 14 e 15) não existem no juizado
+estadual. Se a exigência de advogado no recurso federal for menos estrita do que a estadual, o
+sistema está negando um direito processual que a parte teria; se for igual ou mais estrita, o
+bloqueio está certo por acidente. Nenhuma das duas hipóteses foi confirmada contra a lei.
+
+**Quando revisitar:** antes de qualquer promessa de cobertura completa do JEF na banca ou em
+produção — verificar o texto da Lei 10.259/2001 (arts. 10, 14 e 15) e a jurisprudência da TNU sobre
+capacidade postulatória na fase recursal, e então ou ampliar `JEF_JUS_POSTULANDI_APPEAL_TYPES` com
+fundamento explícito, ou converter o bloqueio atual em enforcement documentado com teste próprio.
+Enquanto isso, o comportamento é seguro (nega mais do que talvez devesse), nunca permissivo demais.
