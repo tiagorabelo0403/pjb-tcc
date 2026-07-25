@@ -435,8 +435,23 @@ continua barrado nesses dois tipos após o mapeamento, não presumir que a allow
 
 ## D-completude-documental-sem-jus-postulandi
 
-**Status:** aberta — achado durante investigação da Fatia 2, pré-existente às fatias de jus
-postulandi, não criado por elas
+**Status:** FECHADA — corrigida no canal REST; o achado colateral do Marketplace segue aberto em
+`D-marketplace-sem-completude-documental`
+
+**Correção:** `CompletudeDocumentalPolicyService.diagnosticar` ganhou sobrecarga que recebe o
+`InstrumentoRepresentacaoProcessual` resolvido para o ator; quando o instrumento é regime de jus
+postulandi, `PROCURACAO` sai da lista de documentos obrigatórios — e apenas ela, sem afetar nenhum
+outro requisito do catálogo do rito. A assinatura de dois argumentos foi mantida como delegação,
+então os call sites e testes anteriores não mudaram. `AjuizarProcessoCommand` resolve o instrumento
+via `RepresentacaoProcessualPolicyService` antes de chamar a checagem. Trava defensiva: quando a
+política resolve a representação como irregular, o método devolve `null` e a exigência de procuração
+permanece — irregularidade nunca vira dispensa. Quatro testes novos em
+`CompletudeDocumentalPolicyServiceTest` (11/11 verde) cobrem a dispensa nos três regimes de jus
+postulandi, a manutenção da exigência em `MANDATO_AD_JUDICIA` e a garantia de que documento
+obrigatório diverso da procuração continua bloqueando.
+
+**Contexto original (mantido para rastreabilidade):** achado durante investigação da Fatia 2,
+pré-existente às fatias de jus postulandi, não criado por elas.
 
 **Contexto:** `POST /api/v1/processos/ajuizar` (`ProcessoCommandController`, `@PreAuthorize
 ("isAuthenticated()")` — aberto a qualquer usuário autenticado, incluindo CIDADAO) roteia para
@@ -527,3 +542,49 @@ produção — verificar o texto da Lei 10.259/2001 (arts. 10, 14 e 15) e a juri
 capacidade postulatória na fase recursal, e então ou ampliar `JEF_JUS_POSTULANDI_APPEAL_TYPES` com
 fundamento explícito, ou converter o bloqueio atual em enforcement documentado com teste próprio.
 Enquanto isso, o comportamento é seguro (nega mais do que talvez devesse), nunca permissivo demais.
+
+## D-recursal-superficie-por-papel
+
+**Status:** aberta — dívida arquitetural, não bug ativo
+
+**Contexto:** o módulo recursal expõe quatro controllers (`AdvogadoCockpitController`,
+`DefensorPublicoPainelController`, `MinisterioPublicoPainelController`,
+`ProcuradoriaOperacionalController`) que chamam a mesma facade com os mesmos parâmetros, diferindo
+apenas no `@PreAuthorize`. Isso contradiz o precedente firmado em `5d500ee` para o peticionamento
+inicial, onde a capacidade postulatória é resolvida por perfil no cadastro e por motor de política,
+com `isAuthenticated()` na porta e o gate na camada de serviço — padrão que `PeticionamentoController`
+(`/api/v1/peticionamento`) segue. Como consequência direta desta jornada:
+`RecursalValidacaoMinimaService.elegivelPorJusPostulandi()` passou a autorizar o cidadão em jus
+postulandi a opor embargos de declaração, mas não existe superfície pela qual ele exerça isso — o
+motor responde sim e não há porta correspondente.
+
+**Risco:** cristaliza o desenho de superfície-por-papel. Qualquer perfil novo que ganhe capacidade
+recursal exige uma quinta cópia do mesmo controller, e a regra de quem pode recorrer permanece
+dispersa em quatro lugares em vez de um. O motor de admissibilidade já concentra a decisão; a
+superfície é que não confia nele.
+
+**Quando revisitar:** em fatia própria de convergência recursal — superfície única autorizada por
+`elegivelPorJusPostulandi()` somada à legitimidade profissional, no mesmo padrão do peticionamento.
+Exige período de coexistência com os quatro controllers atuais por causa de consumidores de frontend
+e testes; a remoção é etapa posterior, não simultânea. Não fazer dentro de fatia de jus postulandi.
+
+## D-custas-jec-isencao-primeiro-grau
+
+**Status:** aberta — incorreção jurídica ativa
+
+**Contexto:** o art. 54 da Lei 9.099/95 dispensa custas no acesso ao Juizado Especial em primeiro
+grau. Grep por `custas`/`gratuidade`/`preparo`/`isenção` cruzado com o JEC em `service/` e `core/`
+não retorna nenhuma política que modele essa isenção. `preparoDispensado` existe como parâmetro dos
+quatro controllers recursais profissionais, mas nunca é ligado ao fluxo do cidadão;
+`RecursoProcessualTipo.exigePreparo()` já devolve `false` para `RECURSO_INOMINADO_JEC`, o que cobre
+a fase recursal e deixa a inicial descoberta.
+
+**Risco:** o cidadão liberado no JEC pelas fatias de jus postulandi pode receber cobrança indevida
+de custas iniciais numa causa que a lei isenta. Diferente das demais dívidas desta jornada, esta não
+é lacuna de enforcement nem de cobertura futura: é incorreção com efeito patrimonial direto sobre a
+parte, e atinge justamente o público que as fatias anteriores passaram a admitir sem advogado.
+
+**Quando revisitar:** em fatia própria de política de custas por rito, seguindo o padrão de
+`TetoProcessualService` — regra de rito resolvida por um serviço dedicado, nunca `if` espalhado pelos
+fluxos. Investigar antes se existe emissão de guia ou cálculo de custas em algum ponto do projeto;
+se não existir, a fatia é de modelagem nova, não de correção pontual.

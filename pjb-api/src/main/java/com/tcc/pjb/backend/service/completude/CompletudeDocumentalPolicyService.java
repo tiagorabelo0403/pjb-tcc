@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.service.completude;
 
 import com.tcc.pjb.backend.core.procedural.ProceduralCatalogSupport;
 import com.tcc.pjb.backend.model.dto.Attachment;
+import com.tcc.pjb.backend.model.entity.enums.InstrumentoRepresentacaoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
@@ -43,13 +44,28 @@ public class CompletudeDocumentalPolicyService {
      * não-resolvido produziria validação contra spec errada.
      */
     public DiagnosticoCompletudeDocumental diagnosticar(RitoProcessual rito, List<Attachment> anexos) {
+        return diagnosticar(rito, anexos, null);
+    }
+
+    /**
+     * Sobrecarga sensível ao instrumento de representação resolvido para o ator. Quando o
+     * instrumento é regime de jus postulandi ({@code InstrumentoRepresentacaoProcessual#isJusPostulandi()}),
+     * {@code PROCURACAO} deixa de compor os documentos obrigatórios: a parte que postula em nome
+     * próprio não constitui advogado e não tem mandato a juntar. A dispensa é restrita a esse
+     * documento — todos os demais requisitos do catálogo do rito continuam exigíveis.
+     */
+    public DiagnosticoCompletudeDocumental diagnosticar(RitoProcessual rito,
+                                                        List<Attachment> anexos,
+                                                        InstrumentoRepresentacaoProcessual instrumentoRepresentacao) {
         RitoProcessual ritoResolvido = rito == null ? RitoProcessual.COMUM_ORDINARIO : rito;
+        boolean dispensaProcuracao = instrumentoRepresentacao != null && instrumentoRepresentacao.isJusPostulandi();
 
         List<TipoDocumento> obrigatorios = ProceduralCatalogSupport.snapshot(ritoResolvido)
                 .documents()
                 .stream()
                 .filter(ProceduralCatalogSupport.DocumentSpec::required)
                 .map(ProceduralCatalogSupport.DocumentSpec::code)
+                .filter(code -> !(dispensaProcuracao && code == TipoDocumento.PROCURACAO))
                 .toList();
 
         Set<TipoDocumento> presentes = (anexos == null ? List.<Attachment>of() : anexos)

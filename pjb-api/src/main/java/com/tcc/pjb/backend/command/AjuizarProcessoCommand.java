@@ -28,6 +28,8 @@ import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
 import com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao;
 import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
 import com.tcc.pjb.backend.service.policy.SigiloPolicyFactory;
+import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
+import com.tcc.pjb.backend.model.entity.enums.InstrumentoRepresentacaoProcessual;
 import com.tcc.pjb.backend.service.procedural.AjuizamentoCanonicalContextService;
 import com.tcc.pjb.backend.service.processo.ProcessoMaterialObjetoEnrichmentService;
 import com.tcc.pjb.backend.service.territorial.TerritorialProcessualService;
@@ -59,6 +61,7 @@ public class AjuizarProcessoCommand {
     private final TetoProcessualService tetoProcessualService;
     private final TerritorialProcessualService territorialProcessualService;
     private final CompletudeDocumentalPolicyService completudeDocumentalPolicyService;
+    private final RepresentacaoProcessualPolicyService representacaoProcessualPolicyService;
     private final PoloProcessualApplicationService poloProcessualApplicationService;
     private final PoloCompositionPolicy poloCompositionPolicy;
     private final DocumentoNacionalValidator documentoNacionalValidator;
@@ -108,7 +111,8 @@ public class AjuizarProcessoCommand {
         validateSubmissionBlueprint(submissionBlueprint);
         validateConnectorExecution(connectorExecution);
 
-        var diagnosticoCompl = completudeDocumentalPolicyService.diagnosticar(processo.getRito(), anexos);
+        var diagnosticoCompl = completudeDocumentalPolicyService.diagnosticar(
+                processo.getRito(), anexos, resolveInstrumentoRepresentacao(processo, advogado));
         if (diagnosticoCompl.bloqueante()) {
             throw completudeDocumentalPolicyService.toException(diagnosticoCompl);
         }
@@ -246,6 +250,15 @@ public class AjuizarProcessoCommand {
                     null, null,
                     pc.ufDomicilio(), pc.comarcaDomicilio(), pc.municipioDomicilio());
         }
+    }
+
+    private InstrumentoRepresentacaoProcessual resolveInstrumentoRepresentacao(Processo processo, Usuario ator) {
+        var policy = representacaoProcessualPolicyService.resolve(
+                processo, ator, null, null, null, false, false, null, null);
+        if (!policy.regularidadeSuficiente()) {
+            return null;
+        }
+        return InstrumentoRepresentacaoProcessual.fromString(policy.resolvedInstrument());
     }
 
     private Long resolveUsuarioIdDestinatario(Usuario usuario) {
