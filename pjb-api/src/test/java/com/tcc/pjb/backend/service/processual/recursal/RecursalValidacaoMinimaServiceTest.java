@@ -95,6 +95,25 @@ class RecursalValidacaoMinimaServiceTest {
     }
 
     @Test
+    void cidadaoNoJuizadoEspecialFederalPodeOporEmbargosDeDeclaracaoPorJusPostulandi() {
+        Processo processo = salvarProcesso(RitoProcessual.JUIZADO_ESPECIAL_FEDERAL, RamoDireito.PREVIDENCIARIO);
+        Usuario cidadao = salvarCidadao();
+
+        assertThatCode(() -> service.validar(processo, cidadao, LegalAppealType.EMBARGOS_DECLARACAO, null, false, null))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void cidadaoNoJuizadoEspecialFederalNaoPodeInterporRecursoInominadoSemAdvogado() {
+        Processo processo = salvarProcesso(RitoProcessual.JUIZADO_ESPECIAL_FEDERAL, RamoDireito.PREVIDENCIARIO);
+        Usuario cidadao = salvarCidadao();
+
+        assertThatThrownBy(() -> service.validar(processo, cidadao, LegalAppealType.RECURSO_INOMINADO, null, false, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("legitimidade");
+    }
+
+    @Test
     void advogadoContinuaLegitimoParaRecursoInominadoNoJuizado() {
         Processo processo = salvarProcesso(RitoProcessual.JUIZADO_ESPECIAL_CIVEL, RamoDireito.CIVIL);
         Usuario advogado = salvarAdvogado();
@@ -105,7 +124,7 @@ class RecursalValidacaoMinimaServiceTest {
 
     private Processo salvarProcesso(RitoProcessual rito, RamoDireito ramo) {
         boolean trabalhista = ramo == RamoDireito.TRABALHISTA;
-        String tribunal = trabalhista ? "TRT7" : "TJCE";
+        String tribunal = trabalhista ? "TRT7" : ramo == RamoDireito.PREVIDENCIARIO ? "TRF5" : "TJCE";
         Processo processo = new Processo();
         processo.setNumeroProcesso("0001234-56.2026.8.06.0001");
         processo.setNumeroUnificado(processo.getNumeroProcesso());

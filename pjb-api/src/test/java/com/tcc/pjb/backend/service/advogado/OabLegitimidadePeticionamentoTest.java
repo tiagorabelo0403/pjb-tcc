@@ -20,6 +20,7 @@ import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoParte;
 import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
+import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.entity.intelligence.LaianePeticaoInicialDraftSession;
 import com.tcc.pjb.backend.model.entity.processo.PoloProcessual;
 import com.tcc.pjb.backend.model.repository.LaianePeticaoInicialDraftSessionRepository;
@@ -35,6 +36,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -494,6 +497,89 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
                 null,
                 EnderecosProcessuaisRequest.vazio()
         ))).isInstanceOf(com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException.class);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = RitoProcessual.class, names = {
+            "TRABALHISTA_ORDINARIO",
+            "TRABALHISTA_SUMARISSIMO",
+            "TRABALHISTA_SUMARIO_ALCADA",
+            "TRABALHISTA_ACAO_CUMPRIMENTO",
+            "TRABALHISTA_CUMPRIMENTO_SENTENCA",
+            "TRABALHISTA_EXECUCAO",
+            "TRABALHISTA_ACIDENTE_TRABALHO"
+    })
+    void cidadaoPeticionaEmRitoTrabalhistaPermitidoSemAdvogado(RitoProcessual rito) {
+        Usuario cidadao = salvarCidadao();
+        LaianePeticaoInicialDraftSession draft = salvarDraftComRito(cidadao, rito.name(), "Peticao inicial trabalhista de jus postulandi");
+        when(currentUserService.getRequired()).thenReturn(cidadao);
+
+        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE,
+                        com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.CTPS)));
+
+        assertThat(result.processoId()).isNotNull();
+        verifyNoInteractions(oabValidationClient);
+        Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
+        assertThat(processo.getParteAutoraNome()).isEqualTo(cidadao.getNome());
+        assertThat(processo.getParteAutoraCpf()).isEqualTo(cidadao.getCpf());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = RitoProcessual.class, names = {
+            "JUIZADO_ESPECIAL_FEDERAL",
+            "PREVIDENCIARIO_JEF"
+    })
+    void cidadaoPeticionaEmJuizadoEspecialFederalSemAdvogado(RitoProcessual rito) {
+        Usuario cidadao = salvarCidadao();
+        LaianePeticaoInicialDraftSession draft = salvarDraftComRito(cidadao, rito.name(), "Peticao inicial de juizado especial federal");
+        when(currentUserService.getRequired()).thenReturn(cidadao);
+
+        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("FEDERAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
+
+        assertThat(result.processoId()).isNotNull();
+        verifyNoInteractions(oabValidationClient);
+        Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
+        assertThat(processo.getParteAutoraNome()).isEqualTo(cidadao.getNome());
+        assertThat(processo.getParteAutoraCpf()).isEqualTo(cidadao.getCpf());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = RitoProcessual.class, names = {
+            "TRABALHISTA_ACAO_RESCISORIA",
+            "TRABALHISTA_MANDADO_SEGURANCA",
+            "TRABALHISTA_TUTELA_CAUTELAR",
+            "TRABALHISTA_DISSIDIO_COLETIVO",
+            "TRABALHISTA_INQUERITO_FALTA_GRAVE"
+    })
+    void cidadaoEmRitoTrabalhistaExcluidoBloqueiaProtocolo(RitoProcessual rito) {
+        Usuario cidadao = salvarCidadao();
+        LaianePeticaoInicialDraftSession draft = salvarDraftComRito(cidadao, rito.name(), "Peticao inicial trabalhista fora do jus postulandi");
+        when(currentUserService.getRequired()).thenReturn(cidadao);
+
+        assertThatThrownBy(() -> service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE))))
+                .isInstanceOf(com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException.class);
+    }
+
+    @Test
+    void advogadoEmRitoTrabalhistaContinuaProtocolandoNormalmente() {
+        Usuario advogado = salvarUsuario(TipoUsuario.ADVOGADO, "OAB/CE 98765");
+        when(currentUserService.getRequired()).thenReturn(advogado);
+        when(oabValidationClient.validate(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.same(advogado)))
+                .thenReturn(OabValidationResult.apto("test"));
+        LaianePeticaoInicialDraftSession draft = salvarDraftComRito(advogado, "TRABALHISTA_ORDINARIO",
+                "Joao Reclamante, por intermédio de advogado constituido, apresenta a presente reclamacao em face de Empresa Re Ltda.");
+
+        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE,
+                        com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.CTPS)));
+
+        assertThat(result.processoId()).isNotNull();
+        Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
+        assertThat(processo.getParteAutoraNome()).isEqualTo("Joao Reclamante");
+        assertThat(processo.getParteAutoraCpf()).isNull();
     }
 
     private Usuario salvarCidadao() {

@@ -61,13 +61,14 @@ public class RepresentacaoProcessualPolicyService {
         RitoProcessual rito = parseRito(ritoRaw);
         TipoAudiencia tipoAudiencia = parseTipoAudiencia(tipoAudienciaRaw);
         boolean trabalhista = ramo == RamoDireito.TRABALHISTA || (rito != null && rito.isTrabalhista());
-        boolean juizadoEspecialCivel = rito == RitoProcessual.JUIZADO_ESPECIAL_CIVEL;
+        boolean juizadoEspecialCivel = isJuizadoEspecialCivel(rito);
+        boolean juizadoEspecialFederal = isJuizadoEspecialFederal(rito);
         boolean contextoAudiencia = audienciaId != null || tipoAudiencia != null || hasText(termoAudienciaReferencia) || hasText(ataAudienciaReferencia);
         boolean consensual = contextoConsensual || isAudienciaConsensual(tipoAudiencia);
         InstrumentoRepresentacaoProcessual requested = InstrumentoRepresentacaoProcessual.fromString(requestedInstrumentRaw);
-        InstrumentoRepresentacaoProcessual resolved = resolveInstrument(perfilAtor, requested, trabalhista, juizadoEspecialCivel, contextoAudiencia);
+        InstrumentoRepresentacaoProcessual resolved = resolveInstrument(perfilAtor, requested, rito, trabalhista, contextoAudiencia);
         boolean admiteApudActa = trabalhista;
-        boolean admiteJusPostulandi = (trabalhista && !isTst(tribunalRaw)) || juizadoEspecialCivel;
+        boolean admiteJusPostulandi = (trabalhista && !isTst(tribunalRaw)) || juizadoEspecialCivel || juizadoEspecialFederal;
         boolean dispensaMandatoPorFuncaoInstitucional = resolved != null && resolved.isInstitucional();
         boolean exigeProcuracaoFormal = resolved == null || !resolved.dispensaMandatoFormal();
         boolean exigePoderesEspeciais = consensual || poderesEspeciaisTransigir || (resolved != null && resolved.exigePoderesEspeciaisTransigirPorNatureza());
@@ -108,6 +109,16 @@ public class RepresentacaoProcessualPolicyService {
             if (!juizadoEspecialCivel) {
                 regularidade = false;
                 alertas.add("O jus postulandi da Lei 9.099/95 foi modelado apenas para o rito do Juizado Especial Cível.");
+            }
+            if (perfilAtor != null && perfilAtor.isAdvocacia()) {
+                regularidade = false;
+                alertas.add("O jus postulandi é regime de autorrepresentação excepcional da parte e não substitui mandato de advogado já constituído.");
+            }
+        }
+        if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF) {
+            if (!juizadoEspecialFederal) {
+                regularidade = false;
+                alertas.add("O jus postulandi da Lei 10.259/2001 foi modelado apenas para os ritos do Juizado Especial Federal.");
             }
             if (perfilAtor != null && perfilAtor.isAdvocacia()) {
                 regularidade = false;
@@ -215,8 +226,8 @@ public class RepresentacaoProcessualPolicyService {
 
     private InstrumentoRepresentacaoProcessual resolveInstrument(TipoUsuario perfilAtor,
                                                                  InstrumentoRepresentacaoProcessual requested,
+                                                                 RitoProcessual rito,
                                                                  boolean trabalhista,
-                                                                 boolean juizadoEspecialCivel,
                                                                  boolean contextoAudiencia) {
         if (perfilAtor != null) {
             if (perfilAtor.isDefensoriaPublica()) {
@@ -238,8 +249,11 @@ public class RepresentacaoProcessualPolicyService {
         if (perfilAtor == TipoUsuario.CIDADAO && trabalhista) {
             return InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_TRABALHISTA;
         }
-        if (perfilAtor == TipoUsuario.CIDADAO && juizadoEspecialCivel) {
+        if (perfilAtor == TipoUsuario.CIDADAO && isJuizadoEspecialCivel(rito)) {
             return InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO;
+        }
+        if (perfilAtor == TipoUsuario.CIDADAO && isJuizadoEspecialFederal(rito)) {
+            return InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF;
         }
         if (trabalhista && contextoAudiencia && perfilAtor != null && perfilAtor.isAdvocacia()) {
             return InstrumentoRepresentacaoProcessual.MANDATO_AD_JUDICIA;
@@ -262,6 +276,9 @@ public class RepresentacaoProcessualPolicyService {
         }
         if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO) {
             fundamentos.add("Lei 9.099/95, art. 9º, com exigência de advogado no recurso à Turma Recursal nos termos do art. 41, § 2º.");
+        }
+        if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF) {
+            fundamentos.add("Lei 10.259/2001, art. 10, sem limite de alçada para a dispensa de advogado, com aplicação subsidiária da Lei 9.099/95 na forma do art. 1º.");
         }
         if (resolved == InstrumentoRepresentacaoProcessual.DEFENSORIA_PUBLICA_INSTITUCIONAL) {
             fundamentos.add("CF/88, art. 134.");
@@ -309,6 +326,9 @@ public class RepresentacaoProcessualPolicyService {
         if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO) {
             documentos.add("Qualificação pessoal da parte e documento de identificação, com ciência da exigência de advogado em eventual recurso à Turma Recursal.");
         }
+        if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF) {
+            documentos.add("Qualificação pessoal da parte, documento de identificação e comprovação do ato administrativo ou benefício discutido perante o ente federal.");
+        }
         if (perfilAtor != null && perfilAtor.isAdvocacia()) {
             documentos.add("OAB válida e higidez da cadeia de representação.");
         }
@@ -349,6 +369,9 @@ public class RepresentacaoProcessualPolicyService {
         if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO) {
             validacoes.add("Confirmar que a causa está dentro da competência dos Juizados Especiais Cíveis e alertar sobre a exigência de advogado em eventual recurso à Turma Recursal (Lei 9.099/95, art. 41, § 2º).");
         }
+        if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF) {
+            validacoes.add("Confirmar competência do Juizado Especial Federal e alertar sobre a exigência de advogado na fase recursal perante a Turma Recursal Federal e no incidente de uniformização.");
+        }
         if (resolved != null && resolved.isInstitucional()) {
             validacoes.add("Confirmar competência funcional, lotação, legitimidade institucional e ausência de extrapolação de atribuições.");
         }
@@ -373,6 +396,9 @@ public class RepresentacaoProcessualPolicyService {
         }
         if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO && admiteJusPostulandi) {
             atos.add("Reclamar pessoalmente perante o Juizado Especial Cível e acompanhar a causa até a fase recursal, observado o limite de alçada.");
+        }
+        if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF && admiteJusPostulandi) {
+            atos.add("Postular pessoalmente perante o Juizado Especial Federal e acompanhar a causa até a fase recursal, sem limite de alçada para a dispensa de advogado.");
         }
         if (resolved == InstrumentoRepresentacaoProcessual.PROCURACAO_APUD_ACTA) {
             atos.add("Constituição imediata do patrono em audiência com lastro em termo ou ata.");
@@ -409,6 +435,9 @@ public class RepresentacaoProcessualPolicyService {
         }
         if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO) {
             return "AUTORREPRESENTACAO_JUIZADO_ESPECIAL";
+        }
+        if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF) {
+            return "AUTORREPRESENTACAO_JUIZADO_ESPECIAL_FEDERAL";
         }
         if (resolved.isInstitucional()) {
             return "REPRESENTACAO_INSTITUCIONAL";
@@ -452,6 +481,14 @@ public class RepresentacaoProcessualPolicyService {
         } catch (Exception ignored) {
             return null;
         }
+    }
+
+    private boolean isJuizadoEspecialCivel(RitoProcessual rito) {
+        return rito == RitoProcessual.JUIZADO_ESPECIAL_CIVEL;
+    }
+
+    private boolean isJuizadoEspecialFederal(RitoProcessual rito) {
+        return rito == RitoProcessual.JUIZADO_ESPECIAL_FEDERAL || rito == RitoProcessual.PREVIDENCIARIO_JEF;
     }
 
     private boolean isAudienciaConsensual(TipoAudiencia tipo) {

@@ -75,9 +75,58 @@ class RepresentacaoProcessualPolicyServiceTest {
     }
 
     @Test
-    void enumIsJusPostulandiCobreOsDoisFundamentosLegais() {
+    void cidadaoEmJuizadoEspecialFederalResolveJusPostulandiProprio() {
+        RepresentacaoProcessualPolicyResponse policy = service.resolve(
+                "PREVIDENCIARIO", "JUIZADO_ESPECIAL_FEDERAL", "TRF5", TipoUsuario.CIDADAO,
+                null, null, null, false, false, null, null);
+
+        assertEquals("JUS_POSTULANDI_JEF", policy.resolvedInstrument());
+        assertTrue(policy.regularidadeSuficiente());
+        assertFalse(policy.exigeProcuracaoFormal());
+        assertTrue(policy.documentosBase().stream().noneMatch(d -> d.contains("Procuração geral para o foro")));
+        assertTrue(policy.fundamentosLegais().stream().anyMatch(f -> f.contains("Lei 10.259/2001, art. 10")));
+        assertTrue(policy.fundamentosLegais().stream().noneMatch(f -> f.contains("Lei 9.099/95, art. 9º")));
+        assertEquals("AUTORREPRESENTACAO_JUIZADO_ESPECIAL_FEDERAL", policy.regimePostulacao());
+        assertTrue(service.representacaoSuficiente(policy, false, false));
+    }
+
+    @Test
+    void cidadaoEmPrevidenciarioJefResolveJusPostulandiProprio() {
+        RepresentacaoProcessualPolicyResponse policy = service.resolve(
+                "PREVIDENCIARIO", "PREVIDENCIARIO_JEF", "TRF5", TipoUsuario.CIDADAO,
+                null, null, null, false, false, null, null);
+
+        assertEquals("JUS_POSTULANDI_JEF", policy.resolvedInstrument());
+        assertTrue(policy.regularidadeSuficiente());
+        assertTrue(service.representacaoSuficiente(policy, false, false));
+    }
+
+    @Test
+    void advogadoEmJuizadoEspecialFederalContinuaExigindoMandatoAdJudicia() {
+        RepresentacaoProcessualPolicyResponse policy = service.resolve(
+                "PREVIDENCIARIO", "JUIZADO_ESPECIAL_FEDERAL", "TRF5", TipoUsuario.ADVOGADO,
+                null, null, null, false, false, null, null);
+
+        assertEquals("MANDATO_AD_JUDICIA", policy.resolvedInstrument());
+        assertTrue(policy.exigeProcuracaoFormal());
+        assertFalse(service.representacaoSuficiente(policy, false, false));
+    }
+
+    @Test
+    void instrumentoJusPostulandiJefResolvidoForaDoRitoEIrregular() {
+        RepresentacaoProcessualPolicyResponse policy = service.resolve(
+                "CIVIL", "JUIZADO_ESPECIAL_CIVEL", "TJCE", TipoUsuario.CIDADAO,
+                "JUS_POSTULANDI_JEF", null, null, false, false, null, null);
+
+        assertEquals("JUS_POSTULANDI_JEF", policy.resolvedInstrument());
+        assertFalse(policy.regularidadeSuficiente());
+    }
+
+    @Test
+    void enumIsJusPostulandiCobreOsTresFundamentosLegais() {
         assertTrue(InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_TRABALHISTA.isJusPostulandi());
         assertTrue(InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO.isJusPostulandi());
+        assertTrue(InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF.isJusPostulandi());
         assertFalse(InstrumentoRepresentacaoProcessual.MANDATO_AD_JUDICIA.isJusPostulandi());
     }
 
@@ -85,5 +134,11 @@ class RepresentacaoProcessualPolicyServiceTest {
     void fromStringReconheceAliasesDoJusPostulandiDoJuizado() {
         assertEquals(InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO, InstrumentoRepresentacaoProcessual.fromString("jus_postulandi_jec"));
         assertEquals(InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO, InstrumentoRepresentacaoProcessual.fromString("JUS_POSTULANDI_LEI_9099"));
+    }
+
+    @Test
+    void fromStringReconheceAliasesDoJusPostulandiFederal() {
+        assertEquals(InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF, InstrumentoRepresentacaoProcessual.fromString("jus_postulandi_jef"));
+        assertEquals(InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF, InstrumentoRepresentacaoProcessual.fromString("JUS_POSTULANDI_LEI_10259"));
     }
 }

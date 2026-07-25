@@ -36,6 +36,10 @@ public class RecursalValidacaoMinimaService {
             LegalAppealType.EMBARGOS_DECLARACAO
     );
 
+    private static final Set<LegalAppealType> JEF_JUS_POSTULANDI_APPEAL_TYPES = Set.of(
+            LegalAppealType.EMBARGOS_DECLARACAO
+    );
+
     private final RecursoAdmissibilidadeService admissibilidadeService;
     private final RecursoTempestividadeGuardService tempestividadeService;
     private final WorkItemRepository workItemRepository;
@@ -217,6 +221,9 @@ public class RecursalValidacaoMinimaService {
         }
         if (instrumento == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_TRABALHISTA) {
             return TRABALHISTA_JUS_POSTULANDI_APPEAL_TYPES.contains(appealType);
+        }
+        if (instrumento == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF) {
+            return JEF_JUS_POSTULANDI_APPEAL_TYPES.contains(appealType);
         }
         return false;
     }

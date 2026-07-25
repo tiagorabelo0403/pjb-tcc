@@ -53,7 +53,16 @@ public class LaianePeticaoInicialDraftService {
     private static final Pattern AUTOR_MINUTA_PATTERN = Pattern.compile("(?m)^(.{1,255}?), por intermédio de .+?, apresenta ");
     private static final Pattern REU_MINUTA_PATTERN = Pattern.compile("(?m)^em face de (.{1,255}?)\\.$");
     private static final java.util.Set<RitoProcessual> RITOS_PETICIONAMENTO_PESSOAL = java.util.Set.of(
-            RitoProcessual.JUIZADO_ESPECIAL_CIVEL
+            RitoProcessual.JUIZADO_ESPECIAL_CIVEL,
+            RitoProcessual.TRABALHISTA_ORDINARIO,
+            RitoProcessual.TRABALHISTA_SUMARISSIMO,
+            RitoProcessual.TRABALHISTA_SUMARIO_ALCADA,
+            RitoProcessual.TRABALHISTA_ACAO_CUMPRIMENTO,
+            RitoProcessual.TRABALHISTA_CUMPRIMENTO_SENTENCA,
+            RitoProcessual.TRABALHISTA_EXECUCAO,
+            RitoProcessual.TRABALHISTA_ACIDENTE_TRABALHO,
+            RitoProcessual.JUIZADO_ESPECIAL_FEDERAL,
+            RitoProcessual.PREVIDENCIARIO_JEF
     );
 
     private final LaianePeticaoInicialDraftSessionRepository repository;
