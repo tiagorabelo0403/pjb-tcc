@@ -730,3 +730,23 @@ legal (`renda ≤ 5 * 1518 = 7.590` em vez de `5 * 1621 = 8.105`), potencialment
 gratuidade a quem tem direito. Efeito era latente porque a classe segue sem consumidor externo,
 como o resto dos motores de custas — mas o valor errado deixou o registro no código como se fosse
 autoritativo.
+
+**Extensão da correção — atualização automática do salário mínimo:** o problema estrutural por trás
+do valor errado hardcoded era a ausência de mecanismo de atualização anual. `SalarioMinimoBcbClient`
+e `SalarioMinimoNacionalSyncScheduler` fecham essa lacuna. O client consulta a série 1619 do Banco
+Central do Brasil (`https://api.bcb.gov.br/dados/serie/bcdata.sgs.1619/dados/ultimos/1`), API pública
+com contrato estável, e devolve `Optional<SnapshotSalarioMinimo>` com data e valor. O scheduler roda
+diariamente às 03:00 (cron configurável via `pjb.sync.salario-minimo.cron`), compara com o valor
+persistido pelo ano da referência retornada e só chama `salvarOuAtualizar` quando difere. Payload
+inválido, HTTP fora do ar ou exceção inesperada não propagam — o `FALLBACK_OFICIAL` do service
+segue como muleta e a próxima execução do cron tenta de novo.
+
+Segue o padrão do projeto para integrações federais: `RestClient` do Spring 6 sobre o
+`pjbSharedHttpClient` já compartilhado por `CnjTpuSyncService`, `ResilientGovRegistryClient`,
+`InfojudHttpClient` e outros; `@ConditionalOnProperty(name = "pjb.sync.salario-minimo.enabled",
+havingValue = "true")` mantém a integração **desligada por default**, alinhado à convenção do
+`IbgeSyncService` — o operador habilita explicitamente em produção quando decidir. Doze testes
+cobrem o parser (payload BCB válido, com múltiplas entradas, vazio, nulo, em branco, não-array,
+campos ausentes, data inválida, valor negativo/zero, JSON inválido); cinco cobrem o scheduler
+(valor diferente dispara persistência, valor igual é no-op, snapshot vazio é no-op, comparação por
+`compareTo` tolera diferença de scale, exceção do service não propaga).
