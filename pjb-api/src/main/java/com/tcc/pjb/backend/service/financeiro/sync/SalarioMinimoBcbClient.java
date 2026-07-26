@@ -39,23 +39,17 @@ public class SalarioMinimoBcbClient {
         this.restClient = RestClient.builder().requestFactory(factory).build();
     }
 
-    SalarioMinimoBcbClient(RestClient restClient, ObjectMapper objectMapper, String url) {
-        this.restClient = Objects.requireNonNull(restClient);
-        this.objectMapper = Objects.requireNonNull(objectMapper);
-        this.url = Objects.requireNonNull(url);
-    }
-
     public Optional<SnapshotSalarioMinimo> buscarUltimoValor() {
         try {
             String body = restClient.get().uri(url).retrieve().body(String.class);
-            return parse(body);
+            return parse(objectMapper, body);
         } catch (Exception e) {
             log.warn("Sync salario minimo: falha ao consultar BCB em {}: {}", url, e.getMessage());
             return Optional.empty();
         }
     }
 
-    Optional<SnapshotSalarioMinimo> parse(String rawJson) {
+    static Optional<SnapshotSalarioMinimo> parse(ObjectMapper objectMapper, String rawJson) {
         if (rawJson == null || rawJson.isBlank()) {
             return Optional.empty();
         }
