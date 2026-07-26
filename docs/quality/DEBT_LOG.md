@@ -703,26 +703,30 @@ call sites de uma vez.
 
 ## D-salario-minimo-hardcoded-em-gratuidade
 
-**Status:** aberta — valor errado + duplicação de motor
+**Status:** FECHADA — a constante `SALARIO_MINIMO_2026 = 1518` foi removida;
+`JusticaGratuidaVerificadorService` agora injeta `SalarioMinimoNacionalService` e consulta
+`valorVigente()` a cada avaliação. O motor de salário mínimo já registra 2026 → R\$ 1.621,00 no
+`fallbackOficial()`, e a base ativa via `SalarioMinimoNacionalRepository` sobrescreve o fallback
+quando houver.
 
-**Contexto:** `JusticaGratuidaVerificadorService` mantém a constante
-`private static final BigDecimal SALARIO_MINIMO_2026 = new BigDecimal("1518")`. O valor de 2026 é
-R$ 1.621,00 — registrado corretamente em `SalarioMinimoNacionalService.fallbackOficial()`, que
-tem entradas por ano (2023 → 1320, 2024 → 1412, 2025 → 1518, 2026 → 1621). Ou seja, a constante
-está com o valor de 2025 sob o nome de 2026, e o motor certo já existe e retorna o valor certo.
+**Correção:** o teto de presunção passou a ser `valorVigente().multiply(5)` calculado a cada
+chamada de `avaliar`, em vez de constante compilada. A regra fixa dos "cinco salários mínimos"
+(consolidada por jurisprudência majoritária ao lado do CPC art. 99, § 3º) segue como constante
+`TETO_PRESUNCAO_SM = 5` — é multiplicador legal, não valor monetário. Sete testes cobrem os
+caminhos do `avaliar`, incluindo o teto exato em 2026 (R\$ 1.621 × 5 = R\$ 8.105) e a rejeição
+por um centavo acima. A verificação de wiring da pré-condição confirmou que a classe não tinha
+consumidor em `main` nem construção manual em testes, então adicionar construtor com o novo
+service não quebrou nada.
 
-**Risco:** cálculo de hipossuficiência em 2026 usa referência R\$ 103 menor do que a legal
-(`renda ≤ 5 * 1518 = 7.590` em vez de `5 * 1621 = 8.105`), potencialmente negando gratuidade a
-quem tem direito. Consumidor externo da classe: grep por `JusticaGratuidaVerificadorService`
-fora da própria pasta retorna zero — está desconectada como o resto dos motores de custas, então
-o efeito é latente igual ao motor de custas em si.
+**Contexto original (mantido para rastreabilidade):** `JusticaGratuidaVerificadorService` mantinha
+a constante `private static final BigDecimal SALARIO_MINIMO_2026 = new BigDecimal("1518")`. O
+valor de 2026 é R\$ 1.621,00 — registrado corretamente em
+`SalarioMinimoNacionalService.fallbackOficial()`, que tem entradas por ano (2023 → 1320,
+2024 → 1412, 2025 → 1518, 2026 → 1621). Ou seja, a constante estava com o valor de 2025 sob o
+nome de 2026, e o motor certo já existia e retornava o valor certo.
 
-**Quando revisitar:** micro-fatia própria — remover a constante e injetar
-`SalarioMinimoNacionalService.valorEm(dataReferencia)`. **Antes de abrir a fatia, verificar se
-`JusticaGratuidaVerificadorService` tem o service disponível via DI** — a classe hoje é
-`@Service` com construtor implícito sem dependência; injetar `SalarioMinimoNacionalService` exige
-adicionar construtor, e nenhum consumidor externo hoje quebra por isso porque a classe não é
-usada, mas o wiring precisa ser confirmado antes de estimar como "micro". Se a alteração
-introduzir dependência transitiva não trivial (por exemplo, se o service de salário mínimo
-precisar de repositório que puxe contexto Spring adicional), a fatia deixa de ser micro e deve
-ser reportada como tal.
+**Risco original:** cálculo de hipossuficiência em 2026 usava referência R\$ 103 menor do que a
+legal (`renda ≤ 5 * 1518 = 7.590` em vez de `5 * 1621 = 8.105`), potencialmente negando
+gratuidade a quem tem direito. Efeito era latente porque a classe segue sem consumidor externo,
+como o resto dos motores de custas — mas o valor errado deixou o registro no código como se fosse
+autoritativo.
