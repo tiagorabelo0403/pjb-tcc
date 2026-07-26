@@ -23,7 +23,7 @@ class CustaJudicialServiceSnapshotsTest {
         CustaJudicialRepository repository = mock(CustaJudicialRepository.class);
         CustaJudicial entity = CustaJudicial.builder()
                 .id(33L)
-                .tipo("CUSTAS_INICIAIS")
+                .tipo(com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.CUSTAS_INICIAIS)
                 .status("PAGO")
                 .valor(BigDecimal.TEN)
                 .codigoReceita("1880")
@@ -43,7 +43,7 @@ class CustaJudicialServiceSnapshotsTest {
                 repository,
                 mock(GruCodigoBarrasGenerator.class),
                 mock(PixPayloadGenerator.class),
-                mock(IsentoCustaPolicy.class),
+                mock(CustaIsencaoPolicy.class),
                 mock(AuditLedgerService.class),
                 mock(ReadAfterWriteConsistencyPolicy.class));
 

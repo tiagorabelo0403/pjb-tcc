@@ -5,6 +5,7 @@ import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaConsultaCommand;
 import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaConsultaTimelineCommand;
 import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaHealthQuery;
 import com.tcc.pjb.backend.core.financeiro.custas.domain.GerarCustaJudicialCommand;
+import com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta;
 import java.math.BigDecimal;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class CustasApplicationService {
     }
 
     @Transactional
-    public com.tcc.pjb.backend.core.financeiro.custas.domain.CustaJudicialResult gerar(Long processoId, String tipo, BigDecimal valor) {
+    public com.tcc.pjb.backend.core.financeiro.custas.domain.CustaJudicialResult gerar(Long processoId, TipoCusta tipo, BigDecimal valor) {
         var result = custaJudicialService.gerarCustas(new GerarCustaJudicialCommand(processoId, tipo, valor));
         auditLedgerService.appendSafely("CUSTA_GERACAO_MANUAL", "PROCESSO", String.valueOf(processoId), null, "isento=" + result.isento());
         return result;

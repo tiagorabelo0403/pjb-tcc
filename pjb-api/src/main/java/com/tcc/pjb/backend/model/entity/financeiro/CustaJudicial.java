@@ -1,10 +1,13 @@
 package com.tcc.pjb.backend.model.entity.financeiro;
 
+import com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta;
 import com.tcc.pjb.backend.core.modularity.PjbModuleId;
 import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
 import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,8 +42,9 @@ public class CustaJudicial {
     @Column(name = "processo_id", nullable = false)
     private Long processoId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo", nullable = false, length = 64)
-    private String tipo;
+    private TipoCusta tipo;
 
     @Column(name = "valor", nullable = false, precision = 19, scale = 2)
     private BigDecimal valor;
@@ -87,7 +91,7 @@ public class CustaJudicial {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    public static CustaJudicial isento(Long processoId, String tipo, BigDecimal valor, String motivo) {
+    public static CustaJudicial isento(Long processoId, TipoCusta tipo, BigDecimal valor, String motivo) {
         return CustaJudicial.builder()
                 .processoId(processoId)
                 .tipo(tipo)

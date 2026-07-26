@@ -39,7 +39,7 @@ class CustaJudicialServiceTest {
                 mock(AuditLedgerService.class),
                 new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5))
         );
-        var result = service.gerarCustas(99L, "CUSTAS_INICIAIS", new BigDecimal("100.00"));
+        var result = service.gerarCustas(99L, com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.CUSTAS_INICIAIS, new BigDecimal("100.00"));
         assertThat(result.isento()).isFalse();
         assertThat(result.linhaDigitavel()).isEqualTo("linha");
         assertThat(result.pixPayload()).isEqualTo("payload");
@@ -61,7 +61,7 @@ class CustaJudicialServiceTest {
                 mock(AuditLedgerService.class),
                 new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5))
         );
-        var result = service.gerarCustas(100L, "CUSTAS_INICIAIS", new BigDecimal("100.00"));
+        var result = service.gerarCustas(100L, com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.CUSTAS_INICIAIS, new BigDecimal("100.00"));
         assertThat(result.isento()).isTrue();
         assertThat(result.motivoIsencao()).isEqualTo("gratuidade");
     }

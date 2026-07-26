@@ -18,6 +18,7 @@ import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaConsultaTimelineCo
 import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaConsultaTimelineResult;
 import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaStatusSnapshot;
 import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaVencimentoSnapshot;
+import com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.financeiro.CustaJudicial;
@@ -40,7 +41,7 @@ public class CustaJudicialService {
     private final CustaJudicialRepository custaRepository;
     private final GruCodigoBarrasGenerator gruGenerator;
     private final PixPayloadGenerator pixGenerator;
-    private final IsentoCustaPolicy isentoPolicy;
+    private final CustaIsencaoPolicy isentoPolicy;
     private final AuditLedgerService auditLedger;
     private final ReadAfterWriteConsistencyPolicy readAfterWriteConsistencyPolicy;
 
@@ -48,7 +49,7 @@ public class CustaJudicialService {
                                 CustaJudicialRepository custaRepository,
                                 @Qualifier("gruCodigoBarrasGenerator") GruCodigoBarrasGenerator gruGenerator,
                                 PixPayloadGenerator pixGenerator,
-                                IsentoCustaPolicy isentoPolicy,
+                                CustaIsencaoPolicy isentoPolicy,
                                 AuditLedgerService auditLedger,
                                 ReadAfterWriteConsistencyPolicy readAfterWriteConsistencyPolicy) {
         this.processoRepository = Objects.requireNonNull(processoRepository);
@@ -67,7 +68,8 @@ public class CustaJudicialService {
     }
 
     @Transactional
-    public CustaJudicialResult gerarCustas(Long processoId, String tipoCusta, BigDecimal valor) {
+    public CustaJudicialResult gerarCustas(Long processoId, TipoCusta tipoCusta, BigDecimal valor) {
+        Objects.requireNonNull(tipoCusta, "tipoCusta");
         Processo processo = processoRepository.findById(processoId)
                 .orElseThrow(() -> new IllegalArgumentException("Processo não encontrado: " + processoId));
         com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult isencao = isentoPolicy.verificar(processo, tipoCusta);
@@ -75,12 +77,13 @@ public class CustaJudicialService {
             CustaJudicial entity = CustaJudicial.isento(processoId, tipoCusta, valor, isencao.motivo());
             custaRepository.save(entity);
             readAfterWriteConsistencyPolicy.markWrite();
-            auditLedger.appendSafely("CUSTA_ISENCAO", "PROCESSO", String.valueOf(processoId), "tipo=" + tipoCusta + " motivo=" + isencao.motivo());
+            auditLedger.appendSafely("CUSTA_ISENCAO", "PROCESSO", String.valueOf(processoId),
+                    "tipo=" + tipoCusta.name() + " fundamento=" + tipoCusta.fundamentoLegal() + " motivo=" + isencao.motivo());
             return CustaJudicialResult.isento(entity.getId(), isencao.motivo());
         }
         String uf = processo.getUf() != null && !processo.getUf().isBlank() ? processo.getUf().trim().toUpperCase() : "DF";
-        GruResult gru = gruGenerator.gerar(tipoCusta, valor, uf);
-        PixResult pix = pixGenerator.gerar(valor, processoId, tipoCusta);
+        GruResult gru = gruGenerator.gerar(tipoCusta.name(), valor, uf);
+        PixResult pix = pixGenerator.gerar(valor, processoId, tipoCusta.name());
         LocalDate vencimento = LocalDate.now().plusDays(30);
         CustaJudicial entity = CustaJudicial.builder()
                 .processoId(processoId)
@@ -99,7 +102,8 @@ public class CustaJudicialService {
                 .build();
         custaRepository.save(entity);
         readAfterWriteConsistencyPolicy.markWrite();
-        auditLedger.appendSafely("CUSTA_GERADA", "PROCESSO", String.valueOf(processoId), "tipo=" + tipoCusta + " valor=" + valor + " vencimento=" + vencimento);
+        auditLedger.appendSafely("CUSTA_GERADA", "PROCESSO", String.valueOf(processoId),
+                "tipo=" + tipoCusta.name() + " fundamento=" + tipoCusta.fundamentoLegal() + " valor=" + valor + " vencimento=" + vencimento);
         return CustaJudicialResult.pendente(entity.getId(), gru, pix, vencimento);
     }
 
@@ -121,7 +125,7 @@ public class CustaJudicialService {
     public CustaJudicialView view(Long custaId) {
         CustaJudicial entity = custaRepository.findById(custaId)
                 .orElseThrow(() -> new IllegalArgumentException("Custa não encontrada: " + custaId));
-        return new CustaJudicialView(entity.getId(), entity.getTipo(), entity.getStatus(), entity.getLinhaDigitavel(), entity.getPixPayload(), entity.getVencimento());
+        return new CustaJudicialView(entity.getId(), entity.getTipo() == null ? null : entity.getTipo().name(), entity.getStatus(), entity.getLinhaDigitavel(), entity.getPixPayload(), entity.getVencimento());
     }
 
     @Transactional(readOnly = true)
@@ -137,7 +141,7 @@ public class CustaJudicialService {
         Objects.requireNonNull(command);
         CustaJudicial entity = custaRepository.findById(command.custaId())
                 .orElseThrow(() -> new IllegalArgumentException("Custa não encontrada: " + command.custaId()));
-        return new CustaConsultaResult(entity.getId(), entity.getTipo(), entity.getValor(), entity.getStatus(), entity.getVencimento(), entity.getPagoEm(), entity.getValorPago());
+        return new CustaConsultaResult(entity.getId(), entity.getTipo() == null ? null : entity.getTipo().name(), entity.getValor(), entity.getStatus(), entity.getVencimento(), entity.getPagoEm(), entity.getValorPago());
     }
 
     @Transactional(readOnly = true)
@@ -173,7 +177,7 @@ public class CustaJudicialService {
         CustaJudicial entity = custaRepository.findById(command.custaId())
                 .orElseThrow(() -> new IllegalArgumentException("Custa não encontrada: " + command.custaId()));
         java.util.ArrayList<CustaTimelineEntry> timeline = new java.util.ArrayList<>();
-        timeline.add(new CustaTimelineEntry("CUSTA_EMITIDA", entity.getCreatedAt(), entity.getTipo()));
+        timeline.add(new CustaTimelineEntry("CUSTA_EMITIDA", entity.getCreatedAt(), entity.getTipo() == null ? null : entity.getTipo().name()));
         timeline.add(new CustaTimelineEntry("VENCIMENTO", entity.getVencimento() == null ? null : entity.getVencimento().atStartOfDay().toInstant(java.time.ZoneOffset.UTC), entity.getStatus()));
         if (entity.getPagoEm() != null) {
             timeline.add(new CustaTimelineEntry("PAGAMENTO_REGISTRADO", entity.getPagoEm(), entity.getValorPago() == null ? null : entity.getValorPago().toPlainString()));

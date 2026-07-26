@@ -26,7 +26,7 @@ class CustaJudicialServiceViewsTest {
         CustaJudicial entity = CustaJudicial.builder()
                 .id(31L)
                 .processoId(19L)
-                .tipo("PREPARO_RECURSAL")
+                .tipo(com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.PREPARO_RECURSAL)
                 .valor(new BigDecimal("150.00"))
                 .status("PAGO")
                 .linhaDigitavel("34191")
@@ -45,7 +45,7 @@ class CustaJudicialServiceViewsTest {
                 custaRepository,
                 mock(GruCodigoBarrasGenerator.class),
                 mock(PixPayloadGenerator.class),
-                mock(IsentoCustaPolicy.class),
+                mock(CustaIsencaoPolicy.class),
                 mock(AuditLedgerService.class),
                 mock(ReadAfterWriteConsistencyPolicy.class));
 

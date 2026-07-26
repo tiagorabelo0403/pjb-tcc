@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.core.financeiro.custas;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult;
+import com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
@@ -10,14 +11,13 @@ import org.junit.jupiter.api.Test;
 
 class CustaIsencaoPorRitoPolicyTest {
 
-    private static final String CUSTAS_INICIAIS = "CUSTAS_INICIAIS";
     private final CustaIsencaoPorRitoPolicy policy = new CustaIsencaoPorRitoPolicy();
 
     @Test
     void juizadoEspecialCivelEmPrimeiroGrauIsentoComFundamentoDaLei9099() {
         Processo processo = processo(RamoDireito.CIVIL, RitoProcessual.JUIZADO_ESPECIAL_CIVEL);
 
-        IsencaoCustaResult resultado = policy.verificar(processo, CUSTAS_INICIAIS);
+        IsencaoCustaResult resultado = policy.verificar(processo, TipoCusta.CUSTAS_INICIAIS);
 
         assertThat(resultado.isento()).isTrue();
         assertThat(resultado.motivo()).contains("Lei 9.099/95, art. 54");
@@ -27,7 +27,7 @@ class CustaIsencaoPorRitoPolicyTest {
     void juizadoEspecialFederalEmPrimeiroGrauIsentoComFundamentoDaLei10259() {
         Processo processo = processo(RamoDireito.PREVIDENCIARIO, RitoProcessual.JUIZADO_ESPECIAL_FEDERAL);
 
-        IsencaoCustaResult resultado = policy.verificar(processo, CUSTAS_INICIAIS);
+        IsencaoCustaResult resultado = policy.verificar(processo, TipoCusta.CUSTAS_INICIAIS);
 
         assertThat(resultado.isento()).isTrue();
         assertThat(resultado.motivo()).contains("Lei 10.259/2001");
@@ -37,7 +37,7 @@ class CustaIsencaoPorRitoPolicyTest {
     void previdenciarioJefIsentoComFundamentoDaLei10259() {
         Processo processo = processo(RamoDireito.PREVIDENCIARIO, RitoProcessual.PREVIDENCIARIO_JEF);
 
-        IsencaoCustaResult resultado = policy.verificar(processo, CUSTAS_INICIAIS);
+        IsencaoCustaResult resultado = policy.verificar(processo, TipoCusta.CUSTAS_INICIAIS);
 
         assertThat(resultado.isento()).isTrue();
         assertThat(resultado.motivo()).contains("Lei 10.259/2001");
@@ -47,7 +47,7 @@ class CustaIsencaoPorRitoPolicyTest {
     void juizadoEspecialFazendaPublicaIsentoComFundamentoDaLei12153() {
         Processo processo = processo(RamoDireito.ADMINISTRATIVO, RitoProcessual.JUIZADO_ESPECIAL_FAZENDA_PUBLICA);
 
-        IsencaoCustaResult resultado = policy.verificar(processo, CUSTAS_INICIAIS);
+        IsencaoCustaResult resultado = policy.verificar(processo, TipoCusta.CUSTAS_INICIAIS);
 
         assertThat(resultado.isento()).isTrue();
         assertThat(resultado.motivo()).contains("Lei 12.153/2009");
@@ -57,7 +57,7 @@ class CustaIsencaoPorRitoPolicyTest {
     void infanciaJuventudePermaneceIsentaIndependenteDoRitoComFundamentoNoEca() {
         Processo processo = processo(RamoDireito.INFANCIA_JUVENTUDE, RitoProcessual.COMUM_ORDINARIO);
 
-        IsencaoCustaResult resultado = policy.verificar(processo, CUSTAS_INICIAIS);
+        IsencaoCustaResult resultado = policy.verificar(processo, TipoCusta.CUSTAS_INICIAIS);
 
         assertThat(resultado.isento()).isTrue();
         assertThat(resultado.motivo()).contains("Lei 8.069/90 (ECA), art. 141");
@@ -77,7 +77,7 @@ class CustaIsencaoPorRitoPolicyTest {
     void juizadoEspecialCivelNaoEhIsentoEmPreparoRecursal() {
         Processo processo = processo(RamoDireito.CIVIL, RitoProcessual.JUIZADO_ESPECIAL_CIVEL);
 
-        IsencaoCustaResult resultado = policy.verificar(processo, "PREPARO_RECURSAL");
+        IsencaoCustaResult resultado = policy.verificar(processo, TipoCusta.PREPARO_RECURSAL);
 
         assertThat(resultado.isento()).isFalse();
     }
@@ -92,10 +92,19 @@ class CustaIsencaoPorRitoPolicyTest {
     }
 
     @Test
-    void juizadoEspecialCivelNaoEhIsentoQuandoTipoCustaEhVazio() {
+    void juizadoEspecialCivelNaoEhIsentoEmHonorariosPericiais() {
         Processo processo = processo(RamoDireito.CIVIL, RitoProcessual.JUIZADO_ESPECIAL_CIVEL);
 
-        IsencaoCustaResult resultado = policy.verificar(processo, "");
+        IsencaoCustaResult resultado = policy.verificar(processo, TipoCusta.HONORARIOS_PERICIAIS);
+
+        assertThat(resultado.isento()).isFalse();
+    }
+
+    @Test
+    void juizadoEspecialCivelNaoEhIsentoEmMultaPorLitiganciaMaFe() {
+        Processo processo = processo(RamoDireito.CIVIL, RitoProcessual.JUIZADO_ESPECIAL_CIVEL);
+
+        IsencaoCustaResult resultado = policy.verificar(processo, TipoCusta.MULTA_LITIGANCIA_MA_FE);
 
         assertThat(resultado.isento()).isFalse();
     }
@@ -104,7 +113,7 @@ class CustaIsencaoPorRitoPolicyTest {
     void ritoCivelComumNaoEhIsentoEmPrimeiroGrau() {
         Processo processo = processo(RamoDireito.CIVIL, RitoProcessual.COMUM_ORDINARIO);
 
-        IsencaoCustaResult resultado = policy.verificar(processo, CUSTAS_INICIAIS);
+        IsencaoCustaResult resultado = policy.verificar(processo, TipoCusta.CUSTAS_INICIAIS);
 
         assertThat(resultado.isento()).isFalse();
     }
@@ -113,16 +122,7 @@ class CustaIsencaoPorRitoPolicyTest {
     void ritoTrabalhistaNaoRecebeIsencaoPorEssaPolitica() {
         Processo processo = processo(RamoDireito.TRABALHISTA, RitoProcessual.TRABALHISTA_ORDINARIO);
 
-        IsencaoCustaResult resultado = policy.verificar(processo, CUSTAS_INICIAIS);
-
-        assertThat(resultado.isento()).isFalse();
-    }
-
-    @Test
-    void juizadoEspecialCivelNaoEhIsentoQuandoTipoCustaVemEmMinusculo() {
-        Processo processo = processo(RamoDireito.CIVIL, RitoProcessual.JUIZADO_ESPECIAL_CIVEL);
-
-        IsencaoCustaResult resultado = policy.verificar(processo, "custas_iniciais");
+        IsencaoCustaResult resultado = policy.verificar(processo, TipoCusta.CUSTAS_INICIAIS);
 
         assertThat(resultado.isento()).isFalse();
     }
@@ -131,7 +131,7 @@ class CustaIsencaoPorRitoPolicyTest {
     void ritoNuloNaoEhIsentoAindaQueSejaCustasIniciais() {
         Processo processo = processo(RamoDireito.CIVIL, null);
 
-        IsencaoCustaResult resultado = policy.verificar(processo, CUSTAS_INICIAIS);
+        IsencaoCustaResult resultado = policy.verificar(processo, TipoCusta.CUSTAS_INICIAIS);
 
         assertThat(resultado.isento()).isFalse();
     }

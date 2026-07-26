@@ -29,11 +29,11 @@ class CustaJudicialFlowIT extends PjbIntegrationTestBase {
     @MockitoBean
     private PixPayloadGenerator pixPayloadGenerator;
     @MockitoBean
-    private IsentoCustaPolicy isentoCustaPolicy;
+    private CustaIsencaoPolicy custaIsencaoPolicy;
 
     @Test
     void deveGerarCustaPendente() {
-        org.mockito.Mockito.when(isentoCustaPolicy.verificar(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+        org.mockito.Mockito.when(custaIsencaoPolicy.verificar(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult(false, null));
         org.mockito.Mockito.when(gruCodigoBarrasGenerator.gerar(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new GruResult("001", "linha", "barra", "nosso"));
@@ -48,7 +48,7 @@ class CustaJudicialFlowIT extends PjbIntegrationTestBase {
                 .ramoDireito(RamoDireito.CIVIL)
                 .statusProcesso(StatusProcesso.EM_ANDAMENTO)
                 .build());
-        var result = custaJudicialService.gerarCustas(processo.getId(), "CUSTAS_INICIAIS", BigDecimal.valueOf(100));
+        var result = custaJudicialService.gerarCustas(processo.getId(), com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.CUSTAS_INICIAIS, BigDecimal.valueOf(100));
         assertThat(result.isento()).isFalse();
         assertThat(custaJudicialRepository.findById(result.custaId())).isPresent();
     }

@@ -636,70 +636,65 @@ motor só distingue os dois primeiros (via `IsentoCustaPolicy`).
 
 ## D-custas-calculator-fazenda-classificada-como-isenta-cita-cpc-91-errado
 
-**Status:** aberta — erro jurídico em código morto
+**Status:** FECHADA — a fatia de unificação removeu o `CustasProcessuaisCalculatorService` por
+completo, junto com seu enum `TipoCusta` paralelo e o teste próprio. O erro jurídico deixa de
+existir porque a classe deixa de existir; a decisão foi remover em vez de migrar corrigindo porque
+os percentuais hardcoded (`2%` preparo, `1%` multa art. 1.026, `10%` má-fé) não têm base legal
+universal — variam por regimento de custas estadual (TJ) ou resolução do CJF, então plantar esses
+números como se fossem autoritativos era ruído maior do que corrigir a citação errada do CPC art.
+91. Se cálculo de preparo/multa virar necessidade real, será fatia própria com tabela por
+tribunal, seguindo o padrão de `tb_jurisdicao_territorial`.
 
-**Contexto:** `CustasProcessuaisCalculatorService`, no módulo paralelo `service/custas/` que não
-tem consumidor no projeto, trata Fazenda Pública e Ministério Público como isentos e cita o CPC
-art. 91 como fundamento: `"Fazenda Pública/MP isentos de custas (CPC, art. 91)."` O art. 91 não é
-fundamento de isenção — trata de pagamento diferido, como descrito em
-`D-custas-fazenda-publica-pagamento-diferido`. Ou seja, o service morto está errado por dois
-motivos independentes: (a) classifica indevidamente Fazenda/MP como isentos e (b) cita artigo que
-não sustenta essa classificação.
-
-**Risco:** se o service morto for reativado sem revisão, propaga o erro para todos os pontos que
-passarem a chamá-lo. Como está morto hoje, o risco é dormente.
-
-**Quando revisitar:** ao decidir o destino do service morto — revitalizar corrigindo, migrar a
-lógica útil (`percentualPreparo` etc.) para o módulo vivo, ou remover. Faz par com
-`D-custas-dois-modulos-nao-integrados`.
+**Contexto original (mantido para rastreabilidade):** `CustasProcessuaisCalculatorService`, no
+módulo paralelo `service/custas/` que não tinha consumidor no projeto, tratava Fazenda Pública e
+Ministério Público como isentos e citava o CPC art. 91 como fundamento
+(`"Fazenda Pública/MP isentos de custas (CPC, art. 91)."`). O art. 91 não é fundamento de isenção
+— trata de pagamento diferido, como descrito em `D-custas-fazenda-publica-pagamento-diferido`.
 
 ## D-custas-dois-modulos-nao-integrados
 
-**Status:** aberta — dívida arquitetural
+**Status:** FECHADA — o módulo vivo é agora fonte única de verdade. `TipoCusta` foi movido para
+`core/financeiro/custas/domain/TipoCusta.java` com os predicados originais (`eMulta`,
+`requerDespacho`) preservados e três complementos legítimos adicionados
+(`aplicaAoAjuizamentoInicial`, `aplicaAoRecursal`, `fundamentoLegal` — este último cobre os nove
+valores do enum com base legal explícita por tipo). O pacote `service/custas/` foi deletado
+inteiro: `CustasProcessuaisCalculatorService`, `TipoCusta` (versão antiga) e o teste do calculator.
+A interface `IsentoCustaPolicy` foi renomeada para `CustaIsencaoPolicy` para seguir o padrão de
+nomes do módulo (substantivo antes de qualificador, como `CustaJudicialService`).
 
-**Contexto:** o projeto tem dois módulos de custas que não se falam. `core/financeiro/custas/` é
-o vivo: interface `IsentoCustaPolicy`, `CustaJudicialService`, geradores de GRU e PIX, ledger,
-controller admin, migrations `V196` e `V247`. `service/custas/` é o morto: `enum TipoCusta` com
-nove valores tipados (`CUSTAS_INICIAIS`, `PREPARO_RECURSAL`, `MULTA_LITIGANCIA_MA_FE`, etc.),
+**Contexto original (mantido para rastreabilidade):** o projeto tinha dois módulos de custas que
+não se falavam. `core/financeiro/custas/` era o vivo: interface `IsentoCustaPolicy`,
+`CustaJudicialService`, geradores de GRU e PIX, ledger, controller admin, migrations `V196` e
+`V247`. `service/custas/` era o morto: `enum TipoCusta` com nove valores tipados,
 `CustasProcessuaisCalculatorService` com percentuais de preparo e multa, sem nenhum call site em
-`main`.
-
-**Risco:** divergência conceitual entre os dois módulos, retrabalho garantido em qualquer fatia
-futura que precise tipar custas ou calcular preparo. O módulo vivo recebe `String tipoCusta` na
-interface; o enum certo mora no módulo morto — foi o que forçou
-`CustaIsencaoPorRitoPolicy` a comparar contra a string literal `"CUSTAS_INICIAIS"`, alimentando
-`D-custas-interface-recebe-string-em-vez-de-enum`.
-
-**Quando revisitar:** em fatia própria de unificação, com decisão prévia sobre qual dos dois é a
-fonte de verdade. Recomendação preliminar: migrar `TipoCusta` e a lógica de percentual para o
-módulo vivo, remover o service morto. Não antes de definir se o motor de custas será integrado
-ao ajuizamento e sob que política de negócio.
+`main`. O módulo vivo recebia `String tipoCusta` na interface enquanto o enum certo morava no
+módulo morto.
 
 ## D-custas-interface-recebe-string-em-vez-de-enum
 
-**Status:** aberta — dívida de tipagem
+**Status:** FECHADA — a interface `CustaIsencaoPolicy.verificar(Processo, TipoCusta)` passou a
+receber `TipoCusta` diretamente. Os cinco call sites foram migrados em conjunto:
+`CustaIsencaoPorRitoPolicy` (troca comparação `"CUSTAS_INICIAIS".equals(tipoCusta)` por
+`tipoCusta.aplicaAoAjuizamentoInicial()`), `GerarCustaJudicialCommand` (record com
+`TipoCusta tipoCusta`), `CustaJudicialService.gerarCustas(Long, TipoCusta, BigDecimal)`,
+`CustasApplicationService.gerar(Long, TipoCusta, BigDecimal)`, `AdminCustasController.gerar` (usa
+`@RequestParam("tipo") TipoCusta tipo` — Spring converte string do request para enum
+automaticamente, valor inválido devolve 400 sem código adicional). A entity `CustaJudicial.tipo`
+foi migrada para `TipoCusta` com `@Enumerated(EnumType.STRING)`, mantendo compatibilidade binária
+com a coluna `VARCHAR(64)` já existente (sem migration nova). DTOs de saída (`CustaJudicialView`,
+`CustaConsultaResult`, `CustaTimelineEntry`) continuam expondo `String` no contrato público,
+convertidos com `.name()` no boundary — a tipagem forte é escolha interna, não vaza para clientes.
 
-**Contexto:** `IsentoCustaPolicy.verificar(Processo, String tipoCusta)` recebe string livre. Não
-há enum na assinatura, nem validação por parte do consumidor — o service confia que o chamador
-passará o valor certo. Isso é o mesmo padrão frágil já corrigido em outros pontos do projeto
-(compare com o hardening de `LaianeLawyerService` e `JuizGabineteDecisionalService`, que trocaram
-comparação de string por enum tipado). Aqui o enum existe (`service/custas/TipoCusta`), mas está
-no módulo morto — reaproveitá-lo sem antes decidir
-`D-custas-dois-modulos-nao-integrados` reforça a divergência arquitetural em vez de resolvê-la.
+**Ganho colateral no ledger:** `CUSTA_ISENCAO` e `CUSTA_GERADA` no `AuditLedgerService` passaram a
+gravar `fundamento=` extraído de `TipoCusta.fundamentoLegal()`, além do `tipo=` já existente. A
+rastreabilidade jurídica de cada isenção deixa de depender só do texto do motivo — agora tem
+base legal explícita no evento.
 
-**Consumidores atuais dessa string:** `CustaIsencaoPorRitoPolicy` (introduzida nesta fatia,
-compara contra `"CUSTAS_INICIAIS"`), `GerarCustaJudicialCommand` (record do módulo vivo),
-`CustaJudicialService.gerarCustas(Long, String, BigDecimal)`,
-`CustasApplicationService.gerar(Long, String, BigDecimal)`, `AdminCustasController.gerar` (recebe
-`@RequestParam("tipo") String`).
-
-**Risco:** se o valor esperado mudar de string por typo ou renomeação, o call site continua
-compilando e passa a nunca isentar — silencioso. O consumidor introduzido nesta fatia é o mais
-sensível, porque uma comparação `equals` fora do padrão vira "não isento" em vez de erro.
-
-**Quando revisitar:** depois que `D-custas-dois-modulos-nao-integrados` tiver decisão sobre qual
-módulo é fonte de verdade. Aí faz sentido migrar a interface para o enum e propagar aos cinco
-call sites de uma vez.
+**Contexto original (mantido para rastreabilidade):** `IsentoCustaPolicy.verificar(Processo,
+String tipoCusta)` recebia string livre. Não havia enum na assinatura nem validação por parte do
+consumidor — o service confiava que o chamador passaria o valor certo. Mesmo padrão frágil já
+corrigido em outros pontos do projeto (`LaianeLawyerService`, `JuizGabineteDecisionalService`,
+que trocaram comparação de string por enum tipado).
 
 ## D-salario-minimo-hardcoded-em-gratuidade
 

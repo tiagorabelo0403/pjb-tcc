@@ -24,7 +24,7 @@ class CustaJudicialServiceConsultaTest {
         CustaJudicialRepository custaRepository = mock(CustaJudicialRepository.class);
         CustaJudicial entity = CustaJudicial.builder()
                 .id(10L)
-                .tipo("CUSTAS_INICIAIS")
+                .tipo(com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.CUSTAS_INICIAIS)
                 .valor(new BigDecimal("100.00"))
                 .status("PENDENTE")
                 .linhaDigitavel("001")
@@ -35,7 +35,7 @@ class CustaJudicialServiceConsultaTest {
                 .createdAt(Instant.now())
                 .build();
         when(custaRepository.findById(10L)).thenReturn(Optional.of(entity));
-        CustaJudicialService service = new CustaJudicialService(processoRepository, custaRepository, mock(GruCodigoBarrasGenerator.class), mock(PixPayloadGenerator.class), mock(IsentoCustaPolicy.class), mock(AuditLedgerService.class), mock(ReadAfterWriteConsistencyPolicy.class));
+        CustaJudicialService service = new CustaJudicialService(processoRepository, custaRepository, mock(GruCodigoBarrasGenerator.class), mock(PixPayloadGenerator.class), mock(CustaIsencaoPolicy.class), mock(AuditLedgerService.class), mock(ReadAfterWriteConsistencyPolicy.class));
 
         var consulta = service.consultar(new CustaConsultaCommand(10L));
         var view = service.view(10L);

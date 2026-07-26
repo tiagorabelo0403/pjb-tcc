@@ -1,25 +1,24 @@
 package com.tcc.pjb.backend.core.financeiro.custas;
 
 import com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult;
+import com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CustaIsencaoPorRitoPolicy implements IsentoCustaPolicy {
-
-    private static final String TIPO_CUSTAS_INICIAIS = "CUSTAS_INICIAIS";
+public class CustaIsencaoPorRitoPolicy implements CustaIsencaoPolicy {
 
     @Override
-    public IsencaoCustaResult verificar(Processo processo, String tipoCusta) {
+    public IsencaoCustaResult verificar(Processo processo, TipoCusta tipoCusta) {
         if (processo == null) {
             return IsencaoCustaResult.naoIsento();
         }
         if (processo.getRamoDireito() == RamoDireito.INFANCIA_JUVENTUDE) {
             return IsencaoCustaResult.isento("Lei 8.069/90 (ECA), art. 141, § 2º — gratuidade nas ações do Estatuto da Criança e do Adolescente.");
         }
-        if (!TIPO_CUSTAS_INICIAIS.equals(tipoCusta)) {
+        if (tipoCusta == null || !tipoCusta.aplicaAoAjuizamentoInicial()) {
             return IsencaoCustaResult.naoIsento();
         }
         RitoProcessual rito = processo.getRito();

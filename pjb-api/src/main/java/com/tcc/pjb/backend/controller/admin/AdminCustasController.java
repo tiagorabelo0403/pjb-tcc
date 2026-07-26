@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.controller.admin;
 
 import com.tcc.pjb.backend.core.financeiro.custas.CustasApplicationService;
+import com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta;
 import com.tcc.pjb.backend.model.dto.api.ApiCommandResponse;
 import com.tcc.pjb.backend.model.dto.api.ApiQueryResponse;
 import com.tcc.pjb.backend.service.api.ApiResponseFactory;
@@ -34,7 +35,7 @@ public class AdminCustasController {
 
     @PostMapping("/gerar")
     public ResponseEntity<ApiCommandResponse<?>> gerar(@RequestParam("processoId") Long processoId,
-                                                       @RequestParam("tipo") String tipo,
+                                                       @RequestParam("tipo") TipoCusta tipo,
                                                        @RequestParam("valor") BigDecimal valor) {
         return ResponseEntity.ok(apiResponseFactory.commandOk("custa gerada", applicationService.gerar(processoId, tipo, valor), List.of()));
     }

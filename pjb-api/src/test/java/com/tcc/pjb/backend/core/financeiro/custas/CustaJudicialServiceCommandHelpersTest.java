@@ -24,7 +24,7 @@ class CustaJudicialServiceCommandHelpersTest {
         CustaJudicialRepository custaRepository = mock(CustaJudicialRepository.class);
         CustaJudicial entity = CustaJudicial.builder()
                 .id(70L)
-                .tipo("TAXA_JUDICIARIA")
+                .tipo(com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.CUSTAS_INICIAIS)
                 .valor(new BigDecimal("120.00"))
                 .status("PENDENTE")
                 .codigoReceita("18870")
@@ -43,7 +43,7 @@ class CustaJudicialServiceCommandHelpersTest {
                 custaRepository,
                 mock(GruCodigoBarrasGenerator.class),
                 mock(PixPayloadGenerator.class),
-                mock(IsentoCustaPolicy.class),
+                mock(CustaIsencaoPolicy.class),
                 mock(AuditLedgerService.class),
                 mock(ReadAfterWriteConsistencyPolicy.class));
 

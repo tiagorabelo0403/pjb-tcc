@@ -22,11 +22,11 @@ class CustasApplicationServiceTest {
     void gerar_deveAuditarCriacaoManual() {
         CustaJudicialService custaJudicialService = mock(CustaJudicialService.class);
         AuditLedgerService auditLedgerService = mock(AuditLedgerService.class);
-        when(custaJudicialService.gerarCustas(new com.tcc.pjb.backend.core.financeiro.custas.domain.GerarCustaJudicialCommand(3L, "CUSTAS_INICIAIS", BigDecimal.TEN)))
+        when(custaJudicialService.gerarCustas(new com.tcc.pjb.backend.core.financeiro.custas.domain.GerarCustaJudicialCommand(3L, com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.CUSTAS_INICIAIS, BigDecimal.TEN)))
                 .thenReturn(com.tcc.pjb.backend.core.financeiro.custas.domain.CustaJudicialResult.isento(9L, "gratuidade"));
         CustasApplicationService applicationService = new CustasApplicationService(custaJudicialService, auditLedgerService);
 
-        var result = applicationService.gerar(3L, "CUSTAS_INICIAIS", BigDecimal.TEN);
+        var result = applicationService.gerar(3L, com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.CUSTAS_INICIAIS, BigDecimal.TEN);
 
         assertThat(result.isento()).isTrue();
         verify(auditLedgerService).appendSafely(eq("CUSTA_GERACAO_MANUAL"), eq("PROCESSO"), eq("3"), isNull(), eq("isento=true"));
