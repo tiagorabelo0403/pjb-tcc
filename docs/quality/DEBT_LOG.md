@@ -807,3 +807,25 @@ cobrem o parser (payload BCB válido, com múltiplas entradas, vazio, nulo, em b
 campos ausentes, data inválida, valor negativo/zero, JSON inválido); cinco cobrem o scheduler
 (valor diferente dispara persistência, valor igual é no-op, snapshot vazio é no-op, comparação por
 `compareTo` tolera diferença de scale, exceção do service não propaga).
+
+## D-openapi-anotacoes-ausentes-em-controllers
+
+**Status:** aberta — transversal, não bug ativo
+
+**Contexto:** nenhum controller do PJB usa `@Operation` ou `@Tag` (`io.swagger.v3.oas.annotations`)
+hoje. O springdoc-openapi gera a spec por análise automática, sem descrições, sem exemplos, sem
+nomes de tag consistentes. A superfície unificada `RecursalPeticionamentoController` (Fatia 1 de
+`D-recursal-superficie-por-papel`) foi analisada como candidata a receber `@Tag`/`@Operation`
+isoladamente e a decisão explícita foi **não fazer**: adicionar anotação Swagger em um único
+controller entre 200+ pioraria a consistência do projeto sem resolver a qualidade real da spec.
+
+**Risco:** contrato público sem semântica descritiva, dificultando consumo por integradores futuros
+(clientes SDK auto-gerados, portais de terceiros, ferramentas de importação OpenAPI). Não bloqueia
+funcionalidade, mas empobrece a documentação executável que o PJB expõe.
+
+**Quando revisitar:** fatia própria de documentação de API, tratando todos os controllers de uma
+vez com padrão consistente (tag por área de domínio, `@Operation` com `summary` curto e
+`description` mais longo, exemplos em DTOs via `@Schema`), não parcelado por endpoint novo.
+Anti-padrão: aplicar caso-a-caso à medida que novos endpoints nascem — cria duas classes de
+controllers no mesmo projeto e nunca converge. `RecursalPeticionamentoController` é candidato
+natural a primeiro alvo dessa fatia transversal.
