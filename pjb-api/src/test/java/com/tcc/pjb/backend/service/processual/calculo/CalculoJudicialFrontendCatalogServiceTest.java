@@ -4,15 +4,28 @@ import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialFrontendB
 import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialExperienceContext;
 import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialFrontendCatalogResponse;
 import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialSolicitantePerfil;
+import com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class CalculoJudicialFrontendCatalogServiceTest {
 
+    private static final BigDecimal SALARIO_MOCK = new BigDecimal("1621.00");
+
     private final CalculoJudicialFrontendContractService contractService = new CalculoJudicialFrontendContractService(new CalculoJudicialTabelaOficialService(), TestEconomicReferenceSupport.economicReferenceService());
     private final CalculoJudicialExperiencePreferenceService preferenceService = new CalculoJudicialExperiencePreferenceService(org.mockito.Mockito.mock(com.tcc.pjb.backend.repository.ui.UsuarioCalculoExperiencePreferenceRepository.class), contractService);
-    private final CalculoJudicialFrontendCatalogService service = new CalculoJudicialFrontendCatalogService(new CalculoJudicialProfileResolverService(), contractService, new CalculoJudicialTabelaOficialService(), preferenceService);
+    private final SalarioMinimoNacionalService salarioMinimoNacionalService = salarioServiceComValorMockado(SALARIO_MOCK);
+    private final CalculoJudicialFrontendCatalogService service = new CalculoJudicialFrontendCatalogService(new CalculoJudicialProfileResolverService(), contractService, new CalculoJudicialTabelaOficialService(), preferenceService, salarioMinimoNacionalService);
+
+    private static SalarioMinimoNacionalService salarioServiceComValorMockado(BigDecimal valor) {
+        SalarioMinimoNacionalService mocked = mock(SalarioMinimoNacionalService.class);
+        when(mocked.valorVigente()).thenReturn(valor);
+        return mocked;
+    }
 
     @Test
     void deveRetornarCatalogoCompletoParaFrontend() {
@@ -74,6 +87,18 @@ class CalculoJudicialFrontendCatalogServiceTest {
         assertThat(response.payloadInicial()).containsEntry("tipoBeneficio", "Auxílio por incapacidade temporária");
         assertThat(response.requestExemplo()).containsEntry("tribunal", "TRF5");
         assertThat(response.responseExemplo()).containsEntry("dominio", "FEDERAL_PREVIDENCIARIO_CJF");
+    }
+
+    @Test
+    void salarioMinimoReferenciaVemDoServiceCanonicoNaoDeLiteralAntigo() {
+        CalculoJudicialFrontendBootstrapResponse response = service.bootstrap(null, CalculoJudicialSolicitantePerfil.ADVOGADO, "federal-previdenciario-cjf");
+
+        assertThat(response.payloadInicial())
+                .as("payloadInicial deve refletir SalarioMinimoNacionalService.valorVigente() mockado, nunca o literal antigo 1518.00")
+                .containsEntry("salarioMinimoReferencia", SALARIO_MOCK.toPlainString());
+        assertThat(response.requestExemplo())
+                .as("requestExemplo deve refletir SalarioMinimoNacionalService.valorVigente() mockado")
+                .containsEntry("salarioMinimoReferencia", SALARIO_MOCK.toPlainString());
     }
 
 }

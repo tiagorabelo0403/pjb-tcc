@@ -1,7 +1,12 @@
 package com.tcc.pjb.backend.service.recuperacaojudicial;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -9,11 +14,22 @@ import org.junit.jupiter.api.Test;
 
 class RecuperacaoJudicialFalenciaTest {
 
+    private static final LocalDate DATA_PEDIDO_2025 = LocalDate.of(2025, 6, 15);
+    private static final BigDecimal SALARIO_MINIMO_2025 = new BigDecimal("1518.00");
+    private static final BigDecimal SALARIO_MINIMO_2026 = new BigDecimal("1621.00");
+
     private final RecuperacaoJudicialReadinessService rj = new RecuperacaoJudicialReadinessService();
     private final PlanoRecuperacaoJudicialService plano = new PlanoRecuperacaoJudicialService();
-    private final FalenciaDecretacaoService falencia = new FalenciaDecretacaoService();
+    private final SalarioMinimoNacionalService salarioMinimoNacionalService = mockSalarioService();
+    private final FalenciaDecretacaoService falencia = new FalenciaDecretacaoService(salarioMinimoNacionalService);
     private final QuadroGeralCredoresAssemblerService quadro = new QuadroGeralCredoresAssemblerService();
     private final RecuperacaoExtrajudicialService crj = new RecuperacaoExtrajudicialService();
+
+    private static SalarioMinimoNacionalService mockSalarioService() {
+        SalarioMinimoNacionalService service = mock(SalarioMinimoNacionalService.class);
+        when(service.multiplicar(any(BigDecimal.class), any(LocalDate.class))).thenReturn(new BigDecimal("60720.00"));
+        return service;
+    }
 
     @Test
     void recuperacaoSemPendenciasEmpresaCom3Anos() {
@@ -80,7 +96,7 @@ class RecuperacaoJudicialFalenciaTest {
                 "12.000.000/0001-00",
                 FalenciaDecretacaoService.CausaFalencia.IMPONTUALIDADE,
                 new BigDecimal("100000.00"),
-                false, false, null, false);
+                false, false, null, false, DATA_PEDIDO_2025);
         var result = falencia.avaliar(input);
         assertThat(result.pendenciasIdentificadas()).isEmpty();
         assertThat(result.causaApurada()).isEqualTo(FalenciaDecretacaoService.CausaFalencia.IMPONTUALIDADE);
@@ -92,7 +108,7 @@ class RecuperacaoJudicialFalenciaTest {
                 "12.000.000/0001-01",
                 FalenciaDecretacaoService.CausaFalencia.IMPONTUALIDADE,
                 new BigDecimal("500.00"),
-                false, false, null, false);
+                false, false, null, false, DATA_PEDIDO_2025);
         var result = falencia.avaliar(input);
         assertThat(result.pendenciasIdentificadas()).anyMatch(i -> i.contains("40 salários"));
     }
@@ -102,9 +118,53 @@ class RecuperacaoJudicialFalenciaTest {
         var input = new FalenciaDecretacaoService.FalenciaInput(
                 "12.000.000/0001-02",
                 FalenciaDecretacaoService.CausaFalencia.EXECUCAO_FRUSTRADA,
-                null, true, false, null, true);
+                null, true, false, null, true, DATA_PEDIDO_2025);
         var result = falencia.avaliar(input);
         assertThat(result.pendenciasIdentificadas()).anyMatch(i -> i.contains("stay"));
+    }
+
+    @Test
+    void limiteDe40SalariosUsaDataDoPedidoNaoDataAtual() {
+        SalarioMinimoNacionalService serviceEspecifico = mock(SalarioMinimoNacionalService.class);
+        when(serviceEspecifico.multiplicar(eq(new BigDecimal("40")), eq(DATA_PEDIDO_2025)))
+                .thenReturn(new BigDecimal("40").multiply(SALARIO_MINIMO_2025));
+        when(serviceEspecifico.multiplicar(eq(new BigDecimal("40")), eq(LocalDate.of(2026, 6, 15))))
+                .thenReturn(new BigDecimal("40").multiply(SALARIO_MINIMO_2026));
+        FalenciaDecretacaoService falenciaEspecifica = new FalenciaDecretacaoService(serviceEspecifico);
+
+        var inputBaixo2025 = new FalenciaDecretacaoService.FalenciaInput(
+                "12.000.000/0001-03",
+                FalenciaDecretacaoService.CausaFalencia.IMPONTUALIDADE,
+                new BigDecimal("60000.00"),
+                false, false, null, false, DATA_PEDIDO_2025);
+        var resultBaixo2025 = falenciaEspecifica.avaliar(inputBaixo2025);
+
+        assertThat(resultBaixo2025.pendenciasIdentificadas())
+                .as("60000 > 40*1518=60720? Não. Deve entrar como pendência quando SM é de 2025.")
+                .anyMatch(i -> i.contains("40 salários"));
+
+        var inputAlto2025 = new FalenciaDecretacaoService.FalenciaInput(
+                "12.000.000/0001-04",
+                FalenciaDecretacaoService.CausaFalencia.IMPONTUALIDADE,
+                new BigDecimal("60800.00"),
+                false, false, null, false, DATA_PEDIDO_2025);
+        var resultAlto2025 = falenciaEspecifica.avaliar(inputAlto2025);
+
+        assertThat(resultAlto2025.pendenciasIdentificadas())
+                .as("60800 > 40*1518=60720? Sim. Deve ser indicativo com SM de 2025.")
+                .isEmpty();
+    }
+
+    @Test
+    void dataPedidoNulaFalhaExplicitamenteEmVezDeCairEmDataAtual() {
+        var input = new FalenciaDecretacaoService.FalenciaInput(
+                "12.000.000/0001-05",
+                FalenciaDecretacaoService.CausaFalencia.IMPONTUALIDADE,
+                new BigDecimal("100000.00"),
+                false, false, null, false, null);
+        assertThat(org.junit.jupiter.api.Assertions.assertThrows(
+                NullPointerException.class, () -> falencia.avaliar(input)))
+                .hasMessageContaining("dataPedido");
     }
 
     @Test

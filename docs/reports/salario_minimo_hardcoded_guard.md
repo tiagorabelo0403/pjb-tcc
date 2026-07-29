@@ -3,8 +3,8 @@
 - Base analisada: `C:\PJB\pjb-api\src\main\java\com\tcc\pjb\backend`
 - Arquivo canonico excluido do scan: `SalarioMinimoNacionalService.java`
 - Arquivos escaneados: **8070**
-- Arquivos com achados: **5**
-- Total de ocorrencias: **10**
+- Arquivos com achados: **2**
+- Total de ocorrencias: **4**
 
 ## Achados
 
@@ -16,33 +16,6 @@
 - linha 430 — padrao `localdate_now_inline_in_service_call`, match `multiplicar`
   - snippet: `&& valorCausa.compareTo(salarioMinimoNacionalService.multiplicar(new BigDecimal("60"), LocalDate.now())) <= 0) {`
   - acao: Passar data de referencia do dominio (data do pedido, data do ajuizamento, etc.), nao LocalDate.now() inline.
-
-### `pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/calculo/CalculoJudicialEconomicReferenceService.java` (2 ocorrencia(s))
-
-- linha 34 — padrao `valor_por_ano_literal`, match `2025`
-  - snippet: `salarioMinimoNacionalService.valorPorAno(2025),`
-  - acao: Derivar o ano de LocalDate (ex.: hoje.getYear() - 1 ou getYear()) em vez de literal.
-- linha 35 — padrao `valor_por_ano_literal`, match `2026`
-  - snippet: `salarioMinimoNacionalService.valorPorAno(2026),`
-  - acao: Derivar o ano de LocalDate (ex.: hoje.getYear() - 1 ou getYear()) em vez de literal.
-
-### `pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/calculo/CalculoJudicialFrontendCatalogService.java` (2 ocorrencia(s))
-
-- linha 466 — padrao `map_entry_literal_with_salario_minimo_key`, match `salarioMinimoReferencia="1518.00"`
-  - snippet: `"salarioMinimoReferencia", "1518.00",`
-  - acao: Substituir literal por chamada ao SalarioMinimoNacionalService.
-- linha 589 — padrao `map_entry_literal_with_salario_minimo_key`, match `salarioMinimoReferencia="1518.00"`
-  - snippet: `"salarioMinimoReferencia", "1518.00",`
-  - acao: Substituir literal por chamada ao SalarioMinimoNacionalService.
-
-### `pjb-api/src/main/java/com/tcc/pjb/backend/service/recuperacaojudicial/FalenciaDecretacaoService.java` (2 ocorrencia(s))
-
-- linha 12 — padrao `bigdecimal_literal_near_identifier`, match `1412.00`
-  - snippet: `private static final BigDecimal VALOR_SALARIO_MINIMO = new BigDecimal("1412.00");`
-  - acao: Substituir literal por chamada ao SalarioMinimoNacionalService com data de referencia explicita.
-- linha 12 — padrao `constant_declaration_salario_minimo`, match `VALOR_SALARIO_MINIMO`
-  - snippet: `private static final BigDecimal VALOR_SALARIO_MINIMO = new BigDecimal("1412.00");`
-  - acao: Remover a constante local; injetar SalarioMinimoNacionalService e usar valorEm/multiplicar com data de referencia.
 
 ### `pjb-api/src/main/java/com/tcc/pjb/backend/service/recuperacaojudicial/QuadroGeralCredoresAssemblerService.java` (2 ocorrencia(s))
 

@@ -829,3 +829,169 @@ vez com padrão consistente (tag por área de domínio, `@Operation` com `summar
 Anti-padrão: aplicar caso-a-caso à medida que novos endpoints nascem — cria duas classes de
 controllers no mesmo projeto e nunca converge. `RecursalPeticionamentoController` é candidato
 natural a primeiro alvo dessa fatia transversal.
+
+## D-salario-minimo-hardcoded-fora-de-gratuidade
+
+**Status:** parcialmente atendida — 3 dos 5 pontos fechados nesta fatia; 2 pontos permanecem
+abertos como dívidas próprias (`D-national-rule-pack-engine-sem-data-referencia` e
+`D-quadro-credores-recuperacao-marco-nao-pesquisado`).
+
+**Contexto:** investigação transversal em `pjb-api/src/main/java` mapeou 5 pontos que instanciavam
+salário mínimo fora do serviço canônico `SalarioMinimoNacionalService`, complementares ao
+`D-salario-minimo-hardcoded-em-gratuidade` já FECHADA (que cobria apenas
+`JusticaGratuidaVerificadorService`). Os pontos eram: (i) constante literal `"1412.00"` em
+`FalenciaDecretacaoService` (limite de impontualidade — Lei 11.101/2005 art. 94 I, que fixa o SM
+"na data do pedido de falência"); (ii) constante literal `"1412.00"` em
+`QuadroGeralCredoresAssemblerService` (limite trabalhista da falência — Lei 11.101/2005 art. 83 I);
+(iii) duas strings literais `"1518.00"` no catálogo de exemplo do frontend em
+`CalculoJudicialFrontendCatalogService`; (iv) `valorPorAno(2025)` e `valorPorAno(2026)` literais
+no painel comparativo de `CalculoJudicialEconomicReferenceService`; (v) duas chamadas
+`multiplicar(..., LocalDate.now())` em `NationalRulePackEngine` para calcular os tetos de
+competência do JEC (40 SM) e JEF (60 SM).
+
+**Correção aplicada:**
+- **FalenciaDecretacaoService** — injetado `SalarioMinimoNacionalService`, `FalenciaInput`
+  recebeu `LocalDate dataPedido` obrigatória (`Objects.requireNonNull`, sem fallback para
+  `LocalDate.now()`), constante `VALOR_SALARIO_MINIMO` removida e substituída por
+  `salarioMinimoNacionalService.multiplicar(LIMITE_IMPONTUALIDADE_SALARIOS_MINIMOS, dataPedido)`.
+  Teste de regressão `limiteDe40SalariosUsaDataDoPedidoNaoDataAtual` prova aritmeticamente com SM
+  histórico (2025 → R\$ 1.518,00, limite R\$ 60.720,00) que o valor da data efetivamente determina
+  o limite, e teste `dataPedidoNulaFalhaExplicitamenteEmVezDeCairEmDataAtual` prova o `NullPointerException`
+  com mensagem `"dataPedido"` — sem fallback silencioso que reintroduziria o hardcode por outro caminho.
+- **CalculoJudicialFrontendCatalogService** — injetado `SalarioMinimoNacionalService` (5ª dep no
+  construtor, único call site explícito é o próprio teste unitário), 2 literais `"1518.00"`
+  substituídos por `valorVigente().toPlainString()`. Teste
+  `salarioMinimoReferenciaVemDoServiceCanonicoNaoDeLiteralAntigo` mocka o service com valor
+  distinto do antigo hardcode e prova que payloadInicial + requestExemplo do bootstrap
+  `FEDERAL_PREVIDENCIARIO_CJF` refletem o valor mockado.
+- **CalculoJudicialEconomicReferenceService** — `valorPorAno(2025)` e `valorPorAno(2026)`
+  substituídos por `valorPorAno(hoje.getYear() - 1)` e `valorPorAno(hoje.getYear())`, com `hoje`
+  já disponível no método. Decisão de janela documentada: (ano anterior + ano corrente) evita
+  cair no fallback do próximo ano sem decreto publicado, o que exporia dois valores idênticos
+  rotulados como anos diferentes. Constantes de metadata (`FONTE_SALARIO_2026`, `FONTE_INSS_2026`,
+  `TETO_INSS_2026`) mantidas — são referências a normas específicas, não valor monetário do SM.
+  Teste `janelaComparativaChamaAnoAnteriorEAnoCorrenteDerivadosDeLocalDateNaoLiterais` verifica
+  as chamadas por `ArgumentMatchers` derivados de `LocalDate.now().getYear()`, sem fixar anos
+  literais que ficariam errados no futuro.
+- **DTO `CalculoJudicialSalarioMinimoDto`** — campos ainda nomeados `referencia2025`/`referencia2026`,
+  o que ficará semanticamente incorreto no ano seguinte. Não renomeado nesta fatia porque é
+  breaking change de contrato consumido pelo frontend; registrado como observação para fatia
+  futura de generalização de contrato (`referenciaAnoAnterior`/`referenciaAnoCorrente`).
+
+**Guard de regressão:** `salario_minimo_hardcoded_guard.py` (bridge em `scripts/`, corpo em
+`tooling/python/scripts/`) detecta 5 padrões: literal `1XXX.00` próximo a identificador de SM,
+literal em entry de Map com chave `salarioMinimo*`, declaração de `static final BigDecimal
+SALARIO_MINIMO*`, chamada `valorPorAno(literal)`, e `LocalDate.now()` inline em chamada ao service
+canônico. Whitelist explícita do `SalarioMinimoNacionalService.java` (fonte canônica com
+`FALLBACK_OFICIAL` legítimo). Sem mecanismo de allowlist inline — nenhuma convenção prévia no
+projeto e a fatia optou por não inventar. Exit 1 documentado enquanto as duas dívidas próprias
+não forem resolvidas.
+
+**Risco original:** valores monetários congelados em pontos de cálculo relevantes (falência,
+recuperação judicial, catálogo de frontend, painel comparativo), com correção requerendo
+atualização manual arquivo-a-arquivo todo ano em vez de sincronização automática via
+`SalarioMinimoNacionalSyncScheduler`. Impacto direto: cálculo pode negar competência a JEC/JEF em
+casos limite, exibir catálogo desatualizado, ou aplicar teto trabalhista/impontualidade com valor
+de anos anteriores.
+
+## D-national-rule-pack-engine-sem-data-referencia
+
+**Status:** aberta — dívida arquitetural, não bug ativo (achado transversal de fatia de
+`D-salario-minimo-hardcoded-fora-de-gratuidade`, extraído para tratamento próprio)
+
+**Contexto:** `NationalRulePackEngine.inferDynamicRules(ContextoRegra ctx)` chama
+`salarioMinimoNacionalService.multiplicar(new BigDecimal("40"), LocalDate.now())` (linha 418, teto
+JEC) e `salarioMinimoNacionalService.multiplicar(new BigDecimal("60"), LocalDate.now())` (linha 430,
+teto JEF). A regra jurídica pede **data do ajuizamento** (Lei 9.099/95 art. 3º I; Lei 10.259/2001
+art. 3º) — o valor da causa deve ser aferido no momento da propositura, não no momento em que a
+regra é avaliada. O `record ContextoRegra` (linhas 34-40) carrega `classeTPU`, `assuntoTPU`,
+`ramo`, `grau`, `tribunalCodigo`, `extras`, mas **nenhum campo de data**. O `Map<String, Object>
+extras` já transporta `valorCausa`; poderia transportar `dataAjuizamento` também, mas hoje não
+transporta e o engine cai no `LocalDate.now()` por falta de alternativa disponível.
+
+**Risco:** ao virar de ano, causas ajuizadas em dezembro do ano anterior podem ser reclassificadas
+como JEC/JEF por chamada da regra em janeiro do ano corrente com valor de causa que era limítrofe.
+Baixa probabilidade, mas mancha o motor com uma decisão temporal errada por construção. Também
+mascara o fato de que o SM da data do ajuizamento seria diferente — regra jurídica correta viraria
+"foi JEC no momento do ajuizamento" e não "é JEC agora".
+
+**Quando revisitar:** fatia arquitetural própria. Alteração exige adicionar `LocalDate
+dataReferencia` ao `record ContextoRegra`, o que cascateia por 28 arquivos consumidores
+(`JurimetriaEngine`, `NationalColegiadoEngine`, `CejuscEngine`, `CooperacaoJuridicaEngine`,
+`ImpedimentoSuspeicaoEngine`, `NotificacaoInteligentePJB`, `TransparenciaCnjEngine`, `LoadPlan`,
+`PluginSnapshot`, `PluginResolucaoTribunalService`, `TribunalRuleEngine`,
+`TribunalRulePackSynchronizationSupport`, `TribunalRuleResolutionSupport`, além dos testes). O
+guard `salario_minimo_hardcoded_guard.py` detecta as duas ocorrências e permanecerá reportando-as
+com `exit=1` documentado até o fechamento desta dívida.
+
+## D-quadro-credores-recuperacao-marco-nao-pesquisado
+
+**Status:** aberta — bloqueio de segurança sobre `QuadroGeralCredoresAssemblerService`, gate
+levantado pela Fase 0 da fatia de `D-salario-minimo-hardcoded-fora-de-gratuidade`.
+
+**Contexto:** o service `QuadroGeralCredoresAssemblerService` foi analisado como candidato a
+receber `LocalDate dataDecretacao` e passar a consultar o `SalarioMinimoNacionalService` para o
+limite trabalhista de 150 SM por credor (Lei 11.101/2005 art. 83 I). **Se o service fosse
+exclusivo de falência**, o critério "data da decretação da falência" seria o majoritariamente
+aceito pela jurisprudência estadual (ausente precedente do STJ especificamente sobre o marco),
+com fundamento na consolidação do quadro geral pelo administrador judicial e no princípio da
+par conditio creditorum — essa é a base doutrinária que orientaria a implementação. **Mas o
+service não é declaradamente exclusivo de falência**, e a investigação leu o arquivo completo do
+assembler e confirmou:
+
+- nenhum parâmetro, campo ou enum distingue falência × recuperação judicial;
+- o observation gerado cita apenas "Lei 11.101/2005 arts. 83 e 149" (art. 149 é ordem de pagamento
+  pós-realização do ativo, específico de falência);
+- o único teste (`quadroGeralOrdenadoPorClasse` em `RecuperacaoJudicialFalenciaTest`) cobre apenas
+  ordenação, sem cenário RJ vs falência;
+- **zero call sites em produção** (mesmo perfil de `JusticaGratuidaVerificadorService`).
+
+O art. 83 rege falência; em recuperação judicial as classes de credores são reaproveitadas por
+remissão via art. 41, mas o evento-marco temporal em RJ **não é "decretação"** (que só existe em
+falência) — pode ser deferimento do processamento, concessão da recuperação, ou outra decisão
+específica. **Marco temporal para RJ não foi pesquisado nesta fatia.**
+
+**Risco:** como o service não impõe barreira arquitetural contra reuso em RJ (aceita qualquer
+`List<Credor>` sem verificar tipo de processo), qualquer implementação futura da Fase 3 com
+"data da decretação" hardcoded como semântica única pode ser silenciosamente incorreta em cenário
+de RJ. Aplicar critério de falência em RJ, ou vice-versa, reintroduz a mesma ambiguidade que a
+fatia atual resolveu para o outro service.
+
+**Quando revisitar:** fatia própria com pesquisa jurídica prévia sobre o marco temporal do SM em
+recuperação judicial. Antes de escrever código: (a) pesquisar art. 54 c/c 83 da Lei 11.101/2005 no
+contexto de RJ; (b) confirmar precedente ou doutrina sobre marco em RJ; (c) decidir se o service
+deve receber enum discriminador (`TipoProcesso.FALENCIA` / `TipoProcesso.RECUPERACAO`) para
+resolver marco diferente por caminho, ou se são dois services distintos. O guard
+`salario_minimo_hardcoded_guard.py` continua reportando as 2 ocorrências (constante literal +
+declaração de constante) até fechamento.
+
+## D-scheduler-salario-minimo-nunca-ativado
+
+**Status:** aberta — dívida operacional, não bug ativo (achado transversal da investigação de
+`D-salario-minimo-hardcoded-fora-de-gratuidade`)
+
+**Contexto:** `SalarioMinimoNacionalSyncScheduler` (`@Scheduled(cron = "${pjb.sync.salario-minimo.cron:0 0 3 * * *}")`)
+existe com cron diário às 03:00 UTC e consumiria a série 1619 do Banco Central via
+`SalarioMinimoBcbClient`. Está protegido por dois gates: `@Profile("!test")` e
+`@ConditionalOnProperty(name = "pjb.sync.salario-minimo.enabled", havingValue = "true")` — sem
+`matchIfMissing=true`. **A propriedade `pjb.sync.salario-minimo.enabled` não está setada em
+nenhum `application*.yml`/`.properties` de `pjb-api/src/main/resources`.** Nenhuma migration
+popula a tabela `salario_minimo_nacional` como seed. Consequência: em todo ambiente, toda consulta
+a `SalarioMinimoNacionalService.valorPorAno(ano)` cai no `FALLBACK_OFICIAL` estático (2023=1320,
+2024=1412, 2025=1518, 2026=1621), e o último recurso do fallback devolve `1621` fixo para qualquer
+ano ≥ 2026. Quando 2027 chegar, o service devolverá 1621 para 2027 sem intervenção humana — valor
+de 2026 congelado como default eterno.
+
+**Risco:** a plataforma parece dinâmica (consulta service canônico, propaga data de referência,
+guard anti-hardcode ativo) mas a fonte por trás é estática e envelhece silenciosamente. Correção
+dos 3 hardcodes da fatia atual (Falencia + FrontendCatalog + EconomicReference) melhora o desenho
+mas não elimina a dívida de fonte: enquanto o scheduler não subir, a atualização anual do salário
+mínimo continua manual (via PR editando `FALLBACK_OFICIAL`).
+
+**Quando revisitar:** decisão operacional de deploy + segurança. Ativar o scheduler exige (a)
+setar `pjb.sync.salario-minimo.enabled=true` no perfil de produção, (b) confirmar que a chamada
+externa ao BCB é aceitável no ambiente (whitelist de saída, rate limit), (c) monitorar as
+primeiras execuções via log ou métrica dedicada (o scheduler não escreve em `AuditLedgerService`
+hoje), (d) avaliar se cabe seed inicial via migration para garantir base populada mesmo antes da
+primeira execução. Não integrar essa fatia com a de fixes atuais — é decisão operacional de
+outra natureza.

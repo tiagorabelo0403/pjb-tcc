@@ -2,8 +2,8 @@
   "base": "C:\\PJB\\pjb-api\\src\\main\\java\\com\\tcc\\pjb\\backend",
   "canonicalServiceExcluded": "SalarioMinimoNacionalService.java",
   "filesScanned": 8070,
-  "filesWithFindings": 5,
-  "totalHits": 10,
+  "filesWithFindings": 2,
+  "totalHits": 4,
   "findings": [
     {
       "file": "pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/rules/NationalRulePackEngine.java",
@@ -22,66 +22,6 @@
           "match": "multiplicar",
           "snippet": "&& valorCausa.compareTo(salarioMinimoNacionalService.multiplicar(new BigDecimal(\"60\"), LocalDate.now())) <= 0) {",
           "recommendedAction": "Passar data de referencia do dominio (data do pedido, data do ajuizamento, etc.), nao LocalDate.now() inline."
-        }
-      ]
-    },
-    {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/calculo/CalculoJudicialEconomicReferenceService.java",
-      "hitCount": 2,
-      "hits": [
-        {
-          "pattern": "valor_por_ano_literal",
-          "line": 34,
-          "match": "2025",
-          "snippet": "salarioMinimoNacionalService.valorPorAno(2025),",
-          "recommendedAction": "Derivar o ano de LocalDate (ex.: hoje.getYear() - 1 ou getYear()) em vez de literal."
-        },
-        {
-          "pattern": "valor_por_ano_literal",
-          "line": 35,
-          "match": "2026",
-          "snippet": "salarioMinimoNacionalService.valorPorAno(2026),",
-          "recommendedAction": "Derivar o ano de LocalDate (ex.: hoje.getYear() - 1 ou getYear()) em vez de literal."
-        }
-      ]
-    },
-    {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/processual/calculo/CalculoJudicialFrontendCatalogService.java",
-      "hitCount": 2,
-      "hits": [
-        {
-          "pattern": "map_entry_literal_with_salario_minimo_key",
-          "line": 466,
-          "match": "salarioMinimoReferencia=\"1518.00\"",
-          "snippet": "\"salarioMinimoReferencia\", \"1518.00\",",
-          "recommendedAction": "Substituir literal por chamada ao SalarioMinimoNacionalService."
-        },
-        {
-          "pattern": "map_entry_literal_with_salario_minimo_key",
-          "line": 589,
-          "match": "salarioMinimoReferencia=\"1518.00\"",
-          "snippet": "\"salarioMinimoReferencia\", \"1518.00\",",
-          "recommendedAction": "Substituir literal por chamada ao SalarioMinimoNacionalService."
-        }
-      ]
-    },
-    {
-      "file": "pjb-api/src/main/java/com/tcc/pjb/backend/service/recuperacaojudicial/FalenciaDecretacaoService.java",
-      "hitCount": 2,
-      "hits": [
-        {
-          "pattern": "bigdecimal_literal_near_identifier",
-          "line": 12,
-          "match": "1412.00",
-          "snippet": "private static final BigDecimal VALOR_SALARIO_MINIMO = new BigDecimal(\"1412.00\");",
-          "recommendedAction": "Substituir literal por chamada ao SalarioMinimoNacionalService com data de referencia explicita."
-        },
-        {
-          "pattern": "constant_declaration_salario_minimo",
-          "line": 12,
-          "match": "VALOR_SALARIO_MINIMO",
-          "snippet": "private static final BigDecimal VALOR_SALARIO_MINIMO = new BigDecimal(\"1412.00\");",
-          "recommendedAction": "Remover a constante local; injetar SalarioMinimoNacionalService e usar valorEm/multiplicar com data de referencia."
         }
       ]
     },

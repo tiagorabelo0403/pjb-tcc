@@ -31,8 +31,8 @@ public class CalculoJudicialEconomicReferenceService {
         CalculoJudicialSalarioMinimoDto salario = new CalculoJudicialSalarioMinimoDto(
                 salarioMinimoNacionalService.valorVigente(),
                 hoje.withDayOfYear(1).toString(),
-                salarioMinimoNacionalService.valorPorAno(2025),
-                salarioMinimoNacionalService.valorPorAno(2026),
+                salarioMinimoNacionalService.valorPorAno(hoje.getYear() - 1),
+                salarioMinimoNacionalService.valorPorAno(hoje.getYear()),
                 "Decreto nº 12.797/2025",
                 FONTE_SALARIO_2026
         );

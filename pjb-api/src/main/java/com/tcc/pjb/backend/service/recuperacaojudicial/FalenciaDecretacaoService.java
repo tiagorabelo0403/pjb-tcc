@@ -1,15 +1,23 @@
 package com.tcc.pjb.backend.service.recuperacaojudicial;
 
+import com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FalenciaDecretacaoService {
 
-    private static final BigDecimal LIMITE_IMPONTUALIDADE_SALARIOS = new BigDecimal("40");
-    private static final BigDecimal VALOR_SALARIO_MINIMO = new BigDecimal("1412.00");
+    private static final BigDecimal LIMITE_IMPONTUALIDADE_SALARIOS_MINIMOS = new BigDecimal("40");
+
+    private final SalarioMinimoNacionalService salarioMinimoNacionalService;
+
+    public FalenciaDecretacaoService(SalarioMinimoNacionalService salarioMinimoNacionalService) {
+        this.salarioMinimoNacionalService = Objects.requireNonNull(salarioMinimoNacionalService);
+    }
 
     public enum CausaFalencia {
         IMPONTUALIDADE,
@@ -24,7 +32,8 @@ public class FalenciaDecretacaoService {
             boolean execucaoFrustrada,
             boolean atoFalencia,
             String descricaoAtoFalencia,
-            boolean pedidoRecuperacaoPendenteOuDeferido
+            boolean pedidoRecuperacaoPendenteOuDeferido,
+            LocalDate dataPedido
     ) {}
 
     public record FalenciaResult(
@@ -40,6 +49,7 @@ public class FalenciaDecretacaoService {
             "Pendências identificadas — conferir antes de submeter ao magistrado.";
 
     public FalenciaResult avaliar(FalenciaInput input) {
+        Objects.requireNonNull(input.dataPedido(), "dataPedido");
         List<String> indicativos = new ArrayList<>();
         List<String> pendencias = new ArrayList<>();
 
@@ -49,7 +59,7 @@ public class FalenciaDecretacaoService {
 
         switch (input.causa()) {
             case IMPONTUALIDADE -> {
-                BigDecimal limiteValor = LIMITE_IMPONTUALIDADE_SALARIOS.multiply(VALOR_SALARIO_MINIMO);
+                BigDecimal limiteValor = salarioMinimoNacionalService.multiplicar(LIMITE_IMPONTUALIDADE_SALARIOS_MINIMOS, input.dataPedido());
                 if (input.valorDividaImpontualidade() != null
                         && input.valorDividaImpontualidade().compareTo(limiteValor) > 0) {
                     indicativos.add(String.format(
