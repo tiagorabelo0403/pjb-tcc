@@ -1,7 +1,7 @@
 # Spring Ambiguous Constructor Guard
 
 - Base analisada: `C:\PJB\pjb-api\src\main\java\com\tcc\pjb\backend`
-- Arquivos com estereotipo Spring escaneados: **2310**
+- Arquivos com estereotipo Spring escaneados: **2311**
 - Classes com ambiguidade de construtor: **0**
 
 ## Achados

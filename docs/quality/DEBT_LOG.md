@@ -545,7 +545,8 @@ Enquanto isso, o comportamento é seguro (nega mais do que talvez devesse), nunc
 
 ## D-recursal-superficie-por-papel
 
-**Status:** aberta — dívida arquitetural, não bug ativo
+**Status:** parcialmente atendida — superfície única aditiva criada em Fatia 1; os quatro controllers
+originais permanecem intactos por coexistência, e as etapas de deprecação/remoção seguem abertas.
 
 **Contexto:** o módulo recursal expõe quatro controllers (`AdvogadoCockpitController`,
 `DefensorPublicoPainelController`, `MinisterioPublicoPainelController`,
@@ -562,6 +563,67 @@ motor responde sim e não há porta correspondente.
 recursal exige uma quinta cópia do mesmo controller, e a regra de quem pode recorrer permanece
 dispersa em quatro lugares em vez de um. O motor de admissibilidade já concentra a decisão; a
 superfície é que não confia nele.
+
+**Fatia 1 aplicada — superfície unificada aditiva:** `RecursalPeticionamentoController`
+(`POST /api/v1/recursal/processos/{processoId}/recurso`) publica a superfície única de interposição
+recursal, autorizada por `@PreAuthorize` combinado que cobre as 13 roles legítimas hoje
+(advocacia, defensoria pública, ministério público e procuradorias). A decisão de qual
+service-de-perfil chamar acontece em `RecursalPeticionamentoPerfilRouter`, que resolve pelo
+`TipoUsuario` do usuário autenticado (`isAdvocacia`/`isDefensoriaPublica`/`isMinisterioPublico`/
+`isProcuradoria`) e delega ao mesmo intermediate service que os controllers atuais consomem
+(`AdvogadoCockpitService`, `DefensorPublicoPainelService`, `MinisterioPublicoPainelService`,
+`ProcuradoriaOperacionalService`), preservando 100% dos guards materiais por perfil já existentes
+(`InstitutionalMaterialActionGuardService.MaterialAction.{DEFENSORIA|MINISTERIO_PUBLICO|PROCURADORIA}_RECURSO`
+e a governança de escritório da advocacia via `OfficeGovernedProcessOperationService`). O rate limit
+usa uma capability única (`recursal_peticionamento_recurso`), com o domínio (`LAWYER` × `INSTITUCIONAL`)
+resolvido pelo próprio perfil. A resposta é envelopada em `SurfaceActionResponse` canônica com scope
+`recursal.peticionamento.<perfil>`. DTO nova (`RecursalPeticionamentoRequest`, mesma shape byte-a-byte
+das anteriores). Os quatro controllers antigos ficam intactos por período de coexistência: nada foi
+removido nesta fatia. Cobertura: `RecursalPeticionamentoPerfilRouterTest` (11 testes: roteamento por
+`TipoUsuario` — inclusive PGR rumo ao MP pela classificação canônica do enum —, mapeamento de
+rate-limit domain, delegação por perfil, rejeição de perfil sem habilitação),
+`RecursalPeticionamentoControllerTest` (4 testes MockMvc: happy path por família de perfil, scope
+canônico, escolha correta do `CapabilityRateLimitDomain`) e `RecursalPeticionamentoControllerIT`
+(7 testes contra Postgres real com Spring Security completo: anônimo negado sem tocar o router,
+`ROLE_JUIZ` recebendo 403 via `@PreAuthorize`, e as quatro famílias legítimas mais o PGR chegando
+ao router com o `Perfil` esperado). A DTO reusa `InstitutionalRecursoRequest` já existente em vez
+de introduzir uma terceira cópia idêntica; `AdvogadoRecursoRequest` ganhou javadoc apontando para
+a superfície canônica e para a Fatia 3 de remoção. Guards `constructor_injection_guard.py` e
+`spring_ambiguous_constructor_guard.py` verdes com a nova classe já contabilizada (2310→2311
+arquivos com estereótipo Spring escaneados, 0 findings).
+
+**Divergência de roteamento PGR (registrada, não corrigida):** o enum `TipoUsuario` classifica
+`PROCURADOR_GERAL_REPUBLICA` como Ministério Público (`isMinisterioPublico()` inclui PGR;
+`isProcuradoria()` não). O router segue essa classificação canônica e roteia PGR ao
+`MinisterioPublicoPainelService` — coberto por teste explícito
+(`resolverPerfilAtivo_procuradorGeralRepublica_retornaMinisterioPublicoPorClassificacaoDoEnum`). O
+`ProcuradoriaOperacionalController` legado, porém, aceita PGR no seu `@PreAuthorize`, o que
+significa que um PGR autenticado hoje pode bater no endpoint da Procuradoria e disparar
+`MaterialAction.PROCURADORIA_RECURSO` em vez de `MINISTERIO_PUBLICO_RECURSO`. Na superfície
+unificada, esse mesmo PGR passa pelo guard de MP. Não é bug da Fatia 1 — é divergência
+preexistente na modelagem de roles do PGR entre `TipoUsuario` (MP-centric) e o `@PreAuthorize` do
+controller legado (MP+Procuradoria). A fatia de deprecação (2) deve alinhar os dois lados; até lá,
+preferir a nova superfície faz o PGR ficar sempre no caminho canônico do enum.
+
+**Divergência de role `DEFENSOR_DISTRITAL` (não introduzida, apenas não replicada):** o
+`@PreAuthorize` do `DefensorPublicoPainelController` legado inclui `DEFENSOR_DISTRITAL`, valor que
+não existe em `TipoUsuario` — code-path morto que nunca casa em runtime. A superfície unificada
+não replica esse literal; se algum dia a role for adicionada ao enum, ambos os lados precisam ser
+atualizados.
+
+**Fatias restantes (abertas):** (2) deprecar as quatro URLs antigas com header `Deprecation`/`Sunset`,
+redirecionando internamente à nova superfície; (3) remover os três métodos `interporRecurso` dos
+surfaces intermediários (`AdvogadoSurfaceFacadeService`, `InstitutionalPainelSurfaceFacadeService`,
+`ProcuradoriaOperationalSurfaceFacadeService`) e as quatro URLs antigas depois de zerar consumidores;
+(4) habilitar jus postulandi de parte na mesma URL — expandir `@PreAuthorize` para incluir role de
+cidadão-parte quando `elegivelPorJusPostulandi()` permitir, fechando a lacuna do motor recursal que
+já responde “sim” para embargos de declaração no jus postulandi mas hoje não tem porta correspondente.
+
+**Fatia 4 é bloqueadora de Fatias 2 e 3.** Deprecar (Fatia 2) ou remover (Fatia 3) as quatro URLs
+legadas antes de habilitar jus postulandi de parte na nova superfície (Fatia 4) deixaria o
+cidadão-parte permanentemente sem porta para exercer a capacidade que
+`RecursalValidacaoMinimaService.elegivelPorJusPostulandi()` já autoriza — o oposto do objetivo do
+debt. A ordem operacional obrigatória é 1 → 4 → 2 → 3.
 
 **Quando revisitar:** em fatia própria de convergência recursal — superfície única autorizada por
 `elegivelPorJusPostulandi()` somada à legitimidade profissional, no mesmo padrão do peticionamento.
