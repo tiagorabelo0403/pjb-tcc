@@ -1015,3 +1015,8 @@ Revisitar em fatia própria: IT com Spring Security real provando 403 para CIDAD
 
 Os 4 controllers recursais legados (`AdvogadoCockpitController`, `DefensorPublicoPainelController`, `MinisterioPublicoPainelController`, `ProcuradoriaOperacionalController`) não tinham nenhuma classe de teste dedicada antes da Fatia 2 de `D-recursal-superficie-por-papel` — só os headers de depreciação de `interporRecurso` ganharam cobertura mínima, os demais endpoints seguem sem teste próprio.
 Revisitar em fatia própria: cobertura completa (sucesso, validação, autorização real) dos 4 controllers antes da remoção na Fatia 3.
+
+## D-frontend-delivery-routes-nao-sinaliza-depreciacao
+
+`PjbFrontendDeliveryApplicationService.parseRoutes` escaneia `@PostMapping`/`@GetMapping` via regex e não lê headers HTTP de depreciação — os 4 endpoints recursais legados aparecem no catálogo `/api/v1/frontend/delivery/routes` com o mesmo peso da rota unificada nova, achado ao investigar consumidores antes da Fatia 3.
+Revisitar se o catálogo vier a ser consumido por um frontend real: cruzar rota com `RecursalLegacyDeprecationHeaders` ou marcador equivalente antes de expor como pronta para uso.

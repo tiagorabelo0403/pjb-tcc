@@ -203,62 +203,6 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/advogado/cockpit/processos/{processoId}/recurso",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/advogado/cockpit/processos/{processoId}/recurso",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "advogado",
-                "cockpit",
-                "processos",
-                "{processoId}",
-                "recurso"
-              ]
-            },
-            "description": "authMode=AUTHENTICATED responseType=ResponseEntity<AdvogadoOperacaoResponse>",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": []
-        },
-        {
           "name": "GET /api/v1/advogado/cockpit/snapshot",
           "request": {
             "method": "GET",
@@ -8284,60 +8228,6 @@
                   "type": "string"
                 }
               ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/v1/defensor/recurso/{processoId}",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/defensor/recurso/{processoId}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "defensor",
-                "recurso",
-                "{processoId}"
-              ]
-            },
-            "description": "authMode=AUTHENTICATED responseType=ResponseEntity<SurfaceActionResponse>",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -19431,60 +19321,6 @@
                   "type": "string"
                 }
               ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/v1/mp/recurso/{processoId}",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/mp/recurso/{processoId}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "mp",
-                "recurso",
-                "{processoId}"
-              ]
-            },
-            "description": "authMode=AUTHENTICATED responseType=ResponseEntity<SurfaceActionResponse>",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
           "response": []
@@ -32917,62 +32753,6 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/procuradoria/operacional/processos/{processoId}/recurso",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/procuradoria/operacional/processos/{processoId}/recurso",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "procuradoria",
-                "operacional",
-                "processos",
-                "{processoId}",
-                "recurso"
-              ]
-            },
-            "description": "authMode=AUTHENTICATED responseType=ResponseEntity<SurfaceActionResponse>",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": []
-        },
-        {
           "name": "GET /api/v1/procuradoria/operacional/snapshot",
           "request": {
             "method": "GET",
@@ -40039,6 +39819,291 @@
                   "type": "string"
                 }
               ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "recursal",
+      "item": [
+        {
+          "name": "POST /api/v1/recursal/processos/{processoId}/recurso",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/recursal/processos/{processoId}/recurso",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "recursal",
+                "processos",
+                "{processoId}",
+                "recurso"
+              ]
+            },
+            "description": "authMode=AUTHENTICATED responseType=ResponseEntity<SurfaceActionResponse>. Superficie unica de interposicao recursal (D-recursal-superficie-por-papel). O perfil ativo (ADVOCACIA, DEFENSORIA, MINISTERIO_PUBLICO, PROCURADORIA, CIDADAO) e resolvido automaticamente a partir do papel (role) do JWT autenticado, sem variacao de URL. Sucede os 4 endpoints legados por perfil, movidos para a pasta 'legado (depreciado, remover apos 28/10/2026)'.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"example\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "legado (depreciado, remover apos 28/10/2026)",
+      "item": [
+        {
+          "name": "POST /api/v1/advogado/cockpit/processos/{processoId}/recurso",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/advogado/cockpit/processos/{processoId}/recurso",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "advogado",
+                "cockpit",
+                "processos",
+                "{processoId}",
+                "recurso"
+              ]
+            },
+            "description": "authMode=AUTHENTICATED responseType=ResponseEntity<AdvogadoOperacaoResponse> | DEPRECIADO (RFC 8594): Deprecation: true, Sunset: Tue, 28 Oct 2026 00:00:00 GMT. Sucessor: POST /api/v1/recursal/processos/{processoId}/recurso.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"example\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/defensor/recurso/{processoId}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/defensor/recurso/{processoId}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "defensor",
+                "recurso",
+                "{processoId}"
+              ]
+            },
+            "description": "authMode=AUTHENTICATED responseType=ResponseEntity<SurfaceActionResponse> | DEPRECIADO (RFC 8594): Deprecation: true, Sunset: Tue, 28 Oct 2026 00:00:00 GMT. Sucessor: POST /api/v1/recursal/processos/{processoId}/recurso.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"example\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/mp/recurso/{processoId}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/mp/recurso/{processoId}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "mp",
+                "recurso",
+                "{processoId}"
+              ]
+            },
+            "description": "authMode=AUTHENTICATED responseType=ResponseEntity<SurfaceActionResponse> | DEPRECIADO (RFC 8594): Deprecation: true, Sunset: Tue, 28 Oct 2026 00:00:00 GMT. Sucessor: POST /api/v1/recursal/processos/{processoId}/recurso.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"example\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/procuradoria/operacional/processos/{processoId}/recurso",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/procuradoria/operacional/processos/{processoId}/recurso",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "procuradoria",
+                "operacional",
+                "processos",
+                "{processoId}",
+                "recurso"
+              ]
+            },
+            "description": "authMode=AUTHENTICATED responseType=ResponseEntity<SurfaceActionResponse> | DEPRECIADO (RFC 8594): Deprecation: true, Sunset: Tue, 28 Oct 2026 00:00:00 GMT. Sucessor: POST /api/v1/recursal/processos/{processoId}/recurso.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"example\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []
