@@ -4,6 +4,7 @@ import com.tcc.pjb.backend.model.dto.profile.operational.InstitutionalRecursoReq
 import com.tcc.pjb.backend.model.dto.profile.operational.ProcuradoriaContestacaoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.ProcuradoriaExecucaoFiscalRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.ProcuradoriaParecerRequest;
+import com.tcc.pjb.backend.controller.recursal.RecursalLegacyDeprecationHeaders;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
@@ -78,6 +79,7 @@ public class ProcuradoriaOperacionalController {
                                                                  Authentication authentication) {
         enforce(authentication, "procuradoria_recurso");
         return ResponseEntity.status(HttpStatus.CREATED)
+                .headers(RecursalLegacyDeprecationHeaders.forProcesso(processoId))
                 .body(facadeService.interporRecurso(
                         processoId,
                         request.tipoRecurso(),

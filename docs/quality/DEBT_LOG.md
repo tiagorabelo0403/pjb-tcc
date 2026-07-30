@@ -1010,3 +1010,8 @@ Revisitar em fatia própria: adicionar branch explícito para `CIDADAO` retornan
 
 `PjbAuthorizationService.requireReadProcessoAsCidadaoParte` não tem teste dedicado que prove a rejeição real por CPF divergente em nenhum dos 9 consumidores em produção — lacuna pré-existente, mais antiga que a Fatia 4 de `D-recursal-superficie-por-papel`, só encontrada ao cablear esta fatia.
 Revisitar em fatia própria: IT com Spring Security real provando 403 para CIDADAO cujo CPF não bate com nenhuma parte do processo.
+
+## D-controllers-recursais-legados-sem-teste-dedicado
+
+Os 4 controllers recursais legados (`AdvogadoCockpitController`, `DefensorPublicoPainelController`, `MinisterioPublicoPainelController`, `ProcuradoriaOperacionalController`) não tinham nenhuma classe de teste dedicada antes da Fatia 2 de `D-recursal-superficie-por-papel` — só os headers de depreciação de `interporRecurso` ganharam cobertura mínima, os demais endpoints seguem sem teste próprio.
+Revisitar em fatia própria: cobertura completa (sucesso, validação, autorização real) dos 4 controllers antes da remoção na Fatia 3.

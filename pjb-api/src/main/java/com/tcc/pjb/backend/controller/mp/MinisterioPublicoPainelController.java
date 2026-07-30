@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.controller.mp;
 import com.tcc.pjb.backend.model.dto.dashboard.PerfilDashboardPayload;
 import com.tcc.pjb.backend.model.dto.profile.operational.InstitutionalRecursoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.MinisterioPublicoParecerRequest;
+import com.tcc.pjb.backend.controller.recursal.RecursalLegacyDeprecationHeaders;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceCollectionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
@@ -96,7 +97,9 @@ public class MinisterioPublicoPainelController {
                                                                  @Valid @RequestBody InstitutionalRecursoRequest request,
                                                                  Authentication authentication) {
         rateLimiter.enforce(CapabilityRateLimitDomain.INSTITUCIONAL, authentication, "mp_recurso", ApiVersion.V1);
-        return ResponseEntity.status(HttpStatus.CREATED).body(
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .headers(RecursalLegacyDeprecationHeaders.forProcesso(processoId))
+                .body(
                 facadeService.ministerioPublicoInterporRecurso(
                         processoId,
                         request.tipoRecurso(),

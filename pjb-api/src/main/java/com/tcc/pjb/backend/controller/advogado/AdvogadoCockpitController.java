@@ -19,6 +19,7 @@ import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOperacaoResponse;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoCienciaLoteRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoPeticaoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoRecursoRequest;
+import com.tcc.pjb.backend.controller.recursal.RecursalLegacyDeprecationHeaders;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.versioning.ApiVersion;
@@ -68,6 +69,7 @@ public class AdvogadoCockpitController {
                                                                     Authentication authentication) {
         enforce(authentication, "advogado_cockpit_recurso");
         return ResponseEntity.status(HttpStatus.CREATED)
+                .headers(RecursalLegacyDeprecationHeaders.forProcesso(processoId))
                 .body(facadeService.interporRecurso(processoId, request.tipoRecurso(), request.razoes(), request.fundamentacao(), request.pedidoEfeitoSuspensivo(), request.preparoDispensado(), request.observacoes()));
     }
 

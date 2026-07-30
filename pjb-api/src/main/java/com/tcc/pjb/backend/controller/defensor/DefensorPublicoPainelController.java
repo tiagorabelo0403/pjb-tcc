@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.controller.defensor;
 
 import com.tcc.pjb.backend.model.dto.dashboard.PerfilDashboardPayload;
 import com.tcc.pjb.backend.model.dto.profile.operational.InstitutionalRecursoRequest;
+import com.tcc.pjb.backend.controller.recursal.RecursalLegacyDeprecationHeaders;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceCollectionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
@@ -86,7 +87,9 @@ public class DefensorPublicoPainelController {
                                                                  @Valid @RequestBody InstitutionalRecursoRequest request,
                                                                  Authentication authentication) {
         rateLimiter.enforce(CapabilityRateLimitDomain.INSTITUCIONAL, authentication, "defensor_recurso", ApiVersion.V1);
-        return ResponseEntity.status(HttpStatus.CREATED).body(
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .headers(RecursalLegacyDeprecationHeaders.forProcesso(processoId))
+                .body(
                 facadeService.defensorInterporRecurso(
                         processoId,
                         request.tipoRecurso(),
