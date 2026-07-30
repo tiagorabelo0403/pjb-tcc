@@ -150,7 +150,8 @@ class ApiMarketplaceServicePoloMaterializacaoTest extends PjbIntegrationTestBase
                 comarcaAutor,
                 ufReu,
                 comarcaReu,
-                enderecoReuDesconhecido
+                enderecoReuDesconhecido,
+                null
         );
     }
 }

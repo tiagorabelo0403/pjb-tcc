@@ -496,28 +496,57 @@ construção, só não há prova de uso.
 
 ## D-marketplace-sem-completude-documental
 
-**Status:** aberta — achado colateral do mapeamento de canais de ajuizamento da Fatia 2
+**Status:** Fase 1 aplicada — sinal síncrono + assíncrono de completude documental no canal
+marketplace; consolidação dos três canais numa política única segue como Fase 2, não implementada.
 
-**Contexto:** existem três canais que criam processo no PJB, e cada um valida completude documental
-de um jeito diferente. `POST /api/v1/processos/ajuizar` passa por `AjuizarProcessoCommand` e usa
-`CompletudeDocumentalPolicyService` contra o catálogo estático `ProceduralCatalogDefinitionSupport`.
-`LaianePeticaoInicialDraftService.protocolar()` usa `ProtocoloCompletudeValidator` contra a tabela
-`tb_requisito_documental` (migration `V284`), com severidade, condicionalidade por representante e
-registro de pendência. `ApiMarketplaceService.protocolar()` não faz nenhuma das duas: chama
-`ajuizamentoService.ajuizar(processo)` direto, sem consultar catálogo nem tabela de requisitos —
-grep por `completude`/`Completude`/`PROCURACAO`/`TipoDocumento` nessa classe não retorna nada.
+**Contexto original (mantido para rastreabilidade):** existem três canais que criam processo no
+PJB, e cada um validava completude documental de um jeito diferente (ou não validava). `POST
+/api/v1/processos/ajuizar` passa por `AjuizarProcessoCommand` e usa `CompletudeDocumentalPolicyService`
+contra o catálogo estático `ProceduralCatalogDefinitionSupport`. `LaianePeticaoInicialDraftService.protocolar()`
+usa `ProtocoloCompletudeValidator` contra a tabela `tb_requisito_documental` (migration `V284`), com
+severidade, condicionalidade por representante e registro de pendência. `ApiMarketplaceService.protocolar()`
+não fazia nenhuma das duas: chamava `ajuizamentoService.ajuizar(processo)` direto, sem consultar
+catálogo nem tabela de requisitos.
 
-**Risco:** processo protocolado por integrador externo via marketplace entra sem nenhuma verificação
-de documento obrigatório, enquanto o mesmo rito protocolado por advogado no Laiane é barrado por
-`ProtocoloPendenteException` se faltar CTPS numa reclamação trabalhista. A assimetria não é de
-severidade, é de existência: o marketplace não tem o conceito. Como o canal é de integração
-sistema-a-sistema (autenticado por `clientId`), o efeito prático é que a qualidade documental do
-acervo depende da disciplina do integrador, não do PJB.
+**Correção (Fase 1):** `MarketplaceProtocoloRequest` ganhou campo opcional `documentos` (`List<Attachment>`,
+aditivo — clientes que não migraram continuam funcionando). `ApiMarketplaceService.protocolar()` reaproveita
+`CompletudeDocumentalPolicyService.diagnosticar(rito, documentos)` sem alterar o service. Quando bloqueante,
+`Processo.connectorSubmissionStatus` grava `PENDENTE_DOCUMENTACAO` em vez de `RECEBIDO_MARKETPLACE` —
+decisão deliberada de não introduzir valor novo em `StatusProcesso` (enum compartilhado por
+distribuição/prazo/analytics): o sinal vive no campo já dedicado ao canal conector, raio de explosão zero
+sobre os demais bounded contexts. A resposta HTTP síncrona (`MarketplaceProtocoloResponse`) ganhou
+`documentacaoCompleta`/`documentosFaltantes` — sinal que não depende de o cliente ter configurado webhook,
+o que cobre 100% dos integradores hoje (nenhum tinha motivo pra configurar webhook para um evento que não
+existia). `MarketplaceGovernanceService.publicarEventoPendenciaDocumental` (novo, espelha
+`publicarEventoProtocolo`) dispara `PROCESSO_PENDENTE_DOCUMENTACAO` adicionalmente — nunca em substituição —
+ao `PROCESSO_PROTOCOLADO`, que continua disparando sempre: o protocolo aconteceu de fato, completo ou não.
 
-**Quando revisitar:** ao consolidar os três canais numa política única de completude — o candidato
-natural é `ProtocoloCompletudeValidator`, por ser o único orientado a dado (tabela versionada com
-vigência) em vez de catálogo compilado. Não é correção pontual: exige decidir se o marketplace
-rejeita, aceita com pendência registrada, ou aceita e sinaliza ao integrador via response.
+**Hardcode de rito corrigido na mesma fatia, não documentado como ruído:** `processo.setRito(RitoProcessual.COMUM_ORDINARIO)`
+incondicional foi substituído por `ProceduralCatalogSupport.tryResolveRito(null, request.ramoDireito(),
+request.classeProcessual())` — utilitário estático leve já usado por `AjuizarProcessoCommand` como fallback
+sobre o roteamento pesado (`NationalProcessRoutingService`), sem puxar esse motor pesado para dentro do
+marketplace. `MarketplaceProtocoloRequest` já carregava os dois sinais (`ramoDireito`, `classeProcessual`)
+sem precisar de campo novo. Fallback idêntico ao comportamento anterior quando nada casa (`COMUM_ORDINARIO`),
+resolução real quando casa — decisão tomada porque ligar completude documental sem corrigir o rito produziria
+sinal de pendência poluído por rito errado desde o primeiro dia, o oposto do que a fatia promete entregar.
+
+**Testes:** `ApiMarketplaceServiceCompletudeDocumentalUnitTest` (3, Mockito puro, sem Docker) e
+`ApiMarketplaceServiceCompletudeDocumentalTest` (3, IT com Postgres real via Testcontainers) — ambos verdes,
+cobrindo cliente sem campo `documentos` (nome do teste prova a negação central: sinalização pendente, não
+aceitação silenciosa), cliente completo e cliente parcial. Regressão de `ApiMarketplaceServicePoloMaterializacaoTest`
+(4) confirmada sem alteração.
+
+**Fase 2 (não implementada, registrada apenas por nome):** endpoint dedicado
+`POST /processos/{id}/documentos` para complementação documental pós-protocolo, disparando evento
+`PROCESSO_DOCUMENTACAO_COMPLETADA` reservado neste texto para evitar renomear webhook já em produção quando
+a Fase 2 for implementada. Consolidação das três políticas de completude (catálogo estático, tabela
+`tb_requisito_documental`, e a nova checagem do marketplace) numa única fonte segue em aberto — candidato
+natural continua sendo `ProtocoloCompletudeValidator`, por ser orientado a dado versionado.
+
+**Achados colaterais registrados sem virar entrada própria:** duplicação de `MarketplaceProtocoloRequest`/
+`MarketplaceProtocoloResponse` (DTO público em `model.dto.processo.marketplace` vs. record aninhado em
+`ApiMarketplaceService`, sincronizados manualmente por `MarketplaceSurfaceFacadeService`) — pré-existente,
+apenas mais um campo a manter nos dois lados a partir de agora.
 
 ## D-jus-postulandi-recurso-jef-turma-recursal
 

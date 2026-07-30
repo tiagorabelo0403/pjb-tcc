@@ -70,7 +70,8 @@ public class MarketplaceSurfaceFacadeService {
                 request.comarcaAutor(),
                 request.ufReu(),
                 request.comarcaReu(),
-                request.enderecoReuDesconhecido()
+                request.enderecoReuDesconhecido(),
+                request.documentos()
         ), clientId);
         return new MarketplaceProtocoloResponse(
                 result.processoId(),
@@ -79,7 +80,9 @@ public class MarketplaceSurfaceFacadeService {
                 result.status(),
                 result.tipoJustica(),
                 result.ramoDireito(),
-                result.recebidoEm()
+                result.recebidoEm(),
+                result.documentacaoCompleta(),
+                result.documentosFaltantes()
         );
     }
 
