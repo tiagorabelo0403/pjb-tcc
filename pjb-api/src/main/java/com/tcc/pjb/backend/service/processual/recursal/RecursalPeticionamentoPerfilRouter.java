@@ -20,17 +20,20 @@ public class RecursalPeticionamentoPerfilRouter {
     private final DefensorPublicoPainelService defensorPublicoPainelService;
     private final MinisterioPublicoPainelService ministerioPublicoPainelService;
     private final ProcuradoriaOperacionalService procuradoriaOperacionalService;
+    private final RecursalPeticionamentoFacadeService recursalPeticionamentoFacadeService;
 
     public RecursalPeticionamentoPerfilRouter(PerfilPainelSupportService perfilPainelSupportService,
                                               AdvogadoCockpitService advogadoCockpitService,
                                               DefensorPublicoPainelService defensorPublicoPainelService,
                                               MinisterioPublicoPainelService ministerioPublicoPainelService,
-                                              ProcuradoriaOperacionalService procuradoriaOperacionalService) {
+                                              ProcuradoriaOperacionalService procuradoriaOperacionalService,
+                                              RecursalPeticionamentoFacadeService recursalPeticionamentoFacadeService) {
         this.perfilPainelSupportService = Objects.requireNonNull(perfilPainelSupportService);
         this.advogadoCockpitService = Objects.requireNonNull(advogadoCockpitService);
         this.defensorPublicoPainelService = Objects.requireNonNull(defensorPublicoPainelService);
         this.ministerioPublicoPainelService = Objects.requireNonNull(ministerioPublicoPainelService);
         this.procuradoriaOperacionalService = Objects.requireNonNull(procuradoriaOperacionalService);
+        this.recursalPeticionamentoFacadeService = Objects.requireNonNull(recursalPeticionamentoFacadeService);
     }
 
     public Perfil resolverPerfilAtivo() {
@@ -51,6 +54,9 @@ public class RecursalPeticionamentoPerfilRouter {
         if (tipoUsuario.isProcuradoria()) {
             return Perfil.PROCURADORIA;
         }
+        if (tipoUsuario.isPeticionantePessoal()) {
+            return Perfil.CIDADAO;
+        }
         throw new IllegalArgumentException("Perfil " + tipoUsuario.name() + " sem habilitação recursal ativa no PJB.");
     }
 
@@ -68,6 +74,7 @@ public class RecursalPeticionamentoPerfilRouter {
             case DEFENSORIA -> defensorPublicoPainelService.interporRecurso(processoId, tipoRecurso, razoes, fundamentacao, pedidoEfeitoSuspensivo, preparoDispensado, observacoes);
             case MINISTERIO_PUBLICO -> ministerioPublicoPainelService.interporRecurso(processoId, tipoRecurso, razoes, fundamentacao, pedidoEfeitoSuspensivo, preparoDispensado, observacoes);
             case PROCURADORIA -> procuradoriaOperacionalService.interporRecurso(processoId, tipoRecurso, razoes, fundamentacao, pedidoEfeitoSuspensivo, preparoDispensado, observacoes);
+            case CIDADAO -> recursalPeticionamentoFacadeService.interporRecurso(processoId, tipoRecurso, razoes, fundamentacao, pedidoEfeitoSuspensivo, preparoDispensado, observacoes);
         };
     }
 
@@ -75,7 +82,8 @@ public class RecursalPeticionamentoPerfilRouter {
         ADVOCACIA(CapabilityRateLimitDomain.LAWYER, "advocacia"),
         DEFENSORIA(CapabilityRateLimitDomain.INSTITUCIONAL, "defensoria"),
         MINISTERIO_PUBLICO(CapabilityRateLimitDomain.INSTITUCIONAL, "ministerio-publico"),
-        PROCURADORIA(CapabilityRateLimitDomain.INSTITUCIONAL, "procuradoria");
+        PROCURADORIA(CapabilityRateLimitDomain.INSTITUCIONAL, "procuradoria"),
+        CIDADAO(CapabilityRateLimitDomain.CITIZEN, "cidadao");
 
         private final CapabilityRateLimitDomain rateLimitDomain;
         private final String scopeToken;

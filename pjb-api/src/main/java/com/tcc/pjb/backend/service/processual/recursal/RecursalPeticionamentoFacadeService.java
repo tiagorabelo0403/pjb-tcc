@@ -132,7 +132,7 @@ public class RecursalPeticionamentoFacadeService {
         Usuario usuario = context.usuario();
         PerfilRecursalDescriptor descriptor = peticionamentoSupport.descriptorOf(usuario);
         authorizationService.requireRole(usuario, descriptor.allowedRoles());
-        authorizationService.requireReadProcesso(processo);
+        authorizationService.requireReadProcessoAsCidadaoParte(processo);
 
         String recursoNormalizado = peticionamentoSupport.requiredText(tipoRecurso, "tipoRecurso");
         String razoesNormalizadas = peticionamentoSupport.requiredText(razoes, "razoes");

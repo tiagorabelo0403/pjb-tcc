@@ -145,4 +145,19 @@ class RecursalPeticionamentoControllerIT extends PjbFlowItBase {
         verify(router).interporRecurso(eq(RecursalPeticionamentoPerfilRouter.Perfil.MINISTERIO_PUBLICO),
                 eq(7L), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(), any());
     }
+
+    @Test
+    @WithMockUser(username = "cidadao@test.local", authorities = {"ROLE_CIDADAO"})
+    void roleCidadao_recebe201EDelegaComPerfilCidadao() throws Exception {
+        when(router.resolverPerfilAtivo()).thenReturn(RecursalPeticionamentoPerfilRouter.Perfil.CIDADAO);
+
+        mockMvc.perform(post("/api/v1/recursal/processos/{id}/recurso", 7L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.scope").value("recursal.peticionamento.cidadao"));
+
+        verify(router).interporRecurso(eq(RecursalPeticionamentoPerfilRouter.Perfil.CIDADAO),
+                eq(7L), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(), any());
+    }
 }

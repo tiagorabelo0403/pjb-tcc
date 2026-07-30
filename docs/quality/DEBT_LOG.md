@@ -995,3 +995,18 @@ primeiras execuções via log ou métrica dedicada (o scheduler não escreve em 
 hoje), (d) avaliar se cabe seed inicial via migration para garantir base populada mesmo antes da
 primeira execução. Não integrar essa fatia com a de fixes atuais — é decisão operacional de
 outra natureza.
+
+## D-titularidade-cidadao-duplicada-dois-guards
+
+`PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty` implementam a mesma checagem de CPF (parte autora/ré/usuário do processo) em dois arquivos distintos, achado ao cablear a Fatia 4 de `D-recursal-superficie-por-papel`.
+Revisitar ao tocar qualquer um dos dois: unificar num único método antes de corrigir bug ou adicionar caso novo em só um lado.
+
+## D-peticionamento-controller-domain-lacuna-cidadao
+
+`PeticionamentoController.resolveDomain()` não reconhece `CIDADAO` e recai em `CapabilityRateLimitDomain.LAWYER` por omissão — inconsistente com o resto do projeto, que usa `CITIZEN` para ação/leitura de cidadão (achado ao cablear a Fatia 4 de `D-recursal-superficie-por-papel`).
+Revisitar em fatia própria: adicionar branch explícito para `CIDADAO` retornando `CITIZEN`.
+
+## D-cidadao-parte-guard-sem-teste-rejeicao
+
+`PjbAuthorizationService.requireReadProcessoAsCidadaoParte` não tem teste dedicado que prove a rejeição real por CPF divergente em nenhum dos 9 consumidores em produção — lacuna pré-existente, mais antiga que a Fatia 4 de `D-recursal-superficie-por-papel`, só encontrada ao cablear esta fatia.
+Revisitar em fatia própria: IT com Spring Security real provando 403 para CIDADAO cujo CPF não bate com nenhuma parte do processo.

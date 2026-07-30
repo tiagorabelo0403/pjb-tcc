@@ -126,4 +126,23 @@ class RecursalPeticionamentoControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.scope").value("recursal.peticionamento.procuradoria"));
     }
+
+    @Test
+    void interporRecurso_cidadao_usaRateLimitCitizenEScopeCidadao() throws Exception {
+        when(router.resolverPerfilAtivo()).thenReturn(RecursalPeticionamentoPerfilRouter.Perfil.CIDADAO);
+        when(router.interporRecurso(eq(RecursalPeticionamentoPerfilRouter.Perfil.CIDADAO),
+                anyLong(), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(), any()))
+                .thenReturn(Map.of("status", "RECURSO_INTERPOSTO"));
+
+        String body = objectMapper.writeValueAsString(new InstitutionalRecursoRequest(
+                "EMBARGOS_DECLARACAO", "razoes", "fundamentacao", false, false, null));
+
+        mockMvc.perform(post("/api/v1/recursal/processos/{processoId}/recurso", 25L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.scope").value("recursal.peticionamento.cidadao"));
+
+        verify(rateLimiter).enforce(eq(CapabilityRateLimitDomain.CITIZEN), any(), eq("recursal_peticionamento_recurso"), eq(ApiVersion.V1));
+    }
 }

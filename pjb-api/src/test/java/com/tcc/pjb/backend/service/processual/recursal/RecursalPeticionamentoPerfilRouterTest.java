@@ -25,6 +25,7 @@ class RecursalPeticionamentoPerfilRouterTest {
     private DefensorPublicoPainelService defensorPublicoPainelService;
     private MinisterioPublicoPainelService ministerioPublicoPainelService;
     private ProcuradoriaOperacionalService procuradoriaOperacionalService;
+    private RecursalPeticionamentoFacadeService recursalPeticionamentoFacadeService;
     private RecursalPeticionamentoPerfilRouter router;
 
     @BeforeEach
@@ -34,12 +35,14 @@ class RecursalPeticionamentoPerfilRouterTest {
         defensorPublicoPainelService = mock(DefensorPublicoPainelService.class);
         ministerioPublicoPainelService = mock(MinisterioPublicoPainelService.class);
         procuradoriaOperacionalService = mock(ProcuradoriaOperacionalService.class);
+        recursalPeticionamentoFacadeService = mock(RecursalPeticionamentoFacadeService.class);
         router = new RecursalPeticionamentoPerfilRouter(
                 perfilPainelSupportService,
                 advogadoCockpitService,
                 defensorPublicoPainelService,
                 ministerioPublicoPainelService,
-                procuradoriaOperacionalService
+                procuradoriaOperacionalService,
+                recursalPeticionamentoFacadeService
         );
     }
 
@@ -92,12 +95,23 @@ class RecursalPeticionamentoPerfilRouterTest {
     }
 
     @Test
-    void resolverPerfilAtivo_perfilSemHabilitacaoRecursal_lancaIllegalArgument() {
+    void resolverPerfilAtivo_cidadao_retornaCidadaoComRateLimitCitizen() {
         givenCurrentUser(TipoUsuario.CIDADAO);
+
+        RecursalPeticionamentoPerfilRouter.Perfil perfil = router.resolverPerfilAtivo();
+
+        assertThat(perfil).isEqualTo(RecursalPeticionamentoPerfilRouter.Perfil.CIDADAO);
+        assertThat(perfil.rateLimitDomain()).isEqualTo(CapabilityRateLimitDomain.CITIZEN);
+        assertThat(perfil.scopeToken()).isEqualTo("cidadao");
+    }
+
+    @Test
+    void resolverPerfilAtivo_perfilSemHabilitacaoRecursal_lancaIllegalArgument() {
+        givenCurrentUser(TipoUsuario.JUIZ);
 
         assertThatThrownBy(() -> router.resolverPerfilAtivo())
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("CIDADAO");
+                .hasMessageContaining("JUIZ");
     }
 
     @Test
@@ -164,6 +178,20 @@ class RecursalPeticionamentoPerfilRouterTest {
 
         assertThat(resultado).isEqualTo(esperado);
         verifyNoInteractions(advogadoCockpitService, defensorPublicoPainelService, ministerioPublicoPainelService);
+    }
+
+    @Test
+    void interporRecurso_cidadao_delegaAFachadaUnica() {
+        Map<String, Object> esperado = Map.of("status", "RECURSO_INTERPOSTO", "perfil", "CIDADAO");
+        when(recursalPeticionamentoFacadeService.interporRecurso(15L, "EMBARGOS_DECLARACAO", "r", "f", false, false, null))
+                .thenReturn(esperado);
+
+        Map<String, Object> resultado = router.interporRecurso(
+                RecursalPeticionamentoPerfilRouter.Perfil.CIDADAO,
+                15L, "EMBARGOS_DECLARACAO", "r", "f", false, false, null);
+
+        assertThat(resultado).isEqualTo(esperado);
+        verifyNoInteractions(advogadoCockpitService, defensorPublicoPainelService, ministerioPublicoPainelService, procuradoriaOperacionalService);
     }
 
     private void givenCurrentUser(TipoUsuario tipoUsuario) {

@@ -28,7 +28,8 @@ public class RecursalPeticionamentoController {
             "hasAnyRole('ADVOGADO','OAB_PRESIDENTE_SECCIONAL',"
             + "'DEFENSOR_PUBLICO','DEFENSOR_PUBLICO_FEDERAL',"
             + "'MEMBRO_MINISTERIO_PUBLICO','PROMOTOR_ELEITORAL','PROMOTOR_TRABALHISTA','PROCURADOR_GERAL_REPUBLICA',"
-            + "'PROCURADOR','PROCURADORIA_MUNICIPAL','PROCURADORIA_ESTADUAL','PROCURADORIA_FEDERAL')";
+            + "'PROCURADOR','PROCURADORIA_MUNICIPAL','PROCURADORIA_ESTADUAL','PROCURADORIA_FEDERAL',"
+            + "'CIDADAO')";
 
     private final RecursalPeticionamentoPerfilRouter router;
     private final SurfaceProjectionSupport projectionSupport;

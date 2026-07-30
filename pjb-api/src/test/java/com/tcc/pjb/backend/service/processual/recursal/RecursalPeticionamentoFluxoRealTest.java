@@ -112,14 +112,15 @@ class RecursalPeticionamentoFluxoRealTest {
 
     private PerfilDashboardContextFactory contextFactory;
     private ProcessoLifecycleMachine lifecycleMachine;
+    private PjbAuthorizationService authorizationService;
 
     @BeforeEach
     void setUp() {
         contextFactory = Mockito.mock(PerfilDashboardContextFactory.class);
         lifecycleMachine = Mockito.mock(ProcessoLifecycleMachine.class);
-        PjbAuthorizationService authorizationService = Mockito.mock(PjbAuthorizationService.class);
+        authorizationService = Mockito.mock(PjbAuthorizationService.class);
         doNothing().when(authorizationService).requireRole(any(), any(String[].class));
-        doNothing().when(authorizationService).requireReadProcesso(any());
+        doNothing().when(authorizationService).requireReadProcessoAsCidadaoParte(any());
         RecursalMeshRequestMapper meshRequestMapper = new RecursalMeshRequestMapper();
         NationalRecursalMeshService recursalMeshService = Mockito.mock(NationalRecursalMeshService.class);
         when(recursalMeshService.plan(any(RecursalMeshPlanRequest.class))).thenAnswer(invocation -> {
@@ -291,6 +292,46 @@ class RecursalPeticionamentoFluxoRealTest {
         assertThat(outboxEventRepository.findAll()).isEmpty();
     }
 
+    @Test
+    void recursoCidadaoComJusPostulandiNoJecEhAutorizadoEChamaGuardDeTitularidade() {
+        Usuario cidadao = salvarCidadao();
+        Processo processo = salvarProcessoJec(cidadao.getCpf(), StatusProcesso.SENTENCA_PROFERIDA, LocalDateTime.now().minusDays(1));
+        when(contextFactory.build()).thenReturn(contexto(cidadao));
+
+        Map<String, Object> response = facadeService.interporRecurso(
+                processo.getId(),
+                "EMBARGOS_DECLARACAO",
+                "Omissao da sentenca quanto ao pedido de danos morais.",
+                "CPC art. 1022",
+                false,
+                false,
+                "embargos do proprio cidadao"
+        );
+
+        assertThat(response.get("status")).isEqualTo("RECURSO_INTERPOSTO");
+        Mockito.verify(authorizationService).requireReadProcessoAsCidadaoParte(Mockito.argThat(p -> p.getId().equals(processo.getId())));
+    }
+
+    @Test
+    void recursoCidadaoSemJusPostulandiParaRecursoInominadoEhNegado() {
+        Usuario cidadao = salvarCidadao();
+        Processo processo = salvarProcessoJec(cidadao.getCpf(), StatusProcesso.SENTENCA_PROFERIDA, LocalDateTime.now().minusDays(1));
+        when(contextFactory.build()).thenReturn(contexto(cidadao));
+
+        assertThatThrownBy(() -> facadeService.interporRecurso(
+                processo.getId(),
+                "RECURSO_INOMINADO",
+                "Recurso inominado sem advogado constituido.",
+                "Lei 9.099/95 art. 41",
+                false,
+                false,
+                null
+        )).isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Recurso inadmissivel");
+
+        assertThat(workItemRepository.findAllByProcesso(processo.getId())).isEmpty();
+    }
+
     private void prepararProjectionAssembler(RecursalProjectionAssembler projectionAssembler) {
         when(projectionAssembler.buildEndpoints(anyLong())).thenReturn(new LinkedHashMap<>());
         when(projectionAssembler.buildStrategy(any(), any(), Mockito.anyBoolean(), Mockito.anyBoolean())).thenReturn(new LinkedHashMap<>());
@@ -347,6 +388,26 @@ class RecursalPeticionamentoFluxoRealTest {
         processo.setDataUltimaMovimentacao(ultimaMovimentacao);
         processo.setResultadoFinal(status == StatusProcesso.SENTENCA_PROFERIDA ? "Sentenca de improcedencia parcial." : null);
         return processoRepository.saveAndFlush(processo);
+    }
+
+    private Processo salvarProcessoJec(String parteAutoraCpf, StatusProcesso status, LocalDateTime ultimaMovimentacao) {
+        Processo processo = salvarProcesso(status, ultimaMovimentacao);
+        processo.setRito(RitoProcessual.JUIZADO_ESPECIAL_CIVEL);
+        processo.setParteAutoraCpf(parteAutoraCpf);
+        return processoRepository.saveAndFlush(processo);
+    }
+
+    private Usuario salvarCidadao() {
+        Usuario usuario = new Usuario();
+        usuario.setNome("Cidadao Recursal");
+        usuario.setEmail("cidadao.recursal." + System.nanoTime() + "@test.local");
+        usuario.setCpf(cpfValido(Math.toIntExact(Math.abs(System.nanoTime() % 800000L) + 100000L)));
+        usuario.setTipoUsuario(TipoUsuario.CIDADAO);
+        usuario.setPerfil(TipoUsuario.CIDADAO.name());
+        usuario.setAtivo(true);
+        usuario.setUf("CE");
+        usuario.setComarca("Fortaleza");
+        return usuarioRepository.saveAndFlush(usuario);
     }
 
     private Usuario salvarAdvogado() {
