@@ -288,12 +288,14 @@ public class TribunalRuleEngine {
 
     public TribunalRuleEngine(NationalRulePackEngine nationalRulePackEngine,
                               NationalPrazoEngine nationalPrazoEngine,
-                              SalarioMinimoNacionalService salarioMinimoNacionalService) {
+                              SalarioMinimoNacionalService salarioMinimoNacionalService,
+                              TribunalRuleResolutionSupport resolutionSupport,
+                              TribunalRulePackSynchronizationSupport rulePackSynchronizationSupport) {
         this.nationalRulePackEngine = Objects.requireNonNull(nationalRulePackEngine);
         this.nationalPrazoEngine = Objects.requireNonNull(nationalPrazoEngine);
         this.salarioMinimoNacionalService = Objects.requireNonNull(salarioMinimoNacionalService);
-        this.resolutionSupport = new TribunalRuleResolutionSupport(this.nationalRulePackEngine, this.nationalPrazoEngine, this.salarioMinimoNacionalService);
-        this.rulePackSynchronizationSupport = new TribunalRulePackSynchronizationSupport(this.nationalRulePackEngine, this.resolutionSupport);
+        this.resolutionSupport = Objects.requireNonNull(resolutionSupport);
+        this.rulePackSynchronizationSupport = Objects.requireNonNull(rulePackSynchronizationSupport);
         this.analyticsSupport = new TribunalRuleAnalyticsSupport();
     }
 

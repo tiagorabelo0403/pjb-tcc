@@ -14,10 +14,19 @@ class TribunalRuleEngineTest {
 
     @Test
     void shouldTrimPluginRegistry() throws Exception {
+        NationalRulePackEngine nationalRulePackEngine = mock(NationalRulePackEngine.class);
+        NationalPrazoEngine nationalPrazoEngine = mock(NationalPrazoEngine.class);
+        SalarioMinimoNacionalService salarioMinimoNacionalService = mock(SalarioMinimoNacionalService.class);
+        TribunalRuleResolutionSupport resolutionSupport = new TribunalRuleResolutionSupport(
+                nationalRulePackEngine, nationalPrazoEngine, salarioMinimoNacionalService);
+        TribunalRulePackSynchronizationSupport rulePackSynchronizationSupport = new TribunalRulePackSynchronizationSupport(
+                nationalRulePackEngine, resolutionSupport);
         TribunalRuleEngine engine = new TribunalRuleEngine(
-                mock(NationalRulePackEngine.class),
-                mock(NationalPrazoEngine.class),
-                mock(SalarioMinimoNacionalService.class)
+                nationalRulePackEngine,
+                nationalPrazoEngine,
+                salarioMinimoNacionalService,
+                resolutionSupport,
+                rulePackSynchronizationSupport
         );
 
         for (int i = 0; i < 320; i++) {

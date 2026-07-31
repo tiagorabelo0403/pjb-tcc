@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.tribunal.regras;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.platform.jusos.v2.rules.NationalRulePackEngine;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import com.tcc.pjb.backend.tribunal.regras.snapshot.RegraResolvida;
 
+@Component
 final class TribunalRulePackSynchronizationSupport {
 
     private final NationalRulePackEngine nationalRulePackEngine;

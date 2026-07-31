@@ -5,6 +5,7 @@ import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.platform.jusos.v2.prazo.NationalPrazoEngine;
 import com.tcc.pjb.backend.platform.jusos.v2.rules.NationalRulePackEngine;
 import com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -28,6 +29,7 @@ import com.tcc.pjb.backend.tribunal.regras.snapshot.SnapshotDistribuicao;
 import com.tcc.pjb.backend.tribunal.regras.snapshot.SnapshotPrazo;
 import com.tcc.pjb.backend.tribunal.regras.snapshot.SnapshotTriagem;
 
+@Component
 final class TribunalRuleResolutionSupport {
 
     private final NationalRulePackEngine nationalRulePackEngine;
