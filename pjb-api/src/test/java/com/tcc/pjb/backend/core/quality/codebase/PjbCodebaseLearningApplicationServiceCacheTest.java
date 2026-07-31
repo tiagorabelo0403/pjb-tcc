@@ -7,13 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.tcc.pjb.backend.core.quality.codebase.application.PjbCodebaseLearningApplicationService;
 import com.tcc.pjb.backend.core.quality.codebase.application.PjbCodebaseLearningSettings;
 import com.tcc.pjb.backend.core.quality.codebase.domain.PjbCodebaseLearningAggregate;
+import com.tcc.pjb.backend.support.MutableClock;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -89,33 +88,5 @@ class PjbCodebaseLearningApplicationServiceCacheTest {
         Path target = projectRoot.resolve(relative);
         Files.createDirectories(target.getParent());
         Files.writeString(target, content);
-    }
-
-    private static final class MutableClock extends Clock {
-
-        private Instant current;
-
-        private MutableClock(Instant current) {
-            this.current = current;
-        }
-
-        @Override
-        public ZoneOffset getZone() {
-            return ZoneOffset.UTC;
-        }
-
-        @Override
-        public Clock withZone(java.time.ZoneId zone) {
-            return this;
-        }
-
-        @Override
-        public Instant instant() {
-            return current;
-        }
-
-        private void advance(Duration duration) {
-            current = current.plus(duration);
-        }
     }
 }
