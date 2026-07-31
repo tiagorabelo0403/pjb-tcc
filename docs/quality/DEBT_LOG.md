@@ -1048,8 +1048,15 @@ Revisitar em fatia própria: IT com Spring Security real provando 403 para CIDAD
 
 ## D-controllers-recursais-legados-sem-teste-dedicado
 
+**Status:** FECHADA — cobertura completa (sucesso, validação, autorização real) adicionada aos 4 controllers.
+
 Os 4 controllers recursais legados (`AdvogadoCockpitController`, `DefensorPublicoPainelController`, `MinisterioPublicoPainelController`, `ProcuradoriaOperacionalController`) não tinham nenhuma classe de teste dedicada antes da Fatia 2 de `D-recursal-superficie-por-papel` — só os headers de depreciação de `interporRecurso` ganharam cobertura mínima, os demais endpoints seguem sem teste próprio.
-Revisitar em fatia própria: cobertura completa (sucesso, validação, autorização real) dos 4 controllers antes da remoção na Fatia 3.
+
+**Fechamento:** cada controller ganhou (a) testes unitários `MockMvc` standalone cobrindo sucesso de todo endpoint restante e falha de validação (400) para todo DTO com constraint real, e (b) uma classe `*IT` nova (`AdvogadoCockpitControllerIT`, `DefensorPublicoPainelControllerIT`, `MinisterioPublicoPainelControllerIT`, `ProcuradoriaOperacionalControllerIT`) contra Postgres real com Spring Security completo, provando anônimo negado (401/403), role fora da lista negada (403) e cada role legítima do `@PreAuthorize` autorizada (200/201) — mesmo padrão de `RecursalPeticionamentoControllerIT`. Totais confirmados via execução real: Advogado 9 unit + 4 IT, Defensor 11 unit + 3 IT, MP 13 unit + 6 IT, Procuradoria 10 unit + 7 IT — 63 testes novos, 0 falhas.
+
+**Dois achados reais descobertos ao escrever as ITs, ambos sem impacto em produção porque `PjbGrantedAuthorityFactory` já concede a combinação certa a qualquer usuário real:**
+- `OAB_PRESIDENTE_SECCIONAL`, `PROMOTOR_ELEITORAL` e `PROMOTOR_TRABALHISTA` nunca chegam sozinhos em produção — a fábrica sempre concede `ROLE_ADVOGADO` junto ao primeiro (por ser also-advocacia) e `ROLE_MINISTERIO_PUBLICO`/`ROLE_MEMBRO_MINISTERIO_PUBLICO` junto aos outros dois (por `isMinisterioPublico()==true`). Testar esses papéis isolados nas ITs gerava 403 falso-negativo; corrigido replicando a combinação real de authorities.
+- A IT do Defensor não testa sucesso para `DEFENSOR_DISTRITAL` — esse literal aparece no `@PreAuthorize` legado mas não existe como valor de `TipoUsuario` (já registrado acima como divergência); não faz sentido provar "sucesso" para um papel que a fábrica jamais concede a ninguém.
 
 ## D-frontend-delivery-routes-nao-sinaliza-depreciacao
 
