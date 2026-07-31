@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalTimestampAuthorityProperties;
 import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalTimestampAuthorityService;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 class RecursalPdfArtifactValidationServiceTest {
 
@@ -38,7 +39,7 @@ class RecursalPdfArtifactValidationServiceTest {
 
     @BeforeEach
     void setUp() {
-        AuditLedgerService auditLedgerService = new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class));
+        AuditLedgerService auditLedgerService = new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class), new SimpleMeterRegistry());
         PjbHardwareSecurityModule hsm = HsmTestFactory.forTest(new PjbHsmProperties(
                 false,
                 true,

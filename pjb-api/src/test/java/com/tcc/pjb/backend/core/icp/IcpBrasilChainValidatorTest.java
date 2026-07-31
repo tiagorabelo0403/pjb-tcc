@@ -11,6 +11,7 @@ import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerEntry;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.repository.IcpCertificateCacheRepository;
 import com.tcc.pjb.backend.model.repository.IcpSignatureEventRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.math.BigInteger;
 import java.security.Principal;
 import java.security.PublicKey;
@@ -48,7 +49,7 @@ class IcpBrasilChainValidatorTest {
         IcpSignatureEventRepository eventRepository = mock(IcpSignatureEventRepository.class);
         when(cacheRepository.findByIssuerDnAndSerialHex(any(), any())).thenReturn(java.util.Optional.empty());
         when(cacheRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        AuditLedgerService auditLedger = new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class));
+        AuditLedgerService auditLedger = new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class), new SimpleMeterRegistry());
         IcpBrasilChainValidator validator = new IcpBrasilChainValidator(
                 cacheRepository,
                 eventRepository,

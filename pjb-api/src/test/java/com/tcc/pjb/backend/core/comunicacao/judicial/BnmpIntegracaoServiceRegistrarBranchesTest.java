@@ -21,6 +21,7 @@ import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.platform.jusos.v2.notificacao.NotificacaoInteligentePJB;
 import com.tcc.pjb.backend.platform.runtime.execution.PjbExecutionDescriptor;
 import com.tcc.pjb.backend.platform.runtime.execution.PjbExecutionOrchestrator;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -54,7 +55,7 @@ class BnmpIntegracaoServiceRegistrarBranchesTest {
         return new BnmpIntegracaoService(
                 bnmpApiGateway, hsm,
                 mock(ProcessoRepository.class),
-                new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class)),
+                new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class), new SimpleMeterRegistry()),
                 mock(NotificacaoInteligentePJB.class),
                 stateStore,
                 executionOrchestrator,

@@ -34,12 +34,13 @@ import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalPdfProofEnvel
 import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalNativePdfSignatureProperties;
 import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalTimestampAuthorityProperties;
 import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalTimestampAuthorityService;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 class RecursalPdfLongTermValidationServiceTest {
 
     @Test
     void finalizeEvidenceShouldPromoteArtifactToLtaCandidateWhenCertificateValidationPasses() {
-        AuditLedgerService auditLedgerService = new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class));
+        AuditLedgerService auditLedgerService = new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class), new SimpleMeterRegistry());
         PjbHardwareSecurityModule hsm = HsmTestFactory.forTest(new PjbHsmProperties(
                 false,
                 true,

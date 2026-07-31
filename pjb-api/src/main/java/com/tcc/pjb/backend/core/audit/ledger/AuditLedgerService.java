@@ -2,6 +2,8 @@ package com.tcc.pjb.backend.core.audit.ledger;
 
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.util.Hashes;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +23,14 @@ public class AuditLedgerService {
     private final AtomicInteger entryCount = new AtomicInteger();
     private final AuditLedgerRepository auditLedgerRepository;
     private final CurrentUserService currentUserService;
+    private final Counter persistFailureCounter;
 
-    public AuditLedgerService(AuditLedgerRepository auditLedgerRepository, CurrentUserService currentUserService) {
+    public AuditLedgerService(AuditLedgerRepository auditLedgerRepository, CurrentUserService currentUserService, MeterRegistry registry) {
         this.auditLedgerRepository = Objects.requireNonNull(auditLedgerRepository);
         this.currentUserService = Objects.requireNonNull(currentUserService);
+        this.persistFailureCounter = Counter.builder("pjb.audit_ledger.persist_failures")
+                .description("Entradas de auditoria que falharam ao persistir (engolidas por appendSafely, nunca lançadas ao chamador)")
+                .register(Objects.requireNonNull(registry));
     }
 
     private static final int PAYLOAD_HASH_MAX_LENGTH = 64;

@@ -24,6 +24,7 @@ import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalNativePdfSign
 import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalPdfProofEnvelopeService;
 import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalPdfExportService;
 import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalPdfNativeSignatureService;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.Map;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -56,7 +57,7 @@ class RecursalPdfNativeSignatureServiceTest {
         exportService = new RecursalPdfExportService();
         nativeSignatureService = new RecursalPdfNativeSignatureService(
                 hsm,
-                new AuditLedgerService(Mockito.mock(AuditLedgerRepository.class), Mockito.mock(CurrentUserService.class)),
+                new AuditLedgerService(Mockito.mock(AuditLedgerRepository.class), Mockito.mock(CurrentUserService.class), new SimpleMeterRegistry()),
                 Mockito.mock(JudicialKeyStoreLoader.class),
                 new RecursalNativePdfSignatureProperties(true, null, null, null, null, null, null)
         );

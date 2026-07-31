@@ -52,6 +52,7 @@ import com.tcc.pjb.backend.service.processual.recursal.formalizacao.RecursalForm
 import com.tcc.pjb.backend.service.processual.recursal.operational.RecursalSecretariatTopologyService;
 import com.tcc.pjb.backend.service.processual.recursal.protocolo.RecursalProtocolArtifactReadinessService;
 import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +87,7 @@ class RecursalFormalizacaoServiceTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        AuditLedgerService auditLedgerService = new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class));
+        AuditLedgerService auditLedgerService = new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class), new SimpleMeterRegistry());
         PjbHardwareSecurityModule hsm = HsmTestFactory.forTest(new PjbHsmProperties(
                 false,
                 true,
