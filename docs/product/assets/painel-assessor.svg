@@ -1,0 +1,45 @@
+<svg viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Painel do Assessor de Gabinete — inbox travado ao gabinete do magistrado</title>
+  <desc id="desc">Mockup do painel do assessor, com os campos reais de AssessorPayload (gabineteId, magistradoVinculado, minutasParaRevisar) e o guardrail que restringe o inbox ao gabinete específico do magistrado vinculado.</desc>
+  <defs><filter id="s2" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.35"/></filter></defs>
+
+  <rect x="20" y="20" width="1240" height="600" rx="14" fill="#12172a" stroke="#2a3350" filter="url(#s2)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/><circle cx="66" cy="48" r="6" fill="#e0b84f"/><circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">📋 PJB — Painel do Assessor de Gabinete</text>
+  <text x="1195" y="53" text-anchor="end" font-size="12.5" fill="#c9d3ea">Lívia Torres · gabineteId: GAB-2VC-014</text>
+
+  <g font-size="12">
+    <rect x="50" y="96" width="360" height="90" rx="12" fill="#2c3e67"/>
+    <text x="66" y="122" font-size="10.5" fill="#c9d3ea">magistradoVinculado</text>
+    <text x="66" y="150" font-size="15" font-weight="700" fill="#ffffff">Dra. Ana Ferreira — Juíza Federal</text>
+
+    <rect x="426" y="96" width="300" height="90" rx="12" fill="#3a3320"/>
+    <text x="442" y="122" font-size="10.5" fill="#e0c98a">minutasParaRevisar</text>
+    <text x="442" y="150" font-size="26" font-weight="700" fill="#f4c542">6</text>
+
+    <rect x="742" y="96" width="448" height="90" rx="12" fill="#171d34"/>
+    <text x="758" y="122" font-size="10.5" fill="#a9b3cc">Plantão (comum)</text>
+    <text x="758" y="150" font-size="13" fill="#ffffff">Sem plantão ativo hoje</text>
+  </g>
+
+  <g>
+    <rect x="50" y="206" width="1140" height="290" rx="14" fill="#161c30"/>
+    <text x="76" y="238" font-size="14" font-weight="700" fill="#ffffff">📥 Inbox — filtrado só pelo gabinete vinculado</text>
+
+    <rect x="76" y="256" width="1074" height="46" rx="8" fill="#16321f"/>
+    <text x="92" y="284" font-size="12" fill="#ffffff">Minuta de despacho — processo 0008101-11.2026.8.06.0001 (tutela de urgência)</text>
+
+    <rect x="76" y="308" width="1074" height="46" rx="8" fill="#16321f"/>
+    <text x="92" y="336" font-size="12" fill="#ffffff">Rascunho de decisão — processo 0008050-05.2026.8.06.0001</text>
+
+    <rect x="76" y="360" width="1074" height="46" rx="8" fill="#171d34"/>
+    <text x="92" y="388" font-size="12" fill="#dfe4ee">Audiências de hoje: 2 — pauta da Dra. Ana Ferreira</text>
+
+    <text x="76" y="440" font-size="11.5" fill="#f4a3a3">🚫 Inbox do gabinete GAB-2VC-009 (outro juiz) nunca aparece aqui — mesmo estando no mesmo fórum.</text>
+    <text x="76" y="462" font-size="10.5" fill="#5d6785">Assessor sempre prepara minuta — nunca pratica ato jurisdicional sozinho.</text>
+  </g>
+
+  <text x="50" y="520" font-size="10.5" fill="#5d6785">Dados fictícios — campos reais de AssessorPayload e AssessorGabineteGuardRailService.filtrarInboxCompativel.</text>
+</svg>

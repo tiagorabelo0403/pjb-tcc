@@ -1,0 +1,127 @@
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="title desc">
+  <title id="title">Who enters PJB, and how</title>
+  <desc id="desc">Access map showing the ten user groups that enter PJB: Judiciary, Judicial Clerk, Public Prosecutor's Office, Public Defender's Office, Government Attorney's Office, Court Auxiliary, Law Enforcement, Administrator, Attorneys, and Citizen, all converging on the system's central hub.</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a8f98"/>
+    </marker>
+    <radialGradient id="hubGrad" cx="35%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#2c3e67"/>
+      <stop offset="100%" stop-color="#141d33"/>
+    </radialGradient>
+  </defs>
+
+  <!-- lines connecting each group to the central hub -->
+  <g stroke="#8a8f98" stroke-width="2" marker-end="url(#arrow)">
+    <line x1="600" y1="140" x2="600" y2="320"/>
+    <line x1="757" y1="175" x2="655" y2="345"/>
+    <line x1="859" y1="299" x2="700" y2="385"/>
+    <line x1="859" y1="446" x2="700" y2="415"/>
+    <line x1="757" y1="571" x2="655" y2="455"/>
+    <line x1="600" y1="620" x2="600" y2="480"/>
+    <line x1="443" y1="571" x2="545" y2="455"/>
+    <line x1="341" y1="446" x2="500" y2="415"/>
+    <line x1="341" y1="299" x2="500" y2="385"/>
+    <line x1="443" y1="175" x2="545" y2="345"/>
+  </g>
+
+  <!-- central hub -->
+  <circle cx="600" cy="400" r="82" fill="url(#hubGrad)" stroke="#0b1220" stroke-width="2"/>
+  <text x="600" y="392" text-anchor="middle" font-size="30" font-weight="700" fill="#f4c542">⚖️</text>
+  <text x="600" y="425" text-anchor="middle" font-size="24" font-weight="700" fill="#ffffff">PJB</text>
+
+  <!-- group: Judiciary (top) -->
+  <g>
+    <rect x="500" y="60" width="200" height="80" rx="16" fill="#2c3e67"/>
+    <text x="600" y="93" text-anchor="middle" font-size="22" fill="#ffffff">👨‍⚖️</text>
+    <text x="600" y="117" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">Judiciary</text>
+    <text x="600" y="133" text-anchor="middle" font-size="10.5" fill="#c9d3ea">Judge · Appellate Judge · Justice</text>
+  </g>
+
+  <!-- group: Judicial Clerk -->
+  <g>
+    <rect x="682" y="109" width="200" height="80" rx="16" fill="#2c3e67"/>
+    <text x="782" y="142" text-anchor="middle" font-size="22" fill="#ffffff">📋</text>
+    <text x="782" y="166" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">Judicial Clerk</text>
+    <text x="782" y="182" text-anchor="middle" font-size="10.5" fill="#c9d3ea">Chambers staff</text>
+  </g>
+
+  <!-- group: Public Prosecutor's Office -->
+  <g>
+    <rect x="795" y="264" width="200" height="80" rx="16" fill="#7a2e3d"/>
+    <text x="895" y="297" text-anchor="middle" font-size="22" fill="#ffffff">⚖️</text>
+    <text x="895" y="321" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Public Prosecutor</text>
+    <text x="895" y="337" text-anchor="middle" font-size="10.5" fill="#f0d5da">Prosecutor · Prosecutor General</text>
+  </g>
+
+  <!-- group: Public Defender's Office -->
+  <g>
+    <rect x="795" y="456" width="200" height="80" rx="16" fill="#7a2e3d"/>
+    <text x="895" y="489" text-anchor="middle" font-size="22" fill="#ffffff">🤝</text>
+    <text x="895" y="513" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Public Defender</text>
+    <text x="895" y="529" text-anchor="middle" font-size="10.5" fill="#f0d5da">Public defender</text>
+  </g>
+
+  <!-- group: Government Attorney's Office -->
+  <g>
+    <rect x="682" y="611" width="200" height="80" rx="16" fill="#7a2e3d"/>
+    <text x="782" y="644" text-anchor="middle" font-size="22" fill="#ffffff">🏢</text>
+    <text x="782" y="668" text-anchor="middle" font-size="13.5" font-weight="600" fill="#ffffff">Gov. Attorney's Office</text>
+    <text x="782" y="684" text-anchor="middle" font-size="10.5" fill="#f0d5da">Municipal · State · Federal (AGU)</text>
+  </g>
+
+  <!-- group: Court Auxiliary (bottom) -->
+  <g>
+    <rect x="500" y="660" width="200" height="80" rx="16" fill="#2f5d62"/>
+    <text x="600" y="693" text-anchor="middle" font-size="22" fill="#ffffff">🔬</text>
+    <text x="600" y="717" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">Court Auxiliary</text>
+    <text x="600" y="733" text-anchor="middle" font-size="10.5" fill="#cfe6e5">Expert witness · Bailiff</text>
+  </g>
+
+  <!-- group: Law Enforcement -->
+  <g>
+    <rect x="318" y="611" width="200" height="80" rx="16" fill="#2f5d62"/>
+    <text x="418" y="644" text-anchor="middle" font-size="22" fill="#ffffff">🚓</text>
+    <text x="418" y="668" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">Law Enforcement</text>
+    <text x="418" y="684" text-anchor="middle" font-size="10.5" fill="#cfe6e5">Police chief · Officer</text>
+  </g>
+
+  <!-- group: Administrator -->
+  <g>
+    <rect x="205" y="456" width="200" height="80" rx="16" fill="#555a63"/>
+    <text x="305" y="489" text-anchor="middle" font-size="22" fill="#ffffff">🔧</text>
+    <text x="305" y="513" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">Administrator</text>
+    <text x="305" y="529" text-anchor="middle" font-size="10.5" fill="#d8dade">System configuration</text>
+  </g>
+
+  <!-- group: Attorneys -->
+  <g>
+    <rect x="205" y="264" width="200" height="80" rx="16" fill="#b3811a"/>
+    <text x="305" y="297" text-anchor="middle" font-size="22" fill="#ffffff">⚖️</text>
+    <text x="305" y="321" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">Attorneys</text>
+    <text x="305" y="337" text-anchor="middle" font-size="10.5" fill="#f8e6c4">Lawyer · OAB officer</text>
+  </g>
+
+  <!-- group: Citizen -->
+  <g>
+    <rect x="318" y="109" width="200" height="80" rx="16" fill="#b3811a"/>
+    <text x="418" y="142" text-anchor="middle" font-size="22" fill="#ffffff">👤</text>
+    <text x="418" y="166" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">Citizen</text>
+    <text x="418" y="182" text-anchor="middle" font-size="10.5" fill="#f8e6c4">A party, without an attorney</text>
+  </g>
+
+  <!-- legend -->
+  <g font-size="12" fill="#8a8f98">
+    <rect x="40" y="760" width="14" height="14" rx="3" fill="#b3811a"/>
+    <text x="60" y="771">Outside the institution</text>
+    <rect x="230" y="760" width="14" height="14" rx="3" fill="#2c3e67"/>
+    <text x="250" y="771">Judiciary</text>
+    <rect x="370" y="760" width="14" height="14" rx="3" fill="#7a2e3d"/>
+    <text x="390" y="771">Prosecutorial function</text>
+    <rect x="570" y="760" width="14" height="14" rx="3" fill="#2f5d62"/>
+    <text x="590" y="771">Support and law enforcement</text>
+    <rect x="800" y="760" width="14" height="14" rx="3" fill="#555a63"/>
+    <text x="820" y="771">Administration</text>
+  </g>
+</svg>

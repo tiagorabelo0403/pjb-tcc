@@ -1,17 +1,19 @@
+<div align="center">
+
+# ⚖️ PJB — Plataforma Judicial Brasileira
+
+### Sistema judicial eletrônico de nova geração, projetado para substituir integralmente PJe, e-SAJ, eProc, Creta e Projudi em todos os segmentos da Justiça brasileira
+
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
-![Testes unitários](https://img.shields.io/badge/Testes%20unit%C3%A1rios-4.274%20%7C%200%20falhas-brightgreen)
-![Testes de integração](https://img.shields.io/badge/Testes%20IT-230%20%7C%200%20falhas%20conhecidas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.274%20unit%20%2B%20230%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
-# PJB — Plataforma Judicial Brasileira
+**[🇧🇷 Português (este arquivo)](./README.md)** · **[🇬🇧 English](./README.en.md)** · **[📓 Guia Visual Interativo](docs/product/GUIA_VISUAL_INTERATIVO.md)**
 
-> Sistema judicial eletrônico de nova geração, construído em Java 21 e Spring Boot 3.5, projetado para substituir integralmente PJe, e-SAJ, eProc, Creta e Projudi em todos os segmentos da Justiça brasileira.
-
-**Idiomas / Languages:** [🇧🇷 Português (este arquivo)](./README.md) · [🇬🇧 English](./README.en.md)
+</div>
 
 ---
 
@@ -21,6 +23,8 @@
 - [Sobre o projeto](#sobre-o-projeto)
 - [O problema](#o-problema)
 - [A proposta](#a-proposta)
+- [Glossário](#glossário)
+- [Guia visual interativo](#guia-visual-interativo)
 - [Pré-requisitos](#pré-requisitos)
 - [Instalação e configuração](#instalação-e-configuração)
 - [Como executar](#como-executar)
@@ -50,7 +54,8 @@
 - [Próximos passos](#próximos-passos)
 - [Autor](#autor)
 - [Licença](#licença)
-- [Glossário](#glossário)
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -59,6 +64,8 @@
 O PJB é uma plataforma de substituição total — não incremental — dos sistemas judiciais eletrônicos em uso no Brasil. Cinco sistemas foram construídos ao longo de décadas por entidades diferentes, sem nenhuma coordenação de protocolo, modelo de dados ou interface. O resultado é uma infraestrutura que hoje suporta mais de **80 milhões de processos ativos**, **91 tribunais** e **cerca de 30 mil magistrados**, mas que não foi projetada para escalar, auditar ou integrar com o rigor que a legislação e a sociedade passaram a exigir.
 
 O PJB foi construído do zero com três compromissos inegociáveis: rastreabilidade total em cada ação do sistema, testabilidade como critério de aceite de qualquer funcionalidade e segurança por construção — ABAC, RLS e propagação governada de sigilo não são camadas adicionadas depois, são restrições que guiam cada decisão arquitetural.
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -74,6 +81,8 @@ O PJB foi construído do zero com três compromissos inegociáveis: rastreabilid
 
 Nenhum dos cinco foi projetado com escalabilidade horizontal, auditoria de acesso granular ou suporte completo às classes processuais do CPC/2015 e das reformas trabalhistas. O PJB não é uma reescrita deles. É uma ruptura deliberada com esse modelo.
 
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
 ---
 
 ## A proposta
@@ -85,6 +94,69 @@ O PJB foi projetado do zero com três compromissos inegociáveis:
 **2. Testabilidade como critério de aceite.** Nenhuma funcionalidade existe sem comportamento verificável. A suíte de testes é o contrato executável do sistema — se o teste passa, o comportamento está garantido. Funcionalidade sem teste não é funcionalidade: é intenção.
 
 **3. Segurança por construção.** ABAC, RLS por operação, propagação governada de contexto sigiloso e Step-up Gov.br não são camadas adicionadas depois. São restrições que guiam cada decisão arquitetural desde o início — antes do primeiro endpoint, antes da primeira migration, antes da primeira linha de código de domínio.
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
+---
+
+## Glossário
+
+> Termos jurídicos e técnicos usados a partir daqui — útil para quem não vem de engenharia de software.
+
+| Termo | Significado |
+|-------|-------------|
+| **NPU** | Número Processo Único — identificador padronizado CNJ (ex: 0000001-00.2024.8.26.0001) |
+| **Rito** | Fluxo processual obrigatório definido pela lei (ordinário, sumaríssimo, JEC, etc.) |
+| **Autuação** | Ato de registrar formalmente o processo no sistema, com classe, assunto e partes |
+| **Distribuição** | Atribuição do processo a uma vara ou juízo competente |
+| **Movimentação** | Qualquer ato praticado sobre o processo (despacho, decisão, sentença, certidão) |
+| **GIGS** | Grupo de Atividades — conjunto de tarefas processuais com prazo e responsável |
+| **Sobrestamento** | Suspensão temporária do processo aguardando julgamento de paradigma |
+| **BATNA** | Best Alternative to a Negotiated Agreement — análise de alternativa ao acordo |
+| **ABAC** | Attribute-Based Access Control — controle de acesso por atributos do contexto |
+| **RLS** | Row Level Security — política de segurança aplicada no nível do banco de dados |
+| **ADR** | Architecture Decision Record — registro formal de decisão arquitetural |
+| **ICP-Brasil** | Infraestrutura de Chaves Públicas Brasileira — padrão de assinatura digital |
+| **Gov.br** | Sistema de autenticação federal com níveis de confiança bronze, prata e ouro |
+| **PDPJ** | Plataforma Digital do Poder Judiciário — barramento de integração nacional |
+| **MNI** | Modelo Nacional de Interoperabilidade — protocolo de troca entre sistemas judiciais |
+| **CNJ** | Conselho Nacional de Justiça — órgão regulador que define classes, assuntos e tabelas |
+| **JEC** | Juizado Especial Cível |
+| **JEF** | Juizado Especial Federal |
+| **JEFP** | Juizado Especial da Fazenda Pública |
+| **BO** | Boletim de Ocorrência |
+| **SBOM** | Software Bill of Materials — inventário auditável de dependências |
+| **CPF** | Cadastro de Pessoa Física — identificador tributário individual brasileiro |
+| **CNPJ** | Cadastro Nacional de Pessoa Jurídica — identificador tributário de empresas brasileiras |
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
+---
+
+## Guia visual interativo
+
+Prefere entender o PJB em diagramas antes de mexer em código? O **[📓 Guia Visual Interativo](docs/product/GUIA_VISUAL_INTERATIVO.md)** é onde isso vive — com imagens e diagramas reais, não só texto:
+
+<div align="center">
+
+![Quem entra no PJB e por onde](docs/product/assets/quem-entra-no-pjb.svg)
+
+*Prévia: quem entra no PJB e por onde — o guia completo detalha inclusive o que muda entre juiz, desembargador e ministro*
+
+</div>
+
+No guia completo você encontra:
+
+- **quem entra no PJB e como cada perfil se autentica** — cidadão, advocacia, magistratura (com o detalhe de juiz × desembargador × ministro), Ministério Público, Defensoria, Procuradoria, perito, e mais;
+- o passo a passo de como uma ação é ajuizada, da petição ao protocolo;
+- como funciona a triagem inteligente que analisa cada petição antes de virar processo (e por que ela **não** é a Laiane);
+- a **calculadora judicial** com exemplo real de entrada e saída — cada verba calculada, com a lei que a fundamenta;
+- a **bancada de acordo** com o relatório BATNA completo — valor em discussão, custo de cada lado, probabilidade de recurso;
+- **Laiane**, a inteligência artificial jurídica do projeto — o que ela faz para cada papel, as travas que garantem que ela nunca decide sozinha, e a homenagem por trás do nome.
+
+Esse conteúdo fica deliberadamente fora deste README — aqui o foco é documentação técnica; lá, o foco é entender o comportamento do sistema sem precisar ler Java.
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -101,6 +173,8 @@ Antes de clonar e rodar o projeto, certifique-se de ter instalado:
 | **Python** | 3.10+ | Guards estruturais em `scripts/` |
 
 > **IDE recomendada:** IntelliJ IDEA 2024+ com os plugins Checkstyle e SonarLint ativos. O projeto usa records, sealed classes e pattern matching do Java 21 — versões anteriores da IDE não reconhecem toda a sintaxe.
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -173,6 +247,8 @@ java -jar pjb-api/target/pjb-api.jar
 ./mvnw test-compile -pl pjb-api
 ```
 
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
 ---
 
 ## Como executar
@@ -226,6 +302,8 @@ Com o profile `docker`, o sistema semeia automaticamente usuários e processos d
 docker compose down
 ```
 
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
 ---
 
 ## Testes
@@ -276,21 +354,13 @@ O `argLine` do Surefire/Failsafe fixa `-Dpjb.runtime.lifecycle.drain-quiet-perio
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
 
-A suíte de integração passou por um processo de estabilização completo: 49 falhas no início, 14 depois da eliminação dos clusters CG-1 (22E — variável de ambiente errada), CG-2-Postgres (5E — contaminação entre testes por dados não limpos), CG-3 (3E — IDs hardcoded sem seed) e CG-7 (1E), 10 depois do fechamento de `ConsultaPublicaSearchFlowIT` e das 3 `ProcessoCommandControllerIT` (dívida D-d25-testes-anexo), e **0** depois de fechar `D-routing-preprotocolo` e as 9 falhas pré-existentes restantes. Duas dessas correções tocaram bugs de produção, não só de teste: `AuditLedgerService` gravava eventos de auditoria só em memória, sem persistir no repositório que os endpoints de auditoria consultam; e a resolução do proceeding raiz em `CaseContinuityOrchestratorService` usava um campo que muda de estado durante o ciclo de vida do processo, causando ambiguidade entre o proceeding raiz e seus branches (ex.: cumprimento de sentença) após arquivamento. Os 10 testes do motor de composição de polos por rito são todos verdes e não compõem o histórico de falhas. A fatia de competência territorial somou mais 24 testes depois da zeragem, verdes desde a criação — 9 de `Trt7CearaJurisdicaoCargaIT` (TRT7/CE), 7 de `Trt3MgJurisdicaoCargaIT` (TRT3/MG) e 8 de `Trt21RnJurisdicaoCargaIT` (TRT21/RN) — também fora do histórico de falhas. `RepresentacaoProcessualPolicyServiceTest` soma mais 7 testes verdes (primeira classe de teste dedicada a esse service), confirmados isoladamente junto com 18 testes de regressão nos consumidores conhecidos (`RepresentacaoProcessualPolicyJsonExtractorTest`, `ProcessualParticipacaoAtivaWorkspaceSupportTest`, `ProcessualParticipacaoAtivaFacadeServiceTest`, `RecursalFormalizacaoServiceTest`, `DespachoProcessoProtocoladoTest`, `PeticionamentoSessaoFacadeServiceWiringTest`). `RecursalValidacaoMinimaServiceTest` (também nova) soma mais 5 testes verdes cobrindo o enforcement de jus postulandi na admissibilidade recursal, confirmados junto com a regressão de `RecursalPeticionamentoFluxoRealTest` (3 testes) — nenhum dos 33 testes desta fatia ainda incorporado ao total de 4.138 por não terem sido reconfirmados numa rodada completa da suíte nesta sessão. A fatia seguinte, que estendeu o jus postulandi aos ritos trabalhistas e ao JEF, levou `OabLegitimidadePeticionamentoTest` de 13 para 28 execuções — sete ritos trabalhistas admitidos, cinco recusados e dois do JEF, todos parametrizados por `RitoProcessual` — e as duas classes de representação e admissibilidade recursal para 12 e 7 testes. As três rodadas de jus postulandi foram por classe isolada via `-Dit.test=` sob o goal `integration-test`, e não numa execução completa da suíte. O mesmo vale para `CustaIsencaoPorRitoPolicyTest` (13 testes cobrindo isenção JEC, JEF, JEFP e ECA, mais os cenários de fase e input negativos), rodado isolado junto com os cinco testes de regressão de `CustaJudicialService` que dependem do mock da interface. A Fatia 1 de `D-recursal-superficie-por-papel` acrescentou mais 22 testes verdes — `RecursalPeticionamentoPerfilRouterTest` (11) validando o roteamento por `TipoUsuario` para os quatro intermediates recursais, o mapeamento correto de `CapabilityRateLimitDomain` (LAWYER × INSTITUCIONAL) e o caminho canônico de `PROCURADOR_GERAL_REPUBLICA` rumo ao Ministério Público (consistente com `isMinisterioPublico()`), `RecursalPeticionamentoControllerTest` (4) provando via MockMvc a superfície unificada `POST /api/v1/recursal/processos/{processoId}/recurso` com scope canônico `recursal.peticionamento.<perfil>` e envelopamento em `SurfaceActionResponse`, e `RecursalPeticionamentoControllerIT` (7) rodando contra Postgres real com Spring Security completo — anônimo negado sem tocar o router, `ROLE_JUIZ` recebendo 403 pela `@PreAuthorize`, e as quatro famílias legítimas (`ROLE_ADVOGADO`, `ROLE_DEFENSOR_PUBLICO`, `ROLE_MEMBRO_MINISTERIO_PUBLICO`, `ROLE_PROCURADOR`) mais o caso PGR chegando ao router com o `Perfil` esperado. A DTO reusa `InstitutionalRecursoRequest` já existente em vez de introduzir uma terceira cópia idêntica; `AdvogadoRecursoRequest` recebe javadoc apontando para a superfície canônica e a Fatia 3 que a removerá. Os quatro controllers recursais originais seguem intactos por coexistência. Nenhum desses testes está no total agregado de 4.138 até o próximo `verify` de aceite. A Fatia 4 de `D-recursal-superficie-por-papel` fechou o quinto perfil da superfície unificada — cidadão com jus postulandi (Lei 9.099/95 art. 9º no JEC, CLT art. 791 no trabalhista) — sem precisar alterar a assinatura de `resolverPerfilAtivo()`: a elegibilidade por espécie recursal já era decidida dentro de `RecursalValidacaoMinimaService.validar()`, chamada pela mesma fachada (`RecursalPeticionamentoFacadeService.interporRecurso`) que os 4 perfis profissionais já compartilhavam. A titularidade do cidadão-parte reusa `PjbAuthorizationService.requireReadProcessoAsCidadaoParte`, método preexistente já usado por 9 serviços em produção, no lugar de `requireReadProcesso` — comportamento comprovadamente idêntico para os 4 perfis profissionais (o método delega para `requireReadProcesso` e só adiciona checagem quando `TipoUsuario == CIDADAO`). Somou mais 6 testes verdes: 5 unitários (`RecursalPeticionamentoPerfilRouterTest` +2, `RecursalPeticionamentoControllerTest` +1, `RecursalPeticionamentoFluxoRealTest` +2 casos reais contra JPA — embargos de declaração no JEC autorizado, recurso inominado negado por falta de jus postulandi) e `RecursalPeticionamentoControllerIT` +1 (papel `ROLE_CIDADAO` chegando ao router com o `Perfil.CIDADAO` esperado, rate limit `CapabilityRateLimitDomain.CITIZEN`). A regressão dos 4 perfis profissionais foi confirmada por leitura de código (identidade comportamental do guard) e por execução real: os 3 testes preexistentes de `RecursalPeticionamentoFluxoRealTest` com ator `ADVOGADO` e o E2E completo `PjbFluxoJudicialCompletoE2ETest` (peticionamento → distribuição → despacho → sentença → recurso) continuam verdes. Três achados de fiação ficaram registrados no `DEBT_LOG` em vez de expandir o escopo: duplicação de checagem de CPF entre `requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty`, lacuna de classificação de `CapabilityRateLimitDomain` em `PeticionamentoController.resolveDomain()` (não reconhece `CIDADAO`, cai em `LAWYER` por omissão) e ausência de teste dedicado à rejeição real do guard de titularidade em qualquer um dos 9 consumidores existentes. Nenhum desses testes está no total agregado de 4.138 unitários / 230 IT até o próximo `verify` de aceite. Fatia 4 fechada desbloqueia as Fatias 2 e 3 (deprecação e remoção dos 4 controllers recursais originais). A Fatia 2 sinalizou depreciação HTTP (RFC 8594) nos 4 controllers legados — `Deprecation: true`, `Link` apontando para a superfície unificada e `Sunset: Tue, 28 Oct 2026 00:00:00 GMT` —, isolada no método `interporRecurso` de cada um, sem tocar nos demais endpoints; a data e os headers ficam centralizados em `RecursalLegacyDeprecationHeaders` para não duplicar a string em 4 lugares. Somou 8 testes verdes, 2 por controller (`AdvogadoCockpitControllerTest`, `DefensorPublicoPainelControllerTest`, `MinisterioPublicoPainelControllerTest`, `ProcuradoriaOperacionalControllerTest`), provando presença dos 3 headers em `interporRecurso` e ausência deles em outro endpoint do mesmo controller — nenhum dos 4 tinha teste dedicado antes, achado registrado como `D-controllers-recursais-legados-sem-teste-dedicado`. Nenhum desses testes está no total agregado de 4.138 unitários / 230 IT até o próximo `verify` de aceite. A investigação de consumidores reais que antecedeu a Fatia 3 não achou frontend nem chamada interna no repositório — consistente com a seção Frontend deste documento, ainda em fase de planejamento —, mas achou `docs/postman/PJB_Frontend_Integration.postman_collection.json` referenciando as 4 URLs legadas e nunca a rota unificada, parado desde o commit de baseline inicial, 298 commits atrás. A coleção foi sincronizada: as 4 requisições legadas migraram, intactas (mesma URL, headers, corpo — só a descrição ganhou nota de sucessor), para a pasta `legado (depreciado, remover apos 28/10/2026)`, e uma pasta `recursal` nova documenta a rota única — o perfil é resolvido pelo JWT, não pela URL, por isso 1 requisição, não 5. O gap entre o catálogo dinâmico de rotas (`PjbFrontendDeliveryApplicationService`, que escaneia `@PostMapping`/`@GetMapping` via regex sem ler headers HTTP) e a depreciação real ficou registrado como `D-frontend-delivery-routes-nao-sinaliza-depreciacao`. A Fatia 3 (remoção dos 4 controllers) segue pendente — não de mais investigação de código, mas de confirmação humana sobre uso real da coleção sincronizada nas próximas semanas.
+A suíte de integração passou por um processo de estabilização estrutural: falhas por variável de ambiente incorreta, contaminação de dados entre testes e IDs hardcoded sem seed foram eliminadas até restar zero. Duas dessas correções expuseram bugs reais de produção, não só de teste: `AuditLedgerService` gravava eventos de auditoria apenas em memória, sem persistir no repositório consultado pelos próprios endpoints de auditoria; e a resolução do processo raiz em `CaseContinuityOrchestratorService` usava um campo mutável durante o ciclo de vida do processo, gerando ambiguidade entre o processo raiz e seus desdobramentos (ex.: cumprimento de sentença) após arquivamento.
 
-`D-marketplace-sem-completude-documental` fechou a Fase 1: o canal `ApiMarketplaceService.protocolar()` — único dos três canais de ajuizamento que não validava nenhum documento obrigatório — passou a reaproveitar `CompletudeDocumentalPolicyService.diagnosticar()`, o mesmo motor já usado pelo REST e indiretamente pelo Laiane. `MarketplaceProtocoloRequest` ganhou campo opcional `documentos` (aditivo — integrador que não migrou continua funcionando); quando a checagem bloqueia, `Processo.connectorSubmissionStatus` grava `PENDENTE_DOCUMENTACAO` em vez de `RECEBIDO_MARKETPLACE`, sem introduzir valor novo em `StatusProcesso` (o enum compartilhado por distribuição, prazo e analytics não foi tocado — raio de explosão zero sobre os demais bounded contexts). O sinal não depende de o integrador ter configurado webhook: a própria resposta síncrona do protocolo ganhou `documentacaoCompleta`/`documentosFaltantes`, porque nenhum cliente hoje tinha motivo pra configurar um webhook para um evento que não existia. Quando incompleto, `MarketplaceGovernanceService` dispara `PROCESSO_PENDENTE_DOCUMENTACAO` **além** de `PROCESSO_PROTOCOLADO` (nunca em substituição — o protocolo aconteceu de fato, completo ou não). O hardcode `RitoProcessual.COMUM_ORDINARIO` incondicional que o canal carregava foi corrigido na mesma fatia, não deixado como ruído documentado: `ProceduralCatalogSupport.tryResolveRito(null, ramoDireito, classeProcessual)` — o mesmo utilitário leve que `AjuizarProcessoCommand` já usa como fallback sobre o roteamento pesado, sem puxar esse motor pesado para dentro do marketplace — resolve o rito a partir de dois campos que o payload já carregava, com o mesmo fallback de antes quando nada casa. Somou 6 testes verdes: `ApiMarketplaceServiceCompletudeDocumentalUnitTest` (3, Mockito puro, sem Testcontainers) e `ApiMarketplaceServiceCompletudeDocumentalTest` (3, IT com Postgres real), cobrindo cliente sem `documentos` (nome do teste prova a negação central — sinalização pendente, não aceitação silenciosa), cliente completo e cliente parcial. Fase 2 (endpoint de complementação documental pós-protocolo) segue registrada só por nome de evento reservado (`PROCESSO_DOCUMENTACAO_COMPLETADA`) em `docs/quality/DEBT_LOG.md`, não implementada.
+O `verify` padrão (Failsafe) não alcança 13 métodos de teste distribuídos em 6 classes¹ que combinam a convenção `*Test.java` com `@Tag("integration")` — o Surefire exclui essas classes por tag e o Failsafe não as reconhece pelo padrão de nome de arquivo. Todas as 13 já foram confirmadas verdes individualmente via `-Dit.test=`, mas ficam fora da contagem de rotina do `verify`.
 
-A fatia de observabilidade de `D-scheduler-salario-minimo-nunca-ativado` fechou quatro itens sobre o motor de salário mínimo sem ativar o scheduler de sincronização com o Banco Central (que segue desligado por decisão operacional, não por esquecimento — ver seção de Concorrência). `SalarioMinimoStalenessWatchdogService`, novo e desacoplado da flag `pjb.sync.salario-minimo.enabled`, verifica a cada execução agendada se `SalarioMinimoNacionalService.anoMaisRecenteConhecido()` está defasado do ano corrente além de um limiar configurável (default 1 ano, fundamentado a posteriori em `D-salario-minimo-watchdog-limiar-sem-base-documentada`: `FALLBACK_OFICIAL` registra 2023→2026 sem lacuna, confirmando cadência anual sem exceção conhecida, e a comparação estritamente `>` em vez de `>=` evita falso-positivo no início de cada ano, quando o decreto novo pode legitimamente ainda não ter sido cadastrado). A implementação inicial de `anoMaisRecenteConhecido()` continha um bug real, achado e corrigido antes do commit: usava o máximo irrestrito do banco em vez da mesma cadeia de resolução de `valorPorAno()`, o que faria o watchdog reportar "sem defasagem" mesmo com o banco preso a um ano bem mais antigo que o fallback estático — corrigido para reusar exatamente a query e prioridade de `valorPorAno`. Duas gauges Micrometer (`pjb.salario_minimo.ano_referencia_atual`, `pjb.salario_minimo.fallback_idade_dias`) expõem o mesmo dado via `/actuator/prometheus`, com leitura cacheada por até 60s (`Clock` injetado, reaproveitando o bean já existente em `TimeConfig`) para não bater no banco a cada scrape do Prometheus. O `SalarioMinimoBcbClient` ganhou `@CircuitBreaker` (instância `salario-minimo-bcb`, alinhada estruturalmente a `datajud-feed` — mesmo perfil de integração de feed externo single-source, não ao `mni-remessa`, que é fluxo de submissão com thresholds diferentes); `PdpjConnector` usa `@CircuitBreaker(name = "pdpj")` sem configuração nomeada própria, então não havia "padrão MNI/PDPJ-Br" real para alinhar além do DataJud. A escrita manual de salário mínimo (`POST /api/v1/intelligence/teto/salario-minimo`) passou a registrar entrada em `AuditLedgerService`; um IT real contra Postgres (`AuditLedgerServicePayloadHashNuloIT`) provou que `payload_hash` nulo nunca chega cru ao banco — `safePayloadHash()` sintetiza um SHA-256 a partir de outros campos antes de persistir, achado que corrigiu a própria expectativa do teste na primeira tentativa. A classe de teste `MutableClock`, que já existia duplicada em 4 arquivos antes desta fatia, foi extraída para `com.tcc.pjb.backend.support.MutableClock` (pública) e consolidada nos dois arquivos tocados nesta sessão; as outras 3 cópias foram migradas numa fatia seguinte (ver parágrafo abaixo), zerando a duplicação.
+O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
-Uma rodada completa de `mvnw test -pl pjb-api` nesta sessão (4.274 testes, 0 falhas, 0 erros) consolidou definitivamente todo o backlog de fatias anteriores commitadas mas nunca reconfirmadas numa execução agregada — recursal Fatia 1/2/4, jus postulandi trabalhista e do JEF, isenção de custas por rito, marketplace, entre outras citadas acima como "fora do total agregado até o próximo verify de aceite" — mais os 12 testes novos da fatia de observabilidade do salário mínimo. O texto histórico de cada fatia acima permanece como registro de quando aquele lote foi de fato somado por execução, não por aritmética — 4.274 é o número real desta sessão, verificado, não a soma manual dos parágrafos anteriores.
-
-Uma fatia seguinte fechou, com correção real e não apenas registro, os 5 débitos abertos pela auditoria de observabilidade acima. `TribunalRuleEngine` parou de instanciar `TribunalRuleResolutionSupport`/`TribunalRulePackSynchronizationSupport` com `new` interno — os dois viraram `@Component` injetados via construtor, único consumidor mapeado e migrado. `AuditLedgerService.persistSafely` ganhou um `Counter` Micrometer (`pjb.audit_ledger.persist_failures`) incrementado no `catch` que hoje só loga, tornando falha de persistência observável sem mudar o contrato de "nunca lança" do método; `MeterRegistry` entra pelo único construtor da classe, sem overload. As 3 cópias restantes de `MutableClock` (`PjbCodebaseSanityApplicationServiceCacheTest`, `PjbWriteFailoverTrackerTest`, `AcordoProcessualApplicationServiceTest`) foram migradas para a classe compartilhada, zerando a duplicação apontada em `D-mutableclock-duplicado-em-3-testes`.
-
-O quinto item — contaminação de estado entre ITs em lote amplo — exigiu investigação de causa raiz real em vez de aceitar o registro anterior como definitivo. Sem `forkCount`/`reuseForks` configurado no pom, o Failsafe roda todas as ITs de um lote na mesma JVM e no mesmo banco Postgres (`PjbIntegrationTestBase`); `PjbFlowItBase.truncateDatabaseBeforeEach()` autodescobre e trunca todas as tabelas de `public` a cada teste, o que incluía `tb_jurisdicao_territorial`/`tb_jurisdicao_territorial_unidade` — catálogos semeados uma única vez pelo Flyway (V304/V305/V306) e nunca recriados depois. Qualquer uma das 11 classes que herdam `PjbFlowItBase` rodando antes de `Trt7CearaJurisdicaoCargaIT` no mesmo fork apagava o catálogo territorial para o resto da execução, batendo exatamente com o sintoma histórico (município resolvendo para `MunicipioForaDoCatalogo` em vez de `Resolvida`, isolado sempre 9/9 verde). A primeira correção — excluir os dois catálogos do TRUNCATE autodescoberto — não bastou sozinha: `AjuizamentoServiceFlowIT` tinha um `@AfterAll truncateAfterAll()` próprio com a mesma query copiada e colada (herdado de uma fatia anterior de `D-consultapublica-flaky`), sem a exclusão, reintroduzindo o vazamento no fim de sua própria execução. A duplicação foi eliminada extraindo `truncateAllTrackedTables()` como método protegido reutilizável em `PjbFlowItBase`. A reprodução foi controlada nos dois sentidos — `-Dit.test=AjuizamentoServiceFlowIT,Trt7CearaJurisdicaoCargaIT` reproduziu as 9 falhas antes do fix completo e confirmou 12/12 verdes depois — e a suíte unitária completa (4.274 testes, 0 falhas) foi rodada de novo ao final desta fatia, sem variação no total, confirmando ausência de regressão.
-
-As 206 confirmadas em 5 lotes via `-Dtest=` explícito (goal `test`/Surefire, não `verify`/Failsafe) — mesmo `argLine` e mesmo timeout default de 10min entre os dois plugins, mas identidade de goal diferente da que o CI usa no portão oficial.
-
-¹ O `verify` padrão (Failsafe) não alcança 13 métodos de teste distribuídos em 6 classes (`OabLegitimidadePeticionamentoTest`, `PjbFluxoJudicialCompletoE2ETest`, `DistribuicaoProcessoProtocoladoTest`, `ConsultaPublicaProcessoProtocoladoTest`, `ApiMarketplaceServicePoloMaterializacaoTest`, `ApiMarketplaceServiceCompletudeDocumentalTest`) — nome `*Test.java` combinado com `@Tag("integration")` faz o Surefire excluir por tag e o Failsafe não reconhecer pelo padrão de arquivo. A sexta classe herda o mesmo padrão de nomenclatura da vizinha `ApiMarketplaceServicePoloMaterializacaoTest`, no mesmo pacote — gap pré-existente, não introduzido por ela, apenas repetido por consistência local. Os 13 já foram confirmados verdes individualmente (`-Dit.test=`), mas não entram nesta contagem por rodarem fora do `verify` de rotina. Atenção: `-Dit.test=` só tem efeito sob os goals `integration-test`/`verify` (onde o Failsafe roda) — sob o goal `test` ele é ignorado silenciosamente e o Surefire executa a suíte unitária inteira por padrão, o que já gerou uma execução de ~18 minutos por engano ao tentar validar uma única classe dessas 6.
+¹ `OabLegitimidadePeticionamentoTest`, `PjbFluxoJudicialCompletoE2ETest`, `DistribuicaoProcessoProtocoladoTest`, `ConsultaPublicaProcessoProtocoladoTest`, `ApiMarketplaceServicePoloMaterializacaoTest`, `ApiMarketplaceServiceCompletudeDocumentalTest`. Atenção: `-Dit.test=` só tem efeito sob os goals `integration-test`/`verify` — sob o goal `test` ele é ignorado silenciosamente e o Surefire roda a suíte unitária inteira.
 
 ### Relatório de cobertura (JaCoCo)
 
@@ -299,6 +369,8 @@ As 206 confirmadas em 5 lotes via `-Dtest=` explícito (goal `test`/Surefire, n�
 # Relatório gerado em:
 # pjb-api/target/site/jacoco/index.html
 ```
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -323,6 +395,8 @@ docs/openapi/
 ```
 
 Toda rota REST é registrada no registry canônico de bounded contexts. O `PjbOpenApiContractWeaknessDetectorTest` valida automaticamente que nenhuma rota existe sem contrato OpenAPI registrado, que nenhum campo usa `Map<String,Object>` sem schema tipado e que datas seguem `format: date-time`.
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -370,6 +444,8 @@ Toda rota REST é registrada no registry canônico de bounded contexts. O `PjbOp
 | `advocacia` | Escritório, delegações, filas de assinatura, workspace |
 | `laiane` | Módulo especializado de assistência jurídica via IA |
 
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
 ---
 
 ## Arquitetura
@@ -412,20 +488,30 @@ pjb/
 
 ### Camadas e dependências
 
-```
-┌─────────────────────────────────────────┐
-│              pjb-api                    │
-│  Controllers · JPA Entities · Config    │
-│  Spring Boot · Security · OpenAPI       │
-├─────────────────────────────────────────┤
-│              pjb-core                   │
-│  Domain Services · Application Services │
-│  Aggregates · Value Objects · Ports     │
-└─────────────────────────────────────────┘
-         ↑ depende de, nunca o inverso
+```mermaid
+graph TD
+    subgraph API["pjb-api — Adaptadores"]
+        C[Controllers<br/><small>REST por bounded context</small>]
+        J[JPA Entities & Repositories]
+        S[Spring Security · OpenAPI · Config]
+    end
+
+    subgraph CORE["pjb-core — Domínio puro"]
+        AG[Aggregates & Value Objects]
+        AS[Application & Domain Services]
+        P[Ports<br/><small>Repository · Messaging · IA</small>]
+    end
+
+    C --> AS
+    S -.protege.-> C
+    AS --> AG
+    AS --> P
+    J -.implementa.-> P
+
+    CORE -.->|"nunca conhece Spring, JPA ou HTTP"| API
 ```
 
-`pjb-core` não conhece Spring, JPA nem HTTP. Toda injeção é por construtor com `@Inject` (Jakarta). Repositories são interfaces de porta em `pjb-core`; as implementações JPA ficam em `pjb-api`.
+`pjb-core` não conhece Spring, JPA nem HTTP — a seta de dependência aponta sempre de fora para dentro, nunca o inverso. Toda injeção é por construtor com `@Inject` (Jakarta). Repositories são interfaces de porta em `pjb-core`; as implementações JPA ficam em `pjb-api`.
 
 ### Padrões arquiteturais aplicados
 
@@ -439,6 +525,8 @@ pjb/
 | Virtual Threads (Java 21) | Toda execução assíncrona | Alta concorrência sem pool sizing manual |
 | Scoped Values (Java 21) | Propagação de sigilo | Contexto sigiloso não vaza entre Virtual Threads |
 | Structured Concurrency | Operações multi-rito | Falha de um filho cancela os demais, sem leak |
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -454,6 +542,7 @@ pjb/
 | Migrations | Flyway — numeração até V306, com particionamento mensal em tabelas de evento |
 | Persistência | JPA / Hibernate com `ddl-auto: validate` em produção |
 | Mensageria | Apache Kafka 3.8 — eventos judiciais e outbox |
+| Orquestração de workflow | Camunda 8 / Zeebe — BPMN aplicado ao fluxo de ajuizamento |
 | Cache | Redis 7.4 |
 | Busca | Elasticsearch 8.15 |
 | Segurança | Spring Security, ABAC, Gov.br, ICP-Brasil, Passkey/WebAuthn |
@@ -465,17 +554,26 @@ pjb/
 | Guards estruturais | 7 scripts Python + ArchUnit integrados ao CI |
 | Containerização | Docker Compose (dev/test), Kubernetes (produção) |
 
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
 ---
 
 ## Módulos funcionais
 
-### 1 — Governança institucional
+O backend está organizado em 15 módulos funcionais. Clique em qualquer um para expandir os detalhes.
+
+<details>
+<summary><strong>1 — Governança institucional</strong></summary>
+<br>
 
 Gerencia papel, lotação, localização, competência e visibilidade de cada ator no processo. A matriz de visibilidade produz uma explicação auditável para cada decisão de acesso — quem pode ver o quê, por qual motivo, com registro imutável.
 
 Inclui gestão de afiliações, credenciais institucionais, atestação de fonte oficial e delegações formais entre unidades.
+</details>
 
-### 2 — Motor de rito e distribuição inteligente
+<details>
+<summary><strong>2 — Motor de rito e distribuição inteligente</strong></summary>
+<br>
 
 Distribui processos por natureza, competência, rito e comarca. Suporta vara única, comarca do interior, JEC itinerante e qualquer configuração de tribunal. O engine explainável documenta cada critério avaliado na decisão de distribuição — nenhuma distribuição é uma caixa-preta.
 
@@ -495,58 +593,103 @@ Cada carga cruzou o nome do município do PDF contra a lista oficial do IBGE por
 `vigencia_inicio` usa uma data presumida (promulgação da CF/88) por continuidade nas três regiões — decisão mantida mesmo quando o documento-fonte trazia data de instalação real por vara (caso do TRT3/MG, com varas de Belo Horizonte instaladas entre 1941 e 2013), porque o schema atual só suporta um `vigencia_inicio` por linha de município, não por vara individual (`D-vigencia-trt7-e-futuras-regioes-presumida-nao-documentada`, `docs/quality/DEBT_LOG.md`). Duas inconsistências recorrentes na fonte primária do TST ficaram registradas como dívida em vez de contornadas silenciosamente: código de vara duplicado entre unidades fisicamente distintas (3 pares no MG, 3 pares no RN, por causas diferentes em cada região — `D-trt3-codigo-unidade-duplicado-fonte`) e municípios sem nenhuma vara documentada (6 no MG por provável competência delegada ao juiz de direito da comarca, 38 no RN cobertos por um Posto Avançado sem código formal atribuído — `D-trt3-municipios-sem-vara-competencia-delegada`, `D-trt21-posto-avancado-sem-codigo`).
 
 Cada uma das três cargas é travada por teste de regressão permanente contra o documento-fonte — a distribuição de varas por município é reparseada de forma independente do script que gerou a migration antes de virar `assert`, para que uma alteração futura na migration ou uma migration de outra região que corrompa dado por acidente de nome de tabela seja detectada, não silenciosamente aceita.
+</details>
 
-### 3 — Motor de celeridade constitucional
+<details>
+<summary><strong>3 — Motor de celeridade constitucional</strong></summary>
+<br>
 
 Monitora prazos constitucionais por rito, calcula gargalos sistêmicos e sugere aceleradores por área do direito. Não pressiona magistrados individualmente — identifica onde o sistema está lento e por quê, com dados agregados e anônimos.
+</details>
 
-### 4 — Painel interno e secretaria cartorária
+<details>
+<summary><strong>4 — Painel interno e secretaria cartorária</strong></summary>
+<br>
 
 Filas inteligentes com priorização semântica, agrupadores por similaridade, lote de assinatura com conferência obrigatória e hash SHA-256 por documento. Cada ato de secretaria tem rastreabilidade de quem fez, quando, com qual resultado e em qual estado o processo se encontrava.
+</details>
 
-### 5 — Aceleradores por área do direito
+<details>
+<summary><strong>5 — Aceleradores por área do direito</strong></summary>
+<br>
 
 Fluxos especializados para cível, criminal, trabalhista, eleitoral, família, execução, Juizados Especiais (cível, federal e da Fazenda Pública), precatório, falimentar e controle concentrado de constitucionalidade. Cada área tem checklist computável, diagnóstico de risco e sugestão de próximo ato.
+</details>
 
-### 6 — Chips inteligentes e conciliação
+<details>
+<summary><strong>6 — Chips inteligentes e conciliação</strong></summary>
+<br>
 
 Marcadores semânticos de processo para priorização automática por urgência, complexidade e probabilidade de acordo. O módulo de conciliação sugere acordos baseados em precedentes semelhantes, com score de probabilidade, BATNA calculado e histórico de propostas.
+</details>
 
-### 7 — Documentos, dossiê e cadeia de custódia
+<details>
+<summary><strong>7 — Documentos, dossiê e cadeia de custódia</strong></summary>
+<br>
 
 Cada documento tem origem, estado operacional, hash de integridade e cadeia de confiança verificável. O dossiê documental consolida todos os artefatos de um processo com rastreabilidade completa desde a criação até o arquivamento.
 
-O envelope de assinatura qualificada (`QualifiedDocumentSignatureEnvelopeService`) calcula `cadeiaCustodiaElegivel`, `assinaturaCompletaMaterializada` e `rubricaDataHoraLocalPresentes` a partir do certificado de entrada e do envelope já materializado — os três eram `true` fixo, sem verificação real, até serem corrigidos. `classificacaoContextualCoerente` compara o papel de quem assina contra o segmento institucional real em 12 dos 14 chamadores (`resolveSegmentoInstitucional` deixou de usar fallback tautológico e passou a reconhecer escrivão de polícia via `isSegurancaPublica()`); os 2 chamadores restantes ainda caem no `true` de default por ausência de mapeamento de capacidade institucional — dívida registrada (`D-classificacao-contextual-default-permissivo`), não regressão silenciosa.
+**Envelope de assinatura qualificada** (`QualifiedDocumentSignatureEnvelopeService`):
+- Calcula três verificações a partir do certificado de entrada e do envelope já materializado: `cadeiaCustodiaElegivel`, `assinaturaCompletaMaterializada`, `rubricaDataHoraLocalPresentes` — as três eram `true` fixo, sem verificação real, até serem corrigidas.
+- `classificacaoContextualCoerente` compara o papel de quem assina contra o segmento institucional real em 12 dos 14 chamadores (escrivão de polícia já reconhecido via `isSegurancaPublica()`); os 2 restantes caem no `true` de default por falta de mapeamento — dívida registrada (`D-classificacao-contextual-default-permissivo`), não regressão silenciosa.
 
-O vocabulário documental é canônico e selado: `TipoDocumento` (~105 valores) carrega uma `CategoriaDocumento` (`PECA_INAUGURAL`, `PECA_RECURSAL`, `DOC_INSTRUCAO`, `DOC_QUALIFICACAO`). Sobre esse vocabulário está sendo construído um gate de completude documental por rito/classe, que lerá categoria e tipo para decidir a aptidão ao protocolo — substituindo a contagem de anexos atual por validação tipada. A meta de design é que ausência de tipo seja rejeição explícita, nunca passagem silenciosa.
+**Vocabulário documental** — canônico e selado:
+- `TipoDocumento` (~105 valores) carrega uma `CategoriaDocumento` (`PECA_INAUGURAL`, `PECA_RECURSAL`, `DOC_INSTRUCAO`, `DOC_QUALIFICACAO`).
+- Um gate de completude documental por rito/classe está sendo construído sobre esse vocabulário, substituindo a contagem de anexos por validação tipada — meta de design: ausência de tipo é rejeição explícita, nunca passagem silenciosa.
 
-**Borda HTTP (fatia 1b' — concluída):** o advogado pode declarar `TipoDocumento` por anexo via `AnexoDeclarado { nomeArquivo, tipo }` no multipart de ajuizamento. O `SmartFileSplitter` valida a correlação (nome ↔ declaração, bidirecional) com 400 explícito em quatro casos: nome ausente, nomes duplicados, arquivo sem declaração correspondente e declaração sem arquivo correspondente. Quando declarado e a correlação fecha, `Attachment.tipoDocumento` é preenchido; declarar é opcional nesta fatia — a obrigatoriedade por rito é decisão do gate (1c). O gate de completude (fatia 1c) lerá esse campo para enforçar obrigatoriedade por rito/classe — a decisão de política (anexo sem tipo = rejeição ou tolerância) é responsabilidade do gate, não da borda.
+**Borda HTTP e canal tipado:**
+- O advogado declara `TipoDocumento` por anexo via `AnexoDeclarado { nomeArquivo, tipo }` no multipart de ajuizamento.
+- `SmartFileSplitter` valida a correlação nome ↔ declaração (bidirecional), com 400 explícito em quatro casos: nome ausente, nomes duplicados, arquivo sem declaração, declaração sem arquivo.
+- Declarar é opcional — a obrigatoriedade por rito é decisão do gate de completude, não da borda.
+- `Attachment.tipoDocumento` propaga até o payload de routing via `NationalProceduralProcessoEntityPayloadAssembler` (chave `documentosTipados`), só adicionada quando há pelo menos um tipo não-nulo — lista vazia nunca ativa o canal em callers sem declaração.
 
-**Canal tipado (fatia 1d — concluída):** `Attachment.tipoDocumento` é propagado do `SmartFileSplitter` até o payload de routing via `NationalProceduralProcessoEntityPayloadAssembler` (chave `documentosTipados`) e consumido por `NationalProceduralPreflightPayloadFactory.extractPresentDocuments`. Fronteira 2 protegida: a chave só é adicionada ao payload quando pelo menos um `tipoDocumento` não-nulo está presente (`!tipados.isEmpty()`), evitando que lista vazia ative o canal tipado em callers sem declaração. Os 3 `ProcessoCommandControllerIT` que exercitam o ajuizamento civil sem `AnexoDeclarado` foram fechados (D-d25-testes-anexo): isolados do motor real de roteamento/completude documental, cobertura que já existe em `ValidacaoDocumentoAjuizamentoIT` e `CompletudeDocumentalAjuizamentoIT`.
+**Composição de partes por rito** — o ajuizamento não impõe o molde cível a todos os segmentos:
+- O sistema lê o catálogo por rito e materializa o papel correto: `ACUSACAO`/`ACUSADO` no penal, `RECLAMANTE`/`RECLAMADA` no trabalhista, `IMPETRANTE`/`IMPETRADO` no mandado de segurança, `SEGURADO` no previdenciário (INSS não vira polo automático), `INVESTIGADO` no IPM militar.
+- No habeas corpus, sem dicotomia ativo/passivo, nenhum polo é criado. Ritos não cobertos mantêm composição nula até especificação.
+- `PoloProcessual` registra domicílio da parte (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`), separado do território de roteamento (`tb_processo`).
+- Os quatro canais de entrada capturam esse domicílio: REST e Laiane via `EstruturarRequest`, com a flag `enderecoReuDesconhecido` (mesmo padrão do PJe); marketplace via `MarketplaceProtocoloRequest`, mesma regra de precedência; MNI via `MniXmlToProcessoAdapter.resolvePartes`, normalizando UF para sigla de 2 letras e descartando formato inválido, nunca gravando dado cru.
+- Comarca e município seguem nulos apenas no canal MNI, que não tem elemento equivalente no schema — dívida documentada (`D-domicilio-parte-dois-canais-nao-populam`).
+- Um único motor (`PoloCompositionPolicy` + `PoloRoleMappingTable`) materializa o polo nos quatro canais — nenhum caminho divergente produz rótulo genérico onde o rito exige papel específico.
 
-**Composição de partes por rito:** o ajuizamento não impõe o molde cível a todos os segmentos. O sistema lê o catálogo por rito e materializa o papel processual correto: `ACUSACAO`/`ACUSADO` no penal, `RECLAMANTE`/`RECLAMADA` no trabalhista, `IMPETRANTE`/`IMPETRADO` no mandado de segurança, `SEGURADO` no previdenciário (o INSS não vira polo automático — é ponto de extensão para integração futura), `INVESTIGADO` no IPM militar. Onde a dicotomia ativo/passivo não existe juridicamente — no habeas corpus o paciente não é parte adversarial —, nenhum polo é criado. Ritos não cobertos pelo catálogo mantêm composição nula até que seus perfis de partes sejam especificados. O catálogo por rito é a única fonte de verdade: o mesmo que define quais documentos são exigidos define quem são as partes. `PoloProcessual` também registra o domicílio processual da parte (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`) e razão social para pessoas jurídicas, separados do território de roteamento — este fica em `tb_processo` (`uf_autor`, `comarca_autor`, `uf_reu`, `comarca_reu`). O ajuizamento via REST e o assistente de petição inicial (Laiane) já capturam essa informação na entrada: `EstruturarRequest` recebe `ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu`, a sessão de draft os carrega até `protocolar()` e o `Processo` os persiste, com a flag `enderecoReuDesconhecido` seguindo o mesmo padrão do PJe — endereço do réu frequentemente desconhecido no ajuizamento — e vencendo os valores informados quando marcada. O marketplace de integradores captura os mesmos 4 campos via `MarketplaceProtocoloRequest`, propagados por `MarketplaceSurfaceFacadeService` até o record interno homônimo de `ApiMarketplaceService`, aplicando a mesma regra de precedência. O canal MNI captura a UF de domicílio: `MniXmlToProcessoAdapter.resolvePartes` lê o elemento `<estado>` do primeiro `<endereco>` de cada `<pessoa>` do XML (o XSD do MNI 2.2.2 define `estado` como elemento de texto livre, sem restrição de formato), normaliza para sigla de 2 letras maiúsculas e descarta qualquer valor fora desse formato — nunca grava dado cru, e nunca lança exceção por endereço ausente. Comarca e município continuam nulos nesse canal: o MNI não tem elemento equivalente a comarca, e o único `codigoMunicipioIBGE` do padrão pertence a `tipoOrgaoJulgador` (órgão julgador), não ao endereço da parte — confirmado por busca exaustiva na documentação do schema, para não presumir um dado que o padrão não carrega. A dívida `D-domicilio-parte-dois-canais-nao-populam` documenta essas limitações residuais de comarca/município em MNI e Marketplace; nenhum dos quatro canais deixa mais o domicílio de parte inteiramente nulo. O motor (`PoloCompositionPolicy` + `PoloRoleMappingTable`) é o único funil de materialização de polo — ajuizamento via REST, o assistente de petição inicial (Laiane), a importação MNI e o marketplace de integradores convergem para o mesmo mecanismo (para Laiane e marketplace, materializado dentro de `AjuizamentoService.ajuizar()`; MNI materializa via método próprio equivalente em `MniRecepcaoService`, sem cada chamador precisar lembrar de acionar o motor), sem caminhos divergentes que produzam rótulo genérico (`AUTOR`/`REU`) onde o rito exige papel específico.
+**Completude documental no marketplace:**
+- Dos três canais que criam processo, só o marketplace não verificava documento obrigatório — chamava `AjuizamentoService.ajuizar()` direto, sem o `CompletudeDocumentalPolicyService` que o REST já usa.
+- Quando a checagem acusa pendência, o processo é criado normalmente (integração sistema-a-sistema não trava), mas `connectorSubmissionStatus` grava `PENDENTE_DOCUMENTACAO` e a resposta expõe `documentacaoCompleta`/`documentosFaltantes`.
+- O rito hardcoded em `COMUM_ORDINARIO` que esse canal carregava foi corrigido junto, com `ProceduralCatalogSupport.tryResolveRito()` lendo o payload. Detalhe completo: `docs/quality/DEBT_LOG.md` (`D-marketplace-sem-completude-documental`).
+</details>
 
-**Completude documental no marketplace (fatia concluída):** dos três canais que criam processo, só o marketplace de integradores não verificava documento obrigatório — chamava `AjuizamentoService.ajuizar()` direto, sem passar pelo mesmo `CompletudeDocumentalPolicyService` que o REST já usa. `MarketplaceProtocoloRequest` ganhou campo opcional `documentos`; quando a checagem acusa pendência, o processo é criado normalmente (a integração sistema-a-sistema não trava), mas `connectorSubmissionStatus` grava `PENDENTE_DOCUMENTACAO` e a resposta síncrona expõe `documentacaoCompleta`/`documentosFaltantes` — sinal que independe do integrador ter webhook configurado, o que cobre a totalidade dos clientes atuais. Um segundo webhook (`PROCESSO_PENDENTE_DOCUMENTACAO`) reforça o sinal para quem tiver endpoint ativo, sem substituir o `PROCESSO_PROTOCOLADO` que já disparava. O rito hardcoded em `COMUM_ORDINARIO` que esse canal carregava desde sempre foi corrigido junto, com `ProceduralCatalogSupport.tryResolveRito()` lendo `ramoDireito`/`classeProcessual` do próprio payload — sem essa correção, a completude nasceria avaliando processo trabalhista contra catálogo cível. Detalhe completo em `docs/quality/DEBT_LOG.md` (`D-marketplace-sem-completude-documental`).
-
-### 8 — Autuação, retificação e qualidade de metadados
+<details>
+<summary><strong>8 — Autuação, retificação e qualidade de metadados</strong></summary>
+<br>
 
 Retificação governada com diff jurídico — cada alteração passa por política, avaliação de impacto e aprovação explícita. Score de qualidade de metadados detecta classes ausentes, partes sem documento e rito incompatível antes que o processo avance para a fase seguinte.
+</details>
 
-### 9 — Importação e normalização de processos externos
+<details>
+<summary><strong>9 — Importação e normalização de processos externos</strong></summary>
+<br>
 
 Ingesta processos de PJe, e-SAJ, eProc, Projudi, Creta, MNI e PDPJ. Cada sistema externo tem normalizador específico que padroniza NPU, classe processual CNJ e rito antes de persistir. Conflitos de importação são registrados com diff auditável.
 
 O adapter MNI (`intercomunicacao-2.2.2`, atributos `polo`/`parte`/`pessoa` do schema oficial do CNJ) materializa autor e réu do processo importado, incluindo o polo processual pelo mesmo motor de composição por rito usado no ajuizamento direto — processo importado via MNI não fica mais sem partes identificadas.
+</details>
 
-### 10 — Mandados, certidões e comunicação resiliente
+<details>
+<summary><strong>10 — Mandados, certidões e comunicação resiliente</strong></summary>
+<br>
 
 Gestão completa de mandados com diagnóstico de devolução e priorização de urgentes. Certidões automáticas com checklist de pendências e emissão em lote. Domicílio eletrônico judicial com retry exponencial, painel de falhas e fallback auditável.
+</details>
 
-### 11 — GIGS, notas, lembretes e pendências
+<details>
+<summary><strong>11 — GIGS, notas, lembretes e pendências</strong></summary>
+<br>
 
 Atividades processuais (GIGS) com execução governada, visibilidade controlada por sigilo e papel, controle de atos jurisdicionais e lembrete automático de minuta pendente. Notas e lembretes com política de visibilidade por papel, lotação e prazo de expiração.
+</details>
 
-### 12 — IA jurídica auditável
+<details>
+<summary><strong>12 — IA jurídica auditável</strong></summary>
+<br>
 
 A IA opera como camada de suporte — nunca substitui decisão humana. Toda interação passa por uma moldura pré-consciente que avalia ramo do direito, tradição doutrinária, risco procedimental, proveniência de evidência e classificação de sigilo antes de formular qualquer resposta.
 
@@ -557,22 +700,34 @@ A IA opera como camada de suporte — nunca substitui decisão humana. Toda inte
 **Gate de completude processual:** verifica se o pacote documental está completo antes de permitir que o processo avance de fase. A validação tem duas camadas: estrutural (checklists configuráveis por rito, com pendências tipificadas e prazo de resolução) e semântica (OCR + VectorSearch detecta a presença efetiva de conteúdo exigido em documentos já anexados, não apenas a existência do arquivo). Pendências são notificadas via outbox com ciclo de resolução rastreável. O processo não avança enquanto houver lacuna de completude — e a secretaria pode fazer override com justificativa mínima auditável.
 
 **Consultoria de decisão judicial:** `advisoryMode` sempre retorna `ADVISORY_DRAFT_ONLY` — a Laiane produz apenas minuta assistida, nunca decide. `reviewRequired` e `publicationLocked` são sempre `true`: toda consultoria exige revisão humana integral antes de publicação, sem exceção por template ou caso. Não é comportamento condicional, é política de segurança deliberada — os três modos de consultoria (`SUGESTIVO`, `RESTRITIVO`, `BLOQUEADOR`) documentados numa versão anterior da API nunca chegaram a ser implementados, e a diferenciação de níveis de consultoria fica registrada como decisão de produto em aberto (`D-advisory-modos-nao-implementados`), não como funcionalidade pendente de bug fix.
+</details>
 
-### 13 — Relatórios e analytics sem ranking punitivo
+<details>
+<summary><strong>13 — Relatórios e analytics sem ranking punitivo</strong></summary>
+<br>
 
 Relatórios de gargalo, tempo médio por rito, taxa de retrabalho e taxa de conciliação. Exportação Justiça em Números para o CNJ. Nenhum relatório identifica magistrado por desempenho individual — os dados servem à melhoria sistêmica, não à pressão sobre pessoas.
+</details>
 
-### 14 — Envelope de integração PDPJ/MNI/API
+<details>
+<summary><strong>14 — Envelope de integração PDPJ/MNI/API</strong></summary>
+<br>
 
 Envelope canônico `PjbIntegrationEventEnvelope` com UUID, hash de payload, routing key e versão semântica. Mapeamento de eventos judiciais para rota canônica `judicial.{sistema}.{tipo}.{rito}`. Suporta emissão e consumo de eventos com garantia de at-least-once via outbox.
+</details>
 
-### 15 — Módulo criminal e investigação policial
+<details>
+<summary><strong>15 — Módulo criminal e investigação policial</strong></summary>
+<br>
 
 A delegacia é modelada como unidade institucional de primeira linha, com lotação, competência territorial e grade de plantão — não como um papel genérico, mas como uma entidade com identidade e hierarquia própria dentro do bounded context criminal.
 
 Boletins de ocorrência produzem inquéritos rastreáveis. Cada BO tem tipificação, envolvidos, cadeia de custódia de documentos e vínculo automático ao processo penal quando há autuação. O inquérito acompanha o processo desde a fase policial até a fase judicial, sem quebra de rastreabilidade.
 
 O escopo policial é resolvido por lotação, não por papel. O que um delegado enxerga e movimenta é determinado pela delegacia onde está lotado. O DelegadoPainel materializa exatamente essa visão restrita — sem exposição de dados de outra unidade. O `WorkItemScopeGuard` aplica essa restrição como P0: qualquer acesso a item de trabalho fora do escopo de lotação é bloqueado no guard central, e o ArchUnit garante em tempo de build que não existe caminho de código que consiga contorná-lo.
+</details>
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -592,6 +747,8 @@ Dez serviços que cobrem lacunas que nenhum sistema judicial brasileiro resolve 
 | 8 | `DomicilioJudicialResilienceService` | Retry com backoff exponencial, painel de falhas persistente e fallback gracioso para comunicação eletrônica |
 | 9 | `ArquivamentoPendenciaChecker` | Checklist de segurança para arquivamento: custas, expedientes, prazos e documentos — nunca arquiva automaticamente |
 | 10 | `ProcessMiningMaterializedViewService` | Tabelas materializadas atualizadas em Virtual Threads — gargalo por ato, fase, rito e integração com refresh assíncrono |
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -619,6 +776,8 @@ O catálogo `RitoProcessual` é selado (sealed). Todos os ritos abaixo são trat
 
 **Especializados:** falimentar, recuperação judicial, precatório, militar, extrajudicial, arbitragem com homologação
 
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
 ---
 
 ## Segurança e conformidade
@@ -645,6 +804,8 @@ O modelo de segurança é orientado por identidade, papel, lotação, órgão, u
 | **LGPD** | Dados sigilosos nunca enviados a serviços externos; redact auditável por versão |
 | **Dual approval** | Operações críticas exigem confirmação de segundo ator autorizado |
 
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
 ---
 
 ## Concorrência e execução assíncrona
@@ -658,6 +819,8 @@ Bounded concurrency via `PjbBoundedExecutorService` previne explosão de conexõ
 Zero `CompletableFuture` solto no código de produção. O ADR-0051 define o modelo unificado de execução e é aplicado por guard Python e ArchUnit a cada build.
 
 `SalarioMinimoNacionalSyncScheduler` (sincronização diária com a série 1619 do Banco Central) segue desligado por default (`pjb.sync.salario-minimo.enabled`, ausente em todos os profiles) — mesma convenção de `IbgeSyncService`, decisão operacional registrada no commit que introduziu o scheduler, não esquecimento. `SalarioMinimoStalenessWatchdogService` roda independente dessa flag e alerta se o valor servido ficar defasado do ano corrente além do limiar configurado, sem depender da sincronização automática estar ativa.
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -675,6 +838,8 @@ Os 8 tópicos Kafka são declarados explicitamente via beans `NewTopic` em `PjbK
 
 Dados pessoais sensíveis — CPF e CNPJ — foram removidos de todas as camadas onde não precisam estar: resposta de API de metadados ICP-Brasil, cache de certificados, eventos de assinatura e entradas do audit ledger de cadeia ICP. Onde o identificador é necessário para correlação, é armazenado como referência hasheada, nunca em claro.
 
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
 ---
 
 ## Banco de dados
@@ -689,6 +854,8 @@ CREATE POLICY processo_sigilo ON processo
     USING (sigilo = false OR current_setting('app.papel') IN ('JUIZ', 'PROMOTOR'));
 ```
 
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
 ---
 
 ## Qualidade executável
@@ -696,7 +863,7 @@ CREATE POLICY processo_sigilo ON processo
 | Métrica | Estado |
 |---------|--------|
 | Testes unitários (Surefire) | **4.274 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **230 · 0 falhas conhecidas** (de 49 → 14 → 10 → 0; D-routing-preprotocolo e as 9 pré-existentes fechadas; +10 motor de polos verdes; +24 da fatia de competência territorial — CE, MG e RN — verdes desde a criação — ver nota¹ na seção Testes sobre 10 testes confirmados fora desta contagem) |
+| Testes de integração (Failsafe) | **230 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
@@ -750,6 +917,8 @@ python scripts/runtime_concurrency_guard.py
 | `anti_mock_prod_guard` | Bloqueia se mocks de integração crítica estiverem ativos em produção: Gov.br, ICP-Brasil, Kafka, Elasticsearch, IA |
 | `openapi_weakness_detector` | Detecta `Map<String,Object>` sem schema tipado, campos sem `format: date-time` e rotas sem contrato OpenAPI registrado |
 
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
 ---
 
 ## Observabilidade
@@ -766,6 +935,8 @@ GET /actuator/metrics
 Expõe leitura viva do estado estrutural: hotspots do core, trilhas internas de extração do core, blueprints de extração, fluxos críticos ponta a ponta e razão de cobertura por bounded context. O snapshot em memória tem TTL curto; use `refresh=true` para forçar revarredura sem reiniciar a aplicação.
 
 `GET /actuator/prometheus` também expõe `pjb.salario_minimo.ano_referencia_atual` e `pjb.salario_minimo.fallback_idade_dias` — gauges que permitem alertar sobre o motor de salário mínimo ficando desatualizado sem precisar ativar a sincronização automática com o Banco Central (ver seção de Concorrência).
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -831,6 +1002,8 @@ Corpo opcional explicando o "por quê", não o "o quê".
 
 Compilar + guards Python verdes + suíte sem regressão + contratos públicos preservados.
 
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
 ---
 
 ## Sincronização Git segura
@@ -840,6 +1013,8 @@ Compilar + guards Python verdes + suíte sem regressão + contratos públicos pr
 ```
 
 A barreira local inspeciona o diff antes de qualquer commit e bloqueia chaves de API, senhas, tokens JWT, certificados e qualquer padrão de segredo conhecido. Detalhes em `docs/security/GIT_SAFE_SYNC.md`.
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -852,15 +1027,26 @@ docs/product/NATIONAL_JUDICIAL_SYSTEM_REPLACEMENT_MATRIX.md
 docs/product/NATIONAL_JUDICIAL_SYSTEM_REPLACEMENT_INDEX.json
 ```
 
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
 ---
 
 ## Autor
 
-**Tiago Rabelo**
-Engenharia de Software — Universidade Católica de Quixadá (Unicatólica)
-Trabalho de Conclusão de Curso — 2024/2025
+<div align="center">
 
-🔗 [github.com/tiagorabelo0403](https://github.com/tiagorabelo0403)
+![Unicatólica](https://img.shields.io/badge/Unicat%C3%B3lica-Centro%20Universit%C3%A1rio%20Cat%C3%B3lica%20de%20Quixad%C3%A1-8B0000?style=flat-square)
+
+### Tiago Rabelo Saboia
+
+Direito — Centro Universitário Católica de Quixadá (Unicatólica)
+Trabalho de Conclusão de Curso — 2026
+
+📧 [Tiagorabelo.offc@gmail.com](mailto:Tiagorabelo.offc@gmail.com) · 🔗 [github.com/tiagorabelo0403](https://github.com/tiagorabelo0403) · 🎓 [unicatolicaquixada.edu.br](https://unicatolicaquixada.edu.br/)
+
+</div>
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
@@ -869,7 +1055,7 @@ Trabalho de Conclusão de Curso — 2024/2025
 Este projeto está licenciado sob a [MIT License](./LICENSE).
 
 ```
-MIT License — Copyright (c) 2025 Tiago Rabelo
+MIT License — Copyright (c) 2025 Tiago Rabelo Saboia
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -882,33 +1068,7 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 ```
 
----
-
-## Glossário
-
-| Termo | Significado |
-|-------|-------------|
-| **NPU** | Número Processo Único — identificador padronizado CNJ (ex: 0000001-00.2024.8.26.0001) |
-| **Rito** | Fluxo processual obrigatório definido pela lei (ordinário, sumaríssimo, JEC, etc.) |
-| **Autuação** | Ato de registrar formalmente o processo no sistema, com classe, assunto e partes |
-| **Distribuição** | Atribuição do processo a uma vara ou juízo competente |
-| **Movimentação** | Qualquer ato praticado sobre o processo (despacho, decisão, sentença, certidão) |
-| **GIGS** | Grupo de Atividades — conjunto de tarefas processuais com prazo e responsável |
-| **Sobrestamento** | Suspensão temporária do processo aguardando julgamento de paradigma |
-| **BATNA** | Best Alternative to a Negotiated Agreement — análise de alternativa ao acordo |
-| **ABAC** | Attribute-Based Access Control — controle de acesso por atributos do contexto |
-| **RLS** | Row Level Security — política de segurança aplicada no nível do banco de dados |
-| **ADR** | Architecture Decision Record — registro formal de decisão arquitetural |
-| **ICP-Brasil** | Infraestrutura de Chaves Públicas Brasileira — padrão de assinatura digital |
-| **Gov.br** | Sistema de autenticação federal com níveis de confiança bronze, prata e ouro |
-| **PDPJ** | Plataforma Digital do Poder Judiciário — barramento de integração nacional |
-| **MNI** | Modelo Nacional de Interoperabilidade — protocolo de troca entre sistemas judiciais |
-| **CNJ** | Conselho Nacional de Justiça — órgão regulador que define classes, assuntos e tabelas |
-| **JEC** | Juizado Especial Cível |
-| **JEF** | Juizado Especial Federal |
-| **JEFP** | Juizado Especial da Fazenda Pública |
-| **BO** | Boletim de Ocorrência |
-| **SBOM** | Software Bill of Materials — inventário auditável de dependências |
+[⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 

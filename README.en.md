@@ -1,17 +1,19 @@
+<div align="center">
+
+# ⚖️ PJB — Brazilian Judicial Platform
+
+### A next-generation electronic judicial system, designed to fully replace PJe, e-SAJ, eProc, Creta, and Projudi across every segment of the Brazilian justice system
+
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
-![Unit Tests](https://img.shields.io/badge/Unit%20Tests-4%2C138%20%7C%200%20failures-brightgreen)
-![Integration Tests](https://img.shields.io/badge/IT%20Tests-230%20%7C%200%20known%20failures-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-4%2C274%20unit%20%2B%20230%20IT%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
-# PJB — Brazilian Judicial Platform
+**[🇬🇧 English (this file)](./README.en.md)** · **[🇧🇷 Português](./README.md)** · **[📓 Interactive Visual Guide](docs/product/INTERACTIVE_VISUAL_GUIDE.md)**
 
-> A next-generation electronic judicial system built on Java 21 and Spring Boot 3.5, designed to fully replace PJe, e-SAJ, eProc, Creta, and Projudi across all segments of the Brazilian justice system.
-
-**Languages / Idiomas:** [🇬🇧 English (this file)](./README.en.md) · [🇧🇷 Português](./README.md)
+</div>
 
 ---
 
@@ -21,6 +23,8 @@
 - [About the Project](#about-the-project)
 - [The Problem](#the-problem)
 - [The Proposal](#the-proposal)
+- [Glossary](#glossary)
+- [Interactive Visual Guide](#interactive-visual-guide)
 - [Prerequisites](#prerequisites)
 - [Installation & Setup](#installation--setup)
 - [Running the Application](#running-the-application)
@@ -50,7 +54,8 @@
 - [Next Steps](#next-steps)
 - [Author](#author)
 - [License](#license)
-- [Glossary](#glossary)
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -59,6 +64,8 @@
 PJB is a total-replacement platform — not an incremental patch — for the electronic judicial systems currently running in Brazil. Five systems were built over decades by different entities, with no coordination of protocol, data model, or interface. Today, this fractured infrastructure supports more than **80 million active cases**, **91 courts**, and **approximately 30,000 judges**, alongside tens of millions of lawyers, litigants, and court staff — and none of those systems were designed to talk to each other.
 
 PJB was built from scratch to solve this problem properly. It is not a wrapper around legacy systems. It is a deliberate break from that model: domain modeled from the Brazilian Civil Procedure Code (CPC/2015), labor reforms, and current criminal legislation; attribute-based access control with row-level security at the database; an immutable audit trail on every action; and Java 21 Virtual Threads to scale without the cost of managing manual thread pools.
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -74,6 +81,8 @@ PJB was built from scratch to solve this problem properly. It is not a wrapper a
 
 None of the five were designed for horizontal scalability, granular access auditing, or complete support for all procedural classes under the CPC/2015 and labor reforms. PJB does not attempt to rewrite them. It replaces the entire model.
 
+[⬆ Back to top](#quick-navigation)
+
 ---
 
 ## The Proposal
@@ -85,6 +94,69 @@ PJB was designed from scratch around three non-negotiable commitments:
 **2. Testability as acceptance criteria.** No feature exists without verifiable behavior. The test suite is the system's executable contract — if the test passes, the behavior is guaranteed. A feature without a test is not a feature: it is intent.
 
 **3. Security by construction.** ABAC, per-operation RLS, governed propagation of confidential context, and Step-up Gov.br are not layers added afterward. They are constraints that guide every architectural decision from the start — before the first endpoint, before the first migration, before the first line of domain code.
+
+[⬆ Back to top](#quick-navigation)
+
+---
+
+## Glossary
+
+> Legal and technical terms used from here on — useful if you don't come from a software engineering background.
+
+| Term | Meaning |
+|------|---------|
+| **NPU** | Unique Process Number — CNJ standardized identifier (e.g., 0000001-00.2024.8.26.0001) |
+| **Rito** | Mandatory procedural flow defined by law (ordinary, abbreviated, small claims, etc.) |
+| **Autuação** | Act of formally registering the case in the system, with class, subject, and parties |
+| **Distribuição** | Assignment of the case to a competent court or judge |
+| **Movimentação** | Any act performed on the case (ruling, decision, judgment, certificate) |
+| **GIGS** | Activity Group — a set of procedural tasks with a deadline and responsible party |
+| **Sobrestamento** | Temporary suspension of the case awaiting a paradigm ruling |
+| **BATNA** | Best Alternative to a Negotiated Agreement |
+| **ABAC** | Attribute-Based Access Control |
+| **RLS** | Row Level Security — security policy applied at the database level |
+| **ADR** | Architecture Decision Record — formal record of an architectural decision |
+| **ICP-Brasil** | Brazilian Public Key Infrastructure — digital signature standard |
+| **Gov.br** | Federal authentication system with bronze, silver, and gold trust levels |
+| **PDPJ** | Digital Platform of the Judiciary — national integration bus |
+| **MNI** | National Interoperability Model — exchange protocol between judicial systems |
+| **CNJ** | National Council of Justice — regulatory body that defines classes, subjects, and tables |
+| **JEC** | Civil Small Claims Court |
+| **JEF** | Federal Small Claims Court |
+| **JEFP** | Public Treasury Small Claims Court |
+| **BO** | Boletim de Ocorrência — Police Occurrence Report |
+| **SBOM** | Software Bill of Materials — auditable dependency inventory |
+| **CPF** | Brazilian individual taxpayer identification number |
+| **CNPJ** | Brazilian corporate taxpayer identification number |
+
+[⬆ Back to top](#quick-navigation)
+
+---
+
+## Interactive Visual Guide
+
+Prefer to understand PJB through diagrams before touching any code? The **[📓 Interactive Visual Guide](docs/product/INTERACTIVE_VISUAL_GUIDE.md)** is where that lives — with real images and diagrams, not just text:
+
+<div align="center">
+
+![Who enters PJB, and how](docs/product/assets/who-enters-pjb.svg)
+
+*Preview: who enters PJB, and how — the full guide also breaks down what differs between a trial judge, an appellate judge, and a justice*
+
+</div>
+
+In the full guide you'll find:
+
+- **who enters PJB and how each profile authenticates** — citizens, attorneys, the judiciary (with the trial judge × appellate judge × justice breakdown), the Public Prosecutor's Office, the Public Defender's Office, government attorneys, expert witnesses, and more;
+- the step-by-step of how a lawsuit gets filed, from petition to case number;
+- how the smart intake engine screens every petition before it becomes a case (and why it is **not** Laiane);
+- the **judicial calculator** with a real worked input-and-output example — every item calculated, with the law behind it;
+- the **settlement bench** with the full BATNA report — the amount in discussion, each side's cost, likelihood of appeal;
+- **Laiane**, the project's legal artificial intelligence — what she does for each role, the safeguards that guarantee she never decides on her own, and the tribute behind her name.
+
+This content lives deliberately outside this README — here the focus is technical documentation; there, the focus is understanding how the system behaves without reading Java.
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -101,6 +173,8 @@ Before cloning and running the project, make sure you have the following install
 | **Python** | 3.10+ | Structural guards in `scripts/` |
 
 > **Recommended IDE:** IntelliJ IDEA 2024+ with the Checkstyle and SonarLint plugins active. The project uses Java 21 records, sealed classes, and pattern matching — older IDE versions may not recognize the full syntax.
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -173,6 +247,8 @@ java -jar pjb-api/target/pjb-api.jar
 ./mvnw test-compile -pl pjb-api
 ```
 
+[⬆ Back to top](#quick-navigation)
+
 ---
 
 ## Running the Application
@@ -226,13 +302,15 @@ With the `docker` profile, the system automatically seeds demo users and cases s
 docker compose down
 ```
 
+[⬆ Back to top](#quick-navigation)
+
 ---
 
 ## Tests
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 4,138 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 4,274 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 230 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 ### Run Unit Tests Only (fast)
@@ -249,7 +327,7 @@ Expected time: **~15 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api
 ```
 
-This is the official project gate. It runs the 4,138 unit tests (Surefire) and then the 230 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 4,274 unit tests (Surefire) and then the 230 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 Expected time: **~50 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
 
@@ -267,7 +345,7 @@ The Surefire/Failsafe `argLine` sets `-Dpjb.runtime.lifecycle.drain-quiet-period
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **4,138** |
+| Total unit tests | Surefire | **4,274** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~15 min** |
@@ -276,11 +354,13 @@ The Surefire/Failsafe `argLine` sets `-Dpjb.runtime.lifecycle.drain-quiet-period
 | IT failures | Failsafe | **0** (0E + 0F) |
 | Full verify execution time | Surefire + Failsafe | **~50 min** |
 
-The integration suite went through a full stabilization process: 49 failures at the start, 14 after eliminating clusters CG-1 (22E — wrong environment variable), CG-2-Postgres (5E — cross-test data contamination from unclean fixtures), CG-3 (3E — hardcoded IDs without seeding), and CG-7 (1E); 10 after closing `ConsultaPublicaSearchFlowIT` and the 3 `ProcessoCommandControllerIT` (debt D-d25-testes-anexo); and **0** after closing `D-routing-preprotocolo` and the remaining 9 pre-existing failures. Two of those fixes touched production bugs, not just test setup: `AuditLedgerService` recorded audit events only in memory, without persisting to the repository the audit endpoints actually query; and root-proceeding resolution in `CaseContinuityOrchestratorService` used a field that changes state during the case lifecycle, causing ambiguity between the root proceeding and its branches (e.g., judgment enforcement) after archiving. The 10 polo-composition-by-procedural-type tests are all green and are not part of the failure history. The territorial competence slice added 24 more tests after reaching zero, green since creation — 9 from `Trt7CearaJurisdicaoCargaIT` (TRT7/CE), 7 from `Trt3MgJurisdicaoCargaIT` (TRT3/MG), and 8 from `Trt21RnJurisdicaoCargaIT` (TRT21/RN) — also outside the failure history. `RepresentacaoProcessualPolicyServiceTest` adds 7 more green tests (the first dedicated test class for that service), confirmed in isolation together with 18 regression tests across the known consumers (`RepresentacaoProcessualPolicyJsonExtractorTest`, `ProcessualParticipacaoAtivaWorkspaceSupportTest`, `ProcessualParticipacaoAtivaFacadeServiceTest`, `RecursalFormalizacaoServiceTest`, `DespachoProcessoProtocoladoTest`, `PeticionamentoSessaoFacadeServiceWiringTest`). `RecursalValidacaoMinimaServiceTest` (also new) adds 5 more green tests covering jus postulandi enforcement in appellate admissibility, confirmed together with the `RecursalPeticionamentoFluxoRealTest` regression (3 tests) — none of the 33 tests in this slice are yet folded into the 4,138 aggregate total since a full suite run was not re-confirmed this session. The following slice, which extended jus postulandi to the labor procedures and to the federal small-claims court, took `OabLegitimidadePeticionamentoTest` from 13 to 28 executions — seven labor procedures admitted, five refused, and two federal ones, all parameterized over `RitoProcessual` — and the two representation and appellate-admissibility classes to 12 and 7 tests. All three jus postulandi runs were per-class via `-Dit.test=` under the `integration-test` goal, not a full suite run. The same applies to `CustaIsencaoPorRitoPolicyTest` (13 tests covering exemption for JEC, JEF, JEFP, and ECA, plus phase and negative-input scenarios), run in isolation together with the five `CustaJudicialService` regression tests that mock the interface. None of these tests are folded into the 4,138 aggregate total until the next acceptance `verify`.
+The integration suite went through a structural stabilization process: failures caused by incorrect environment variables, cross-test data contamination, and hardcoded IDs without seeding were eliminated down to zero. Two of those fixes exposed real production bugs, not just test issues: `AuditLedgerService` recorded audit events only in memory, without persisting to the repository the audit endpoints actually query; and root-proceeding resolution in `CaseContinuityOrchestratorService` used a mutable field during the case lifecycle, causing ambiguity between the root proceeding and its branches (e.g., judgment enforcement) after archiving.
 
-The 206 confirmed across 5 batches via explicit `-Dtest=` (goal `test`/Surefire, not `verify`/Failsafe) — same `argLine` and same default 10-minute timeout between the two plugins, but a different goal identity than the one CI uses in the official gate.
+The default `verify` (Failsafe) does not reach 13 test methods spread across 6 classes¹ that combine the `*Test.java` naming convention with `@Tag("integration")` — Surefire excludes these classes by tag and Failsafe does not recognize them by file pattern. All 13 have already been confirmed green individually via `-Dit.test=`, but stay outside the routine `verify` count.
 
-¹ The default `verify` (Failsafe) does not reach 10 test methods spread across 5 classes (`OabLegitimidadePeticionamentoTest`, `PjbFluxoJudicialCompletoE2ETest`, `DistribuicaoProcessoProtocoladoTest`, `ConsultaPublicaProcessoProtocoladoTest`, `ApiMarketplaceServicePoloMaterializacaoTest`) — the `*Test.java` name combined with `@Tag("integration")` makes Surefire exclude by tag while Failsafe does not recognize the file pattern. The 10 have already been confirmed green individually (`-Dit.test=`), but do not enter this count since they run outside the routine `verify`.
+The history of technical decisions, known technical debt, and closure criteria for each workstream is documented in [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) and the [ADRs](./docs/adr/).
+
+¹ `OabLegitimidadePeticionamentoTest`, `PjbFluxoJudicialCompletoE2ETest`, `DistribuicaoProcessoProtocoladoTest`, `ConsultaPublicaProcessoProtocoladoTest`, `ApiMarketplaceServicePoloMaterializacaoTest`, `ApiMarketplaceServiceCompletudeDocumentalTest`. Note: `-Dit.test=` only takes effect under the `integration-test`/`verify` goals — under the `test` goal it is silently ignored and Surefire runs the entire unit suite.
 
 ### Coverage Report (JaCoCo)
 
@@ -289,6 +369,8 @@ The 206 confirmed across 5 batches via explicit `-Dtest=` (goal `test`/Surefire,
 # Report generated at:
 # pjb-api/target/site/jacoco/index.html
 ```
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -313,6 +395,8 @@ docs/openapi/
 ```
 
 Every REST route is registered in the canonical bounded context registry. The `PjbOpenApiContractWeaknessDetectorTest` automatically validates that no route exists without a registered OpenAPI contract, no field uses `Map<String,Object>` without a typed schema, and all dates follow `format: date-time`.
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -360,6 +444,8 @@ Every REST route is registered in the canonical bounded context registry. The `P
 | `advocacia` | Law firm, delegations, signature queues, workspace |
 | `laiane` | Specialized legal assistance module via AI |
 
+[⬆ Back to top](#quick-navigation)
+
 ---
 
 ## Architecture
@@ -402,20 +488,30 @@ pjb/
 
 ### Layers and Dependencies
 
-```
-┌─────────────────────────────────────────┐
-│              pjb-api                    │
-│  Controllers · JPA Entities · Config    │
-│  Spring Boot · Security · OpenAPI       │
-├─────────────────────────────────────────┤
-│              pjb-core                   │
-│  Domain Services · Application Services │
-│  Aggregates · Value Objects · Ports     │
-└─────────────────────────────────────────┘
-         ↑ depends on, never the reverse
+```mermaid
+graph TD
+    subgraph API["pjb-api — Adapters"]
+        C[Controllers<br/><small>REST per bounded context</small>]
+        J[JPA Entities & Repositories]
+        S[Spring Security · OpenAPI · Config]
+    end
+
+    subgraph CORE["pjb-core — Pure Domain"]
+        AG[Aggregates & Value Objects]
+        AS[Application & Domain Services]
+        P[Ports<br/><small>Repository · Messaging · AI</small>]
+    end
+
+    C --> AS
+    S -.guards.-> C
+    AS --> AG
+    AS --> P
+    J -.implements.-> P
+
+    CORE -.->|"never knows Spring, JPA, or HTTP"| API
 ```
 
-`pjb-core` has no knowledge of Spring, JPA, or HTTP. All injection is constructor-based with `@Inject` (Jakarta). Repositories are port interfaces in `pjb-core`; JPA implementations live in `pjb-api`.
+`pjb-core` has no knowledge of Spring, JPA, or HTTP — the dependency arrow always points inward, never the other way around. All injection is constructor-based, using `@Inject` (Jakarta). Repositories are port interfaces defined in `pjb-core`; their JPA implementations live in `pjb-api`.
 
 ### Applied Architectural Patterns
 
@@ -429,6 +525,8 @@ pjb/
 | Virtual Threads (Java 21) | All async execution | High concurrency without manual pool sizing |
 | Scoped Values (Java 21) | Confidentiality propagation | Confidential context never leaks across Virtual Threads |
 | Structured Concurrency | Multi-type operations | Child failure cancels siblings; no resource leak |
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -444,6 +542,7 @@ pjb/
 | Migrations | Flyway — V0–V296, with monthly partitioning on event tables |
 | Persistence | JPA / Hibernate with `ddl-auto: validate` in production |
 | Messaging | Apache Kafka 3.8 — judicial events and outbox |
+| Workflow orchestration | Camunda 8 / Zeebe — BPMN applied to the filing workflow |
 | Cache | Redis 7.4 |
 | Search | Elasticsearch 8.15 |
 | Security | Spring Security, ABAC, Gov.br, ICP-Brasil, Passkey/WebAuthn |
@@ -455,21 +554,30 @@ pjb/
 | Structural Guards | 7 Python scripts + ArchUnit integrated into CI |
 | Containerization | Docker Compose (dev/test), Kubernetes (production) |
 
+[⬆ Back to top](#quick-navigation)
+
 ---
 
 ## Functional Modules
 
-### 1 — Institutional Governance
+The backend is organized into 15 functional modules. Click any module below to expand its details.
+
+<details>
+<summary><strong>1 — Institutional Governance</strong></summary>
+<br>
 
 Manages role, assignment, location, competence, and visibility of each actor in the case. The visibility matrix produces an auditable explanation for every access decision — who can see what, for what reason, with an immutable record.
 
 Includes management of affiliations, institutional credentials, official source attestation, and formal delegations between units.
+</details>
 
-### 2 — Procedural Engine and Intelligent Distribution
+<details>
+<summary><strong>2 — Procedural Engine and Intelligent Distribution</strong></summary>
+<br>
 
 Distributes cases by nature, competence, procedural type, and district. Supports single courts, small-town districts, itinerant Small Claims Courts, and any tribunal configuration. The explainable engine documents every criterion evaluated in the distribution decision — no distribution is a black box.
 
-Territorial competence is a property of the procedural type (`CriterioTerritorial` maps CPC art. 47/48/53-II, CLT art. 651, and CPP art. 70) — a procedural type without a verified criterion returns an explicit absence, it never assumes the defendant's domicile by default. The `tb_jurisdicao_territorial` catalog resolves the municipality (by IBGE code) to the competent unit(s) via `CompetenciaTerritorialResolver`, with temporal-overlap exclusion guaranteed by the schema itself (a PostgreSQL `EXCLUDE` constraint, not application-level validation) and native support for a municipality with concurrent competence across courts — Belo Horizonte has 48 concurrent labor courts in a single catalog row, Fortaleza 18, Natal 13.
+Territorial competence is a property of the procedural type (`CriterioTerritorial` maps CPC art. 47/48/53-II, CLT art. 651, and CPP art. 70) — a procedural type without a verified criterion returns an explicit absence; it never assumes the defendant's domicile by default. The `tb_jurisdicao_territorial` catalog resolves the municipality (by IBGE code) to the competent unit(s) via `CompetenciaTerritorialResolver`, with temporal-overlap exclusion guaranteed by the schema itself (a PostgreSQL `EXCLUDE` constraint, not application-level validation) and native support for municipalities with concurrent competence across courts — Belo Horizonte has 48 concurrent labor courts in a single catalog row, Fortaleza has 18, and Natal has 13.
 
 Three Labor Justice regions were loaded with real data, extracted from an official TST PDF and cross-checked against the IBGE locality API — not as national coverage, but as a demonstration that the engine works end to end without a schema redesign between regions:
 
@@ -484,57 +592,104 @@ Each load matched the municipality name from the PDF against the official IBGE l
 
 `vigencia_inicio` uses a presumed date (the 1988 Constitution's promulgation) for continuity across all three regions — a decision kept even where the source document carried a real per-court installation date (the TRT3/MG case, with Belo Horizonte courts installed between 1941 and 2013), because the current schema only supports one `vigencia_inicio` per municipality row, not per individual court (`D-vigencia-trt7-e-futuras-regioes-presumida-nao-documentada`, `docs/quality/DEBT_LOG.md`). Two recurring inconsistencies in the TST's primary source were recorded as debt instead of being silently worked around: duplicate court codes between physically distinct units (3 pairs in MG, 3 pairs in RN, for different reasons in each region — `D-trt3-codigo-unidade-duplicado-fonte`) and municipalities with no documented court (6 in MG, likely delegated to the district's judge; 38 in RN covered by an Advanced Post with no formally assigned code — `D-trt3-municipios-sem-vara-competencia-delegada`, `D-trt21-posto-avancado-sem-codigo`).
 
-Each of the three loads is locked by a permanent regression test against the source document — the municipality-to-court distribution is re-parsed independently of the script that generated the migration before it becomes an `assert`, so a future migration change, or a migration from another region that accidentally corrupts data via a table-name mistake, gets caught instead of silently accepted.
+Each of the three loads is locked by a permanent regression test against the source document — the municipality-to-court distribution is re-parsed independently of the script that generated the migration before it becomes an `assert`, so that a future migration change, or a migration from another region that accidentally corrupts data via a table-name mistake, gets caught rather than silently accepted.
+</details>
 
-### 3 — Constitutional Timeliness Engine
+<details>
+<summary><strong>3 — Constitutional Timeliness Engine</strong></summary>
+<br>
 
-Monitors constitutional deadlines by procedural type, calculates systemic bottlenecks, and suggests accelerators by area of law. It does not put pressure on individual judges — it identifies where the system is slow and why, using aggregated and anonymous data.
+Monitors constitutional deadlines by procedural type, calculates systemic bottlenecks, and suggests accelerators by area of law. It does not pressure individual judges — it identifies where the system is slow and why, using aggregated, anonymized data.
+</details>
 
-### 4 — Internal Panel and Clerical Registry
+<details>
+<summary><strong>4 — Internal Panel and Clerical Registry</strong></summary>
+<br>
 
-Intelligent queues with semantic prioritization, similarity groupings, batch signing with mandatory verification, and SHA-256 hash per document. Every clerical act has full traceability: who did it, when, with what result, and what state the case was in.
+Intelligent queues with semantic prioritization, similarity groupings, batch signing with mandatory verification, and a SHA-256 hash per document. Every clerical act carries full traceability: who did it, when, with what result, and what state the case was in at the time.
+</details>
 
-### 5 — Area-Specific Legal Accelerators
+<details>
+<summary><strong>5 — Area-Specific Legal Accelerators</strong></summary>
+<br>
 
-Specialized flows for civil, criminal, labor, electoral, family, enforcement, Small Claims Courts (civil, federal, and public treasury), bankruptcy, and concentrated constitutionality review. Each area has a computable checklist, risk diagnosis, and suggested next act.
+Specialized workflows for civil, criminal, labor, electoral, family, enforcement, Small Claims Courts (civil, federal, and public-treasury), bankruptcy, and concentrated constitutionality review. Each area has a computable checklist, a risk diagnosis, and a suggested next act.
+</details>
 
-### 6 — Smart Tags and Conciliation
+<details>
+<summary><strong>6 — Smart Tags and Conciliation</strong></summary>
+<br>
 
-Semantic case markers for automatic prioritization by urgency, complexity, and settlement probability. The conciliation module suggests settlements based on similar precedents, with a probability score, calculated BATNA, and proposal history.
+Semantic case markers drive automatic prioritization by urgency, complexity, and settlement probability. The conciliation module suggests settlements based on similar precedents, complete with a probability score, a calculated BATNA, and a proposal history.
+</details>
 
-### 7 — Documents, Dossier, and Chain of Custody
+<details>
+<summary><strong>7 — Documents, Dossier, and Chain of Custody</strong></summary>
+<br>
 
 Each document has origin, operational state, integrity hash, and a verifiable chain of trust. The documentary dossier consolidates all artifacts of a case with complete traceability from creation to archiving.
 
-The qualified signature envelope (`QualifiedDocumentSignatureEnvelopeService`) computes `cadeiaCustodiaElegivel`, `assinaturaCompletaMaterializada`, and `rubricaDataHoraLocalPresentes` from the input certificate and the already-materialized envelope — all three were hardcoded `true`, with no real verification, until they were fixed. `classificacaoContextualCoerente` compares the signer's role against the actual institutional segment in 12 of 14 callers (`resolveSegmentoInstitucional` stopped using a tautological fallback and now recognizes police clerks via `isSegurancaPublica()`); the 2 remaining callers still fall back to the permissive `true` default for lack of institutional-capacity mapping — a registered debt (`D-classificacao-contextual-default-permissivo`), not a silent regression.
+**Qualified signature envelope** (`QualifiedDocumentSignatureEnvelopeService`):
+- Computes three checks from the input certificate and the already-materialized envelope: `cadeiaCustodiaElegivel`, `assinaturaCompletaMaterializada`, `rubricaDataHoraLocalPresentes` — all three were hardcoded `true`, with no real verification, until they were fixed.
+- `classificacaoContextualCoerente` compares the signer's role against the actual institutional segment in 12 of 14 callers (police clerks now recognized via `isSegurancaPublica()`); the 2 remaining callers still fall back to the permissive `true` default for lack of a mapping — a registered debt (`D-classificacao-contextual-default-permissivo`), not a silent regression.
 
-The document vocabulary is canonical and sealed: `TipoDocumento` (~105 values) carries a `CategoriaDocumento` (`PECA_INAUGURAL`, `PECA_RECURSAL`, `DOC_INSTRUCAO`, `DOC_QUALIFICACAO`). Built on top of that vocabulary is a document-completeness gate by procedural type/class, which will read category and type to decide protocol eligibility — replacing today's attachment-count check with typed validation. The design goal is that a missing type is an explicit rejection, never a silent pass-through.
+**Document vocabulary** — canonical and sealed:
+- `TipoDocumento` (~105 values) carries a `CategoriaDocumento` (`PECA_INAUGURAL`, `PECA_RECURSAL`, `DOC_INSTRUCAO`, `DOC_QUALIFICACAO`).
+- A document-completeness gate by procedural type/class is being built on top of this vocabulary, replacing the attachment-count check with typed validation — design goal: a missing type is an explicit rejection, never a silent pass-through.
 
-**HTTP boundary (slice 1b′ — done):** the lawyer can declare a `TipoDocumento` per attachment via `AnexoDeclarado { nomeArquivo, tipo }` in the filing multipart request. `SmartFileSplitter` validates the correlation (name ↔ declaration, bidirectionally) with an explicit 400 in four cases: missing name, duplicate names, a file without a matching declaration, and a declaration without a matching file. When declared and the correlation matches, `Attachment.tipoDocumento` is populated; declaring is optional in this slice — mandating it by procedural type is a decision for the gate (1c). The completeness gate (slice 1c) will read this field to enforce the requirement by procedural type/class — the policy decision (undeclared attachment = rejection or tolerance) belongs to the gate, not to the boundary.
+**HTTP boundary and typed channel:**
+- The lawyer declares a `TipoDocumento` per attachment via `AnexoDeclarado { nomeArquivo, tipo }` in the filing multipart request.
+- `SmartFileSplitter` validates the name ↔ declaration correlation (bidirectionally), with an explicit 400 in four cases: missing name, duplicate names, a file without a declaration, a declaration without a file.
+- Declaring is optional — mandating it by procedural type is a decision for the completeness gate, not the boundary.
+- `Attachment.tipoDocumento` propagates to the routing payload via `NationalProceduralProcessoEntityPayloadAssembler` (key `documentosTipados`), added only when at least one non-null type is present — an empty list never activates the channel for callers without a declaration.
 
-**Typed channel (slice 1d — done):** `Attachment.tipoDocumento` is propagated from `SmartFileSplitter` all the way to the routing payload via `NationalProceduralProcessoEntityPayloadAssembler` (key `documentosTipados`) and consumed by `NationalProceduralPreflightPayloadFactory.extractPresentDocuments`. Boundary 2 is protected: the key is only added to the payload when at least one non-null `tipoDocumento` is present (`!tipados.isEmpty()`), preventing an empty list from activating the typed channel for callers without a declaration. The 3 `ProcessoCommandControllerIT` classes that exercise civil filing without `AnexoDeclarado` were closed (D-d25-testes-anexo): isolated from the real routing/completeness engine, coverage that already exists in `ValidacaoDocumentoAjuizamentoIT` and `CompletudeDocumentalAjuizamentoIT`.
+**Party composition by procedural type** — filing does not force the civil mold onto every segment:
+- The system reads the catalog by procedural type and materializes the correct role: `ACUSACAO`/`ACUSADO` in criminal cases, `RECLAMANTE`/`RECLAMADA` in labor cases, `IMPETRANTE`/`IMPETRADO` in writs of mandamus, `SEGURADO` in social-security cases (the INSS does not automatically become a party), `INVESTIGADO` in military inquiries.
+- In habeas corpus, with no active/passive dichotomy, no party is created at all. Procedural types not yet covered keep a null composition until specified.
+- `PoloProcessual` records the party's procedural domicile (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`), kept separate from the routing territory (`tb_processo`).
+- All four filing channels capture this domicile: REST and Laiane via `EstruturarRequest`, with the `enderecoReuDesconhecido` flag (same pattern as PJe); the marketplace via `MarketplaceProtocoloRequest`, same precedence rule; MNI via `MniXmlToProcessoAdapter.resolvePartes`, normalizing the state to a two-letter code and discarding invalid formats, never persisting raw garbage.
+- County and municipality remain null only on the MNI channel, which has no equivalent schema element — a documented debt (`D-domicilio-parte-dois-canais-nao-populam`).
+- A single engine (`PoloCompositionPolicy` + `PoloRoleMappingTable`) materializes the party across all four channels — no divergent path ever produces a generic label where the procedural type requires a specific role.
 
-**Party composition by procedural type:** filing does not force the civil mold onto every segment. The system reads the catalog by procedural type and materializes the correct procedural role: `ACUSACAO`/`ACUSADO` in criminal cases, `RECLAMANTE`/`RECLAMADA` in labor cases, `IMPETRANTE`/`IMPETRADO` in writs of mandamus, `SEGURADO` in social-security cases (the INSS does not automatically become a party — it is an extension point for future integration), `INVESTIGADO` in military inquiries. Where the active/passive dichotomy does not legally exist — in habeas corpus, the patient is not an adversarial party — no party is created. Procedural types not covered by the catalog keep null composition until their party profiles are specified. The catalog by procedural type is the single source of truth: the same catalog that defines which documents are required also defines who the parties are. `PoloProcessual` also records the party's procedural domicile (`uf_domicilio`, `comarca_domicilio`, `municipio_domicilio`) and corporate name for legal entities, kept separate from the routing territory — which lives in `tb_processo` (`uf_autor`, `comarca_autor`, `uf_reu`, `comarca_reu`). Filing via REST and the initial-petition assistant (Laiane) already capture this information at input time: `EstruturarRequest` receives `ufAutor`/`comarcaAutor`/`ufReu`/`comarcaReu`, the draft session carries them through to `protocolar()`, and `Processo` persists them, with the `enderecoReuDesconhecido` flag following the same pattern as PJe — the defendant's address is often unknown at filing time — and overriding the informed values when set. The integrator marketplace captures the same 4 fields via `MarketplaceProtocoloRequest`, propagated by `MarketplaceSurfaceFacadeService` to the equivalent internal record in `ApiMarketplaceService`, applying the same precedence rule. The MNI channel captures the party's UF: `MniXmlToProcessoAdapter.resolvePartes` reads the `<estado>` element from the first `<endereco>` of each `<pessoa>` in the XML (the MNI 2.2.2 XSD defines `estado` as a free-text element, with no format restriction), normalizes it to a 2-letter uppercase code, and discards anything outside that format — never persisting raw garbage, never throwing on a missing address. County-equivalent (`comarca`) and municipality remain null on this channel: MNI has no comarca-equivalent element, and the only `codigoMunicipioIBGE` in the standard belongs to `tipoOrgaoJulgador` (the adjudicating court), not to a party's address — confirmed by an exhaustive search of the schema documentation, so as not to assume data the standard does not actually carry. Debt `D-domicilio-parte-dois-canais-nao-populam` documents these residual comarca/municipality gaps in MNI and Marketplace; none of the four channels leaves party domicile entirely null anymore. The engine (`PoloCompositionPolicy` + `PoloRoleMappingTable`) is the single funnel for party materialization — filing via REST, the initial-petition assistant (Laiane), MNI import, and the integrator marketplace all converge on the same mechanism (for Laiane and the marketplace, materialized inside `AjuizamentoService.ajuizar()`; MNI materializes via an equivalent dedicated method in `MniRecepcaoService`, so no caller needs to remember to invoke the engine), with no divergent path producing a generic label (`AUTOR`/`REU`) where the procedural type requires a specific role.
+**Marketplace document completeness:**
+- Of the three channels that create a case, only the marketplace did not check for required documents — it called `AjuizamentoService.ajuizar()` directly, bypassing the `CompletudeDocumentalPolicyService` that REST already used.
+- When the check flags a pending item, the case is still created normally (system-to-system integration never blocks), but `connectorSubmissionStatus` records `PENDENTE_DOCUMENTACAO` and the response exposes `documentacaoCompleta`/`documentosFaltantes`.
+- The hardcoded `COMUM_ORDINARIO` procedural type this channel carried was fixed alongside it, with `ProceduralCatalogSupport.tryResolveRito()` reading the payload. Full detail: `docs/quality/DEBT_LOG.md` (`D-marketplace-sem-completude-documental`).
+</details>
 
-### 8 — Filing, Correction, and Metadata Quality
+<details>
+<summary><strong>8 — Filing, Correction, and Metadata Quality</strong></summary>
+<br>
 
-Governed correction with legal diff — every change goes through policy, impact assessment, and explicit approval. The metadata quality score detects missing classes, parties without documents, and incompatible procedural types before the case advances.
+Governed correction with a legal diff — every change goes through policy review, impact assessment, and explicit approval. The metadata-quality score detects missing classes, parties without documents, and incompatible procedural types before the case is allowed to advance.
+</details>
 
-### 9 — Import and Normalization of External Cases
+<details>
+<summary><strong>9 — Import and Normalization of External Cases</strong></summary>
+<br>
 
-Ingests cases from PJe, e-SAJ, eProc, Projudi, Creta, MNI, and PDPJ. Each external system has a specific normalizer that standardizes NPU, CNJ procedural class, and type before persisting. Import conflicts are recorded with auditable diffs.
+Ingests cases from PJe, e-SAJ, eProc, Projudi, Creta, MNI, and PDPJ. Each external system has its own normalizer that standardizes the NPU, the CNJ procedural class, and the procedural type before persisting. Import conflicts are recorded with an auditable diff.
 
-The MNI adapter (`intercomunicacao-2.2.2`, the `polo`/`parte`/`pessoa` attributes from the CNJ's official schema) materializes the plaintiff and defendant of the imported case, including the party record, through the same procedural-type composition engine used for direct filing — a case imported via MNI is no longer left without identified parties.
+The MNI adapter (`intercomunicacao-2.2.2`, using the `polo`/`parte`/`pessoa` attributes from the CNJ's official schema) materializes the plaintiff and defendant of the imported case, including the full party record, through the same procedural-type composition engine used for direct filing — a case imported via MNI is no longer left without identified parties.
+</details>
 
-### 10 — Court Orders, Certificates, and Resilient Communication
+<details>
+<summary><strong>10 — Court Orders, Certificates, and Resilient Communication</strong></summary>
+<br>
 
-Complete management of court orders with return diagnosis and urgent prioritization. Automatic certificates with pending checklists and batch issuance. Electronic judicial domicile with exponential retry, failure dashboard, and auditable fallback.
+Complete court-order management with return diagnostics and urgent-case prioritization. Automatic certificates with pending-item checklists and batch issuance. Electronic judicial domicile with exponential retry, a failure dashboard, and an auditable fallback path.
+</details>
 
-### 11 — GIGS, Notes, Reminders, and Pending Items
+<details>
+<summary><strong>11 — GIGS, Notes, Reminders, and Pending Items</strong></summary>
+<br>
 
-Procedural activities (GIGS) with governed execution, visibility controlled by confidentiality and role, jurisdictional act control, and automatic draft reminders. Notes and reminders with visibility policy by role, assignment, and expiration deadline.
+Procedural activities (GIGS) with governed execution, visibility controlled by confidentiality level and role, jurisdictional-act control, and automatic reminders for pending drafts. Notes and reminders follow a visibility policy based on role, assignment, and expiration deadline.
+</details>
 
-### 12 — Auditable Legal AI
+<details>
+<summary><strong>12 — Auditable Legal AI</strong></summary>
+<br>
 
 AI operates as a support layer — it never replaces human decision-making. Every interaction passes through a pre-conscious framework that evaluates the area of law, doctrinal tradition, procedural risk, evidence provenance, and confidentiality classification before formulating any response.
 
@@ -544,23 +699,35 @@ AI operates as a support layer — it never replaces human decision-making. Ever
 
 **Process Completeness Gate:** verifies that the document package is complete before allowing the case to advance to the next phase. Validation has two layers: structural (configurable checklists per procedural type, with typed pending items and resolution deadlines) and semantic (OCR + VectorSearch detects the actual presence of required content in already-attached documents, not just the existence of the file). Pending items are notified via outbox with a traceable resolution cycle. The case does not advance while there is a completeness gap — and the clerk can override with a minimum auditable justification.
 
-**Judicial decision advisory:** `advisoryMode` always returns `ADVISORY_DRAFT_ONLY` — Laiane produces only an assisted draft, it never decides. `reviewRequired` and `publicationLocked` are always `true`: every consultation requires full human review before publication, with no exception per template or case. This is not conditional behavior, it is a deliberate security policy — the three advisory modes (`SUGESTIVO`, `RESTRITIVO`, `BLOQUEADOR`) documented in an earlier version of the API were never actually implemented, and differentiating advisory levels remains an open product decision (`D-advisory-modos-nao-implementados`), not a pending bug fix.
+**Judicial decision advisory:** `advisoryMode` always returns `ADVISORY_DRAFT_ONLY` — Laiane produces only an assisted draft; it never renders a decision. `reviewRequired` and `publicationLocked` are always `true`: every consultation requires full human review before publication, with no exception carved out for any template or case. This is not conditional behavior — it is a deliberate security policy. The three advisory modes documented in an earlier version of the API (`SUGESTIVO`, `RESTRITIVO`, `BLOQUEADOR`) were never actually implemented, and differentiating advisory levels remains an open product decision (`D-advisory-modos-nao-implementados`), not a pending bug fix.
+</details>
 
-### 13 — Reports and Analytics Without Punitive Rankings
+<details>
+<summary><strong>13 — Reports and Analytics Without Punitive Rankings</strong></summary>
+<br>
 
-Bottleneck reports, average time per procedural type, rework rate, and conciliation rate. Justice in Numbers export for the CNJ. No report identifies a judge by individual performance — data serves systemic improvement, not pressure on people.
+Bottleneck reports, average time per procedural type, rework rate, and conciliation rate, plus a *Justiça em Números* ("Justice in Numbers") export for the CNJ. No report identifies a judge by individual performance — the data exists to drive systemic improvement, never to pressure people.
+</details>
 
-### 14 — PDPJ/MNI/API Integration Envelope
+<details>
+<summary><strong>14 — PDPJ/MNI/API Integration Envelope</strong></summary>
+<br>
 
-Canonical `PjbIntegrationEventEnvelope` with UUID, payload hash, routing key, and semantic versioning. Mapping of judicial events to canonical route `judicial.{system}.{type}.{procedural_type}`. Supports event emission and consumption with at-least-once guarantee via outbox.
+A canonical `PjbIntegrationEventEnvelope` carrying a UUID, payload hash, routing key, and semantic version. Judicial events map to the canonical route `judicial.{system}.{type}.{procedural_type}`. Supports event emission and consumption with an at-least-once guarantee via the outbox pattern.
+</details>
 
-### 15 — Criminal Module and Police Investigation
+<details>
+<summary><strong>15 — Criminal Module and Police Investigation</strong></summary>
+<br>
 
-The precinct is modeled as a first-line institutional unit, with assignments, territorial competence, and shift schedule — not as a generic role, but as an entity with its own identity and hierarchy within the criminal bounded context.
+The police precinct is modeled as a first-line institutional unit, with its own assignments, territorial competence, and shift schedule — not as a generic role, but as an entity with its own identity and hierarchy within the criminal bounded context.
 
-Occurrence reports produce traceable investigations. Each report has classification, involved parties, document chain of custody, and automatic link to the criminal case upon formal filing. The investigation follows the case from the police phase through the judicial phase without any break in traceability.
+Incident reports produce traceable investigations. Each report carries a classification, the parties involved, a document chain of custody, and an automatic link to the criminal case once formal charges are filed. The investigation follows the case from the police phase all the way through the judicial phase without any break in traceability.
 
-Police scope is resolved by assignment, not by role. What a police chief sees and moves is determined by the precinct where they are assigned. The DelegadoPainel materializes exactly that restricted view — without exposing data from another unit. The `WorkItemScopeGuard` applies this restriction as a P0 control: any access to a work item outside the assignment scope is blocked at the central guard, and ArchUnit ensures at build time that no code path can bypass it.
+Police-side scope is resolved by assignment, not by role. What a given officer sees and can act on is determined by the precinct they are assigned to. `DelegadoPainel` materializes exactly that restricted view, with no data exposure from any other unit. `WorkItemScopeGuard` enforces this restriction as a P0 control: any access to a work item outside the officer's assignment scope is blocked at the central guard, and ArchUnit verifies at build time that no code path can bypass it.
+</details>
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -580,6 +747,8 @@ Ten services that cover gaps no Brazilian judicial system currently addresses sy
 | 8 | `DomicilioJudicialResilienceService` | Exponential retry with backoff, persistent failure dashboard, and graceful fallback for electronic communication |
 | 9 | `ArquivamentoPendenciaChecker` | Safety checklist for archiving: court fees, orders, deadlines, and documents — never archives automatically |
 | 10 | `ProcessMiningMaterializedViewService` | Materialized tables updated in Virtual Threads — bottleneck by act, phase, procedural type, and asynchronous refresh integration |
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -607,6 +776,8 @@ The `RitoProcessual` catalog is sealed. All procedural types below are first-cla
 
 **Specialized:** bankruptcy, judicial reorganization, precatory, military, extrajudicial, arbitration with court confirmation
 
+[⬆ Back to top](#quick-navigation)
+
 ---
 
 ## Security & Compliance
@@ -633,6 +804,8 @@ The security model is driven by identity, role, assignment, organization, unit, 
 | **LGPD** | Confidential data never sent to external services; auditable redact by version |
 | **Dual Approval** | Critical operations require confirmation from a second authorized actor |
 
+[⬆ Back to top](#quick-navigation)
+
 ---
 
 ## Concurrency and Async Execution
@@ -644,6 +817,8 @@ Confidential context is propagated via Scoped Values with bind/restore at every 
 Bounded concurrency via `PjbBoundedExecutorService` prevents connection pool explosion under peak loads. Structured Concurrency manages operations that depend on multiple procedural types in parallel — a child failure cancels the rest, without resource leaks.
 
 Zero loose `CompletableFuture` in production code. ADR-0051 defines the unified execution model and is enforced by a Python guard and ArchUnit on every build.
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -661,6 +836,8 @@ All 8 Kafka topics are declared explicitly via `NewTopic` beans in `PjbKafkaTopi
 
 Sensitive personal data — CPF and CNPJ — have been removed from every layer where they are not needed: ICP-Brasil API metadata responses, certificate cache, signature events, and ICP chain audit ledger entries. Where the identifier is needed for correlation, it is stored as a hashed reference, never in clear text.
 
+[⬆ Back to top](#quick-navigation)
+
 ---
 
 ## Database
@@ -675,14 +852,16 @@ CREATE POLICY processo_sigilo ON processo
     USING (sigilo = false OR current_setting('app.papel') IN ('JUIZ', 'PROMOTOR'));
 ```
 
+[⬆ Back to top](#quick-navigation)
+
 ---
 
 ## Code Quality
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **4,138 · 0 failures · 0 errors** |
-| Integration tests (Failsafe) | **230 · 0 known failures** (from 49 → 14 → 10 → 0; D-routing-preprotocolo and the 9 remaining pre-existing failures closed; +10 polo-composition-engine green; +24 from the territorial competence slice — CE, MG and RN — green since creation — see note¹ in the Tests section about 10 tests confirmed outside this count) |
+| Unit tests (Surefire) | **4,274 · 0 failures · 0 errors** |
+| Integration tests (Failsafe) | **230 · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
 | Python Guards | 7 scripts active in CI |
@@ -734,6 +913,8 @@ python scripts\config_taxonomy_guard.py
 | `anti_mock_prod_guard` | Blocks if critical integration mocks are active in production: Gov.br, ICP-Brasil, Kafka, Elasticsearch, AI |
 | `openapi_weakness_detector` | Detects `Map<String,Object>` without typed schema, fields without `format: date-time`, routes without registered OpenAPI contract |
 
+[⬆ Back to top](#quick-navigation)
+
 ---
 
 ## Observability
@@ -748,6 +929,8 @@ GET /actuator/metrics
 ```
 
 Exposes a live read of the structural state: core hotspots, internal core extraction trails, extraction blueprints, end-to-end critical flows, and coverage ratio per bounded context. The in-memory snapshot has a short TTL; use `refresh=true` to force a rescan without restarting the application.
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -813,6 +996,8 @@ Optional body explaining the "why", not the "what".
 
 Compile + Python guards green + suite without regression + public contracts preserved.
 
+[⬆ Back to top](#quick-navigation)
+
 ---
 
 ## Safe Git Sync
@@ -822,6 +1007,8 @@ Compile + Python guards green + suite without regression + public contracts pres
 ```
 
 The local barrier inspects the diff before any commit and blocks API keys, passwords, JWT tokens, certificates, and any known secret pattern. Details in `docs/security/GIT_SAFE_SYNC.md`.
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -834,15 +1021,26 @@ docs/product/NATIONAL_JUDICIAL_SYSTEM_REPLACEMENT_MATRIX.md
 docs/product/NATIONAL_JUDICIAL_SYSTEM_REPLACEMENT_INDEX.json
 ```
 
+[⬆ Back to top](#quick-navigation)
+
 ---
 
 ## Author
 
-**Tiago Rabelo**
-Software Engineering — Universidade Católica de Quixadá (Unicatólica), Brazil
-Final Undergraduate Thesis (TCC) — 2024/2025
+<div align="center">
 
-🔗 [github.com/tiagorabelo0403](https://github.com/tiagorabelo0403)
+![Unicatólica](https://img.shields.io/badge/Unicat%C3%B3lica-Centro%20Universit%C3%A1rio%20Cat%C3%B3lica%20de%20Quixad%C3%A1-8B0000?style=flat-square)
+
+### Tiago Rabelo Saboia
+
+Law — Centro Universitário Católica de Quixadá (Unicatólica), Brazil
+Final Undergraduate Thesis (TCC) — 2026
+
+📧 [Tiagorabelo.offc@gmail.com](mailto:Tiagorabelo.offc@gmail.com) · 🔗 [github.com/tiagorabelo0403](https://github.com/tiagorabelo0403) · 🎓 [unicatolicaquixada.edu.br](https://unicatolicaquixada.edu.br/)
+
+</div>
+
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -851,7 +1049,7 @@ Final Undergraduate Thesis (TCC) — 2024/2025
 This project is licensed under the [MIT License](./LICENSE).
 
 ```
-MIT License — Copyright (c) 2025 Tiago Rabelo
+MIT License — Copyright (c) 2025 Tiago Rabelo Saboia
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -864,35 +1062,7 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 ```
 
----
-
-## Glossary
-
-| Term | Meaning |
-|------|---------|
-| **NPU** | Unique Process Number — CNJ standardized identifier (e.g., 0000001-00.2024.8.26.0001) |
-| **Rito** | Mandatory procedural flow defined by law (ordinary, abbreviated, small claims, etc.) |
-| **Autuação** | Act of formally registering the case in the system, with class, subject, and parties |
-| **Distribuição** | Assignment of the case to a competent court or judge |
-| **Movimentação** | Any act performed on the case (ruling, decision, judgment, certificate) |
-| **GIGS** | Activity Group — a set of procedural tasks with a deadline and responsible party |
-| **Sobrestamento** | Temporary suspension of the case awaiting a paradigm ruling |
-| **BATNA** | Best Alternative to a Negotiated Agreement |
-| **ABAC** | Attribute-Based Access Control |
-| **RLS** | Row Level Security — security policy applied at the database level |
-| **ADR** | Architecture Decision Record — formal record of an architectural decision |
-| **ICP-Brasil** | Brazilian Public Key Infrastructure — digital signature standard |
-| **Gov.br** | Federal authentication system with bronze, silver, and gold trust levels |
-| **PDPJ** | Digital Platform of the Judiciary — national integration bus |
-| **MNI** | National Interoperability Model — exchange protocol between judicial systems |
-| **CNJ** | National Council of Justice — regulatory body that defines classes, subjects, and tables |
-| **JEC** | Civil Small Claims Court |
-| **JEF** | Federal Small Claims Court |
-| **JEFP** | Public Treasury Small Claims Court |
-| **BO** | Boletim de Ocorrência — Police Occurrence Report |
-| **SBOM** | Software Bill of Materials — auditable dependency inventory |
-| **CPF** | Brazilian individual taxpayer identification number |
-| **CNPJ** | Brazilian corporate taxpayer identification number |
+[⬆ Back to top](#quick-navigation)
 
 ---
 
@@ -900,7 +1070,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 4,138 unit tests plus 230 integration tests, and 269 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 4,274 unit tests plus 230 integration tests, and 269 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

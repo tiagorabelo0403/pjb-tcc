@@ -1,0 +1,115 @@
+<svg viewBox="0 0 1280 780" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Tela de acesso do PJB — cada perfil entra por um portal e um método de autenticação próprios</title>
+  <desc id="desc">Mockup da tela de login do PJB mostrando os dez grupos arquiteturais de usuário, cada um com seu método de autenticação real: cidadão via Gov.br, advocacia via certificado ICP-Brasil ou passkey, magistratura com step-up facial, e assim por diante.</desc>
+
+  <defs>
+    <filter id="sombra4" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect x="20" y="20" width="1240" height="740" rx="14" fill="#12172a" stroke="#2a3350" stroke-width="1" filter="url(#sombra4)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/>
+  <circle cx="66" cy="48" r="6" fill="#e0b84f"/>
+  <circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">⚖️ PJB — Escolha como entrar</text>
+
+  <text x="50" y="106" font-size="13" fill="#a9b3cc">Não existe "porta única": cada perfil autentica por um método próprio, adequado ao seu papel.</text>
+
+  <!-- grid de 10 cartoes -->
+  <g font-size="12">
+    <!-- linha 1 -->
+    <rect x="50" y="126" width="228" height="140" rx="12" fill="#b3811a"/>
+    <text x="70" y="152" font-size="20" fill="#ffffff">👤</text>
+    <text x="70" y="176" font-weight="700" fill="#ffffff">Cidadão</text>
+    <text x="70" y="198" font-size="10.5" fill="#f8e6c4">Parte, sem advogado</text>
+    <line x1="70" y1="208" x2="258" y2="208" stroke="#00000033"/>
+    <text x="70" y="228" font-size="10.5" font-weight="600" fill="#ffffff">🔑 Gov.br</text>
+    <text x="70" y="246" font-size="9.5" fill="#f8e6c4">nível bronze, prata ou ouro</text>
+
+    <rect x="290" y="126" width="228" height="140" rx="12" fill="#b3811a"/>
+    <text x="310" y="152" font-size="20" fill="#ffffff">⚖️</text>
+    <text x="310" y="176" font-weight="700" fill="#ffffff">Advocacia</text>
+    <text x="310" y="198" font-size="10.5" fill="#f8e6c4">Advogado(a), OAB</text>
+    <line x1="310" y1="208" x2="498" y2="208" stroke="#00000033"/>
+    <text x="310" y="228" font-size="10.5" font-weight="600" fill="#ffffff">🔑 Certificado ICP-Brasil</text>
+    <text x="310" y="246" font-size="9.5" fill="#f8e6c4">ou Passkey / WebAuthn</text>
+
+    <rect x="530" y="126" width="228" height="140" rx="12" fill="#2c3e67"/>
+    <text x="550" y="152" font-size="20" fill="#ffffff">👨‍⚖️</text>
+    <text x="550" y="176" font-weight="700" fill="#ffffff">Magistratura</text>
+    <text x="550" y="198" font-size="10.5" fill="#c9d3ea">Juiz, desembargador, ministro</text>
+    <line x1="550" y1="208" x2="738" y2="208" stroke="#ffffff22"/>
+    <text x="550" y="228" font-size="10.5" font-weight="600" fill="#ffffff">🔑 Login + step-up facial</text>
+    <text x="550" y="246" font-size="9.5" fill="#c9d3ea">exigido para sentenciar/homologar</text>
+
+    <rect x="770" y="126" width="228" height="140" rx="12" fill="#2c3e67"/>
+    <text x="790" y="152" font-size="20" fill="#ffffff">📋</text>
+    <text x="790" y="176" font-weight="700" fill="#ffffff">Assessoria</text>
+    <text x="790" y="198" font-size="10.5" fill="#c9d3ea">Assessor de gabinete</text>
+    <line x1="790" y1="208" x2="978" y2="208" stroke="#ffffff22"/>
+    <text x="790" y="228" font-size="10.5" font-weight="600" fill="#ffffff">🔑 Login institucional</text>
+    <text x="790" y="246" font-size="9.5" fill="#c9d3ea">sem o step-up do titular</text>
+
+    <rect x="1010" y="126" width="180" height="140" rx="12" fill="#555a63"/>
+    <text x="1030" y="152" font-size="20" fill="#ffffff">🔧</text>
+    <text x="1030" y="176" font-weight="700" fill="#ffffff">Administrador</text>
+    <text x="1030" y="198" font-size="10.5" fill="#d8dade">Config. do sistema</text>
+    <line x1="1030" y1="208" x2="1170" y2="208" stroke="#ffffff22"/>
+    <text x="1030" y="228" font-size="10.5" font-weight="600" fill="#ffffff">🔑 Login + privilégio</text>
+    <text x="1030" y="246" font-size="9.5" fill="#d8dade">elevado</text>
+
+    <!-- linha 2 -->
+    <rect x="50" y="280" width="228" height="140" rx="12" fill="#7a2e3d"/>
+    <text x="70" y="306" font-size="20" fill="#ffffff">⚖️</text>
+    <text x="70" y="330" font-weight="700" fill="#ffffff">Ministério Público</text>
+    <text x="70" y="352" font-size="10.5" fill="#f0d5da">Promotor, Procurador-Geral</text>
+    <line x1="70" y1="362" x2="258" y2="362" stroke="#ffffff22"/>
+    <text x="70" y="382" font-size="10.5" font-weight="600" fill="#ffffff">🔑 Login institucional</text>
+    <text x="70" y="400" font-size="9.5" fill="#f0d5da">mesma base do Judiciário</text>
+
+    <rect x="290" y="280" width="228" height="140" rx="12" fill="#7a2e3d"/>
+    <text x="310" y="306" font-size="20" fill="#ffffff">🤝</text>
+    <text x="310" y="330" font-weight="700" fill="#ffffff">Defensoria Pública</text>
+    <text x="310" y="352" font-size="10.5" fill="#f0d5da">Defensor público</text>
+    <line x1="310" y1="362" x2="498" y2="362" stroke="#ffffff22"/>
+    <text x="310" y="382" font-size="10.5" font-weight="600" fill="#ffffff">🔑 Login institucional</text>
+
+    <rect x="530" y="280" width="228" height="140" rx="12" fill="#7a2e3d"/>
+    <text x="550" y="306" font-size="20" fill="#ffffff">🏢</text>
+    <text x="550" y="330" font-weight="700" fill="#ffffff">Procuradoria</text>
+    <text x="550" y="352" font-size="10.5" fill="#f0d5da">PGM, PGE, AGU</text>
+    <line x1="550" y1="362" x2="738" y2="362" stroke="#ffffff22"/>
+    <text x="550" y="382" font-size="10.5" font-weight="600" fill="#ffffff">🔑 Login institucional</text>
+
+    <rect x="770" y="280" width="228" height="140" rx="12" fill="#2f5d62"/>
+    <text x="790" y="306" font-size="20" fill="#ffffff">🔬</text>
+    <text x="790" y="330" font-weight="700" fill="#ffffff">Auxiliar da Justiça</text>
+    <text x="790" y="352" font-size="10.5" fill="#cfe6e5">Perito, oficial de justiça</text>
+    <line x1="790" y1="362" x2="978" y2="362" stroke="#ffffff22"/>
+    <text x="790" y="382" font-size="10.5" font-weight="600" fill="#ffffff">🔑 Credencial própria</text>
+    <text x="790" y="400" font-size="9.5" fill="#cfe6e5">controlador dedicado</text>
+
+    <rect x="1010" y="280" width="180" height="140" rx="12" fill="#2f5d62"/>
+    <text x="1030" y="306" font-size="20" fill="#ffffff">🚓</text>
+    <text x="1030" y="330" font-weight="700" fill="#ffffff">Segurança Pública</text>
+    <text x="1030" y="352" font-size="10.5" fill="#cfe6e5">Delegado, agente</text>
+    <line x1="1030" y1="362" x2="1170" y2="362" stroke="#ffffff22"/>
+    <text x="1030" y="382" font-size="10.5" font-weight="600" fill="#ffffff">🔑 Login + escopo</text>
+    <text x="1030" y="400" font-size="9.5" fill="#cfe6e5">restrito à delegacia</text>
+  </g>
+
+  <!-- rodape -->
+  <g>
+    <rect x="50" y="440" width="1140" height="130" rx="14" fill="#161c30"/>
+    <text x="76" y="470" font-size="13" font-weight="700" fill="#ffffff">🔐 Dois detalhes de segurança que valem destaque</text>
+    <text x="76" y="496" font-size="12" fill="#dfe4ee">O login por certificado ICP-Brasil roda um desafio-resposta completo: o servidor emite um nonce criptográfico, o</text>
+    <text x="76" y="514" font-size="12" fill="#dfe4ee">certificado do usuário assina, a cadeia de confiança é validada — nunca é só escolher um certificado num menu.</text>
+    <text x="76" y="540" font-size="12" fill="#dfe4ee">O step-up por reconhecimento facial do magistrado só é exigido para atos de maior peso (sentenciar, homologar);</text>
+    <text x="76" y="558" font-size="12" fill="#dfe4ee">nas ações do dia a dia, o login institucional padrão já é suficiente.</text>
+  </g>
+
+  <text x="50" y="600" font-size="11" fill="#5d6785">O sistema reconhece mais de 50 papéis distintos (TipoUsuario), agrupados nestas 10 categorias arquiteturais reais.</text>
+</svg>

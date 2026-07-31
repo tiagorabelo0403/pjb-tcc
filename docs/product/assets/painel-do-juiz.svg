@@ -1,0 +1,113 @@
+<svg viewBox="0 0 1280 780" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Painel do juiz no PJB — pauta com urgência explicada e atos judiciais disponíveis</title>
+  <desc id="desc">Mockup de interface mostrando o painel de um juiz após processos serem ajuizados: pauta da vara ordenada por urgência com motivo explícito, e o workspace de atos judiciais que mostra quais atos estão habilitados para o processo selecionado, com o motivo de cada habilitação ou bloqueio.</desc>
+
+  <defs>
+    <filter id="sombra" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- janela da aplicacao -->
+  <rect x="20" y="20" width="1240" height="740" rx="14" fill="#12172a" stroke="#2a3350" stroke-width="1" filter="url(#sombra)"/>
+
+  <!-- barra superior -->
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/>
+  <circle cx="66" cy="48" r="6" fill="#e0b84f"/>
+  <circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">⚖️ PJB — Painel do Magistrado</text>
+  <text x="1195" y="53" text-anchor="end" font-size="12.5" fill="#c9d3ea">Dra. Ana Ferreira · Juíza Federal</text>
+
+  <!-- barra lateral -->
+  <rect x="20" y="76" width="210" height="684" fill="#0d1120"/>
+  <g font-size="12.5">
+    <rect x="20" y="96" width="210" height="42" fill="#1f2a48"/>
+    <text x="46" y="122" fill="#ffffff" font-weight="600">📋 Pauta da vara</text>
+
+    <text x="46" y="164" fill="#a9b3cc">📁 Atos judiciais</text>
+    <text x="46" y="200" fill="#a9b3cc">🔎 Radar de jurisprudência</text>
+    <text x="46" y="236" fill="#a9b3cc">📅 Agenda e audiências</text>
+    <text x="46" y="272" fill="#a9b3cc">🧑‍🤝‍🧑 Delegação (assessoria)</text>
+    <text x="46" y="308" fill="#a9b3cc">📊 Painel de urgência</text>
+  </g>
+
+  <!-- conteudo principal: pauta -->
+  <text x="250" y="112" font-size="15" font-weight="700" fill="#ffffff">Pauta da vara — ordenada por urgência, não por ordem de chegada</text>
+
+  <g font-size="11.5">
+    <!-- cabecalho da tabela -->
+    <text x="250" y="140" fill="#7d879e">Nº do processo</text>
+    <text x="430" y="140" fill="#7d879e">Classe / Assunto</text>
+    <text x="660" y="140" fill="#7d879e">Fase</text>
+    <text x="760" y="140" fill="#7d879e">Última movimentação</text>
+    <text x="960" y="140" fill="#7d879e">Urgência (motivo)</text>
+    <line x1="250" y1="150" x2="1230" y2="150" stroke="#2a3350" stroke-width="1"/>
+
+    <!-- linha 1: alta urgencia -->
+    <rect x="250" y="158" width="980" height="46" rx="8" fill="#3a1f28"/>
+    <text x="266" y="186" fill="#ffffff">0008101-11.2026.8.06.0001</text>
+    <text x="430" y="186" fill="#dfe4ee">Tutela de urgência — saúde (leito de UTI)</text>
+    <text x="660" y="186" fill="#dfe4ee">Concluso</text>
+    <text x="760" y="186" fill="#a9b3cc">há 3 horas</text>
+    <text x="960" y="181" fill="#f4a3a3" font-weight="700">96 — risco à vida</text>
+    <text x="960" y="196" fill="#a9b3cc" font-size="10">prazo decorrido, sem manifestação</text>
+
+    <!-- linha 2: media urgencia -->
+    <rect x="250" y="210" width="980" height="46" rx="8" fill="#171d34"/>
+    <text x="266" y="238" fill="#ffffff">0008102-22.2026.8.06.0001</text>
+    <text x="430" y="238" fill="#dfe4ee">Medida protetiva — Lei Maria da Penha</text>
+    <text x="660" y="238" fill="#dfe4ee">Concluso</text>
+    <text x="760" y="238" fill="#a9b3cc">há 9 horas</text>
+    <text x="960" y="233" fill="#f4c542" font-weight="700">78 — matéria urgente</text>
+    <text x="960" y="248" fill="#a9b3cc" font-size="10">rito exige decisão em 48h</text>
+
+    <!-- linha 3: normal -->
+    <rect x="250" y="262" width="980" height="46" rx="8" fill="#171d34"/>
+    <text x="266" y="290" fill="#ffffff">0008050-05.2026.8.06.0001</text>
+    <text x="430" y="290" fill="#dfe4ee">Procedimento comum — indenização</text>
+    <text x="660" y="290" fill="#dfe4ee">Aguardando despacho</text>
+    <text x="760" y="290" fill="#a9b3cc">há 2 dias</text>
+    <text x="960" y="285" fill="#7fd1a0" font-weight="700">34 — fluxo normal</text>
+    <text x="960" y="300" fill="#a9b3cc" font-size="10">dentro do prazo regular</text>
+  </g>
+
+  <!-- workspace de atos disponiveis -->
+  <text x="250" y="345" font-size="14" font-weight="700" fill="#ffffff">Atos disponíveis — processo 0008101-11.2026.8.06.0001 selecionado</text>
+
+  <g font-size="12">
+    <rect x="250" y="362" width="300" height="110" rx="12" fill="#16321f"/>
+    <text x="270" y="388" font-weight="700" fill="#ffffff">✅ Tutela de urgência</text>
+    <text x="270" y="408" fill="#bfe8cc" font-size="11">Habilitado</text>
+    <text x="270" y="428" fill="#a9b3cc" font-size="10.5">Minuta assistida disponível —</text>
+    <text x="270" y="444" fill="#a9b3cc" font-size="10.5">sinal de urgência de saúde confirmado</text>
+    <text x="270" y="460" fill="#a9b3cc" font-size="10.5">pelo laudo anexado</text>
+
+    <rect x="570" y="362" width="300" height="110" rx="12" fill="#3a1f28"/>
+    <text x="590" y="388" font-weight="700" fill="#ffffff">🚫 Homologação de acordo</text>
+    <text x="590" y="408" fill="#f4a3a3" font-size="11">Bloqueado</text>
+    <text x="590" y="428" fill="#a9b3cc" font-size="10.5">Não há proposta de acordo</text>
+    <text x="590" y="444" fill="#a9b3cc" font-size="10.5">registrada neste processo —</text>
+    <text x="590" y="460" fill="#a9b3cc" font-size="10.5">ato não se aplica ainda</text>
+
+    <rect x="890" y="362" width="300" height="110" rx="12" fill="#171d34"/>
+    <text x="910" y="388" font-weight="700" fill="#ffffff">📝 Despacho genérico</text>
+    <text x="910" y="408" fill="#c9d3ea" font-size="11">Sempre habilitado</text>
+    <text x="910" y="428" fill="#a9b3cc" font-size="10.5">Disponível em qualquer fase —</text>
+    <text x="910" y="444" fill="#a9b3cc" font-size="10.5">não depende de sinal específico</text>
+    <text x="910" y="460" fill="#a9b3cc" font-size="10.5">do processo</text>
+  </g>
+
+  <text x="250" y="510" font-size="11.5" fill="#5d6785">Cada ato mostra o motivo de estar liberado ou bloqueado — nunca um botão cinza sem explicação. Dados fictícios, apenas para ilustrar a interface.</text>
+
+  <!-- radar de jurisprudencia lateral -->
+  <g>
+    <rect x="250" y="540" width="940" height="150" rx="12" fill="#161c30"/>
+    <text x="270" y="568" font-size="13" font-weight="700" fill="#ffffff">🔎 Radar de jurisprudência — aplicado ao processo em análise</text>
+    <text x="270" y="596" font-size="11.5" fill="#dfe4ee">3 precedentes do próprio tribunal sobre tutela de urgência em saúde, ordenados por proximidade fática</text>
+    <text x="270" y="618" font-size="11.5" fill="#dfe4ee">1 tema de recurso repetitivo do STJ potencialmente vinculante para este tipo de pedido</text>
+    <text x="270" y="640" font-size="11.5" fill="#dfe4ee">Alerta: prazo regimental para decisão em tutela de urgência já em curso</text>
+    <text x="270" y="668" font-size="10.5" fill="#5d6785">O radar sugere, nunca decide — a leitura e a decisão continuam sendo do magistrado.</text>
+  </g>
+</svg>
