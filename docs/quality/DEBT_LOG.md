@@ -1049,3 +1049,33 @@ Revisitar em fatia própria: cobertura completa (sucesso, validação, autoriza�
 
 `PjbFrontendDeliveryApplicationService.parseRoutes` escaneia `@PostMapping`/`@GetMapping` via regex e não lê headers HTTP de depreciação — os 4 endpoints recursais legados aparecem no catálogo `/api/v1/frontend/delivery/routes` com o mesmo peso da rota unificada nova, achado ao investigar consumidores antes da Fatia 3.
 Revisitar se o catálogo vier a ser consumido por um frontend real: cruzar rota com `RecursalLegacyDeprecationHeaders` ou marcador equivalente antes de expor como pronta para uso.
+
+## D-tribunal-rule-engine-wiring-manual-de-colaborador
+
+`TribunalRuleEngine` constrói `TribunalRuleResolutionSupport` e `TribunalRulePackSynchronizationSupport` com `new` no próprio construtor em vez de injetá-los via Spring — oposto ao padrão de constructor injection do resto do projeto. Achado ao confirmar que `SalarioMinimoNacionalService` não era dependência morta ali (é repassada pra materializar `resolutionSupport`, que a usa de fato); não corrigido por estar fora do escopo da fatia de observabilidade de `D-scheduler-salario-minimo-nunca-ativado`.
+Revisitar em fatia própria: avaliar se os dois colaboradores deveriam virar `@Component` injetados via construtor, mapeando todo consumidor de `TribunalRuleEngine` antes.
+
+## D-auditoria-salario-minimo-sem-garantia-de-persistencia
+
+`AuditLedgerService.persistSafely` envolve `auditLedgerRepository.save(entry)` num `try/catch` que loga e nunca propaga nem tenta de novo — comportamento pré-existente da classe, exposto de novo pela auditoria da escrita manual de salário mínimo (`IntelligenceOperationalSurfaceFacadeService.salvarSalarioMinimo`). `payload_hash=null` passado ao `appendSafely` não chega nulo ao banco: `safePayloadHash()` sintetiza um SHA-256 a partir de `eventCode`/`resourceType`/`resourceId`/`description`/timestamp antes de persistir — confirmado por IT real contra Postgres (`AuditLedgerServicePayloadHashNuloIT`, que originalmente esperava `null` e falhou, expondo esse comportamento). Não é a causa de falha silenciosa aqui, mas qualquer outra falha de persistência (banco fora, pool esgotado) ainda passaria despercebida, sem alerta associado ao `log.warn`.
+Revisitar: decidir se falha de persistência de evento crítico deveria propagar ou alimentar retry/outbox em vez de só logar — mudança em classe usada por dezenas de call sites, não é correção pontual.
+
+## D-testes-it-contaminacao-em-lote-amplo-service-package
+
+`mvnw test -Dtest="com.tcc.pjb.backend.service.**"` produziu 24 falhas em `Trt7CearaJurisdicaoCargaIT` (município resolvendo para `MunicipioForaDoCatalogo` em vez de `Resolvida`); a mesma classe isolada (`-Dtest=Trt7CearaJurisdicaoCargaIT`, mesmo HEAD) deu 9/9 verde — contaminação real de estado entre classes de IT quando agrupadas amplamente fora do `verify` padrão, não regressão de código. `D-ci-heap` já registra instabilidade de execução conhecida no CI; se o GitHub Actions algum dia agrupar essas classes de forma parecida, o resultado é falso-negativo pra quem não tiver este contexto.
+Revisitar: identificar o dado/estado que vaza entre `Trt7CearaJurisdicaoCargaIT` e as demais classes do lote (mesmo padrão de `D-consultapublica-flaky` e `D-pjbflowitbase-cleanup-only-beforeeach`); não usar `-Dtest="pacote.**"` como atalho de validação de regressão ampla até resolver — usar `verify` oficial ou lotes menores deliberadamente compostos.
+
+## D-salario-minimo-watchdog-limiar-sem-base-documentada
+
+`SalarioMinimoStalenessWatchdogService` usa limiar default de 1 ano (`pjb.observability.salario-minimo.staleness-limiar-anos:1`) escolhido por julgamento de engenharia no momento da implementação, sem SLA, ADR ou requisito citado — registrado explicitamente para não virar decisão calibrada por presunção de quem ler o config depois.
+Revisitar: se houver critério real (tempo histórico entre decretos, tolerância operacional acordada), substituir o valor e esta entrada por uma nota de fundamento.
+
+## D-anomaisrecenteconhecido-divergia-da-resolucao-real-de-valorPorAno
+
+**FECHADA nesta mesma fatia.** `SalarioMinimoNacionalService.anoMaisRecenteConhecido()` usava `findTopByAtivoTrueOrderByAnoReferenciaDesc()` (máximo irrestrito do banco) e só considerava a persistência quando o ano superava o teto do fallback — divergindo de `valorPorAno()`, que prioriza qualquer registro do banco de forma incondicional, mesmo mais antigo que o fallback. Cenário real: banco só com registro de 2023, fallback até 2026 — o watchdog reportava "sem defasagem" enquanto `valorPorAno(anoAtual)` de fato servia o valor de 2023.
+Corrigido reusando a mesma query e cadeia de resolução de `valorPorAno` (`findTopByAnoReferenciaLessThanEqualAndAtivoTrueOrderByAnoReferenciaDesc`), retornando o ano que efetivamente governa o valor servido. 3 testes cobrem banco vazio, banco mais antigo que o fallback (o cenário real do achado) e banco no ano corrente.
+
+## D-mutableclock-duplicado-em-3-testes
+
+`MutableClock` (implementação de `java.time.Clock` mutável para teste) existia como classe privada copiada em 4 arquivos antes desta fatia; extraída para `com.tcc.pjb.backend.support.MutableClock` (pública, reusável) e consolidada em `SalarioMinimoMetricsTest` e `PjbCodebaseLearningApplicationServiceCacheTest` — os dois nomeados no pedido de correção. `PjbCodebaseSanityApplicationServiceCacheTest`, `PjbWriteFailoverTrackerTest` e `AcordoProcessualApplicationServiceTest` continuam com cópia privada própria, não tocados por estarem fora do escopo desta fatia.
+Revisitar: migrar os 3 restantes para a classe compartilhada quando algum deles for tocado por outro motivo, ou numa fatia dedicada de higiene de teste.
