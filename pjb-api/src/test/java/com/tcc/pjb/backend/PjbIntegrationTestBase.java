@@ -8,6 +8,15 @@ import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
+/**
+ * Sem configuracao de forkCount/reuseForks no pom, o Failsafe roda todas as subclasses
+ * desta base na mesma JVM forked, reaproveitando os mesmos containers POSTGRES/KAFKA estaticos
+ * e o mesmo banco entre classes. Nenhum rollback transacional é aplicado por teste (deliberado:
+ * cenarios com Kafka listener/Virtual Thread assincrono nao veem dados de uma transacao ainda aberta).
+ * Qualquer fixture que grave em tabela de catalogo compartilhado (ex.: tb_jurisdicao_territorial)
+ * deve usar um discriminador exclusivo (tribunal_codigo ou municipio_ibge sintetico, nunca um
+ * codigo real) para nao vazar para asserts de contagem exata de outras classes do mesmo lote.
+ */
 @SpringBootTest(classes = BackendApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("integration-test")
 public abstract class PjbIntegrationTestBase {

@@ -15,6 +15,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * de partição via pg_inherits — zero lista manual de tabelas, zero divergência
  * com futuras migrations.
  *
+ * <p>Exceção deliberada: catálogos semeados pelo Flyway e nunca escritos pelo fluxo em
+ * teste (ex.: {@code tb_jurisdicao_territorial}, {@code tb_jurisdicao_territorial_unidade})
+ * ficam fora do TRUNCATE. Sem forkCount/reuseForks configurado no pom, Failsafe roda todas
+ * as ITs do lote na mesma JVM/mesmo banco ({@link PjbIntegrationTestBase}); truncar esses
+ * catálogos aqui os apaga para o resto do fork sem repor via nova migration, quebrando ITs
+ * que dependem deles (ex.: {@code Trt7CearaJurisdicaoCargaIT}) só quando rodadas em lote
+ * amplo — nunca isoladas. Nenhuma classe que herda esta base grava nessas tabelas.
+ *
  * <p>Premissa de segurança do TRUNCATE (ACCESS EXCLUSIVE):
  * O perfil integration-test desabilita schedulers ({@code spring.task.scheduling.enabled=false}),
  * pg-listen ({@code pjb.jobs.pg-listen.enabled=false}) e dispatcher
@@ -30,12 +38,26 @@ public abstract class PjbFlowItBase extends PjbIntegrationTestBase {
 
     @BeforeEach
     void truncateDatabaseBeforeEach() {
+        truncateAllTrackedTables();
+    }
+
+    /**
+     * Reutilizável por subclasses que precisem de um TRUNCATE adicional fora do @BeforeEach
+     * (ex.: @AfterAll com @TestInstance(PER_CLASS)) — nunca duplicar esta query: a exclusão
+     * dos catálogos Flyway acima é o próprio fix de {@code D-testes-it-contaminacao-em-lote-amplo-service-package},
+     * uma cópia divergente reintroduz o vazamento.
+     */
+    protected final void truncateAllTrackedTables() {
         List<String> tables = jdbcTemplate.queryForList(
                 """
                 SELECT t.tablename
                 FROM pg_tables t
                 WHERE t.schemaname = 'public'
-                  AND t.tablename NOT IN ('flyway_schema_history')
+                  AND t.tablename NOT IN (
+                      'flyway_schema_history',
+                      'tb_jurisdicao_territorial',
+                      'tb_jurisdicao_territorial_unidade'
+                  )
                   AND t.tablename NOT IN (
                       SELECT c.relname FROM pg_inherits i
                       JOIN pg_class c ON i.inhrelid = c.oid

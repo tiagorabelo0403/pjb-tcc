@@ -30,7 +30,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -54,32 +53,12 @@ class AjuizamentoServiceFlowIT extends PjbFlowItBase {
     @Autowired
     private OutboxEventRepository outboxEventRepository;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
     @MockitoBean
     private TriagemNacionalIAEngine triagemNacionalIAEngine;
 
     @AfterAll
     void truncateAfterAll() {
-        List<String> tables = jdbcTemplate.queryForList(
-                """
-                SELECT t.tablename
-                FROM pg_tables t
-                WHERE t.schemaname = 'public'
-                  AND t.tablename NOT IN ('flyway_schema_history')
-                  AND t.tablename NOT IN (
-                      SELECT c.relname FROM pg_inherits i
-                      JOIN pg_class c ON i.inhrelid = c.oid
-                      JOIN pg_namespace n ON c.relnamespace = n.oid
-                      WHERE n.nspname = 'public'
-                  )
-                """,
-                String.class);
-        if (!tables.isEmpty()) {
-            String tableList = String.join(", ", tables.stream().map(t -> "\"" + t + "\"").toList());
-            jdbcTemplate.execute("TRUNCATE " + tableList + " RESTART IDENTITY CASCADE");
-        }
+        truncateAllTrackedTables();
     }
 
     @Test
