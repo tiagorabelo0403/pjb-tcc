@@ -49,6 +49,13 @@ resilience4j:
         permitted-number-of-calls-in-half-open-state: 2
         record-exceptions:
           - java.lang.Exception
+      salario-minimo-bcb:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_SALARIO_MINIMO_BCB_WAIT:120s}
+        permitted-number-of-calls-in-half-open-state: 2
+        record-exceptions:
+          - java.lang.Exception
       infojud-consulta:
         sliding-window-size: 5
         failure-rate-threshold: 60

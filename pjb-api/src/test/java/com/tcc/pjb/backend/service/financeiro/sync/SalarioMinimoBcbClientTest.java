@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
+import java.net.http.HttpClient;
 import java.time.LocalDate;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,17 @@ import org.junit.jupiter.api.Test;
 class SalarioMinimoBcbClientTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Test
+    void fallbackDeCircuitBreakerRetornaOptionalEmptySemLancarExcecao() {
+        SalarioMinimoBcbClient client = new SalarioMinimoBcbClient(
+                HttpClient.newHttpClient(), objectMapper, "https://api.bcb.gov.br/dados/serie/bcdata.sgs.1619/dados/ultimos/1?formato=json");
+
+        Optional<SalarioMinimoBcbClient.SnapshotSalarioMinimo> resultado =
+                client.buscarUltimoValorFallback(new RuntimeException("BCB indisponivel"));
+
+        assertThat(resultado).isEmpty();
+    }
 
     @Test
     void payloadValidoDoBcbEhParseadoParaSnapshot() {

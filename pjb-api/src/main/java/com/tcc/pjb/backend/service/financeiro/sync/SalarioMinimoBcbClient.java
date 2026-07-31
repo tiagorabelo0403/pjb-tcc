@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.service.financeiro.sync;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.math.BigDecimal;
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -39,14 +40,15 @@ public class SalarioMinimoBcbClient {
         this.restClient = RestClient.builder().requestFactory(factory).build();
     }
 
+    @CircuitBreaker(name = "salario-minimo-bcb", fallbackMethod = "buscarUltimoValorFallback")
     public Optional<SnapshotSalarioMinimo> buscarUltimoValor() {
-        try {
-            String body = restClient.get().uri(url).retrieve().body(String.class);
-            return parse(objectMapper, body);
-        } catch (Exception e) {
-            log.warn("Sync salario minimo: falha ao consultar BCB em {}: {}", url, e.getMessage());
-            return Optional.empty();
-        }
+        String body = restClient.get().uri(url).retrieve().body(String.class);
+        return parse(objectMapper, body);
+    }
+
+    Optional<SnapshotSalarioMinimo> buscarUltimoValorFallback(Throwable t) {
+        log.warn("Sync salario minimo: falha ao consultar BCB em {}: {}", url, t.getMessage());
+        return Optional.empty();
     }
 
     static Optional<SnapshotSalarioMinimo> parse(ObjectMapper objectMapper, String rawJson) {
