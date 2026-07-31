@@ -22,11 +22,9 @@ import com.tcc.pjb.backend.modules.acordo.domain.AcordoPropostaStatus;
 import com.tcc.pjb.backend.modules.acordo.domain.AcordoSessaoStatus;
 import com.tcc.pjb.backend.modules.acordo.domain.AcordoTermoStatus;
 import com.tcc.pjb.backend.modules.acordo.domain.AcordoTipoSala;
+import com.tcc.pjb.backend.support.MutableClock;
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -125,7 +123,7 @@ class AcordoProcessualApplicationServiceTest {
         Fixture fx = Fixture.create();
         AcordoSessaoSnapshot sala = fx.openReadyRoom();
         AcordoPropostaSnapshot proposta = fx.service.registrarProposta(proposalCommand(sala.id(), 10L, fx.now.plusSeconds(3600), false));
-        fx.clock.now = fx.now.plusSeconds(7200);
+        fx.clock.set(fx.now.plusSeconds(7200));
 
         assertThatThrownBy(() -> fx.service.gerarMinutaTermo(new AcordoProcessualApplicationService.GerarMinutaTermoCommand(
                 proposta.id(), 10L, "Termo final do acordo", meta())))
@@ -204,7 +202,7 @@ class AcordoProcessualApplicationServiceTest {
     void salaExpiradaNaoAceitaMensagem() {
         Fixture fx = Fixture.create();
         AcordoSessaoSnapshot sala = fx.openReadyRoom();
-        fx.clock.now = fx.now.plusSeconds(31 * 24 * 3600);
+        fx.clock.set(fx.now.plusSeconds(31 * 24 * 3600));
 
         assertThatThrownBy(() -> fx.service.registrarMensagem(new AcordoProcessualApplicationService.RegistrarMensagemCommand(
                 sala.id(), 10L, AcordoMensagemTipo.TEXTO, "mensagem tardia", false, AcordoMensagemVisibilidade.PARTICIPANTES, meta())))
@@ -258,7 +256,7 @@ class AcordoProcessualApplicationServiceTest {
     void expirarSalasVencidasMarcaStatusEAudita() {
         Fixture fx = Fixture.create();
         AcordoSessaoSnapshot sala = fx.openReadyRoom();
-        fx.clock.now = fx.now.plusSeconds(31 * 24 * 3600);
+        fx.clock.set(fx.now.plusSeconds(31 * 24 * 3600));
 
         int expiradas = fx.service.expirarSalasVencidas(10);
 
@@ -655,28 +653,5 @@ class AcordoProcessualApplicationServiceTest {
     }
 
     private record Movimento(String tipo, Long processoId, String ator, String descricao) {
-    }
-
-    private static final class MutableClock extends Clock {
-        private Instant now;
-
-        private MutableClock(Instant now) {
-            this.now = now;
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return ZoneOffset.UTC;
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return this;
-        }
-
-        @Override
-        public Instant instant() {
-            return now;
-        }
     }
 }

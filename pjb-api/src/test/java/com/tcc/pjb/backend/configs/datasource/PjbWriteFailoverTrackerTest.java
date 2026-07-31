@@ -1,10 +1,9 @@
 package com.tcc.pjb.backend.configs.datasource;
 
+import com.tcc.pjb.backend.support.MutableClock;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,32 +24,5 @@ class PjbWriteFailoverTrackerTest {
         tracker.isEndpointAvailable("endpoint-0");
 
         assertTrue(tracker.trackedUnavailableEndpoints() < 64);
-    }
-
-    private static final class MutableClock extends Clock {
-        private Instant instant;
-
-        private MutableClock(Instant instant) {
-            this.instant = instant;
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return ZoneId.of("UTC");
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return this;
-        }
-
-        @Override
-        public Instant instant() {
-            return instant;
-        }
-
-        private void advance(Duration duration) {
-            instant = instant.plus(duration);
-        }
     }
 }
