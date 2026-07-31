@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.274%20unit%20%2B%20230%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.313%20unit%20%2B%20250%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -310,8 +310,8 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.274 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 230 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes unitários (Surefire):** 4.313 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes de integração (Failsafe):** 250 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -327,7 +327,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.274 unitários (Surefire) e depois os 230 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.313 unitários (Surefire) e depois os 250 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -345,11 +345,11 @@ O `argLine` do Surefire/Failsafe fixa `-Dpjb.runtime.lifecycle.drain-quiet-perio
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.274** |
+| Total de testes unitários | Surefire | **4.313** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
-| Total de testes de integração | Failsafe | **230** ¹ |
+| Total de testes de integração | Failsafe | **250** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
@@ -357,6 +357,10 @@ O `argLine` do Surefire/Failsafe fixa `-Dpjb.runtime.lifecycle.drain-quiet-perio
 A suíte de integração passou por um processo de estabilização estrutural: falhas por variável de ambiente incorreta, contaminação de dados entre testes e IDs hardcoded sem seed foram eliminadas até restar zero. Duas dessas correções expuseram bugs reais de produção, não só de teste: `AuditLedgerService` gravava eventos de auditoria apenas em memória, sem persistir no repositório consultado pelos próprios endpoints de auditoria; e a resolução do processo raiz em `CaseContinuityOrchestratorService` usava um campo mutável durante o ciclo de vida do processo, gerando ambiguidade entre o processo raiz e seus desdobramentos (ex.: cumprimento de sentença) após arquivamento.
 
 O `verify` padrão (Failsafe) não alcança 13 métodos de teste distribuídos em 6 classes¹ que combinam a convenção `*Test.java` com `@Tag("integration")` — o Surefire exclui essas classes por tag e o Failsafe não as reconhece pelo padrão de nome de arquivo. Todas as 13 já foram confirmadas verdes individualmente via `-Dit.test=`, mas ficam fora da contagem de rotina do `verify`.
+
+Duas fatias fecharam nesta sessão. `D-drain-coordinator-fork-exit-sem-guarda-regressao` ganhou um guard Python dedicado (`scripts/drain_quiet_period_argline_guard.py`) que falha se o `<argLine>` de Surefire ou Failsafe perder o override `drain-quiet-period` ou ele virar zero — o fix já existia (linha acima), mas não tinha rede de segurança contra regressão; `PjbRuntimeDrainServiceTest` ganhou 4 testes documentando o fallback silencioso de `sanitizeDuration()` (`Duration.ZERO`/negativo caem no default de produção). E `D-controllers-recursais-legados-sem-teste-dedicado` fechou cobertura completa dos 4 controllers recursais legados (`AdvogadoCockpitController`, `DefensorPublicoPainelController`, `MinisterioPublicoPainelController`, `ProcuradoriaOperacionalController`) — pré-requisito documentado antes de qualquer remoção futura desses controllers: sucesso de todo endpoint, falha de validação (400) para todo DTO com constraint real, e uma classe IT nova por controller provando anônimo negado, role ilegítima negada (403) e cada role legítima do `@PreAuthorize` autorizada, contra Postgres real com Spring Security completo — 63 testes novos (39 unitários + 20 de integração), 0 falhas. As ITs novas expuseram dois achados reais sem impacto em produção, documentados em `DEBT_LOG.md`: três papéis (`OAB_PRESIDENTE_SECCIONAL`, `PROMOTOR_ELEITORAL`, `PROMOTOR_TRABALHISTA`) nunca chegam sozinhos em runtime porque `PjbGrantedAuthorityFactory` sempre concede um papel-base junto; e `DEFENSOR_DISTRITAL` é um literal morto no `@PreAuthorize` legado que não existe como valor de `TipoUsuario`.
+
+Os 4.313 testes unitários foram reconfirmados numa rodada completa (`mvnw test -pl pjb-api`) ao final desta sessão — 0 falhas, sem regressão. Os 250 testes de integração somam o total anterior (230) mais os 20 novos das 4 ITs acima, cada uma confirmada verde individualmente (`-Dit.test=`); uma rodada agregada completa do `verify` (250 testes, ~50 min) não foi reexecutada nesta sessão por restrição de tempo — o número é soma verificada por execução individual, não estimativa.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -862,8 +866,8 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.274 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **230 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes unitários (Surefire) | **4.313 · 0 falhas · 0 erros** |
+| Testes de integração (Failsafe) | **250 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
@@ -1076,7 +1080,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.274 testes e 269 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.313 testes e 269 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

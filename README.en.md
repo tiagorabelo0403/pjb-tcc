@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-4%2C274%20unit%20%2B%20230%20IT%20%7C%200%20failures-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-4%2C313%20unit%20%2B%20250%20IT%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -310,8 +310,8 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 4,274 tests with Mockito and in-memory H2. Fast, no Docker required.
-- **Integration tests (Failsafe):** 230 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
+- **Unit tests (Surefire):** 4,313 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Integration tests (Failsafe):** 250 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 ### Run Unit Tests Only (fast)
 
@@ -327,7 +327,7 @@ Expected time: **~15 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api
 ```
 
-This is the official project gate. It runs the 4,274 unit tests (Surefire) and then the 230 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 4,313 unit tests (Surefire) and then the 250 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 Expected time: **~50 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
 
@@ -345,11 +345,11 @@ The Surefire/Failsafe `argLine` sets `-Dpjb.runtime.lifecycle.drain-quiet-period
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **4,274** |
+| Total unit tests | Surefire | **4,313** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~15 min** |
-| Total integration tests | Failsafe | **230** ¹ |
+| Total integration tests | Failsafe | **250** ¹ |
 | Polo-composition-engine tests | Failsafe | **+10 green** (role by procedural type: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | IT failures | Failsafe | **0** (0E + 0F) |
 | Full verify execution time | Surefire + Failsafe | **~50 min** |
@@ -357,6 +357,10 @@ The Surefire/Failsafe `argLine` sets `-Dpjb.runtime.lifecycle.drain-quiet-period
 The integration suite went through a structural stabilization process: failures caused by incorrect environment variables, cross-test data contamination, and hardcoded IDs without seeding were eliminated down to zero. Two of those fixes exposed real production bugs, not just test issues: `AuditLedgerService` recorded audit events only in memory, without persisting to the repository the audit endpoints actually query; and root-proceeding resolution in `CaseContinuityOrchestratorService` used a mutable field during the case lifecycle, causing ambiguity between the root proceeding and its branches (e.g., judgment enforcement) after archiving.
 
 The default `verify` (Failsafe) does not reach 13 test methods spread across 6 classes¹ that combine the `*Test.java` naming convention with `@Tag("integration")` — Surefire excludes these classes by tag and Failsafe does not recognize them by file pattern. All 13 have already been confirmed green individually via `-Dit.test=`, but stay outside the routine `verify` count.
+
+Two workstreams closed this session. `D-drain-coordinator-fork-exit-sem-guarda-regressao` got a dedicated Python guard (`scripts/drain_quiet_period_argline_guard.py`) that fails if Surefire's or Failsafe's `<argLine>` loses the `drain-quiet-period` override or it turns to zero — the fix already existed (paragraph above), but had no regression net; `PjbRuntimeDrainServiceTest` gained 4 tests documenting `sanitizeDuration()`'s silent fallback (`Duration.ZERO`/negative fall back to the production default). And `D-controllers-recursais-legados-sem-teste-dedicado` closed full test coverage for the 4 legacy appeal controllers (`AdvogadoCockpitController`, `DefensorPublicoPainelController`, `MinisterioPublicoPainelController`, `ProcuradoriaOperacionalController`) — a documented prerequisite before any future removal of these controllers: success for every endpoint, validation failure (400) for every DTO with a real constraint, and one new IT class per controller proving anonymous denied, illegitimate role denied (403), and every legitimate `@PreAuthorize` role authorized, against real Postgres with full Spring Security — 63 new tests (39 unit + 20 integration), 0 failures. The new ITs surfaced two real findings with no production impact, documented in `DEBT_LOG.md`: three roles (`OAB_PRESIDENTE_SECCIONAL`, `PROMOTOR_ELEITORAL`, `PROMOTOR_TRABALHISTA`) never arrive alone at runtime because `PjbGrantedAuthorityFactory` always grants a base role alongside them; and `DEFENSOR_DISTRITAL` is a dead literal in the legacy `@PreAuthorize` that doesn't exist as a `TipoUsuario` value.
+
+The 4,313 unit tests were reconfirmed in a full run (`mvnw test -pl pjb-api`) at the end of this session — 0 failures, no regression. The 250 integration tests add the previous total (230) to the 20 new ones from the 4 ITs above, each individually confirmed green (`-Dit.test=`); a full aggregate `verify` run (250 tests, ~50 min) was not re-executed this session due to time constraints — the number is a verified sum from individual runs, not an estimate.
 
 The history of technical decisions, known technical debt, and closure criteria for each workstream is documented in [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) and the [ADRs](./docs/adr/).
 
@@ -860,8 +864,8 @@ CREATE POLICY processo_sigilo ON processo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **4,274 · 0 failures · 0 errors** |
-| Integration tests (Failsafe) | **230 · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
+| Unit tests (Surefire) | **4,313 · 0 failures · 0 errors** |
+| Integration tests (Failsafe) | **250 · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
 | Python Guards | 7 scripts active in CI |
@@ -1070,7 +1074,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 4,274 unit tests plus 230 integration tests, and 269 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 4,313 unit tests plus 250 integration tests, and 269 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 
