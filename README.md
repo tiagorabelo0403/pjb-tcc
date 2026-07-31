@@ -2,7 +2,7 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
-![Testes unitários](https://img.shields.io/badge/Testes%20unit%C3%A1rios-4.262%20%7C%200%20falhas-brightgreen)
+![Testes unitários](https://img.shields.io/badge/Testes%20unit%C3%A1rios-4.274%20%7C%200%20falhas-brightgreen)
 ![Testes de integração](https://img.shields.io/badge/Testes%20IT-230%20%7C%200%20falhas%20conhecidas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
@@ -232,7 +232,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.262 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 4.274 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 230 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
@@ -249,7 +249,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.262 unitários (Surefire) e depois os 230 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.274 unitários (Surefire) e depois os 230 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -267,7 +267,7 @@ O `argLine` do Surefire/Failsafe fixa `-Dpjb.runtime.lifecycle.drain-quiet-perio
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.262** |
+| Total de testes unitários | Surefire | **4.274** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
@@ -280,7 +280,9 @@ A suíte de integração passou por um processo de estabilização completo: 49 
 
 `D-marketplace-sem-completude-documental` fechou a Fase 1: o canal `ApiMarketplaceService.protocolar()` — único dos três canais de ajuizamento que não validava nenhum documento obrigatório — passou a reaproveitar `CompletudeDocumentalPolicyService.diagnosticar()`, o mesmo motor já usado pelo REST e indiretamente pelo Laiane. `MarketplaceProtocoloRequest` ganhou campo opcional `documentos` (aditivo — integrador que não migrou continua funcionando); quando a checagem bloqueia, `Processo.connectorSubmissionStatus` grava `PENDENTE_DOCUMENTACAO` em vez de `RECEBIDO_MARKETPLACE`, sem introduzir valor novo em `StatusProcesso` (o enum compartilhado por distribuição, prazo e analytics não foi tocado — raio de explosão zero sobre os demais bounded contexts). O sinal não depende de o integrador ter configurado webhook: a própria resposta síncrona do protocolo ganhou `documentacaoCompleta`/`documentosFaltantes`, porque nenhum cliente hoje tinha motivo pra configurar um webhook para um evento que não existia. Quando incompleto, `MarketplaceGovernanceService` dispara `PROCESSO_PENDENTE_DOCUMENTACAO` **além** de `PROCESSO_PROTOCOLADO` (nunca em substituição — o protocolo aconteceu de fato, completo ou não). O hardcode `RitoProcessual.COMUM_ORDINARIO` incondicional que o canal carregava foi corrigido na mesma fatia, não deixado como ruído documentado: `ProceduralCatalogSupport.tryResolveRito(null, ramoDireito, classeProcessual)` — o mesmo utilitário leve que `AjuizarProcessoCommand` já usa como fallback sobre o roteamento pesado, sem puxar esse motor pesado para dentro do marketplace — resolve o rito a partir de dois campos que o payload já carregava, com o mesmo fallback de antes quando nada casa. Somou 6 testes verdes: `ApiMarketplaceServiceCompletudeDocumentalUnitTest` (3, Mockito puro, sem Testcontainers) e `ApiMarketplaceServiceCompletudeDocumentalTest` (3, IT com Postgres real), cobrindo cliente sem `documentos` (nome do teste prova a negação central — sinalização pendente, não aceitação silenciosa), cliente completo e cliente parcial. Fase 2 (endpoint de complementação documental pós-protocolo) segue registrada só por nome de evento reservado (`PROCESSO_DOCUMENTACAO_COMPLETADA`) em `docs/quality/DEBT_LOG.md`, não implementada.
 
-Uma rodada completa de `mvnw test -pl pjb-api` nesta sessão (4.262 testes, 0 falhas, 0 erros, ~17 min) consolidou definitivamente todo o backlog de fatias anteriores commitadas mas nunca reconfirmadas numa execução agregada — recursal Fatia 1/2/4, jus postulandi trabalhista e do JEF, isenção de custas por rito, entre outras citadas acima como "fora do total agregado até o próximo verify de aceite". O texto histórico de cada fatia acima permanece como registro de quando aquele lote foi de fato somado por execução, não por aritmética — 4.262 é o número real desta sessão, verificado, não a soma manual dos parágrafos anteriores.
+A fatia de observabilidade de `D-scheduler-salario-minimo-nunca-ativado` fechou quatro itens sobre o motor de salário mínimo sem ativar o scheduler de sincronização com o Banco Central (que segue desligado por decisão operacional, não por esquecimento — ver seção de Concorrência). `SalarioMinimoStalenessWatchdogService`, novo e desacoplado da flag `pjb.sync.salario-minimo.enabled`, verifica a cada execução agendada se `SalarioMinimoNacionalService.anoMaisRecenteConhecido()` está defasado do ano corrente além de um limiar configurável (default 1 ano, sem base documentada além de julgamento de engenharia — registrado como tal em `D-salario-minimo-watchdog-limiar-sem-base-documentada`). A implementação inicial de `anoMaisRecenteConhecido()` continha um bug real, achado e corrigido antes do commit: usava o máximo irrestrito do banco em vez da mesma cadeia de resolução de `valorPorAno()`, o que faria o watchdog reportar "sem defasagem" mesmo com o banco preso a um ano bem mais antigo que o fallback estático — corrigido para reusar exatamente a query e prioridade de `valorPorAno`. Duas gauges Micrometer (`pjb.salario_minimo.ano_referencia_atual`, `pjb.salario_minimo.fallback_idade_dias`) expõem o mesmo dado via `/actuator/prometheus`, com leitura cacheada por até 60s (`Clock` injetado, reaproveitando o bean já existente em `TimeConfig`) para não bater no banco a cada scrape do Prometheus. O `SalarioMinimoBcbClient` ganhou `@CircuitBreaker` (instância `salario-minimo-bcb`, alinhada estruturalmente a `datajud-feed` — mesmo perfil de integração de feed externo single-source, não ao `mni-remessa`, que é fluxo de submissão com thresholds diferentes); `PdpjConnector` usa `@CircuitBreaker(name = "pdpj")` sem configuração nomeada própria, então não havia "padrão MNI/PDPJ-Br" real para alinhar além do DataJud. A escrita manual de salário mínimo (`POST /api/v1/intelligence/teto/salario-minimo`) passou a registrar entrada em `AuditLedgerService`; um IT real contra Postgres (`AuditLedgerServicePayloadHashNuloIT`) provou que `payload_hash` nulo nunca chega cru ao banco — `safePayloadHash()` sintetiza um SHA-256 a partir de outros campos antes de persistir, achado que corrigiu a própria expectativa do teste na primeira tentativa. A classe de teste `MutableClock`, que já existia duplicada em 4 arquivos antes desta fatia, foi extraída para `com.tcc.pjb.backend.support.MutableClock` (pública) e consolidada nos dois arquivos tocados nesta sessão; as outras 3 cópias seguem como estavam, registradas em `D-mutableclock-duplicado-em-3-testes`.
+
+Uma rodada completa de `mvnw test -pl pjb-api` nesta sessão (4.274 testes, 0 falhas, 0 erros) consolidou definitivamente todo o backlog de fatias anteriores commitadas mas nunca reconfirmadas numa execução agregada — recursal Fatia 1/2/4, jus postulandi trabalhista e do JEF, isenção de custas por rito, marketplace, entre outras citadas acima como "fora do total agregado até o próximo verify de aceite" — mais os 12 testes novos da fatia de observabilidade do salário mínimo. O texto histórico de cada fatia acima permanece como registro de quando aquele lote foi de fato somado por execução, não por aritmética — 4.274 é o número real desta sessão, verificado, não a soma manual dos parágrafos anteriores.
 
 As 206 confirmadas em 5 lotes via `-Dtest=` explícito (goal `test`/Surefire, não `verify`/Failsafe) — mesmo `argLine` e mesmo timeout default de 10min entre os dois plugins, mas identidade de goal diferente da que o CI usa no portão oficial.
 
@@ -651,6 +653,8 @@ Bounded concurrency via `PjbBoundedExecutorService` previne explosão de conexõ
 
 Zero `CompletableFuture` solto no código de produção. O ADR-0051 define o modelo unificado de execução e é aplicado por guard Python e ArchUnit a cada build.
 
+`SalarioMinimoNacionalSyncScheduler` (sincronização diária com a série 1619 do Banco Central) segue desligado por default (`pjb.sync.salario-minimo.enabled`, ausente em todos os profiles) — mesma convenção de `IbgeSyncService`, decisão operacional registrada no commit que introduziu o scheduler, não esquecimento. `SalarioMinimoStalenessWatchdogService` roda independente dessa flag e alerta se o valor servido ficar defasado do ano corrente além do limiar configurado, sem depender da sincronização automática estar ativa.
+
 ---
 
 ## Escalabilidade e resiliência operacional
@@ -687,7 +691,7 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.262 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.274 · 0 falhas · 0 erros** |
 | Testes de integração (Failsafe) | **230 · 0 falhas conhecidas** (de 49 → 14 → 10 → 0; D-routing-preprotocolo e as 9 pré-existentes fechadas; +10 motor de polos verdes; +24 da fatia de competência territorial — CE, MG e RN — verdes desde a criação — ver nota¹ na seção Testes sobre 10 testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -756,6 +760,8 @@ GET /actuator/metrics
 ```
 
 Expõe leitura viva do estado estrutural: hotspots do core, trilhas internas de extração do core, blueprints de extração, fluxos críticos ponta a ponta e razão de cobertura por bounded context. O snapshot em memória tem TTL curto; use `refresh=true` para forçar revarredura sem reiniciar a aplicação.
+
+`GET /actuator/prometheus` também expõe `pjb.salario_minimo.ano_referencia_atual` e `pjb.salario_minimo.fallback_idade_dias` — gauges que permitem alertar sobre o motor de salário mínimo ficando desatualizado sem precisar ativar a sincronização automática com o Banco Central (ver seção de Concorrência).
 
 ---
 
@@ -906,7 +912,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.262 testes e 269 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.274 testes e 269 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
