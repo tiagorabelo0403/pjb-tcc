@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.platform.runtime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,46 @@ class PjbRuntimeDrainServiceTest {
         service.beginDrain("maintenance");
         assertThat(service.isDraining()).isTrue();
         assertThat(service.readyForTraffic()).isTrue();
+    }
+
+    @Test
+    void shouldFallBackSilentlyToProductionDefaultWhenDrainQuietPeriodIsZero() {
+        PjbRuntimeLifecycleProperties properties = new PjbRuntimeLifecycleProperties();
+        properties.setDrainQuietPeriod(Duration.ZERO);
+        PjbRuntimeDrainService service = new PjbRuntimeDrainService(properties, event -> {
+        });
+
+        assertThat(service.drainQuietPeriod()).isEqualTo(Duration.ofSeconds(20));
+    }
+
+    @Test
+    void shouldFallBackSilentlyToProductionDefaultWhenDrainQuietPeriodIsNegative() {
+        PjbRuntimeLifecycleProperties properties = new PjbRuntimeLifecycleProperties();
+        properties.setDrainQuietPeriod(Duration.ofSeconds(-1));
+        PjbRuntimeDrainService service = new PjbRuntimeDrainService(properties, event -> {
+        });
+
+        assertThat(service.drainQuietPeriod()).isEqualTo(Duration.ofSeconds(20));
+    }
+
+    @Test
+    void shouldFallBackSilentlyToProductionDefaultWhenShutdownAwaitTimeoutIsZero() {
+        PjbRuntimeLifecycleProperties properties = new PjbRuntimeLifecycleProperties();
+        properties.setShutdownAwaitTimeout(Duration.ZERO);
+        PjbRuntimeDrainService service = new PjbRuntimeDrainService(properties, event -> {
+        });
+
+        assertThat(service.shutdownAwaitTimeout()).isEqualTo(Duration.ofSeconds(30));
+    }
+
+    @Test
+    void shouldHonorSmallNonZeroDrainQuietPeriodInsteadOfFallingBack() {
+        PjbRuntimeLifecycleProperties properties = new PjbRuntimeLifecycleProperties();
+        properties.setDrainQuietPeriod(Duration.ofMillis(10));
+        PjbRuntimeDrainService service = new PjbRuntimeDrainService(properties, event -> {
+        });
+
+        assertThat(service.drainQuietPeriod()).isEqualTo(Duration.ofMillis(10));
     }
 
     private static final class RecordingPublisher implements ApplicationEventPublisher {

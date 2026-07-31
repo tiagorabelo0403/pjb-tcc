@@ -262,7 +262,7 @@ explícita distinguindo-o de um "Código atribuído pelo TRT" real (decisão de 
 
 ## D-drain-coordinator-fork-exit-sem-guarda-regressao
 
-**Status:** aberta (fix aplicado e validado 2x; falta blindagem contra regressão)
+**Status:** FECHADA — guard dedicado e testes de `sanitizeDuration()` adicionados.
 
 **Contexto:** `PjbRuntimeDrainCoordinator` (`SmartLifecycle`, fase `Integer.MAX_VALUE`) dorme
 `pjb.runtime.lifecycle.drain-quiet-period` (default de produção: 20s) a cada fechamento de contexto
@@ -274,23 +274,29 @@ por thread dump (`main` preso em `ApplicationShutdownHooks.runHooks()` → `Spri
 `pjb-drain-coordinator` ainda em `Thread.sleep()`). Corrigido via
 `-Dpjb.runtime.lifecycle.drain-quiet-period=10ms` no `argLine` de Surefire e Failsafe (`pom.xml`).
 
-**Risco:** o fix depende de duas linhas de `argLine` no `pom.xml` permanecerem intactas — sem elas, o
-sintoma volta. É silencioso em rodadas curtas ou isoladas (uma classe sozinha nunca acumula GC suficiente
-pra estourar os 30s) e só se manifesta em `verify`/`test` completo sob carga.
+**Risco original:** o fix dependia de duas linhas de `argLine` no `pom.xml` permanecerem intactas —
+sem elas, o sintoma volta. É silencioso em rodadas curtas ou isoladas (uma classe sozinha nunca
+acumula GC suficiente pra estourar os 30s) e só se manifesta em `verify`/`test` completo sob carga.
 
-`PjbRuntimeDrainService.sanitizeDuration()` trata `Duration.ZERO` como valor inválido e substitui
-silenciosamente pelo fallback de produção (20s/30s) — `-Dpjb.runtime.lifecycle.drain-quiet-period=0s`
+`PjbRuntimeDrainService.sanitizeDuration()` trata `Duration.ZERO` (ou negativo) como valor inválido e
+substitui silenciosamente pelo fallback de produção (20s/30s) — `-Dpjb.runtime.lifecycle.drain-quiet-period=0s`
 não gera erro nem log, simplesmente não tem efeito algum; só um valor pequeno e não-zero (ex.: `10ms`)
 neutraliza a espera de fato.
 
-**Cobertura de teste:** nenhuma. Não existe teste que falhe se a flag for removida do `pom.xml`, nem
-teste que exercite `sanitizeDuration()` com `Duration.ZERO` pra documentar o comportamento de fallback
-silencioso.
+**Fechamento:**
+- `scripts/drain_quiet_period_argline_guard.py` — guard Python dedicado que lê `pom.xml`, localiza os
+  blocos reais de configuração (não o `<pluginManagement>`, que só fixa versão) do Surefire e do
+  Failsafe, e falha se o `<argLine>` de qualquer um dos dois não tiver
+  `-Dpjb.runtime.lifecycle.drain-quiet-period=<valor>` com um valor não-zero. Validado tanto contra o
+  `pom.xml` real (passa) quanto contra cópias mutadas simulando a flag removida e a flag zerada (falha
+  nos dois casos, com a causa raiz explicada na mensagem).
+- `PjbRuntimeDrainServiceTest` ganhou 4 testes novos documentando o comportamento de
+  `sanitizeDuration()`: `Duration.ZERO` e `Duration` negativo em `drainQuietPeriod()`/`shutdownAwaitTimeout()`
+  caem no fallback de produção (20s/30s) silenciosamente, e um valor pequeno não-zero (`10ms`) é
+  respeitado sem fallback. Suite completa da classe: 6/6 verdes.
 
-**Quando revisitar:** ao mexer no `<argLine>` do Surefire/Failsafe por qualquer outro motivo — conferir
-que a flag continua presente. Candidato a guard Python dedicado (verifica que o argLine de teste sempre
-inclui esse override), já que a ausência da flag só se manifesta em rodada completa, nunca em execução
-isolada de uma classe.
+**Quando revisitar:** ao mexer no `<argLine>` do Surefire/Failsafe por qualquer outro motivo, rodar
+`python scripts/drain_quiet_period_argline_guard.py` — ele já acusa se a flag sumir ou for zerada.
 
 ## D-transactional-hotspot-guard-49-achados-nao-triados
 
