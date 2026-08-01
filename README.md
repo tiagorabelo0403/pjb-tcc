@@ -335,6 +335,17 @@ Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring
 
 O `argLine` do Surefire/Failsafe fixa `-Dpjb.runtime.lifecycle.drain-quiet-period=10ms`. O coordenador de drenagem graciosa (`PjbRuntimeDrainCoordinator`) dorme 20s por padrão a cada fechamento de contexto Spring — correto em produção, onde existe tráfego real para drenar antes do shutdown, mas puro desperdício numa JVM de teste. Sem esse override, um `verify` completo pode estourar o watchdog de 30s do próprio Surefire (`forkedProcessExitTimeoutInSeconds`) e matar a JVM forkada à força no encerramento, mesmo com todos os testes já verdes — sintoma que só aparece em rodadas longas, nunca isolando uma classe.
 
+### Se o `test`/`verify` começar a "cair" sem motivo aparente
+
+Se rodadas de teste passarem a ser mortas logo no início (ou o build ficar lento e instável), quase sempre a causa é **JVM de teste órfã**: quando um `mvnw` é interrompido abruptamente, a JVM forkada do Surefire/Failsafe (`-Xmx4g`) pode sobreviver sem processo pai que a encerre e ir acumulando até sufocar a memória da máquina, matando os próximos runs. Não é flag de JVM mal configurada — é processo zumbi. Há um guard dedicado para detectar e limpar isso:
+
+```bash
+python scripts/reap_orphan_test_jvms.py         # lista as JVMs de teste órfãs (report-only)
+python scripts/reap_orphan_test_jvms.py --kill  # encerra as órfãs e libera a memória
+```
+
+Multiplataforma (Windows/Linux/macOS), somente stdlib. Report-only por padrão (sai com código ≠ 0 se achar órfãs, útil como sinal em CI); `--kill` reapa. Não é amarrado ao build automaticamente — rode-o quando notar instabilidade, antes de uma rodada longa.
+
 ### Rodar um teste específico com stack trace completo
 
 ```bash

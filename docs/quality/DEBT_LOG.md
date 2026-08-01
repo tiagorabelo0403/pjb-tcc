@@ -260,6 +260,26 @@ caso de uso exigir cobertura desses 38 municípios — nesse caso, decidir entre
 primária adicional (site do TRT21) ou adotar convenção própria de identificador não oficial, com anotação
 explícita distinguindo-o de um "Código atribuído pelo TRT" real (decisão de produto, não técnica).
 
+## D-verify-instabilidade-forks-orfaos
+
+**Status:** FECHADA — guard reaper dedicado + documentação no README.
+
+**Contexto:** durante longas sessões de teste, rodadas de `mvnw test`/`verify` passaram a ser mortas
+logo no início. A causa raiz NÃO era flag de JVM mal configurada (o `-Xmx4g` por fork e o launcher
+Maven estão corretos e deliberados — ver `D-ci-heap-correcao`), e sim **JVM de teste órfã**: quando um
+`mvnw` em background é interrompido abruptamente (SIGKILL do ambiente/CI), a JVM forkada do
+Surefire/Failsafe (`surefirebooter`, `-Xmx4g`) sobrevive sem processo pai que a reape e vai acumulando —
+observado ao vivo caindo para ~1,5 GB livres de 24 GB, com múltiplos forks `-Xmx4g` zumbis segurando
+~7 GB; encerrá-los restaurava 8-9 GB e destravava os runs seguintes. Processo zumbi, não heap errado.
+
+**Fechamento:** `scripts/reap_orphan_test_jvms.py` — guard multiplataforma (Windows via CIM/PowerShell,
+Linux/macOS via `ps`, somente stdlib) que detecta JVMs de teste órfãs (fork do surefire/failsafe cujo
+processo pai não está mais vivo, ou reparentado para PID 1) e as encerra com `--kill` (report-only por
+padrão, exit ≠ 0 se achar — sinal útil em CI). Não amarrado ao build automaticamente (auto-kill em toda
+rodada poderia matar um run paralelo legítimo); é executado sob demanda ao notar instabilidade.
+Documentado no README (seção Testes, "Se o test/verify começar a cair sem motivo aparente"). Padrão
+operacional confirmado nesta sessão: reapear órfãs antes de uma rodada longa mantém a memória saudável.
+
 ## D-drain-coordinator-fork-exit-sem-guarda-regressao
 
 **Status:** FECHADA — guard dedicado e testes de `sanitizeDuration()` adicionados.

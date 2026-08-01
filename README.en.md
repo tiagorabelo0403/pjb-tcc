@@ -335,6 +335,17 @@ Expected time: **~50 min** on local hardware. Most of this time is the Spring co
 
 The Surefire/Failsafe `argLine` sets `-Dpjb.runtime.lifecycle.drain-quiet-period=10ms`. The graceful drain coordinator (`PjbRuntimeDrainCoordinator`) sleeps 20s by default on every Spring context close — correct in production, where there is real traffic to drain before shutdown, but pure waste in a test JVM. Without this override, a full `verify` run can exceed Surefire's own 30s fork-exit watchdog (`forkedProcessExitTimeoutInSeconds`) and force-kill the forked JVM at teardown, even with every test already green — a symptom that only shows up on long full-suite runs, never in an isolated class.
 
+### If `test`/`verify` starts "dropping" for no apparent reason
+
+If test runs start getting killed right at the start (or the build turns slow and flaky), the cause is almost always an **orphaned test JVM**: when a `mvnw` run is interrupted abruptly, the forked Surefire/Failsafe JVM (`-Xmx4g`) can survive with no parent process to reap it and pile up until it starves the machine's memory, killing subsequent runs. It is not a misconfigured JVM flag — it is a zombie process. A dedicated guard detects and clears it:
+
+```bash
+python scripts/reap_orphan_test_jvms.py         # list orphaned test JVMs (report-only)
+python scripts/reap_orphan_test_jvms.py --kill  # terminate the orphans and free memory
+```
+
+Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits non-zero if orphans are found — useful as a CI signal); `--kill` reaps them. It is not wired into the build automatically — run it when you notice instability, before a long run.
+
 ### Run a Specific Test with Full Stack Trace
 
 ```bash
