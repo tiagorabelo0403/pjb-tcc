@@ -850,6 +850,27 @@ The security model is driven by identity, role, assignment, organization, unit, 
 | **LGPD** | Confidential data never sent to external services; auditable redact by version |
 | **Dual Approval** | Critical operations require confirmation from a second authorized actor |
 
+### Secrets vault and the AES-GCM master key
+
+All encryption of sensitive data at rest goes through `CryptoVaultService` (AES-GCM), which requires a Base64 master key of at least 32 bytes via `pjb.security.master-key` — the service fails to start with a clear `IllegalStateException` if it is missing.
+
+**In production**, `application-prod.yml` already enforces `${PJB_MASTER_KEY_BASE64}` with no default: no env, no boot. **In dev/demo (compose)**, the previous default was a 32-byte block of zeros — a key valid in size and catastrophically insecure in value. Removed: `docker-compose.yml` now uses the compose `${PJB_MASTER_KEY_BASE64:?…}` syntax, which fails before the container starts if the variable is not defined in `.env`. To generate a local dev key:
+
+```bash
+openssl rand -base64 32
+```
+
+Paste the value into `.env` as `PJB_MASTER_KEY_BASE64=<value>`.
+
+**Real rotation via HashiCorp Vault** is already wired through `VaultDbCredentialsProvider` (native HTTP integration against the Vault API, KV v2, `X-Vault-Token`, configurable timeout), activated by `pjb.db.credentials.rotation.enabled=true`. To exercise it locally, Compose exposes a `vault` service in its own profile (not started by default):
+
+```bash
+docker compose --profile vault up -d vault
+bash scripts/vault_dev_bootstrap.sh        # enables KV v2 and writes test credentials
+```
+
+The script prints the 4 env vars the backend needs to pull credentials from Vault. The `vault` service in compose runs in dev-mode (no persistence, command `server -dev -dev-listen-address=0.0.0.0:8200`, token via `PJB_VAULT_DEV_ROOT_TOKEN`) — **for dev/demo only**. In production, point `VaultDbCredentialsProvider` at an externally-managed instance, using a real auth method (AppRole/Kubernetes/etc.), not a static root token.
+
 [⬆ Back to top](#quick-navigation)
 
 ---

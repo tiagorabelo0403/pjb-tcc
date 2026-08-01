@@ -850,6 +850,27 @@ O modelo de segurança é orientado por identidade, papel, lotação, órgão, u
 | **LGPD** | Dados sigilosos nunca enviados a serviços externos; redact auditável por versão |
 | **Dual approval** | Operações críticas exigem confirmação de segundo ator autorizado |
 
+### Cofre de segredos e a chave mestra AES-GCM
+
+Toda criptografia de dado sensível em repouso passa pelo `CryptoVaultService` (AES-GCM), que exige uma chave mestra Base64 de pelo menos 32 bytes via `pjb.security.master-key` — falha explícita na subida se ausente, com mensagem clara em `IllegalStateException`.
+
+**Em produção**, `application-prod.yml` já força `${PJB_MASTER_KEY_BASE64}` sem default: sem env, o serviço não sobe. **Em dev/demo (compose)**, o default anterior era um bloco de 32 zeros — chave válida em tamanho e catastroficamente insegura em valor. Removido: agora o `docker-compose.yml` usa a sintaxe `${PJB_MASTER_KEY_BASE64:?…}` do compose, que falha antes do container subir se a variável não estiver definida no `.env`. Para gerar uma chave dev local:
+
+```bash
+openssl rand -base64 32
+```
+
+Cole o valor no `.env` como `PJB_MASTER_KEY_BASE64=<valor>`.
+
+**Rotação real via HashiCorp Vault** já está wired via `VaultDbCredentialsProvider` (integração HTTP nativa contra a Vault API, KV v2, `X-Vault-Token`, timeout configurável), ativada por `pjb.db.credentials.rotation.enabled=true`. Para exercitar localmente, o compose expõe um serviço `vault` em profile próprio (não sobe por padrão):
+
+```bash
+docker compose --profile vault up -d vault
+bash scripts/vault_dev_bootstrap.sh        # habilita KV v2 e grava credenciais de teste
+```
+
+O script imprime as 4 envs que o backend precisa pra puxar credenciais do Vault. O serviço `vault` no compose roda em dev-mode (sem persistência, comando `server -dev -dev-listen-address=0.0.0.0:8200`, token via `PJB_VAULT_DEV_ROOT_TOKEN`) — **exclusivamente para dev/demo**. Em produção, apontar `VaultDbCredentialsProvider` para uma instância gerenciada externamente, com auth method próprio (AppRole/Kubernetes/etc.), não com root token estático.
+
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---

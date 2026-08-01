@@ -104,7 +104,14 @@ services:
       PJB_LIVE_CLUSTER_ENABLED: ${PJB_LIVE_CLUSTER_ENABLED:-false}
       PJB_DB_USER: ${PJB_DB_USER:-pjb}
       PJB_DB_PASS: ${PJB_DB_PASS:-pjb}
-      PJB_MASTER_KEY_BASE64: ${PJB_MASTER_KEY_BASE64:-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
+      # Chave mestra AES-GCM (Base64, >= 32 bytes). Obrigatoria. Se não setada, o backend falha
+      # na subida com mensagem clara de CryptoVaultService (nunca sobe com chave em branco).
+      # Para gerar uma chave dev local (sem Vault): 'openssl rand -base64 32' e cole no .env como
+      # PJB_MASTER_KEY_BASE64=<valor>. Em produção, usar Vault (perfil pjb.db.credentials.rotation.enabled=true).
+      # ATENCAO: nunca commitar a chave. O default anterior era um bloco de zeros — chave valida em
+      # tamanho e catastroficamente insegura em valor; removido de proposito para forcar definição
+      # explicita antes do container subir.
+      PJB_MASTER_KEY_BASE64: ${PJB_MASTER_KEY_BASE64:?defina PJB_MASTER_KEY_BASE64 no .env (openssl rand -base64 32)}
       PJB_JVM_MAX_METASPACE_SIZE: ${PJB_JVM_MAX_METASPACE_SIZE:-512m}
       JAVA_OPTS: ${PJB_JAVA_OPTS:--Dfile.encoding=UTF-8 -Djava.security.egd=file:/dev/urandom}
     depends_on:
@@ -124,6 +131,35 @@ services:
       timeout: 5s
       retries: 10
       start_period: 45s
+    restart: unless-stopped
+
+  # Vault em dev-mode: cofre de segredos para dev/demo apenas. Sobe SEM persistencia (in-memory),
+  # com token fixo definido em PJB_VAULT_DEV_ROOT_TOKEN. NAO usar como cofre real de producao —
+  # em prod, apontar VaultDbCredentialsProvider (pjb.db.credentials.rotation.enabled=true) para
+  # uma instancia gerenciada externamente (HashiCorp Vault, AWS/GCP KMS via provider adequado).
+  # Fica no profile "vault" para nao ser subido por padrao: 'docker compose --profile vault up -d'.
+  vault:
+    profiles: ["vault"]
+    image: hashicorp/vault:1.17
+    # Comando explicito e obrigatorio para dev-mode desde versoes recentes da imagem oficial —
+    # so as env VAULT_DEV_* nao bastam mais para auto-iniciar o server. -dev-listen-address
+    # obriga bind em 0.0.0.0 para o port publish do Docker Desktop enxergar.
+    command: ["server", "-dev", "-dev-listen-address=0.0.0.0:8200"]
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${PJB_VAULT_DEV_ROOT_TOKEN:?defina PJB_VAULT_DEV_ROOT_TOKEN no .env (dev only)}
+      VAULT_ADDR: http://127.0.0.1:8200
+    ports:
+      - "${PJB_VAULT_PORT:-8200}:8200"
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      # Usa /v1/sys/health com sealedcode=200 (dev-mode nunca fica sealed, mas mantido por consistencia)
+      # e wget -qO -: falha real de conexao propaga exit != 0, healthcheck reporta unhealthy.
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8200/v1/sys/health?standbyok=true&sealedcode=200"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
 
 volumes:
