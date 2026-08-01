@@ -21,7 +21,12 @@ import org.testcontainers.utility.DockerImageName;
 @ActiveProfiles("integration-test")
 public abstract class PjbIntegrationTestBase {
 
-    public static final DockerImageName POSTGRES_IMAGE = DockerImageName.parse("postgres:17");
+    // pgvector/pgvector:pg17 e postgres:17 + extensao vector precompilada. Necessario porque a
+    // migration V307__ai_vector_store_pgvector.sql chama CREATE EXTENSION vector — sem a imagem
+    // certa, todo IT falha no Flyway antes de qualquer teste rodar. asCompatibleSubstituteFor
+    // ensina o Testcontainers a nao rejeitar a imagem por nao ser "postgres" puro.
+    public static final DockerImageName POSTGRES_IMAGE = DockerImageName.parse("pgvector/pgvector:pg17")
+            .asCompatibleSubstituteFor("postgres");
 
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(POSTGRES_IMAGE)
             .withDatabaseName("pjb_it")

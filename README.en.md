@@ -778,6 +778,22 @@ Ten services that cover gaps no Brazilian judicial system currently addresses sy
 | 9 | `ArquivamentoPendenciaChecker` | Safety checklist for archiving: court fees, orders, deadlines, and documents — never archives automatically |
 | 10 | `ProcessMiningMaterializedViewService` | Materialized tables updated in Virtual Threads — bottleneck by act, phase, procedural type, and asynchronous refresh integration |
 
+### Vector store for legal RAG (pgvector)
+
+`VectorSearchService` has three possible backends, selected by `pjb.ai.vector.mode`:
+
+| Mode | When to use | Backend |
+|------|-------------|---------|
+| `disabled` (default) | No vector usage — returns empty result, no infra cost | None |
+| `mock` | `dev`/`test` profiles — in-memory TF-IDF | No server |
+| `pgvector` | Production — real semantic search | pgvector extension on the same Postgres |
+
+`pgvector` mode reuses the Postgres already in Compose (image `pgvector/pgvector:pg17`, a drop-in replacement for `postgres:17` with the extension pre-compiled) — no dedicated vector database to maintain. Migration `V307__ai_vector_store_pgvector.sql` creates the `pjb_ai_vector_document` table with `embedding vector(1536)` (OpenAI's `text-embedding-3-small` dimension, already configured in `application-ai.yml`), an HNSW index with `vector_cosine_ops` (`m=16, ef_construction=64`), and a GIN index on `metadata jsonb` for filtering by arbitrary keys without a full scan.
+
+The adapter (`VectorSearchServicePgVector`) uses the project's existing `EmbeddingService` — when the output vector's dimension differs from the column's, it is truncated/padded and renormalized, so swapping models does not break the schema. Filters in the `filtros` map become a `metadata @> ?::jsonb` clause; without filters, the WHERE is omitted. Score = `1 − cosine_distance` (same convention as the rest of the stack). A database failure returns a degraded result (`iaVersion=pgvector-error`) without throwing — the UI does not break because of vectors.
+
+Coverage: `VectorSearchServicePgVectorTest` (8 tests with mocked `JdbcTemplate` — SQL, JSONB filter, score calculation, dimension truncation, default top-K, degraded-on-error). The migration was validated in isolation on the `pgvector/pgvector:pg17` image with `psql`: `CREATE EXTENSION`, all 4 indexes, insert, and query with `<=>` + `@>` all worked.
+
 [⬆ Back to top](#quick-navigation)
 
 ---

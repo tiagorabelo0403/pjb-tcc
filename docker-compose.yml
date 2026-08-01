@@ -1,7 +1,11 @@
 name: pjb
 services:
   postgres:
-    image: postgres:17
+    # Imagem oficial pgvector/pgvector:pg17 = postgres:17 + extensao vector precompilada.
+    # Necessaria para o VectorSearchServicePgVector (pjb.ai.vector.mode=pgvector) e
+    # habilitada pela migration V307__ai_vector_store_pgvector.sql. Sem trocar de imagem,
+    # a migration falha com "extension vector is not available".
+    image: pgvector/pgvector:pg17
     environment:
       POSTGRES_DB: ${PJB_DB_NAME:-pjb}
       POSTGRES_USER: ${PJB_DB_USER:-pjb}
