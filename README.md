@@ -284,6 +284,19 @@ docker compose --profile app up -d --build
 
 O serviço `backend` está no profile `app`. Sem ele, o Compose sobe apenas a infraestrutura de suporte. Se a porta `5432` já estiver em uso localmente, defina `PJB_PG_PORT=5433` no `.env` — o backend em Docker continua acessando `postgres:5432` pela rede interna do Compose.
 
+### JVM dentro de container — receita anti-`killed` (OOM)
+
+Container Java mal calibrado é a receita clássica pra `killed` sem heap dump: a JVM enxerga a RAM da máquina hospedeira, aloca heap grande demais, e o kernel do container mata o processo por ultrapassar o limite de memória — sem stack trace, sem dump, só um exit silencioso. O `pjb-runtime.sh` (entrypoint da imagem) resolve isso automaticamente, calculando as flags da JVM a partir do próprio limite do cgroup:
+
+- Detecta o limite de memória do container (`/sys/fs/cgroup/memory.max` em v2, `memory.limit_in_bytes` em v1) e o de CPU (`cpu.max` ou `cpu.cfs_quota_us`) sem depender do que o host reporta.
+- Reserva memória nativa proporcional ao tamanho do container (34% para 512Mi–1Gi, 30% para 2Gi, 26% para 4Gi, 24% para ≥8Gi) — porque metaspace + direct memory + code cache + stacks nativas não são heap e precisam de espaço.
+- `MaxRAMPercentage`, `InitialRAMPercentage`, `MaxMetaspaceSize`, `MaxDirectMemorySize`, `ReservedCodeCacheSize` escalam por faixa de tamanho — nada é hardcoded pra um perfil só.
+- `-XX:+UseContainerSupport -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError` garantem que qualquer OOM real gere dump e o container saia limpo (não vira zumbi), com `HeapDumpPath` configurável.
+- GC log e JFR opcionais por env (`PJB_JVM_GC_LOG_ENABLED`, `PJB_JVM_JFR_ENABLED`) — sem custo se desativados.
+- Três perfis por env `PJB_JVM_PROFILE`: `balanced` (G1GC, default), `latency` (ZGC generational), `startup` (G1GC + dedup).
+
+A tabela de decisão está travada por um guard Python dedicado (`scripts/pjb_runtime_memory_recipe_guard.py`) que executa as funções bash isoladas do script real com limites simulados (512Mi/1Gi/2Gi/4Gi/8Gi/16Gi) e falha se qualquer valor divergir — mudança na fórmula fica obrigada a ser consciente.
+
 ### Endpoints após subir
 
 | Endpoint | Descrição |

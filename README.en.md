@@ -284,6 +284,19 @@ docker compose --profile app up -d --build
 
 The `backend` service is in the `app` profile. Without it, Compose only starts the supporting infrastructure. If port `5432` is already in use locally, set `PJB_PG_PORT=5433` in `.env` — the backend in Docker continues accessing `postgres:5432` via the internal Compose network.
 
+### JVM in a container — anti-`killed` (OOM) recipe
+
+A miscalibrated Java container is the classic recipe for a silent `killed`: the JVM sees the host's RAM, allocates a heap that's too large, and the container kernel kills the process for exceeding the memory limit — no stack trace, no dump, just a silent exit. `pjb-runtime.sh` (the image's entrypoint) solves this automatically by computing JVM flags from the cgroup limits themselves:
+
+- Detects the container's memory limit (`/sys/fs/cgroup/memory.max` on v2, `memory.limit_in_bytes` on v1) and CPU limit (`cpu.max` or `cpu.cfs_quota_us`) instead of trusting the host's view.
+- Reserves native memory proportional to container size (34% for 512Mi–1Gi, 30% for 2Gi, 26% for 4Gi, 24% for ≥8Gi) — because metaspace + direct memory + code cache + native stacks are not heap and need room.
+- `MaxRAMPercentage`, `InitialRAMPercentage`, `MaxMetaspaceSize`, `MaxDirectMemorySize`, `ReservedCodeCacheSize` scale by size band — nothing is hardcoded to a single profile.
+- `-XX:+UseContainerSupport -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError` ensure any real OOM produces a dump and the container exits cleanly (not a zombie), with configurable `HeapDumpPath`.
+- GC log and JFR are opt-in via env (`PJB_JVM_GC_LOG_ENABLED`, `PJB_JVM_JFR_ENABLED`) — zero cost when disabled.
+- Three profiles via `PJB_JVM_PROFILE`: `balanced` (G1GC, default), `latency` (ZGC generational), `startup` (G1GC + dedup).
+
+The decision table is locked by a dedicated Python guard (`scripts/pjb_runtime_memory_recipe_guard.py`) that executes the real bash functions in isolation with simulated limits (512Mi/1Gi/2Gi/4Gi/8Gi/16Gi) and fails if any value diverges — any change to the formula must be intentional.
+
 ### Available Endpoints
 
 | Endpoint | Description |
