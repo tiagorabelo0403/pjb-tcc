@@ -364,7 +364,7 @@ public final class RecursalWorkbenchSurfaceCatalog {
     }
 
     public static String ministerioPublicoRecurso() {
-        return "/api/v1/mp/recurso/{processoId}";
+        return "/api/v1/recursal/processos/{processoId}/recurso";
     }
 
     public static String procuradoriaSnapshot() {
@@ -376,7 +376,7 @@ public final class RecursalWorkbenchSurfaceCatalog {
     }
 
     public static String procuradoriaRecurso() {
-        return "/api/v1/procuradoria/operacional/processos/{processoId}/recurso";
+        return "/api/v1/recursal/processos/{processoId}/recurso";
     }
 
     public static String procuradoriaParecer() {

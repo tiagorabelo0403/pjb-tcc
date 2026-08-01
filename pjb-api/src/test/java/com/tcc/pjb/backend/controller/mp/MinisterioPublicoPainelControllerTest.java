@@ -1,20 +1,16 @@
 package com.tcc.pjb.backend.controller.mp;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.model.dto.dashboard.PerfilDashboardPayload;
-import com.tcc.pjb.backend.model.dto.profile.operational.InstitutionalRecursoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.MinisterioPublicoParecerRequest;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceCollectionResponse;
@@ -63,41 +59,12 @@ class MinisterioPublicoPainelControllerTest {
     }
 
     @Test
-    void interporRecurso_expoeHeadersDeDepreciacaoDaSuperficieLegada() throws Exception {
-        when(facadeService.ministerioPublicoInterporRecurso(anyLong(), anyString(), anyString(), anyString(), anyBoolean(), anyBoolean(), any()))
-                .thenReturn(new SurfaceActionResponse("mp.recurso", "interpor-recurso", 11L, "RECURSO_INTERPOSTO", null));
-
-        String body = objectMapper.writeValueAsString(new InstitutionalRecursoRequest(
-                "RESP", "razoes recursais", "fundamentacao", true, false, "obs"));
-
-        mockMvc.perform(post("/api/v1/mp/recurso/{processoId}", 11L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Deprecation", "true"))
-                .andExpect(header().string("Sunset", "Tue, 28 Oct 2026 00:00:00 GMT"))
-                .andExpect(header().string("Link", "</api/v1/recursal/processos/11/recurso>; rel=\"successor-version\""));
-    }
-
-    @Test
-    void manifestacoesPendentes_naoGanhaHeadersDeDepreciacao() throws Exception {
+    void manifestacoesPendentes_retornaColecaoDoFacade() throws Exception {
         when(facadeService.ministerioPublicoManifestacoesPendentes()).thenReturn(new SurfaceCollectionResponse("mp.manifestacoes-pendentes", List.of()));
 
         mockMvc.perform(get("/api/v1/mp/manifestacoes/pendentes"))
                 .andExpect(status().isOk())
-                .andExpect(header().doesNotExist("Deprecation"))
-                .andExpect(header().doesNotExist("Sunset"))
-                .andExpect(header().doesNotExist("Link"));
-    }
-
-    @Test
-    void interporRecurso_camposEmBrancoRetorna400() throws Exception {
-        String body = objectMapper.writeValueAsString(new InstitutionalRecursoRequest("", "", "", false, false, null));
-
-        mockMvc.perform(post("/api/v1/mp/recurso/{processoId}", 11L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isBadRequest());
+                .andExpect(jsonPath("$.scope").value("mp.manifestacoes-pendentes"));
     }
 
     @Test

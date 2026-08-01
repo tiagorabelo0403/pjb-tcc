@@ -21,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -71,6 +72,7 @@ import com.tcc.pjb.backend.model.repository.security.PasskeySessionRepository;
 import com.tcc.pjb.backend.model.repository.security.UserSecurityProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.configs.security.DbUserDetailsService;
+import com.tcc.pjb.backend.configs.security.InstitutionalCriticalActionHttpGuardFilter;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.security.ratelimit.RateLimiterStore;
 import com.tcc.pjb.backend.service.infra.scaling.JudicialScaleProfileResolver;
@@ -105,6 +107,7 @@ public class SecurityConfig {
                                            ObjectProvider<DecisionClientBindingFilter> decisionClientBindingFilterProvider,
                                            ObjectProvider<AccountFreezeFilter> accountFreezeFilterProvider,
                                            ObjectProvider<DevicePolicyFilter> devicePolicyFilterProvider,
+                                           ObjectProvider<InstitutionalCriticalActionHttpGuardFilter> institutionalCriticalActionHttpGuardFilterProvider,
                                            ObjectProvider<JwtDecoder> jwtDecoderProvider,
                                            ApiRouteGovernanceProperties apiRouteGovernanceProperties,
                                            Environment env) throws Exception {
@@ -318,6 +321,11 @@ public class SecurityConfig {
             } else {
                 http.addFilterAfter(devicePolicyFilter, BasicAuthenticationFilter.class);
             }
+        }
+
+        InstitutionalCriticalActionHttpGuardFilter institutionalCriticalActionHttpGuardFilter = institutionalCriticalActionHttpGuardFilterProvider.getIfAvailable();
+        if (institutionalCriticalActionHttpGuardFilter != null) {
+            http.addFilterAfter(institutionalCriticalActionHttpGuardFilter, AuthorizationFilter.class);
         }
 
         JwtDecoder jwtDecoder = jwtDecoderProvider.getIfAvailable();

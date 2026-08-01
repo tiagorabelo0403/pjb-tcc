@@ -1,10 +1,8 @@
 package com.tcc.pjb.backend.controller.procuradoria;
 
-import com.tcc.pjb.backend.model.dto.profile.operational.InstitutionalRecursoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.ProcuradoriaContestacaoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.ProcuradoriaExecucaoFiscalRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.ProcuradoriaParecerRequest;
-import com.tcc.pjb.backend.controller.recursal.RecursalLegacyDeprecationHeaders;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
@@ -70,25 +68,6 @@ public class ProcuradoriaOperacionalController {
         enforce(authentication, "procuradoria_execucao_fiscal");
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(facadeService.ajuizarExecucaoFiscal(request.devedorCpfCnpj(), request.valorDivida(), request.descricao(), request.comarca()));
-    }
-
-    @PostMapping("/processos/{processoId}/recurso")
-    @PreAuthorize(ROLES)
-    public ResponseEntity<SurfaceActionResponse> interporRecurso(@PathVariable Long processoId,
-                                                                 @Valid @RequestBody InstitutionalRecursoRequest request,
-                                                                 Authentication authentication) {
-        enforce(authentication, "procuradoria_recurso");
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .headers(RecursalLegacyDeprecationHeaders.forProcesso(processoId))
-                .body(facadeService.interporRecurso(
-                        processoId,
-                        request.tipoRecurso(),
-                        request.razoes(),
-                        request.fundamentacao(),
-                        request.pedidoEfeitoSuspensivo(),
-                        request.preparoDispensado(),
-                        request.observacoes()
-                ));
     }
 
     @PostMapping("/processos/{processoId}/parecer")

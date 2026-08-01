@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.313%20unit%20%2B%20250%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.310%20unit%20%2B%20252%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -310,8 +310,8 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.313 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 250 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes unitários (Surefire):** 4.310 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes de integração (Failsafe):** 252 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -327,7 +327,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.313 unitários (Surefire) e depois os 250 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.310 unitários (Surefire) e depois os 252 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -345,11 +345,11 @@ O `argLine` do Surefire/Failsafe fixa `-Dpjb.runtime.lifecycle.drain-quiet-perio
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.313** |
+| Total de testes unitários | Surefire | **4.310** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
-| Total de testes de integração | Failsafe | **250** ¹ |
+| Total de testes de integração | Failsafe | **252** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
@@ -360,7 +360,9 @@ O `verify` padrão (Failsafe) não alcança 13 métodos de teste distribuídos e
 
 Duas fatias fecharam nesta sessão. `D-drain-coordinator-fork-exit-sem-guarda-regressao` ganhou um guard Python dedicado (`scripts/drain_quiet_period_argline_guard.py`) que falha se o `<argLine>` de Surefire ou Failsafe perder o override `drain-quiet-period` ou ele virar zero — o fix já existia (linha acima), mas não tinha rede de segurança contra regressão; `PjbRuntimeDrainServiceTest` ganhou 4 testes documentando o fallback silencioso de `sanitizeDuration()` (`Duration.ZERO`/negativo caem no default de produção). E `D-controllers-recursais-legados-sem-teste-dedicado` fechou cobertura completa dos 4 controllers recursais legados (`AdvogadoCockpitController`, `DefensorPublicoPainelController`, `MinisterioPublicoPainelController`, `ProcuradoriaOperacionalController`) — pré-requisito documentado antes de qualquer remoção futura desses controllers: sucesso de todo endpoint, falha de validação (400) para todo DTO com constraint real, e uma classe IT nova por controller provando anônimo negado, role ilegítima negada (403) e cada role legítima do `@PreAuthorize` autorizada, contra Postgres real com Spring Security completo — 63 testes novos (39 unitários + 20 de integração), 0 falhas. As ITs novas expuseram dois achados reais sem impacto em produção, documentados em `DEBT_LOG.md`: três papéis (`OAB_PRESIDENTE_SECCIONAL`, `PROMOTOR_ELEITORAL`, `PROMOTOR_TRABALHISTA`) nunca chegam sozinhos em runtime porque `PjbGrantedAuthorityFactory` sempre concede um papel-base junto; e `DEFENSOR_DISTRITAL` é um literal morto no `@PreAuthorize` legado que não existe como valor de `TipoUsuario`.
 
-Os 4.313 testes unitários foram reconfirmados numa rodada completa (`mvnw test -pl pjb-api`) ao final desta sessão — 0 falhas, sem regressão. Os 250 testes de integração somam o total anterior (230) mais os 20 novos das 4 ITs acima, cada uma confirmada verde individualmente (`-Dit.test=`); uma rodada agregada completa do `verify` (250 testes, ~50 min) não foi reexecutada nesta sessão por restrição de tempo — o número é soma verificada por execução individual, não estimativa.
+Uma terceira fatia fechou `D-recursal-superficie-por-papel` por completo: com o pré-requisito de teste já pronto, o endpoint `interporRecurso` (e o `@PostMapping` correspondente) foi removido dos 4 controllers legados — eles continuam existindo, com os demais endpoints intactos, só o recurso saiu de lá. As facades intermediárias correspondentes (`AdvogadoSurfaceFacadeService.interporRecurso`, `InstitutionalPainelSurfaceFacadeService.defensorInterporRecurso`/`.ministerioPublicoInterporRecurso`, `ProcuradoriaOperationalSurfaceFacadeService.interporRecurso`) foram removidas junto — a camada de serviço que `RecursalPeticionamentoPerfilRouter` chama diretamente ficou intacta. `AdvogadoRecursoRequest` e `RecursalLegacyDeprecationHeaders` foram deletados por não terem mais nenhum chamador. Antes de remover, uma política OPA real de um overlay de produção (`prod-sovereign-opa-ext-authz`) foi encontrada desatualizada desde a Fatia 1 — o `critical_paths` nunca cobria o endpoint unificado `/api/v1/recursal/`, só o legado `/api/v1/mp/recurso/` que estava prestes a ser removido; corrigido antes de prosseguir, registrado em `D-recursal-opa-critical-path-nao-atualizado`. A coleção Postman perdeu a pasta de endpoints legados e o contrato estático `docs/openapi/public-api.yaml` perdeu os 4 blocos de path correspondentes. Uma revisão pedida antes de commitar levou a duas varreduras adicionais de consumidores, cada uma achando mais: `RecursalWorkbenchSurfaceCatalog` e `InstitutionalWorkbenchProjectionService` montavam botões reais de "Interpor recurso" apontando pra URL que acabara de virar 404 — corrigido. Muito mais grave, e agora corrigido: `InstitutionalCriticalActionHttpGuardFilter`, o filtro Spring que aplica o gate documental institucional (`InstitutionalDocumentSecurityGateApplicationService`) a ~30 atos sensíveis reais (sentença, despacho, manifestação do MP, ofício, laudo, etc.), estava registrado com `@Order(HIGHEST_PRECEDENCE + 35)` **antes** da cadeia do Spring Security (order `-100`, lido do jar) e nunca era adicionado a ela — então rodava com o `SecurityContextHolder` vazio e `getRequired()` estourava `IllegalStateException`, dando **HTTP 500 em todo POST institucional protegido** desde que o filtro existe (controle de segurança dormente/quebrado, provado por IT com stack trace). A correção tem três camadas: o filtro passou a ser registrado via `http.addFilterAfter(..., AuthorizationFilter.class)` (roda depois da autenticação e autorização, com o usuário resolvido — mesma convenção dos filtros de step-up); a fábrica do gate ficou null-safe (`getOrNull` em vez de `getRequired`, nunca mais 500); e o path recursal unificado foi religado ao filtro, restaurando o gate que o recursal perdeu na Fatia 1. Provado por 5 testes unitários novos do serviço de gate, teste do filtro para o path recursal, e uma IT com JWT real contra Postgres (`InstitutionalRecursalGateIT`) mais a `RecursalPeticionamentoControllerIT` (8/8) revalidada com o filtro já ativo. Duas outras classes (`PainelActionSurfaceCompositionService`/`PainelExecutionSurfaceCompositionService`, consumidas pelos painéis reais de MP/Defensoria) tinham 4 entradas apontando pra URLs que nunca existiram de verdade — corrigidas também. Tudo documentado em detalhe no `DEBT_LOG.md` (`D-institutional-gate-filter-roda-antes-da-auth`).
+
+Os 4.310 testes unitários foram reconfirmados numa rodada completa (`mvnw test -pl pjb-api`) ao final desta sessão — 0 falhas, 0 erros, sem regressão (inclui os 5 testes novos do serviço de gate documental e o teste do path recursal no filtro). Os 252 testes de integração somam o total anterior (250) mais os 2 da `InstitutionalRecursalGateIT`, cada IT nova confirmada verde individualmente (`-Dit.test=`); uma rodada agregada completa do `verify` (~50 min) não foi reexecutada por restrição de tempo — o número é soma verificada por execução individual, não estimativa.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -866,8 +868,8 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.313 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **250 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes unitários (Surefire) | **4.310 · 0 falhas · 0 erros** |
+| Testes de integração (Failsafe) | **252 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
@@ -1080,7 +1082,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.313 testes e 269 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.310 testes e 269 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

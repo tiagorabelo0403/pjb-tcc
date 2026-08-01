@@ -48,17 +48,6 @@ public class ProcuradoriaOperationalSurfaceFacadeService {
                 operacionalService.emitirParecer(processoId, request));
     }
 
-    public SurfaceActionResponse interporRecurso(Long processoId,
-                                                 String tipoRecurso,
-                                                 String razoes,
-                                                 String fundamentacao,
-                                                 boolean pedidoEfeitoSuspensivo,
-                                                 boolean preparoDispensado,
-                                                 String observacoes) {
-        return projectionSupport.action("procuradoria.operacional", "interporRecurso", processoId,
-                operacionalService.interporRecurso(processoId, tipoRecurso, razoes, fundamentacao, pedidoEfeitoSuspensivo, preparoDispensado, observacoes));
-    }
-
     public SurfaceSnapshotResponse calcularPrecatorioRpv(PrecatorioRpvCalculoRequest request) {
         PrecatorioRpvService.PrecatorioRpvRequest mapped = new PrecatorioRpvService.PrecatorioRpvRequest(
                 request.processoId(),

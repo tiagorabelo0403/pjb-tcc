@@ -122,10 +122,6 @@ public class AdvogadoSurfaceFacadeService {
         return toOperacaoResponse(advogadoCockpitService.darCienciaIntimacaoEmLote(workItemIds));
     }
 
-    public AdvogadoOperacaoResponse interporRecurso(Long processoId, String tipoRecurso, String razoes, String fundamentacao, boolean pedidoEfeitoSuspensivo, boolean preparoDispensado, String observacoes) {
-        return toOperacaoResponse(advogadoCockpitService.interprorRecurso(processoId, tipoRecurso, razoes, fundamentacao, pedidoEfeitoSuspensivo, preparoDispensado, observacoes));
-    }
-
     public List<AdvogadoClienteAnaliticoItemResponse> analiticoPorCliente(String clienteCpfCnpj) {
         return advogadoCockpitService.analiticoPorCliente(clienteCpfCnpj).stream()
                 .map(this::toAnaliticoItem)

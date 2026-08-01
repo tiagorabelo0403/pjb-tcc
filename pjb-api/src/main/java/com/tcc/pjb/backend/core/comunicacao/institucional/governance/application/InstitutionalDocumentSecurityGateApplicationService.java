@@ -34,8 +34,9 @@ public class InstitutionalDocumentSecurityGateApplicationService {
                                                      InstitutionalSensitiveAct act,
                                                      String operationCode,
                                                      boolean allowLegacyFallback) {
-        Usuario usuario = currentUserService.getRequired();
-        InstitutionalNomination nomination = resolveNomination(usuario.getId(), unidadeCodigo, caixaCodigo);
+        Usuario usuario = currentUserService.getOrNull();
+        Long usuarioId = usuario == null ? null : usuario.getId();
+        InstitutionalNomination nomination = usuarioId == null ? null : resolveNomination(usuarioId, unidadeCodigo, caixaCodigo);
         if (nomination == null && allowLegacyFallback) {
             return new InstitutionalDocumentSecurityGate(
                     operationCode,

@@ -168,24 +168,6 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/advogado/cockpit/processos/{processoId}/recurso:
-    post:
-      summary: "AdvogadoCockpitController::POST /api/v1/advogado/cockpit/processos/{processoId}/recurso"
-      tags:
-        - "advogado"
-      responses:
-        200:
-          description: "OK"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AdvogadoRecursoRequest"
-      security:
-        -
-          bearerAuth:
-
   /api/v1/advogado/cockpit/snapshot:
     get:
       summary: "AdvogadoCockpitController::GET /api/v1/advogado/cockpit/snapshot"
@@ -1936,24 +1918,6 @@ paths:
       responses:
         200:
           description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/defensor/recurso/{processoId}:
-    post:
-      summary: "DefensorPublicoPainelController::POST /api/v1/defensor/recurso/{processoId}"
-      tags:
-        - "defensor"
-      responses:
-        200:
-          description: "OK"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InstitutionalRecursoRequest"
       security:
         -
           bearerAuth:
@@ -5307,24 +5271,6 @@ paths:
       responses:
         200:
           description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/mp/recurso/{processoId}:
-    post:
-      summary: "MinisterioPublicoPainelController::POST /api/v1/mp/recurso/{processoId}"
-      tags:
-        - "mp"
-      responses:
-        200:
-          description: "OK"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InstitutionalRecursoRequest"
       security:
         -
           bearerAuth:
@@ -9473,24 +9419,6 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ProcuradoriaParecerRequest"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/procuradoria/operacional/processos/{processoId}/recurso:
-    post:
-      summary: "ProcuradoriaOperacionalController::POST /api/v1/procuradoria/operacional/processos/{processoId}/recurso"
-      tags:
-        - "procuradoria"
-      responses:
-        200:
-          description: "OK"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InstitutionalRecursoRequest"
       security:
         -
           bearerAuth:

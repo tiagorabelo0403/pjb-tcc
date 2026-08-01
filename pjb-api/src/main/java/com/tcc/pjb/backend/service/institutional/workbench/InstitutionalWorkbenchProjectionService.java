@@ -297,18 +297,18 @@ public class InstitutionalWorkbenchProjectionService {
             case MEMBRO_MINISTERIO_PUBLICO, PROMOTOR_ELEITORAL, PROMOTOR_TRABALHISTA, PROCURADOR_GERAL_REPUBLICA -> List.of(
                     ActionBlueprint.processAction(MaterialActionCode.MINISTERIO_PUBLICO_MANIFESTACAO, "Registrar manifestação", "/api/v1/mp/manifestacao/{processoId}"),
                     ActionBlueprint.processAction(MaterialActionCode.MINISTERIO_PUBLICO_PARECER, "Emitir parecer", "/api/v1/mp/parecer/{processoId}"),
-                    ActionBlueprint.processAction(MaterialActionCode.MINISTERIO_PUBLICO_RECURSO, "Interpor recurso", "/api/v1/mp/recurso/{processoId}"),
+                    ActionBlueprint.processAction(MaterialActionCode.MINISTERIO_PUBLICO_RECURSO, "Interpor recurso", "/api/v1/recursal/processos/{processoId}/recurso"),
                     ActionBlueprint.processAction(MaterialActionCode.MINISTERIO_PUBLICO_REQUISICAO_DILIGENCIA, "Requisitar diligência", "/api/v1/mp/requisicao/diligencia/{processoId}")
             );
             case DEFENSOR_PUBLICO, DEFENSOR_PUBLICO_FEDERAL -> List.of(
                     ActionBlueprint.processAction(MaterialActionCode.DEFENSORIA_PETICAO, "Protocolar petição", "/api/v1/defensor/peticao/{processoId}"),
-                    ActionBlueprint.processAction(MaterialActionCode.DEFENSORIA_RECURSO, "Interpor recurso", "/api/v1/defensor/recurso/{processoId}"),
+                    ActionBlueprint.processAction(MaterialActionCode.DEFENSORIA_RECURSO, "Interpor recurso", "/api/v1/recursal/processos/{processoId}/recurso"),
                     ActionBlueprint.processAction(MaterialActionCode.DEFENSORIA_GRATUIDADE, "Requerer gratuidade", "/api/v1/defensor/gratuidade/{processoId}/requerimento")
             );
             case PROCURADORIA_MUNICIPAL, PROCURADORIA_ESTADUAL, PROCURADORIA_FEDERAL, PROCURADOR -> List.of(
                     ActionBlueprint.processAction(MaterialActionCode.PROCURADORIA_CONTESTACAO, "Apresentar contestação", "/api/v1/procuradoria/operacional/processos/{processoId}/contestacao"),
                     ActionBlueprint.processAction(MaterialActionCode.PROCURADORIA_PARECER, "Emitir parecer", "/api/v1/procuradoria/operacional/processos/{processoId}/parecer"),
-                    ActionBlueprint.processAction(MaterialActionCode.PROCURADORIA_RECURSO, "Interpor recurso", "/api/v1/procuradoria/operacional/processos/{processoId}/recurso"),
+                    ActionBlueprint.processAction(MaterialActionCode.PROCURADORIA_RECURSO, "Interpor recurso", "/api/v1/recursal/processos/{processoId}/recurso"),
                     ActionBlueprint.catalogAction(MaterialActionCode.PROCURADORIA_EXECUCAO_FISCAL, "Ajuizar execução fiscal", "/api/v1/procuradoria/operacional/execucao-fiscal",
                             new InstitutionalMaterialActionGuardService.CatalogActionContext(
                                     InstitutionalMaterialActionGuardService.TargetSphere.INDETERMINADA,

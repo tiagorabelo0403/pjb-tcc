@@ -121,10 +121,10 @@ public class PainelExecutionSurfaceCompositionService {
             items.add(tx("ALERTA", "Abrir alerta investigativo", "/api/v1/delegado/alertas", priorityTag));
         } else if (panelCode.contains("MINISTERIO_PUBLICO")) {
             items.add(tx("MANIFESTACAO", "Lançar manifestação", "/api/v1/mp/manifestacoes", priorityTag));
-            items.add(tx("RECURSO", "Preparar recurso", "/api/v1/mp/recursos", priorityTag));
+            items.add(tx("RECURSO", "Preparar recurso", "/api/v1/recursal/processos/{processoId}/recurso", priorityTag));
         } else if (panelCode.contains("DEFENSOR_PUBLICO")) {
             items.add(tx("PETICAO", "Redigir petição", "/api/v1/defensoria/peticoes", priorityTag));
-            items.add(tx("RECURSO", "Abrir recurso", "/api/v1/defensoria/recursos", priorityTag));
+            items.add(tx("RECURSO", "Abrir recurso", "/api/v1/recursal/processos/{processoId}/recurso", priorityTag));
         } else if (panelCode.contains("DESEMBARGADOR") || panelCode.contains("COLEGIADO")) {
             items.add(tx("VOTO", "Preparar voto", "/api/v1/colegiado/votos", priorityTag));
             items.add(tx("ACORDAO", "Publicar acórdão", "/api/v1/secretariat/operacional/colegiado/julgamentos", priorityTag));

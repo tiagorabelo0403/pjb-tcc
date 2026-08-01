@@ -1,8 +1,6 @@
 package com.tcc.pjb.backend.controller.defensor;
 
 import com.tcc.pjb.backend.model.dto.dashboard.PerfilDashboardPayload;
-import com.tcc.pjb.backend.model.dto.profile.operational.InstitutionalRecursoRequest;
-import com.tcc.pjb.backend.controller.recursal.RecursalLegacyDeprecationHeaders;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceCollectionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
@@ -20,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -79,27 +76,6 @@ public class DefensorPublicoPainelController {
     public ResponseEntity<SurfaceActionResponse> registrarPeticao(@PathVariable Long processoId, @RequestBody Object request, Authentication authentication) {
         rateLimiter.enforce(CapabilityRateLimitDomain.INSTITUCIONAL, authentication, "defensor_peticao", ApiVersion.V1);
         return ResponseEntity.status(HttpStatus.CREATED).body(facadeService.defensorRegistrarPeticao(processoId, request));
-    }
-
-    @PostMapping("/recurso/{processoId}")
-    @PreAuthorize(DEFENSOR_ROLES)
-    public ResponseEntity<SurfaceActionResponse> interporRecurso(@PathVariable Long processoId,
-                                                                 @Valid @RequestBody InstitutionalRecursoRequest request,
-                                                                 Authentication authentication) {
-        rateLimiter.enforce(CapabilityRateLimitDomain.INSTITUCIONAL, authentication, "defensor_recurso", ApiVersion.V1);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .headers(RecursalLegacyDeprecationHeaders.forProcesso(processoId))
-                .body(
-                facadeService.defensorInterporRecurso(
-                        processoId,
-                        request.tipoRecurso(),
-                        request.razoes(),
-                        request.fundamentacao(),
-                        request.pedidoEfeitoSuspensivo(),
-                        request.preparoDispensado(),
-                        request.observacoes()
-                )
-        );
     }
 
     @GetMapping("/audiencias/hoje")

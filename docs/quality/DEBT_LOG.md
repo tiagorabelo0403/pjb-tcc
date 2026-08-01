@@ -578,10 +578,97 @@ capacidade postulatória na fase recursal, e então ou ampliar `JEF_JUS_POSTULAN
 fundamento explícito, ou converter o bloqueio atual em enforcement documentado com teste próprio.
 Enquanto isso, o comportamento é seguro (nega mais do que talvez devesse), nunca permissivo demais.
 
+## D-recursal-opa-critical-path-nao-atualizado
+
+**Status:** FECHADA — `critical_paths` do OPA ext-authz atualizado para cobrir a superfície unificada.
+
+**Contexto:** `infra/k8s/overlays/prod-sovereign-opa-ext-authz/opa-policy-configmap.yaml` é uma política
+Envoy/OPA real (`default allow := false`), um dos 4 overlays principais validados por schema no
+próprio CI (ver README, seção "Validação de manifestos Kubernetes"). Seu conjunto `critical_paths`
+(exige header `x-pjb-affiliation-id` e `not read_only`) listava só `/api/v1/mp/recurso/` — o path
+legado do MP — desde antes da Fatia 1 de `D-recursal-superficie-por-papel`. Quando a Fatia 1 publicou
+a superfície unificada `/api/v1/recursal/processos/{id}/recurso` (semanas atrás), essa política nunca
+foi atualizada: o path novo não começa com `/api/v1/institucional/` nem com nenhum `critical_paths`
+existente, então em qualquer deploy real usando este overlay o endpoint unificado roda **sem nenhuma
+proteção de critical-path** desde que a Fatia 1 foi ao ar — achado ao investigar pré-requisitos da
+Fatia 3, não introduzido por ela.
+
+**Risco se não corrigido antes da Fatia 3:** remover o path legado `/api/v1/mp/recurso/` (que a Fatia 3
+prevê) sem primeiro cobrir `/api/v1/recursal/` deixaria as operações de recurso do MP **sem nenhuma**
+proteção de critical-path neste overlay — regressão de segurança real, não cosmética.
+
+**Fechamento:** `critical_paths` ganhou `/api/v1/recursal/` mantendo `/api/v1/mp/recurso/` por enquanto
+(será removido do conjunto quando o path legado for de fato apagado do código, na mesma Fatia 3).
+`python infra/k8s_schema_validate.py` confirmado OK nos 4 overlays após a mudança.
+
+**Quando revisitar:** ao concluir a remoção do path `/api/v1/mp/recurso/` no código (Fatia 3), remover
+também a entrada `/api/v1/mp/recurso/` deste `critical_paths` — path morto, nunca mais alcançável.
+
+## D-institutional-gate-filter-roda-antes-da-auth
+
+**Status:** FECHADA — bug sistêmico de ordem de filtro corrigido e provado por IT com JWT real.
+
+**Contexto (bug):** `InstitutionalCriticalActionHttpGuardFilter` — o filtro que aplica o gate documental
+institucional (`InstitutionalDocumentSecurityGateApplicationService.enforce`, ato sensível conforme o
+path) a ~30 operationCodes reais (senteça, despacho, manifestação/parecer/requisição do MP, ofício e
+resposta de ofício do oficial de justiça, laudo do perito, parecer psicossocial, redistribuição,
+lavratura de escritura, etc.) — era `@Component` com `@Order(Ordered.HIGHEST_PRECEDENCE + 35)` e nunca
+foi adicionado à cadeia do Spring Security via `http.addFilter*`. `HIGHEST_PRECEDENCE + 35`
+(`Integer.MIN_VALUE + 35`) registra o filtro no servlet chain **antes** do `DelegatingFilterProxy` do
+Spring Security, cujo order é `SecurityProperties.DEFAULT_FILTER_ORDER = -100` (valor lido diretamente
+do `spring-boot-autoconfigure-3.5.12.jar`, não presumido). Resultado: quando o filtro rodava, o
+`SecurityContextHolder` ainda estava vazio, então `enforce()` → `CurrentUserService.getRequired()`
+lançava `IllegalStateException` (não capturada — o filtro só tratava `RegraNegocioException`) →
+**HTTP 500 em todo POST protegido**, em produção. O gate era, na prática, um controle de segurança
+dormente/quebrado desde que foi introduzido.
+
+**Prova empírica:** IT temporária `InstitutionalGateFilterOrderingProbeIT` (removida após confirmar)
+com usuário seedado + JWT real reproduziu o 500; o stack trace mostrou o throw exatamente em
+`getRequired`, chamado pelo filtro, com a cadeia do Spring Security ausente entre os filtros que o
+envolviam — confirmando que ele rodava antes da autenticação. Nenhuma IT do projeto exercitava
+qualquer path desse filtro via HTTP real antes desta fatia (lacuna de cobertura que escondia o bug).
+
+**Correção (3 camadas):**
+1. **Ordem:** removido o `@Order(HIGHEST_PRECEDENCE + 35)` (mantido `@Component`, exatamente como
+   `MinisterStepUpFilter`/`DecisionStepUpFilter`, que são `@Component` sem `@Order` e adicionados à
+   cadeia) e registrado via `http.addFilterAfter(institutionalCriticalActionHttpGuardFilter, AuthorizationFilter.class)`
+   em `SecurityConfig`. `AuthorizationFilter` é o último filtro de segurança — garante execução após
+   autenticação E autorização, com o usuário resolvido. `OncePerRequestFilter` deduplica a
+   auto-registração residual (que agora cai em `LOWEST_PRECEDENCE`, depois da cadeia de segurança).
+2. **Null-safety (defesa em profundidade):** `InstitutionalDocumentSecurityGateApplicationService.avaliar()`
+   trocou `currentUserService.getRequired()` por `getOrNull()`; usuário não resolvível vira `nomination == null`
+   e segue o mesmo `allowLegacyFallback` já existente — nunca mais 500, decisão determinística. Não muda
+   nada para usuário real resolvido (getOrNull devolve o mesmo que getRequired devolveria).
+3. **Cobertura recursal:** `/api/v1/recursal/processos/*/recurso` adicionado ao `resolvePolicy` do filtro
+   (agora funcional), com `operationCode="RECURSAL_UNIFICADO"` e ato `PETICIONAR_EM_NOME_DO_ORGAO`,
+   restaurando o gate institucional que a superfície recursal perdeu na Fatia 1 de
+   `D-recursal-superficie-por-papel`.
+
+**Cobertura de teste nova:** `InstitutionalDocumentSecurityGateApplicationServiceTest` (5, unit:
+null-safety com/sem fallback legado, no-nomination allow/block, generatedAt); teste novo em
+`InstitutionalCriticalActionHttpGuardFilterTest` para o path recursal unificado; `InstitutionalRecursalGateIT`
+(2, `PjbFlowItBase` + JWT real contra Postgres: usuário MP resolvido passa pelo gate e chega ao router
+com header `X-PJB-Institutional-Gate-Operation=RECURSAL_UNIFICADO`; usuário com uid não materializado no
+banco NÃO estoura 500). `RecursalPeticionamentoControllerIT` (8/8) revalidada verde com o filtro já
+ativo na cadeia (regressão do path recém-protegido via `@WithMockUser`).
+
+**Escopo assumido conscientemente:** o mesmo bug de ordem afetava ~30 operationCodes; a correção de
+ordem os conserta TODOS de uma vez (o filtro inteiro passou a rodar após a auth). Risco real da
+mudança é baixo: os endpoints hoje já davam 500/nunca foram exercitados (TCC pré-produção, sem tráfego
+real, sem IT cobrindo-os), então ativar o gate corretamente é estritamente melhoria. As demais famílias
+(oficial de justiça, perito, psicossocial, etc.) não ganharam IT dedicada nesta fatia — o gate delas
+agora roda pela mesma correção de ordem, mas a prova end-to-end por família fica registrada como
+extensão natural de cobertura futura, não como bug aberto.
+
+**Quando revisitar:** ao adicionar novas famílias de ato sensível ao filtro, cobrir com IT via JWT
+real (padrão de `InstitutionalRecursalGateIT`). Ao seedar nomeação institucional em teste, usar
+`InstitutionalNominationStateRepository.save(...)` para exercitar o caminho de bloqueio real do gate.
+
 ## D-recursal-superficie-por-papel
 
-**Status:** parcialmente atendida — superfície única aditiva criada em Fatia 1; os quatro controllers
-originais permanecem intactos por coexistência, e as etapas de deprecação/remoção seguem abertas.
+**Status:** FECHADA — Fatias 1, 2, 3 e 4 concluídas. Os 4 controllers legados seguem existindo (têm
+outros endpoints ativos além do recurso), mas o endpoint `interporRecurso` e as facades correspondentes
+foram removidos; toda interposição de recurso passa exclusivamente pela superfície unificada.
 
 **Contexto:** o módulo recursal expõe quatro controllers (`AdvogadoCockpitController`,
 `DefensorPublicoPainelController`, `MinisterioPublicoPainelController`,
@@ -646,24 +733,120 @@ não existe em `TipoUsuario` — code-path morto que nunca casa em runtime. A su
 não replica esse literal; se algum dia a role for adicionada ao enum, ambos os lados precisam ser
 atualizados.
 
-**Fatias restantes (abertas):** (2) deprecar as quatro URLs antigas com header `Deprecation`/`Sunset`,
-redirecionando internamente à nova superfície; (3) remover os três métodos `interporRecurso` dos
-surfaces intermediários (`AdvogadoSurfaceFacadeService`, `InstitutionalPainelSurfaceFacadeService`,
-`ProcuradoriaOperationalSurfaceFacadeService`) e as quatro URLs antigas depois de zerar consumidores;
-(4) habilitar jus postulandi de parte na mesma URL — expandir `@PreAuthorize` para incluir role de
-cidadão-parte quando `elegivelPorJusPostulandi()` permitir, fechando a lacuna do motor recursal que
-já responde “sim” para embargos de declaração no jus postulandi mas hoje não tem porta correspondente.
+**Fatia 4 aplicada** (commit `1b15fc4`): `RecursalPeticionamentoPerfilRouter` ganhou o quinto perfil
+(`CIDADAO`), resolvido via `TipoUsuario.isPeticionantePessoal()`, fechando a lacuna do jus postulandi
+para embargos de declaração.
 
-**Fatia 4 é bloqueadora de Fatias 2 e 3.** Deprecar (Fatia 2) ou remover (Fatia 3) as quatro URLs
-legadas antes de habilitar jus postulandi de parte na nova superfície (Fatia 4) deixaria o
-cidadão-parte permanentemente sem porta para exercer a capacidade que
-`RecursalValidacaoMinimaService.elegivelPorJusPostulandi()` já autoriza — o oposto do objetivo do
-debt. A ordem operacional obrigatória é 1 → 4 → 2 → 3.
+**Fatia 2 aplicada** (commits `9ffdf4a`/`343dae2`): os 4 controllers legados passaram a expor headers
+RFC 8594 (`Deprecation: true`, `Sunset`, `Link: successor-version`) no endpoint `interporRecurso`,
+e a coleção Postman de integração foi sincronizada com a superfície unificada.
 
-**Quando revisitar:** em fatia própria de convergência recursal — superfície única autorizada por
-`elegivelPorJusPostulandi()` somada à legitimidade profissional, no mesmo padrão do peticionamento.
-Exige período de coexistência com os quatro controllers atuais por causa de consumidores de frontend
-e testes; a remoção é etapa posterior, não simultânea. Não fazer dentro de fatia de jus postulandi.
+**Pré-requisito de Fatia 3 fechado em `D-controllers-recursais-legados-sem-teste-dedicado`:**
+cobertura completa (sucesso, validação, autorização real) dos 4 controllers antes de remover
+qualquer endpoint, para garantir que nenhum outro comportamento deles fosse afetado pela remoção.
+
+**Gap de infraestrutura achado e corrigido antes da Fatia 3, registrado em
+`D-recursal-opa-critical-path-nao-atualizado`:** a política OPA de um overlay de produção real
+(`prod-sovereign-opa-ext-authz`) nunca foi atualizada para cobrir `/api/v1/recursal/` desde que a
+Fatia 1 foi ao ar — corrigido antes de remover o path legado de MP que a política protegia.
+
+**Fatia 3 aplicada — remoção do endpoint legado:** o método `interporRecurso` (e o `@PostMapping`
+correspondente) foi removido dos 4 controllers legados (`AdvogadoCockpitController`,
+`DefensorPublicoPainelController`, `MinisterioPublicoPainelController`,
+`ProcuradoriaOperacionalController`) — os controllers continuam existindo, com seus demais endpoints
+intactos (snapshot, painel, petição, parecer, etc.). Os métodos de facade correspondentes foram
+removidos (`AdvogadoSurfaceFacadeService.interporRecurso`,
+`InstitutionalPainelSurfaceFacadeService.defensorInterporRecurso`/`.ministerioPublicoInterporRecurso`,
+`ProcuradoriaOperationalSurfaceFacadeService.interporRecurso`) — confirmado, via grep, que nenhum
+tinha consumidor além do próprio controller legado que os chamava; a camada de serviço subjacente
+(`AdvogadoCockpitService.interprorRecurso`, `DefensorPublicoPainelService.interporRecurso`,
+`MinisterioPublicoPainelService.interporRecurso`, `ProcuradoriaOperacionalService.interporRecurso`)
+foi preservada intacta, pois é exatamente o que `RecursalPeticionamentoPerfilRouter` chama
+diretamente. `AdvogadoRecursoRequest` (DTO exclusiva do endpoint legado) e
+`RecursalLegacyDeprecationHeaders` (helper de headers RFC 8594, sem mais nenhum chamador) foram
+deletados por inteiro. A coleção Postman perdeu a pasta "legado (depreciado, remover apos
+28/10/2026)" com os 4 requests órfãos; o contrato estático `docs/openapi/public-api.yaml` perdeu os
+4 blocos de path correspondentes (validado com `yaml.safe_load`, 825→821 paths). Testes órfãos dos
+4 controllers (headers de depreciação, validação do corpo do recurso) foram removidos das classes
+de teste; os testes de sucesso dos demais endpoints permanecem intactos e verdes — nenhuma
+regressão nos 63 testes fechados em `D-controllers-recursais-legados-sem-teste-dedicado`, nem nos
+testes da própria superfície unificada (`RecursalPeticionamentoControllerTest`/`IT`,
+`RecursalPeticionamentoPerfilRouterTest`).
+
+**Consumidor real quase esquecido — 3 rodadas de varredura, cada uma achou mais (revisão pedida
+antes de commitar):** a primeira varredura de consumidores só cobriu extensões não-Java
+(`.json`/`.md`/`.ts`/`.js`/`.yaml`/`.yml`). Uma segunda varredura sem filtro de extensão encontrou
+dois arquivos Java de produção com as URLs legadas hardcoded como string literal:
+`RecursalWorkbenchSurfaceCatalog.ministerioPublicoRecurso()`/`.procuradoriaRecurso()` (catálogo de
+URLs usado por 5 blueprints de experiência do workbench institucional para montar cards/atalhos de
+ação reais) e `InstitutionalWorkbenchProjectionService.actionBlueprints()` (3 entradas — MP,
+Defensoria, Procuradoria — ligadas a `MaterialActionCode` real). Se não corrigido, o workbench
+continuaria oferecendo ao usuário um botão "Interpor recurso" apontando para uma URL 404.
+
+Uma terceira varredura, ainda mais ampla (regex por qualquer string `/api/v1/...recurso.../`, sem
+qualquer filtro de contexto), achou dois problemas mais sérios que os anteriores:
+
+- **`InstitutionalCriticalActionHttpGuardFilter` rodava ANTES da autenticação — bug sistêmico de
+  ordem de filtro, agora CORRIGIDO e provado (ver `D-institutional-gate-filter-roda-antes-da-auth`):**
+  o filtro era `@Component` com `@Order(Ordered.HIGHEST_PRECEDENCE + 35)` e NÃO era adicionado à cadeia
+  do Spring Security. `HIGHEST_PRECEDENCE + 35` (= `Integer.MIN_VALUE + 35`) registra o filtro no
+  servlet chain ANTES do `DelegatingFilterProxy` do Spring Security (`SecurityProperties.DEFAULT_FILTER_ORDER = -100`,
+  lido do jar 3.5.12), então `SecurityContextHolder` estava vazio quando o filtro rodava e
+  `InstitutionalDocumentSecurityGateApplicationService.enforce()` → `CurrentUserService.getRequired()`
+  lançava `IllegalStateException` → **HTTP 500 em todo POST institucional protegido** (senteça,
+  despacho, manifestação MP, ofício, laudo, ~30 operationCodes). Provado por IT (`InstitutionalGateFilterOrderingProbeIT`,
+  temporária, removida após confirmar) cujo stack trace mostrou o throw exatamente nesse ponto, com a
+  cadeia do Spring Security ausente entre os filtros que o envolviam. **Correção:** removido o `@Order`
+  (mantido `@Component`, seguindo a mesma convenção de `MinisterStepUpFilter`/`DecisionStepUpFilter`,
+  que são `@Component` sem `@Order` e adicionados à cadeia) e registrado via
+  `http.addFilterAfter(filtro, AuthorizationFilter.class)` em `SecurityConfig` — roda depois de toda
+  autenticação e autorização, com o usuário resolvido; `OncePerRequestFilter` deduplica a
+  auto-registração residual em `LOWEST_PRECEDENCE`. Como defesa em profundidade, `avaliar()` trocou
+  `getRequired()` por `getOrNull()`: usuário não resolvível é tratado como "sem nomeação", seguindo o
+  `allowLegacyFallback` (nunca mais 500). E `/api/v1/recursal/processos/*/recurso` foi adicionado ao
+  filtro (agora funcional), restaurando o gate institucional que o recursal perdeu na Fatia 1.
+  Cobertura: `InstitutionalDocumentSecurityGateApplicationServiceTest` (5, unit, prova null-safety +
+  bloqueio estrito), `InstitutionalCriticalActionHttpGuardFilterTest` (4, incl. o path recursal
+  unificado) e `InstitutionalRecursalGateIT` (2, JWT real contra Postgres: usuário MP resolvido passa
+  pelo gate e chega ao router; usuário não materializado no banco não estoura 500). Regressão:
+  `RecursalPeticionamentoControllerIT` (8/8) revalidada verde com o filtro já ativo na cadeia. As 4 ITs
+  dos controllers legados só fazem GET (não tocam path protegido por POST) — `shouldNotFilter` pula o
+  filtro nelas, sem risco de regressão.
+- **`PainelActionSurfaceCompositionService`/`PainelExecutionSurfaceCompositionService`** — dois services
+  reais consumidos por `MinisterioPublicoPainelService`/`DefensorPublicoPainelService`/etc. (confirmado
+  via grep de chamador) montam o `actionSurface`/`nativeComposition` retornado pelos paineis reais.
+  Tinham 4 entradas de "preparar/abrir recurso" apontando pra `/api/v1/mp/recursos` e
+  `/api/v1/defensoria/recursos` — **URLs que nunca existiram como endpoint real**, nem antes nem depois
+  desta fatia (achado pré-existente, não introduzido aqui, mas na mesma área e mesma ação). As 4 foram
+  corrigidas pra `/api/v1/recursal/processos/{processoId}/recurso`. Uma entrada não relacionada
+  (`/api/v1/colegiado/recursos/comando`, atalho de desembargador pra revisar recursos recebidos, não
+  pra interpor um) foi deixada intacta — semântica diferente, fora do escopo desta fatia.
+
+As strings dos dois `PainelXSurfaceCompositionService` e do `RecursalWorkbenchSurfaceCatalog`/
+`InstitutionalWorkbenchProjectionService` foram atualizadas para
+`/api/v1/recursal/processos/{processoId}/recurso` — a interposição de recurso é auto-roteada por
+perfil no motor unificado, então o mesmo path serve todos os papéis igualmente (o filtro HTTP foi
+efetivamente corrigido e religado ao path unificado — ver o item acima). Nenhum teste dos arquivos
+alterados assertava o literal antigo (confirmado por grep antes de cada troca); todos os testes
+relevantes rodados após as correções: 4/4 `InstitutionalCriticalActionHttpGuardFilterTest` (incl. o
+path recursal unificado), 5/5 `InstitutionalDocumentSecurityGateApplicationServiceTest`, 2/2
+`InstitutionalRecursalGateIT` (JWT real contra Postgres), 2/2 `PainelActionSurfaceCompositionServiceTest`,
+2/2 `PainelExecutionSurfaceCompositionServiceTest`, 4/4 `PainelCompositionNullSafetyTest`, 2/2
+`DelegadoPainelServiceInstitucionalTest`, 2/2 `InstitutionalWorkbenchProjectionServiceTest`, 2/2
+`InstitutionalWorkbenchServiceTest`, 2/2 `PjbInstitutionalWorkbenchSurfaceArchitectureTest` — 0
+falhas. Advogado nunca teve entrada equivalente em nenhum desses arquivos (não é fluxo
+"institucional"), então não havia nada a corrigir para esse perfil aqui. `RecursoController`
+(`/api/v1/recurso/*`) foi lido e confirmado como feature totalmente diferente e não afetada
+(admissibilidade/tempestividade/deserção/readiness — análise, não interposição).
+
+**Gap residual (não fechado nesta fatia):** `docs/openapi/public-api.yaml` também nunca ganhou o
+path `/api/v1/recursal/processos/{id}/recurso` desde a Fatia 1 — o contrato vivo (`/v3/api-docs`,
+gerado em runtime pelo springdoc) está correto; só o export estático ficou defasado. Não reconstruído
+à mão nesta fatia para não arriscar inventar um shape que não bate com o gerado de verdade — revisitar
+quando o export estático for regenerado por processo real, não editado manualmente.
+
+**Quando revisitar:** dívida fechada. Se algum dia os 4 controllers legados perderem também seus
+demais endpoints (não só o recurso), essa é outra fatia — fora do escopo desta.
 
 ## D-custas-jec-isencao-primeiro-grau
 
