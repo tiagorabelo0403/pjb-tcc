@@ -37,14 +37,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PastaDigitalService {
 
-    
-    private static final long LIMITE_BYTES = 5L * 1024L * 1024L;
-
     private final ProcessoRepository processoRepository;
     private final DocumentoProcessualRepository documentoRepository;
     private final DocumentoPaginaRepository paginaRepository;
     private final PjbAuthorizationService authorizationService;
     private final DocumentoSigiloClassifier sigiloClassifier;
+    private final com.tcc.pjb.backend.service.document.DocumentContentValidator contentValidator;
 
     @Transactional
     public DocumentoIndexadoResponse anexarDocumentoPdf(Long processoId,
@@ -57,23 +55,11 @@ public class PastaDigitalService {
         DocumentoCategoria categoria = DocumentoCategoria.fromString(categoriaRaw);
         NivelSigilo sigiloDocInput = NivelSigilo.fromString(nivelSigiloRaw);
 
-        if (arquivo == null || arquivo.isEmpty()) {
-            throw new ErroDeValidacaoException(TipoErroValidacao.FORMATO_INVALIDO, "arquivo")
-                    .addMetadado("motivo", "arquivo ausente ou vazio");
-        }
-        if (arquivo.getSize() > LIMITE_BYTES) {
-            throw new ErroDeValidacaoException(TipoErroValidacao.TAMANHO_EXCEDIDO, arquivo.getOriginalFilename())
-                    .addMetadado("tamanho_atual", arquivo.getSize())
-                    .addMetadado("tamanho_limite", LIMITE_BYTES);
-        }
+        contentValidator.validarTamanho(arquivo == null ? 0 : arquivo.getSize(), arquivo == null ? null : arquivo.getOriginalFilename());
 
         String nomeOriginal = arquivo.getOriginalFilename();
         String contentType = arquivo.getContentType();
-        if (!isPdf(arquivo)) {
-            throw new ErroDeValidacaoException(TipoErroValidacao.FORMATO_INVALIDO, nomeOriginal)
-                    .addMetadado("tipo_recebido", contentType)
-                    .addMetadado("tipo_esperado", MediaType.APPLICATION_PDF_VALUE);
-        }
+        contentValidator.validarExtensaoOuContentType(nomeOriginal, contentType);
 
         Processo processo = processoRepository.findById(processoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
@@ -94,18 +80,10 @@ public class PastaDigitalService {
                         .addMetadado("sha256", sha256);
             }
 
+            var validado = contentValidator.validarEstruturaPdf(bytes, nomeOriginal);
             try (PDDocument pdf = Loader.loadPDF(bytes)) {
-                if (pdf.isEncrypted()) {
-                    throw new ErroDeValidacaoException(TipoErroValidacao.ARQUIVO_PROTEGIDO, nomeOriginal)
-                            .addMetadado("motivo", "Documento possui senha");
-                }
-                int n = pdf.getNumberOfPages();
-                if (n <= 0) {
-                    throw new ErroDeValidacaoException(TipoErroValidacao.ARQUIVO_CORROMPIDO, nomeOriginal)
-                            .addMetadado("motivo", "PDF com 0 páginas");
-                }
+                int n = validado.numeroPaginas();
 
-                
                 String sampleText = extractSampleText(pdf, Math.min(2, n));
                 DocumentoSigiloClassifier.Classification cls = sigiloClassifier.classify(nomeOriginal, sampleText);
                 DocumentoCategoria categoriaFinal = categoria;
@@ -299,13 +277,6 @@ public class PastaDigitalService {
         NivelSigilo x = (a == null) ? NivelSigilo.PUBLICO : a;
         NivelSigilo y = (b == null) ? NivelSigilo.PUBLICO : b;
         return (x.getNivel() >= y.getNivel()) ? x : y;
-    }
-
-    private boolean isPdf(MultipartFile file) {
-        String contentType = file.getContentType();
-        String nome = file.getOriginalFilename();
-        return (contentType != null && contentType.equals(MediaType.APPLICATION_PDF_VALUE)) ||
-                (nome != null && nome.toLowerCase().endsWith(".pdf"));
     }
 
     private String nextUniquePageId() {

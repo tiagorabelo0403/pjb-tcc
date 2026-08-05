@@ -15,6 +15,7 @@ import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.repository.document.DocumentoPaginaRepository;
 import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
+import com.tcc.pjb.backend.service.document.DocumentContentValidator;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
 import java.io.ByteArrayOutputStream;
 import java.util.Optional;
@@ -50,7 +51,7 @@ class PastaDigitalServiceTest {
             return d;
         });
         service = new PastaDigitalService(processoRepository, documentoRepository, paginaRepository,
-                authorizationService, new DocumentoSigiloClassifier());
+                authorizationService, new DocumentoSigiloClassifier(), new DocumentContentValidator());
     }
 
     @Test
