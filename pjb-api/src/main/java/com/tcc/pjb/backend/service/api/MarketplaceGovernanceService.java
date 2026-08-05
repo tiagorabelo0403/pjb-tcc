@@ -147,6 +147,11 @@ public class MarketplaceGovernanceService {
     }
 
     @Transactional(readOnly = true)
+    public void assertClientHasActiveSubscription(String clientId) {
+        requireSubscription(clientId);
+    }
+
+    @Transactional(readOnly = true)
     public void assertClientCanProtocol(String clientId) {
         MarketplaceClientSubscription subscription = requireSubscription(clientId);
         Instant now = Instant.now();

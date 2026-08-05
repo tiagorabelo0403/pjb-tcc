@@ -30,15 +30,17 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
 
     private AjuizamentoService ajuizamentoService;
     private MarketplaceGovernanceService governanceService;
+    private MarketplaceDocumentoPersistenceService documentoPersistenceService;
     private ApiMarketplaceService service;
 
     @BeforeEach
     void setUp() {
         ajuizamentoService = mock(AjuizamentoService.class);
         governanceService = mock(MarketplaceGovernanceService.class);
+        documentoPersistenceService = mock(MarketplaceDocumentoPersistenceService.class);
         when(ajuizamentoService.ajuizar(any())).thenAnswer(invocation -> invocation.getArgument(0));
         service = new ApiMarketplaceService(ajuizamentoService, governanceService, new CompletudeDocumentalPolicyService(),
-                new MarketplaceRepresentacaoResolver(new RepresentacaoProcessualPolicyService()));
+                new MarketplaceRepresentacaoResolver(new RepresentacaoProcessualPolicyService()), documentoPersistenceService);
     }
 
     @Test

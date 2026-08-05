@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.procedural.ProceduralCatalogSupport;
@@ -17,7 +18,9 @@ import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.service.AjuizamentoService;
 import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
+import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
 
+@Slf4j
 @Service
 public class ApiMarketplaceService {
 
@@ -28,15 +31,18 @@ public class ApiMarketplaceService {
     private final MarketplaceGovernanceService governanceService;
     private final CompletudeDocumentalPolicyService completudeDocumentalPolicyService;
     private final MarketplaceRepresentacaoResolver representacaoResolver;
+    private final MarketplaceDocumentoPersistenceService documentoPersistenceService;
 
     public ApiMarketplaceService(AjuizamentoService ajuizamentoService,
                                  MarketplaceGovernanceService governanceService,
                                  CompletudeDocumentalPolicyService completudeDocumentalPolicyService,
-                                 MarketplaceRepresentacaoResolver representacaoResolver) {
+                                 MarketplaceRepresentacaoResolver representacaoResolver,
+                                 MarketplaceDocumentoPersistenceService documentoPersistenceService) {
         this.ajuizamentoService = Objects.requireNonNull(ajuizamentoService);
         this.governanceService = Objects.requireNonNull(governanceService);
         this.completudeDocumentalPolicyService = Objects.requireNonNull(completudeDocumentalPolicyService);
         this.representacaoResolver = Objects.requireNonNull(representacaoResolver);
+        this.documentoPersistenceService = Objects.requireNonNull(documentoPersistenceService);
     }
 
     @Transactional
@@ -94,6 +100,18 @@ public class ApiMarketplaceService {
         }
 
         Processo salvo = ajuizamentoService.ajuizar(processo);
+
+        if (request.documentos() != null) {
+            for (Attachment attachment : request.documentos()) {
+                try {
+                    documentoPersistenceService.persistirSeNovo(salvo, attachment);
+                } catch (ErroDeValidacaoException e) {
+                    log.warn("Documento declarado no protocolo marketplace não pôde ser persistido "
+                                    + "(protocolo segue de qualquer forma): processoId={} clientId={} erro={}",
+                            salvo.getId(), clientId, e.getMessage());
+                }
+            }
+        }
 
         governanceService.registrarConsumoProtocolo(clientId);
         governanceService.publicarEventoProtocolo(clientId, salvo.getId(), salvo.getNumeroProcesso(), salvo.getConnectorProtocolReference());
