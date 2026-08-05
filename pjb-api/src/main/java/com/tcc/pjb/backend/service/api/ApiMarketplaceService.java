@@ -27,13 +27,16 @@ public class ApiMarketplaceService {
     private final AjuizamentoService ajuizamentoService;
     private final MarketplaceGovernanceService governanceService;
     private final CompletudeDocumentalPolicyService completudeDocumentalPolicyService;
+    private final MarketplaceRepresentacaoResolver representacaoResolver;
 
     public ApiMarketplaceService(AjuizamentoService ajuizamentoService,
                                  MarketplaceGovernanceService governanceService,
-                                 CompletudeDocumentalPolicyService completudeDocumentalPolicyService) {
+                                 CompletudeDocumentalPolicyService completudeDocumentalPolicyService,
+                                 MarketplaceRepresentacaoResolver representacaoResolver) {
         this.ajuizamentoService = Objects.requireNonNull(ajuizamentoService);
         this.governanceService = Objects.requireNonNull(governanceService);
         this.completudeDocumentalPolicyService = Objects.requireNonNull(completudeDocumentalPolicyService);
+        this.representacaoResolver = Objects.requireNonNull(representacaoResolver);
     }
 
     @Transactional
@@ -74,7 +77,10 @@ public class ApiMarketplaceService {
         processo.setDataDistribuicao(LocalDateTime.now());
         processo.setDataUltimaMovimentacao(LocalDateTime.now());
 
-        var diagnostico = completudeDocumentalPolicyService.diagnosticar(processo.getRito(), request.documentos());
+        var instrumento = representacaoResolver.resolve(processo.getRamoDireito(), processo.getRito(),
+                processo.getTribunal(), request.perfilAtor());
+        processo.setInstrumentoRepresentacaoResolvido(instrumento == null ? null : instrumento.name());
+        var diagnostico = completudeDocumentalPolicyService.diagnosticar(processo.getRito(), request.documentos(), instrumento);
         List<String> documentosFaltantes = diagnostico.faltantes().stream().map(Enum::name).toList();
         boolean documentacaoCompleta = !diagnostico.bloqueante();
 
@@ -130,7 +136,8 @@ public class ApiMarketplaceService {
             String ufReu,
             String comarcaReu,
             boolean enderecoReuDesconhecido,
-            List<Attachment> documentos
+            List<Attachment> documentos,
+            String perfilAtor
     ) {
     }
 

@@ -28,6 +28,7 @@ public record MarketplaceProtocoloRequest(
         @Pattern(regexp = "^$|^[A-Za-z]{2}$") String ufReu,
         @Size(max = 160) String comarcaReu,
         boolean enderecoReuDesconhecido,
-        List<Attachment> documentos
+        List<Attachment> documentos,
+        String perfilAtor
 ) {
 }

@@ -143,7 +143,8 @@ class ApiMarketplaceServiceCompletudeDocumentalTest extends PjbIntegrationTestBa
                 null,
                 null,
                 false,
-                documentos
+                documentos,
+                null
         );
     }
 }

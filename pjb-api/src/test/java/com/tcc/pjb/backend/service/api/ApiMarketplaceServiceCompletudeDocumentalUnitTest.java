@@ -13,7 +13,9 @@ import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.service.AjuizamentoService;
+import com.tcc.pjb.backend.service.api.MarketplaceRepresentacaoResolver;
 import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
+import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +37,8 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
         ajuizamentoService = mock(AjuizamentoService.class);
         governanceService = mock(MarketplaceGovernanceService.class);
         when(ajuizamentoService.ajuizar(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        service = new ApiMarketplaceService(ajuizamentoService, governanceService, new CompletudeDocumentalPolicyService());
+        service = new ApiMarketplaceService(ajuizamentoService, governanceService, new CompletudeDocumentalPolicyService(),
+                new MarketplaceRepresentacaoResolver(new RepresentacaoProcessualPolicyService()));
     }
 
     @Test
@@ -96,6 +99,46 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
                         TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS.name());
     }
 
+    @Test
+    void clienteComPerfilAtorCidadaoEmRitoJuizadoDispensaProcuracao() {
+        List<Attachment> semProcuracao = List.of(
+                attachment(TipoDocumento.PETICAO_INICIAL),
+                attachment(TipoDocumento.DOCUMENTO_IDENTIDADE),
+                attachment(TipoDocumento.COMPROVANTE_ENDERECO),
+                attachment(TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS)
+        );
+
+        var request = baseRequestComPerfil(semProcuracao, "CIDADAO");
+        var result = service.protocolar(request, "client-teste");
+
+        assertThat(result.documentacaoCompleta()).isTrue();
+        assertThat(result.documentosFaltantes()).isEmpty();
+    }
+
+    @Test
+    void clienteSemPerfilAtorContinuaExigindoProcuracao() {
+        List<Attachment> semProcuracao = List.of(
+                attachment(TipoDocumento.PETICAO_INICIAL),
+                attachment(TipoDocumento.DOCUMENTO_IDENTIDADE),
+                attachment(TipoDocumento.COMPROVANTE_ENDERECO),
+                attachment(TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS)
+        );
+
+        var request = baseRequestComPerfil(semProcuracao, null);
+        var result = service.protocolar(request, "client-teste");
+
+        assertThat(result.documentacaoCompleta()).isFalse();
+        assertThat(result.documentosFaltantes()).containsExactly(TipoDocumento.PROCURACAO.name());
+    }
+
+    private ApiMarketplaceService.MarketplaceProtocoloRequest baseRequestComPerfil(List<Attachment> documentos, String perfilAtor) {
+        return new ApiMarketplaceService.MarketplaceProtocoloRequest(
+                "ref-0009999-30.2026.8.06.0001", "0009999-30.2026.8.06.0001", "ESTADUAL", "CIVIL", "CE", "Fortaleza",
+                "JUIZADO_ESPECIAL_CIVEL", "Cobranca via marketplace", "Condenacao ao pagamento", null,
+                "Cliente Marketplace Ltda", "12345678000199", "Fornecedor Reu Ltda", "98765432000188",
+                BigDecimal.valueOf(5000), null, null, null, null, false, documentos, perfilAtor);
+    }
+
     private Attachment attachment(TipoDocumento tipo) {
         return Attachment.builder().tipoDocumento(tipo).build();
     }
@@ -122,7 +165,8 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
                 null,
                 null,
                 false,
-                documentos
+                documentos,
+                null
         );
     }
 }

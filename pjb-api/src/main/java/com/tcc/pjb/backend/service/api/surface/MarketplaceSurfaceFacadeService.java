@@ -71,7 +71,8 @@ public class MarketplaceSurfaceFacadeService {
                 request.ufReu(),
                 request.comarcaReu(),
                 request.enderecoReuDesconhecido(),
-                request.documentos()
+                request.documentos(),
+                request.perfilAtor()
         ), clientId);
         return new MarketplaceProtocoloResponse(
                 result.processoId(),
