@@ -57,6 +57,17 @@ public class CompletudeDocumentalPolicyService {
     public DiagnosticoCompletudeDocumental diagnosticar(RitoProcessual rito,
                                                         List<Attachment> anexos,
                                                         InstrumentoRepresentacaoProcessual instrumentoRepresentacao) {
+        Set<TipoDocumento> presentes = (anexos == null ? List.<Attachment>of() : anexos)
+                .stream()
+                .map(Attachment::getTipoDocumento)
+                .filter(t -> t != null)
+                .collect(Collectors.toSet());
+        return diagnosticar(rito, presentes, instrumentoRepresentacao);
+    }
+
+    public DiagnosticoCompletudeDocumental diagnosticar(RitoProcessual rito,
+                                                        Set<TipoDocumento> tiposPresentes,
+                                                        InstrumentoRepresentacaoProcessual instrumentoRepresentacao) {
         RitoProcessual ritoResolvido = rito == null ? RitoProcessual.COMUM_ORDINARIO : rito;
         boolean dispensaProcuracao = instrumentoRepresentacao != null && instrumentoRepresentacao.isJusPostulandi();
 
@@ -68,11 +79,7 @@ public class CompletudeDocumentalPolicyService {
                 .filter(code -> !(dispensaProcuracao && code == TipoDocumento.PROCURACAO))
                 .toList();
 
-        Set<TipoDocumento> presentes = (anexos == null ? List.<Attachment>of() : anexos)
-                .stream()
-                .map(Attachment::getTipoDocumento)
-                .filter(t -> t != null)
-                .collect(Collectors.toSet());
+        Set<TipoDocumento> presentes = tiposPresentes == null ? Set.of() : tiposPresentes;
 
         List<TipoDocumento> faltantes = obrigatorios.stream()
                 .filter(req -> !presentes.contains(req))
