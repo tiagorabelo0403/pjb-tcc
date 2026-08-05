@@ -14,7 +14,11 @@ public class DocumentContentValidator {
 
     private static final long LIMITE_BYTES = 5L * 1024L * 1024L;
 
-    public record ValidatedPdf(int numeroPaginas) {
+    public record ValidatedPdf(PDDocument document, int numeroPaginas) implements java.io.Closeable {
+        @Override
+        public void close() throws IOException {
+            document.close();
+        }
     }
 
     public void validarTamanho(long tamanhoBytes, String nomeOriginal) {
@@ -40,7 +44,8 @@ public class DocumentContentValidator {
     }
 
     public ValidatedPdf validarEstruturaPdf(byte[] bytes, String nomeOriginal) throws IOException {
-        try (PDDocument pdf = Loader.loadPDF(bytes)) {
+        PDDocument pdf = Loader.loadPDF(bytes);
+        try {
             if (pdf.isEncrypted()) {
                 throw new ErroDeValidacaoException(TipoErroValidacao.ARQUIVO_PROTEGIDO, nomeOriginal)
                         .addMetadado("motivo", "Documento possui senha");
@@ -50,7 +55,10 @@ public class DocumentContentValidator {
                 throw new ErroDeValidacaoException(TipoErroValidacao.ARQUIVO_CORROMPIDO, nomeOriginal)
                         .addMetadado("motivo", "PDF com 0 páginas");
             }
-            return new ValidatedPdf(n);
+            return new ValidatedPdf(pdf, n);
+        } catch (RuntimeException e) {
+            pdf.close();
+            throw e;
         }
     }
 }

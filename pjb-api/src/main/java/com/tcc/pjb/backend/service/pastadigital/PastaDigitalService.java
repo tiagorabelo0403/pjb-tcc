@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.http.MediaType;
@@ -80,8 +79,8 @@ public class PastaDigitalService {
                         .addMetadado("sha256", sha256);
             }
 
-            var validado = contentValidator.validarEstruturaPdf(bytes, nomeOriginal);
-            try (PDDocument pdf = Loader.loadPDF(bytes)) {
+            try (var validado = contentValidator.validarEstruturaPdf(bytes, nomeOriginal)) {
+                PDDocument pdf = validado.document();
                 int n = validado.numeroPaginas();
 
                 String sampleText = extractSampleText(pdf, Math.min(2, n));
