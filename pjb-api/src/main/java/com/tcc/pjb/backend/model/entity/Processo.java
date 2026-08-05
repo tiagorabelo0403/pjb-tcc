@@ -233,6 +233,9 @@ public class Processo {
     @Column(name = "connector_submission_status")
     private String connectorSubmissionStatus;
 
+    @Column(name = "instrumento_representacao_resolvido")
+    private String instrumentoRepresentacaoResolvido;
+
     @Column(name = "connector_protocol_reference")
     private String connectorProtocolReference;
 

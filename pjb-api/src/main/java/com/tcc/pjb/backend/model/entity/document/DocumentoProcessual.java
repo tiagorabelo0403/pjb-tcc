@@ -81,6 +81,10 @@ public class DocumentoProcessual {
     private DocumentoCategoria categoria;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_documento")
+    private com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento tipoDocumento;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "nivel_sigilo")
     private NivelSigilo nivelSigilo;
 
@@ -164,6 +168,7 @@ public class DocumentoProcessual {
         public DocumentoProcessualBuilder pdf(byte[] pdf) { target.pdf = pdf; return this; }
         public DocumentoProcessualBuilder origemSistema(String origemSistema) { target.origemSistema = origemSistema; return this; }
         public DocumentoProcessualBuilder categoria(DocumentoCategoria categoria) { target.categoria = categoria; return this; }
+        public DocumentoProcessualBuilder tipoDocumento(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento tipoDocumento) { target.tipoDocumento = tipoDocumento; return this; }
         public DocumentoProcessualBuilder nivelSigilo(NivelSigilo nivelSigilo) { target.nivelSigilo = nivelSigilo; return this; }
         public DocumentoProcessualBuilder visibilityScope(String visibilityScope) { target.visibilityScope = visibilityScope; return this; }
         public DocumentoProcessualBuilder criadoPor(Long criadoPor) { target.criadoPor = criadoPor; return this; }
