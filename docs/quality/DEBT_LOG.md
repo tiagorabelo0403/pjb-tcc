@@ -81,22 +81,42 @@ transversal, não específica do MNI).
 
 ## D-mni-litisconsorcio-primeira-pessoa
 
-**Status:** aberta
+**Status:** fechada
 
-**Contexto:** `MniXmlToProcessoAdapter.resolvePartes` captura apenas a primeira `<pessoa>` de cada
-`<polo>` (via `firstDescendant`, que retorna o primeiro match). Esse era o comportamento pré-existente
-para nome/documento e agora também vale para a UF de domicílio recém-capturada. Em litisconsórcio
-(múltiplos autores ou múltiplos réus no mesmo polo), as demais pessoas do polo são ignoradas por
-completo — nome, documento e domicílio só da primeira.
+**Contexto:** `MniXmlToProcessoAdapter.resolvePartes` capturava apenas a primeira `<pessoa>` de cada
+`<polo>` (via `firstDescendant`, que retornava o primeiro match). Em litisconsórcio (múltiplos autores
+ou múltiplos réus no mesmo polo), as demais pessoas do polo eram ignoradas — nome, documento e
+domicílio perdidos silenciosamente.
 
-**Risco:** processo com litisconsórcio recebido via MNI perde as partes além da primeira de cada polo.
-Não é regressão desta fatia (o comportamento já existia para nome/documento antes de qualquer trabalho
-em domicílio) — mas tocar o método tornou a limitação mais visível e vale documentar explicitamente
-em vez de deixar só implícita no código.
+**Correção:** `resolvePartes` agora itera TODAS as `<pessoa>` de cada `<polo>` via `allDescendants`.
+O adapter retorna `MniAdapterResult(Processo, List<MniParteParsed>)` — a primeira pessoa de cada polo
+ainda popula os campos planos do `Processo` (backward compat); `MniRecepcaoService.materializarPolosIniciais`
+materializa TODAS as pessoas como `PoloProcessual`, usando o `TipoParte` rito-aware do
+`PoloCompositionPolicy` para as primeiras e replicando o mesmo `TipoParte` para as demais do mesmo polo.
+Testes de litisconsórcio no adapter (4 pessoas, 2 polos) e no service (4 `incluir`, `TipoParte`
+rito-aware preservado) validam a correção.
 
-**Quando revisitar:** ao modelar múltiplas partes por polo no canal MNI — depende de estender
-`PoloProcessual`/`resolvePartes` para agregar uma lista, não um único nome/documento/UF por polo;
-fatia própria, maior que ajuste pontual no adapter.
+## D-mni-terceiro-pj-interesse-publico
+
+**Status:** fechada
+
+**Contexto:** ao investigar a mesma fatia de litisconsórcio, identificamos que o adapter MNI também
+descartava três categorias de parte: (1) terceiro interessado — o schema MNI usa `polo="TC"`/`"TJ"`,
+mas o mapeamento antigo era binário (`"AT"` → ATIVO, qualquer outra coisa → PASSIVO), então terceiro
+virava réu; (2) pessoa jurídica — o atributo `tipoPessoa="juridica"` da `<pessoa>` não era lido e
+`razaoSocial` nunca era populado no `PoloProcessual`; (3) parte institucional sem `<pessoa>` — o
+schema MNI permite `<interessePublico>` (texto livre) em vez de `<pessoa>` para casos como Fazenda
+Pública/INSS/União, e o adapter só buscava `<pessoa>`, descartando a parte silenciosamente.
+
+**Correção:** `MniParteParsed` ganhou o campo `tipoPessoa`. `resolvePartes` agora também itera
+`<interessePublico>` dentro de cada `<polo>`, marcando `tipoPessoa="interesse_publico"`.
+`MniRecepcaoService.mapMniPoloCode` mapeia `"TC"/"TJ"` → `TipoPolo.TERCEIRO` e `"FL"` →
+`TipoPolo.MINISTERIO_PUBLICO` (com `TERCEIRO` como default seguro em vez de `PASSIVO`);
+`defaultTipoParteForPolo` dá o `TipoParte` correto por polo quando `PoloCompositionPolicy` não tem
+entrada para aquele tipo. `PoloProcessual` ganhou a coluna `razao_social` (migration V297) e um
+overload de `incluir` que a recebe; `razaoSocial` é populado quando `tipoPessoa` é `"juridica"` ou
+`"interesse_publico"`. Testes no adapter cobrem os 5 casos (pessoa física, PJ, terceiro, interesse
+público, Ministério Público) validando `tipoPolo`/`nome`/`documento`/`tipoPessoa` de cada parte parseada.
 
 ## D-intake-workspace-endereco-nao-wireado
 

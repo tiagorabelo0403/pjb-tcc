@@ -5,6 +5,8 @@ import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import javax.xml.parsers.DocumentBuilder;
@@ -22,7 +24,7 @@ public class MniXmlToProcessoAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(MniXmlToProcessoAdapter.class);
 
-    public Processo fromXml(String xml, String tribunalOrigem, String motivo) {
+    public MniAdapterResult fromXml(String xml, String tribunalOrigem, String motivo) {
         Objects.requireNonNull(xml, "xml");
         Document doc = parseSecure(xml);
         Processo processo = new Processo();
@@ -41,12 +43,15 @@ public class MniXmlToProcessoAdapter {
         processo.setRamoDireito(resolveRamo(tag(doc, "ramoDireito")));
         processo.setRito(resolveRito(tag(doc, "rito")));
         processo.setStatusProcesso(StatusProcesso.EM_ANDAMENTO);
-        resolvePartes(doc, processo);
-        return processo;
+        List<MniParteParsed> partes = resolvePartes(doc, processo);
+        return new MniAdapterResult(processo, partes);
     }
 
-    private void resolvePartes(Document doc, Processo processo) {
+    private List<MniParteParsed> resolvePartes(Document doc, Processo processo) {
+        List<MniParteParsed> partes = new ArrayList<>();
         NodeList all = doc.getElementsByTagName("*");
+        boolean primeiroAT = true;
+        boolean primeiroPA = true;
         for (int i = 0; i < all.getLength(); i++) {
             Node n = all.item(i);
             if (n.getNodeType() != Node.ELEMENT_NODE) {
@@ -57,23 +62,34 @@ public class MniXmlToProcessoAdapter {
                 continue;
             }
             String tipoPolo = attr(n, "polo");
-            Node pessoa = firstDescendant(n, "pessoa");
-            if (pessoa == null) {
-                continue;
+            List<Node> pessoas = allDescendants(n, "pessoa");
+            for (Node pessoa : pessoas) {
+                String nome = attr(pessoa, "nome");
+                String documento = attr(pessoa, "numeroDocumentoPrincipal");
+                String uf = normalizeUf(elementText(firstDescendant(pessoa, "endereco"), "estado"));
+                String tipoPessoa = attr(pessoa, "tipoPessoa");
+                partes.add(new MniParteParsed(tipoPolo, nome, documento, uf, tipoPessoa));
+                if ("AT".equalsIgnoreCase(tipoPolo) && primeiroAT) {
+                    processo.setParteAutoraNome(nome);
+                    processo.setParteAutoraCpf(documento);
+                    processo.setUfAutor(uf);
+                    primeiroAT = false;
+                } else if ("PA".equalsIgnoreCase(tipoPolo) && primeiroPA) {
+                    processo.setParteReuNome(nome);
+                    processo.setParteReuCpf(documento);
+                    processo.setUfReu(uf);
+                    primeiroPA = false;
+                }
             }
-            String nome = attr(pessoa, "nome");
-            String documento = attr(pessoa, "numeroDocumentoPrincipal");
-            String uf = normalizeUf(elementText(firstDescendant(pessoa, "endereco"), "estado"));
-            if ("AT".equalsIgnoreCase(tipoPolo)) {
-                processo.setParteAutoraNome(nome);
-                processo.setParteAutoraCpf(documento);
-                processo.setUfAutor(uf);
-            } else if ("PA".equalsIgnoreCase(tipoPolo)) {
-                processo.setParteReuNome(nome);
-                processo.setParteReuCpf(documento);
-                processo.setUfReu(uf);
+            for (Node ip : allDescendants(n, "interessePublico")) {
+                String nome = ip.getTextContent();
+                if (nome != null) {
+                    nome = nome.trim();
+                }
+                partes.add(new MniParteParsed(tipoPolo, nome, null, null, "interesse_publico"));
             }
         }
+        return partes;
     }
 
     private static String elementText(Node scope, String tagName) {
@@ -121,6 +137,23 @@ public class MniXmlToProcessoAdapter {
             }
         }
         return null;
+    }
+
+    private static List<Node> allDescendants(Node parent, String tagName) {
+        List<Node> result = new ArrayList<>();
+        NodeList children = parent.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (child.getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            }
+            String local = child.getLocalName() != null ? child.getLocalName() : child.getNodeName();
+            if (tagName.equalsIgnoreCase(local)) {
+                result.add(child);
+            }
+            result.addAll(allDescendants(child, tagName));
+        }
+        return result;
     }
 
     private static Document parseSecure(String xml) {

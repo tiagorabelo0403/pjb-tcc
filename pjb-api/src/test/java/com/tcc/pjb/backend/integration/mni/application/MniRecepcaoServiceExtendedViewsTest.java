@@ -9,6 +9,7 @@ import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
 import com.tcc.pjb.backend.core.processo.polo.motor.PoloCompositionPolicy;
 import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
+import com.tcc.pjb.backend.integration.mni.adapter.MniAdapterResult;
 import com.tcc.pjb.backend.integration.mni.adapter.MniXmlToProcessoAdapter;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoCommand;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -30,7 +31,7 @@ class MniRecepcaoServiceExtendedViewsTest {
         AuditLedgerService auditLedger = mock(AuditLedgerService.class);
 
         Processo processo = Processo.builder().id(55L).numeroUnificado("0001-22.2026.8.06.0001").build();
-        when(adapter.fromXml("<mni/>", "TJCE", "CARTA_PRECATORIA")).thenReturn(processo);
+        when(adapter.fromXml("<mni/>", "TJCE", "CARTA_PRECATORIA")).thenReturn(new MniAdapterResult(processo, java.util.List.of()));
         when(processoRepository.save(processo)).thenReturn(processo);
         when(recepcaoRepository.findByMniPayloadHash(org.mockito.ArgumentMatchers.anyString())).thenReturn(Optional.empty());
         when(recepcaoRepository.save(org.mockito.ArgumentMatchers.any(MniRecepcao.class))).thenAnswer(invocation -> {
