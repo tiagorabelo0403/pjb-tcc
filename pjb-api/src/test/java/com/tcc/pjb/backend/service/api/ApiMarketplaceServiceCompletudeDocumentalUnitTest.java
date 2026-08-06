@@ -77,10 +77,13 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
         assertThat(result.documentosFaltantes()).isNotEmpty();
         assertThat(result.status()).isEqualTo("PENDENTE_DOCUMENTACAO");
 
-        ArgumentCaptor<Processo> captor = ArgumentCaptor.forClass(Processo.class);
-        org.mockito.Mockito.verify(ajuizamentoService).ajuizar(captor.capture());
-        assertThat(captor.getValue().getConnectorSubmissionStatus()).isEqualTo("PENDENTE_DOCUMENTACAO");
-        assertThat(captor.getValue().getStatusProcesso().name()).isEqualTo("DISTRIBUIDO");
+        ArgumentCaptor<Processo> ajuizarCaptor = ArgumentCaptor.forClass(Processo.class);
+        org.mockito.Mockito.verify(ajuizamentoService).ajuizar(ajuizarCaptor.capture());
+        assertThat(ajuizarCaptor.getValue().getStatusProcesso().name()).isEqualTo("DISTRIBUIDO");
+
+        ArgumentCaptor<Processo> saveCaptor = ArgumentCaptor.forClass(Processo.class);
+        org.mockito.Mockito.verify(processoRepository).save(saveCaptor.capture());
+        assertThat(saveCaptor.getValue().getConnectorSubmissionStatus()).isEqualTo("PENDENTE_DOCUMENTACAO");
 
         verify(governanceService, times(1)).publicarEventoPendenciaDocumental(
                 anyString(), any(), anyString(), anyString(), any());
@@ -127,6 +130,31 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
                         TipoDocumento.DOCUMENTO_IDENTIDADE.name(),
                         TipoDocumento.COMPROVANTE_ENDERECO.name(),
                         TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS.name());
+    }
+
+    @Test
+    void documentoDeclaradoSemConteudoNaoPersistidoNaoContaComoCompleto() {
+        List<Attachment> declarados = List.of(
+                attachment(TipoDocumento.PETICAO_INICIAL),
+                attachment(TipoDocumento.PROCURACAO),
+                attachment(TipoDocumento.DOCUMENTO_IDENTIDADE),
+                attachment(TipoDocumento.COMPROVANTE_ENDERECO),
+                attachment(TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS)
+        );
+        stubDocumentosPersistidos(TipoDocumento.PETICAO_INICIAL, TipoDocumento.PROCURACAO);
+
+        ApiMarketplaceService.MarketplaceProtocoloResponse result = service.protocolar(baseRequest(declarados), "client-teste");
+
+        assertThat(result.documentacaoCompleta()).isFalse();
+        assertThat(result.status()).isEqualTo("PENDENTE_DOCUMENTACAO");
+        assertThat(result.documentosFaltantes())
+                .containsExactlyInAnyOrder(
+                        TipoDocumento.DOCUMENTO_IDENTIDADE.name(),
+                        TipoDocumento.COMPROVANTE_ENDERECO.name(),
+                        TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS.name());
+
+        verify(governanceService, times(1)).publicarEventoPendenciaDocumental(
+                anyString(), any(), anyString(), anyString(), any());
     }
 
     @Test

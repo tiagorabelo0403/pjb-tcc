@@ -95,10 +95,6 @@ public class ApiMarketplaceService {
         processo.setDataDistribuicao(LocalDateTime.now());
         processo.setDataUltimaMovimentacao(LocalDateTime.now());
 
-        var instrumento = representacaoResolver.resolve(processo.getRamoDireito(), processo.getRito(),
-                processo.getTribunal(), request.perfilAtor());
-        processo.setInstrumentoRepresentacaoResolvido(instrumento == null ? null : instrumento.name());
-
         Processo salvo = ajuizamentoService.ajuizar(processo);
 
         if (request.documentos() != null) {
@@ -112,6 +108,10 @@ public class ApiMarketplaceService {
                 }
             }
         }
+
+        var instrumento = representacaoResolver.resolve(salvo.getRamoDireito(), salvo.getRito(),
+                salvo.getTribunal(), request.perfilAtor());
+        salvo.setInstrumentoRepresentacaoResolvido(instrumento == null ? null : instrumento.name());
 
         Set<TipoDocumento> tiposPresentes = EnumSet.noneOf(TipoDocumento.class);
         for (DocumentoProcessual documento : documentoRepository.findByProcessoId(salvo.getId())) {

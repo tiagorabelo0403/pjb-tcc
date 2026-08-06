@@ -89,9 +89,43 @@ class ApiMarketplaceServiceCompletudeDocumentalTest extends PjbIntegrationTestBa
 
         Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
         assertThat(processo.getConnectorSubmissionStatus()).isEqualTo("RECEBIDO_MARKETPLACE");
-        assertThat(documentoRepository.findByProcessoId(result.processoId())).hasSize(5);
+        assertThat(documentoRepository.findByProcessoId(result.processoId()))
+                .extracting(d -> d.getTipoDocumento())
+                .containsExactlyInAnyOrder(TipoDocumento.PETICAO_INICIAL, TipoDocumento.PROCURACAO,
+                        TipoDocumento.DOCUMENTO_IDENTIDADE, TipoDocumento.COMPROVANTE_ENDERECO,
+                        TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS);
 
         verify(governanceService, never()).publicarEventoPendenciaDocumental(
+                anyString(), any(), anyString(), anyString(), any());
+    }
+
+    @Test
+    void anexoDeclaradoSemConteudoNaoContaComoPersistidoNemCompleto() {
+        stubGovernance();
+
+        List<Attachment> declarados = List.of(
+                attachment(TipoDocumento.PETICAO_INICIAL),
+                attachment(TipoDocumento.DOCUMENTO_IDENTIDADE),
+                attachment(TipoDocumento.COMPROVANTE_ENDERECO),
+                attachment(TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS),
+                Attachment.builder().tipoDocumento(TipoDocumento.PROCURACAO).build()
+        );
+
+        ApiMarketplaceService.MarketplaceProtocoloRequest request = baseRequest("0009999-24.2026.8.06.0001", declarados);
+
+        ApiMarketplaceService.MarketplaceProtocoloResponse result = service.protocolar(request, "client-teste");
+
+        assertThat(result.documentacaoCompleta()).isFalse();
+        assertThat(result.documentosFaltantes()).containsExactly(TipoDocumento.PROCURACAO.name());
+
+        Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
+        assertThat(processo.getConnectorSubmissionStatus()).isEqualTo("PENDENTE_DOCUMENTACAO");
+        assertThat(documentoRepository.findByProcessoId(result.processoId()))
+                .extracting(d -> d.getTipoDocumento())
+                .containsExactlyInAnyOrder(TipoDocumento.PETICAO_INICIAL, TipoDocumento.DOCUMENTO_IDENTIDADE,
+                        TipoDocumento.COMPROVANTE_ENDERECO, TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS);
+
+        verify(governanceService, times(1)).publicarEventoPendenciaDocumental(
                 anyString(), any(), anyString(), anyString(), any());
     }
 
