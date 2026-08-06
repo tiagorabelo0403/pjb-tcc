@@ -3,6 +3,8 @@ package com.tcc.pjb.backend.service.api.surface;
 import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceAdminPlanRequest;
 import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceAdminSubscriptionRequest;
 import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceAdminWebhookRequest;
+import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceComplementoDocumentalRequest;
+import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceComplementoDocumentalResponse;
 import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceOauthClientRegistrationRequest;
 import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceOauthIntrospectionRequest;
 import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceOauthRevocationRequest;
@@ -17,6 +19,7 @@ import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceCollectionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
 import com.tcc.pjb.backend.service.api.ApiMarketplaceService;
+import com.tcc.pjb.backend.service.api.MarketplaceDocumentoComplementarService;
 import com.tcc.pjb.backend.service.api.MarketplaceGovernanceService;
 import com.tcc.pjb.backend.service.api.MarketplaceWebhookDispatcherService;
 import com.tcc.pjb.backend.service.api.oauth.MarketplaceOAuth2Service;
@@ -34,19 +37,22 @@ public class MarketplaceSurfaceFacadeService {
     private final MarketplaceWebhookDispatcherService webhookDispatcherService;
     private final SigiloZeroKnowledgeProofService zkService;
     private final SurfaceProjectionSupport projectionSupport;
+    private final MarketplaceDocumentoComplementarService documentoComplementarService;
 
     public MarketplaceSurfaceFacadeService(ApiMarketplaceService apiMarketplaceService,
                                            MarketplaceOAuth2Service oauth2Service,
                                            MarketplaceGovernanceService governanceService,
                                            MarketplaceWebhookDispatcherService webhookDispatcherService,
                                            SigiloZeroKnowledgeProofService zkService,
-                                           SurfaceProjectionSupport projectionSupport) {
+                                           SurfaceProjectionSupport projectionSupport,
+                                           MarketplaceDocumentoComplementarService documentoComplementarService) {
         this.apiMarketplaceService = Objects.requireNonNull(apiMarketplaceService);
         this.oauth2Service = Objects.requireNonNull(oauth2Service);
         this.governanceService = Objects.requireNonNull(governanceService);
         this.webhookDispatcherService = Objects.requireNonNull(webhookDispatcherService);
         this.zkService = Objects.requireNonNull(zkService);
         this.projectionSupport = Objects.requireNonNull(projectionSupport);
+        this.documentoComplementarService = Objects.requireNonNull(documentoComplementarService);
     }
 
     public MarketplaceProtocoloResponse protocolar(MarketplaceProtocoloRequest request, String clientId) {
@@ -217,5 +223,11 @@ public class MarketplaceSurfaceFacadeService {
                 result.status(),
                 result.verificadoEm()
         );
+    }
+
+    public MarketplaceComplementoDocumentalResponse complementarDocumentos(Long processoId,
+                                                                            MarketplaceComplementoDocumentalRequest request,
+                                                                            String clientId) {
+        return documentoComplementarService.complementar(processoId, request.documentos(), clientId);
     }
 }

@@ -1,5 +1,7 @@
 package com.tcc.pjb.backend.controller.processo;
 
+import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceComplementoDocumentalRequest;
+import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceComplementoDocumentalResponse;
 import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceProtocoloRequest;
 import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceProtocoloResponse;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
@@ -13,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,5 +48,19 @@ public class ApiMarketplaceController {
             clientId = marketplaceOAuth2Service.authorizeHttpRequest(servletRequest, "processos:protocolar").clientId();
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(facadeService.protocolar(request, clientId));
+    }
+
+    @PostMapping("/processos/{id}/documentos")
+    public ResponseEntity<MarketplaceComplementoDocumentalResponse> complementarDocumentos(
+            @PathVariable Long id,
+            @Valid @RequestBody MarketplaceComplementoDocumentalRequest request,
+            Authentication authentication,
+            HttpServletRequest servletRequest) {
+        rateLimiter.enforce(CapabilityRateLimitDomain.INSTITUCIONAL, authentication, "marketplace_complementar_documentos", ApiVersion.V1);
+        String clientId = authentication != null && authentication.getName() != null ? authentication.getName() : null;
+        if (clientId == null || clientId.isBlank()) {
+            clientId = marketplaceOAuth2Service.authorizeHttpRequest(servletRequest, "processos:documentos").clientId();
+        }
+        return ResponseEntity.ok(facadeService.complementarDocumentos(id, request, clientId));
     }
 }
