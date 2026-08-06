@@ -51,8 +51,7 @@ public class MarketplaceDocumentoComplementarService {
     @Transactional
     public MarketplaceComplementoDocumentalResponse complementar(Long processoId, List<Attachment> documentos, String clientId) {
         Processo processo = processoRepository.findById(processoId)
-                .filter(p -> p.getConnectorProtocolReference() != null
-                        && p.getConnectorProtocolReference().startsWith(clientId + ":"))
+                .filter(p -> pertenceAoCliente(p, clientId))
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Processo não encontrado para este cliente."));
 
         if (!STATUS_PENDENTE_DOCUMENTACAO.equals(processo.getConnectorSubmissionStatus())) {
@@ -105,5 +104,17 @@ public class MarketplaceDocumentoComplementarService {
                 documentosFaltantes,
                 documentosRecebidos,
                 agora);
+    }
+
+    private static boolean pertenceAoCliente(Processo processo, String clientId) {
+        String referencia = processo.getConnectorProtocolReference();
+        if (referencia == null || clientId == null) {
+            return false;
+        }
+        int separador = referencia.indexOf(':');
+        if (separador < 0) {
+            return false;
+        }
+        return referencia.substring(0, separador).equals(clientId);
     }
 }

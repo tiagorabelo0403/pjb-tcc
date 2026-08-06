@@ -480,7 +480,11 @@ pjb:
           methods: ["POST"]
           allowed-content-types: ["application/json"]
           max-page-size: 20
-          max-request-bytes: 2097152
+          # DocumentContentValidator.LIMITE_BYTES permite ate 5MB por documento; em JSON o
+          # conteudo vai em base64 (~1.33x) mais overhead de estrutura — 8MB cobre um anexo
+          # no limite documentado com folga. Multiplos anexos grandes na mesma chamada podem
+          # ainda assim estourar isso; ver DEBT_LOG (D-marketplace-payload-multiplo-anexo).
+          max-request-bytes: 8388608
           max-path-segments: 18
           max-offset: 100
           max-requests-per-window: 120

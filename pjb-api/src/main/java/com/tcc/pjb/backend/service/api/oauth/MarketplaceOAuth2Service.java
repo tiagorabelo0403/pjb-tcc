@@ -432,7 +432,7 @@ public class MarketplaceOAuth2Service {
 
     private String joinScopes(Collection<String> scopes) {
         Set<String> normalized = normalizeScopes(scopes);
-        return normalized.isEmpty() ? "processos:protocolar" : String.join(" ", normalized);
+        return normalized.isEmpty() ? "processos:protocolar processos:documentos" : String.join(" ", normalized);
     }
 
     private String normalizeScope(String raw) {

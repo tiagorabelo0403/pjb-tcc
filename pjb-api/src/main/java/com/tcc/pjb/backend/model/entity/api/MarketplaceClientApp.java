@@ -82,7 +82,7 @@ public class MarketplaceClientApp {
     @PrePersist
     void prePersist() {
         if (allowedScopes == null || allowedScopes.isBlank()) {
-            allowedScopes = "processos:protocolar";
+            allowedScopes = "processos:protocolar processos:documentos";
         }
         if (allowedGrants == null || allowedGrants.isBlank()) {
             allowedGrants = "client_credentials";
