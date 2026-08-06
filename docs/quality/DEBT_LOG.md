@@ -542,8 +542,7 @@ construção, só não há prova de uso.
 
 ## D-marketplace-sem-completude-documental
 
-**Status:** Fase 1 aplicada — sinal síncrono + assíncrono de completude documental no canal
-marketplace; consolidação dos três canais numa política única segue como Fase 2, não implementada.
+**Status:** Fase 1 e Fase 2 fechadas.
 
 **Contexto original (mantido para rastreabilidade):** existem três canais que criam processo no
 PJB, e cada um validava completude documental de um jeito diferente (ou não validava). `POST
@@ -582,12 +581,64 @@ cobrindo cliente sem campo `documentos` (nome do teste prova a negação central
 aceitação silenciosa), cliente completo e cliente parcial. Regressão de `ApiMarketplaceServicePoloMaterializacaoTest`
 (4) confirmada sem alteração.
 
-**Fase 2 (não implementada, registrada apenas por nome):** endpoint dedicado
-`POST /processos/{id}/documentos` para complementação documental pós-protocolo, disparando evento
-`PROCESSO_DOCUMENTACAO_COMPLETADA` reservado neste texto para evitar renomear webhook já em produção quando
-a Fase 2 for implementada. Consolidação das três políticas de completude (catálogo estático, tabela
-`tb_requisito_documental`, e a nova checagem do marketplace) numa única fonte segue em aberto — candidato
-natural continua sendo `ProtocoloCompletudeValidator`, por ser orientado a dado versionado.
+**Correção (Fase 2 — retrofit do jus postulandi na Fase 1):** a Fase 1 checava completude documental
+contra o catálogo do rito sem saber se o ator dispensava `PROCURACAO` por jus postulandi — o mesmo bug
+que `D-completude-documental-sem-jus-postulandi` já havia corrigido no canal REST, mas que a Fase 1 do
+marketplace reintroduziu por não existir ainda quando aquela fatia foi escrita. `MarketplaceProtocoloRequest`
+ganhou campo opcional `perfilAtor` (aditivo — sem ele o comportamento não muda). `ApiMarketplaceService.protocolar()`
+resolve o `InstrumentoRepresentacaoProcessual` via `MarketplaceRepresentacaoResolver` (novo — encapsula a
+sobrecarga de `RepresentacaoProcessualPolicyService` que trabalha com primitivos, sem exigir `Usuario`
+carregado, que o canal marketplace não tem) e passa o instrumento resolvido para
+`CompletudeDocumentalPolicyService.diagnosticar`, dispensando `PROCURACAO` corretamente quando o regime é
+jus postulandi.
+
+**Correção (Fase 2 — endpoint de complementação documental):** novo `POST
+/api/marketplace/v1/processos/{id}/documentos` (`MarketplaceDocumentoComplementarService`, exposto via
+`MarketplaceSurfaceFacadeService` + `ApiMarketplaceController`) para complementação documental pós-protocolo,
+com storage real via `ObjectStoragePort` — ao contrário da Fase 1, que usava os documentos apenas
+transientemente para diagnóstico, sem persistir nada. O endpoint faz checagem de posse (404 se o processo
+não pertence ao cliente chamador), guarda de estado (409 se `connectorSubmissionStatus` não é
+`PENDENTE_DOCUMENTACAO`), validação de conteúdo via `DocumentContentValidator` (extraído de
+`PastaDigitalService`, que passou a delegar para ele sem mudança de comportamento) e classificação de
+sigilo com texto extraído real da amostra do documento. Ao completar a exigência documental, dispara o
+evento `PROCESSO_DOCUMENTACAO_COMPLETADA` — reservado por nome desde a Fase 1 para não renomear webhook
+já em produção.
+
+Para que o endpoint novo tivesse o que completar, `ApiMarketplaceService.protocolar()` também passou a
+persistir os documentos declarados como `DocumentoProcessual` reais (via `MarketplaceDocumentoPersistenceService`,
+novo, compartilhado pelos dois pontos de entrada) — achado de arquitetura no meio da implementação, aprovado
+antes de aplicar: sem persistência real na Fase 1, o recálculo de completude do endpoint novo nunca teria o
+que somar, porque só soma linhas persistidas. `CompletudeDocumentalPolicyService` ganhou sobrecarga que aceita
+`Set<TipoDocumento>` diretamente (em vez de só a lista de anexos), para o endpoint novo recalcular completude
+sem precisar reconstruir anexos.
+
+**Dois bugs reais encontrados e corrigidos durante a Fase 2 (nenhum introduzido por ela):**
+`MarketplaceDocumentoPersistenceService.persistirSeNovo` nasceu `@Transactional`, o que quebrava o
+try/catch deliberadamente tolerante de `protocolar()` (um anexo ruim não deve abortar o protocolo inteiro)
+— o Spring propaga a transação compartilhada para rollback-only e a chamada externa nunca via a exceção
+isolada. Corrigido removendo o `@Transactional` interno; os dois chamadores já têm transação própria. Mais
+grave: `tb_documento_processual.categoria` é `NOT NULL` desde a migration `V19`, mas
+`DocumentoSigiloClassifier.suggestedCategoria()` devolve `null` para qualquer documento comum (sem sinal de
+sensibilidade) — todo insert de documento normal pelo marketplace teria estourado
+`DataIntegrityViolationException` em produção. Só foi descoberto porque a IT nova (`MarketplaceDocumentoComplementarServiceIT`)
+é o primeiro teste real deste projeto a tocar Postgres de verdade num insert de `DocumentoProcessual` pelo
+canal marketplace. Corrigido em `MarketplaceDocumentoPersistenceService` com fallback para
+`DocumentoCategoria.PUBLICO` quando o classificador não sugere nada — mesma escolha que o backfill da
+própria `V19` já fazia e que a camada ABAC já normaliza em outros pontos. Uma hipótese inicial (incorreta)
+assumiu que `PastaDigitalService` (canal interno de documentos) tinha o mesmo bug e recebeu o mesmo fix por
+engano; revisão de código independente identificou que a variável `categoria` ali já vem normalizada por
+`DocumentoCategoria.fromString(...)`, que nunca devolve `null` — o fix nesse arquivo foi revertido, o bug
+nunca existiu ali.
+
+**Testes (Fase 2):** 23 testes unitários novos (7 `PastaDigitalServiceTest`, 2
+`CompletudeDocumentalPolicyServiceTest`, 4 `MarketplaceRepresentacaoResolverTest`, 2
+`ApiMarketplaceServiceCompletudeDocumentalUnitTest`, 1 `MarketplaceGovernanceServiceDocumentacaoCompletadaTest`,
+7 `MarketplaceDocumentoComplementarServiceTest`) e 1 IT nova (`MarketplaceDocumentoComplementarServiceIT`,
+Testcontainers Postgres real, prova round-trip de storage) — todos verdes. Suíte completa do projeto
+reconfirmada ao final: **4.421 testes unitários, 0 falhas, 0 erros** (`mvn test` completo, não estimativa).
+Consolidação das três políticas de completude (catálogo estático, tabela `tb_requisito_documental`, e a
+checagem do marketplace) numa única fonte segue fora de escopo desta fatia — candidato natural continua
+sendo `ProtocoloCompletudeValidator`, por ser orientado a dado versionado.
 
 **Achados colaterais registrados sem virar entrada própria:** duplicação de `MarketplaceProtocoloRequest`/
 `MarketplaceProtocoloResponse` (DTO público em `model.dto.processo.marketplace` vs. record aninhado em
