@@ -37,7 +37,9 @@ class PersonalProcessAccessGuardServiceTest {
         profile.setGovVerifiedAt(LocalDateTime.now().minusMinutes(5));
         when(repository.findByUsuarioId(10L)).thenReturn(java.util.Optional.of(profile));
         SecurityContextHolder.getContext().setAuthentication(jwt("10", true, false, false, List.of("ROLE_ADVOGADO")));
-        PersonalProcessAccessGuardService service = new PersonalProcessAccessGuardService(currentUserService, repository);
+        PersonalProcessAccessGuardService service = new PersonalProcessAccessGuardService(
+                currentUserService, repository, new com.tcc.pjb.backend.core.security.access.ProcessoPartyCpfMatcher(),
+                mock(com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService.class));
         var envelope = service.resolveOwnProcessAccess("MEUS_PROCESSOS_PESSOAIS");
         assertTrue(envelope.allowed());
         assertEquals("GOVBR_PESSOAL", envelope.accessMode());
@@ -58,7 +60,9 @@ class PersonalProcessAccessGuardServiceTest {
         profile.setGovVerifiedAt(LocalDateTime.now().minusMinutes(10));
         when(repository.findByUsuarioId(20L)).thenReturn(java.util.Optional.of(profile));
         SecurityContextHolder.getContext().setAuthentication(jwt("20", true, false, false, List.of("ROLE_JUIZ")));
-        PersonalProcessAccessGuardService service = new PersonalProcessAccessGuardService(currentUserService, repository);
+        PersonalProcessAccessGuardService service = new PersonalProcessAccessGuardService(
+                currentUserService, repository, new com.tcc.pjb.backend.core.security.access.ProcessoPartyCpfMatcher(),
+                mock(com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService.class));
         var envelope = service.resolveOwnProcessAccess("OVERVIEW_PROCESSO_PESSOAL");
         assertFalse(envelope.allowed());
         assertTrue(envelope.blockers().contains("REINFORCED_STRONG_AUTH_REQUIRED"));
