@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.310%20unit%20%2B%20252%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.417%20unit%20%2B%20253%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -369,7 +369,7 @@ Multiplataforma (Windows/Linux/macOS), somente stdlib. Report-only por padrão (
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.310** |
+| Total de testes unitários | Surefire | **4.417** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
@@ -397,6 +397,10 @@ Na mesma investigação, três lacunas irmãs foram encontradas e fechadas na d�
 Provado por 3 testes novos: no adapter, um de litisconsórcio (4 pessoas, 2 polos) e um dos 5 tipos de parte (física, jurídica, terceiro, interesse público, Ministério Público — `tipoPolo`/`nome`/`documento`/`tipoPessoa` de cada `MniParteParsed` validados); no serviço, litisconsórcio materializa 4 `incluir` com `TipoParte` rito-aware preservado. `PoloProcessualApplicationServiceTest` (15 testes, cobre o novo overload com `razaoSocial`) e `ApiMarketplaceServicePoloMaterializacaoTest` (4 testes, Testcontainers) reconfirmados verdes nesta sessão — zero cascata no caminho de aplicação de polo. `MotorComposicaoPolosAjuizamentoIT` (10 testes, `PoloCompositionPolicy` não tocado neste diff) não foi reexecutado nesta sessão; permanece validado da verificação anterior.
 
 Contagens novas: 4.379 + 3 = 4.382 unitários (2 no adapter, 1 no serviço); 253 integração (nenhuma IT nova nesta fatia). Todas verdes em execução individual (`-Dit.test=` para as ITs, `-Dtest=` para o unit).
+
+Na fatia seguinte, o trio `D-titularidade-cidadao-duplicada-dois-guards` + `D-peticionamento-controller-domain-lacuna-cidadao` + `D-cidadao-parte-guard-sem-teste-rejeicao` fechou, todos achados na mesma investigação (Fatia 4 de `D-recursal-superficie-por-papel`), mas elevados além de remendo pontual. Extraído `ProcessoPartyCpfMatcher` (novo, com resultado tipado via `sealed interface PartyMatchResult` — Java 21) para eliminar a comparação de CPF duplicada byte a byte entre `PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty`, sem mudar comportamento em nenhum dos 11 call sites. O bug de rate-limit era mais estrutural do que o achado original sugeria: `PeticionamentoController.resolveDomain()` não reconhecia CIDADAO, mas era uma de 3 reimplementações independentes da mesma regra `Authentication`→`CapabilityRateLimitDomain` — 2 com o mesmo bug, 1 aparentemente correta. Criado `CapabilityRateLimitDomainResolver` único, migrados os 4 controllers. Ambos os métodos de match de CPF passaram a auditar a decisão no ledger — antes, negação por CPF divergente não deixava rastro algum além da exceção HTTP —, com convenções propositalmente assimétricas (`AUTHZ_CIDADAO_PARTE_ALLOW/DENY` via trilha ABAC real para o primeiro; `PERSONAL_ACCESS_ALLOW/DENY` mais simples para o segundo, que nunca teve acesso à máquina ABAC package-private do outro pacote). `CidadaoInstanciasControllerCpfMismatchIT` prova, contra Postgres real e sem mocks no caminho de autorização, tanto o 403 quanto a entrada de auditoria.
+
+A revisão final de branch inteira — não as 8 revisões por task, que não teriam como ver isso — achou um bug Critical real: `PjbGrantedAuthorityFactory` concede `ROLE_USER` a *todo* usuário autenticado, não só a `CIDADAO`. O resolver inicial tratava `ROLE_USER` como sinal de cidadão, o que tornava `INSTITUCIONAL` inalcançável em produção — juiz, defensor público, procurador e perito cairiam silenciosamente em `CITIZEN` nos 4 controllers migrados. Mais grave ainda: a implementação usada como "referência correta" para desenhar o resolver (`UserCalendarController.resolveDomain`) já tinha esse mesmo bug latente antes desta fatia — a correção fecha um defeito pré-existente no projeto, não um introduzido por ela. Corrigido removendo `ROLE_USER` do critério de `CITIZEN` (só `ROLE_CIDADAO` identifica cidadão de forma confiável); a suíte de teste do resolver foi reconstruída com `PjbGrantedAuthorityFactory.authoritiesFor(...)` real em vez de fixtures de authority isolada — a suíte anterior era estruturalmente cega para esse exato bug, já que nunca combinava `ROLE_USER` com um papel institucional no mesmo caso de teste. Suíte completa reconfirmada do zero após a correção: **4.417 testes unitários, 0 falhas, 0 erros**.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
