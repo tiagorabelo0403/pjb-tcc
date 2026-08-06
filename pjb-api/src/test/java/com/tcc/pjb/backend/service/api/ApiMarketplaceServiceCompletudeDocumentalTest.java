@@ -63,6 +63,7 @@ class ApiMarketplaceServiceCompletudeDocumentalTest extends PjbIntegrationTestBa
 
         Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
         assertThat(processo.getConnectorSubmissionStatus()).isEqualTo("PENDENTE_DOCUMENTACAO");
+        assertThat(processo.getConnectorClientId()).isEqualTo("client-teste");
 
         verify(governanceService, times(1)).publicarEventoPendenciaDocumental(
                 anyString(), any(), anyString(), anyString(), any());
