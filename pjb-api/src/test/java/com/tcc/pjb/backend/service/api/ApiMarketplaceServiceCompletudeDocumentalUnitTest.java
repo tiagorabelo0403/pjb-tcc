@@ -11,12 +11,16 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
+import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import com.tcc.pjb.backend.service.AjuizamentoService;
 import com.tcc.pjb.backend.service.api.MarketplaceRepresentacaoResolver;
 import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
 import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,12 +29,21 @@ import org.mockito.ArgumentCaptor;
 /**
  * Cobertura sem Testcontainers/Spring context: valida a decisão de completude documental
  * de {@link ApiMarketplaceService#protocolar} isoladamente, sem depender de Docker.
+ *
+ * <p>Desde a correção da Fase 2, a completude é calculada a partir do que
+ * {@link DocumentoProcessualRepository#findByProcessoId(Long)} devolve como efetivamente
+ * persistido — não mais do que o cliente meramente declarou em {@code request.documentos()}.
+ * Cada teste, portanto, controla separadamente "o que o cliente anexou na requisição" e
+ * "o que o repositório reporta como persistido", estubando este último via
+ * {@link #stubDocumentosPersistidos(TipoDocumento...)}.
  */
 class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
 
     private AjuizamentoService ajuizamentoService;
     private MarketplaceGovernanceService governanceService;
     private MarketplaceDocumentoPersistenceService documentoPersistenceService;
+    private DocumentoProcessualRepository documentoRepository;
+    private ProcessoRepository processoRepository;
     private ApiMarketplaceService service;
 
     @BeforeEach
@@ -38,9 +51,20 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
         ajuizamentoService = mock(AjuizamentoService.class);
         governanceService = mock(MarketplaceGovernanceService.class);
         documentoPersistenceService = mock(MarketplaceDocumentoPersistenceService.class);
+        documentoRepository = mock(DocumentoProcessualRepository.class);
+        processoRepository = mock(ProcessoRepository.class);
         when(ajuizamentoService.ajuizar(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(processoRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         service = new ApiMarketplaceService(ajuizamentoService, governanceService, new CompletudeDocumentalPolicyService(),
-                new MarketplaceRepresentacaoResolver(new RepresentacaoProcessualPolicyService()), documentoPersistenceService);
+                new MarketplaceRepresentacaoResolver(new RepresentacaoProcessualPolicyService()), documentoPersistenceService,
+                documentoRepository, processoRepository);
+    }
+
+    private void stubDocumentosPersistidos(TipoDocumento... tipos) {
+        List<DocumentoProcessual> persistidos = Arrays.stream(tipos)
+                .map(tipo -> DocumentoProcessual.builder().tipoDocumento(tipo).build())
+                .toList();
+        when(documentoRepository.findByProcessoId(any())).thenReturn(persistidos);
     }
 
     @Test
@@ -72,6 +96,9 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
                 attachment(TipoDocumento.COMPROVANTE_ENDERECO),
                 attachment(TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS)
         );
+        stubDocumentosPersistidos(TipoDocumento.PETICAO_INICIAL, TipoDocumento.PROCURACAO,
+                TipoDocumento.DOCUMENTO_IDENTIDADE, TipoDocumento.COMPROVANTE_ENDERECO,
+                TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS);
 
         ApiMarketplaceService.MarketplaceProtocoloResponse result = service.protocolar(baseRequest(completos), "client-teste");
 
@@ -90,6 +117,7 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
                 attachment(TipoDocumento.PETICAO_INICIAL),
                 attachment(TipoDocumento.PROCURACAO)
         );
+        stubDocumentosPersistidos(TipoDocumento.PETICAO_INICIAL, TipoDocumento.PROCURACAO);
 
         ApiMarketplaceService.MarketplaceProtocoloResponse result = service.protocolar(baseRequest(parciais), "client-teste");
 
@@ -110,6 +138,9 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
                 attachment(TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS)
         );
 
+        stubDocumentosPersistidos(TipoDocumento.PETICAO_INICIAL, TipoDocumento.DOCUMENTO_IDENTIDADE,
+                TipoDocumento.COMPROVANTE_ENDERECO, TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS);
+
         var request = baseRequestComPerfil(semProcuracao, "CIDADAO");
         var result = service.protocolar(request, "client-teste");
 
@@ -125,6 +156,9 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
                 attachment(TipoDocumento.COMPROVANTE_ENDERECO),
                 attachment(TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS)
         );
+
+        stubDocumentosPersistidos(TipoDocumento.PETICAO_INICIAL, TipoDocumento.DOCUMENTO_IDENTIDADE,
+                TipoDocumento.COMPROVANTE_ENDERECO, TipoDocumento.PROVAS_DOCUMENTAIS_BASICAS);
 
         var request = baseRequestComPerfil(semProcuracao, null);
         var result = service.protocolar(request, "client-teste");

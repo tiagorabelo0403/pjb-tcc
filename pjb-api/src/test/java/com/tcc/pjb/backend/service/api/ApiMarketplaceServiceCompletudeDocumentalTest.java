@@ -14,9 +14,13 @@ import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import com.tcc.pjb.backend.service.triagem.TriagemNacionalIAEngine;
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.List;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +40,9 @@ class ApiMarketplaceServiceCompletudeDocumentalTest extends PjbIntegrationTestBa
 
     @Autowired
     private ProcessoRepository processoRepository;
+
+    @Autowired
+    private DocumentoProcessualRepository documentoRepository;
 
     @MockitoBean
     private MarketplaceGovernanceService governanceService;
@@ -82,6 +89,7 @@ class ApiMarketplaceServiceCompletudeDocumentalTest extends PjbIntegrationTestBa
 
         Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
         assertThat(processo.getConnectorSubmissionStatus()).isEqualTo("RECEBIDO_MARKETPLACE");
+        assertThat(documentoRepository.findByProcessoId(result.processoId())).hasSize(5);
 
         verify(governanceService, never()).publicarEventoPendenciaDocumental(
                 anyString(), any(), anyString(), anyString(), any());
@@ -109,7 +117,24 @@ class ApiMarketplaceServiceCompletudeDocumentalTest extends PjbIntegrationTestBa
     }
 
     private Attachment attachment(TipoDocumento tipo) {
-        return Attachment.builder().tipoDocumento(tipo).build();
+        return Attachment.builder()
+                .tipoDocumento(tipo)
+                .name(tipo.name().toLowerCase() + ".pdf")
+                .contentType("application/pdf")
+                .content(pdfBytes(tipo.ordinal() + 1))
+                .build();
+    }
+
+    private static byte[] pdfBytes(int paginas) {
+        try (PDDocument doc = new PDDocument(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            for (int i = 0; i < paginas; i++) {
+                doc.addPage(new PDPage());
+            }
+            doc.save(out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            throw new IllegalStateException("Falha ao gerar PDF de teste", e);
+        }
     }
 
     private void stubGovernance() {
