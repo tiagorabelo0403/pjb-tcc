@@ -21,7 +21,6 @@ import java.util.UUID;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class MarketplaceDocumentoPersistenceService {
@@ -41,18 +40,17 @@ public class MarketplaceDocumentoPersistenceService {
         this.sigiloClassifier = Objects.requireNonNull(sigiloClassifier);
     }
 
-    @Transactional
-    public Optional<String> persistirSeNovo(Processo processo, Attachment attachment) {
+    public Optional<String> persistirSeNovo(Processo processo, Attachment attachment, boolean permitirAusenciaDeConteudo) {
         if (attachment.getTipoDocumento() == null) {
             throw new ErroDeValidacaoException(TipoErroValidacao.CAMPO_OBRIGATORIO, "tipoDocumento")
                     .addMetadado("motivo", "tipoDocumento obrigatório para cada documento enviado");
         }
         byte[] bytes = attachment.getContent();
-        if (bytes == null || bytes.length == 0) {
+        if (permitirAusenciaDeConteudo && (bytes == null || bytes.length == 0)) {
             return Optional.empty();
         }
         String nome = attachment.getName();
-        contentValidator.validarTamanho(bytes.length, nome);
+        contentValidator.validarTamanho(bytes == null ? 0 : bytes.length, nome);
         contentValidator.validarExtensaoOuContentType(nome, attachment.getContentType());
 
         String sha256 = Hashes.sha256HexBytes(bytes);

@@ -63,7 +63,7 @@ public class MarketplaceDocumentoComplementarService {
 
         List<String> documentosRecebidos = new ArrayList<>();
         for (Attachment attachment : documentos) {
-            documentoPersistenceService.persistirSeNovo(processo, attachment)
+            documentoPersistenceService.persistirSeNovo(processo, attachment, false)
                     .ifPresent(documentosRecebidos::add);
         }
 

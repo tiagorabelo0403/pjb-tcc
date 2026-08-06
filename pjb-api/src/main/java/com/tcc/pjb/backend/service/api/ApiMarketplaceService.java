@@ -104,7 +104,7 @@ public class ApiMarketplaceService {
         if (request.documentos() != null) {
             for (Attachment attachment : request.documentos()) {
                 try {
-                    documentoPersistenceService.persistirSeNovo(salvo, attachment);
+                    documentoPersistenceService.persistirSeNovo(salvo, attachment, true);
                 } catch (ErroDeValidacaoException e) {
                     log.warn("Documento declarado no protocolo marketplace não pôde ser persistido "
                                     + "(protocolo segue de qualquer forma): processoId={} clientId={} erro={}",
