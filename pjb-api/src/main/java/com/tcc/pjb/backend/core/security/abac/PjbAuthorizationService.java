@@ -5,6 +5,8 @@ import com.tcc.pjb.backend.core.comunicacao.institucional.access.AutorizacaoCaix
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.GovBrAssuranceExtractor;
 import com.tcc.pjb.backend.core.security.GovBrAssurancePolicy;
+import com.tcc.pjb.backend.core.security.access.PartyMatchResult;
+import com.tcc.pjb.backend.core.security.access.ProcessoPartyCpfMatcher;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalDocumentScopePolicyService;
 import com.tcc.pjb.backend.core.security.abac.policy.PolicyRegistry;
 import com.tcc.pjb.backend.core.security.sigilo.service.SigiloAccessService;
@@ -25,6 +27,9 @@ public class PjbAuthorizationService {
     private final PjbAuthorizationPolicyFacade policyFacade;
     private final PjbAuthorizationSigiloResolver sigiloResolver;
     private final PjbAuthorizationAuditFacade auditFacade;
+    private final PjbAuthorizationTrailAssembler trailAssembler;
+    private final PjbAuthorizationDecisionContextResolver contextResolver;
+    private final ProcessoPartyCpfMatcher partyCpfMatcher;
     private final PjbAuthorizationExternalSystemAccessPolicy externalSystemAccessPolicy;
     private final PjbAuthorizationInstitutionalCapabilityFacade institutionalCapabilityFacade;
     private final PjbAuthorizationSensitiveIntegrationFacade sensitiveIntegrationFacade;
@@ -42,10 +47,12 @@ public class PjbAuthorizationService {
                                    PjbAuthorizationTrailAnalyticsRefreshQueueService authorizationTrailAnalyticsRefreshQueueService,
                                    GovBrAssuranceExtractor govBrAssuranceExtractor,
                                    GovBrAssurancePolicy govBrAssurancePolicy,
-                                   ProfessionalDocumentScopePolicyService professionalDocumentScopePolicyService) {
+                                   ProfessionalDocumentScopePolicyService professionalDocumentScopePolicyService,
+                                   ProcessoPartyCpfMatcher partyCpfMatcher) {
         this.currentUserService = currentUserService;
-        PjbAuthorizationDecisionContextResolver contextResolver = new PjbAuthorizationDecisionContextResolver(currentUserService, govBrAssuranceExtractor);
-        PjbAuthorizationTrailAssembler trailAssembler = new PjbAuthorizationTrailAssembler();
+        this.contextResolver = new PjbAuthorizationDecisionContextResolver(currentUserService, govBrAssuranceExtractor);
+        this.trailAssembler = new PjbAuthorizationTrailAssembler();
+        this.partyCpfMatcher = partyCpfMatcher;
         this.sigiloResolver = new PjbAuthorizationSigiloResolver(currentUserService, sigiloAccessService);
         this.auditFacade = new PjbAuthorizationAuditFacade(
                 auditLedgerService,
@@ -144,15 +151,17 @@ public class PjbAuthorizationService {
         if (cpf == null || cpf.isBlank()) {
             throw new AccessDeniedPjbException("CPF não encontrado no perfil");
         }
-        if (processo == null) {
+        PartyMatchResult match = partyCpfMatcher.match(cpf, processo);
+        if (match instanceof PartyMatchResult.NotMatched) {
+            registerCidadaoParteDecision(processo, usuario, AuthzDecision.deny("cidadao_nao_e_parte_do_processo", "cidadao-parte-v1"));
             throw new AccessDeniedPjbException("Cidadão não é parte do processo.");
         }
-        boolean parteDoProcesso = cpf.equals(processo.getParteAutoraCpf())
-                || cpf.equals(processo.getParteReuCpf())
-                || (processo.getUsuario() != null && cpf.equals(processo.getUsuario().getCpf()));
-        if (!parteDoProcesso) {
-            throw new AccessDeniedPjbException("Cidadão não é parte do processo.");
-        }
+        registerCidadaoParteDecision(processo, usuario, AuthzDecision.allow("cidadao_e_parte_do_processo", "cidadao-parte-v1"));
+    }
+
+    private void registerCidadaoParteDecision(Processo processo, Usuario usuario, AuthzDecision decision) {
+        PjbAuthorizationDecisionContext context = contextResolver.resolve(usuario);
+        auditFacade.registerDecision(trailAssembler.assembleCidadaoParte(processo, context, decision));
     }
 
     public void requireReadProcessoAtSecrecy(Processo processo, NivelSigilo sigiloEfetivo) {
