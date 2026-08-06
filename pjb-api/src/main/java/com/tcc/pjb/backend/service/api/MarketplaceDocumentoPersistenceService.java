@@ -6,6 +6,7 @@ import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.DocumentoCategoria;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import com.tcc.pjb.backend.service.document.DocumentContentValidator;
@@ -69,6 +70,7 @@ public class MarketplaceDocumentoPersistenceService {
         }
 
         var cls = sigiloClassifier.classify(nome, sampleText);
+        DocumentoCategoria categoria = cls.suggestedCategoria() == null ? DocumentoCategoria.PUBLICO : cls.suggestedCategoria();
         NivelSigilo procSigilo = processo.getNivelSigilo() == null ? NivelSigilo.PUBLICO : processo.getNivelSigilo();
         NivelSigilo sigiloDoc = maxSigilo(procSigilo, cls.minSigilo());
 
@@ -90,7 +92,7 @@ public class MarketplaceDocumentoPersistenceService {
                 .storageBackend("LOCALFS")
                 .storageUri(key)
                 .tipoDocumento(attachment.getTipoDocumento())
-                .categoria(cls.suggestedCategoria())
+                .categoria(categoria)
                 .nivelSigilo(sigiloDoc)
                 .origemSistema("MARKETPLACE_API")
                 .criadoEm(LocalDateTime.now())

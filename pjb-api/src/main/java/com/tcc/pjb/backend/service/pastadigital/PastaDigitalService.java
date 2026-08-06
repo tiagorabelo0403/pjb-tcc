@@ -93,6 +93,9 @@ public class PastaDigitalService {
                 if (categoriaFinal != DocumentoCategoria.PESSOAL && cls.suggestedCategoria() == DocumentoCategoria.PESSOAL && cls.confidence() >= 0.65) {
                     categoriaFinal = DocumentoCategoria.PESSOAL;
                 }
+                if (categoriaFinal == null) {
+                    categoriaFinal = DocumentoCategoria.PUBLICO;
+                }
 
                 NivelSigilo minCategoria = (categoriaFinal == DocumentoCategoria.PESSOAL) ? NivelSigilo.SIGILO_N2 : NivelSigilo.PUBLICO;
                 NivelSigilo sigiloDoc = maxSigilo(procSigilo, maxSigilo(sigiloDocInput, maxSigilo(minCategoria, cls.minSigilo())));
