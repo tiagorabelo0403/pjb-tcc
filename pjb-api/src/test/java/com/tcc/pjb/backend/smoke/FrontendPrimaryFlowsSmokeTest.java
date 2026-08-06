@@ -36,6 +36,7 @@ import com.tcc.pjb.backend.model.dto.security.WebAuthnChallengeResponse;
 import com.tcc.pjb.backend.model.dto.timeline.TimelineItemResponse;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDecision;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomainResolver;
 import com.tcc.pjb.backend.service.advogado.LaianePeticaoInicialDraftService;
 import com.tcc.pjb.backend.service.api.ApiResponseFactory;
 import com.tcc.pjb.backend.service.auth.surface.WebAuthnSurfaceFacadeService;
@@ -159,6 +160,7 @@ class FrontendPrimaryFlowsSmokeTest {
         PeticionamentoSimpleProtocolWizardService simpleProtocolWizardService = mock(PeticionamentoSimpleProtocolWizardService.class);
         PeticionamentoJourneyIntelligenceService journeyIntelligenceService = mock(PeticionamentoJourneyIntelligenceService.class);
         CapabilityRateLimiter rateLimiter = mock(CapabilityRateLimiter.class);
+        CapabilityRateLimitDomainResolver domainResolver = mock(CapabilityRateLimitDomainResolver.class);
         when(rateLimiter.enforce(any(), any(), anyString(), any())).thenReturn(new CapabilityRateLimitDecision(true, 100L, 99L, 0L, 60, 1));
         when(facadeService.abrirSessaoInicial(any())).thenReturn(PeticionamentoSessaoResponse.builder()
                 .modoSolicitado("ASSISTIDO")
@@ -174,7 +176,8 @@ class FrontendPrimaryFlowsSmokeTest {
                 studioWorkspaceService,
                 simpleProtocolWizardService,
                 journeyIntelligenceService,
-                rateLimiter
+                rateLimiter,
+                domainResolver
         ));
 
         mvc.perform(post("/api/v1/peticionamento/inicial/sessao")
