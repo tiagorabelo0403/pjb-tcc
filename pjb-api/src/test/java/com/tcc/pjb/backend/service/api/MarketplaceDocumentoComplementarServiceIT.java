@@ -52,6 +52,7 @@ class MarketplaceDocumentoComplementarServiceIT extends PjbIntegrationTestBase {
                 .numeroProcesso("0009999-40.2026.8.06.0001")
                 .rito(RitoProcessual.COMUM_ORDINARIO)
                 .connectorSystem("MARKETPLACE_API")
+                .connectorClientId("client-it")
                 .connectorProtocolReference("client-it:ref-40")
                 .connectorSubmissionStatus("PENDENTE_DOCUMENTACAO")
                 .dataCriacao(LocalDateTime.now())

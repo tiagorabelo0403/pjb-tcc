@@ -85,6 +85,7 @@ public class ApiMarketplaceService {
         processo.setParteReuCpf(request.parteReuCpf());
         processo.setValorCausa(request.valorCausa());
         processo.setConnectorSystem("MARKETPLACE_API");
+        processo.setConnectorClientId(clientId);
         processo.setConnectorProtocolReference(clientId + ":" + request.clientReference());
         processo.setConnectorSubmissionProcessedAt(LocalDateTime.now());
         processo.setFaseAtual(FaseProcessual.CONHECIMENTO);

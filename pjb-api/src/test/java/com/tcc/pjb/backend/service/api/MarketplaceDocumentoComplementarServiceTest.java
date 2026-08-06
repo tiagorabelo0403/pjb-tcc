@@ -50,12 +50,39 @@ class MarketplaceDocumentoComplementarServiceTest {
 
     @Test
     void posseNegadaRetornaRecursoNaoEncontrado() {
-        Processo processo = Processo.builder().id(1L).connectorProtocolReference("outro-client:ref")
+        Processo processo = Processo.builder().id(1L).connectorClientId("outro-client")
+                .connectorProtocolReference("outro-client:ref")
                 .connectorSubmissionStatus("PENDENTE_DOCUMENTACAO").build();
         when(processoRepository.findById(1L)).thenReturn(Optional.of(processo));
 
         assertThatThrownBy(() -> service.complementar(1L, List.of(), "client-teste"))
                 .isInstanceOf(RecursoNaoEncontradoException.class);
+    }
+
+    @Test
+    void colisaoDeDoisPontosNoClientIdNaoConcedePosseIndevida() {
+        Processo processoVitima = Processo.builder().id(2L).connectorClientId("acme:sub")
+                .connectorProtocolReference("acme:sub:ref-456")
+                .connectorSubmissionStatus("PENDENTE_DOCUMENTACAO").build();
+        when(processoRepository.findById(2L)).thenReturn(Optional.of(processoVitima));
+
+        assertThatThrownBy(() -> service.complementar(2L, List.of(), "acme"))
+                .as("clientId 'acme' não pode ser confundido com o dono real 'acme:sub'")
+                .isInstanceOf(RecursoNaoEncontradoException.class);
+    }
+
+    @Test
+    void clientIdComDoisPontosAcessaOProprioProcessoCorretamente() {
+        Processo processo = Processo.builder().id(2L).connectorClientId("acme:sub")
+                .connectorProtocolReference("acme:sub:ref-456")
+                .connectorSubmissionStatus("PENDENTE_DOCUMENTACAO")
+                .rito(RitoProcessual.COMUM_ORDINARIO).build();
+        when(processoRepository.findById(2L)).thenReturn(Optional.of(processo));
+        when(documentoRepository.findByProcessoId(2L)).thenReturn(List.of());
+
+        MarketplaceComplementoDocumentalResponse resp = service.complementar(2L, List.of(), "acme:sub");
+
+        assertThat(resp.processoId()).isEqualTo(2L);
     }
 
     @Test
@@ -68,7 +95,8 @@ class MarketplaceDocumentoComplementarServiceTest {
 
     @Test
     void estadoNaoPendenteRetornaRecursoJaExistente() {
-        Processo processo = Processo.builder().id(1L).connectorProtocolReference("client-teste:ref")
+        Processo processo = Processo.builder().id(1L).connectorClientId("client-teste")
+                .connectorProtocolReference("client-teste:ref")
                 .connectorSubmissionStatus("RECEBIDO_MARKETPLACE").build();
         when(processoRepository.findById(1L)).thenReturn(Optional.of(processo));
 
@@ -152,7 +180,7 @@ class MarketplaceDocumentoComplementarServiceTest {
     }
 
     private Processo pendente() {
-        return Processo.builder().id(1L).numeroProcesso("0001-1.2026")
+        return Processo.builder().id(1L).numeroProcesso("0001-1.2026").connectorClientId("client-teste")
                 .connectorProtocolReference("client-teste:ref").connectorSubmissionStatus("PENDENTE_DOCUMENTACAO")
                 .rito(RitoProcessual.COMUM_ORDINARIO).build();
     }
