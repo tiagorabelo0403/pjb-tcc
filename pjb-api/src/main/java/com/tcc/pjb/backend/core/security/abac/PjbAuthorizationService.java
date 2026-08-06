@@ -1,11 +1,13 @@
 package com.tcc.pjb.backend.core.security.abac;
 
+import java.util.Locale;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.access.AutorizacaoCaixaInstitucionalService;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.GovBrAssuranceExtractor;
 import com.tcc.pjb.backend.core.security.GovBrAssurancePolicy;
 import com.tcc.pjb.backend.core.security.access.PartyMatchResult;
+import com.tcc.pjb.backend.core.security.access.PartyRole;
 import com.tcc.pjb.backend.core.security.access.ProcessoPartyCpfMatcher;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalDocumentScopePolicyService;
 import com.tcc.pjb.backend.core.security.abac.policy.PolicyRegistry;
@@ -156,7 +158,9 @@ public class PjbAuthorizationService {
             registerCidadaoParteDecision(processo, usuario, AuthzDecision.deny("cidadao_nao_e_parte_do_processo", "cidadao-parte-v1"));
             throw new AccessDeniedPjbException("Cidadão não é parte do processo.");
         }
-        registerCidadaoParteDecision(processo, usuario, AuthzDecision.allow("cidadao_e_parte_do_processo", "cidadao-parte-v1"));
+        PartyRole role = ((PartyMatchResult.Matched) match).role();
+        registerCidadaoParteDecision(processo, usuario,
+                AuthzDecision.allow("cidadao_e_parte_do_processo:" + role.name().toLowerCase(Locale.ROOT), "cidadao-parte-v1"));
     }
 
     private void registerCidadaoParteDecision(Processo processo, Usuario usuario, AuthzDecision decision) {

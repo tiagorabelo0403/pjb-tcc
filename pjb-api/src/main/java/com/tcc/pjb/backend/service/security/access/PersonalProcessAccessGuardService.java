@@ -21,6 +21,7 @@ import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.security.access.PartyMatchResult;
+import com.tcc.pjb.backend.core.security.access.PartyRole;
 import com.tcc.pjb.backend.core.security.access.ProcessoPartyCpfMatcher;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
@@ -168,7 +169,9 @@ public class PersonalProcessAccessGuardService {
             auditLedgerService.appendSafely("PERSONAL_ACCESS_DENY", "PROCESSO", resourceId);
             throw new AccessDeniedPjbException("Acesso pessoal ao processo bloqueado: a identidade civil autenticada não está vinculada ao processo informado.");
         }
-        auditLedgerService.appendSafely("PERSONAL_ACCESS_ALLOW", "PROCESSO", resourceId);
+        PartyRole role = ((PartyMatchResult.Matched) match).role();
+        auditLedgerService.appendSafely("PERSONAL_ACCESS_ALLOW", "PROCESSO", resourceId, null,
+                "papel=" + role.name().toLowerCase(Locale.ROOT));
     }
 
     private boolean supportsPersonalGovContext(Usuario usuario) {

@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.platform.security.ratelimit;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,12 +18,12 @@ public class CapabilityRateLimitDomainResolver {
         Set<String> authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .filter(Objects::nonNull)
-                .map(String::toUpperCase)
+                .map(s -> s.toUpperCase(Locale.ROOT))
                 .collect(Collectors.toSet());
         if (authorities.contains("ROLE_ADVOGADO") || authorities.contains("ROLE_ADVOCACIA")) {
             return CapabilityRateLimitDomain.LAWYER;
         }
-        if (authorities.contains("ROLE_CIDADAO") || authorities.contains("ROLE_USER")) {
+        if (authorities.contains("ROLE_CIDADAO")) {
             return CapabilityRateLimitDomain.CITIZEN;
         }
         return CapabilityRateLimitDomain.INSTITUCIONAL;

@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.security.access;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,7 +11,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
+import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.security.UserSecurityProfile;
@@ -66,6 +70,51 @@ class PersonalProcessAccessGuardServiceTest {
         var envelope = service.resolveOwnProcessAccess("OVERVIEW_PROCESSO_PESSOAL");
         assertFalse(envelope.allowed());
         assertTrue(envelope.blockers().contains("REINFORCED_STRONG_AUTH_REQUIRED"));
+    }
+
+    @Test
+    void permiteAcessoQuandoCpfDoUsuarioAtualCasaComParteAutora() {
+        CurrentUserService currentUserService = mock(CurrentUserService.class);
+        UserSecurityProfileRepository repository = mock(UserSecurityProfileRepository.class);
+        AuditLedgerService auditLedgerService = mock(AuditLedgerService.class);
+        Usuario usuario = new Usuario();
+        usuario.setId(30L);
+        usuario.setCpf("11122233344");
+        usuario.setTipoUsuario(TipoUsuario.CIDADAO);
+        usuario.setAtivo(true);
+        when(currentUserService.getRequired()).thenReturn(usuario);
+        Processo processo = Processo.builder().id(500L).parteAutoraCpf("11122233344").build();
+        PersonalProcessAccessGuardService service = new PersonalProcessAccessGuardService(
+                currentUserService, repository, new com.tcc.pjb.backend.core.security.access.ProcessoPartyCpfMatcher(),
+                auditLedgerService);
+
+        assertDoesNotThrow(() -> service.requireCurrentUserAsParty(processo));
+
+        verify(auditLedgerService).appendSafely(eq("PERSONAL_ACCESS_ALLOW"), eq("PROCESSO"), anyString(), any(), contains("autor"));
+    }
+
+    @Test
+    void bloqueiaAcessoQuandoCpfDoUsuarioAtualNaoCasaComNenhumaParte() {
+        CurrentUserService currentUserService = mock(CurrentUserService.class);
+        UserSecurityProfileRepository repository = mock(UserSecurityProfileRepository.class);
+        AuditLedgerService auditLedgerService = mock(AuditLedgerService.class);
+        Usuario usuario = new Usuario();
+        usuario.setId(31L);
+        usuario.setCpf("99988877766");
+        usuario.setTipoUsuario(TipoUsuario.CIDADAO);
+        usuario.setAtivo(true);
+        when(currentUserService.getRequired()).thenReturn(usuario);
+        Processo processo = Processo.builder().id(501L).parteAutoraCpf("11122233344").parteReuCpf("22233344455").build();
+        PersonalProcessAccessGuardService service = new PersonalProcessAccessGuardService(
+                currentUserService, repository, new com.tcc.pjb.backend.core.security.access.ProcessoPartyCpfMatcher(),
+                auditLedgerService);
+
+        AccessDeniedPjbException exception = assertThrows(AccessDeniedPjbException.class,
+                () -> service.requireCurrentUserAsParty(processo));
+
+        assertEquals("Acesso pessoal ao processo bloqueado: a identidade civil autenticada não está vinculada ao processo informado.",
+                exception.getMessage());
+        verify(auditLedgerService).appendSafely(eq("PERSONAL_ACCESS_DENY"), eq("PROCESSO"), anyString());
     }
 
     private JwtAuthenticationToken jwt(String sub,
