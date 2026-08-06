@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.tcc.pjb.backend.PjbIntegrationTestBase;
 import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.enums.DocumentoCategoria;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
@@ -76,6 +77,7 @@ class MarketplaceDocumentoComplementarServiceIT extends PjbIntegrationTestBase {
         assertThat(salvos.get(0).getStorageUri()).isNotBlank();
         assertThat(salvos.get(0).getStorageUri()).startsWith("marketplace/" + processo.getId() + "/");
         assertThat(salvos.get(0).getPdf()).isNull();
+        assertThat(salvos.get(0).getCategoria()).isEqualTo(DocumentoCategoria.PUBLICO);
 
         var lido = documentContentService.resolvePdf(salvos.get(0));
         assertThat(lido.inlineDb()).isFalse();
