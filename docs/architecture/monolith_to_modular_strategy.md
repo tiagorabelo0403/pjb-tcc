@@ -59,7 +59,6 @@ Principios:
 - custas
 - integracao-mni
 - integracao-datajud
-- integracao-codex
 - ia
 - auditoria
 - observabilidade
