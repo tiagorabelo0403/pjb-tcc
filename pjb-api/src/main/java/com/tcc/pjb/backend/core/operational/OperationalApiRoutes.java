@@ -35,6 +35,7 @@ public final class OperationalApiRoutes {
     public static final String PATH_SECRETARIAT_QUEUE_EXCEPTIONS = "/queue/exceptions";
     public static final String PATH_SECRETARIAT_QUEUE_COVERAGE = "/queue/coverage";
     public static final String PATH_SECRETARIAT_QUEUE_FORMAL_CATALOG = "/queue/formal-catalog";
+    public static final String PATH_SECRETARIAT_QUEUE_PRODUTIVIDADE = "/queue/produtividade";
     public static final String PATH_SECRETARIAT_QUEUE_VENUE_CONFIRMATION = "/queue/items/{workItemId}/venue-confirmation";
     public static final String PATH_SECRETARIAT_QUEUE_PARTICIPANT_NOTIFICATION = "/queue/items/{workItemId}/participant-notification";
     public static final String PATH_SECRETARIAT_QUEUE_PARTICIPANT_NOTIFICATION_CHALLENGE = "/queue/items/{workItemId}/participant-notification/challenge";
