@@ -23,6 +23,8 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+    mem_limit: ${PJB_POSTGRES_MEM_LIMIT:-1g}
+    cpus: ${PJB_POSTGRES_CPUS:-2.0}
 
   kafka:
     image: apache/kafka:3.8.0
@@ -51,6 +53,8 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
+    mem_limit: ${PJB_KAFKA_MEM_LIMIT:-1g}
+    cpus: ${PJB_KAFKA_CPUS:-1.5}
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
@@ -70,6 +74,11 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
+    # ES_JAVA_OPTS acima ja fixa o heap em 512m; o container precisa de folga extra
+    # (off-heap: buffers de indexacao, cache de campo, overhead da JVM) — 1.5g cobre isso
+    # com margem sem deixar o container crescer sem teto.
+    mem_limit: ${PJB_ES_MEM_LIMIT:-1.5g}
+    cpus: ${PJB_ES_CPUS:-1.5}
 
   redis:
     image: redis:7.4
@@ -84,6 +93,8 @@ services:
       timeout: 5s
       retries: 3
     restart: unless-stopped
+    mem_limit: ${PJB_REDIS_MEM_LIMIT:-256m}
+    cpus: ${PJB_REDIS_CPUS:-0.5}
 
   backend:
     profiles: ["app"]
@@ -131,7 +142,16 @@ services:
       timeout: 5s
       retries: 10
       start_period: 45s
-    restart: unless-stopped
+    # on-failure (nao unless-stopped): o backend tem dependencias externas que podem falhar
+    # de forma persistente (ex.: postgres nunca sobe por erro de config no compose). Reiniciar
+    # sem limite nesse cenario produz um container preso em loop de retry indefinidamente —
+    # incidente real: pjb-backend-1 rodou 7 dias em retry do Flyway, sozinho consumindo 72% da
+    # RAM do host porque MaxRAMPercentage (pjb-runtime.sh) sem mem_limit no container calcula
+    # sobre a RAM total visivel, nao sobre um teto real. mem_limit abaixo fecha as duas pontas:
+    # da RAM visivel ao container e do que o container pode tentar reivindicar sem limite.
+    restart: on-failure:5
+    mem_limit: ${PJB_BACKEND_MEM_LIMIT:-2g}
+    cpus: ${PJB_BACKEND_CPUS:-2.0}
 
   # Vault em dev-mode: cofre de segredos para dev/demo apenas. Sobe SEM persistencia (in-memory),
   # com token fixo definido em PJB_VAULT_DEV_ROOT_TOKEN. NAO usar como cofre real de producao —
@@ -161,6 +181,8 @@ services:
       retries: 10
       start_period: 10s
     restart: unless-stopped
+    mem_limit: ${PJB_VAULT_MEM_LIMIT:-256m}
+    cpus: ${PJB_VAULT_CPUS:-0.5}
 
 volumes:
   pjb_pg_data:

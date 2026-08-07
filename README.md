@@ -932,6 +932,8 @@ Os 8 tópicos Kafka são declarados explicitamente via beans `NewTopic` em `PjbK
 
 Dados pessoais sensíveis — CPF e CNPJ — foram removidos de todas as camadas onde não precisam estar: resposta de API de metadados ICP-Brasil, cache de certificados, eventos de assinatura e entradas do audit ledger de cadeia ICP. Onde o identificador é necessário para correlação, é armazenado como referência hasheada, nunca em claro.
 
+Todo `docker-compose*.yml` (base, HA, read-replica, n8n) tem `mem_limit`/`cpus` explícito por serviço, configurável via env (`PJB_<SERVICO>_MEM_LIMIT`/`_CPUS`, default sensato por serviço). Sem teto de memória, `pjb-runtime.sh` calcula `-XX:MaxRAMPercentage` sobre a RAM total visível ao container em vez de sobre um limite real — um container preso em retry (dependência que nunca subiu, por exemplo) reivindica até 72% da VM inteira do Docker Desktop sozinho, sem nenhum outro processo conseguir memória. `backend`/`backend-b` também trocaram `restart: unless-stopped` por `on-failure:5`: dependência externa persistentemente quebrada não deve produzir reinício infinito e silencioso. `scripts/docker_zombie_container_guard.py` detecta esse padrão especificamente (unhealthy prolongado ou contagem alta de restarts) para qualquer container que escape dessas duas redes de segurança.
+
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---

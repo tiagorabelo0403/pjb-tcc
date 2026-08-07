@@ -24,6 +24,8 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_PGBOUNCER_MEM_LIMIT:-128m}
+    cpus: ${PJB_PGBOUNCER_CPUS:-0.5}
 
   pgbouncer-ro:
     profiles: ["ha"]
@@ -50,6 +52,8 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_PGBOUNCER_MEM_LIMIT:-128m}
+    cpus: ${PJB_PGBOUNCER_CPUS:-0.5}
 
   db-edge:
     profiles: ["ha"]
@@ -67,6 +71,8 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_DB_EDGE_MEM_LIMIT:-128m}
+    cpus: ${PJB_DB_EDGE_CPUS:-0.5}
 
   backend:
     environment:
@@ -124,7 +130,9 @@ services:
       timeout: 5s
       retries: 10
       start_period: 45s
-    restart: unless-stopped
+    restart: on-failure:5
+    mem_limit: ${PJB_BACKEND_MEM_LIMIT:-2g}
+    cpus: ${PJB_BACKEND_CPUS:-2.0}
 
   api-edge:
     profiles: ["app"]
@@ -144,3 +152,5 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_API_EDGE_MEM_LIMIT:-128m}
+    cpus: ${PJB_API_EDGE_CPUS:-0.5}
