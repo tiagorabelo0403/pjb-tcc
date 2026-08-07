@@ -407,26 +407,34 @@ paginar como foi feito em `UsuarioService`.
 
 ## D-peticionamento-pessoal-teste-nao-cobre-timing-de-repositorio
 
-**Status:** aberta — nota de cobertura, não bloqueia nada
+**Status:** FECHADA — teste unitário isolado prova a ausência de chamada ao repositório.
 
-**Contexto:** `LaianePeticaoInicialDraftService.rejeitarProcessoIdParaPeticionantePessoal` roda antes
-de `resolveProcesso` em `estruturar()`/`salvar()`, evitando por construção que um peticionante
-pessoal consiga fazer o serviço buscar no repositório um `Processo` de terceiro a partir de um
-`processoId` arbitrário. O teste `cidadaoComProcessoIdDeTerceiroEBloqueadoAntesDeCarregarOProcesso`
-prova que a exceção é lançada e que nenhum dado do processo alheio chega ao chamador — mas
-`processoRepository` neste teste é um bean real (`@Autowired`, `PjbIntegrationTestBase`), não um
-mock/spy, então o teste não confirma que `processoRepository.findById` deixa de ser chamado.
+**Contexto original (mantido para rastreabilidade):** `LaianePeticaoInicialDraftService.rejeitarProcessoIdParaPeticionantePessoal`
+roda antes de `resolveProcesso` em `estruturar()`/`salvar()`, evitando por construção que um
+peticionante pessoal consiga fazer o serviço buscar no repositório um `Processo` de terceiro a
+partir de um `processoId` arbitrário. O teste existente (`OabLegitimidadePeticionamentoTest.
+cidadaoComProcessoIdDeTerceiroEBloqueadoAntesDeCarregarOProcesso`) provava a exceção e a ausência
+de dado no chamador, mas `processoRepository` ali é um bean real (`@Autowired`, `PjbIntegrationTestBase`),
+não um mock/spy — o teste não confirmava que `processoRepository.findById` deixava de ser chamado.
 
-**Risco:** a garantia de que não há chamada ao repositório existe hoje só por leitura de código
-(a ordem das chamadas no método), não por teste. Isso importa porque, mesmo sem vazamento de dado,
-uma chamada ao repositório antes do bloqueio poderia, em tese, vazar existência de `processoId` por
-diferença de timing entre "processo existe, barrado depois" e "processo não existe, erro mais
-rápido" — canal lateral de enumeração, não a ausência de dado que o teste atual cobre.
+**Tentativa descartada:** converter o `processoRepository` compartilhado do arquivo IT para
+`@MockitoSpyBean` quebrou o boot inteiro do `ApplicationContext` da classe (28/28 erros): o bean
+é interceptado por AOP relacionado a RLS de sigilo (`PjbProcessoSigiloRlsFilter`/
+`ProcessoSigiloRlsEnvelopeService`), e o CGLIB do Spring não consegue gerar proxy em cima do proxy
+já gerado pelo Mockito para o spy. Revertido integralmente.
+
+**Fechamento:** `LaianePeticaoInicialDraftServiceTimingTest` (teste unitário puro, sem Spring, sem
+Postgres) constrói o service manualmente com os 14 colaboradores como mocks Mockito isolados —
+sem o bean gerenciado pelo Spring, o `ProcessoRepository` mockado nunca passa pelo pós-processamento
+de AOP que quebrava o spy. `verifyNoInteractions(processoRepository)` depois da chamada que lança
+`AccessDeniedPjbException` prova que `rejeitarProcessoIdParaPeticionantePessoal` bloqueia antes de
+`resolveProcesso` tocar o repositório — não só por leitura de código. 1/1 verde, 3,8s (contra os
+~200s do IT completo).
 
 **Quando revisitar:** se este padrão de trava (`rejeitar antes de resolver`) for replicado em canal
 com superfície de ataque maior que o Laiane (ex.: endpoint público REST sem autenticação de
-profissional), vale reforçar com `@SpyBean`/verificação de invocação — não é urgente aqui, porque o
-Laiane já exige usuário autenticado e o request de peticionante pessoal é de baixo volume.
+profissional), o mesmo padrão de teste unitário isolado (não IT) se aplica — construir o service
+manualmente com mocks evita a incompatibilidade AOP/CGLIB descoberta aqui.
 
 ## D-resolve-9-params-posicionais
 

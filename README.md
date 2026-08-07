@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.409%20unit%20%2B%20254%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.410%20unit%20%2B%20254%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -378,7 +378,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.409** |
+| Total de testes unitários | Surefire | **4.410** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
@@ -414,6 +414,8 @@ O bounded context `custas` (motor de custas judiciais — GRU, PIX, isenção po
 Um container `pjb-backend-1` órfão rodava havia 7 dias em loop de retry do Flyway (backoff exponencial em 120s) porque seu Postgres de dependência nunca tinha sido de fato iniciado, consumindo 8,45GB dos 11,6GB de memória alocados à VM do Docker Desktop — sem folga pra qualquer outro container, incluindo os que o Testcontainers precisa subir num `verify`. Removido, junto com o `pjb-postgres-replica-1` (também nunca iniciado). `docker system df`/`prune` liberou mais 23,7GB (22,17GB de build cache obsoleto, ~815MB de imagens dangling, ~760MB de volumes anônimos órfãos de execuções de teste interrompidas), sem tocar em nenhuma imagem nomeada nem nos 7 volumes nomeados dos stacks `pjb`/`pjb-clean`.
 
 Três dívidas de titularidade/domínio de cidadão fecharam juntas, todas achadas na mesma investigação anterior sem bloqueio jurídico ou de produto: `D-titularidade-cidadao-duplicada-dois-guards` — `PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty` implementavam a mesma checagem de CPF (parte autora/ré/usuário do processo) em dois arquivos; unificada em `core.security.ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)`, com cada método preservando sua própria mensagem de erro e pré-condição. `D-peticionamento-controller-domain-lacuna-cidadao` — `PeticionamentoController.resolveDomain()` não reconhecia `CIDADAO` e recaía em `CapabilityRateLimitDomain.LAWYER` por omissão; ganhou branch explícito checando `ROLE_CIDADAO`, retornando `CITIZEN`. `D-cidadao-parte-guard-sem-teste-rejeicao` — o guard de titularidade não tinha teste dedicado provando rejeição real; `CidadaoInstanciasControllerCpfMismatchIT` (JWT real, Postgres real via Testcontainers) prova as duas direções — CIDADAO com CPF divergente recebe 403, CIDADAO com CPF da parte autora recebe 200. 2/2 verde.
+
+`D-peticionamento-pessoal-teste-nao-cobre-timing-de-repositorio` fechou por teste unitário puro, não IT: a garantia de que `LaianePeticaoInicialDraftService.rejeitarProcessoIdParaPeticionantePessoal` bloqueia um peticionante pessoal antes de `resolveProcesso` tocar o repositório existia só por leitura de código. Uma primeira tentativa converteu o `processoRepository` compartilhado do IT existente para `@MockitoSpyBean` — quebrou o boot do `ApplicationContext` inteiro (28/28 erros), porque esse repositório é interceptado por AOP de RLS de sigilo e o CGLIB do Spring não consegue proxyar em cima do proxy que o Mockito já gerou para o spy. Revertido. `LaianePeticaoInicialDraftServiceTimingTest` constrói o service manualmente com os 14 colaboradores como mocks Mockito isolados, sem passar pelo Spring — `verifyNoInteractions(processoRepository)` depois da exceção prova a ordem real das chamadas. 1/1 verde em 3,8s.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
