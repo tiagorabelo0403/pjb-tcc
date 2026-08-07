@@ -393,6 +393,8 @@ Optional<Processo> findMagistraturaActsScopedById(@Param("id") Long id);
             """)
     Page<Processo> findByAdvogadoCpf(@Param("cpf") String cpf, Pageable pageable);
 
+    Page<Processo> findByVaraAndStatusProcesso(String vara, StatusProcesso statusProcesso, Pageable pageable);
+
     @EntityGraph(attributePaths = {"jurisdicao"})
     @Query("""
             SELECT p FROM Processo p

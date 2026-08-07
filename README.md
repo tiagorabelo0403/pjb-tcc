@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.457%20unit%20%2B%20259%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.459%20unit%20%2B%20259%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -324,7 +324,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.457 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 4.459 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 259 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.457 unitários (Surefire) e depois os 259 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.459 unitários (Surefire) e depois os 259 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,7 +379,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.457** |
+| Total de testes unitários | Surefire | **4.459** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
@@ -451,6 +451,8 @@ Investigando "prazo em dobro", achei um motor de prazo bem mais maduro do que o 
 Três dívidas de titularidade/domínio de cidadão fecharam juntas, todas achadas na mesma investigação anterior sem bloqueio jurídico ou de produto: `D-titularidade-cidadao-duplicada-dois-guards` — `PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty` implementavam a mesma checagem de CPF (parte autora/ré/usuário do processo) em dois arquivos; unificada em `core.security.ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)`, com cada método preservando sua própria mensagem de erro e pré-condição. `D-peticionamento-controller-domain-lacuna-cidadao` — `PeticionamentoController.resolveDomain()` não reconhecia `CIDADAO` e recaía em `CapabilityRateLimitDomain.LAWYER` por omissão; ganhou branch explícito checando `ROLE_CIDADAO`, retornando `CITIZEN`. `D-cidadao-parte-guard-sem-teste-rejeicao` — o guard de titularidade não tinha teste dedicado provando rejeição real; `CidadaoInstanciasControllerCpfMismatchIT` (JWT real, Postgres real via Testcontainers) prova as duas direções — CIDADAO com CPF divergente recebe 403, CIDADAO com CPF da parte autora recebe 200. 2/2 verde.
 
 `D-peticionamento-pessoal-teste-nao-cobre-timing-de-repositorio` fechou por teste unitário puro, não IT: a garantia de que `LaianePeticaoInicialDraftService.rejeitarProcessoIdParaPeticionantePessoal` bloqueia um peticionante pessoal antes de `resolveProcesso` tocar o repositório existia só por leitura de código. Uma primeira tentativa converteu o `processoRepository` compartilhado do IT existente para `@MockitoSpyBean` — quebrou o boot do `ApplicationContext` inteiro (28/28 erros), porque esse repositório é interceptado por AOP de RLS de sigilo e o CGLIB do Spring não consegue proxyar em cima do proxy que o Mockito já gerou para o spy. Revertido. `LaianePeticaoInicialDraftServiceTimingTest` constrói o service manualmente com os 14 colaboradores como mocks Mockito isolados, sem passar pelo Spring — `verifyNoInteractions(processoRepository)` depois da exceção prova a ordem real das chamadas. 1/1 verde em 3,8s.
+
+Investigando "painel de arquivamento/desarquivamento", achei que as ações por processo já existiam maduras: `TransitoJulgadoArquivamentoController` já expõe `arquivar`/`desarquivar` corretamente restritos a `SERVIDOR`/`SERVIDOR_FORUM`/`JUIZ`/`MAGISTRADO`, e `PostArchiveAccessRequestController` já resolve pedido de acesso pontual a processo arquivado — nenhum dos dois é um caso de porta trancada errada, como custas e DJe foram. A lacuna real era outra: nenhum dos dois é uma lista — o servidor não tinha como ver, de uma vez, quais processos da própria vara já transitaram em julgado e ainda esperam arquivamento; tinha que checar processo por processo, ou voltar pra planilha. `ArquivamentoPainelService.candidatosPorVara` (novo) busca `Processo` com `StatusProcesso.TRANSITO_EM_JULGADO` filtrado por vara (`ProcessoRepository.findByVaraAndStatusProcesso`, paginado a 500 itens) e devolve `numeroProcesso`, `classeProcessual` e `dataUltimaMovimentacao` de cada candidato — o mesmo padrão de "resumo estruturado, não dado cru" das demais filas. `GET /api/v1/processo/transito-julgado/vara/candidatos-arquivamento` expõe isso, sem duplicar nem tocar as ações de arquivar/desarquivar existentes. 2 testes unitários novos (`ArquivamentoPainelServiceTest`) provam a listagem com candidatos reais e o painel vazio quando a vara não tem nenhum.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -997,7 +999,7 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.457 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.459 · 0 falhas · 0 erros** |
 | Testes de integração (Failsafe) | **259 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1211,7 +1213,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.457 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.459 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
