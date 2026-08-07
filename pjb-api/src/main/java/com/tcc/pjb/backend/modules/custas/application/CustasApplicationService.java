@@ -36,6 +36,11 @@ public class CustasApplicationService {
     }
 
     @Transactional(readOnly = true)
+    public java.util.List<com.tcc.pjb.backend.modules.custas.domain.CustaConsultaResult> listarPorProcesso(Long processoId) {
+        return custaJudicialService.listarPorProcesso(processoId);
+    }
+
+    @Transactional(readOnly = true)
     public com.tcc.pjb.backend.modules.custas.domain.CustaHealthResult health(Long custaId) {
         return custaJudicialService.health(new CustaHealthQuery(requireId(custaId)));
     }

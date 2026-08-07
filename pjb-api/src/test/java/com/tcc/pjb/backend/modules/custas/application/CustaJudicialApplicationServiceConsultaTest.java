@@ -16,6 +16,7 @@ import com.tcc.pjb.backend.modules.custas.infrastructure.persistence.CustaJudici
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -47,5 +48,37 @@ class CustaJudicialApplicationServiceConsultaTest {
         assertThat(consulta.id()).isEqualTo(10L);
         assertThat(view.custaId()).isEqualTo(10L);
         assertThat(pix.txid()).isEqualTo("tx-1");
+    }
+
+    @Test
+    void deveListarCustasDoProcessoOrdenadasPeloStore() {
+        ProcessoCustaPort processoPort = mock(ProcessoCustaPort.class);
+        CustaJudicialStorePort custaStore = mock(CustaJudicialStorePort.class);
+        CustaJudicial custa1 = CustaJudicial.builder()
+                .id(1L)
+                .processoId(77L)
+                .tipo(com.tcc.pjb.backend.modules.custas.domain.TipoCusta.CUSTAS_INICIAIS)
+                .valor(new BigDecimal("50.00"))
+                .status("PAGO")
+                .createdAt(Instant.now())
+                .build();
+        CustaJudicial custa2 = CustaJudicial.builder()
+                .id(2L)
+                .processoId(77L)
+                .tipo(com.tcc.pjb.backend.modules.custas.domain.TipoCusta.PREPARO_RECURSAL)
+                .valor(new BigDecimal("25.00"))
+                .status("PENDENTE")
+                .createdAt(Instant.now())
+                .build();
+        when(custaStore.findByProcessoId(77L)).thenReturn(List.of(custa2, custa1));
+        CustaJudicialApplicationService service = new CustaJudicialApplicationService(processoPort, custaStore, mock(GruCodigoBarrasGenerator.class), mock(PixPayloadGenerator.class), mock(CustaIsencaoPolicy.class), mock(AuditLedgerService.class), mock(ReadAfterWriteConsistencyPolicy.class));
+
+        var resultado = service.listarPorProcesso(77L);
+
+        assertThat(resultado).hasSize(2);
+        assertThat(resultado.get(0).id()).isEqualTo(2L);
+        assertThat(resultado.get(0).status()).isEqualTo("PENDENTE");
+        assertThat(resultado.get(1).id()).isEqualTo(1L);
+        assertThat(resultado.get(1).status()).isEqualTo("PAGO");
     }
 }

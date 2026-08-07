@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.modules.custas.infrastructure.persistence;
 
 import com.tcc.pjb.backend.modules.custas.api.CustaJudicialStorePort;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,11 @@ public class CustaJudicialStoreAdapter implements CustaJudicialStorePort {
     @Override
     public Optional<CustaJudicial> findById(Long custaId) {
         return custaJudicialRepository.findById(custaId);
+    }
+
+    @Override
+    public List<CustaJudicial> findByProcessoId(Long processoId) {
+        return custaJudicialRepository.findByProcessoIdOrderByCreatedAtDesc(processoId);
     }
 
     @Override

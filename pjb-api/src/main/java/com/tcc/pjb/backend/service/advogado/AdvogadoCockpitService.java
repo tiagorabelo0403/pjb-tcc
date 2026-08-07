@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.advogado;
 
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCustaItemResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoHonorariosResponse;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -10,6 +11,8 @@ import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeGovernedProcessOperationService;
+import com.tcc.pjb.backend.modules.custas.application.CustasApplicationService;
+import com.tcc.pjb.backend.modules.custas.domain.CustaConsultaResult;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
@@ -35,6 +38,7 @@ public class AdvogadoCockpitService {
     private final PjbAuthorizationService authorizationService;
     private final OfficeGovernedProcessOperationService officeGovernedProcessOperationService;
     private final HonorariosSucumbenciaCalculatorService honorariosSucumbenciaCalculatorService;
+    private final CustasApplicationService custasApplicationService;
 
     public AdvogadoCockpitService(PerfilDashboardContextFactory contextFactory,
                                   PainelServiceCommons commons,
@@ -42,7 +46,8 @@ public class AdvogadoCockpitService {
                                   WorkItemRepository workItemRepository,
                                   PjbAuthorizationService authorizationService,
                                   OfficeGovernedProcessOperationService officeGovernedProcessOperationService,
-                                  HonorariosSucumbenciaCalculatorService honorariosSucumbenciaCalculatorService) {
+                                  HonorariosSucumbenciaCalculatorService honorariosSucumbenciaCalculatorService,
+                                  CustasApplicationService custasApplicationService) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
@@ -50,6 +55,7 @@ public class AdvogadoCockpitService {
         this.authorizationService = authorizationService;
         this.officeGovernedProcessOperationService = officeGovernedProcessOperationService;
         this.honorariosSucumbenciaCalculatorService = honorariosSucumbenciaCalculatorService;
+        this.custasApplicationService = custasApplicationService;
     }
 
     public CockpitSnapshot bootstrapCockpit() {
@@ -166,6 +172,26 @@ public class AdvogadoCockpitService {
                 calculado.percentualAplicado(),
                 calculado.valorHonorarios(),
                 calculado.fundamentacao());
+    }
+
+    public List<AdvogadoCustaItemResponse> listarCustas(Long processoId) {
+        Processo processo = processoRepository.findById(processoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+        authorizationService.requireReadProcesso(processo);
+        return custasApplicationService.listarPorProcesso(processoId).stream()
+                .map(this::toCustaItem)
+                .toList();
+    }
+
+    private AdvogadoCustaItemResponse toCustaItem(CustaConsultaResult custa) {
+        return new AdvogadoCustaItemResponse(
+                custa.id(),
+                custa.tipo(),
+                custa.valor(),
+                custa.status(),
+                custa.vencimento(),
+                custa.pagoEm(),
+                custa.valorPago());
     }
 
     public List<Map<String, Object>> analiticoPorCliente(String clienteCpfCnpj) {

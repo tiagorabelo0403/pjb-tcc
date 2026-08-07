@@ -144,6 +144,18 @@ public class CustaJudicialApplicationService {
         Objects.requireNonNull(command);
         CustaJudicial entity = custaStore.findById(command.custaId())
                 .orElseThrow(() -> new IllegalArgumentException("Custa não encontrada: " + command.custaId()));
+        return toConsultaResult(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<CustaConsultaResult> listarPorProcesso(Long processoId) {
+        Objects.requireNonNull(processoId);
+        return custaStore.findByProcessoId(processoId).stream()
+                .map(this::toConsultaResult)
+                .toList();
+    }
+
+    private CustaConsultaResult toConsultaResult(CustaJudicial entity) {
         return new CustaConsultaResult(entity.getId(), entity.getTipo() == null ? null : entity.getTipo().name(), entity.getValor(), entity.getStatus(), entity.getVencimento(), entity.getPagoEm(), entity.getValorPago());
     }
 

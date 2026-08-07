@@ -128,6 +128,10 @@ public class AdvogadoSurfaceFacadeService {
         return advogadoCockpitService.calcularHonorarios(processoId, request);
     }
 
+    public List<com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCustaItemResponse> listarCustas(Long processoId) {
+        return advogadoCockpitService.listarCustas(processoId);
+    }
+
     public List<AdvogadoClienteAnaliticoItemResponse> analiticoPorCliente(String clienteCpfCnpj) {
         return advogadoCockpitService.analiticoPorCliente(clienteCpfCnpj).stream()
                 .map(this::toAnaliticoItem)
