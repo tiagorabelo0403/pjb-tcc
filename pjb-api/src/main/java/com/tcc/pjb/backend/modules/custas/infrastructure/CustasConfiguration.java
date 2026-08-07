@@ -1,6 +1,8 @@
 package com.tcc.pjb.backend.modules.custas.infrastructure;
 
 import com.tcc.pjb.backend.modules.custas.api.GruCodigoBarrasGenerator;
+import com.tcc.pjb.backend.modules.custas.domain.CustaIsencaoPolicy;
+import com.tcc.pjb.backend.modules.custas.domain.CustaIsencaoPorRitoPolicy;
 import com.tcc.pjb.backend.modules.custas.domain.GruResult;
 import com.tcc.pjb.backend.modules.custas.domain.PixPayloadGenerator;
 import com.tcc.pjb.backend.modules.custas.domain.PixResult;
@@ -28,5 +30,10 @@ public class CustasConfiguration {
             String txid = ("PJB" + processoId + (tipoCusta == null ? "CUSTA" : tipoCusta)).replaceAll("[^A-Za-z0-9]", "");
             return new PixResult("0002012636PJB." + txid + "." + valor.setScale(2, java.math.RoundingMode.HALF_UP), txid.substring(0, Math.min(35, txid.length())));
         };
+    }
+
+    @Bean
+    public CustaIsencaoPolicy custaIsencaoPolicy() {
+        return new CustaIsencaoPorRitoPolicy();
     }
 }

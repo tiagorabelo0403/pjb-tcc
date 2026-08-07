@@ -6,25 +6,25 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.modules.custas.api.CustaJudicialStorePort;
 import com.tcc.pjb.backend.modules.custas.api.GruCodigoBarrasGenerator;
+import com.tcc.pjb.backend.modules.custas.api.ProcessoCustaPort;
 import com.tcc.pjb.backend.modules.custas.domain.CustaConsultaCommand;
 import com.tcc.pjb.backend.modules.custas.domain.CustaIsencaoPolicy;
 import com.tcc.pjb.backend.modules.custas.domain.PixPayloadGenerator;
 import com.tcc.pjb.backend.modules.custas.infrastructure.persistence.CustaJudicial;
-import com.tcc.pjb.backend.modules.custas.infrastructure.persistence.CustaJudicialRepository;
-import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
-class CustaJudicialServiceConsultaTest {
+class CustaJudicialApplicationServiceConsultaTest {
 
     @Test
     void deveConsultarCustaEConstruirViewsBasicas() {
-        ProcessoRepository processoRepository = mock(ProcessoRepository.class);
-        CustaJudicialRepository custaRepository = mock(CustaJudicialRepository.class);
+        ProcessoCustaPort processoPort = mock(ProcessoCustaPort.class);
+        CustaJudicialStorePort custaStore = mock(CustaJudicialStorePort.class);
         CustaJudicial entity = CustaJudicial.builder()
                 .id(10L)
                 .tipo(com.tcc.pjb.backend.modules.custas.domain.TipoCusta.CUSTAS_INICIAIS)
@@ -37,8 +37,8 @@ class CustaJudicialServiceConsultaTest {
                 .vencimento(LocalDate.now().plusDays(10))
                 .createdAt(Instant.now())
                 .build();
-        when(custaRepository.findById(10L)).thenReturn(Optional.of(entity));
-        CustaJudicialService service = new CustaJudicialService(processoRepository, custaRepository, mock(GruCodigoBarrasGenerator.class), mock(PixPayloadGenerator.class), mock(CustaIsencaoPolicy.class), mock(AuditLedgerService.class), mock(ReadAfterWriteConsistencyPolicy.class));
+        when(custaStore.findById(10L)).thenReturn(Optional.of(entity));
+        CustaJudicialApplicationService service = new CustaJudicialApplicationService(processoPort, custaStore, mock(GruCodigoBarrasGenerator.class), mock(PixPayloadGenerator.class), mock(CustaIsencaoPolicy.class), mock(AuditLedgerService.class), mock(ReadAfterWriteConsistencyPolicy.class));
 
         var consulta = service.consultar(new CustaConsultaCommand(10L));
         var view = service.view(10L);

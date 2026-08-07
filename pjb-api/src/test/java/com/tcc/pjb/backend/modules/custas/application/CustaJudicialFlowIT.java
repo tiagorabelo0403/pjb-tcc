@@ -23,7 +23,7 @@ class CustaJudicialFlowIT extends PjbIntegrationTestBase {
     @Autowired
     private ProcessoRepository processoRepository;
     @Autowired
-    private CustaJudicialService custaJudicialService;
+    private CustaJudicialApplicationService custaJudicialService;
     @Autowired
     private CustaJudicialRepository custaJudicialRepository;
 
@@ -36,7 +36,7 @@ class CustaJudicialFlowIT extends PjbIntegrationTestBase {
 
     @Test
     void deveGerarCustaPendente() {
-        org.mockito.Mockito.when(custaIsencaoPolicy.verificar(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+        org.mockito.Mockito.when(custaIsencaoPolicy.verificar(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new com.tcc.pjb.backend.modules.custas.domain.IsencaoCustaResult(false, null));
         org.mockito.Mockito.when(gruCodigoBarrasGenerator.gerar(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new GruResult("001", "linha", "barra", "nosso"));

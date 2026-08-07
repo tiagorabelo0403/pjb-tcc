@@ -20,7 +20,7 @@ class CustasApplicationServiceTest {
 
     @Test
     void gerar_deveAuditarCriacaoManual() {
-        CustaJudicialService custaJudicialService = mock(CustaJudicialService.class);
+        CustaJudicialApplicationService custaJudicialService = mock(CustaJudicialApplicationService.class);
         AuditLedgerService auditLedgerService = mock(AuditLedgerService.class);
         when(custaJudicialService.gerarCustas(new com.tcc.pjb.backend.modules.custas.domain.GerarCustaJudicialCommand(3L, com.tcc.pjb.backend.modules.custas.domain.TipoCusta.CUSTAS_INICIAIS, BigDecimal.TEN)))
                 .thenReturn(com.tcc.pjb.backend.modules.custas.domain.CustaJudicialResult.isento(9L, "gratuidade"));
@@ -34,7 +34,7 @@ class CustasApplicationServiceTest {
 
     @Test
     void timeline_deveAuditarQuantidade() {
-        CustaJudicialService custaJudicialService = mock(CustaJudicialService.class);
+        CustaJudicialApplicationService custaJudicialService = mock(CustaJudicialApplicationService.class);
         AuditLedgerService auditLedgerService = mock(AuditLedgerService.class);
         when(custaJudicialService.consultarTimeline(new com.tcc.pjb.backend.modules.custas.domain.CustaConsultaTimelineCommand(9L)))
                 .thenReturn(new CustaConsultaTimelineResult(9L, List.of(

@@ -14,10 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CustasApplicationService {
 
-    private final CustaJudicialService custaJudicialService;
+    private final CustaJudicialApplicationService custaJudicialService;
     private final AuditLedgerService auditLedgerService;
 
-    public CustasApplicationService(CustaJudicialService custaJudicialService,
+    public CustasApplicationService(CustaJudicialApplicationService custaJudicialService,
                                     AuditLedgerService auditLedgerService) {
         this.custaJudicialService = Objects.requireNonNull(custaJudicialService);
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);

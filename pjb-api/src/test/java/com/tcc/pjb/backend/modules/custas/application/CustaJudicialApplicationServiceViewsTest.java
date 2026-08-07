@@ -6,26 +6,26 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.modules.custas.api.CustaJudicialStorePort;
 import com.tcc.pjb.backend.modules.custas.api.GruCodigoBarrasGenerator;
+import com.tcc.pjb.backend.modules.custas.api.ProcessoCustaPort;
 import com.tcc.pjb.backend.modules.custas.domain.CustaConsultaTimelineCommand;
 import com.tcc.pjb.backend.modules.custas.domain.CustaHealthQuery;
 import com.tcc.pjb.backend.modules.custas.domain.CustaIsencaoPolicy;
 import com.tcc.pjb.backend.modules.custas.domain.PixPayloadGenerator;
 import com.tcc.pjb.backend.modules.custas.infrastructure.persistence.CustaJudicial;
-import com.tcc.pjb.backend.modules.custas.infrastructure.persistence.CustaJudicialRepository;
-import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
-class CustaJudicialServiceViewsTest {
+class CustaJudicialApplicationServiceViewsTest {
 
     @Test
     void shouldExposeHealthTimelinePaymentAndPixViews() {
-        ProcessoRepository processoRepository = mock(ProcessoRepository.class);
-        CustaJudicialRepository custaRepository = mock(CustaJudicialRepository.class);
+        ProcessoCustaPort processoPort = mock(ProcessoCustaPort.class);
+        CustaJudicialStorePort custaStore = mock(CustaJudicialStorePort.class);
         CustaJudicial entity = CustaJudicial.builder()
                 .id(31L)
                 .processoId(19L)
@@ -41,11 +41,11 @@ class CustaJudicialServiceViewsTest {
                 .valorPago(new BigDecimal("150.00"))
                 .createdAt(Instant.parse("2026-04-10T10:00:00Z"))
                 .build();
-        when(custaRepository.findById(31L)).thenReturn(Optional.of(entity));
+        when(custaStore.findById(31L)).thenReturn(Optional.of(entity));
 
-        CustaJudicialService service = new CustaJudicialService(
-                processoRepository,
-                custaRepository,
+        CustaJudicialApplicationService service = new CustaJudicialApplicationService(
+                processoPort,
+                custaStore,
                 mock(GruCodigoBarrasGenerator.class),
                 mock(PixPayloadGenerator.class),
                 mock(CustaIsencaoPolicy.class),
