@@ -359,6 +359,15 @@ python scripts/reap_orphan_test_jvms.py --kill  # encerra as órfãs e libera a 
 
 Multiplataforma (Windows/Linux/macOS), somente stdlib. Report-only por padrão (sai com código ≠ 0 se achar órfãs, útil como sinal em CI); `--kill` reapa. Não é amarrado ao build automaticamente — rode-o quando notar instabilidade, antes de uma rodada longa.
 
+Se o Docker (não a JVM) ficar lento ou `verify` travar tentando subir os containers do Testcontainers, a causa mais comum é **container zumbi**: um container preso em `unhealthy` por horas/dias (tipicamente por um `docker-compose up` parcial, com uma dependência que nunca subiu) segura CPU/memória da VM do Docker Desktop indefinidamente, sem servir a nada. Guard dedicado:
+
+```bash
+python scripts/docker_zombie_container_guard.py         # lista containers zumbis (report-only)
+python scripts/docker_zombie_container_guard.py --kill  # para e remove os zumbis
+```
+
+Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configurável via `--unhealthy-threshold-minutes`) ou com 5+ restarts (via `--restart-count-threshold`). Sai silenciosamente com código 0 se o daemon Docker estiver indisponível — não é um guard de "Docker precisa estar rodando".
+
 ### Rodar um teste específico com stack trace completo
 
 ```bash
