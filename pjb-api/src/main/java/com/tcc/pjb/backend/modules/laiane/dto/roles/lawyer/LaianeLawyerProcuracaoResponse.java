@@ -40,4 +40,8 @@ public class LaianeLawyerProcuracaoResponse {
     private OffsetDateTime createdAt;
     @Schema(description = "Data e hora da última atualização", example = "2026-05-31T15:00:00")
     private OffsetDateTime updatedAt;
+    @Schema(description = "ID da procuração de origem, quando este registro resulta de um substabelecimento", example = "12")
+    private Long substabelecidoDeId;
+    @Schema(description = "Se true, o advogado substabelecente manteve seus próprios poderes (substabelecimento com reserva)", example = "false")
+    private boolean comReservaDePoderes;
 }

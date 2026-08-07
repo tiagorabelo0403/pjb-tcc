@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.427%20unit%20%2B%20254%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.434%20unit%20%2B%20256%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -378,11 +378,11 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.427** |
+| Total de testes unitários | Surefire | **4.434** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
-| Total de testes de integração | Failsafe | **254** ¹ |
+| Total de testes de integração | Failsafe | **256** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
@@ -424,6 +424,8 @@ O módulo `custas` só tinha consulta por `custaId` — nenhum caminho listava a
 `OabValidationService` já existia, integrado a um client real de validação (`OabValidationClient`), mas só era usado como portão bloqueante (`requireAdvogadoAptoParaProtocolo`, lança exceção) antes de protocolar petição inicial — nunca como consulta informativa. O advogado não tinha como checar sua própria regularidade OAB fora do momento de bloqueio. `consultarRegularidade(Usuario)` (novo, extrai a lógica de parse+chamada ao client já usada pelo portão, sem duplicá-la) devolve o `OabValidationResult` (status/motivo/fonte/data) sem lançar nada. `GET /api/v1/advogado/cockpit/oab/regularidade` expõe isso no cockpit. 1 teste unitário novo (`AdvogadoCockpitServiceOabRegularidadeTest`); `OabValidationServiceTest` (5/5) revalidado sem regressão após o refactor de extração do método privado `validar`.
 
 `/api/v1/jurisprudencia/search-contextual` já existia (`JurisprudenceContextualSearchService`, expande a busca com sinônimos por ramo/rito), mas exigia que o cliente soubesse e informasse manualmente `ramo`/`rito` — nenhum endpoint resolvia esses dois campos a partir de um `processoId` real, e nenhum `Advogado*Controller` chamava o serviço. `GET /api/v1/advogado/cockpit/processos/{processoId}/jurisprudencia` resolve `ramoDireito`/`rito` direto do `Processo` (mesma checagem ABAC de honorários/custas antes de consultar) e delega ao serviço existente sem alterá-lo. 3 testes unitários novos (`AdvogadoCockpitServiceJurisprudenciaTest`) provam a busca usando ramo/rito reais do processo, a negação de acesso sem chamar o motor de busca, e processo inexistente sem consultar nada.
+
+`LaianeLawyerController` já cobria criação/listagem/revogação de procuração e habilitação de forma completa — reimplementar isso no cockpit do advogado seria duplicar uma central já pronta. O que faltava era substabelecimento: `LaianeProcuracao` não tinha nenhum conceito de origem/cadeia, então um advogado não conseguia repassar seus poderes a outro (com ou sem reserva). Migration `V308` adiciona `substabelecido_de_id` (self-FK) e `com_reserva_de_poderes` (boolean, default `false`) a `tb_laiane_procuracao`. `LaianeLawyerService.substabelecer` valida que a procuração de origem pertence ao advogado autenticado e está `ATIVA`, que o destinatário é advogado e é diferente do substabelecente, cria a nova procuração vinculada à origem via `substabelecidoDe` copiando `poderes`/`clienteId`/`processoId`, e — quando não há reserva de poderes — revoga a origem (mesma convenção de `revokeProcuracao`: seta `REVOGADA` e fecha `fimVigencia`). `POST /api/v1/laiane/lawyer/procuracoes/{id}/substabelecer` expõe isso; `mapProcuracao` no controller passou a incluir `substabelecidoDeId`/`comReservaDePoderes` na resposta. 7 testes unitários novos (`LaianeLawyerServiceSubstabelecimentoTest`) cobrem substabelecimento com e sem reserva, procuração de outro advogado, procuração já revogada, destinatário que não é advogado, autossubstabelecimento e procuração inexistente. `LaianeLawyerController` nunca teve nenhuma IT antes desta mudança — `LaianeLawyerSubstabelecimentoIT` (nova, 2/2, Postgres real via Testcontainers) prova a migration `V308` e o mapeamento JPA do self-FK aplicados de verdade: substabelecimento aceito revoga a origem, e substabelecimento de procuração de outro advogado recebe 403 pela cadeia real de segurança do Spring. `CapabilityRateLimiter` foi mockado nessa IT (`@MockBean`) porque depende de Redis, ausente da infra de Testcontainers — mesma causa raiz já documentada em `InstitutionalRecursalGateIT`, resolvida aqui isolando a dependência em vez de reformular a asserção, já que o status HTTP é exatamente o que este teste precisa provar.
 
 Três dívidas de titularidade/domínio de cidadão fecharam juntas, todas achadas na mesma investigação anterior sem bloqueio jurídico ou de produto: `D-titularidade-cidadao-duplicada-dois-guards` — `PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty` implementavam a mesma checagem de CPF (parte autora/ré/usuário do processo) em dois arquivos; unificada em `core.security.ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)`, com cada método preservando sua própria mensagem de erro e pré-condição. `D-peticionamento-controller-domain-lacuna-cidadao` — `PeticionamentoController.resolveDomain()` não reconhecia `CIDADAO` e recaía em `CapabilityRateLimitDomain.LAWYER` por omissão; ganhou branch explícito checando `ROLE_CIDADAO`, retornando `CITIZEN`. `D-cidadao-parte-guard-sem-teste-rejeicao` — o guard de titularidade não tinha teste dedicado provando rejeição real; `CidadaoInstanciasControllerCpfMismatchIT` (JWT real, Postgres real via Testcontainers) prova as duas direções — CIDADAO com CPF divergente recebe 403, CIDADAO com CPF da parte autora recebe 200. 2/2 verde.
 
