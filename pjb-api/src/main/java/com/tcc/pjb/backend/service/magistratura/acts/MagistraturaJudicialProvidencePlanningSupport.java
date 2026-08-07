@@ -642,15 +642,15 @@ public class MagistraturaJudicialProvidencePlanningSupport {
         }
         if (code == MagistraturaJudicialProvidenceCode.REDISTRIBUIR_OU_PREVENIR) {
             return deskTarget(unitContext, "RECEBIMENTO", defaultReceiptInbox, defaultReceiptQueue,
-                    unitContext.panelRoute("/api/v1/secretaria/especializada/processos/" + processo.getId() + "/redistribuicao", processo.getId(), "RECEBIMENTO", defaultReceiptInbox, defaultReceiptQueue));
+                    unitContext.panelRoute("/api/v1/secretariat/especializada/processos/" + processo.getId() + "/redistribuicao", processo.getId(), "RECEBIMENTO", defaultReceiptInbox, defaultReceiptQueue));
         }
         if (code == MagistraturaJudicialProvidenceCode.SANEAR_PROCESSO) {
             return deskTarget(unitContext, "SANEAMENTO", defaultSaneamentoInbox, defaultSaneamentoQueue,
-                    unitContext.panelRoute("/api/v1/secretaria/especializada/processos/" + processo.getId() + "/checklist", processo.getId(), "SANEAMENTO", defaultSaneamentoInbox, defaultSaneamentoQueue));
+                    unitContext.panelRoute("/api/v1/secretariat/especializada/processos/" + processo.getId() + "/checklist", processo.getId(), "SANEAMENTO", defaultSaneamentoInbox, defaultSaneamentoQueue));
         }
         if (code == MagistraturaJudicialProvidenceCode.PROCESSAR_INCIDENTE_PROCESSUAL) {
             return deskTarget(unitContext, "SANEAMENTO", defaultSaneamentoInbox, defaultSaneamentoQueue,
-                    unitContext.panelRoute("/api/v1/secretaria/especializada/processos/" + processo.getId() + "/atos", processo.getId(), "SANEAMENTO", defaultSaneamentoInbox, defaultSaneamentoQueue));
+                    unitContext.panelRoute("/api/v1/secretariat/especializada/processos/" + processo.getId() + "/atos", processo.getId(), "SANEAMENTO", defaultSaneamentoInbox, defaultSaneamentoQueue));
         }
         if (code == MagistraturaJudicialProvidenceCode.CONTROLAR_CALCULO_LIQUIDACAO) {
             String route = processo.getRamoDireito() == RamoDireito.TRABALHISTA
@@ -672,10 +672,10 @@ public class MagistraturaJudicialProvidencePlanningSupport {
         }
         if (code == MagistraturaJudicialProvidenceCode.PROVIDENCIAR_PERICIA) {
             return deskTarget(unitContext, "EXECUCAO", defaultExecutionInbox, defaultExecutionQueue,
-                    unitContext.panelRoute("/api/v1/secretaria/especializada/processos/" + processo.getId(), processo.getId(), "EXECUCAO", defaultExecutionInbox, defaultExecutionQueue));
+                    unitContext.panelRoute("/api/v1/secretariat/especializada/processos/" + processo.getId(), processo.getId(), "EXECUCAO", defaultExecutionInbox, defaultExecutionQueue));
         }
         return deskTarget(unitContext, "EXECUCAO", defaultExecutionInbox, defaultExecutionQueue,
-                unitContext.panelRoute("/api/v1/secretaria/especializada/processos/" + processo.getId(), processo.getId(), "EXECUCAO", defaultExecutionInbox, defaultExecutionQueue));
+                unitContext.panelRoute("/api/v1/secretariat/especializada/processos/" + processo.getId(), processo.getId(), "EXECUCAO", defaultExecutionInbox, defaultExecutionQueue));
     }
 
     private DeskTarget deskTarget(MagistraturaOperationalUnitContext unitContext,

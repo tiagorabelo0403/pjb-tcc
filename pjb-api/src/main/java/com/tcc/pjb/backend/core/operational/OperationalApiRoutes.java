@@ -80,6 +80,7 @@ public final class OperationalApiRoutes {
     public static final String PATH_SECRETARIAT_JULGAMENTO_ACORDAO = "/{julgamentoId}/acordao";
 
     public static final String SECRETARIAT_OPERATIONAL_BASE = SECRETARIAT_BASE + "/operacional";
+    public static final String SECRETARIAT_ESPECIALIZADA_BASE = SECRETARIAT_BASE + "/especializada";
     public static final String PATH_SECRETARIAT_OPERATIONAL_SNAPSHOT = "/snapshot";
     public static final String PATH_SECRETARIAT_OPERATIONAL_PROCESS_JUNTADA = "/processos/{processoId}/juntada";
     public static final String PATH_SECRETARIAT_OPERATIONAL_PROCESS_INTIMACAO = "/processos/{processoId}/intimacao";

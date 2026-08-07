@@ -506,7 +506,7 @@ public class SecretariatOperationalOrchestrationService {
                 effectiveDuration,
                 firstNonBlank(tipo, "AUDIENCIA_DE_SECRETARIA"),
                 effectiveLocal,
-                "/api/v1/secretaria/especializada/processos/" + processo.getId() + "/audiencias"
+                "/api/v1/secretariat/especializada/processos/" + processo.getId() + "/audiencias"
         );
     }
 
