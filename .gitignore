@@ -66,6 +66,8 @@ dist/
 Thumbs.db
 .claude/
 .codex/
+CLAUDE.md
+docs/superpowers/
 
 # Local environment and credentials
 .env
