@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.470%20unit%20%2B%20269%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.470%20unit%20%2B%20270%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -325,7 +325,7 @@ docker compose down
 O projeto tem dois níveis de teste com características bem diferentes:
 
 - **Testes unitários (Surefire):** 4.470 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 269 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes de integração (Failsafe):** 270 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.470 unitários (Surefire) e depois os 269 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.470 unitários (Surefire) e depois os 270 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -383,7 +383,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
-| Total de testes de integração | Failsafe | **269** ¹ |
+| Total de testes de integração | Failsafe | **270** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
@@ -467,6 +467,10 @@ Investigando "conclusão dos autos ao magistrado" — o prazo legal de 10 dias �
 O magistrado que assina um despacho não tinha como saber se a publicação no DJe realmente aconteceu — `DespachoComunicacaoPosAtoService.publicarDje` cria a linha de `DjePublicacao` no momento da assinatura, mas `DjeApplicationService.processoPublication`, a consulta que mostra o status dessa publicação, só era alcançável via `SecretariatDjeController` (restrito à secretaria) ou `AdminDjeController` (restrito ao admin) — igual à lacuna já fechada para a secretaria (item anterior desta mesma frente), só que do lado de quem assina o ato. `SecretariatDjeController` tinha um único `@PreAuthorize` de classe cobrindo os dois endpoints; movido para nível de método, com `lifecycle/run` permanecendo restrito à secretaria (rodar o lote de publicação não é ato do magistrado) e `GET /processos/{processoId}/publicacao` passando a aceitar também `MAGISTRADO`/`JUIZ*` — sem duplicar controller, sem tocar `AdminDjeController`. 2 testes unitários novos (`SecretariatDjeControllerAccessTest`, por reflexão sobre a anotação) travam a diferença: `lifecycleRun` não pode ganhar papel de magistratura por engano numa alteração futura, `publicacaoDoProcesso` precisa aceitá-la.
 
 Investigando "produtividade do magistrado" (sentenças/decisões proferidas, tempo médio), achei que a base de dados estava incompleta antes mesmo de eu construir o painel: `JuizGabineteDecisionalService.assinarDespacho` registrava `MovimentacaoProcessual` com `ator(usuario)` — o juiz que praticou o ato —, mas `proferirSentenca` e `proferirDecisaoInterlocutoria` nunca chamavam esse mesmo registro; cada uma só criava um `WorkItem` com `assignedRole(SERVIDOR_FORUM)` e nenhum `assignedUser`, porque esse `WorkItem` representa o encaminhamento à secretaria para publicação, não a autoria do juiz. Resultado: um painel de produtividade construído em cima do `WorkItemRepository` (a mesma técnica usada para secretário e advogado) contaria despacho, mas nunca sentença nem decisão interlocutória — produtividade incompleta por construção, não por falta de dado real. Generalizei `registrarMovimentacaoDespacho` em `registrarMovimentacaoAto` (mesmo método, sem duplicar) e passei a chamá-lo também em `proferirSentenca`/`proferirDecisaoInterlocutoria`, cada uma com sua própria descrição de ato — pré-requisito arquitetural antes do painel, não cosmético. `JuizProdutividadeService.painel` (novo) busca as movimentações do magistrado numa janela de dias (`MovimentacaoProcessualRepository.findByAtor_IdAndDataMovimentacaoAfterOrderByDataMovimentacaoDesc`, nova query), classifica cada uma por tipo a partir do prefixo de descrição que os três pontos de escrita já controlam de forma estável, e calcula o intervalo médio entre atos consecutivos como proxy de ritmo de trabalho — mesma lógica de proxy de duração já usada no restante do sistema, adaptada para pontos no tempo em vez de intervalos com início/fim. `GET /api/v1/juiz/produtividade?diasJanela=30` expõe isso. 5 testes novos (3 unitários em `JuizProdutividadeServiceTest` provando classificação por tipo, cálculo de intervalo com múltiplos atos e ausência de intervalo com menos de dois; 2 de integração em `JuizProdutividadeControllerIT` provando a delegação com janela padrão e customizada) — mais a garantia indireta de que despacho/sentença/decisão continuam funcionando sem regressão, já que `registrarMovimentacaoAto` preserva exatamente o comportamento anterior do despacho.
+
+Último item desta frente do magistrado: homologação de acordo trabalhista (CLT art. 831, CPC art. 487 III — resolução de mérito por ato exclusivamente judicial). `TrabalhistaApplicationService.homologarAcordo` já existia completo, mas só alcançável via `AdminTrabalhistaController` (ADMIN-only) — mesmo padrão de porta trancada de SISBAJUD/INFOJUD/custódia, só que num controller diferente. Já existia `TrabalhistaController` (`/api/v1/trabalhista`) aberto a magistratura para DEJT readiness, execução fast-track e checklist de verbas rescisórias — o lugar certo para a homologação, sem criar mais um controller para o mesmo domínio. `POST /api/v1/trabalhista/processos/{processoId}/homologar-acordo` (novo, restrito a `MAGISTRADO`/`JUIZ`/`JUIZ_TRABALHISTA`) expõe isso, reaproveitando o `ApplicationService` sem tocar `AdminTrabalhistaController`. 1 teste de integração novo (`TrabalhistaControllerHomologacaoIT`, padrão MockMvc standalone) prova a delegação.
+
+Com isso fecham os 7 itens reais encontrados para o painel do magistrado — a investigação inicial buscou 10 ideias, mas parou em 7 por decisão deliberada: nenhuma API foi inventada para completar a contagem. Um oitavo candidato (juiz substituto/impedimento-suspeição) foi investigado e descartado por não ter nenhum fundamento técnico no código — só monitoramento da própria migração PJe→PJB por tribunal, sem relação com substituição de magistrado.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -1014,7 +1018,7 @@ CREATE POLICY processo_sigilo ON processo
 | Métrica | Estado |
 |---------|--------|
 | Testes unitários (Surefire) | **4.470 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **269 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes de integração (Failsafe) | **270 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
