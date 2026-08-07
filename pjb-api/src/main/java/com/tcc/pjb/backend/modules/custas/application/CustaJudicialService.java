@@ -1,28 +1,31 @@
-package com.tcc.pjb.backend.core.financeiro.custas;
+package com.tcc.pjb.backend.modules.custas.application;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaJudicialResult;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.RegistrarPagamentoCustaResult;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.RegistrarPagamentoCustaCommand;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.GerarCustaJudicialCommand;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.GruResult;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.PixResult;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaConsultaCommand;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaConsultaResult;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaPagamentoCommandSnapshot;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaPagamentoAuditSnapshot;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.GruEmissaoSnapshot;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.PixPayloadSnapshot;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaTimelineEntry;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaConsultaTimelineCommand;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaConsultaTimelineResult;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaStatusSnapshot;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaVencimentoSnapshot;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta;
+import com.tcc.pjb.backend.modules.custas.api.GruCodigoBarrasGenerator;
+import com.tcc.pjb.backend.modules.custas.domain.CustaIsencaoPolicy;
+import com.tcc.pjb.backend.modules.custas.domain.PixPayloadGenerator;
+import com.tcc.pjb.backend.modules.custas.domain.CustaJudicialResult;
+import com.tcc.pjb.backend.modules.custas.domain.RegistrarPagamentoCustaResult;
+import com.tcc.pjb.backend.modules.custas.domain.RegistrarPagamentoCustaCommand;
+import com.tcc.pjb.backend.modules.custas.domain.GerarCustaJudicialCommand;
+import com.tcc.pjb.backend.modules.custas.domain.GruResult;
+import com.tcc.pjb.backend.modules.custas.domain.PixResult;
+import com.tcc.pjb.backend.modules.custas.domain.CustaConsultaCommand;
+import com.tcc.pjb.backend.modules.custas.domain.CustaConsultaResult;
+import com.tcc.pjb.backend.modules.custas.domain.CustaPagamentoCommandSnapshot;
+import com.tcc.pjb.backend.modules.custas.domain.CustaPagamentoAuditSnapshot;
+import com.tcc.pjb.backend.modules.custas.domain.GruEmissaoSnapshot;
+import com.tcc.pjb.backend.modules.custas.domain.PixPayloadSnapshot;
+import com.tcc.pjb.backend.modules.custas.domain.CustaTimelineEntry;
+import com.tcc.pjb.backend.modules.custas.domain.CustaConsultaTimelineCommand;
+import com.tcc.pjb.backend.modules.custas.domain.CustaConsultaTimelineResult;
+import com.tcc.pjb.backend.modules.custas.domain.CustaStatusSnapshot;
+import com.tcc.pjb.backend.modules.custas.domain.CustaVencimentoSnapshot;
+import com.tcc.pjb.backend.modules.custas.domain.TipoCusta;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.model.entity.Processo;
-import com.tcc.pjb.backend.model.entity.financeiro.CustaJudicial;
-import com.tcc.pjb.backend.model.repository.CustaJudicialRepository;
+import com.tcc.pjb.backend.modules.custas.infrastructure.persistence.CustaJudicial;
+import com.tcc.pjb.backend.modules.custas.infrastructure.persistence.CustaJudicialRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -31,8 +34,8 @@ import java.util.Objects;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaJudicialView;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.PixCobrancaView;
+import com.tcc.pjb.backend.modules.custas.domain.CustaJudicialView;
+import com.tcc.pjb.backend.modules.custas.domain.PixCobrancaView;
 
 @Service
 public class CustaJudicialService {
@@ -72,7 +75,7 @@ public class CustaJudicialService {
         Objects.requireNonNull(tipoCusta, "tipoCusta");
         Processo processo = processoRepository.findById(processoId)
                 .orElseThrow(() -> new IllegalArgumentException("Processo não encontrado: " + processoId));
-        com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult isencao = isentoPolicy.verificar(processo, tipoCusta);
+        com.tcc.pjb.backend.modules.custas.domain.IsencaoCustaResult isencao = isentoPolicy.verificar(processo, tipoCusta);
         if (isencao.isento()) {
             CustaJudicial entity = CustaJudicial.isento(processoId, tipoCusta, valor, isencao.motivo());
             custaRepository.save(entity);
@@ -203,26 +206,26 @@ public class CustaJudicialService {
 
 
 @Transactional(readOnly = true)
-public com.tcc.pjb.backend.core.financeiro.custas.domain.CustaHealthResult health(com.tcc.pjb.backend.core.financeiro.custas.domain.CustaHealthQuery query) {
+public com.tcc.pjb.backend.modules.custas.domain.CustaHealthResult health(com.tcc.pjb.backend.modules.custas.domain.CustaHealthQuery query) {
     java.util.Objects.requireNonNull(query);
-    return new com.tcc.pjb.backend.core.financeiro.custas.domain.CustaHealthResult(statusSnapshot(query.custaId()), vencimentoSnapshot(query.custaId()));
+    return new com.tcc.pjb.backend.modules.custas.domain.CustaHealthResult(statusSnapshot(query.custaId()), vencimentoSnapshot(query.custaId()));
 }
 
 @Transactional(readOnly = true)
-public com.tcc.pjb.backend.core.financeiro.custas.domain.CustaPagamentoView pagamentoView(Long custaId) {
+public com.tcc.pjb.backend.modules.custas.domain.CustaPagamentoView pagamentoView(Long custaId) {
     var entity = custaRepository.findById(custaId).orElseThrow(() -> new IllegalArgumentException("Custa não encontrada: " + custaId));
-    return new com.tcc.pjb.backend.core.financeiro.custas.domain.CustaPagamentoView(entity.getId(), entity.getValorPago(), entity.getPagoEm(), entity.getStatus());
+    return new com.tcc.pjb.backend.modules.custas.domain.CustaPagamentoView(entity.getId(), entity.getValorPago(), entity.getPagoEm(), entity.getStatus());
 }
 
 @Transactional(readOnly = true)
-public com.tcc.pjb.backend.core.financeiro.custas.domain.GruLinhaDigitavelView linhaDigitavelView(Long custaId) {
+public com.tcc.pjb.backend.modules.custas.domain.GruLinhaDigitavelView linhaDigitavelView(Long custaId) {
     var entity = custaRepository.findById(custaId).orElseThrow(() -> new IllegalArgumentException("Custa não encontrada: " + custaId));
-    return new com.tcc.pjb.backend.core.financeiro.custas.domain.GruLinhaDigitavelView(entity.getId(), entity.getLinhaDigitavel(), entity.getCodigoBarras());
+    return new com.tcc.pjb.backend.modules.custas.domain.GruLinhaDigitavelView(entity.getId(), entity.getLinhaDigitavel(), entity.getCodigoBarras());
 }
 
 @Transactional(readOnly = true)
-public com.tcc.pjb.backend.core.financeiro.custas.domain.PixCobrancaHealthSnapshot pixHealth(Long custaId) {
+public com.tcc.pjb.backend.modules.custas.domain.PixCobrancaHealthSnapshot pixHealth(Long custaId) {
     var entity = custaRepository.findById(custaId).orElseThrow(() -> new IllegalArgumentException("Custa não encontrada: " + custaId));
-    return new com.tcc.pjb.backend.core.financeiro.custas.domain.PixCobrancaHealthSnapshot(entity.getId(), entity.getPixTxid(), "PENDENTE".equalsIgnoreCase(entity.getStatus()));
+    return new com.tcc.pjb.backend.modules.custas.domain.PixCobrancaHealthSnapshot(entity.getId(), entity.getPixTxid(), "PENDENTE".equalsIgnoreCase(entity.getStatus()));
 }
 }
