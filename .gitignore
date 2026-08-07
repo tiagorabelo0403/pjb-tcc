@@ -68,6 +68,7 @@ Thumbs.db
 .codex/
 CLAUDE.md
 docs/superpowers/
+docs/reports/claude_continuation_of_codex_audit.md
 
 # Local environment and credentials
 .env
