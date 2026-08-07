@@ -6,6 +6,7 @@ import com.tcc.pjb.backend.core.forum.routing.ForumDeskPortfolioResolver;
 import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatQueueAgendaSnapshotDto;
 import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatQueuePanelSnapshotDto;
 import com.tcc.pjb.backend.model.entity.secretariat.SecretariatQueueItem;
+import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.repository.secretariat.SecretariatQueueItemRepository;
 import com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityService;
 import com.tcc.pjb.backend.service.secretariat.governance.SecretariatGovernanceService;
@@ -100,6 +101,7 @@ class SecretariatQueueQueryServicePanelTest {
 
         service = new SecretariatQueueQueryService(
             repo,
+            mock(ProcessoRepository.class),
             mapper,
             uiHintService,
             inboxContextResolver,
