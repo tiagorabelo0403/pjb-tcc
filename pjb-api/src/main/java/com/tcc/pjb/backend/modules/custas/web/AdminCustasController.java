@@ -1,7 +1,7 @@
-package com.tcc.pjb.backend.controller.admin;
+package com.tcc.pjb.backend.modules.custas.web;
 
-import com.tcc.pjb.backend.core.financeiro.custas.CustasApplicationService;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta;
+import com.tcc.pjb.backend.modules.custas.application.CustasApplicationService;
+import com.tcc.pjb.backend.modules.custas.domain.TipoCusta;
 import com.tcc.pjb.backend.model.dto.api.ApiCommandResponse;
 import com.tcc.pjb.backend.model.dto.api.ApiQueryResponse;
 import com.tcc.pjb.backend.service.api.ApiResponseFactory;
