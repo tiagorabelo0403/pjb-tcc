@@ -123,6 +123,16 @@ O convidado aceita e passa a atuar dentro daquele escopo — mas sempre com a pr
 
 No exemplo trabalhista, o advogado informa data de admissão, data de desligamento, salário, se houve adicional noturno ou de periculosidade — e a calculadora devolve cada verba separada (saldo de salário, 13º proporcional, férias mais o terço, aviso prévio, FGTS e a multa de 40%), **cada uma com a lei por trás dela**, não só um número solto. No final sai um PDF com essa mesma trilha de cálculo, pra que a parte contrária, o advogado dela e o juiz consigam conferir a conta sem precisar confiar de olho fechado.
 
+Abrindo um processo específico, o advogado encontra um conjunto de ferramentas que resolvem coisas que antes exigiam sair do sistema ou fazer conta de cabeça:
+
+![Ferramentas do processo no cockpit do advogado](assets/painel-advogado-ferramentas-processuais.svg)
+
+O **cálculo de honorários de sucumbência** aplica o CPC art. 85 direto — percentual mínimo ou máximo conforme a complexidade do trabalho, faixa própria quando a Fazenda Pública é vencida, ou o percentual que o próprio magistrado já fixou, sem o advogado ter que decorar qual regra vale pra cada situação. A **regularidade da OAB** vira uma consulta simples, não só um bloqueio que aparece na hora de protocolar — o advogado confere a própria situação antes de precisar dela. Marcar uma audiência agora **detecta conflito de horário** de verdade: o sistema olha toda a agenda daquela vara no dia antes de aceitar o novo horário, então dois processos não competem pelo mesmo juiz ao mesmo tempo sem ninguém perceber. E a **busca de jurisprudência** deixou de exigir que o advogado soubesse de cabeça o ramo e o rito do processo pra pesquisar — o sistema já resolve isso a partir do processo aberto na tela.
+
+Quando o advogado precisa repassar poderes pra outro colega — saindo de férias, mudando de comarca, ou simplesmente dividindo a carga — o **substabelecimento** virou uma ação de verdade dentro do sistema, com ou sem reserva de poderes: sem reserva, quem repassa perde a própria procuração daquele processo; com reserva, os dois continuam habilitados. As **custas do processo** aparecem consolidadas — pendente, paga, por tipo — junto com um **painel financeiro** que soma os totais, sem o advogado ter que abrir cada guia isolada pra saber quanto ainda falta pagar. E quando o problema é agenda apertada em vários processos ao mesmo tempo, dá pra **pedir prorrogação de prazo em lote** — o sistema protocola a petição em cada processo da lista, isolando o que falhar sem travar o resto do lote.
+
+Por fim, o **relatório de produtividade do escritório** mostra a carteira inteira por status e por rito, com a duração média dos processos já encerrados — sem inventar uma taxa de êxito que o sistema não tem como calcular de verdade, já que resultado de mérito não é um dado estruturado em nenhum tribunal do Brasil hoje.
+
 **O juiz**, quando o processo chega pra ele, vê uma pauta ordenada por urgência de verdade — não por ordem de chegada:
 
 ![Painel do juiz](assets/painel-do-juiz.svg)
