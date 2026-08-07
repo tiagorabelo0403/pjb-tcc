@@ -1,7 +1,7 @@
 # Modular monolith guard report
 
 - Errors: 0
-- Warnings: 418
+- Warnings: 424
 
 ## ERROR
 
@@ -38,7 +38,6 @@ No findings.
 
 - `pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/affiliation/application/InstitutionalAffiliationApplicationService.java`: Uso de findAll em service/job deve ser paginado, limitado ou migrado para read model.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/affiliation/application/InstitutionalDelegatedAffiliationApplicationService.java`: Uso de findAll em service/job deve ser paginado, limitado ou migrado para read model.
-- `pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/entry/application/InstitutionalEntryContextApplicationService.java`: Uso de findAll em service/job deve ser paginado, limitado ou migrado para read model.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/governance/application/InstitutionalIntegrationCredentialApplicationService.java`: Uso de findAll em service/job deve ser paginado, limitado ou migrado para read model.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/governance/application/InstitutionalIntegrationSecurityPolicyApplicationService.java`: Uso de findAll em service/job deve ser paginado, limitado ou migrado para read model.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/governance/application/InstitutionalRecertificationApplicationService.java`: Uso de findAll em service/job deve ser paginado, limitado ou migrado para read model.
@@ -260,12 +259,13 @@ No findings.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/entity/AtendimentoAttachment.java`: Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/entity/AtendimentoAttachmentStatus.java`: Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.
 - `pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/entity/AtendimentoChecklistAuditEvent.java`: Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.
-- ... 184 additional findings omitted from this report section.
+- ... 191 additional findings omitted from this report section.
 
 
 ## Baseline
 
-- Baseline respeitado: a divida catalogada nao aumentou.
+- Warnings atuais 424 excedem baseline 418.
+- Warning module-package-shape atual 311 excede baseline 304.
 
 ## Policy
 

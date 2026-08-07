@@ -1,5 +1,8 @@
 {
-  "baselineIssues": [],
+  "baselineIssues": [
+    "Warnings atuais 424 excedem baseline 418.",
+    "Warning module-package-shape atual 311 excede baseline 304."
+  ],
   "errorCounts": {},
   "errors": 0,
   "findings": [
@@ -126,12 +129,6 @@
     {
       "detail": "Uso de findAll em service/job deve ser paginado, limitado ou migrado para read model.",
       "path": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/affiliation/application/InstitutionalDelegatedAffiliationApplicationService.java",
-      "rule": "find-all-in-service-or-job",
-      "severity": "WARNING"
-    },
-    {
-      "detail": "Uso de findAll em service/job deve ser paginado, limitado ou migrado para read model.",
-      "path": "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/entry/application/InstitutionalEntryContextApplicationService.java",
       "rule": "find-all-in-service-or-job",
       "severity": "WARNING"
     },
@@ -2177,6 +2174,18 @@
     },
     {
       "detail": "Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.",
+      "path": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/dto/roles/mp/LaianeAssinaturaQualificadaResponse.java",
+      "rule": "module-package-shape",
+      "severity": "WARNING"
+    },
+    {
+      "detail": "Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.",
+      "path": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/dto/roles/mp/LaianeDocumentoFormalAssinadoResponse.java",
+      "rule": "module-package-shape",
+      "severity": "WARNING"
+    },
+    {
+      "detail": "Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.",
       "path": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/dto/roles/mp/LaianeMpAuditEventDto.java",
       "rule": "module-package-shape",
       "severity": "WARNING"
@@ -2214,6 +2223,18 @@
     {
       "detail": "Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.",
       "path": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/dto/roles/mp/LaianeMpOficioStatusUpdateRequest.java",
+      "rule": "module-package-shape",
+      "severity": "WARNING"
+    },
+    {
+      "detail": "Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.",
+      "path": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/dto/roles/mp/LaianeRegraValidacaoResponse.java",
+      "rule": "module-package-shape",
+      "severity": "WARNING"
+    },
+    {
+      "detail": "Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.",
+      "path": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/dto/roles/mp/LaianeValidacaoSoberanaResponse.java",
       "rule": "module-package-shape",
       "severity": "WARNING"
     },
@@ -2268,6 +2289,18 @@
     {
       "detail": "Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.",
       "path": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/entity/LaianeUserPreference.java",
+      "rule": "module-package-shape",
+      "severity": "WARNING"
+    },
+    {
+      "detail": "Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.",
+      "path": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/event/LaianeOficioAuditEvent.java",
+      "rule": "module-package-shape",
+      "severity": "WARNING"
+    },
+    {
+      "detail": "Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.",
+      "path": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/event/LaianeOficioAuditPostCommitService.java",
       "rule": "module-package-shape",
       "severity": "WARNING"
     },
@@ -2370,6 +2403,12 @@
     {
       "detail": "Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.",
       "path": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/repository/LaianeUserPreferenceRepository.java",
+      "rule": "module-package-shape",
+      "severity": "WARNING"
+    },
+    {
+      "detail": "Modulo em pacote legado dentro de modules.*; migrar por onda para domain/application/infrastructure/web/api.",
+      "path": "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/security/LaianeOficioAccessGuard.java",
       "rule": "module-package-shape",
       "severity": "WARNING"
     },
@@ -2515,10 +2554,10 @@
   "warningCounts": {
     "controller-imports-repository": 5,
     "cross-module-internal-import": 14,
-    "find-all-in-service-or-job": 53,
+    "find-all-in-service-or-job": 52,
     "module-code-outside-modules": 6,
     "module-imports-legacy-repository": 36,
-    "module-package-shape": 304
+    "module-package-shape": 311
   },
-  "warnings": 418
+  "warnings": 424
 }
