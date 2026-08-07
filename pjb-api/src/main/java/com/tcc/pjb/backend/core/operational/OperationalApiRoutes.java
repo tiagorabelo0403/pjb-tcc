@@ -26,6 +26,7 @@ public final class OperationalApiRoutes {
     public static final String JUDGE_GABINETE_DECISOES_BASE = API_V1 + "/juiz/gabinete-decisoes";
     public static final String JUDGE_CUSTODIA_BASE = API_V1 + "/juiz/custodia";
     public static final String JUDGE_SISTEMAS_EXTERNOS_BASE = API_V1 + "/juiz/sistemas-externos";
+    public static final String JUDGE_PRODUTIVIDADE_BASE = API_V1 + "/juiz/produtividade";
     public static final String DESEMBARGADOR_COLEGIADO_BASE = API_V1 + "/desembargador/colegiado";
     public static final String DESEMBARGADOR_PLENARIO_BASE = API_V1 + "/desembargador/plenario";
     public static final String MINISTRO_PLENARIO_BASE = API_V1 + "/ministro/plenario";

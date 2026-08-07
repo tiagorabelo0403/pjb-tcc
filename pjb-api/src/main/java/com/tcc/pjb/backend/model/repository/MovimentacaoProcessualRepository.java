@@ -25,6 +25,8 @@ public interface MovimentacaoProcessualRepository extends JpaRepository<Moviment
 
     List<MovimentacaoProcessual> findByProcesso_IdAndDataMovimentacaoAfterOrderByDataMovimentacaoAsc(Long processoId, Instant fromInstant);
 
+    List<MovimentacaoProcessual> findByAtor_IdAndDataMovimentacaoAfterOrderByDataMovimentacaoDesc(Long atorId, Instant fromInstant);
+
     @Query(
         value = "select distinct on (m.processo_id) m.* " +
             "from tb_movimentacao_processual m " +
