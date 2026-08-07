@@ -6,10 +6,12 @@ import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCustaItemResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoHonorariosResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOabRegularidadeResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoPainelFinanceiroResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoProdutividadeEscritorioResponse;
 import com.tcc.pjb.backend.model.dto.jurisprudencia.JurisprudenceContextualSearchResponse;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
@@ -27,10 +29,13 @@ import com.tcc.pjb.backend.service.processual.legitimidade.OabValidationService;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -242,6 +247,45 @@ public class AdvogadoCockpitService {
                 resultado.reasonCode(),
                 resultado.source(),
                 resultado.checkedAt());
+    }
+
+    private static final Set<StatusProcesso> STATUS_ENCERRADOS = EnumSet.of(
+            StatusProcesso.ARQUIVADO, StatusProcesso.TRANSITO_EM_JULGADO, StatusProcesso.JULGADO);
+
+    public AdvogadoProdutividadeEscritorioResponse consultarProdutividadeEscritorio() {
+        PerfilDashboardContext ctx = contextFactory.build();
+        Usuario usuario = ctx.usuario();
+        authorizationService.requireRole(usuario, "ROLE_ADVOGADO", "ROLE_OAB_PRESIDENTE_SECCIONAL");
+        List<Processo> carteira = processoRepository.findByAdvogadoCpf(usuario.getCpf(), PageRequest.of(0, 1000)).getContent();
+
+        Map<String, Long> porStatus = new LinkedHashMap<>();
+        Map<String, Long> porRito = new LinkedHashMap<>();
+        long encerrados = 0;
+        long somaDuracaoDias = 0;
+        long amostrasDuracao = 0;
+        for (Processo processo : carteira) {
+            String statusNome = processo.getStatusProcesso() == null ? "SEM_STATUS" : processo.getStatusProcesso().name();
+            porStatus.merge(statusNome, 1L, Long::sum);
+            String ritoNome = processo.getRito() == null ? "SEM_RITO" : processo.getRito().name();
+            porRito.merge(ritoNome, 1L, Long::sum);
+            if (processo.getStatusProcesso() != null && STATUS_ENCERRADOS.contains(processo.getStatusProcesso())) {
+                encerrados++;
+                LocalDateTime inicio = processo.getDataDistribuicao() != null ? processo.getDataDistribuicao() : processo.getDataCriacao();
+                LocalDateTime fim = processo.getDataUltimaMovimentacao();
+                if (inicio != null && fim != null && !fim.isBefore(inicio)) {
+                    somaDuracaoDias += ChronoUnit.DAYS.between(inicio, fim);
+                    amostrasDuracao++;
+                }
+            }
+        }
+        Double duracaoMedia = amostrasDuracao == 0 ? null : (double) somaDuracaoDias / amostrasDuracao;
+        return new AdvogadoProdutividadeEscritorioResponse(
+                carteira.size(),
+                carteira.size() - encerrados,
+                encerrados,
+                Map.copyOf(porStatus),
+                Map.copyOf(porRito),
+                duracaoMedia);
     }
 
     public AdvogadoPainelFinanceiroResponse consultarPainelFinanceiro(Long processoId) {

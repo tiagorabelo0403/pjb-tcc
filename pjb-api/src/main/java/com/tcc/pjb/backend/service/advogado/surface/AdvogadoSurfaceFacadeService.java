@@ -149,6 +149,10 @@ public class AdvogadoSurfaceFacadeService {
         return advogadoCockpitService.consultarPainelFinanceiro(processoId);
     }
 
+    public com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoProdutividadeEscritorioResponse consultarProdutividadeEscritorio() {
+        return advogadoCockpitService.consultarProdutividadeEscritorio();
+    }
+
     public List<AdvogadoClienteAnaliticoItemResponse> analiticoPorCliente(String clienteCpfCnpj) {
         return advogadoCockpitService.analiticoPorCliente(clienteCpfCnpj).stream()
                 .map(this::toAnaliticoItem)

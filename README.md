@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.439%20unit%20%2B%20256%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.441%20unit%20%2B%20256%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -378,7 +378,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.439** |
+| Total de testes unitários | Surefire | **4.441** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
@@ -430,6 +430,8 @@ O módulo `custas` só tinha consulta por `custaId` — nenhum caminho listava a
 Honorários (calculado sob demanda, sem estado persistido — a calculadora exige valor de condenação como input) e custas (persistidas, uma lista por processo) já existiam como endpoints separados no cockpit; combiná-los de verdade sem fabricar dado que não existe significa consolidar só o que é persistido. `GET /api/v1/advogado/cockpit/processos/{processoId}/financeiro` reaproveita `listarCustas` (mesma autorização, sem duplicar a checagem) e soma os totais pendente/pago do processo — algo que a lista plana de custas não oferecia antes. 2 testes unitários novos (`AdvogadoCockpitServicePainelFinanceiroTest`) provam a soma correta ignorando status desconhecido (ex.: `CANCELADA`) e o caso de processo sem nenhuma custa.
 
 O cockpit só tinha ação em lote para ciência de intimação (`darCienciaEmLote`); pedir prorrogação de prazo exigia uma petição por processo, uma de cada vez. `prorrogarPrazoEmLote` reaproveita o mesmo `OfficeGovernedProcessOperationService.protocolizarPeticao` já usado pelo peticionamento individual (mesma assinatura qualificada, mesma fila de delegação — nenhuma lógica de protocolo nova) iterando sobre até 50 processos distintos, isolando falha por processo sem interromper o lote: cada chamada roda na própria transação porque o método do lote deliberadamente não é `@Transactional` — encapsular tudo numa transação só faria o Spring marcar `rollbackOnly` na exceção do primeiro processo que falhasse mesmo capturada, derrubando os que já tinham sido protocolados com sucesso. 3 testes unitários novos (`AdvogadoCockpitServiceProrrogacaoPrazoLoteTest`) provam o lote sem falhas, isolamento de uma falha sem interromper os demais, e deduplicação de processo repetido no mesmo lote.
+
+`StatusProcesso` não tem nenhum campo de resultado (êxito/derrota) — só estados processuais (`ARQUIVADO`, `TRANSITO_EM_JULGADO`, `EM_ANDAMENTO`, etc.). Um relatório de produtividade que fabricasse taxa de êxito inventaria dado que não existe no schema. `GET /api/v1/advogado/cockpit/produtividade` usa só o que é real: consolida a carteira inteira do advogado (`findByAdvogadoCpf`, até 1000 processos) por status e por rito, conta ativos vs. encerrados (`ARQUIVADO`/`TRANSITO_EM_JULGADO`/`JULGADO`), e calcula duração média em dias dos processos encerrados a partir de `dataDistribuicao`→`dataUltimaMovimentacao` (com fallback para `dataCriacao` quando a distribuição não foi registrada) — `null` quando nenhum processo encerrado tem as duas datas. 2 testes unitários novos (`AdvogadoCockpitServiceProdutividadeTest`) provam a consolidação por status/rito com duração média calculada corretamente e o caso de carteira vazia sem dividir por zero.
 
 Três dívidas de titularidade/domínio de cidadão fecharam juntas, todas achadas na mesma investigação anterior sem bloqueio jurídico ou de produto: `D-titularidade-cidadao-duplicada-dois-guards` — `PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty` implementavam a mesma checagem de CPF (parte autora/ré/usuário do processo) em dois arquivos; unificada em `core.security.ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)`, com cada método preservando sua própria mensagem de erro e pré-condição. `D-peticionamento-controller-domain-lacuna-cidadao` — `PeticionamentoController.resolveDomain()` não reconhecia `CIDADAO` e recaía em `CapabilityRateLimitDomain.LAWYER` por omissão; ganhou branch explícito checando `ROLE_CIDADAO`, retornando `CITIZEN`. `D-cidadao-parte-guard-sem-teste-rejeicao` — o guard de titularidade não tinha teste dedicado provando rejeição real; `CidadaoInstanciasControllerCpfMismatchIT` (JWT real, Postgres real via Testcontainers) prova as duas direções — CIDADAO com CPF divergente recebe 403, CIDADAO com CPF da parte autora recebe 200. 2/2 verde.
 
