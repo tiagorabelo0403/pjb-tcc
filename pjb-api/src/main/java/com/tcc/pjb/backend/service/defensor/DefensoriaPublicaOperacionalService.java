@@ -22,6 +22,7 @@ import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
+import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopologyMeshService;
 import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
@@ -46,6 +47,7 @@ private final PainelSignalReflectionService signalReflectionService;
 private final PainelNativeCollectionCompositionService collectionCompositionService;
 private final PainelActionSurfaceCompositionService actionSurfaceCompositionService;
 private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
+private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
 public DefensoriaPublicaOperacionalService(PerfilDashboardContextFactory contextFactory,
 PainelServiceCommons commons,
 ProcessoRepository processoRepository,
@@ -57,7 +59,8 @@ PainelSharedExperienceService sharedExperienceService,
 PainelSignalReflectionService signalReflectionService,
 PainelNativeCollectionCompositionService collectionCompositionService,
 PainelActionSurfaceCompositionService actionSurfaceCompositionService,
-                                       PainelExecutionSurfaceCompositionService executionSurfaceCompositionService) {
+                                       PainelExecutionSurfaceCompositionService executionSurfaceCompositionService,
+                                       MovimentacaoProcessualRegistrar movimentacaoRegistrar) {
 this.contextFactory = contextFactory;
 this.commons = commons;
 this.processoRepository = processoRepository;
@@ -70,6 +73,7 @@ this.signalReflectionService = signalReflectionService;
 this.collectionCompositionService = collectionCompositionService;
 this.actionSurfaceCompositionService = actionSurfaceCompositionService;
 this.executionSurfaceCompositionService = executionSurfaceCompositionService;
+this.movimentacaoRegistrar = movimentacaoRegistrar;
 }
 public DefensoriaSnapshot bootstrapPainel() {
 PerfilDashboardContext ctx = contextFactory.build();
@@ -171,6 +175,7 @@ WorkItem defesaItem = WorkItem.builder()
 workItemRepository.save(defesaItem);
 commons.publishUserHistory(usuario, "DEFENSOR", "DEFESA_APRESENTADA",
 "Defesa apresentada pela Defensoria Pública.", processo, processoId);
+movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Defesa da Defensoria Pública apresentada.");
 LinkedHashMap<String, Object> out = new LinkedHashMap<>();
 out.put("status", "DEFESA_PROTOCOLADA");
 out.put("processoId", processoId);
@@ -210,6 +215,7 @@ WorkItem hcItem = WorkItem.builder()
 workItemRepository.save(hcItem);
 commons.publishUserHistory(usuario, "DEFENSOR", "HC_IMPETRADO",
 "Habeas Corpus impetrado pela Defensoria.", processo, processoId);
+movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Habeas Corpus impetrado pela Defensoria Pública.");
 LinkedHashMap<String, Object> response = new LinkedHashMap<>();
 response.put("status", "HC_IMPETRADO");
 response.put("paciente", paciente == null || paciente.isBlank() ? "PACIENTE_NAO_INFORMADO" : paciente.trim());
@@ -246,6 +252,7 @@ WorkItem ajgItem = WorkItem.builder()
 .dueAt(Instant.now().plus(48, ChronoUnit.HOURS))
 .build();
 workItemRepository.save(ajgItem);
+movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Assistência judiciária gratuita solicitada pela Defensoria Pública.");
 LinkedHashMap<String, Object> response = new LinkedHashMap<>();
 response.put("status", "AJG_SOLICITADA");
 response.put("processoId", processoId);

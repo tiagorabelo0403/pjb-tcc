@@ -20,6 +20,7 @@ import com.tcc.pjb.backend.service.processual.peticionamento.workspace.Instituti
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
 import com.tcc.pjb.backend.service.ui.branding.InstitutionalPanelBrandingService;
 import com.tcc.pjb.backend.service.criminal.InqueritoPolicialDigitalService;
+import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalPeticionamentoFacadeService;
 import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
 import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
@@ -53,6 +54,7 @@ public class MinisterioPublicoPainelService {
     private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
     private final InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService;
     private final InqueritoPolicialDigitalService inqueritoPolicialDigitalService;
+    private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
 
     public MinisterioPublicoPainelService(PerfilDashboardContextFactory contextFactory,
                                           PainelServiceCommons commons,
@@ -69,7 +71,8 @@ public class MinisterioPublicoPainelService {
                                           PainelActionSurfaceCompositionService actionSurfaceCompositionService,
                                           PainelExecutionSurfaceCompositionService executionSurfaceCompositionService,
                                           InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService,
-                                          InqueritoPolicialDigitalService inqueritoPolicialDigitalService) {
+                                          InqueritoPolicialDigitalService inqueritoPolicialDigitalService,
+                                          MovimentacaoProcessualRegistrar movimentacaoRegistrar) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
@@ -86,6 +89,7 @@ public class MinisterioPublicoPainelService {
         this.executionSurfaceCompositionService = executionSurfaceCompositionService;
         this.institutionalMaterialActionGuardService = institutionalMaterialActionGuardService;
         this.inqueritoPolicialDigitalService = inqueritoPolicialDigitalService;
+        this.movimentacaoRegistrar = movimentacaoRegistrar;
     }
 
     public PerfilDashboardPayload.MinisterioPublicoPayload bootstrapPainel() {
@@ -181,6 +185,7 @@ public class MinisterioPublicoPainelService {
         institutionalMaterialActionGuardService.requireAllowedForProcessAction(processo, InstitutionalMaterialActionGuardService.MaterialAction.MINISTERIO_PUBLICO_MANIFESTACAO);
         Usuario usuario = contextFactory.build().usuario();
         commons.publishUserHistory(usuario, "MP", "MANIFESTACAO_REGISTRADA", "Manifestação registrada no painel do MP.", processo, processoId);
+        movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Manifestação do Ministério Público registrada.");
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "REGISTRADA");
         out.put("processoId", processoId);
@@ -224,6 +229,7 @@ public class MinisterioPublicoPainelService {
                 .build();
         item = workItemRepository.save(item);
         commons.publishUserHistory(usuario, "MP", "PARECER_REGISTRADO", "Parecer registrado no painel do MP.", processo, processoId);
+        movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Parecer do Ministério Público registrado.");
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "PARECER_REGISTRADO");
         out.put("processoId", processoId);

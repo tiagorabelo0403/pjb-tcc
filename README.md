@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.474%20unit%20%2B%20280%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.478%20unit%20%2B%20286%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -324,8 +324,8 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.474 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 280 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes unitários (Surefire):** 4.478 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes de integração (Failsafe):** 286 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.474 unitários (Surefire) e depois os 280 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.478 unitários (Surefire) e depois os 286 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,11 +379,11 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.474** |
+| Total de testes unitários | Surefire | **4.478** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
-| Total de testes de integração | Failsafe | **280** ¹ |
+| Total de testes de integração | Failsafe | **286** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
@@ -481,6 +481,10 @@ Com isso fecham os 3 itens reais encontrados para o oficial de justiça — o pa
 Última grande frente antes do cidadão: "outros" — Ministério Público, Defensoria Pública e Procuradoria. Investigando, achei que manifestação/parecer/requisição de diligência do MP, defesa/HC/AJG/vulnerabilidade da Defensoria e contestação/parecer/execução fiscal/precatório-RPV da Procuradoria já estão todos wireados, sem porta trancada — a limpeza recursal já feita nesta mesma frente (4 controllers legados, `D-recursal-superficie-por-papel`) já tinha resolvido a duplicação mais óbvia. Mas achei `CuradorEspecialAutomaticoService` (`core/comunicacao/judicial/CuradorEspecialAutomaticoService.java`) — motor completo de curatela especial (CPC art. 72: réu em lugar incerto, incapaz sem representante, preso sem defensor, citado por hora certa, revel sem representante, com prazos de 2 a 15 dias por tipo) — rodando só automaticamente, via `@EventListener onEditalPublicado` e um scheduler sempre ligado (`monitorarPrazosNomeacao`), sem nenhum controller. A Súmula 196/STJ atribui a curatela especial à Defensoria Pública como padrão institucional, mas nem a Defensoria nem o juízo (que formalmente nomeia, já que `nomear` recebe `juizId`) tinham como listar necessidades pendentes, ver uma nomeação ou confirmar o curador — só log de auditoria e um webhook pensado pra integrador externo. Descartei `CuradorAusentesPainelController` como já-resolvido: ele existe, mas é outro instituto (curadoria de bens de ausentes), confirmado por leitura — não toca esse serviço. `CuradoriaEspecialController` (novo, `/api/v1/processo/curadoria-especial`) expõe `consultarNecessidade`/`consultarNomeacao` para Defensoria e magistratura (visibilidade compartilhada, já que os dois precisam acompanhar o prazo) e `nomear` restrito à magistratura (ato judicial de fato, preserva a assinatura real do serviço), sem tocar a automação existente. 3 testes de integração novos (`CuradoriaEspecialControllerIT`, padrão MockMvc standalone) provam as duas consultas e a nomeação.
 
 Investigando o painel de inquéritos do MP, achei uma degradação silenciosa: `MinisterioPublicoPainelService.listarInqueritosEmAcompanhamento` filtra a inbox híbrida do promotor por título contendo "INQUERITO"/"INVESTIGACAO"/"PIC"/"PROCEDIMENTO INVESTIGATORIO" — um heurístico sobre `WorkItem` genérico —, enquanto `InqueritoPolicialDigitalService.listarMeus` já existe, já é autorizado direto pro `MEMBRO_MINISTERIO_PUBLICO` (via `InqueritoPolicialDigitalController`), e devolve o inquérito real: natureza do fato, resumo, investigados, indícios, diligências pendentes, prazo de conclusão, autoridade responsável. O promotor já tinha acesso à peça rica — só o painel de acompanhamento nunca a usava, mostrando uma versão pobre do mesmo dado quando a versão completa já estava um clique adiante. `listarInqueritosEmAcompanhamento` agora compõe primeiro os inquéritos digitais reais (`origem: INQUERITO_DIGITAL`) e só complementa com itens da inbox operacional cujo processo ainda não tem inquérito digital vinculado (`origem: PAINEL_OPERACIONAL`) — sem duplicar o mesmo processo nas duas fontes, sem tocar `InqueritoPolicialDigitalController` nem o motor de inquérito. 2 testes unitários novos (`MinisterioPublicoPainelServiceInqueritosTest`) provam a deduplicação por processo e o caso em que só existe inquérito digital, sem item de painel correspondente.
+
+Último item de "outros": painéis de produtividade para Ministério Público, Defensoria e Procuradoria — mesma lacuna já fechada para magistrado e oficial de justiça, só que triplicada. Investigando os pontos de escrita das três instituições (`MinisterioPublicoPainelService.registrarManifestacao`/`.registrarParecer`, `DefensorPublicoPainelService.registrarPeticao`/`.registrarRequerimentoGratuidade`, `DefensoriaPublicaOperacionalService.apresentarDefesa`/`.impetrarHabeasCorpus`/`.solicitarAssistenciaJudiciariaGratuita`, `ProcuradoriaOperacionalService.apresentarContestatacao`/`.emitirParecer`), achei o mesmo problema de raiz do magistrado: nenhum desses 8 métodos grava `MovimentacaoProcessual.ator` — a maioria só publica um evento efêmero de UI (`commons.publishUserHistory`) ou cria um `WorkItem` sem `assignedUser`, sem deixar nenhum rastro consultável de quem praticou o ato. `ajuizarExecucaoFiscal` (Procuradoria) ficou de fora de propósito: não recebe `processoId` — é o próprio ato de criar um processo novo, sem `Processo` existente pra vincular a movimentação. Em vez de repetir o método privado que criei pro magistrado em cada um dos 4 serviços, extraí `MovimentacaoProcessualRegistrar` (novo, `service/institutional/movimentacao/`) — um componente compartilhado com a mesma lógica, correto agora ser reutilizado porque 8 pontos de escrita reais o usam imediatamente, não é abstração especulativa. `InstitutionalProdutividadeService` (novo, também compartilhado) calcula o painel — total, breakdown por tipo classificado pelo prefixo de descrição que cada um dos 8 pontos já controla, e intervalo médio entre atos — a partir da mesma query `MovimentacaoProcessualRepository.findByAtor_IdAndDataMovimentacaoAfterOrderByDataMovimentacaoDesc` já usada pelo painel do magistrado. Três controllers finos (`MinisterioPublicoProdutividadeController`, `DefensorProdutividadeController`, `ProcuradoriaProdutividadeController`) expõem `GET /produtividade?diasJanela=30` cada um no próprio namespace, delegando pro mesmo serviço com o `atorId` resolvido do usuário autenticado. 10 testes novos (`MovimentacaoProcessualRegistrarTest`, `InstitutionalProdutividadeServiceTest`, e 2 testes de integração por controller) provam o registro de movimentação, a classificação por instituição e a delegação de cada painel.
+
+Com isso fecham os 5 itens reais encontrados para "outros" (Ministério Público, Defensoria, Procuradoria) — a investigação buscou 10, parou em 5 por decisão deliberada, mesma disciplina do magistrado e do oficial de justiça: nenhuma API inventada pra completar a contagem. Restam dois papéis do plano original de 60 ideias: cidadão, e o item adiado do secretário (malote digital), este último só se surgir fundamento técnico real.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -1027,8 +1031,8 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.474 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **280 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes unitários (Surefire) | **4.478 · 0 falhas · 0 erros** |
+| Testes de integração (Failsafe) | **286 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
@@ -1241,7 +1245,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.474 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.478 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
