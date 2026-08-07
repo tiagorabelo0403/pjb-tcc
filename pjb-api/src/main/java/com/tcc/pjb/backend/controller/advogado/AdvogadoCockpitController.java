@@ -22,6 +22,7 @@ import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoHonorariosResponse
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOabRegularidadeResponse;
 import com.tcc.pjb.backend.model.dto.jurisprudencia.JurisprudenceContextualSearchResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOperacaoResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoPainelFinanceiroResponse;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoCienciaLoteRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoPeticaoRequest;
@@ -97,6 +98,13 @@ public class AdvogadoCockpitController {
             Authentication authentication) {
         enforce(authentication, "advogado_cockpit_jurisprudencia");
         return ResponseEntity.ok(facadeService.buscarJurisprudenciaDoProcesso(processoId, q, topK));
+    }
+
+    @GetMapping("/processos/{processoId}/financeiro")
+    public ResponseEntity<AdvogadoPainelFinanceiroResponse> consultarPainelFinanceiro(@PathVariable Long processoId,
+                                                                                       Authentication authentication) {
+        enforce(authentication, "advogado_cockpit_financeiro");
+        return ResponseEntity.ok(facadeService.consultarPainelFinanceiro(processoId));
     }
 
     @GetMapping("/clientes/analitico")

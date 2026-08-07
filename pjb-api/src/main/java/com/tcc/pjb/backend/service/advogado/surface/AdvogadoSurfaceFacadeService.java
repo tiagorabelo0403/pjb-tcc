@@ -141,6 +141,10 @@ public class AdvogadoSurfaceFacadeService {
         return advogadoCockpitService.buscarJurisprudenciaDoProcesso(processoId, query, topK);
     }
 
+    public com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoPainelFinanceiroResponse consultarPainelFinanceiro(Long processoId) {
+        return advogadoCockpitService.consultarPainelFinanceiro(processoId);
+    }
+
     public List<AdvogadoClienteAnaliticoItemResponse> analiticoPorCliente(String clienteCpfCnpj) {
         return advogadoCockpitService.analiticoPorCliente(clienteCpfCnpj).stream()
                 .map(this::toAnaliticoItem)

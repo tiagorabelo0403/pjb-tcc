@@ -5,6 +5,7 @@ import com.tcc.pjb.backend.integration.oab.OabValidationResult;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCustaItemResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoHonorariosResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOabRegularidadeResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoPainelFinanceiroResponse;
 import com.tcc.pjb.backend.model.dto.jurisprudencia.JurisprudenceContextualSearchResponse;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -23,6 +24,7 @@ import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.jurisprudencia.search.JurisprudenceContextualSearchService;
 import com.tcc.pjb.backend.service.processual.honorarios.HonorariosSucumbenciaCalculatorService;
 import com.tcc.pjb.backend.service.processual.legitimidade.OabValidationService;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -215,6 +217,25 @@ public class AdvogadoCockpitService {
                 resultado.reasonCode(),
                 resultado.source(),
                 resultado.checkedAt());
+    }
+
+    public AdvogadoPainelFinanceiroResponse consultarPainelFinanceiro(Long processoId) {
+        List<AdvogadoCustaItemResponse> custas = listarCustas(processoId);
+        int pendentes = 0;
+        int pagas = 0;
+        BigDecimal totalPendente = BigDecimal.ZERO;
+        BigDecimal totalPago = BigDecimal.ZERO;
+        for (AdvogadoCustaItemResponse custa : custas) {
+            BigDecimal valor = custa.valor() == null ? BigDecimal.ZERO : custa.valor();
+            if ("PENDENTE".equals(custa.status())) {
+                pendentes++;
+                totalPendente = totalPendente.add(valor);
+            } else if ("PAGO".equals(custa.status())) {
+                pagas++;
+                totalPago = totalPago.add(valor);
+            }
+        }
+        return new AdvogadoPainelFinanceiroResponse(processoId, custas, custas.size(), pendentes, pagas, totalPendente, totalPago);
     }
 
     public JurisprudenceContextualSearchResponse buscarJurisprudenciaDoProcesso(Long processoId, String query, int topK) {
