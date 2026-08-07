@@ -456,28 +456,30 @@ assinatura.
 
 ## D-jus-postulandi-recurso-tst
 
-**Status:** aberta — bloqueio hoje é efeito colateral, não enforcement intencional
+**FECHADA — correção do diagnóstico original, não implementação de regra nova.** A premissa de que
+`RECURSO_REVISTA` e `AGRAVO_RECURSO_REVISTA` "não têm entrada em `toRecursoProcessualTipo()`" estava
+errada para `AGRAVO_RECURSO_REVISTA` desde antes desta dívida ser escrita — confirmado por
+`git log -p`/`git show` no commit imediatamente anterior ao que registrou esta entrada (24/07 21:22,
+oito minutos antes): `case AGRAVO_INSTRUMENTO, AGRAVO_RESP_RE, AGRAVO_RECURSO_REVISTA ->
+RecursoProcessualTipo.AGRAVO_DE_INSTRUMENTO` já existia desde 25/05. Os dois tipos têm destinos
+diferentes de verdade:
+- **`AGRAVO_RECURSO_REVISTA`** *tem* mapeamento processual e passa pela checagem de legitimidade.
+  Como não está em `TRABALHISTA_JUS_POSTULANDI_APPEAL_TYPES` (só `RECURSO_ORDINARIO_TRABALHISTA` e
+  `EMBARGOS_DECLARACAO`), a Súmula 425/TST **já era aplicada de verdade** — não por acidente, por
+  enforcement ativo da allowlist —, só nunca tinha teste de regressão provando isso.
+- **`RECURSO_REVISTA`** (sem "Agravo") de fato não tem entrada no switch e cai em
+  `"Tipo recursal sem correspondencia processual minima."` para qualquer ator, advogado incluído —
+  esse sim é o bloqueio acidental que a dívida original descrevia, mas só se aplica a este tipo.
 
-**Contexto:** `RecursalValidacaoMinimaService.elegivelPorJusPostulandi()` restringe jus postulandi
-trabalhista a `RECURSO_ORDINARIO_TRABALHISTA` e `EMBARGOS_DECLARACAO` via allowlist de
-`LegalAppealType`. `RECURSO_REVISTA` e `AGRAVO_RECURSO_REVISTA` (recursos de competência do TST,
-onde a Súmula 425/TST expressamente veda jus postulandi) não estão na allowlist — mas também não
-têm entrada em `RecursalValidacaoMinimaService.toRecursoProcessualTipo()` (confirmado por leitura do
-switch: caem no `default -> null`), então `validar()` já lança
-`"Tipo recursal sem correspondencia processual minima."` antes de chegar em qualquer checagem de
-legitimidade, para qualquer ator — advogado incluído.
+**Fechamento:** 4 testes novos em `RecursalValidacaoMinimaServiceTest` — cidadão trabalhista barrado
+em `AGRAVO_RECURSO_REVISTA` por ilegitimidade (prova o enforcement real da Súmula 425), advogado
+segue legítimo no mesmo tipo (prova que a restrição é só de jus postulandi), e o par cidadão/advogado
+em `RECURSO_REVISTA` provando que os dois batem no mesmo erro de mapeamento ausente — não é
+específico de jus postulandi, então não precisa de allowlist nova. 13/13 verde na classe inteira.
 
-**Risco:** o bloqueio de jus postulandi no TST hoje existe por acidente (o tipo recursal nem é
-processável nesta service), não por uma regra que leia o tribunal de destino. Se
-`toRecursoProcessualTipo()` ganhar uma entrada para `RECURSO_REVISTA`/`AGRAVO_RECURSO_REVISTA` no
-futuro (para permitir que advogados formalizem esses recursos por aqui), a allowlist atual passa a
-ser a única proteção contra jus postulandi indevido no TST — e ela protege corretamente, porque
-`RECURSO_REVISTA` não está nela. Mas isso não foi testado nem verificado neste momento; é proteção
-por composição de duas lacunas independentes, não por design.
-
-**Quando revisitar:** ao mapear `RECURSO_REVISTA`/`AGRAVO_RECURSO_REVISTA` em
-`toRecursoProcessualTipo()` — adicionar teste explícito confirmando que jus postulandi trabalhista
-continua barrado nesses dois tipos após o mapeamento, não presumir que a allowlist já cobre.
+**Quando revisitar:** só se `RECURSO_REVISTA` ganhar mapeamento em `toRecursoProcessualTipo()` no
+futuro — nesse momento, adicionar teste explícito confirmando que jus postulandi trabalhista continua
+barrado nele (mesmo padrão que `AGRAVO_RECURSO_REVISTA` já tem agora).
 
 ## D-completude-documental-sem-jus-postulandi
 
@@ -596,27 +598,46 @@ apenas mais um campo a manter nos dois lados a partir de agora.
 
 ## D-jus-postulandi-recurso-jef-turma-recursal
 
-**Status:** aberta — bloqueio por conservadorismo deliberado, não por enforcement verificado
+**Status:** parcialmente atendida — enforcement do comportamento atual agora é verificado por teste;
+a pergunta jurídica de fundo (o que a Lei 10.259/2001 realmente exige) segue em aberto,
+deliberadamente não respondida nesta fatia.
 
 **Contexto:** `RecursalValidacaoMinimaService.JEF_JUS_POSTULANDI_APPEAL_TYPES` contém apenas
-`EMBARGOS_DECLARACAO`. Isso significa que um CIDADAO com `JUS_POSTULANDI_JEF` fica barrado em
-`RECURSO_INOMINADO` (que no catálogo `LegalAppealType` é compartilhado entre JEC estadual e JEF — não
-existe tipo recursal federal separado) e em `PEDIDO_UNIFORMIZACAO` (incidente de uniformização à
-Turma Nacional de Uniformização, específico do microssistema federal e sem equivalente no JEC).
+`EMBARGOS_DECLARACAO`. Um CIDADAO com `JUS_POSTULANDI_JEF` fica barrado em dois tipos, mas por
+motivos diferentes um do outro:
+- **`RECURSO_INOMINADO`** (compartilhado entre JEC estadual e JEF no catálogo `LegalAppealType`) *tem*
+  mapeamento processual e passa pela checagem de legitimidade — o bloqueio é enforcement real da
+  allowlist, e já tinha teste de regressão mesmo antes desta fatia
+  (`cidadaoNoJuizadoEspecialFederalNaoPodeInterporRecursoInominadoSemAdvogado`).
+- **`PEDIDO_UNIFORMIZACAO`** (incidente de uniformização à Turma Nacional de Uniformização, específico
+  do microssistema federal, sem equivalente no JEC) *não* tem entrada em `toRecursoProcessualTipo()` —
+  cai em `"Tipo recursal sem correspondencia processual minima."` para qualquer ator, advogado
+  incluído. Esse é o mesmo padrão de bloqueio acidental por lacuna de mapeamento que
+  `D-jus-postulandi-recurso-tst` documentou para `RECURSO_REVISTA`, não uma decisão da allowlist.
 
-**Risco:** esse bloqueio foi adotado por analogia conservadora ao regime do JEC (Lei 9.099/95,
-art. 41, § 2º), **não** por verificação do que a Lei 10.259/2001 efetivamente exige. A Lei
-10.259/2001 remete subsidiariamente à Lei 9.099/95 (art. 1º), mas tem regime recursal próprio —
-Turma Recursal Federal e incidente de uniformização (arts. 14 e 15) não existem no juizado
-estadual. Se a exigência de advogado no recurso federal for menos estrita do que a estadual, o
-sistema está negando um direito processual que a parte teria; se for igual ou mais estrita, o
-bloqueio está certo por acidente. Nenhuma das duas hipóteses foi confirmada contra a lei.
+**Risco (ainda aberto, não resolvido por esta fatia):** o bloqueio de `RECURSO_INOMINADO` foi adotado
+por analogia conservadora ao regime do JEC (Lei 9.099/95, art. 41, § 2º), **não** por verificação do
+que a Lei 10.259/2001 efetivamente exige. A Lei 10.259/2001 remete subsidiariamente à Lei 9.099/95
+(art. 1º), mas tem regime recursal próprio — Turma Recursal Federal e incidente de uniformização
+(arts. 14 e 15) não existem no juizado estadual. Se a exigência de advogado no recurso federal for
+menos estrita do que a estadual, o sistema está negando um direito processual que a parte teria; se
+for igual ou mais estrita, o bloqueio está certo por acidente. Nenhuma das duas hipóteses foi
+confirmada contra a lei — decisão explícita de não resolver essa pergunta jurídica nesta fatia
+(exige leitura da lei/jurisprudência da TNU, fora do escopo de uma investigação de código).
+
+**Fechamento parcial:** 2 testes novos em `RecursalValidacaoMinimaServiceTest` provam que o par
+cidadão/advogado em `PEDIDO_UNIFORMIZACAO` bate no mesmo erro de mapeamento ausente — não é
+específico de jus postulandi. O comportamento atual (nega mais do que talvez devesse, nunca
+permissivo demais) agora está travado por teste de regressão, não só por composição acidental de
+lacunas.
 
 **Quando revisitar:** antes de qualquer promessa de cobertura completa do JEF na banca ou em
 produção — verificar o texto da Lei 10.259/2001 (arts. 10, 14 e 15) e a jurisprudência da TNU sobre
 capacidade postulatória na fase recursal, e então ou ampliar `JEF_JUS_POSTULANDI_APPEAL_TYPES` com
-fundamento explícito, ou converter o bloqueio atual em enforcement documentado com teste próprio.
-Enquanto isso, o comportamento é seguro (nega mais do que talvez devesse), nunca permissivo demais.
+fundamento explícito, ou registrar o bloqueio atual como enforcement deliberado com base legal
+citada. Se `PEDIDO_UNIFORMIZACAO` ganhar mapeamento em `toRecursoProcessualTipo()` no futuro,
+adicionar teste explícito confirmando que jus postulandi JEF continua barrado nele (mesmo padrão que
+`RECURSO_INOMINADO` já tem).
 
 ## D-recursal-opa-critical-path-nao-atualizado
 
