@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.310%20unit%20%2B%20252%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.404%20unit%20%2B%20252%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -369,7 +369,7 @@ Multiplataforma (Windows/Linux/macOS), somente stdlib. Report-only por padrão (
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.310** |
+| Total de testes unitários | Surefire | **4.404** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
@@ -397,6 +397,8 @@ Na mesma investigação, três lacunas irmãs foram encontradas e fechadas na d�
 Provado por 3 testes novos: no adapter, um de litisconsórcio (4 pessoas, 2 polos) e um dos 5 tipos de parte (física, jurídica, terceiro, interesse público, Ministério Público — `tipoPolo`/`nome`/`documento`/`tipoPessoa` de cada `MniParteParsed` validados); no serviço, litisconsórcio materializa 4 `incluir` com `TipoParte` rito-aware preservado. `PoloProcessualApplicationServiceTest` (15 testes, cobre o novo overload com `razaoSocial`) e `ApiMarketplaceServicePoloMaterializacaoTest` (4 testes, Testcontainers) reconfirmados verdes nesta sessão — zero cascata no caminho de aplicação de polo. `MotorComposicaoPolosAjuizamentoIT` (10 testes, `PoloCompositionPolicy` não tocado neste diff) não foi reexecutado nesta sessão; permanece validado da verificação anterior.
 
 Contagens novas: 4.379 + 3 = 4.382 unitários (2 no adapter, 1 no serviço); 253 integração (nenhuma IT nova nesta fatia). Todas verdes em execução individual (`-Dit.test=` para as ITs, `-Dtest=` para o unit).
+
+Na fatia seguinte, `D-jus-postulandi-recurso-tst` e `D-jus-postulandi-recurso-jef-turma-recursal` fecharam — mas não pela correção óbvia que os títulos sugerem. As duas dívidas descreviam o bloqueio de jus postulandi em recursos do TST e do JEF como acidental (o tipo recursal nem seria processável, não uma regra ativa lendo o tribunal de destino). Investigação de código (`git log -p`/`git show` no commit imediatamente anterior ao registro de cada dívida) mostrou que a premissa estava errada pra metade dos casos: `AGRAVO_RECURSO_REVISTA` (TST) e `RECURSO_INOMINADO` (JEF) já tinham mapeamento processual havia meses e já eram barrados de verdade pela allowlist de jus postulandi — enforcement real da Súmula 425/TST e da analogia conservadora ao JEC, respectivamente —, só nunca tinham teste de regressão provando isso. Só `RECURSO_REVISTA` e `PEDIDO_UNIFORMIZACAO` são de fato bloqueio acidental por lacuna de mapeamento processual, que barra qualquer ator (advogado incluído), não só jus postulandi. 6 testes novos em `RecursalValidacaoMinimaServiceTest` (13/13 verde) provam essa distinção com pares cidadão/advogado para cada um dos quatro tipos recursais. A pergunta jurídica de fundo do JEF — o que a Lei 10.259/2001 realmente exige na fase recursal — segue deliberadamente em aberto: travar o comportamento atual por teste não é o mesmo que decidir se ele está certo, e essa decisão exige leitura de lei e jurisprudência da TNU, fora do escopo de uma investigação de código.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
