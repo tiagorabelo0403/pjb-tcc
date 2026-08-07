@@ -9,6 +9,7 @@ import com.tcc.pjb.backend.core.operational.OperationalApiRoutes;
 import com.tcc.pjb.backend.model.dto.profile.operational.SecretariaExecucaoTrabalhistaRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.SecretariaInspecaoCorregedoriaRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.SecretariaIntimacaoRequest;
+import com.tcc.pjb.backend.model.dto.profile.operational.SecretariaMandadoCitacaoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.SecretariaMidiaProcessualRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.SecretariaPautaColegiadaRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.SecretariaPesquisaEleitoralRequest;
@@ -91,6 +92,21 @@ public class ServidorSecretariaOperacionalController {
                         request.fundamentoOperacional(),
                         request.observacaoOperacional(),
                         request.manterRetornoForumAberto()
+                ));
+    }
+
+    @PostMapping(OperationalApiRoutes.PATH_SECRETARIAT_OPERATIONAL_PROCESS_MANDADO_CITACAO)
+    @PreAuthorize(ROLES)
+    public ResponseEntity<SurfaceActionResponse> expedirMandadoCitacao(@PathVariable Long processoId,
+                                                                        @Valid @RequestBody SecretariaMandadoCitacaoRequest request,
+                                                                        Authentication authentication) {
+        enforce(authentication, "secretaria_operacional_mandado_citacao");
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(facadeService.expedirMandadoCitacao(
+                        processoId,
+                        request.oficialId(),
+                        request.enderecoCitacao(),
+                        request.observacaoOperacional()
                 ));
     }
 

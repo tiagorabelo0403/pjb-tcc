@@ -82,6 +82,7 @@ public final class OperationalApiRoutes {
     public static final String PATH_SECRETARIAT_OPERATIONAL_SNAPSHOT = "/snapshot";
     public static final String PATH_SECRETARIAT_OPERATIONAL_PROCESS_JUNTADA = "/processos/{processoId}/juntada";
     public static final String PATH_SECRETARIAT_OPERATIONAL_PROCESS_INTIMACAO = "/processos/{processoId}/intimacao";
+    public static final String PATH_SECRETARIAT_OPERATIONAL_PROCESS_MANDADO_CITACAO = "/processos/{processoId}/mandado-citacao";
     public static final String PATH_SECRETARIAT_OPERATIONAL_PROCESS_CONCLUSAO = "/processos/{processoId}/conclusao";
     public static final String PATH_SECRETARIAT_OPERATIONAL_QUEUE_SANEAMENTO = "/fila/saneamento";
     public static final String PATH_SECRETARIAT_OPERATIONAL_OFFICIAL_CLOSURES = "/oficial-cumprimentos";
@@ -406,6 +407,10 @@ public final class OperationalApiRoutes {
 
     public static String secretariatOperationalConclusao(Long processoId) {
         return resolvePathVariable(SECRETARIAT_OPERATIONAL_BASE + PATH_SECRETARIAT_OPERATIONAL_PROCESS_CONCLUSAO, "processoId", processoId);
+    }
+
+    public static String secretariatOperationalMandadoCitacao(Long processoId) {
+        return resolvePathVariable(SECRETARIAT_OPERATIONAL_BASE + PATH_SECRETARIAT_OPERATIONAL_PROCESS_MANDADO_CITACAO, "processoId", processoId);
     }
 
     public static String secretariatOperationalQueueSaneamento() {
