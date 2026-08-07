@@ -3,11 +3,15 @@ package com.tcc.pjb.backend.controller.processual;
 import com.tcc.pjb.backend.core.api.PjbApiResponseEnvelope;
 import com.tcc.pjb.backend.model.dto.prazo.PrazoCartorioPainelResponse;
 import com.tcc.pjb.backend.model.dto.prazo.PrazoCertidaoDecursoLoteResponse;
+import com.tcc.pjb.backend.model.dto.prazo.PrazoCertidaoTempestividadeResponse;
+import com.tcc.pjb.backend.platform.jusos.v2.prazo.NationalPrazoEngine;
 import com.tcc.pjb.backend.service.prazo.PrazoCartorioPainelService;
 import com.tcc.pjb.backend.service.prazo.PrazoDecursoCertidaoService;
 import com.tcc.pjb.backend.service.prazo.PrazoProcessualEngine;
 import com.tcc.pjb.backend.service.prazo.PrazoVencimentoAlertService;
+import java.time.LocalDate;
 import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -73,6 +77,16 @@ public class PrazoController {
             certificarDecursoEmLote(@RequestParam String vara) {
         return ResponseEntity.ok(PjbApiResponseEnvelope.ok(
                 cartorioPainelService.certificarDecursoEmLote(vara)));
+    }
+
+    @PostMapping("/secretaria/certidao-tempestividade")
+    @PreAuthorize("hasAnyRole('SERVIDOR_JUDICIARIO','SUPERVISOR','DIRETOR_SECRETARIA','CHEFE_SECRETARIA')")
+    public ResponseEntity<PjbApiResponseEnvelope<PrazoCertidaoTempestividadeResponse>>
+            certificarTempestividade(@RequestParam Long processoId,
+                                      @RequestParam NationalPrazoEngine.TipoPrazo tipoPrazo,
+                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataPratica) {
+        return ResponseEntity.ok(PjbApiResponseEnvelope.ok(
+                cartorioPainelService.certificarTempestividade(processoId, tipoPrazo, dataPratica)));
     }
 
     @PostMapping("/certidao-decurso")

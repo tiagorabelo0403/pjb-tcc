@@ -15,7 +15,9 @@ import com.tcc.pjb.backend.model.entity.enums.CanalCiencia;
 import com.tcc.pjb.backend.model.entity.enums.StatusCiencia;
 import com.tcc.pjb.backend.model.entity.enums.TipoCienciaProcessual;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicaoCiencia;
+import com.tcc.pjb.backend.core.processo.prazo.application.ProcessoPrazoApplicationService;
 import com.tcc.pjb.backend.model.repository.CienciaProcessualRepository;
+import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -24,7 +26,8 @@ import org.junit.jupiter.api.Test;
 class PrazoCartorioPainelServiceCertidaoDecursoTest {
 
     private final CienciaProcessualRepository cienciaProcessualRepository = mock(CienciaProcessualRepository.class);
-    private final PrazoCartorioPainelService service = new PrazoCartorioPainelService(cienciaProcessualRepository);
+    private final PrazoCartorioPainelService service = new PrazoCartorioPainelService(
+            cienciaProcessualRepository, mock(ProcessoRepository.class), mock(ProcessoPrazoApplicationService.class));
 
     private CienciaProcessual ciencia(Long processoId, String numeroProcesso, Instant dataExpiracaoAlvo) {
         Processo processo = new Processo();

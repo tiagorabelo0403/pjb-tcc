@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.454%20unit%20%2B%20256%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.457%20unit%20%2B%20256%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -324,7 +324,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.454 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 4.457 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 256 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.454 unitários (Surefire) e depois os 256 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.457 unitários (Surefire) e depois os 256 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,7 +379,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.454** |
+| Total de testes unitários | Surefire | **4.457** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
@@ -443,6 +443,8 @@ Investigando a fila principal da secretaria, achei o motivo real de o cartório 
 Investigando "emissão de mandado pelo secretário", achei que a peça central já existia madura do lado do juiz: `JuizOficialCumprimentoOrderService.ordenarCumprimento` gera o documento formal `TemplateDocumentoOficial.MANDADO` assinado e roteia pro oficial — mas isso é correto ficar restrito à magistratura, porque mandado de penhora, busca e apreensão etc. exigem determinação judicial explícita a cada ato. O que a secretaria tinha era só `expedicaoIntimacao`, que gera uma `INTIMACAO_FORMAL` (instrumento distinto), não um mandado de verdade. A única exceção legítima é a **citação**: uma vez admitida a petição inicial, expedir o mandado de citação é ato ordinatório da secretaria (CPC art. 203 §4º), sem precisar de nova ordem judicial a cada caso. `ServidorSecretariaOperacionalService.expedirMandadoCitacao` (novo) reaproveita a mesma infraestrutura do lado do juiz — `OfficialDocumentTemplateService` com o template `MANDADO` real, e `ForumOfficialReturnOperationalService.reativarPorExpedicaoAutomatica` pro mesmo roteamento ao oficial — mas escopado só a citação, sem abrir a porta pra secretaria emitir mandados que exigem determinação judicial. `POST /api/v1/secretariat/operacional/processos/{processoId}/mandado-citacao` expõe isso. 2 testes unitários novos (`ServidorSecretariaOperacionalServiceMandadoCitacaoTest`) provam a expedição completa (documento formal gerado, WorkItem roteado ao oficial com endereço e observação) e processo inexistente sem chamar nada.
 
 `WorkItemRepository.radarByInboxAssignedUser` já existia — mas agrupa por servidor só o que está `PENDENTE`/`EM_EXECUCAO` (radar de carga, não de produtividade); nenhuma consulta agrupava o que cada servidor efetivamente **concluiu**. `findConcluidosPorInboxAposData` (novo) busca os `WorkItem` com `status=CONCLUIDO` de uma inbox numa janela de dias; `SecretariatProdutividadeService` agrega em Java por `assignedUser` — total concluído e duração média em horas (`updatedAt - createdAt`, mesma técnica de proxy de duração já usada no relatório de produtividade do advogado, sem precisar de campo novo) — e ordena por total decrescente, formando o ranking. `GET /api/v1/secretariat/queue/produtividade?inboxKey=...&diasJanela=30` expõe isso, reaproveitando `SecretariatInstitutionalVisibilityService.requireInboxAccess` (mesmo portão de autorização por inbox já usado por `agenda`/`governance`/`coverage`). 3 testes unitários novos (`SecretariatProdutividadeServiceTest`) provam o ranking com média correta por servidor, painel vazio sem divisão por zero, e item sem usuário atribuído sendo contado no total mas ignorado no ranking.
+
+Investigando "prazo em dobro", achei um motor de prazo bem mais maduro do que o `PrazoProcessualEngine`/`CienciaProcessual` que eu vinha usando: `ProcessoPrazoApplicationService` (já wireado em `ProcessoSurfaceFacadeService` e nos serviços verticais por rito) calcula "marcos" de prazo reais por processo — principal, recursal, executório, institucional — com `prazoEmDobro` já resolvido por `RamoDireito` (Família, Infância/Juventude, Previdenciário). O que faltava era a certidão de tempestividade — o oposto da certidão de decurso que eu já tinha construído: certificar se um ato praticado numa data específica caiu dentro ou fora do prazo computado. `PrazoCartorioPainelService.certificarTempestividade` (novo) chama `ProcessoPrazoApplicationService.calcular(processoId, tipoPrazo)` (motor existente, não duplicado), compara a data de prática contra o vencimento do marco, e gera o texto da certidão citando o fundamento legal que o próprio motor já carrega. `POST /api/v1/prazos/secretaria/certidao-tempestividade` expõe isso. 3 testes unitários novos (`PrazoCartorioPainelServiceTempestividadeTest`) provam tempestividade, intempestividade, e processo inexistente sem chamar o motor de prazo.
 
 Três dívidas de titularidade/domínio de cidadão fecharam juntas, todas achadas na mesma investigação anterior sem bloqueio jurídico ou de produto: `D-titularidade-cidadao-duplicada-dois-guards` — `PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty` implementavam a mesma checagem de CPF (parte autora/ré/usuário do processo) em dois arquivos; unificada em `core.security.ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)`, com cada método preservando sua própria mensagem de erro e pré-condição. `D-peticionamento-controller-domain-lacuna-cidadao` — `PeticionamentoController.resolveDomain()` não reconhecia `CIDADAO` e recaía em `CapabilityRateLimitDomain.LAWYER` por omissão; ganhou branch explícito checando `ROLE_CIDADAO`, retornando `CITIZEN`. `D-cidadao-parte-guard-sem-teste-rejeicao` — o guard de titularidade não tinha teste dedicado provando rejeição real; `CidadaoInstanciasControllerCpfMismatchIT` (JWT real, Postgres real via Testcontainers) prova as duas direções — CIDADAO com CPF divergente recebe 403, CIDADAO com CPF da parte autora recebe 200. 2/2 verde.
 
@@ -993,7 +995,7 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.454 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.457 · 0 falhas · 0 erros** |
 | Testes de integração (Failsafe) | **256 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1207,7 +1209,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.454 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.457 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

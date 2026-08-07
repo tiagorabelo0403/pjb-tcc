@@ -1,12 +1,20 @@
 package com.tcc.pjb.backend.service.prazo;
 
+import com.tcc.pjb.backend.core.processo.prazo.application.ProcessoPrazoApplicationService;
+import com.tcc.pjb.backend.core.processo.prazo.domain.ProcessoPrazoMarco;
 import com.tcc.pjb.backend.model.dto.prazo.PrazoCartorioItemResponse;
 import com.tcc.pjb.backend.model.dto.prazo.PrazoCartorioPainelResponse;
 import com.tcc.pjb.backend.model.dto.prazo.PrazoCertidaoDecursoItemResponse;
 import com.tcc.pjb.backend.model.dto.prazo.PrazoCertidaoDecursoLoteResponse;
+import com.tcc.pjb.backend.model.dto.prazo.PrazoCertidaoTempestividadeResponse;
+import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.comunicacao.CienciaProcessual;
 import com.tcc.pjb.backend.model.repository.CienciaProcessualRepository;
+import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.platform.jusos.v2.prazo.NationalPrazoEngine;
+import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +29,15 @@ public class PrazoCartorioPainelService {
     private static final int LIMITE_ITENS = 500;
 
     private final CienciaProcessualRepository cienciaProcessualRepository;
+    private final ProcessoRepository processoRepository;
+    private final ProcessoPrazoApplicationService processoPrazoApplicationService;
 
-    public PrazoCartorioPainelService(CienciaProcessualRepository cienciaProcessualRepository) {
+    public PrazoCartorioPainelService(CienciaProcessualRepository cienciaProcessualRepository,
+                                      ProcessoRepository processoRepository,
+                                      ProcessoPrazoApplicationService processoPrazoApplicationService) {
         this.cienciaProcessualRepository = Objects.requireNonNull(cienciaProcessualRepository);
+        this.processoRepository = Objects.requireNonNull(processoRepository);
+        this.processoPrazoApplicationService = Objects.requireNonNull(processoPrazoApplicationService);
     }
 
     @Transactional(readOnly = true)
@@ -92,6 +106,38 @@ public class PrazoCartorioPainelService {
         }
         cienciaProcessualRepository.saveAll(vencidas);
         return new PrazoCertidaoDecursoLoteResponse(vara, certidoes.size(), List.copyOf(certidoes));
+    }
+
+    @Transactional(readOnly = true)
+    public PrazoCertidaoTempestividadeResponse certificarTempestividade(Long processoId,
+                                                                        NationalPrazoEngine.TipoPrazo tipoPrazo,
+                                                                        LocalDate dataPratica) {
+        Objects.requireNonNull(processoId, "processoId");
+        Objects.requireNonNull(tipoPrazo, "tipoPrazo");
+        Objects.requireNonNull(dataPratica, "dataPratica");
+        Processo processo = processoRepository.findById(processoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+        ProcessoPrazoMarco marco = processoPrazoApplicationService.calcular(processoId, tipoPrazo);
+        boolean tempestivo = !dataPratica.isAfter(marco.vencimento());
+        String texto = montarTextoTempestividade(processo, marco, dataPratica, tempestivo);
+        return new PrazoCertidaoTempestividadeResponse(
+                processoId,
+                processo.getNumeroProcesso(),
+                marco.codigo(),
+                marco.titulo(),
+                marco.vencimento(),
+                dataPratica,
+                tempestivo,
+                texto,
+                Instant.now());
+    }
+
+    private String montarTextoTempestividade(Processo processo, ProcessoPrazoMarco marco, LocalDate dataPratica, boolean tempestivo) {
+        return "CERTIDÃO DE " + (tempestivo ? "TEMPESTIVIDADE" : "INTEMPESTIVIDADE")
+                + " — processo " + processo.getNumeroProcesso()
+                + ". Certifico que o ato relativo a \"" + marco.titulo() + "\" foi praticado em " + dataPratica
+                + ", " + (tempestivo ? "dentro do" : "fora do") + " prazo legal, que venceu em " + marco.vencimento()
+                + ". Fundamento: " + String.join("; ", marco.fundamentos()) + ".";
     }
 
     private String montarTextoCertidao(CienciaProcessual ciencia) {
