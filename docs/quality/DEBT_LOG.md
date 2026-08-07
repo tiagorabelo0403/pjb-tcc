@@ -552,8 +552,22 @@ construção, só não há prova de uso.
 
 ## D-marketplace-sem-completude-documental
 
-**Status:** Fase 1 aplicada — sinal síncrono + assíncrono de completude documental no canal
-marketplace; consolidação dos três canais numa política única segue como Fase 2, não implementada.
+**Status:** FECHADA. Fase 1 aplicada — sinal síncrono + assíncrono de completude documental no
+canal marketplace. Fase 2 implementada e mergeada em `master` (commit `c34e2db3`, PR #9,
+branch `worktree-marketplace-completude-fase2`): endpoint `POST /api/marketplace/v1/processos/{id}/documentos`,
+`MarketplaceDocumentoComplementarService` com `MarketplaceDocumentoPersistenceService` compartilhado entre
+`protocolar()` (leniente) e `complementar()` (estrito) — validação, deduplicação por SHA-256, classificação
+de sigilo/categoria, escrita em `ObjectStoragePort`, persistência de `DocumentoProcessual`. Ownership resolvido
+por coluna dedicada `connector_client_id`, substituindo a checagem ambígua original baseada em `startsWith`/
+split por `:` (o `clientId` podia conter `:` no próprio valor). Suíte: 4430/4430 testes unitários, 0 falhas
+na suíte completa de IT (95 classes). Três dívidas novas registradas fora do escopo da Fase 2:
+`D-marketplace-payload-multiplo-anexo`, `D-marketplace-scope-oauth-nao-checado-no-path-primario`,
+`D-marketplace-connectorclientid-sem-backfill-para-janela-entre-commits`.
+
+**Nota de lineage:** esta branch (`worktree-custas-modularizacao`, empilhada em PR #11/#12) diverge de
+`master` antes do merge da PR #9 e ainda não contém o código da Fase 2 — apenas o texto deste log foi
+atualizado para refletir o estado real do projeto em `master`. A convergência (merge/rebase de `master`
+nesta branch) trará o código.
 
 **Contexto original (mantido para rastreabilidade):** existem três canais que criam processo no
 PJB, e cada um validava completude documental de um jeito diferente (ou não validava). `POST
