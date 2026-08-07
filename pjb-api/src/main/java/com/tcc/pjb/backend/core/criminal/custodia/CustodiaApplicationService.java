@@ -81,6 +81,11 @@ public class CustodiaApplicationService {
         return audienciaCustodiaService.medidas(processoId);
     }
 
+    @Transactional(readOnly = true)
+    public java.util.List<com.tcc.pjb.backend.core.criminal.custodia.domain.CustodiaPendenteView> pendentes() {
+        return audienciaCustodiaService.pendentes();
+    }
+
     private Long requireId(Long id) {
         if (id == null || id <= 0) {
             throw new IllegalArgumentException("custodiaId obrigatorio");

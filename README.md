@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.462%20unit%20%2B%20259%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.465%20unit%20%2B%20259%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -324,7 +324,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.462 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 4.465 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 259 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.462 unitários (Surefire) e depois os 259 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.465 unitários (Surefire) e depois os 259 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,7 +379,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.462** |
+| Total de testes unitários | Surefire | **4.465** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
@@ -457,6 +457,8 @@ Investigando "painel de arquivamento/desarquivamento", achei que as ações por 
 Investigando "distribuição/redistribuição de processos no nível da secretaria", achei que a peça central já é rica e está viva: `SecretariatOperationalRedistributionService.redistribuir` avalia carga, atrasos, throughput dos últimos 30 dias e afinidade de célula para sugerir e executar a redistribuição de um processo específico, exposta em `GET`/`POST /api/v1/secretariat/operacional/processos/{processoId}/redistribuicao` — não era o caso de porta trancada nem de peça inexistente. A lacuna real aparece quando um servidor inteiro fica indisponível (férias, licença, afastamento): hoje, redistribuir a mesa dele significa abrir esse endpoint processo por processo, exatamente o tipo de tarefa repetitiva que empurra o cartório de volta pra planilha. `SecretariatOperationalBulkReassignmentService.reatribuirCargaPorAfastamento` (novo) busca todos os work items ativos do servidor afastado (`WorkItemRepository.inboxByUser`, já existente) e reatribui cada um ao candidato do mesmo cargo com menor carga ativa no momento, preferindo colegas da mesma comarca e caindo para o cargo inteiro quando não há ninguém localmente — sem duplicar `SecretariatOperationalRedistributionService`, que resolve outro problema (melhor destino por processo, não esvaziamento de mesa por indisponibilidade). `POST /api/v1/secretariat/operacional/servidores/{servidorId}/reatribuir-carga` expõe isso, registrando o motivo da reatribuição na descrição de cada work item e reprojetando a fila (`SecretariatQueueProjectionService`). 3 testes unitários novos (`SecretariatOperationalBulkReassignmentServiceTest`) provam a reatribuição preferindo o candidato menos ocupado da mesma comarca, a ausência de candidato quando só existe um colega inativo, e o erro para servidor afastado inexistente.
 
 Investigando "normalização de rotas da SecretariaEspecializadaController", achei uma divergência real, não cosmética: `SecretariaEspecializadaController` (20 endpoints — ramo, checklist, distribuição interna, redistribuição, gargalos, atos, SLA, matriz, handoff, malha, topologia, estabilidade, pauta de audiência) montava seu `@RequestMapping` com o literal `/api/v1/secretaria/especializada` (português), enquanto todo o resto da família `secretaria/operacional` usa a constante `OperationalApiRoutes.SECRETARIAT_OPERATIONAL_BASE`, derivada de `SECRETARIAT_BASE = /api/v1/secretariat` (inglês) — duas convenções de nome de recurso coexistindo na mesma superfície. O risco de mexer não era estético: esse literal aparecia hardcoded em outros 9 lugares, entre eles `InstitutionalCriticalActionHttpGuardFilter` (o mesmo filtro de segurança que, mais cedo nesta frente, tinha causado um HTTP 500 dormente por drift de path) casando `/redistribuicao` contra esse prefixo para aplicar o gate documental institucional, e um teste dedicado de mapeamento de política de segurança. `OperationalApiRoutes.SECRETARIAT_ESPECIALIZADA_BASE` (nova constante, `/api/v1/secretariat/especializada`) substitui o literal no controller; os outros 9 pontos — o filtro de segurança, o teste de mapeamento, 5 serviços que geram links de painel/notificação apontando de volta pra esse controller (`SecretariatOperationalOrchestrationService`, `SecretariatOperationalHearingResourceService`, `SecretariatOperationalAttendanceService`, `RecursalOperationalAutomationService`, `MagistraturaJudicialProvidencePlanningSupport`), a coleção Postman e o contrato `docs/openapi/public-api.yaml` — foram atualizados juntos na mesma varredura, sem deixar nenhuma referência ao path antigo. `InstitutionalCriticalActionHttpGuardFilterPolicyMappingTest` (69/69), o teste de disciplina de superfície institucional e o teste de arquitetura de pacotes de secretaria/lifecycle (13/13) revalidados sem regressão após a mudança.
+
+Com o painel do secretário fechado (9/10 itens; "malote digital" segue deliberadamente adiado por falta de base técnica real), a próxima frente é o painel do magistrado. Investigando, achei uma audiência de custódia inteira já pronta e correta — `AudienciaCustodiaService.concluirAudiencia` decide prisão preventiva ou liberdade provisória, consulta mandado ativo no BNMP, registra medida cautelar e já grava `magistradoId` a partir do usuário autenticado — mas só alcançável via `AdminCustodiaController`, restrito a `ADMINISTRADOR`/`ADMIN`; nenhum juiz consegue decidir a própria audiência de custódia pelo sistema. Pior: `AudienciaCustodiaRepository.findByStatusOrderByPrazoLimite24hAsc`, a query que ordena custódias pendentes pelo prazo constitucional de 24h (art. 310 CPP), nunca era chamada em lugar nenhum — sem essa query não existe painel algum de "quem está prestes a estourar o prazo". `JuizCustodiaController` (novo, `/api/v1/juiz/custodia`, papéis de magistratura) reexpõe as mesmas operações do controller admin através do mesmo `CustodiaApplicationService` — sem duplicar regra —, e `AudienciaCustodiaService.pendentes()` (novo, usa a query órfã) alimenta `GET /pendentes`, devolvendo cada custódia com uma flag `vencida` calculada contra o prazo real. Deliberadamente não adicionei essa rota ao `InstitutionalCriticalActionHttpGuardFilter`: ao contrário de despacho/sentença, concluir custódia não gera documento oficial via `OfficialDocumentTemplateService` — aplicar o gate documental aqui seria forçar uma peça de segurança pensada para outro tipo de ato. 3 testes unitários novos (`AudienciaCustodiaServicePendentesTest` com custódia vencida e dentro do prazo, mais a delegação em `CustodiaApplicationServiceTest`) provam o cálculo de vencimento e a ausência de custódias pendentes sem erro.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -1003,7 +1005,7 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.462 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.465 · 0 falhas · 0 erros** |
 | Testes de integração (Failsafe) | **259 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1217,7 +1219,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.462 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.465 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
