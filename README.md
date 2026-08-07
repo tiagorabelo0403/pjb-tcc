@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.441%20unit%20%2B%20256%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.443%20unit%20%2B%20256%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -324,7 +324,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.441 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 4.443 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 256 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.441 unitários (Surefire) e depois os 256 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.443 unitários (Surefire) e depois os 256 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,7 +379,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.441** |
+| Total de testes unitários | Surefire | **4.443** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
@@ -433,6 +433,8 @@ Honorários (calculado sob demanda, sem estado persistido — a calculadora exig
 O cockpit só tinha ação em lote para ciência de intimação (`darCienciaEmLote`); pedir prorrogação de prazo exigia uma petição por processo, uma de cada vez. `prorrogarPrazoEmLote` reaproveita o mesmo `OfficeGovernedProcessOperationService.protocolizarPeticao` já usado pelo peticionamento individual (mesma assinatura qualificada, mesma fila de delegação — nenhuma lógica de protocolo nova) iterando sobre até 50 processos distintos, isolando falha por processo sem interromper o lote: cada chamada roda na própria transação porque o método do lote deliberadamente não é `@Transactional` — encapsular tudo numa transação só faria o Spring marcar `rollbackOnly` na exceção do primeiro processo que falhasse mesmo capturada, derrubando os que já tinham sido protocolados com sucesso. 3 testes unitários novos (`AdvogadoCockpitServiceProrrogacaoPrazoLoteTest`) provam o lote sem falhas, isolamento de uma falha sem interromper os demais, e deduplicação de processo repetido no mesmo lote.
 
 `StatusProcesso` não tem nenhum campo de resultado (êxito/derrota) — só estados processuais (`ARQUIVADO`, `TRANSITO_EM_JULGADO`, `EM_ANDAMENTO`, etc.). Um relatório de produtividade que fabricasse taxa de êxito inventaria dado que não existe no schema. `GET /api/v1/advogado/cockpit/produtividade` usa só o que é real: consolida a carteira inteira do advogado (`findByAdvogadoCpf`, até 1000 processos) por status e por rito, conta ativos vs. encerrados (`ARQUIVADO`/`TRANSITO_EM_JULGADO`/`JULGADO`), e calcula duração média em dias dos processos encerrados a partir de `dataDistribuicao`→`dataUltimaMovimentacao` (com fallback para `dataCriacao` quando a distribuição não foi registrada) — `null` quando nenhum processo encerrado tem as duas datas. 2 testes unitários novos (`AdvogadoCockpitServiceProdutividadeTest`) provam a consolidação por status/rito com duração média calculada corretamente e o caso de carteira vazia sem dividir por zero.
+
+Com o painel do advogado fechado, a próxima frente é o cartório. `PrazoController` só calculava (`PrazoInput`/`PrazoSnapshot` são entrada/saída puras, sem tocar banco) — o servidor não tinha nenhum painel real de prazos vencendo na própria vara. `CienciaProcessual` (registro formal de ciência processual, já criado por `DespachoComunicacaoPosAtoService` a cada despacho, com `dataExpiracao` calculada de verdade) tinha só consultas pontuais por processo/usuário, nenhuma agregada por vara. `CienciaProcessualRepository.findPendentesPorVaraAteData` (nova) busca as ciências pendentes de uma vara com vencimento até a janela pedida; `PrazoCartorioPainelService` classifica em vencidos/vencendo em 7 dias/vencendo em 15 dias (contagem cumulativa — um item vencido conta nos dois baldes, é mais urgente que qualquer um dos dois). `GET /api/v1/prazos/secretaria?vara=...&diasJanela=15` expõe isso. Decisão deliberada: não tentei realimentar `PrazoProcessualEngine` com dado real — seu `PrazoInput` também usa `UUID` pra `processoId` (mesma incompatibilidade já corrigida em `HonorariosSucumbenciaCalculatorService`) e exige `diasUteis`/`rito` que eu não tinha como derivar sem inventar regra de contagem; `CienciaProcessual.dataExpiracao` já é o prazo real computado no momento do despacho, então consultar direto é mais correto que recalcular. 2 testes unitários novos (`PrazoCartorioPainelServiceTest`) provam a classificação por faixa de urgência e o painel vazio quando a vara não tem prazo pendente.
 
 Três dívidas de titularidade/domínio de cidadão fecharam juntas, todas achadas na mesma investigação anterior sem bloqueio jurídico ou de produto: `D-titularidade-cidadao-duplicada-dois-guards` — `PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty` implementavam a mesma checagem de CPF (parte autora/ré/usuário do processo) em dois arquivos; unificada em `core.security.ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)`, com cada método preservando sua própria mensagem de erro e pré-condição. `D-peticionamento-controller-domain-lacuna-cidadao` — `PeticionamentoController.resolveDomain()` não reconhecia `CIDADAO` e recaía em `CapabilityRateLimitDomain.LAWYER` por omissão; ganhou branch explícito checando `ROLE_CIDADAO`, retornando `CITIZEN`. `D-cidadao-parte-guard-sem-teste-rejeicao` — o guard de titularidade não tinha teste dedicado provando rejeição real; `CidadaoInstanciasControllerCpfMismatchIT` (JWT real, Postgres real via Testcontainers) prova as duas direções — CIDADAO com CPF divergente recebe 403, CIDADAO com CPF da parte autora recebe 200. 2/2 verde.
 
@@ -983,7 +985,7 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.441 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.443 · 0 falhas · 0 erros** |
 | Testes de integração (Failsafe) | **256 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1197,7 +1199,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.441 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.443 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
