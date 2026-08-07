@@ -37,7 +37,8 @@ class AdvogadoCockpitServiceOabRegularidadeTest {
             mock(OfficeGovernedProcessOperationService.class),
             new HonorariosSucumbenciaCalculatorService(),
             mock(CustasApplicationService.class),
-            oabValidationService);
+            oabValidationService,
+            mock(com.tcc.pjb.backend.service.jurisprudencia.search.JurisprudenceContextualSearchService.class));
 
     @Test
     void retornaRegularidadeOabDoAdvogadoAutenticadoAposCheckarPapel() {

@@ -44,7 +44,8 @@ class AdvogadoCockpitServiceCustasTest {
             mock(OfficeGovernedProcessOperationService.class),
             new HonorariosSucumbenciaCalculatorService(),
             custasApplicationService,
-            mock(OabValidationService.class));
+            mock(OabValidationService.class),
+            mock(com.tcc.pjb.backend.service.jurisprudencia.search.JurisprudenceContextualSearchService.class));
 
     @Test
     void listaCustasDoProcessoAposAutorizarLeituraDoProcesso() {

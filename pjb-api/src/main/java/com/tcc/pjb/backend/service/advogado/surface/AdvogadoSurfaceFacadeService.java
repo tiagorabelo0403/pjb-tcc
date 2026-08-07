@@ -136,6 +136,11 @@ public class AdvogadoSurfaceFacadeService {
         return advogadoCockpitService.consultarRegularidadeOab();
     }
 
+    public com.tcc.pjb.backend.model.dto.jurisprudencia.JurisprudenceContextualSearchResponse buscarJurisprudenciaDoProcesso(
+            Long processoId, String query, int topK) {
+        return advogadoCockpitService.buscarJurisprudenciaDoProcesso(processoId, query, topK);
+    }
+
     public List<AdvogadoClienteAnaliticoItemResponse> analiticoPorCliente(String clienteCpfCnpj) {
         return advogadoCockpitService.analiticoPorCliente(clienteCpfCnpj).stream()
                 .map(this::toAnaliticoItem)

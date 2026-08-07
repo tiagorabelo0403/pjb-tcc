@@ -1,6 +1,8 @@
 package com.tcc.pjb.backend.controller.advogado;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +20,7 @@ import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCockpitSnapshotRes
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCustaItemResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoHonorariosResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOabRegularidadeResponse;
+import com.tcc.pjb.backend.model.dto.jurisprudencia.JurisprudenceContextualSearchResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOperacaoResponse;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoCienciaLoteRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
@@ -84,6 +87,16 @@ public class AdvogadoCockpitController {
     public ResponseEntity<AdvogadoOabRegularidadeResponse> consultarRegularidadeOab(Authentication authentication) {
         enforce(authentication, "advogado_cockpit_oab_regularidade");
         return ResponseEntity.ok(facadeService.consultarRegularidadeOab());
+    }
+
+    @GetMapping("/processos/{processoId}/jurisprudencia")
+    public ResponseEntity<JurisprudenceContextualSearchResponse> buscarJurisprudenciaDoProcesso(
+            @PathVariable Long processoId,
+            @RequestParam(required = false, defaultValue = "") String q,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(25) int topK,
+            Authentication authentication) {
+        enforce(authentication, "advogado_cockpit_jurisprudencia");
+        return ResponseEntity.ok(facadeService.buscarJurisprudenciaDoProcesso(processoId, q, topK));
     }
 
     @GetMapping("/clientes/analitico")
