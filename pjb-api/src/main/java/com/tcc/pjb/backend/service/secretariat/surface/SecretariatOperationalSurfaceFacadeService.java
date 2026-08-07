@@ -359,6 +359,11 @@ public class SecretariatOperationalSurfaceFacadeService {
                 orchestrationService.redistribuir(processoId, stage));
     }
 
+    public SurfaceActionResponse reatribuirCargaPorAfastamento(Long servidorAfastadoId) {
+        return projectionSupport.action("secretaria.redistribuicao", "reatribuir-carga-afastamento", null,
+                orchestrationService.reatribuirCargaPorAfastamento(servidorAfastadoId));
+    }
+
     public SurfaceSnapshotResponse avaliarGargalos(Long processoId) {
         visibilityService.requireProcessAccess(processoId);
         return projectionSupport.snapshot("secretaria.gargalos", orchestrationService.avaliarGargalos(processoId));

@@ -110,6 +110,14 @@ public class ServidorSecretariaOperacionalController {
                 ));
     }
 
+    @PostMapping(OperationalApiRoutes.PATH_SECRETARIAT_OPERATIONAL_SERVIDOR_REATRIBUICAO)
+    @PreAuthorize(ROLES)
+    public ResponseEntity<SurfaceActionResponse> reatribuirCargaPorAfastamento(@PathVariable Long servidorId,
+                                                                               Authentication authentication) {
+        enforce(authentication, "secretaria_operacional_reatribuir_carga_afastamento");
+        return ResponseEntity.ok(facadeService.reatribuirCargaPorAfastamento(servidorId));
+    }
+
     @PostMapping(OperationalApiRoutes.PATH_SECRETARIAT_OPERATIONAL_PROCESS_CONCLUSAO)
     @PreAuthorize(ROLES)
     public ResponseEntity<SurfaceActionResponse> conclusaoParaDespacho(@PathVariable Long processoId,

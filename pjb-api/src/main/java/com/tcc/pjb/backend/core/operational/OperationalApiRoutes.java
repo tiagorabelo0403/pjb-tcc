@@ -86,6 +86,7 @@ public final class OperationalApiRoutes {
     public static final String PATH_SECRETARIAT_OPERATIONAL_PROCESS_MANDADO_CITACAO = "/processos/{processoId}/mandado-citacao";
     public static final String PATH_SECRETARIAT_OPERATIONAL_PROCESS_CONCLUSAO = "/processos/{processoId}/conclusao";
     public static final String PATH_SECRETARIAT_OPERATIONAL_QUEUE_SANEAMENTO = "/fila/saneamento";
+    public static final String PATH_SECRETARIAT_OPERATIONAL_SERVIDOR_REATRIBUICAO = "/servidores/{servidorId}/reatribuir-carga";
     public static final String PATH_SECRETARIAT_OPERATIONAL_OFFICIAL_CLOSURES = "/oficial-cumprimentos";
     public static final String PATH_SECRETARIAT_OPERATIONAL_OFFICIAL_CLOSURE_RECLASSIFY = "/oficial-cumprimentos/{deskWorkItemId}/reclassificar";
     public static final String PATH_SECRETARIAT_OPERATIONAL_OFFICIAL_CLOSURE_NEXT_PROVIDENCE = "/oficial-cumprimentos/{deskWorkItemId}/proxima-providencia";
