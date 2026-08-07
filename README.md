@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.465%20unit%20%2B%20267%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.467%20unit%20%2B%20267%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -324,7 +324,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.465 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 4.467 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 267 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.465 unitários (Surefire) e depois os 267 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.467 unitários (Surefire) e depois os 267 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,7 +379,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.465** |
+| Total de testes unitários | Surefire | **4.467** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
@@ -463,6 +463,8 @@ Com o painel do secretário fechado (9/10 itens; "malote digital" segue delibera
 SISBAJUD (bloqueio judicial de valores, Res. CNJ 320/2020) e INFOJUD (consulta patrimonial via Receita Federal) tinham a mesma porta trancada errada: `SisbajudApplicationService.bloquear`/`InfojudApplicationService.consultar` já são autorizados explicitamente para magistratura por `PjbAuthorizationExternalSystemAccessPolicy.canRequestSisbajud`/`canRequestInfojud` — a ABAC até aparece no próprio contexto operacional do juiz (`MagistraturaOperationalContextService.operacional()` retorna essas duas flags como `true`) —, mas os únicos endpoints existentes, `AdminSisbajudController`/`AdminInfojudController`, são `@PreAuthorize("hasAnyRole('ADMINISTRADOR','ADMIN')")`: o Spring Security barra o juiz antes mesmo da checagem ABAC ser avaliada. `JuizSistemasExternosController` (novo, `/api/v1/juiz/sistemas-externos`) expõe o subconjunto que o magistrado de fato usa no dia a dia — solicitar bloqueio/consulta e checar o resultado — reaproveitando os dois `ApplicationService` existentes sem duplicar regra; os endpoints administrativos de diagnóstico (retry, health, consistency, owner, window, timeline) continuam exclusivos do admin, que é quem de fato investiga falha de integração. 4 testes de integração novos (`JuizSistemasExternosControllerIT`, padrão MockMvc standalone) provam a delegação de bloqueio SISBAJUD, consulta INFOJUD e a leitura de cada resultado.
 
 Investigando "conclusão dos autos ao magistrado" — o prazo legal de 10 dias úteis para o processo ficar concluso aguardando decisão —, achei `ConclusaoProcessualApplicationService` inteiro (`concluir`, `devolver`, `pendentesDoMagistrado`, `processarExpiradas`) sem um único chamador em todo o código: nem controller, nem outro serviço, nem o próprio `ConclusaoExpiradaScheduler` — que existe, mas desabilitado por padrão (`pjb.jobs.conclusao-expirada.enabled`, `matchIfMissing = false`) e sem gatilho manual. `pendentesDoMagistrado(magistradoId)` já calcula o `StatusProcesso` certo por tipo de conclusão (`CONCLUSO_RELATOR` para voto/relatório em colegiado, `CONCLUSO_JUIZ` nos demais) — era exatamente o painel de prazo legal que faltava, só que invisível. `ConclusaoProcessualController` (novo, `/api/v1/processo/conclusao`) reexpõe as quatro operações sem duplicar regra: `concluir` fica restrito a `SERVIDOR`/`SERVIDOR_FORUM` (é a secretaria que conclui os autos e escolhe o magistrado destinatário, `FuncaoServidorApplicationService.temPermissaoEmQualquerUnidade` já valida a permissão), `devolver` e `GET /pendentes` ficam com o magistrado (o próprio serviço já impede devolução por quem não é o destinatário), e `processar-expiradas` fica aberto aos dois papéis como gatilho manual — sem alterar o `matchIfMissing=false` do scheduler, que segue uma decisão de produto separada. 4 testes de integração novos (`ConclusaoProcessualControllerIT`, padrão MockMvc standalone) provam as quatro delegações com o ator resolvido do usuário autenticado.
+
+O magistrado que assina um despacho não tinha como saber se a publicação no DJe realmente aconteceu — `DespachoComunicacaoPosAtoService.publicarDje` cria a linha de `DjePublicacao` no momento da assinatura, mas `DjeApplicationService.processoPublication`, a consulta que mostra o status dessa publicação, só era alcançável via `SecretariatDjeController` (restrito à secretaria) ou `AdminDjeController` (restrito ao admin) — igual à lacuna já fechada para a secretaria (item anterior desta mesma frente), só que do lado de quem assina o ato. `SecretariatDjeController` tinha um único `@PreAuthorize` de classe cobrindo os dois endpoints; movido para nível de método, com `lifecycle/run` permanecendo restrito à secretaria (rodar o lote de publicação não é ato do magistrado) e `GET /processos/{processoId}/publicacao` passando a aceitar também `MAGISTRADO`/`JUIZ*` — sem duplicar controller, sem tocar `AdminDjeController`. 2 testes unitários novos (`SecretariatDjeControllerAccessTest`, por reflexão sobre a anotação) travam a diferença: `lifecycleRun` não pode ganhar papel de magistratura por engano numa alteração futura, `publicacaoDoProcesso` precisa aceitá-la.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -1009,7 +1011,7 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.465 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.467 · 0 falhas · 0 erros** |
 | Testes de integração (Failsafe) | **267 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1223,7 +1225,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.465 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.467 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

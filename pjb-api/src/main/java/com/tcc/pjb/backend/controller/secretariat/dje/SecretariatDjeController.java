@@ -18,8 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/secretariat/dje")
-@PreAuthorize("hasAnyRole('SERVIDOR_JUDICIARIO','SUPERVISOR','DIRETOR_SECRETARIA','CHEFE_SECRETARIA')")
 public class SecretariatDjeController {
+
+    private static final String SECRETARIA_ROLES = "hasAnyRole('SERVIDOR_JUDICIARIO','SUPERVISOR','DIRETOR_SECRETARIA','CHEFE_SECRETARIA')";
+    private static final String SECRETARIA_OU_MAGISTRATURA_ROLES =
+            "hasAnyRole('SERVIDOR_JUDICIARIO','SUPERVISOR','DIRETOR_SECRETARIA','CHEFE_SECRETARIA','MAGISTRADO','JUIZ','JUIZ_ESTADUAL','JUIZ_FEDERAL','JUIZ_ESPECIAL','JUIZ_ELEITORAL','JUIZ_TRABALHISTA','JUIZ_MILITAR')";
 
     private final DjeApplicationService applicationService;
 
@@ -28,6 +31,7 @@ public class SecretariatDjeController {
     }
 
     @PostMapping("/lifecycle/run")
+    @PreAuthorize(SECRETARIA_ROLES)
     public ResponseEntity<PjbApiResponseEnvelope<DjeLifecycleExecutionSummary>> lifecycleRun(
             @RequestParam(value = "hoje", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hoje,
             @RequestParam(value = "batchSize", required = false) Integer batchSize) {
@@ -35,6 +39,7 @@ public class SecretariatDjeController {
     }
 
     @GetMapping("/processos/{processoId}/publicacao")
+    @PreAuthorize(SECRETARIA_OU_MAGISTRATURA_ROLES)
     public ResponseEntity<PjbApiResponseEnvelope<DjeProcessoPublicationView>> publicacaoDoProcesso(@PathVariable Long processoId) {
         return ResponseEntity.ok(PjbApiResponseEnvelope.ok(applicationService.processoPublication(processoId)));
     }
