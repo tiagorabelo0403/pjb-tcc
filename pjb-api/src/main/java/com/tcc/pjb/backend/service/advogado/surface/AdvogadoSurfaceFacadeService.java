@@ -124,6 +124,10 @@ public class AdvogadoSurfaceFacadeService {
         return toOperacaoResponse(advogadoCockpitService.darCienciaIntimacaoEmLote(workItemIds));
     }
 
+    public AdvogadoOperacaoResponse prorrogarPrazoEmLote(List<Long> processoIds, String justificativa) {
+        return toOperacaoResponse(advogadoCockpitService.prorrogarPrazoEmLote(processoIds, justificativa));
+    }
+
     public AdvogadoHonorariosResponse calcularHonorarios(Long processoId, AdvogadoHonorariosCalculoRequest request) {
         return advogadoCockpitService.calcularHonorarios(processoId, request);
     }

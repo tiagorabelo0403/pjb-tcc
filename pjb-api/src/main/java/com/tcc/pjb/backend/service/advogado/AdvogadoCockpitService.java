@@ -129,6 +129,31 @@ public class AdvogadoCockpitService {
         return officeGovernedProcessOperationService.protocolizarPeticao(processoId, tipoPeticao, conteudo, fundamentacao);
     }
 
+    public Map<String, Object> prorrogarPrazoEmLote(List<Long> processoIds, String justificativa) {
+        List<Long> processados = new java.util.ArrayList<>();
+        List<Map<String, Object>> falhas = new java.util.ArrayList<>();
+        for (Long processoId : processoIds.stream().distinct().limit(50).toList()) {
+            try {
+                officeGovernedProcessOperationService.protocolizarPeticao(
+                        processoId, "PRORROGACAO_PRAZO", "Pedido de prorrogação de prazo processual.", justificativa);
+                processados.add(processoId);
+            } catch (RuntimeException ex) {
+                LinkedHashMap<String, Object> falha = new LinkedHashMap<>();
+                falha.put("processoId", processoId);
+                falha.put("motivo", ex.getMessage());
+                falhas.add(falha);
+            }
+        }
+        LinkedHashMap<String, Object> out = new LinkedHashMap<>();
+        out.put("status", "PRORROGACOES_PROCESSADAS");
+        out.put("tipo", "PRORROGACAO_PRAZO_LOTE");
+        out.put("total", processoIds.size());
+        out.put("processados", processados.size());
+        out.put("ids", processados);
+        out.put("falhas", falhas);
+        return out;
+    }
+
     @Transactional
     public Map<String, Object> darCienciaIntimacaoEmLote(List<Long> workItemIds) {
         PerfilDashboardContext ctx = contextFactory.build();

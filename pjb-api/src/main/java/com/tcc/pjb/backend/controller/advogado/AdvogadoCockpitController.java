@@ -26,6 +26,7 @@ import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoPainelFinanceiroRe
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoCienciaLoteRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoPeticaoRequest;
+import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoProrrogacaoPrazoLoteRequest;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.versioning.ApiVersion;
@@ -67,6 +68,13 @@ public class AdvogadoCockpitController {
                                                                      Authentication authentication) {
         enforce(authentication, "advogado_cockpit_ciencia_lote");
         return ResponseEntity.ok(facadeService.darCienciaEmLote(request.workItemIds()));
+    }
+
+    @PostMapping("/processos/prorrogacao-prazo-lote")
+    public ResponseEntity<AdvogadoOperacaoResponse> prorrogarPrazoEmLote(@Valid @RequestBody AdvogadoProrrogacaoPrazoLoteRequest request,
+                                                                          Authentication authentication) {
+        enforce(authentication, "advogado_cockpit_prorrogacao_prazo_lote");
+        return ResponseEntity.ok(facadeService.prorrogarPrazoEmLote(request.processoIds(), request.justificativa()));
     }
 
     @PostMapping("/processos/{processoId}/honorarios/calcular")
