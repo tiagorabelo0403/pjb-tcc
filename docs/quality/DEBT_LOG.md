@@ -1277,18 +1277,27 @@ outra natureza.
 
 ## D-titularidade-cidadao-duplicada-dois-guards
 
-`PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty` implementam a mesma checagem de CPF (parte autora/ré/usuário do processo) em dois arquivos distintos, achado ao cablear a Etapa 4 de `D-recursal-superficie-por-papel`.
-Revisitar ao tocar qualquer um dos dois: unificar num único método antes de corrigir bug ou adicionar caso novo em só um lado.
+**Status:** FECHADA — checagem de CPF unificada em `ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)`.
+
+**Contexto original (mantido para rastreabilidade):** `PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty` implementavam a mesma checagem de CPF (parte autora/ré/usuário do processo) em dois arquivos distintos.
+
+**Fechamento:** `core.security.ProcessoPartyCpfLinkPolicy` concentra o predicado (`cpf.equals(parteAutoraCpf) || cpf.equals(parteReuCpf) || cpf.equals(processo.getUsuario().getCpf())`, com `null`-safety para CPF e processo). Os dois métodos passaram a delegar a esse predicado, preservando cada um sua própria mensagem de erro e pré-condição (`requireReadProcessoAsCidadaoParte` só se aplica a `TipoUsuario.CIDADAO` e passa antes por `requireReadProcesso`; `requireCurrentUserAsParty` exige usuário resolvido via `getRequired()` e se aplica a qualquer perfil com contexto pessoal). `PersonalProcessAccessGuardServiceTest` e `PjbAuthorizationServiceStructuralSeparationTest` seguem verdes sem alteração de asserção.
 
 ## D-peticionamento-controller-domain-lacuna-cidadao
 
-`PeticionamentoController.resolveDomain()` não reconhece `CIDADAO` e recai em `CapabilityRateLimitDomain.LAWYER` por omissão — inconsistente com o resto do projeto, que usa `CITIZEN` para ação/leitura de cidadão (achado ao cablear a Etapa 4 de `D-recursal-superficie-por-papel`).
-Revisitar em etapa própria: adicionar branch explícito para `CIDADAO` retornando `CITIZEN`.
+**Status:** FECHADA — `resolveDomain()` ganhou branch explícito para `CIDADAO`.
+
+**Contexto original (mantido para rastreabilidade):** `PeticionamentoController.resolveDomain()` não reconhecia `CIDADAO` e recaía em `CapabilityRateLimitDomain.LAWYER` por omissão — inconsistente com o resto do projeto, que usa `CITIZEN` para ação/leitura de cidadão.
+
+**Fechamento:** o método passou a checar `authorities.contains("ROLE_CIDADAO")` (mesma convenção de nome de authority de `PjbGrantedAuthorityFactory.roleOf(tipoUsuario.name())`) depois da checagem institucional existente, retornando `CapabilityRateLimitDomain.CITIZEN`. `LAWYER` permanece o default para qualquer perfil não institucional e não-cidadão, comportamento inalterado para os demais chamadores.
 
 ## D-cidadao-parte-guard-sem-teste-rejeicao
 
-`PjbAuthorizationService.requireReadProcessoAsCidadaoParte` não tem teste dedicado que prove a rejeição real por CPF divergente em nenhum dos 9 consumidores em produção — lacuna pré-existente, mais antiga que a Etapa 4 de `D-recursal-superficie-por-papel`, só encontrada ao cablear esta etapa.
-Revisitar em etapa própria: IT com Spring Security real provando 403 para CIDADAO cujo CPF não bate com nenhuma parte do processo.
+**Status:** FECHADA — IT nova prova rejeição real e liberação real contra Postgres/Spring Security.
+
+**Contexto original (mantido para rastreabilidade):** `PjbAuthorizationService.requireReadProcessoAsCidadaoParte` não tinha teste dedicado que provasse a rejeição real por CPF divergente em nenhum dos consumidores em produção.
+
+**Fechamento:** `CidadaoInstanciasControllerCpfMismatchIT` (`GET /api/v1/cidadao/processos/{id}/instancias`, JWT real via `SecurityMockMvcRequestPostProcessors.jwt()` com claim `uid` resolvendo um `Usuario` seedado no banco) prova as duas direções: CIDADAO com CPF que não bate com nenhuma parte recebe 403; CIDADAO cujo CPF bate com a parte autora recebe 200. 2/2 verde.
 
 ## D-controllers-recursais-legados-sem-teste-dedicado
 
