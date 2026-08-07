@@ -2,10 +2,13 @@ package com.tcc.pjb.backend.service.prazo;
 
 import com.tcc.pjb.backend.model.dto.prazo.PrazoCartorioItemResponse;
 import com.tcc.pjb.backend.model.dto.prazo.PrazoCartorioPainelResponse;
+import com.tcc.pjb.backend.model.dto.prazo.PrazoCertidaoDecursoItemResponse;
+import com.tcc.pjb.backend.model.dto.prazo.PrazoCertidaoDecursoLoteResponse;
 import com.tcc.pjb.backend.model.entity.comunicacao.CienciaProcessual;
 import com.tcc.pjb.backend.model.repository.CienciaProcessualRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.data.domain.PageRequest;
@@ -65,5 +68,37 @@ public class PrazoCartorioPainelService {
         }
 
         return new PrazoCartorioPainelResponse(vara, itens.size(), vencidos, vencendoEm7, vencendoEm15, itens);
+    }
+
+    @Transactional
+    public PrazoCertidaoDecursoLoteResponse certificarDecursoEmLote(String vara) {
+        Objects.requireNonNull(vara, "vara");
+        Instant agora = Instant.now();
+        List<CienciaProcessual> vencidas = cienciaProcessualRepository.findPendentesPorVaraAteData(
+                vara, agora, PageRequest.of(0, LIMITE_ITENS));
+
+        List<PrazoCertidaoDecursoItemResponse> certidoes = new ArrayList<>();
+        for (CienciaProcessual ciencia : vencidas) {
+            ciencia.expirar(agora);
+            if (!ciencia.isFicta()) {
+                continue;
+            }
+            certidoes.add(new PrazoCertidaoDecursoItemResponse(
+                    ciencia.getId(),
+                    ciencia.getProcesso() == null ? null : ciencia.getProcesso().getId(),
+                    ciencia.getNumeroProcesso(),
+                    montarTextoCertidao(ciencia),
+                    agora));
+        }
+        cienciaProcessualRepository.saveAll(vencidas);
+        return new PrazoCertidaoDecursoLoteResponse(vara, certidoes.size(), List.copyOf(certidoes));
+    }
+
+    private String montarTextoCertidao(CienciaProcessual ciencia) {
+        String tipo = ciencia.getTipoCiencia() == null ? "prazo processual" : ciencia.getTipoCiencia().label();
+        return "CERTIDÃO DE DECURSO DE PRAZO — processo " + ciencia.getNumeroProcesso()
+                + ". Certifico, para os devidos fins, o decurso do prazo de " + tipo
+                + " sem manifestação da parte, com vencimento em " + ciencia.getDataExpiracao()
+                + ", nos termos do art. 231 do CPC.";
     }
 }

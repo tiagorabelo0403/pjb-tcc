@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.controller.processual;
 
 import com.tcc.pjb.backend.core.api.PjbApiResponseEnvelope;
 import com.tcc.pjb.backend.model.dto.prazo.PrazoCartorioPainelResponse;
+import com.tcc.pjb.backend.model.dto.prazo.PrazoCertidaoDecursoLoteResponse;
 import com.tcc.pjb.backend.service.prazo.PrazoCartorioPainelService;
 import com.tcc.pjb.backend.service.prazo.PrazoDecursoCertidaoService;
 import com.tcc.pjb.backend.service.prazo.PrazoProcessualEngine;
@@ -64,6 +65,14 @@ public class PrazoController {
                               @RequestParam(defaultValue = "15") int diasJanela) {
         return ResponseEntity.ok(PjbApiResponseEnvelope.ok(
                 cartorioPainelService.painelPorVara(vara, diasJanela)));
+    }
+
+    @PostMapping("/secretaria/certidao-decurso-lote")
+    @PreAuthorize("hasAnyRole('SERVIDOR_JUDICIARIO','SUPERVISOR','DIRETOR_SECRETARIA','CHEFE_SECRETARIA')")
+    public ResponseEntity<PjbApiResponseEnvelope<PrazoCertidaoDecursoLoteResponse>>
+            certificarDecursoEmLote(@RequestParam String vara) {
+        return ResponseEntity.ok(PjbApiResponseEnvelope.ok(
+                cartorioPainelService.certificarDecursoEmLote(vara)));
     }
 
     @PostMapping("/certidao-decurso")
