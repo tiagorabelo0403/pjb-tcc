@@ -1,6 +1,6 @@
-package com.tcc.pjb.backend.core.financeiro.custas;
+package com.tcc.pjb.backend.modules.custas.api;
 
-import com.tcc.pjb.backend.core.financeiro.custas.domain.GruResult;
+import com.tcc.pjb.backend.modules.custas.domain.GruResult;
 import java.math.BigDecimal;
 
 public interface GruCodigoBarrasGenerator {
