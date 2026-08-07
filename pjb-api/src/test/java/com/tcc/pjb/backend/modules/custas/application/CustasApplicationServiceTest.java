@@ -1,4 +1,4 @@
-package com.tcc.pjb.backend.core.financeiro.custas;
+package com.tcc.pjb.backend.modules.custas.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -8,8 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaConsultaTimelineResult;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaTimelineEntry;
+import com.tcc.pjb.backend.modules.custas.domain.CustaConsultaTimelineResult;
+import com.tcc.pjb.backend.modules.custas.domain.CustaTimelineEntry;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -22,11 +22,11 @@ class CustasApplicationServiceTest {
     void gerar_deveAuditarCriacaoManual() {
         CustaJudicialService custaJudicialService = mock(CustaJudicialService.class);
         AuditLedgerService auditLedgerService = mock(AuditLedgerService.class);
-        when(custaJudicialService.gerarCustas(new com.tcc.pjb.backend.core.financeiro.custas.domain.GerarCustaJudicialCommand(3L, com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.CUSTAS_INICIAIS, BigDecimal.TEN)))
-                .thenReturn(com.tcc.pjb.backend.core.financeiro.custas.domain.CustaJudicialResult.isento(9L, "gratuidade"));
+        when(custaJudicialService.gerarCustas(new com.tcc.pjb.backend.modules.custas.domain.GerarCustaJudicialCommand(3L, com.tcc.pjb.backend.modules.custas.domain.TipoCusta.CUSTAS_INICIAIS, BigDecimal.TEN)))
+                .thenReturn(com.tcc.pjb.backend.modules.custas.domain.CustaJudicialResult.isento(9L, "gratuidade"));
         CustasApplicationService applicationService = new CustasApplicationService(custaJudicialService, auditLedgerService);
 
-        var result = applicationService.gerar(3L, com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.CUSTAS_INICIAIS, BigDecimal.TEN);
+        var result = applicationService.gerar(3L, com.tcc.pjb.backend.modules.custas.domain.TipoCusta.CUSTAS_INICIAIS, BigDecimal.TEN);
 
         assertThat(result.isento()).isTrue();
         verify(auditLedgerService).appendSafely(eq("CUSTA_GERACAO_MANUAL"), eq("PROCESSO"), eq("3"), isNull(), eq("isento=true"));
@@ -36,7 +36,7 @@ class CustasApplicationServiceTest {
     void timeline_deveAuditarQuantidade() {
         CustaJudicialService custaJudicialService = mock(CustaJudicialService.class);
         AuditLedgerService auditLedgerService = mock(AuditLedgerService.class);
-        when(custaJudicialService.consultarTimeline(new com.tcc.pjb.backend.core.financeiro.custas.domain.CustaConsultaTimelineCommand(9L)))
+        when(custaJudicialService.consultarTimeline(new com.tcc.pjb.backend.modules.custas.domain.CustaConsultaTimelineCommand(9L)))
                 .thenReturn(new CustaConsultaTimelineResult(9L, List.of(
                         new CustaTimelineEntry("GERADA", Instant.parse("2026-04-11T12:00:00Z"), "PENDENTE"),
                         new CustaTimelineEntry("CONSULTADA", Instant.parse("2026-04-11T12:10:00Z"), "PENDENTE")

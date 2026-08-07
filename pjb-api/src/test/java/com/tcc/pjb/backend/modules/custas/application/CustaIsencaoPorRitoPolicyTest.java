@@ -1,9 +1,9 @@
-package com.tcc.pjb.backend.core.financeiro.custas;
+package com.tcc.pjb.backend.modules.custas.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta;
+import com.tcc.pjb.backend.modules.custas.domain.IsencaoCustaResult;
+import com.tcc.pjb.backend.modules.custas.domain.TipoCusta;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;

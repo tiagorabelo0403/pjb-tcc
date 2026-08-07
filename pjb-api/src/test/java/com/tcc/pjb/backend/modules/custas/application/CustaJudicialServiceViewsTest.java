@@ -1,4 +1,4 @@
-package com.tcc.pjb.backend.core.financeiro.custas;
+package com.tcc.pjb.backend.modules.custas.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -6,10 +6,13 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaConsultaTimelineCommand;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaHealthQuery;
-import com.tcc.pjb.backend.model.entity.financeiro.CustaJudicial;
-import com.tcc.pjb.backend.model.repository.CustaJudicialRepository;
+import com.tcc.pjb.backend.modules.custas.api.GruCodigoBarrasGenerator;
+import com.tcc.pjb.backend.modules.custas.domain.CustaConsultaTimelineCommand;
+import com.tcc.pjb.backend.modules.custas.domain.CustaHealthQuery;
+import com.tcc.pjb.backend.modules.custas.domain.CustaIsencaoPolicy;
+import com.tcc.pjb.backend.modules.custas.domain.PixPayloadGenerator;
+import com.tcc.pjb.backend.modules.custas.infrastructure.persistence.CustaJudicial;
+import com.tcc.pjb.backend.modules.custas.infrastructure.persistence.CustaJudicialRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -26,7 +29,7 @@ class CustaJudicialServiceViewsTest {
         CustaJudicial entity = CustaJudicial.builder()
                 .id(31L)
                 .processoId(19L)
-                .tipo(com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.PREPARO_RECURSAL)
+                .tipo(com.tcc.pjb.backend.modules.custas.domain.TipoCusta.PREPARO_RECURSAL)
                 .valor(new BigDecimal("150.00"))
                 .status("PAGO")
                 .linhaDigitavel("34191")

@@ -1,4 +1,4 @@
-package com.tcc.pjb.backend.core.financeiro.custas;
+package com.tcc.pjb.backend.modules.custas.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -6,8 +6,11 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
-import com.tcc.pjb.backend.model.entity.financeiro.CustaJudicial;
-import com.tcc.pjb.backend.model.repository.CustaJudicialRepository;
+import com.tcc.pjb.backend.modules.custas.api.GruCodigoBarrasGenerator;
+import com.tcc.pjb.backend.modules.custas.domain.CustaIsencaoPolicy;
+import com.tcc.pjb.backend.modules.custas.domain.PixPayloadGenerator;
+import com.tcc.pjb.backend.modules.custas.infrastructure.persistence.CustaJudicial;
+import com.tcc.pjb.backend.modules.custas.infrastructure.persistence.CustaJudicialRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -23,7 +26,7 @@ class CustaJudicialServiceSnapshotsTest {
         CustaJudicialRepository repository = mock(CustaJudicialRepository.class);
         CustaJudicial entity = CustaJudicial.builder()
                 .id(33L)
-                .tipo(com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.CUSTAS_INICIAIS)
+                .tipo(com.tcc.pjb.backend.modules.custas.domain.TipoCusta.CUSTAS_INICIAIS)
                 .status("PAGO")
                 .valor(BigDecimal.TEN)
                 .codigoReceita("1880")

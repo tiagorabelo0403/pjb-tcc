@@ -1,4 +1,4 @@
-package com.tcc.pjb.backend.core.financeiro.custas;
+package com.tcc.pjb.backend.modules.custas.infrastructure.persistence;
 
 import com.tcc.pjb.backend.PjbIntegrationTestBase;
 import org.junit.jupiter.api.Test;

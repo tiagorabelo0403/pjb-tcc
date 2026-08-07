@@ -1,4 +1,4 @@
-package com.tcc.pjb.backend.core.financeiro.custas;
+package com.tcc.pjb.backend.modules.custas.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -6,14 +6,17 @@ import com.tcc.pjb.backend.PjbIntegrationTestBase;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
-import com.tcc.pjb.backend.model.repository.CustaJudicialRepository;
+import com.tcc.pjb.backend.modules.custas.api.GruCodigoBarrasGenerator;
+import com.tcc.pjb.backend.modules.custas.domain.CustaIsencaoPolicy;
+import com.tcc.pjb.backend.modules.custas.domain.PixPayloadGenerator;
+import com.tcc.pjb.backend.modules.custas.infrastructure.persistence.CustaJudicialRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.GruResult;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.PixResult;
+import com.tcc.pjb.backend.modules.custas.domain.GruResult;
+import com.tcc.pjb.backend.modules.custas.domain.PixResult;
 
 class CustaJudicialFlowIT extends PjbIntegrationTestBase {
 
@@ -34,7 +37,7 @@ class CustaJudicialFlowIT extends PjbIntegrationTestBase {
     @Test
     void deveGerarCustaPendente() {
         org.mockito.Mockito.when(custaIsencaoPolicy.verificar(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
-                .thenReturn(new com.tcc.pjb.backend.core.financeiro.custas.domain.IsencaoCustaResult(false, null));
+                .thenReturn(new com.tcc.pjb.backend.modules.custas.domain.IsencaoCustaResult(false, null));
         org.mockito.Mockito.when(gruCodigoBarrasGenerator.gerar(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new GruResult("001", "linha", "barra", "nosso"));
         org.mockito.Mockito.when(pixPayloadGenerator.gerar(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.any()))
@@ -48,7 +51,7 @@ class CustaJudicialFlowIT extends PjbIntegrationTestBase {
                 .ramoDireito(RamoDireito.CIVIL)
                 .statusProcesso(StatusProcesso.EM_ANDAMENTO)
                 .build());
-        var result = custaJudicialService.gerarCustas(processo.getId(), com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta.CUSTAS_INICIAIS, BigDecimal.valueOf(100));
+        var result = custaJudicialService.gerarCustas(processo.getId(), com.tcc.pjb.backend.modules.custas.domain.TipoCusta.CUSTAS_INICIAIS, BigDecimal.valueOf(100));
         assertThat(result.isento()).isFalse();
         assertThat(custaJudicialRepository.findById(result.custaId())).isPresent();
     }

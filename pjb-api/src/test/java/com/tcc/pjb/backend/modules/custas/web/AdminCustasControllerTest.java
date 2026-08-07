@@ -1,4 +1,4 @@
-package com.tcc.pjb.backend.controller.admin;
+package com.tcc.pjb.backend.modules.custas.web;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -7,12 +7,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.tcc.pjb.backend.core.financeiro.custas.CustaJudicialService;
-import com.tcc.pjb.backend.core.financeiro.custas.CustasApplicationService;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaHealthResult;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaStatusSnapshot;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaVencimentoSnapshot;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta;
+import com.tcc.pjb.backend.modules.custas.application.CustaJudicialService;
+import com.tcc.pjb.backend.modules.custas.application.CustasApplicationService;
+import com.tcc.pjb.backend.modules.custas.domain.CustaHealthResult;
+import com.tcc.pjb.backend.modules.custas.domain.CustaStatusSnapshot;
+import com.tcc.pjb.backend.modules.custas.domain.CustaVencimentoSnapshot;
+import com.tcc.pjb.backend.modules.custas.domain.TipoCusta;
 import com.tcc.pjb.backend.service.api.ApiResponseFactory;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -35,7 +35,7 @@ class AdminCustasControllerTest {
 
     @Test
     void gerar_deveExporResultado() throws Exception {
-        when(applicationService.gerar(3L, TipoCusta.CUSTAS_INICIAIS, BigDecimal.TEN)).thenReturn(com.tcc.pjb.backend.core.financeiro.custas.domain.CustaJudicialResult.isento(9L, "gratuidade"));
+        when(applicationService.gerar(3L, TipoCusta.CUSTAS_INICIAIS, BigDecimal.TEN)).thenReturn(com.tcc.pjb.backend.modules.custas.domain.CustaJudicialResult.isento(9L, "gratuidade"));
 
         mockMvc.perform(post("/api/v1/admin/custas/gerar")
                         .param("processoId", "3")

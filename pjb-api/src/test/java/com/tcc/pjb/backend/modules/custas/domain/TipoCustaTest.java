@@ -1,4 +1,4 @@
-package com.tcc.pjb.backend.core.financeiro.custas.domain;
+package com.tcc.pjb.backend.modules.custas.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
