@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.423%20unit%20%2B%20254%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.424%20unit%20%2B%20254%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -378,7 +378,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.423** |
+| Total de testes unitários | Surefire | **4.424** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
@@ -420,6 +420,8 @@ Quando um magistrado profere despacho, `DespachoComunicacaoPosAtoService` já re
 O módulo `custas` só tinha consulta por `custaId` — nenhum caminho listava as custas de um processo inteiro, e o único controller (`AdminCustasController`) é exclusivo de `ADMINISTRADOR`. O advogado não tinha nenhuma visão de custas, nem por processo nem agregada. `CustaJudicialStorePort` ganhou `findByProcessoId` (implementado em `CustaJudicialStoreAdapter` sobre `CustaJudicialRepository.findByProcessoIdOrderByCreatedAtDesc`, já existente e sem uso); `CustaJudicialApplicationService.listarPorProcesso`/`CustasApplicationService.listarPorProcesso` expõem a consulta respeitando a fronteira hexagonal (`CustasArchitectureTest` 5/5 e `ModularMonolithArchitectureTest` 14/14 seguem verdes). `GET /api/v1/advogado/cockpit/processos/{processoId}/custas` reaproveita a mesma checagem ABAC de honorários antes de consultar — o controller nunca toca `modules.custas.domain` diretamente, só o DTO `AdvogadoCustaItemResponse` já mapeado pelo service (regra `controllers_nao_acessam_domain_de_modulos`). 4 testes unitários novos: 3 em `AdvogadoCockpitServiceCustasTest` (listagem, negação de acesso sem consultar custas, processo inexistente sem consultar nada) e 1 em `CustaJudicialApplicationServiceConsultaTest` (ordenação do store preservada).
 
 `PautaAudienciaService.designar`/`reagendar` gravavam a nova `Audiencia` direto no repositório sem checar sobreposição de horário na mesma vara — um advogado (ou a secretaria) podia marcar duas audiências para o mesmo juiz no mesmo horário sem qualquer aviso. `verificarConflitoAgenda` reaproveita `AudienciaRepository.findAgendaPorVara` (já existia, já filtra `CANCELADA`/`ENCERRADA`/`FRUSTRADA` no SQL) buscando a agenda do dia inteiro da vara e comparando sobreposição real de intervalo (`[dataHora, dataHora+duração)`), excluindo a própria audiência quando é um reagendamento. Lança `IllegalStateException` — mesma convenção já usada neste service para `cancelar`/`reagendar` sobre audiência encerrada. 3 testes unitários novos (`PautaAudienciaServiceConflitoAgendaTest`) provam a rejeição por sobreposição, a aceitação quando não há conflito, e a rejeição num reagendamento contra uma audiência diferente da que está sendo movida. `PautaAudienciaControllerIT` (6/6, mocka o service inteiro) revalidado sem regressão.
+
+`OabValidationService` já existia, integrado a um client real de validação (`OabValidationClient`), mas só era usado como portão bloqueante (`requireAdvogadoAptoParaProtocolo`, lança exceção) antes de protocolar petição inicial — nunca como consulta informativa. O advogado não tinha como checar sua própria regularidade OAB fora do momento de bloqueio. `consultarRegularidade(Usuario)` (novo, extrai a lógica de parse+chamada ao client já usada pelo portão, sem duplicá-la) devolve o `OabValidationResult` (status/motivo/fonte/data) sem lançar nada. `GET /api/v1/advogado/cockpit/oab/regularidade` expõe isso no cockpit. 1 teste unitário novo (`AdvogadoCockpitServiceOabRegularidadeTest`); `OabValidationServiceTest` (5/5) revalidado sem regressão após o refactor de extração do método privado `validar`.
 
 Três dívidas de titularidade/domínio de cidadão fecharam juntas, todas achadas na mesma investigação anterior sem bloqueio jurídico ou de produto: `D-titularidade-cidadao-duplicada-dois-guards` — `PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty` implementavam a mesma checagem de CPF (parte autora/ré/usuário do processo) em dois arquivos; unificada em `core.security.ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)`, com cada método preservando sua própria mensagem de erro e pré-condição. `D-peticionamento-controller-domain-lacuna-cidadao` — `PeticionamentoController.resolveDomain()` não reconhecia `CIDADAO` e recaía em `CapabilityRateLimitDomain.LAWYER` por omissão; ganhou branch explícito checando `ROLE_CIDADAO`, retornando `CITIZEN`. `D-cidadao-parte-guard-sem-teste-rejeicao` — o guard de titularidade não tinha teste dedicado provando rejeição real; `CidadaoInstanciasControllerCpfMismatchIT` (JWT real, Postgres real via Testcontainers) prova as duas direções — CIDADAO com CPF divergente recebe 403, CIDADAO com CPF da parte autora recebe 200. 2/2 verde.
 

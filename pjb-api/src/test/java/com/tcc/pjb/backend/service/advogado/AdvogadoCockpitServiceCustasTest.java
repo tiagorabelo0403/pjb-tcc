@@ -22,6 +22,7 @@ import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.processual.honorarios.HonorariosSucumbenciaCalculatorService;
+import com.tcc.pjb.backend.service.processual.legitimidade.OabValidationService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -42,7 +43,8 @@ class AdvogadoCockpitServiceCustasTest {
             authorizationService,
             mock(OfficeGovernedProcessOperationService.class),
             new HonorariosSucumbenciaCalculatorService(),
-            custasApplicationService);
+            custasApplicationService,
+            mock(OabValidationService.class));
 
     @Test
     void listaCustasDoProcessoAposAutorizarLeituraDoProcesso() {

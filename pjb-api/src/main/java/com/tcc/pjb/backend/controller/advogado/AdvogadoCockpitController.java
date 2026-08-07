@@ -17,6 +17,7 @@ import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoClienteAnaliticoIt
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCockpitSnapshotResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCustaItemResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoHonorariosResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOabRegularidadeResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOperacaoResponse;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoCienciaLoteRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
@@ -77,6 +78,12 @@ public class AdvogadoCockpitController {
                                                                          Authentication authentication) {
         enforce(authentication, "advogado_cockpit_custas");
         return ResponseEntity.ok(facadeService.listarCustas(processoId));
+    }
+
+    @GetMapping("/oab/regularidade")
+    public ResponseEntity<AdvogadoOabRegularidadeResponse> consultarRegularidadeOab(Authentication authentication) {
+        enforce(authentication, "advogado_cockpit_oab_regularidade");
+        return ResponseEntity.ok(facadeService.consultarRegularidadeOab());
     }
 
     @GetMapping("/clientes/analitico")

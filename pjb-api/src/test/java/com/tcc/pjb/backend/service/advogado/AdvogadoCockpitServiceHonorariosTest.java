@@ -19,6 +19,7 @@ import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeGovernedProcessOperationService;
 import com.tcc.pjb.backend.modules.custas.application.CustasApplicationService;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
+import com.tcc.pjb.backend.service.processual.legitimidade.OabValidationService;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.processual.honorarios.HonorariosSucumbenciaCalculatorService;
@@ -40,7 +41,8 @@ class AdvogadoCockpitServiceHonorariosTest {
             authorizationService,
             mock(OfficeGovernedProcessOperationService.class),
             calculatorService,
-            mock(CustasApplicationService.class));
+            mock(CustasApplicationService.class),
+            mock(OabValidationService.class));
 
     @Test
     void calculaHonorariosDeTrabalhoComplexoAposAutorizarLeituraDoProcesso() {

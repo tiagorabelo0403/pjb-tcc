@@ -1,8 +1,10 @@
 package com.tcc.pjb.backend.service.advogado;
 
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
+import com.tcc.pjb.backend.integration.oab.OabValidationResult;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCustaItemResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoHonorariosResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOabRegularidadeResponse;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -18,6 +20,7 @@ import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.processual.honorarios.HonorariosSucumbenciaCalculatorService;
+import com.tcc.pjb.backend.service.processual.legitimidade.OabValidationService;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -39,6 +42,7 @@ public class AdvogadoCockpitService {
     private final OfficeGovernedProcessOperationService officeGovernedProcessOperationService;
     private final HonorariosSucumbenciaCalculatorService honorariosSucumbenciaCalculatorService;
     private final CustasApplicationService custasApplicationService;
+    private final OabValidationService oabValidationService;
 
     public AdvogadoCockpitService(PerfilDashboardContextFactory contextFactory,
                                   PainelServiceCommons commons,
@@ -47,7 +51,8 @@ public class AdvogadoCockpitService {
                                   PjbAuthorizationService authorizationService,
                                   OfficeGovernedProcessOperationService officeGovernedProcessOperationService,
                                   HonorariosSucumbenciaCalculatorService honorariosSucumbenciaCalculatorService,
-                                  CustasApplicationService custasApplicationService) {
+                                  CustasApplicationService custasApplicationService,
+                                  OabValidationService oabValidationService) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
@@ -56,6 +61,7 @@ public class AdvogadoCockpitService {
         this.officeGovernedProcessOperationService = officeGovernedProcessOperationService;
         this.honorariosSucumbenciaCalculatorService = honorariosSucumbenciaCalculatorService;
         this.custasApplicationService = custasApplicationService;
+        this.oabValidationService = oabValidationService;
     }
 
     public CockpitSnapshot bootstrapCockpit() {
@@ -192,6 +198,18 @@ public class AdvogadoCockpitService {
                 custa.vencimento(),
                 custa.pagoEm(),
                 custa.valorPago());
+    }
+
+    public AdvogadoOabRegularidadeResponse consultarRegularidadeOab() {
+        PerfilDashboardContext ctx = contextFactory.build();
+        Usuario usuario = ctx.usuario();
+        authorizationService.requireRole(usuario, "ROLE_ADVOGADO", "ROLE_OAB_PRESIDENTE_SECCIONAL");
+        OabValidationResult resultado = oabValidationService.consultarRegularidade(usuario);
+        return new AdvogadoOabRegularidadeResponse(
+                resultado.status().name(),
+                resultado.reasonCode(),
+                resultado.source(),
+                resultado.checkedAt());
     }
 
     public List<Map<String, Object>> analiticoPorCliente(String clienteCpfCnpj) {

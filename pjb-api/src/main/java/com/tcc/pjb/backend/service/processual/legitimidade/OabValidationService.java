@@ -40,13 +40,7 @@ public class OabValidationService {
         if (!requiresOab(usuario)) {
             return;
         }
-        OabInfo info = parse(usuario);
-        OabValidationResult result;
-        try {
-            result = validationClient.validate(info, usuario);
-        } catch (RuntimeException ex) {
-            result = OabValidationResult.indeterminado("OAB_CNA_INDISPONIVEL", "oab-cna");
-        }
+        OabValidationResult result = validar(usuario, parse(usuario));
         if (result.status() == OabValidationStatus.APTO) {
             return;
         }
@@ -60,6 +54,27 @@ public class OabValidationService {
             return;
         }
         throw new RegraNegocioException("Nao foi possivel confirmar a regularidade OAB do advogado.");
+    }
+
+    public OabValidationResult consultarRegularidade(Usuario usuario) {
+        if (!requiresOab(usuario)) {
+            return OabValidationResult.indeterminado("NAO_REQUER_OAB", "oab-cna");
+        }
+        OabInfo info;
+        try {
+            info = parse(usuario);
+        } catch (RegraNegocioException ex) {
+            return OabValidationResult.indeterminado("OAB_NAO_INFORMADA", "oab-cna");
+        }
+        return validar(usuario, info);
+    }
+
+    private OabValidationResult validar(Usuario usuario, OabInfo info) {
+        try {
+            return validationClient.validate(info, usuario);
+        } catch (RuntimeException ex) {
+            return OabValidationResult.indeterminado("OAB_CNA_INDISPONIVEL", "oab-cna");
+        }
     }
 
     private OabInfo parse(Usuario usuario) {
