@@ -542,8 +542,7 @@ construção, só não há prova de uso.
 
 ## D-marketplace-sem-completude-documental
 
-**Status:** Fase 1 aplicada — sinal síncrono + assíncrono de completude documental no canal
-marketplace; consolidação dos três canais numa política única segue como Fase 2, não implementada.
+**Status:** Fase 1 e Fase 2 fechadas.
 
 **Contexto original (mantido para rastreabilidade):** existem três canais que criam processo no
 PJB, e cada um validava completude documental de um jeito diferente (ou não validava). `POST
@@ -582,12 +581,64 @@ cobrindo cliente sem campo `documentos` (nome do teste prova a negação central
 aceitação silenciosa), cliente completo e cliente parcial. Regressão de `ApiMarketplaceServicePoloMaterializacaoTest`
 (4) confirmada sem alteração.
 
-**Fase 2 (não implementada, registrada apenas por nome):** endpoint dedicado
-`POST /processos/{id}/documentos` para complementação documental pós-protocolo, disparando evento
-`PROCESSO_DOCUMENTACAO_COMPLETADA` reservado neste texto para evitar renomear webhook já em produção quando
-a Fase 2 for implementada. Consolidação das três políticas de completude (catálogo estático, tabela
-`tb_requisito_documental`, e a nova checagem do marketplace) numa única fonte segue em aberto — candidato
-natural continua sendo `ProtocoloCompletudeValidator`, por ser orientado a dado versionado.
+**Correção (Fase 2 — retrofit do jus postulandi na Fase 1):** a Fase 1 checava completude documental
+contra o catálogo do rito sem saber se o ator dispensava `PROCURACAO` por jus postulandi — o mesmo bug
+que `D-completude-documental-sem-jus-postulandi` já havia corrigido no canal REST, mas que a Fase 1 do
+marketplace reintroduziu por não existir ainda quando aquela fatia foi escrita. `MarketplaceProtocoloRequest`
+ganhou campo opcional `perfilAtor` (aditivo — sem ele o comportamento não muda). `ApiMarketplaceService.protocolar()`
+resolve o `InstrumentoRepresentacaoProcessual` via `MarketplaceRepresentacaoResolver` (novo — encapsula a
+sobrecarga de `RepresentacaoProcessualPolicyService` que trabalha com primitivos, sem exigir `Usuario`
+carregado, que o canal marketplace não tem) e passa o instrumento resolvido para
+`CompletudeDocumentalPolicyService.diagnosticar`, dispensando `PROCURACAO` corretamente quando o regime é
+jus postulandi.
+
+**Correção (Fase 2 — endpoint de complementação documental):** novo `POST
+/api/marketplace/v1/processos/{id}/documentos` (`MarketplaceDocumentoComplementarService`, exposto via
+`MarketplaceSurfaceFacadeService` + `ApiMarketplaceController`) para complementação documental pós-protocolo,
+com storage real via `ObjectStoragePort` — ao contrário da Fase 1, que usava os documentos apenas
+transientemente para diagnóstico, sem persistir nada. O endpoint faz checagem de posse (404 se o processo
+não pertence ao cliente chamador), guarda de estado (409 se `connectorSubmissionStatus` não é
+`PENDENTE_DOCUMENTACAO`), validação de conteúdo via `DocumentContentValidator` (extraído de
+`PastaDigitalService`, que passou a delegar para ele sem mudança de comportamento) e classificação de
+sigilo com texto extraído real da amostra do documento. Ao completar a exigência documental, dispara o
+evento `PROCESSO_DOCUMENTACAO_COMPLETADA` — reservado por nome desde a Fase 1 para não renomear webhook
+já em produção.
+
+Para que o endpoint novo tivesse o que completar, `ApiMarketplaceService.protocolar()` também passou a
+persistir os documentos declarados como `DocumentoProcessual` reais (via `MarketplaceDocumentoPersistenceService`,
+novo, compartilhado pelos dois pontos de entrada) — achado de arquitetura no meio da implementação, aprovado
+antes de aplicar: sem persistência real na Fase 1, o recálculo de completude do endpoint novo nunca teria o
+que somar, porque só soma linhas persistidas. `CompletudeDocumentalPolicyService` ganhou sobrecarga que aceita
+`Set<TipoDocumento>` diretamente (em vez de só a lista de anexos), para o endpoint novo recalcular completude
+sem precisar reconstruir anexos.
+
+**Dois bugs reais encontrados e corrigidos durante a Fase 2 (nenhum introduzido por ela):**
+`MarketplaceDocumentoPersistenceService.persistirSeNovo` nasceu `@Transactional`, o que quebrava o
+try/catch deliberadamente tolerante de `protocolar()` (um anexo ruim não deve abortar o protocolo inteiro)
+— o Spring propaga a transação compartilhada para rollback-only e a chamada externa nunca via a exceção
+isolada. Corrigido removendo o `@Transactional` interno; os dois chamadores já têm transação própria. Mais
+grave: `tb_documento_processual.categoria` é `NOT NULL` desde a migration `V19`, mas
+`DocumentoSigiloClassifier.suggestedCategoria()` devolve `null` para qualquer documento comum (sem sinal de
+sensibilidade) — todo insert de documento normal pelo marketplace teria estourado
+`DataIntegrityViolationException` em produção. Só foi descoberto porque a IT nova (`MarketplaceDocumentoComplementarServiceIT`)
+é o primeiro teste real deste projeto a tocar Postgres de verdade num insert de `DocumentoProcessual` pelo
+canal marketplace. Corrigido em `MarketplaceDocumentoPersistenceService` com fallback para
+`DocumentoCategoria.PUBLICO` quando o classificador não sugere nada — mesma escolha que o backfill da
+própria `V19` já fazia e que a camada ABAC já normaliza em outros pontos. Uma hipótese inicial (incorreta)
+assumiu que `PastaDigitalService` (canal interno de documentos) tinha o mesmo bug e recebeu o mesmo fix por
+engano; revisão de código independente identificou que a variável `categoria` ali já vem normalizada por
+`DocumentoCategoria.fromString(...)`, que nunca devolve `null` — o fix nesse arquivo foi revertido, o bug
+nunca existiu ali.
+
+**Testes (Fase 2):** 23 testes unitários novos (7 `PastaDigitalServiceTest`, 2
+`CompletudeDocumentalPolicyServiceTest`, 4 `MarketplaceRepresentacaoResolverTest`, 2
+`ApiMarketplaceServiceCompletudeDocumentalUnitTest`, 1 `MarketplaceGovernanceServiceDocumentacaoCompletadaTest`,
+7 `MarketplaceDocumentoComplementarServiceTest`) e 1 IT nova (`MarketplaceDocumentoComplementarServiceIT`,
+Testcontainers Postgres real, prova round-trip de storage) — todos verdes. Suíte completa do projeto
+reconfirmada ao final: **4.421 testes unitários, 0 falhas, 0 erros** (`mvn test` completo, não estimativa).
+Consolidação das três políticas de completude (catálogo estático, tabela `tb_requisito_documental`, e a
+checagem do marketplace) numa única fonte segue fora de escopo desta fatia — candidato natural continua
+sendo `ProtocoloCompletudeValidator`, por ser orientado a dado versionado.
 
 **Achados colaterais registrados sem virar entrada própria:** duplicação de `MarketplaceProtocoloRequest`/
 `MarketplaceProtocoloResponse` (DTO público em `model.dto.processo.marketplace` vs. record aninhado em
@@ -1315,3 +1366,16 @@ Corrigido reusando a mesma query e cadeia de resolução de `valorPorAno` (`find
 
 FECHADA. Os 3 restantes (`PjbCodebaseSanityApplicationServiceCacheTest`, `PjbWriteFailoverTrackerTest`, `AcordoProcessualApplicationServiceTest`) migrados para `com.tcc.pjb.backend.support.MutableClock`, zerando as 4 cópias originais. `AcordoProcessualApplicationServiceTest` usava acesso direto a campo (`fx.clock.now = ...`), incompatível com a classe compartilhada — adicionado `set(Instant)` a `MutableClock` e os 3 sites de uso migrados para `fx.clock.set(...)`. `mvnw test-compile -pl pjb-api` limpo após a migração.
 Não revisitar — nenhuma cópia privada de `MutableClock` restante no módulo.
+
+## D-marketplace-payload-multiplo-anexo
+
+Achado na revisão final de branch inteiro do `D-marketplace-sem-completude-documental` Fase 2. O limite de payload da rota `marketplace-institutional` (`application-api-governance.yml`) foi elevado de 2MB para 8MB — cobre com folga UM anexo no limite documentado de `DocumentContentValidator` (5MB, inflado ~1.33x pelo base64 do JSON). Mas `MarketplaceComplementoDocumentalRequest.documentos` e `MarketplaceProtocoloRequest.documentos` aceitam `List<Attachment>` sem limite de quantidade — um cliente que envie vários anexos grandes na mesma chamada ainda pode estourar o limite de payload antes mesmo de qualquer anexo individual ser validado, recebendo um erro de transporte genérico em vez do `TAMANHO_EXCEDIDO` documentado. Decisão de produto em aberto: limitar quantidade de anexos por chamada, ou elevar o limite de payload proporcionalmente (custo: janela maior para abuso de banda). Não corrigido nesta fatia — corrigir exigiria decidir o número real de anexos esperado por chamada, que não está especificado em nenhum lugar do contrato atual.
+
+## D-marketplace-scope-oauth-nao-checado-no-path-primario
+
+Achado na revisão final de branch inteiro. `ApiMarketplaceController.complementarDocumentos` (e o `protocolar` já existente, que segue o mesmo padrão) resolve `clientId` de duas formas: via `Authentication` já populada pelo filtro de segurança (path primário) ou via `marketplaceOAuth2Service.authorizeHttpRequest(...)` como fallback. O escopo (`processos:documentos`/`processos:protocolar`) só é checado no path de fallback — no path primário, qualquer cliente autenticado alcança o endpoint independente do escopo que possui. `MarketplaceClientApp`/`MarketplaceOAuth2Service.joinScopes` foram corrigidos nesta fatia para provisionar `processos:documentos` por padrão em clientes novos, e a migração `V310__marketplace_client_backfill_scope_documentos.sql` estendeu o escopo aos clientes já existentes (fechando a lacuna de "escopo nunca provisionável" também para o passado). Mas a ausência de checagem no path primário é um padrão pré-existente, compartilhado com `protocolar()`, e não foi tocado — mexer nisso é uma mudança no modelo de autenticação já em produção, fora do escopo desta fatia. Candidato a fatia própria: checar escopo nos dois paths de forma simétrica.
+Nuance achada na correção da checagem de posse (mesma revisão): `Processo.connectorClientId` (coluna dedicada que substituiu o parsing ambíguo de `connectorProtocolReference`) é preenchido com `authentication.getName()` no path primário — que pode vir de QUALQUER principal autenticado no `SecurityContext`, não só de um `MarketplaceClientApp`. Como o path primário nunca valida escopo nem que o principal é de fato um cliente marketplace registrado, um principal de outro subsistema cujo nome colida com um `client_id` de marketplace passaria a checagem de posse por igualdade de string, sem checagem de escopo alguma. Mesma causa raiz do parágrafo acima (nenhuma validação de escopo/identidade no path primário), agravada pela ausência de um discriminador de namespace na coluna nova. Mesma decisão: fora do escopo desta fatia, mesmo candidato de correção.
+
+## D-marketplace-connectorclientid-sem-backfill-para-janela-entre-commits
+
+Achado na revisão da correção do finding B (checagem de posse). A migração `V309__processo_connector_client_id.sql` adiciona a coluna `connector_client_id` sem backfill. Isso é seguro para dados anteriores ao commit `c5203968` (que introduziu o endpoint `/documentos` inteiro), mas esse mesmo commit já persistia `connectorProtocolReference` no formato `clientId:referencia` — teoricamente, qualquer `Processo` protocolado entre `c5203968` e a correção (`5b1551c9`) fica com `connector_client_id = null` e nunca mais alcança `complementar()` (404 permanente, sem caminho de remediação operacional). Não corrigido porque não há dado real nessa janela: a branch nunca foi implantada em produção entre esses dois commits — ambas as migrações chegam juntas no primeiro deploy real da fatia. Revisitar apenas se algum dia esses dois commits forem implantados separadamente (não é o plano atual).

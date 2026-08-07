@@ -137,3 +137,6 @@ docs/reports/test_isolation_guard.md
 
 # Build artifacts do compilador Java
 pjb-api/javac.*.args
+
+# Storage local do ObjectStoragePort (LocalFilesystemObjectStorageAdapter) gerado em runtime/testes
+pjb-api/var/

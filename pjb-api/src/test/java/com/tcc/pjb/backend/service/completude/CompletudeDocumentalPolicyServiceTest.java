@@ -156,6 +156,31 @@ class CompletudeDocumentalPolicyServiceTest {
         assertThat(ex.getMetadados()).containsKey("faltantes");
     }
 
+    @Test
+    void diagnosticarPorConjuntoDeTiposProduzMesmoResultadoQuePorAnexos() {
+        var porAnexos = service.diagnosticar(RitoProcessual.TRABALHISTA_ORDINARIO, List.of(
+                tipado(TipoDocumento.PETICAO_INICIAL),
+                tipado(TipoDocumento.PROCURACAO),
+                tipado(TipoDocumento.CTPS)
+        ));
+
+        var porConjunto = service.diagnosticar(RitoProcessual.TRABALHISTA_ORDINARIO,
+                java.util.Set.of(TipoDocumento.PETICAO_INICIAL, TipoDocumento.PROCURACAO, TipoDocumento.CTPS),
+                null);
+
+        assertThat(porConjunto.bloqueante()).isEqualTo(porAnexos.bloqueante());
+        assertThat(porConjunto.faltantes()).containsExactlyInAnyOrderElementsOf(porAnexos.faltantes());
+    }
+
+    @Test
+    void diagnosticarPorConjuntoVazioDispensaProcuracaoComJusPostulandi() {
+        var d = service.diagnosticar(RitoProcessual.TRABALHISTA_ORDINARIO,
+                java.util.Set.of(TipoDocumento.PETICAO_INICIAL, TipoDocumento.CTPS, TipoDocumento.CALCULO_INICIAL),
+                InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_TRABALHISTA);
+
+        assertThat(d.bloqueante()).isFalse();
+    }
+
     private static Attachment tipado(TipoDocumento tipo) {
         return Attachment.builder().name(tipo.name().toLowerCase() + ".pdf").tipoDocumento(tipo).build();
     }

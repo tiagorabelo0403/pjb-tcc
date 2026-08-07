@@ -233,8 +233,14 @@ public class Processo {
     @Column(name = "connector_submission_status")
     private String connectorSubmissionStatus;
 
+    @Column(name = "instrumento_representacao_resolvido")
+    private String instrumentoRepresentacaoResolvido;
+
     @Column(name = "connector_protocol_reference")
     private String connectorProtocolReference;
+
+    @Column(name = "connector_client_id", length = 120)
+    private String connectorClientId;
 
     @Column(name = "connector_submission_message", length = 4000)
     private String connectorSubmissionMessage;

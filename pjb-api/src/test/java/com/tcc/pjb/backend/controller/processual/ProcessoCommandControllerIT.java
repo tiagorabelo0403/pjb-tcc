@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.controller.processual;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -101,7 +102,7 @@ class ProcessoCommandControllerIT extends PjbFlowItBase {
                     String rito = p.getRito() != null ? p.getRito().name() : "COMUM_ORDINARIO";
                     return passingRoutingReport(rito);
                 });
-        when(completudeDocumentalPolicyService.diagnosticar(any(), any()))
+        when(completudeDocumentalPolicyService.diagnosticar(any(), anyList(), any()))
                 .thenAnswer(inv -> new CompletudeDocumentalPolicyService.DiagnosticoCompletudeDocumental(
                         false, List.of(), inv.getArgument(0)));
     }

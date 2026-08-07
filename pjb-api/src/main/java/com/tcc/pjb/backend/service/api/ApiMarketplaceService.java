@@ -2,22 +2,31 @@ package com.tcc.pjb.backend.service.api;
 
 import java.time.LocalDateTime;
 import jakarta.validation.constraints.NotBlank;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.procedural.ProceduralCatalogSupport;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.dto.Attachment;
+import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.MateriaJurisdicao;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
+import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import com.tcc.pjb.backend.service.AjuizamentoService;
 import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
+import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
 
+@Slf4j
 @Service
 public class ApiMarketplaceService {
 
@@ -27,13 +36,25 @@ public class ApiMarketplaceService {
     private final AjuizamentoService ajuizamentoService;
     private final MarketplaceGovernanceService governanceService;
     private final CompletudeDocumentalPolicyService completudeDocumentalPolicyService;
+    private final MarketplaceRepresentacaoResolver representacaoResolver;
+    private final MarketplaceDocumentoPersistenceService documentoPersistenceService;
+    private final DocumentoProcessualRepository documentoRepository;
+    private final ProcessoRepository processoRepository;
 
     public ApiMarketplaceService(AjuizamentoService ajuizamentoService,
                                  MarketplaceGovernanceService governanceService,
-                                 CompletudeDocumentalPolicyService completudeDocumentalPolicyService) {
+                                 CompletudeDocumentalPolicyService completudeDocumentalPolicyService,
+                                 MarketplaceRepresentacaoResolver representacaoResolver,
+                                 MarketplaceDocumentoPersistenceService documentoPersistenceService,
+                                 DocumentoProcessualRepository documentoRepository,
+                                 ProcessoRepository processoRepository) {
         this.ajuizamentoService = Objects.requireNonNull(ajuizamentoService);
         this.governanceService = Objects.requireNonNull(governanceService);
         this.completudeDocumentalPolicyService = Objects.requireNonNull(completudeDocumentalPolicyService);
+        this.representacaoResolver = Objects.requireNonNull(representacaoResolver);
+        this.documentoPersistenceService = Objects.requireNonNull(documentoPersistenceService);
+        this.documentoRepository = Objects.requireNonNull(documentoRepository);
+        this.processoRepository = Objects.requireNonNull(processoRepository);
     }
 
     @Transactional
@@ -64,6 +85,7 @@ public class ApiMarketplaceService {
         processo.setParteReuCpf(request.parteReuCpf());
         processo.setValorCausa(request.valorCausa());
         processo.setConnectorSystem("MARKETPLACE_API");
+        processo.setConnectorClientId(clientId);
         processo.setConnectorProtocolReference(clientId + ":" + request.clientReference());
         processo.setConnectorSubmissionProcessedAt(LocalDateTime.now());
         processo.setFaseAtual(FaseProcessual.CONHECIMENTO);
@@ -74,20 +96,43 @@ public class ApiMarketplaceService {
         processo.setDataDistribuicao(LocalDateTime.now());
         processo.setDataUltimaMovimentacao(LocalDateTime.now());
 
-        var diagnostico = completudeDocumentalPolicyService.diagnosticar(processo.getRito(), request.documentos());
+        Processo salvo = ajuizamentoService.ajuizar(processo);
+
+        if (request.documentos() != null) {
+            for (Attachment attachment : request.documentos()) {
+                try {
+                    documentoPersistenceService.persistirSeNovo(salvo, attachment, true);
+                } catch (ErroDeValidacaoException e) {
+                    log.warn("Documento declarado no protocolo marketplace não pôde ser persistido "
+                                    + "(protocolo segue de qualquer forma): processoId={} clientId={} erro={}",
+                            salvo.getId(), clientId, e.getMessage());
+                }
+            }
+        }
+
+        var instrumento = representacaoResolver.resolve(salvo.getRamoDireito(), salvo.getRito(),
+                salvo.getTribunal(), request.perfilAtor());
+        salvo.setInstrumentoRepresentacaoResolvido(instrumento == null ? null : instrumento.name());
+
+        Set<TipoDocumento> tiposPresentes = EnumSet.noneOf(TipoDocumento.class);
+        for (DocumentoProcessual documento : documentoRepository.findByProcessoId(salvo.getId())) {
+            if (documento.getTipoDocumento() != null) {
+                tiposPresentes.add(documento.getTipoDocumento());
+            }
+        }
+        var diagnostico = completudeDocumentalPolicyService.diagnosticar(salvo.getRito(), tiposPresentes, instrumento);
         List<String> documentosFaltantes = diagnostico.faltantes().stream().map(Enum::name).toList();
         boolean documentacaoCompleta = !diagnostico.bloqueante();
 
         if (documentacaoCompleta) {
-            processo.setConnectorSubmissionStatus(STATUS_RECEBIDO);
-            processo.setConnectorSubmissionMessage("Protocolo recebido via marketplace OAuth2 preparado para integradores.");
+            salvo.setConnectorSubmissionStatus(STATUS_RECEBIDO);
+            salvo.setConnectorSubmissionMessage("Protocolo recebido via marketplace OAuth2 preparado para integradores.");
         } else {
-            processo.setConnectorSubmissionStatus(STATUS_PENDENTE_DOCUMENTACAO);
-            processo.setConnectorSubmissionMessage(
+            salvo.setConnectorSubmissionStatus(STATUS_PENDENTE_DOCUMENTACAO);
+            salvo.setConnectorSubmissionMessage(
                     "Protocolo recebido via marketplace, pendente de documentacao obrigatoria: " + documentosFaltantes);
         }
-
-        Processo salvo = ajuizamentoService.ajuizar(processo);
+        processoRepository.save(salvo);
 
         governanceService.registrarConsumoProtocolo(clientId);
         governanceService.publicarEventoProtocolo(clientId, salvo.getId(), salvo.getNumeroProcesso(), salvo.getConnectorProtocolReference());
@@ -130,7 +175,8 @@ public class ApiMarketplaceService {
             String ufReu,
             String comarcaReu,
             boolean enderecoReuDesconhecido,
-            List<Attachment> documentos
+            List<Attachment> documentos,
+            String perfilAtor
     ) {
     }
 

@@ -4,6 +4,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -35,9 +36,15 @@ public abstract class PjbIntegrationTestBase {
 
     static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.0"));
 
+    // Efêmero por JVM forked: Ryuk (sidecar do Testcontainers) derruba o container assim que o
+    // processo Failsafe termina, sem passo manual e sem lixo acumulado entre execuções.
+    static final GenericContainer<?> REDIS = new GenericContainer<>(DockerImageName.parse("redis:7.4"))
+            .withExposedPorts(6379);
+
     static {
         KAFKA.start();
         POSTGRES.start();
+        REDIS.start();
     }
 
     @DynamicPropertySource
@@ -53,5 +60,7 @@ public abstract class PjbIntegrationTestBase {
         registry.add("pjb.kafka.enabled", () -> "true");
         registry.add("pjb.jobs.pg-listen.enabled", () -> "false");
         registry.add("pjb.jobs.dispatcher.enabled", () -> "false");
+        registry.add("spring.data.redis.host", REDIS::getHost);
+        registry.add("spring.data.redis.port", () -> REDIS.getMappedPort(6379));
     }
 }

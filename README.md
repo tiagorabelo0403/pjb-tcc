@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.310%20unit%20%2B%20252%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.430%20unit%20%2B%2095%20classes%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -323,8 +323,8 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.310 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 252 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes unitários (Surefire):** 4.430 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes de integração (Failsafe):** 95 classes contra PostgreSQL, Kafka e Redis reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -340,7 +340,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.310 unitários (Surefire) e depois os 252 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.430 unitários (Surefire) e depois as 95 classes de integração (Failsafe) contra containers reais de PostgreSQL 17, Kafka e Redis. O Testcontainers sobe e derruba os três containers automaticamente — não é preciso subir infraestrutura manualmente, nem para os ITs que passam pelo rate limiter (`CapabilityRateLimiter`, Redis-backed).
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -369,11 +369,11 @@ Multiplataforma (Windows/Linux/macOS), somente stdlib. Report-only por padrão (
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.310** |
+| Total de testes unitários | Surefire | **4.430** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
-| Tempo unitários | Surefire | **~17 min** |
-| Total de testes de integração | Failsafe | **252** ¹ |
+| Tempo unitários | Surefire | **~16 min** |
+| Total de classes de integração | Failsafe | **95** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
@@ -397,6 +397,18 @@ Na mesma investigação, três lacunas irmãs foram encontradas e fechadas na d�
 Provado por 3 testes novos: no adapter, um de litisconsórcio (4 pessoas, 2 polos) e um dos 5 tipos de parte (física, jurídica, terceiro, interesse público, Ministério Público — `tipoPolo`/`nome`/`documento`/`tipoPessoa` de cada `MniParteParsed` validados); no serviço, litisconsórcio materializa 4 `incluir` com `TipoParte` rito-aware preservado. `PoloProcessualApplicationServiceTest` (15 testes, cobre o novo overload com `razaoSocial`) e `ApiMarketplaceServicePoloMaterializacaoTest` (4 testes, Testcontainers) reconfirmados verdes nesta sessão — zero cascata no caminho de aplicação de polo. `MotorComposicaoPolosAjuizamentoIT` (10 testes, `PoloCompositionPolicy` não tocado neste diff) não foi reexecutado nesta sessão; permanece validado da verificação anterior.
 
 Contagens novas: 4.379 + 3 = 4.382 unitários (2 no adapter, 1 no serviço); 253 integração (nenhuma IT nova nesta fatia). Todas verdes em execução individual (`-Dit.test=` para as ITs, `-Dtest=` para o unit).
+
+Na fatia seguinte, `D-marketplace-sem-completude-documental` fechou a Fase 2 sobre a base deixada pela Fase 1. Dois pontos: um retrofit do bug de jus postulandi que a Fase 1 tinha reintroduzido no canal marketplace (`MarketplaceProtocoloRequest` ganhou `perfilAtor` opcional; `ApiMarketplaceService.protocolar()` resolve o `InstrumentoRepresentacaoProcessual` via `MarketplaceRepresentacaoResolver`, novo, e dispensa `PROCURACAO` corretamente quando o regime é jus postulandi); e o endpoint novo `POST /api/marketplace/v1/processos/{id}/documentos` para complementação documental pós-protocolo, com storage real via `ObjectStoragePort` (a Fase 1 usava os documentos só transientemente para diagnóstico), checagem de posse (404), guarda de estado (409 fora de `PENDENTE_DOCUMENTACAO`), validação de conteúdo via `DocumentContentValidator` (extraído de `PastaDigitalService`, que passou a delegar para ele sem mudar de comportamento) e o evento `PROCESSO_DOCUMENTACAO_COMPLETADA`, reservado por nome desde a Fase 1. Para o endpoint novo ter o que completar, `protocolar()` também passou a persistir os documentos declarados como `DocumentoProcessual` reais (`MarketplaceDocumentoPersistenceService`, novo, compartilhado pelos dois pontos de entrada) — sem isso o recálculo de completude do endpoint nunca teria linha persistida para somar.
+
+A implementação expôs dois bugs de produção reais, nenhum introduzido por esta fatia: `persistirSeNovo` nasceu `@Transactional` e quebrava o try/catch deliberadamente tolerante de `protocolar()` via rollback-only compartilhado do Spring — corrigido removendo o `@Transactional` interno, já que os dois chamadores têm transação própria; e `tb_documento_processual.categoria` é `NOT NULL` desde a migration `V19`, mas `DocumentoSigiloClassifier.suggestedCategoria()` devolve `null` para documento comum — todo insert normal pelo marketplace teria estourado `DataIntegrityViolationException`, só descoberto porque a IT nova foi o primeiro teste do projeto a tocar Postgres de verdade num insert de `DocumentoProcessual` pelo canal marketplace. Corrigido com fallback para `DocumentoCategoria.PUBLICO`, mesma escolha do backfill da própria `V19`. Uma hipótese inicial de que `PastaDigitalService` tinha o mesmo bug foi corrigida por engano e depois revertida em revisão de código independente — a variável `categoria` ali já vem normalizada por `DocumentoCategoria.fromString(...)`, que nunca devolve `null`; o bug nunca existiu nesse arquivo.
+
+23 testes unitários novos (7 `PastaDigitalServiceTest`, 2 `CompletudeDocumentalPolicyServiceTest`, 4 `MarketplaceRepresentacaoResolverTest`, 2 `ApiMarketplaceServiceCompletudeDocumentalUnitTest`, 1 `MarketplaceGovernanceServiceDocumentacaoCompletadaTest`, 7 `MarketplaceDocumentoComplementarServiceTest`) e 1 IT nova (`MarketplaceDocumentoComplementarServiceIT`, Testcontainers Postgres real, prova round-trip de storage) sobre a base de 4.382 unit / 253 IT da fatia MNI — todos verdes. Suíte completa reconfirmada ao final: **4.421 testes unitários, 0 falhas, 0 erros** (`mvn test -pl pjb-api` completo, número observado, não estimado).
+
+Uma revisão de branch inteira (não por task isolada) sobre a Fase 2 do marketplace achou 5 findings adicionais. Quatro foram fechados junto (limite de payload real vs. documentado, cobertura unitária própria de `MarketplaceDocumentoPersistenceService`, scope OAuth `processos:documentos` provisionado por padrão em clientes novos). O quinto — checagem de posse do processo via `startsWith(clientId + ":")` — teve uma primeira correção (troca para split-no-primeiro-":") que uma segunda revisão provou **ainda quebrada**: como `clientId` pode legalmente conter ":" (`MarketplaceOAuth2Service.normalizeToken` preserva o caractere), um atacante com `clientId="acme"` continuava acessando dados de `"acme:sub"`, e o dono legítimo `"acme:sub"` passava a ser negado contra os próprios dados — pior que o bug original. Corrigido de vez com uma coluna dedicada (`Processo.connectorClientId`, migration `V309`), eliminando a ambiguidade por construção em vez de tentar reparsear a string composta; `V310` retroage o scope `processos:documentos` aos clientes já cadastrados. Dois testes novos provam o cenário de colisão diretamente: `clientId="acme"` contra um processo de `"acme:sub"` é negado, `clientId="acme:sub"` contra o próprio processo é aceito.
+
+A verificação final desta fatia rodou a suíte completa antes do merge — não só o escopo do marketplace — e expôs dois problemas de ambiente/infraestrutura de teste, nenhum dos dois causado por esta fatia. Primeiro: `PjbIntegrationTestBase` já provisionava PostgreSQL e Kafka via Testcontainers, mas não Redis — qualquer IT de controller com `CapabilityRateLimiter` (rate limiter Redis-backed) dependia de infraestrutura externa manual e falhava com `RedisConnectionFailureException`/500 sempre que ela não estava no ar (6 classes afetadas nesta verificação: `AdvogadoAuditoriaControllerIT`, `AdvogadoCockpitControllerIT`, `DefensorPublicoPainelControllerIT`, `MinisterioPublicoPainelControllerIT`, `ProcuradoriaOperacionalControllerIT`, `RecursalPeticionamentoControllerIT`). Corrigido adicionando um `GenericContainer` Redis ao lado de `POSTGRES`/`KAFKA`, mesmo padrão: estático, `start()` único por JVM forked, propriedades via `@DynamicPropertySource`, encerrado automaticamente pelo Ryuk ao fim da JVM — sem passo manual, sem container remanescente entre execuções. Segundo: `ProcessoCommandControllerIT` continuava vermelho mesmo com Redis no ar. Causa raiz real, confirmada por `git log` das duas pontas: o teste (`ProcessoCommandControllerIT.java`, parado em 13/07) só stubava o overload de 2 argumentos de `CompletudeDocumentalPolicyService.diagnosticar()`, mas `AjuizarProcessoCommand.execute()` (nenhum dos dois arquivos tocado por esta fatia) passou a chamar o overload de 3 argumentos em 24/07 — 11 dias depois. Mockito não faz fallback entre overloads; toda chamada real caía num stub inexistente, devolvia `null` e gerava `NullPointerException`/500 em 3 dos 5 testes da classe. Bug pré-existente no master desde 24/07, só descoberto porque esta foi a primeira verificação de suíte completa desde então; corrigido desambiguando o stub (`anyList()` no segundo argumento).
+
+Com as duas causas raiz corrigidas, a suíte completa foi reconfirmada do zero: **4.430 testes unitários** (Surefire, 0 falhas, 0 erros, 5 skipped, ~16 min) e **95 classes de integração** (Failsafe, 0 falhas, 0 erros — cobertas por uma combinação de execução agregada completa e reexecução individual das classes afetadas pelos dois achados acima, já que a suíte completa de IT nesse ambiente esbarra num limite de memória do host antes do fim e precisa ser fatiada).
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
