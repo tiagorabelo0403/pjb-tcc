@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.470%20unit%20%2B%20275%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.472%20unit%20%2B%20277%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -324,8 +324,8 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.470 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 275 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes unitários (Surefire):** 4.472 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes de integração (Failsafe):** 277 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.470 unitários (Surefire) e depois os 275 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.472 unitários (Surefire) e depois os 277 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,11 +379,11 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.470** |
+| Total de testes unitários | Surefire | **4.472** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
-| Total de testes de integração | Failsafe | **275** ¹ |
+| Total de testes de integração | Failsafe | **277** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
@@ -473,6 +473,10 @@ Investigando "produtividade do magistrado" (sentenças/decisões proferidas, tem
 Com isso fecham os 7 itens reais encontrados para o painel do magistrado — a investigação inicial buscou 10 ideias, mas parou em 7 por decisão deliberada: nenhuma API foi inventada para completar a contagem. Um oitavo candidato (juiz substituto/impedimento-suspeição) foi investigado e descartado por não ter nenhum fundamento técnico no código — só monitoramento da própria migração PJe→PJB por tribunal, sem relação com substituição de magistrado.
 
 Com o painel do magistrado fechado, a próxima frente é o oficial de justiça — e essa investigação achou o papel mais maduro dos três: mandados, cumprimento/frustração, avaliação de penhora, ciente de intimação com step-up, ofícios completos (emissão, resposta, catálogo, execução, ack de canal e cartório, reconciliação, retentativa), rota do dia com telemetria e geofencing, localizador de pessoas, certidões automáticas e encerramento soberano já estão todos wireados de ponta a ponta. Mesmo assim, duas peças jurídicas inteiras — completas, testáveis, HSM-assinadas — não tinham nenhum controller: `CitacaoHoraCertaEngine` (citação por hora certa, CPC arts. 252-254 — após duas tentativas frustradas com evidência de que o destinatário mora no local, o oficial agenda e executa a citação por hora certa, com presunção legal de ciência) e `RecusaRecebimentoService` (recusa de recebimento, CPC art. 251 — quando o destinatário está presente mas se recusa a receber o ato, a citação se efetiva mesmo assim). As duas exigem geofence real (`GeofencePresencaOficialService`), evidência mínima antes de aceitar o registro, geram certidão assinada por HSM e disparam prazo/revelia automaticamente — nada incompleto, só invisível pra fora do serviço. `OficialJusticaCitacaoEspecialController` (novo, `/api/v1/oficial-justica/citacao-especial`) expõe as duas famílias de operação, reaproveitando os `Engine`/`Service` existentes sem duplicar nenhuma regra de negócio: `oficialId` sempre resolvido do usuário autenticado, nunca aceito do cliente. 5 testes de integração novos (`OficialJusticaCitacaoEspecialControllerIT`, padrão MockMvc standalone) provam a delegação de tentativa, execução e consulta de hora certa, e o registro/consulta de recusa de recebimento.
+
+Último item do oficial de justiça: painel de produtividade agregada. `DiligenceOperationalAnalyticsService` já calcula contagens de 30 dias por operador (`operatorEncerramentos`, `operatorCheckpoints`, `operatorCertidoes` etc.), mas só dentro de `GET /mandados/{mandadoId}/analytics-operacionais` — que exige um `diligenceReference` específico já conhecido; não dá pra perguntar "como estou indo este mês" sem escolher um mandado arbitrário primeiro, e esse endpoint não quebra os encerramentos por resultado. `DiligenciaOperadorEncerramento` já grava `outcome` (`CUMPRIMENTO_POSITIVO`/`CUMPRIMENTO_FRUSTRADO`/`DILIGENCIA_PARCIAL`) por registro — o dado pra uma taxa de sucesso real já existe, só nunca foi agregado sem depender de um mandado. `DiligenciaOperadorEncerramentoRepository.findByOperatorUserIdAndCanalAndCreatedAtAfterOrderByCreatedAtDesc` (nova query) busca os encerramentos do oficial numa janela de dias; `OficialJusticaProdutividadeService.painel` agrupa por outcome, calcula taxa de sucesso e intervalo médio entre encerramentos consecutivos — mesmo padrão de proxy de ritmo já usado no painel do magistrado, adaptado pro oficial. `GET /api/v1/oficial-justica/produtividade?diasJanela=30` expõe isso.
+
+Com isso fecham os 3 itens reais encontrados para o oficial de justiça — o papel mais maduro dos três investigados nesta frente (secretário, magistrado, oficial): mandados, cumprimento/frustração, avaliação de penhora, ofícios completos, rota do dia, localizador de pessoas, certidões automáticas e encerramento soberano já estavam todos wireados; só duas peças jurídicas órfãs (hora certa, recusa de recebimento) e um painel agregado faltavam.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -1019,8 +1023,8 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.470 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **275 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes unitários (Surefire) | **4.472 · 0 falhas · 0 erros** |
+| Testes de integração (Failsafe) | **277 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
@@ -1233,7 +1237,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.470 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.472 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
