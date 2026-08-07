@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.472%20unit%20%2B%20277%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.472%20unit%20%2B%20280%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -325,7 +325,7 @@ docker compose down
 O projeto tem dois níveis de teste com características bem diferentes:
 
 - **Testes unitários (Surefire):** 4.472 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 277 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes de integração (Failsafe):** 280 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.472 unitários (Surefire) e depois os 277 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.472 unitários (Surefire) e depois os 280 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -383,7 +383,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
-| Total de testes de integração | Failsafe | **277** ¹ |
+| Total de testes de integração | Failsafe | **280** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
@@ -477,6 +477,8 @@ Com o painel do magistrado fechado, a próxima frente é o oficial de justiça �
 Último item do oficial de justiça: painel de produtividade agregada. `DiligenceOperationalAnalyticsService` já calcula contagens de 30 dias por operador (`operatorEncerramentos`, `operatorCheckpoints`, `operatorCertidoes` etc.), mas só dentro de `GET /mandados/{mandadoId}/analytics-operacionais` — que exige um `diligenceReference` específico já conhecido; não dá pra perguntar "como estou indo este mês" sem escolher um mandado arbitrário primeiro, e esse endpoint não quebra os encerramentos por resultado. `DiligenciaOperadorEncerramento` já grava `outcome` (`CUMPRIMENTO_POSITIVO`/`CUMPRIMENTO_FRUSTRADO`/`DILIGENCIA_PARCIAL`) por registro — o dado pra uma taxa de sucesso real já existe, só nunca foi agregado sem depender de um mandado. `DiligenciaOperadorEncerramentoRepository.findByOperatorUserIdAndCanalAndCreatedAtAfterOrderByCreatedAtDesc` (nova query) busca os encerramentos do oficial numa janela de dias; `OficialJusticaProdutividadeService.painel` agrupa por outcome, calcula taxa de sucesso e intervalo médio entre encerramentos consecutivos — mesmo padrão de proxy de ritmo já usado no painel do magistrado, adaptado pro oficial. `GET /api/v1/oficial-justica/produtividade?diasJanela=30` expõe isso.
 
 Com isso fecham os 3 itens reais encontrados para o oficial de justiça — o papel mais maduro dos três investigados nesta frente (secretário, magistrado, oficial): mandados, cumprimento/frustração, avaliação de penhora, ofícios completos, rota do dia, localizador de pessoas, certidões automáticas e encerramento soberano já estavam todos wireados; só duas peças jurídicas órfãs (hora certa, recusa de recebimento) e um painel agregado faltavam.
+
+Última grande frente antes do cidadão: "outros" — Ministério Público, Defensoria Pública e Procuradoria. Investigando, achei que manifestação/parecer/requisição de diligência do MP, defesa/HC/AJG/vulnerabilidade da Defensoria e contestação/parecer/execução fiscal/precatório-RPV da Procuradoria já estão todos wireados, sem porta trancada — a limpeza recursal já feita nesta mesma frente (4 controllers legados, `D-recursal-superficie-por-papel`) já tinha resolvido a duplicação mais óbvia. Mas achei `CuradorEspecialAutomaticoService` (`core/comunicacao/judicial/CuradorEspecialAutomaticoService.java`) — motor completo de curatela especial (CPC art. 72: réu em lugar incerto, incapaz sem representante, preso sem defensor, citado por hora certa, revel sem representante, com prazos de 2 a 15 dias por tipo) — rodando só automaticamente, via `@EventListener onEditalPublicado` e um scheduler sempre ligado (`monitorarPrazosNomeacao`), sem nenhum controller. A Súmula 196/STJ atribui a curatela especial à Defensoria Pública como padrão institucional, mas nem a Defensoria nem o juízo (que formalmente nomeia, já que `nomear` recebe `juizId`) tinham como listar necessidades pendentes, ver uma nomeação ou confirmar o curador — só log de auditoria e um webhook pensado pra integrador externo. Descartei `CuradorAusentesPainelController` como já-resolvido: ele existe, mas é outro instituto (curadoria de bens de ausentes), confirmado por leitura — não toca esse serviço. `CuradoriaEspecialController` (novo, `/api/v1/processo/curadoria-especial`) expõe `consultarNecessidade`/`consultarNomeacao` para Defensoria e magistratura (visibilidade compartilhada, já que os dois precisam acompanhar o prazo) e `nomear` restrito à magistratura (ato judicial de fato, preserva a assinatura real do serviço), sem tocar a automação existente. 3 testes de integração novos (`CuradoriaEspecialControllerIT`, padrão MockMvc standalone) provam as duas consultas e a nomeação.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -1024,7 +1026,7 @@ CREATE POLICY processo_sigilo ON processo
 | Métrica | Estado |
 |---------|--------|
 | Testes unitários (Surefire) | **4.472 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **277 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes de integração (Failsafe) | **280 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
