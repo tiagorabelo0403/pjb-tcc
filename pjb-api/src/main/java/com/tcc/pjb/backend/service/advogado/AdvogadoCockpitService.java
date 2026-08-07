@@ -1,6 +1,9 @@
 package com.tcc.pjb.backend.service.advogado;
 
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoHonorariosResponse;
+import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
+import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
@@ -10,6 +13,8 @@ import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeGovernedProces
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
+import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
+import com.tcc.pjb.backend.service.processual.honorarios.HonorariosSucumbenciaCalculatorService;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -29,19 +34,22 @@ public class AdvogadoCockpitService {
     private final WorkItemRepository workItemRepository;
     private final PjbAuthorizationService authorizationService;
     private final OfficeGovernedProcessOperationService officeGovernedProcessOperationService;
+    private final HonorariosSucumbenciaCalculatorService honorariosSucumbenciaCalculatorService;
 
     public AdvogadoCockpitService(PerfilDashboardContextFactory contextFactory,
                                   PainelServiceCommons commons,
                                   ProcessoRepository processoRepository,
                                   WorkItemRepository workItemRepository,
                                   PjbAuthorizationService authorizationService,
-                                  OfficeGovernedProcessOperationService officeGovernedProcessOperationService) {
+                                  OfficeGovernedProcessOperationService officeGovernedProcessOperationService,
+                                  HonorariosSucumbenciaCalculatorService honorariosSucumbenciaCalculatorService) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
         this.workItemRepository = workItemRepository;
         this.authorizationService = authorizationService;
         this.officeGovernedProcessOperationService = officeGovernedProcessOperationService;
+        this.honorariosSucumbenciaCalculatorService = honorariosSucumbenciaCalculatorService;
     }
 
     public CockpitSnapshot bootstrapCockpit() {
@@ -138,6 +146,26 @@ public class AdvogadoCockpitService {
                 pedidoEfeitoSuspensivo,
                 preparoDispensado,
                 observacoes);
+    }
+
+    public AdvogadoHonorariosResponse calcularHonorarios(Long processoId, AdvogadoHonorariosCalculoRequest request) {
+        Processo processo = processoRepository.findById(processoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+        authorizationService.requireReadProcesso(processo);
+        HonorariosSucumbenciaCalculatorService.HonorariosInput input = new HonorariosSucumbenciaCalculatorService.HonorariosInput(
+                processoId,
+                request.valorCondenacao(),
+                request.fazendaPublicaVencida(),
+                request.causaSimples(),
+                request.trabalhoComplexo(),
+                request.percentualFixadoMagistrado());
+        HonorariosSucumbenciaCalculatorService.HonorariosCalculados calculado = honorariosSucumbenciaCalculatorService.calcular(input);
+        return new AdvogadoHonorariosResponse(
+                processoId,
+                processo.getNumeroProcesso(),
+                calculado.percentualAplicado(),
+                calculado.valorHonorarios(),
+                calculado.fundamentacao());
     }
 
     public List<Map<String, Object>> analiticoPorCliente(String clienteCpfCnpj) {

@@ -15,8 +15,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoClienteAnaliticoItemResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCockpitSnapshotResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoHonorariosResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOperacaoResponse;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoCienciaLoteRequest;
+import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoPeticaoRequest;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
@@ -59,6 +61,14 @@ public class AdvogadoCockpitController {
                                                                      Authentication authentication) {
         enforce(authentication, "advogado_cockpit_ciencia_lote");
         return ResponseEntity.ok(facadeService.darCienciaEmLote(request.workItemIds()));
+    }
+
+    @PostMapping("/processos/{processoId}/honorarios/calcular")
+    public ResponseEntity<AdvogadoHonorariosResponse> calcularHonorarios(@PathVariable Long processoId,
+                                                                          @Valid @RequestBody AdvogadoHonorariosCalculoRequest request,
+                                                                          Authentication authentication) {
+        enforce(authentication, "advogado_cockpit_honorarios");
+        return ResponseEntity.ok(facadeService.calcularHonorarios(processoId, request));
     }
 
     @GetMapping("/clientes/analitico")
