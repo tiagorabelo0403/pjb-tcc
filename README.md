@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.470%20unit%20%2B%20270%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.470%20unit%20%2B%20275%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -325,7 +325,7 @@ docker compose down
 O projeto tem dois níveis de teste com características bem diferentes:
 
 - **Testes unitários (Surefire):** 4.470 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 270 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes de integração (Failsafe):** 275 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.470 unitários (Surefire) e depois os 270 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.470 unitários (Surefire) e depois os 275 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -383,7 +383,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
-| Total de testes de integração | Failsafe | **270** ¹ |
+| Total de testes de integração | Failsafe | **275** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
@@ -471,6 +471,8 @@ Investigando "produtividade do magistrado" (sentenças/decisões proferidas, tem
 Último item desta frente do magistrado: homologação de acordo trabalhista (CLT art. 831, CPC art. 487 III — resolução de mérito por ato exclusivamente judicial). `TrabalhistaApplicationService.homologarAcordo` já existia completo, mas só alcançável via `AdminTrabalhistaController` (ADMIN-only) — mesmo padrão de porta trancada de SISBAJUD/INFOJUD/custódia, só que num controller diferente. Já existia `TrabalhistaController` (`/api/v1/trabalhista`) aberto a magistratura para DEJT readiness, execução fast-track e checklist de verbas rescisórias — o lugar certo para a homologação, sem criar mais um controller para o mesmo domínio. `POST /api/v1/trabalhista/processos/{processoId}/homologar-acordo` (novo, restrito a `MAGISTRADO`/`JUIZ`/`JUIZ_TRABALHISTA`) expõe isso, reaproveitando o `ApplicationService` sem tocar `AdminTrabalhistaController`. 1 teste de integração novo (`TrabalhistaControllerHomologacaoIT`, padrão MockMvc standalone) prova a delegação.
 
 Com isso fecham os 7 itens reais encontrados para o painel do magistrado — a investigação inicial buscou 10 ideias, mas parou em 7 por decisão deliberada: nenhuma API foi inventada para completar a contagem. Um oitavo candidato (juiz substituto/impedimento-suspeição) foi investigado e descartado por não ter nenhum fundamento técnico no código — só monitoramento da própria migração PJe→PJB por tribunal, sem relação com substituição de magistrado.
+
+Com o painel do magistrado fechado, a próxima frente é o oficial de justiça — e essa investigação achou o papel mais maduro dos três: mandados, cumprimento/frustração, avaliação de penhora, ciente de intimação com step-up, ofícios completos (emissão, resposta, catálogo, execução, ack de canal e cartório, reconciliação, retentativa), rota do dia com telemetria e geofencing, localizador de pessoas, certidões automáticas e encerramento soberano já estão todos wireados de ponta a ponta. Mesmo assim, duas peças jurídicas inteiras — completas, testáveis, HSM-assinadas — não tinham nenhum controller: `CitacaoHoraCertaEngine` (citação por hora certa, CPC arts. 252-254 — após duas tentativas frustradas com evidência de que o destinatário mora no local, o oficial agenda e executa a citação por hora certa, com presunção legal de ciência) e `RecusaRecebimentoService` (recusa de recebimento, CPC art. 251 — quando o destinatário está presente mas se recusa a receber o ato, a citação se efetiva mesmo assim). As duas exigem geofence real (`GeofencePresencaOficialService`), evidência mínima antes de aceitar o registro, geram certidão assinada por HSM e disparam prazo/revelia automaticamente — nada incompleto, só invisível pra fora do serviço. `OficialJusticaCitacaoEspecialController` (novo, `/api/v1/oficial-justica/citacao-especial`) expõe as duas famílias de operação, reaproveitando os `Engine`/`Service` existentes sem duplicar nenhuma regra de negócio: `oficialId` sempre resolvido do usuário autenticado, nunca aceito do cliente. 5 testes de integração novos (`OficialJusticaCitacaoEspecialControllerIT`, padrão MockMvc standalone) provam a delegação de tentativa, execução e consulta de hora certa, e o registro/consulta de recusa de recebimento.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -1018,7 +1020,7 @@ CREATE POLICY processo_sigilo ON processo
 | Métrica | Estado |
 |---------|--------|
 | Testes unitários (Surefire) | **4.470 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **270 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes de integração (Failsafe) | **275 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
