@@ -1,7 +1,9 @@
-package com.tcc.pjb.backend.core.financeiro.custas;
+package com.tcc.pjb.backend.modules.custas.infrastructure;
 
-import com.tcc.pjb.backend.core.financeiro.custas.domain.GruResult;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.PixResult;
+import com.tcc.pjb.backend.modules.custas.api.GruCodigoBarrasGenerator;
+import com.tcc.pjb.backend.modules.custas.domain.GruResult;
+import com.tcc.pjb.backend.modules.custas.domain.PixPayloadGenerator;
+import com.tcc.pjb.backend.modules.custas.domain.PixResult;
 import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 import org.springframework.context.annotation.Bean;

@@ -1,6 +1,5 @@
-package com.tcc.pjb.backend.model.repository;
+package com.tcc.pjb.backend.modules.custas.infrastructure.persistence;
 
-import com.tcc.pjb.backend.model.entity.financeiro.CustaJudicial;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 

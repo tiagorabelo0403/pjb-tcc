@@ -1,6 +1,6 @@
-package com.tcc.pjb.backend.model.entity.financeiro;
+package com.tcc.pjb.backend.modules.custas.infrastructure.persistence;
 
-import com.tcc.pjb.backend.core.financeiro.custas.domain.TipoCusta;
+import com.tcc.pjb.backend.modules.custas.domain.TipoCusta;
 import com.tcc.pjb.backend.core.modularity.PjbModuleId;
 import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
 import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
