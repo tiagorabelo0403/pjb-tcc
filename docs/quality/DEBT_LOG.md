@@ -59,7 +59,7 @@ exatamente 2 letras — valor fora desse formato (nome por extenso, código estr
 gravado cru, porque `Processo.ufAutor`/`ufReu` são `@Column(length = 2)` e um valor maior quebraria o
 INSERT no Postgres. `comarcaAutor`/`comarcaReu` continuam nulos nesse canal — **o MNI não tem elemento
 equivalente a comarca** (circunscrição judiciária), e `cidadeAutor`/`cidadeReu` (município) também não
-são capturados nesta fatia, embora o schema tenha um elemento `cidade` livre dentro de `tipoEndereco`
+são capturados nesta etapa, embora o schema tenha um elemento `cidade` livre dentro de `tipoEndereco`
 (texto sem código, sem cruzamento com o catálogo de jurisdição territorial).
 
 **Nota para não confundir no futuro:** o endereço de parte do MNI 2.2.2 **não tem código IBGE de
@@ -100,7 +100,7 @@ rito-aware preservado) validam a correção.
 
 **Status:** fechada
 
-**Contexto:** ao investigar a mesma fatia de litisconsórcio, identificamos que o adapter MNI também
+**Contexto:** ao investigar a mesma etapa de litisconsórcio, identificamos que o adapter MNI também
 descartava três categorias de parte: (1) terceiro interessado — o schema MNI usa `polo="TC"`/`"TJ"`,
 mas o mapeamento antigo era binário (`"AT"` → ATIVO, qualquer outra coisa → PASSIVO), então terceiro
 virava réu; (2) pessoa jurídica — o atributo `tipoPessoa="juridica"` da `<pessoa>` não era lido e
@@ -130,9 +130,9 @@ de parte do `EstruturarRequest`.
 **Risco:** baixo hoje. Wirear `cidade` → `comarca` seria aproximação (comarca é circunscrição
 judiciária; município não é comarca — município pequeno pertence à comarca sede vizinha). Decisão
 tomada: não aproximar. A resolução correta virá do catálogo de jurisdição territorial chaveado por
-código IBGE (iniciativa de competência territorial por rito, Fatia 6 — adapter ViaCEP).
+código IBGE (iniciativa de competência territorial por rito, Etapa 6 — adapter ViaCEP).
 
-**Quando revisitar:** quando a Fatia 6 entregar CEP → código IBGE; aí o wiring vira exato, não
+**Quando revisitar:** quando a Etapa 6 entregar CEP → código IBGE; aí o wiring vira exato, não
 aproximado.
 
 ## D-advisory-modos-nao-implementados
@@ -244,7 +244,7 @@ comarca local (CLT art. 668 c/c CF art. 112 — mecanismo usado onde não há Va
 não ausência de competência. O documento usado (`End03.pdf`, cadastro de Varas do Trabalho) não cobre
 esse tipo de competência delegada por desenho — não é uma lacuna de extração.
 
-**Quando revisitar:** se a Fatia territorial precisar cobrir `modo_competencia = 'DELEGADA_JUIZ_DIREITO'`
+**Quando revisitar:** se a Etapa territorial precisar cobrir `modo_competencia = 'DELEGADA_JUIZ_DIREITO'`
 (já suportado pelo schema desde a V302) — nesse caso, buscar fonte específica de comarcas com
 competência trabalhista delegada, provavelmente no TJMG, não no TST.
 
@@ -298,7 +298,7 @@ processo pai não está mais vivo, ou reparentado para PID 1) e as encerra com `
 padrão, exit ≠ 0 se achar — sinal útil em CI). Não amarrado ao build automaticamente (auto-kill em toda
 rodada poderia matar um run paralelo legítimo); é executado sob demanda ao notar instabilidade.
 Documentado no README (seção Testes, "Se o test/verify começar a cair sem motivo aparente"). Padrão
-operacional confirmado nesta sessão: reapear órfãs antes de uma rodada longa mantém a memória saudável.
+operacional: reapear órfãs antes de uma rodada longa mantém a memória saudável.
 
 ## D-drain-coordinator-fork-exit-sem-guarda-regressao
 
@@ -445,7 +445,7 @@ ou ganhar/perder um parâmetro do mesmo tipo (`String`/`boolean`), o compilador 
 call site continua compilando e passa valor errado para o parâmetro errado, silenciosamente.
 
 **Risco:** regressão silenciosa em qualquer um dos 10 call sites se `resolve()` for refatorado sem
-atualizar todos eles em lockstep. É particularmente provável que uma fatia futura sobre
+atualizar todos eles em lockstep. É particularmente provável que uma etapa futura sobre
 representação processual (ex.: adicionar sinal de "é recurso" para fechar o enforcement do art. 41,
 §2º sem depender de allowlist por `LegalAppealType` em `RecursalValidacaoMinimaService`) mexa nesta
 assinatura.
@@ -498,8 +498,8 @@ permanece — irregularidade nunca vira dispensa. Quatro testes novos em
 postulandi, a manutenção da exigência em `MANDATO_AD_JUDICIA` e a garantia de que documento
 obrigatório diverso da procuração continua bloqueando.
 
-**Contexto original (mantido para rastreabilidade):** achado durante investigação da Fatia 2,
-pré-existente às fatias de jus postulandi, não criado por elas.
+**Contexto original (mantido para rastreabilidade):** achado durante investigação da Etapa 2,
+pré-existente às etapas de jus postulandi, não criado por elas.
 
 **Contexto:** `POST /api/v1/processos/ajuizar` (`ProcessoCommandController`, `@PreAuthorize
 ("isAuthenticated()")` — aberto a qualquer usuário autenticado, incluindo CIDADAO) roteia para
@@ -513,16 +513,16 @@ também exige `PROCURACAO`). Esse catálogo é totalmente independente de
 
 **Risco:** um CIDADAO que ajuíze via `/api/v1/processos/ajuizar` (não via Laiane) para JEC ou
 qualquer rito trabalhista do jus postulandi esbarra em `"Ajuizamento bloqueado por incompletude
-documental... PROCURACAO"` — o mesmo bug que a Fatia 1/Fatia 2 corrigiram no fluxo do Laiane, intacto
+documental... PROCURACAO"` — o mesmo bug que a Etapa 1/Etapa 2 corrigiram no fluxo do Laiane, intacto
 neste segundo caminho de ajuizamento. Confirmado por leitura de código: `grep` por
 `CompletudeDocumentalPolicyService`/`completudeDocumentalPolicyService` no `pjb-api/src/main` só
 retorna `AjuizarProcessoCommand` como consumidor — `LaianePeticaoInicialDraftService` nunca chama
-essa classe, por isso a Fatia 2 não precisou de correção condicional nela (ver decisão registrada no
-prompt da Fatia 2, item "PRIMEIRO").
+essa classe, por isso a Etapa 2 não precisou de correção condicional nela (ver decisão registrada no
+prompt da Etapa 2, item "PRIMEIRO").
 
 **Quando revisitar:** aplicar a mesma correção condicional que
 `RepresentacaoProcessualPolicyService.addDocumentosBase()` já tem: `PROCURACAO` deixa de ser
-`required` quando o instrumento resolvido é `isJusPostulandi()`. Fora de escopo da Fatia 2 por
+`required` quando o instrumento resolvido é `isJusPostulandi()`. Fora de escopo da Etapa 2 por
 instrução explícita do prompt (investigar e reportar, não corrigir).
 
 **Consumidores mapeados (grep, 2026-07-25):** `AjuizarProcessoCommand` — e portanto a checagem de
@@ -569,14 +569,14 @@ existia). `MarketplaceGovernanceService.publicarEventoPendenciaDocumental` (novo
 `publicarEventoProtocolo`) dispara `PROCESSO_PENDENTE_DOCUMENTACAO` adicionalmente — nunca em substituição —
 ao `PROCESSO_PROTOCOLADO`, que continua disparando sempre: o protocolo aconteceu de fato, completo ou não.
 
-**Hardcode de rito corrigido na mesma fatia, não documentado como ruído:** `processo.setRito(RitoProcessual.COMUM_ORDINARIO)`
+**Hardcode de rito corrigido na mesma etapa, não documentado como ruído:** `processo.setRito(RitoProcessual.COMUM_ORDINARIO)`
 incondicional foi substituído por `ProceduralCatalogSupport.tryResolveRito(null, request.ramoDireito(),
 request.classeProcessual())` — utilitário estático leve já usado por `AjuizarProcessoCommand` como fallback
 sobre o roteamento pesado (`NationalProcessRoutingService`), sem puxar esse motor pesado para dentro do
 marketplace. `MarketplaceProtocoloRequest` já carregava os dois sinais (`ramoDireito`, `classeProcessual`)
 sem precisar de campo novo. Fallback idêntico ao comportamento anterior quando nada casa (`COMUM_ORDINARIO`),
 resolução real quando casa — decisão tomada porque ligar completude documental sem corrigir o rito produziria
-sinal de pendência poluído por rito errado desde o primeiro dia, o oposto do que a fatia promete entregar.
+sinal de pendência poluído por rito errado desde o primeiro dia, o oposto do que a etapa promete entregar.
 
 **Testes:** `ApiMarketplaceServiceCompletudeDocumentalUnitTest` (3, Mockito puro, sem Docker) e
 `ApiMarketplaceServiceCompletudeDocumentalTest` (3, IT com Postgres real via Testcontainers) — ambos verdes,
@@ -600,14 +600,14 @@ apenas mais um campo a manter nos dois lados a partir de agora.
 
 **Status:** parcialmente atendida — enforcement do comportamento atual agora é verificado por teste;
 a pergunta jurídica de fundo (o que a Lei 10.259/2001 realmente exige) segue em aberto,
-deliberadamente não respondida nesta fatia.
+deliberadamente não respondida nesta etapa.
 
 **Contexto:** `RecursalValidacaoMinimaService.JEF_JUS_POSTULANDI_APPEAL_TYPES` contém apenas
 `EMBARGOS_DECLARACAO`. Um CIDADAO com `JUS_POSTULANDI_JEF` fica barrado em dois tipos, mas por
 motivos diferentes um do outro:
 - **`RECURSO_INOMINADO`** (compartilhado entre JEC estadual e JEF no catálogo `LegalAppealType`) *tem*
   mapeamento processual e passa pela checagem de legitimidade — o bloqueio é enforcement real da
-  allowlist, e já tinha teste de regressão mesmo antes desta fatia
+  allowlist, e já tinha teste de regressão mesmo antes desta etapa
   (`cidadaoNoJuizadoEspecialFederalNaoPodeInterporRecursoInominadoSemAdvogado`).
 - **`PEDIDO_UNIFORMIZACAO`** (incidente de uniformização à Turma Nacional de Uniformização, específico
   do microssistema federal, sem equivalente no JEC) *não* tem entrada em `toRecursoProcessualTipo()` —
@@ -615,14 +615,14 @@ motivos diferentes um do outro:
   incluído. Esse é o mesmo padrão de bloqueio acidental por lacuna de mapeamento que
   `D-jus-postulandi-recurso-tst` documentou para `RECURSO_REVISTA`, não uma decisão da allowlist.
 
-**Risco (ainda aberto, não resolvido por esta fatia):** o bloqueio de `RECURSO_INOMINADO` foi adotado
+**Risco (ainda aberto, não resolvido por esta etapa):** o bloqueio de `RECURSO_INOMINADO` foi adotado
 por analogia conservadora ao regime do JEC (Lei 9.099/95, art. 41, § 2º), **não** por verificação do
 que a Lei 10.259/2001 efetivamente exige. A Lei 10.259/2001 remete subsidiariamente à Lei 9.099/95
 (art. 1º), mas tem regime recursal próprio — Turma Recursal Federal e incidente de uniformização
 (arts. 14 e 15) não existem no juizado estadual. Se a exigência de advogado no recurso federal for
 menos estrita do que a estadual, o sistema está negando um direito processual que a parte teria; se
 for igual ou mais estrita, o bloqueio está certo por acidente. Nenhuma das duas hipóteses foi
-confirmada contra a lei — decisão explícita de não resolver essa pergunta jurídica nesta fatia
+confirmada contra a lei — decisão explícita de não resolver essa pergunta jurídica nesta etapa
 (exige leitura da lei/jurisprudência da TNU, fora do escopo de uma investigação de código).
 
 **Fechamento parcial:** 2 testes novos em `RecursalValidacaoMinimaServiceTest` provam que o par
@@ -647,22 +647,22 @@ adicionar teste explícito confirmando que jus postulandi JEF continua barrado n
 Envoy/OPA real (`default allow := false`), um dos 4 overlays principais validados por schema no
 próprio CI (ver README, seção "Validação de manifestos Kubernetes"). Seu conjunto `critical_paths`
 (exige header `x-pjb-affiliation-id` e `not read_only`) listava só `/api/v1/mp/recurso/` — o path
-legado do MP — desde antes da Fatia 1 de `D-recursal-superficie-por-papel`. Quando a Fatia 1 publicou
+legado do MP — desde antes da Etapa 1 de `D-recursal-superficie-por-papel`. Quando a Etapa 1 publicou
 a superfície unificada `/api/v1/recursal/processos/{id}/recurso` (semanas atrás), essa política nunca
 foi atualizada: o path novo não começa com `/api/v1/institucional/` nem com nenhum `critical_paths`
 existente, então em qualquer deploy real usando este overlay o endpoint unificado roda **sem nenhuma
-proteção de critical-path** desde que a Fatia 1 foi ao ar — achado ao investigar pré-requisitos da
-Fatia 3, não introduzido por ela.
+proteção de critical-path** desde que a Etapa 1 foi ao ar — achado ao investigar pré-requisitos da
+Etapa 3, não introduzido por ela.
 
-**Risco se não corrigido antes da Fatia 3:** remover o path legado `/api/v1/mp/recurso/` (que a Fatia 3
+**Risco se não corrigido antes da Etapa 3:** remover o path legado `/api/v1/mp/recurso/` (que a Etapa 3
 prevê) sem primeiro cobrir `/api/v1/recursal/` deixaria as operações de recurso do MP **sem nenhuma**
 proteção de critical-path neste overlay — regressão de segurança real, não cosmética.
 
 **Fechamento:** `critical_paths` ganhou `/api/v1/recursal/` mantendo `/api/v1/mp/recurso/` por enquanto
-(será removido do conjunto quando o path legado for de fato apagado do código, na mesma Fatia 3).
+(será removido do conjunto quando o path legado for de fato apagado do código, na mesma Etapa 3).
 `python infra/k8s_schema_validate.py` confirmado OK nos 4 overlays após a mudança.
 
-**Quando revisitar:** ao concluir a remoção do path `/api/v1/mp/recurso/` no código (Fatia 3), remover
+**Quando revisitar:** ao concluir a remoção do path `/api/v1/mp/recurso/` no código (Etapa 3), remover
 também a entrada `/api/v1/mp/recurso/` deste `critical_paths` — path morto, nunca mais alcançável.
 
 ## D-institutional-gate-filter-roda-antes-da-auth
@@ -687,7 +687,7 @@ dormente/quebrado desde que foi introduzido.
 com usuário seedado + JWT real reproduziu o 500; o stack trace mostrou o throw exatamente em
 `getRequired`, chamado pelo filtro, com a cadeia do Spring Security ausente entre os filtros que o
 envolviam — confirmando que ele rodava antes da autenticação. Nenhuma IT do projeto exercitava
-qualquer path desse filtro via HTTP real antes desta fatia (lacuna de cobertura que escondia o bug).
+qualquer path desse filtro via HTTP real antes desta etapa (lacuna de cobertura que escondia o bug).
 
 **Correção (3 camadas):**
 1. **Ordem:** removido o `@Order(HIGHEST_PRECEDENCE + 35)` (mantido `@Component`, exatamente como
@@ -702,7 +702,7 @@ qualquer path desse filtro via HTTP real antes desta fatia (lacuna de cobertura 
    nada para usuário real resolvido (getOrNull devolve o mesmo que getRequired devolveria).
 3. **Cobertura recursal:** `/api/v1/recursal/processos/*/recurso` adicionado ao `resolvePolicy` do filtro
    (agora funcional), com `operationCode="RECURSAL_UNIFICADO"` e ato `PETICIONAR_EM_NOME_DO_ORGAO`,
-   restaurando o gate institucional que a superfície recursal perdeu na Fatia 1 de
+   restaurando o gate institucional que a superfície recursal perdeu na Etapa 1 de
    `D-recursal-superficie-por-papel`.
 
 **Cobertura de teste nova:** `InstitutionalDocumentSecurityGateApplicationServiceTest` (5, unit:
@@ -717,7 +717,7 @@ ativo na cadeia (regressão do path recém-protegido via `@WithMockUser`).
 ordem os conserta TODOS de uma vez (o filtro inteiro passou a rodar após a auth). Risco real da
 mudança é baixo: os endpoints hoje já davam 500/nunca foram exercitados (TCC pré-produção, sem tráfego
 real, sem IT cobrindo-os), então ativar o gate corretamente é estritamente melhoria. As demais famílias
-(oficial de justiça, perito, psicossocial, etc.) não ganharam IT dedicada nesta fatia — o gate delas
+(oficial de justiça, perito, psicossocial, etc.) não ganharam IT dedicada nesta etapa — o gate delas
 agora roda pela mesma correção de ordem, mas a prova end-to-end por família fica registrada como
 extensão natural de cobertura futura, não como bug aberto.
 
@@ -727,7 +727,7 @@ real (padrão de `InstitutionalRecursalGateIT`). Ao seedar nomeação institucio
 
 ## D-recursal-superficie-por-papel
 
-**Status:** FECHADA — Fatias 1, 2, 3 e 4 concluídas. Os 4 controllers legados seguem existindo (têm
+**Status:** FECHADA — Etapas 1, 2, 3 e 4 concluídas. Os 4 controllers legados seguem existindo (têm
 outros endpoints ativos além do recurso), mas o endpoint `interporRecurso` e as facades correspondentes
 foram removidos; toda interposição de recurso passa exclusivamente pela superfície unificada.
 
@@ -747,7 +747,7 @@ recursal exige uma quinta cópia do mesmo controller, e a regra de quem pode rec
 dispersa em quatro lugares em vez de um. O motor de admissibilidade já concentra a decisão; a
 superfície é que não confia nele.
 
-**Fatia 1 aplicada — superfície unificada aditiva:** `RecursalPeticionamentoController`
+**Etapa 1 aplicada — superfície unificada aditiva:** `RecursalPeticionamentoController`
 (`POST /api/v1/recursal/processos/{processoId}/recurso`) publica a superfície única de interposição
 recursal, autorizada por `@PreAuthorize` combinado que cobre as 13 roles legítimas hoje
 (advocacia, defensoria pública, ministério público e procuradorias). A decisão de qual
@@ -762,7 +762,7 @@ usa uma capability única (`recursal_peticionamento_recurso`), com o domínio (`
 resolvido pelo próprio perfil. A resposta é envelopada em `SurfaceActionResponse` canônica com scope
 `recursal.peticionamento.<perfil>`. DTO nova (`RecursalPeticionamentoRequest`, mesma shape byte-a-byte
 das anteriores). Os quatro controllers antigos ficam intactos por período de coexistência: nada foi
-removido nesta fatia. Cobertura: `RecursalPeticionamentoPerfilRouterTest` (11 testes: roteamento por
+removido nesta etapa. Cobertura: `RecursalPeticionamentoPerfilRouterTest` (11 testes: roteamento por
 `TipoUsuario` — inclusive PGR rumo ao MP pela classificação canônica do enum —, mapeamento de
 rate-limit domain, delegação por perfil, rejeição de perfil sem habilitação),
 `RecursalPeticionamentoControllerTest` (4 testes MockMvc: happy path por família de perfil, scope
@@ -771,7 +771,7 @@ canônico, escolha correta do `CapabilityRateLimitDomain`) e `RecursalPeticionam
 `ROLE_JUIZ` recebendo 403 via `@PreAuthorize`, e as quatro famílias legítimas mais o PGR chegando
 ao router com o `Perfil` esperado). A DTO reusa `InstitutionalRecursoRequest` já existente em vez
 de introduzir uma terceira cópia idêntica; `AdvogadoRecursoRequest` ganhou javadoc apontando para
-a superfície canônica e para a Fatia 3 de remoção. Guards `constructor_injection_guard.py` e
+a superfície canônica e para a Etapa 3 de remoção. Guards `constructor_injection_guard.py` e
 `spring_ambiguous_constructor_guard.py` verdes com a nova classe já contabilizada (2310→2311
 arquivos com estereótipo Spring escaneados, 0 findings).
 
@@ -783,9 +783,9 @@ arquivos com estereótipo Spring escaneados, 0 findings).
 `ProcuradoriaOperacionalController` legado, porém, aceita PGR no seu `@PreAuthorize`, o que
 significa que um PGR autenticado hoje pode bater no endpoint da Procuradoria e disparar
 `MaterialAction.PROCURADORIA_RECURSO` em vez de `MINISTERIO_PUBLICO_RECURSO`. Na superfície
-unificada, esse mesmo PGR passa pelo guard de MP. Não é bug da Fatia 1 — é divergência
+unificada, esse mesmo PGR passa pelo guard de MP. Não é bug da Etapa 1 — é divergência
 preexistente na modelagem de roles do PGR entre `TipoUsuario` (MP-centric) e o `@PreAuthorize` do
-controller legado (MP+Procuradoria). A fatia de deprecação (2) deve alinhar os dois lados; até lá,
+controller legado (MP+Procuradoria). A etapa de deprecação (2) deve alinhar os dois lados; até lá,
 preferir a nova superfície faz o PGR ficar sempre no caminho canônico do enum.
 
 **Divergência de role `DEFENSOR_DISTRITAL` (não introduzida, apenas não replicada):** o
@@ -794,24 +794,24 @@ não existe em `TipoUsuario` — code-path morto que nunca casa em runtime. A su
 não replica esse literal; se algum dia a role for adicionada ao enum, ambos os lados precisam ser
 atualizados.
 
-**Fatia 4 aplicada** (commit `1b15fc4`): `RecursalPeticionamentoPerfilRouter` ganhou o quinto perfil
+**Etapa 4 aplicada** (commit `1b15fc4`): `RecursalPeticionamentoPerfilRouter` ganhou o quinto perfil
 (`CIDADAO`), resolvido via `TipoUsuario.isPeticionantePessoal()`, fechando a lacuna do jus postulandi
 para embargos de declaração.
 
-**Fatia 2 aplicada** (commits `9ffdf4a`/`343dae2`): os 4 controllers legados passaram a expor headers
+**Etapa 2 aplicada** (commits `9ffdf4a`/`343dae2`): os 4 controllers legados passaram a expor headers
 RFC 8594 (`Deprecation: true`, `Sunset`, `Link: successor-version`) no endpoint `interporRecurso`,
 e a coleção Postman de integração foi sincronizada com a superfície unificada.
 
-**Pré-requisito de Fatia 3 fechado em `D-controllers-recursais-legados-sem-teste-dedicado`:**
+**Pré-requisito de Etapa 3 fechado em `D-controllers-recursais-legados-sem-teste-dedicado`:**
 cobertura completa (sucesso, validação, autorização real) dos 4 controllers antes de remover
 qualquer endpoint, para garantir que nenhum outro comportamento deles fosse afetado pela remoção.
 
-**Gap de infraestrutura achado e corrigido antes da Fatia 3, registrado em
+**Gap de infraestrutura achado e corrigido antes da Etapa 3, registrado em
 `D-recursal-opa-critical-path-nao-atualizado`:** a política OPA de um overlay de produção real
 (`prod-sovereign-opa-ext-authz`) nunca foi atualizada para cobrir `/api/v1/recursal/` desde que a
-Fatia 1 foi ao ar — corrigido antes de remover o path legado de MP que a política protegia.
+Etapa 1 foi ao ar — corrigido antes de remover o path legado de MP que a política protegia.
 
-**Fatia 3 aplicada — remoção do endpoint legado:** o método `interporRecurso` (e o `@PostMapping`
+**Etapa 3 aplicada — remoção do endpoint legado:** o método `interporRecurso` (e o `@PostMapping`
 correspondente) foi removido dos 4 controllers legados (`AdvogadoCockpitController`,
 `DefensorPublicoPainelController`, `MinisterioPublicoPainelController`,
 `ProcuradoriaOperacionalController`) — os controllers continuam existindo, com seus demais endpoints
@@ -865,7 +865,7 @@ qualquer filtro de contexto), achou dois problemas mais sérios que os anteriore
   auto-registração residual em `LOWEST_PRECEDENCE`. Como defesa em profundidade, `avaliar()` trocou
   `getRequired()` por `getOrNull()`: usuário não resolvível é tratado como "sem nomeação", seguindo o
   `allowLegacyFallback` (nunca mais 500). E `/api/v1/recursal/processos/*/recurso` foi adicionado ao
-  filtro (agora funcional), restaurando o gate institucional que o recursal perdeu na Fatia 1.
+  filtro (agora funcional), restaurando o gate institucional que o recursal perdeu na Etapa 1.
   Cobertura: `InstitutionalDocumentSecurityGateApplicationServiceTest` (5, unit, prova null-safety +
   bloqueio estrito), `InstitutionalCriticalActionHttpGuardFilterTest` (4, incl. o path recursal
   unificado) e `InstitutionalRecursalGateIT` (2, JWT real contra Postgres: usuário MP resolvido passa
@@ -878,10 +878,10 @@ qualquer filtro de contexto), achou dois problemas mais sérios que os anteriore
   via grep de chamador) montam o `actionSurface`/`nativeComposition` retornado pelos paineis reais.
   Tinham 4 entradas de "preparar/abrir recurso" apontando pra `/api/v1/mp/recursos` e
   `/api/v1/defensoria/recursos` — **URLs que nunca existiram como endpoint real**, nem antes nem depois
-  desta fatia (achado pré-existente, não introduzido aqui, mas na mesma área e mesma ação). As 4 foram
+  desta etapa (achado pré-existente, não introduzido aqui, mas na mesma área e mesma ação). As 4 foram
   corrigidas pra `/api/v1/recursal/processos/{processoId}/recurso`. Uma entrada não relacionada
   (`/api/v1/colegiado/recursos/comando`, atalho de desembargador pra revisar recursos recebidos, não
-  pra interpor um) foi deixada intacta — semântica diferente, fora do escopo desta fatia.
+  pra interpor um) foi deixada intacta — semântica diferente, fora do escopo desta etapa.
 
 As strings dos dois `PainelXSurfaceCompositionService` e do `RecursalWorkbenchSurfaceCatalog`/
 `InstitutionalWorkbenchProjectionService` foram atualizadas para
@@ -900,14 +900,14 @@ falhas. Advogado nunca teve entrada equivalente em nenhum desses arquivos (não 
 (`/api/v1/recurso/*`) foi lido e confirmado como feature totalmente diferente e não afetada
 (admissibilidade/tempestividade/deserção/readiness — análise, não interposição).
 
-**Gap residual (não fechado nesta fatia):** `docs/openapi/public-api.yaml` também nunca ganhou o
-path `/api/v1/recursal/processos/{id}/recurso` desde a Fatia 1 — o contrato vivo (`/v3/api-docs`,
+**Gap residual (não fechado nesta etapa):** `docs/openapi/public-api.yaml` também nunca ganhou o
+path `/api/v1/recursal/processos/{id}/recurso` desde a Etapa 1 — o contrato vivo (`/v3/api-docs`,
 gerado em runtime pelo springdoc) está correto; só o export estático ficou defasado. Não reconstruído
-à mão nesta fatia para não arriscar inventar um shape que não bate com o gerado de verdade — revisitar
+à mão nesta etapa para não arriscar inventar um shape que não bate com o gerado de verdade — revisitar
 quando o export estático for regenerado por processo real, não editado manualmente.
 
 **Quando revisitar:** dívida fechada. Se algum dia os 4 controllers legados perderem também seus
-demais endpoints (não só o recurso), essa é outra fatia — fora do escopo desta.
+demais endpoints (não só o recurso), essa é outra etapa — fora do escopo desta.
 
 ## D-custas-jec-isencao-primeiro-grau
 
@@ -926,13 +926,13 @@ isenção. `preparoDispensado` existe como parâmetro dos quatro controllers rec
 mas nunca é ligado ao fluxo do cidadão; `RecursoProcessualTipo.exigePreparo()` já devolve `false`
 para `RECURSO_INOMINADO_JEC`, o que cobre a fase recursal e deixava a inicial descoberta.
 
-**Risco residual:** o cidadão liberado no JEC pelas fatias de jus postulandi ainda depende da
+**Risco residual:** o cidadão liberado no JEC pelas etapas de jus postulandi ainda depende da
 integração do motor de custas ao ajuizamento para que a nova política produza efeito prático.
 Enquanto essa integração não acontece, a nova política é defensiva — garante resposta correta
 quando alguém ligar o motor, mas não cobra nem isenta ninguém por si só.
 
 **Quando revisitar:** ao encaminhar a integração do motor de custas ao ajuizamento
-(`D-motor-custas-nao-integrado-ao-ajuizamento`). Fatias correlatas registradas:
+(`D-motor-custas-nao-integrado-ao-ajuizamento`). Etapas correlatas registradas:
 `D-custas-fazenda-publica-pagamento-diferido`, `D-custas-dois-modulos-nao-integrados`,
 `D-custas-interface-recebe-string-em-vez-de-enum`.
 
@@ -977,13 +977,13 @@ motor só distingue os dois primeiros (via `IsentoCustaPolicy`).
 
 ## D-custas-calculator-fazenda-classificada-como-isenta-cita-cpc-91-errado
 
-**Status:** FECHADA — a fatia de unificação removeu o `CustasProcessuaisCalculatorService` por
+**Status:** FECHADA — a etapa de unificação removeu o `CustasProcessuaisCalculatorService` por
 completo, junto com seu enum `TipoCusta` paralelo e o teste próprio. O erro jurídico deixa de
 existir porque a classe deixa de existir; a decisão foi remover em vez de migrar corrigindo porque
 os percentuais hardcoded (`2%` preparo, `1%` multa art. 1.026, `10%` má-fé) não têm base legal
 universal — variam por regimento de custas estadual (TJ) ou resolução do CJF, então plantar esses
 números como se fossem autoritativos era ruído maior do que corrigir a citação errada do CPC art.
-91. Se cálculo de preparo/multa virar necessidade real, será fatia própria com tabela por
+91. Se cálculo de preparo/multa virar necessidade real, será etapa própria com tabela por
 tribunal, seguindo o padrão de `tb_jurisdicao_territorial`.
 
 **Contexto original (mantido para rastreabilidade):** `CustasProcessuaisCalculatorService`, no
@@ -1093,7 +1093,7 @@ campos ausentes, data inválida, valor negativo/zero, JSON inválido); cinco cob
 
 **Contexto:** nenhum controller do PJB usa `@Operation` ou `@Tag` (`io.swagger.v3.oas.annotations`)
 hoje. O springdoc-openapi gera a spec por análise automática, sem descrições, sem exemplos, sem
-nomes de tag consistentes. A superfície unificada `RecursalPeticionamentoController` (Fatia 1 de
+nomes de tag consistentes. A superfície unificada `RecursalPeticionamentoController` (Etapa 1 de
 `D-recursal-superficie-por-papel`) foi analisada como candidata a receber `@Tag`/`@Operation`
 isoladamente e a decisão explícita foi **não fazer**: adicionar anotação Swagger em um único
 controller entre 200+ pioraria a consistência do projeto sem resolver a qualidade real da spec.
@@ -1102,16 +1102,16 @@ controller entre 200+ pioraria a consistência do projeto sem resolver a qualida
 (clientes SDK auto-gerados, portais de terceiros, ferramentas de importação OpenAPI). Não bloqueia
 funcionalidade, mas empobrece a documentação executável que o PJB expõe.
 
-**Quando revisitar:** fatia própria de documentação de API, tratando todos os controllers de uma
+**Quando revisitar:** etapa própria de documentação de API, tratando todos os controllers de uma
 vez com padrão consistente (tag por área de domínio, `@Operation` com `summary` curto e
 `description` mais longo, exemplos em DTOs via `@Schema`), não parcelado por endpoint novo.
 Anti-padrão: aplicar caso-a-caso à medida que novos endpoints nascem — cria duas classes de
 controllers no mesmo projeto e nunca converge. `RecursalPeticionamentoController` é candidato
-natural a primeiro alvo dessa fatia transversal.
+natural a primeiro alvo dessa etapa transversal.
 
 ## D-salario-minimo-hardcoded-fora-de-gratuidade
 
-**Status:** parcialmente atendida — 3 dos 5 pontos fechados nesta fatia; 2 pontos permanecem
+**Status:** parcialmente atendida — 3 dos 5 pontos fechados nesta etapa; 2 pontos permanecem
 abertos como dívidas próprias (`D-national-rule-pack-engine-sem-data-referencia` e
 `D-quadro-credores-recuperacao-marco-nao-pesquisado`).
 
@@ -1153,8 +1153,8 @@ competência do JEC (40 SM) e JEF (60 SM).
   as chamadas por `ArgumentMatchers` derivados de `LocalDate.now().getYear()`, sem fixar anos
   literais que ficariam errados no futuro.
 - **DTO `CalculoJudicialSalarioMinimoDto`** — campos ainda nomeados `referencia2025`/`referencia2026`,
-  o que ficará semanticamente incorreto no ano seguinte. Não renomeado nesta fatia porque é
-  breaking change de contrato consumido pelo frontend; registrado como observação para fatia
+  o que ficará semanticamente incorreto no ano seguinte. Não renomeado nesta etapa porque é
+  breaking change de contrato consumido pelo frontend; registrado como observação para etapa
   futura de generalização de contrato (`referenciaAnoAnterior`/`referenciaAnoCorrente`).
 
 **Guard de regressão:** `salario_minimo_hardcoded_guard.py` (bridge em `scripts/`, corpo em
@@ -1163,7 +1163,7 @@ literal em entry de Map com chave `salarioMinimo*`, declaração de `static fina
 SALARIO_MINIMO*`, chamada `valorPorAno(literal)`, e `LocalDate.now()` inline em chamada ao service
 canônico. Whitelist explícita do `SalarioMinimoNacionalService.java` (fonte canônica com
 `FALLBACK_OFICIAL` legítimo). Sem mecanismo de allowlist inline — nenhuma convenção prévia no
-projeto e a fatia optou por não inventar. Exit 1 documentado enquanto as duas dívidas próprias
+projeto e a etapa optou por não inventar. Exit 1 documentado enquanto as duas dívidas próprias
 não forem resolvidas.
 
 **Risco original:** valores monetários congelados em pontos de cálculo relevantes (falência,
@@ -1175,7 +1175,7 @@ de anos anteriores.
 
 ## D-national-rule-pack-engine-sem-data-referencia
 
-**Status:** aberta — dívida arquitetural, não bug ativo (achado transversal de fatia de
+**Status:** aberta — dívida arquitetural, não bug ativo (achado transversal de etapa de
 `D-salario-minimo-hardcoded-fora-de-gratuidade`, extraído para tratamento próprio)
 
 **Contexto:** `NationalRulePackEngine.inferDynamicRules(ContextoRegra ctx)` chama
@@ -1194,7 +1194,7 @@ Baixa probabilidade, mas mancha o motor com uma decisão temporal errada por con
 mascara o fato de que o SM da data do ajuizamento seria diferente — regra jurídica correta viraria
 "foi JEC no momento do ajuizamento" e não "é JEC agora".
 
-**Quando revisitar:** fatia arquitetural própria. Alteração exige adicionar `LocalDate
+**Quando revisitar:** etapa arquitetural própria. Alteração exige adicionar `LocalDate
 dataReferencia` ao `record ContextoRegra`, o que cascateia por 28 arquivos consumidores
 (`JurimetriaEngine`, `NationalColegiadoEngine`, `CejuscEngine`, `CooperacaoJuridicaEngine`,
 `ImpedimentoSuspeicaoEngine`, `NotificacaoInteligentePJB`, `TransparenciaCnjEngine`, `LoadPlan`,
@@ -1206,7 +1206,7 @@ com `exit=1` documentado até o fechamento desta dívida.
 ## D-quadro-credores-recuperacao-marco-nao-pesquisado
 
 **Status:** aberta — bloqueio de segurança sobre `QuadroGeralCredoresAssemblerService`, gate
-levantado pela Fase 0 da fatia de `D-salario-minimo-hardcoded-fora-de-gratuidade`.
+levantado pela Fase 0 da etapa de `D-salario-minimo-hardcoded-fora-de-gratuidade`.
 
 **Contexto:** o service `QuadroGeralCredoresAssemblerService` foi analisado como candidato a
 receber `LocalDate dataDecretacao` e passar a consultar o `SalarioMinimoNacionalService` para o
@@ -1228,15 +1228,15 @@ assembler e confirmou:
 O art. 83 rege falência; em recuperação judicial as classes de credores são reaproveitadas por
 remissão via art. 41, mas o evento-marco temporal em RJ **não é "decretação"** (que só existe em
 falência) — pode ser deferimento do processamento, concessão da recuperação, ou outra decisão
-específica. **Marco temporal para RJ não foi pesquisado nesta fatia.**
+específica. **Marco temporal para RJ não foi pesquisado nesta etapa.**
 
 **Risco:** como o service não impõe barreira arquitetural contra reuso em RJ (aceita qualquer
 `List<Credor>` sem verificar tipo de processo), qualquer implementação futura da Fase 3 com
 "data da decretação" hardcoded como semântica única pode ser silenciosamente incorreta em cenário
 de RJ. Aplicar critério de falência em RJ, ou vice-versa, reintroduz a mesma ambiguidade que a
-fatia atual resolveu para o outro service.
+etapa atual resolveu para o outro service.
 
-**Quando revisitar:** fatia própria com pesquisa jurídica prévia sobre o marco temporal do SM em
+**Quando revisitar:** etapa própria com pesquisa jurídica prévia sobre o marco temporal do SM em
 recuperação judicial. Antes de escrever código: (a) pesquisar art. 54 c/c 83 da Lei 11.101/2005 no
 contexto de RJ; (b) confirmar precedente ou doutrina sobre marco em RJ; (c) decidir se o service
 deve receber enum discriminador (`TipoProcesso.FALENCIA` / `TipoProcesso.RECUPERACAO`) para
@@ -1263,7 +1263,7 @@ de 2026 congelado como default eterno.
 
 **Risco:** a plataforma parece dinâmica (consulta service canônico, propaga data de referência,
 guard anti-hardcode ativo) mas a fonte por trás é estática e envelhece silenciosamente. Correção
-dos 3 hardcodes da fatia atual (Falencia + FrontendCatalog + EconomicReference) melhora o desenho
+dos 3 hardcodes da etapa atual (Falencia + FrontendCatalog + EconomicReference) melhora o desenho
 mas não elimina a dívida de fonte: enquanto o scheduler não subir, a atualização anual do salário
 mínimo continua manual (via PR editando `FALLBACK_OFICIAL`).
 
@@ -1272,29 +1272,29 @@ setar `pjb.sync.salario-minimo.enabled=true` no perfil de produção, (b) confir
 externa ao BCB é aceitável no ambiente (whitelist de saída, rate limit), (c) monitorar as
 primeiras execuções via log ou métrica dedicada (o scheduler não escreve em `AuditLedgerService`
 hoje), (d) avaliar se cabe seed inicial via migration para garantir base populada mesmo antes da
-primeira execução. Não integrar essa fatia com a de fixes atuais — é decisão operacional de
+primeira execução. Não integrar essa etapa com a de fixes atuais — é decisão operacional de
 outra natureza.
 
 ## D-titularidade-cidadao-duplicada-dois-guards
 
-`PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty` implementam a mesma checagem de CPF (parte autora/ré/usuário do processo) em dois arquivos distintos, achado ao cablear a Fatia 4 de `D-recursal-superficie-por-papel`.
+`PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty` implementam a mesma checagem de CPF (parte autora/ré/usuário do processo) em dois arquivos distintos, achado ao cablear a Etapa 4 de `D-recursal-superficie-por-papel`.
 Revisitar ao tocar qualquer um dos dois: unificar num único método antes de corrigir bug ou adicionar caso novo em só um lado.
 
 ## D-peticionamento-controller-domain-lacuna-cidadao
 
-`PeticionamentoController.resolveDomain()` não reconhece `CIDADAO` e recai em `CapabilityRateLimitDomain.LAWYER` por omissão — inconsistente com o resto do projeto, que usa `CITIZEN` para ação/leitura de cidadão (achado ao cablear a Fatia 4 de `D-recursal-superficie-por-papel`).
-Revisitar em fatia própria: adicionar branch explícito para `CIDADAO` retornando `CITIZEN`.
+`PeticionamentoController.resolveDomain()` não reconhece `CIDADAO` e recai em `CapabilityRateLimitDomain.LAWYER` por omissão — inconsistente com o resto do projeto, que usa `CITIZEN` para ação/leitura de cidadão (achado ao cablear a Etapa 4 de `D-recursal-superficie-por-papel`).
+Revisitar em etapa própria: adicionar branch explícito para `CIDADAO` retornando `CITIZEN`.
 
 ## D-cidadao-parte-guard-sem-teste-rejeicao
 
-`PjbAuthorizationService.requireReadProcessoAsCidadaoParte` não tem teste dedicado que prove a rejeição real por CPF divergente em nenhum dos 9 consumidores em produção — lacuna pré-existente, mais antiga que a Fatia 4 de `D-recursal-superficie-por-papel`, só encontrada ao cablear esta fatia.
-Revisitar em fatia própria: IT com Spring Security real provando 403 para CIDADAO cujo CPF não bate com nenhuma parte do processo.
+`PjbAuthorizationService.requireReadProcessoAsCidadaoParte` não tem teste dedicado que prove a rejeição real por CPF divergente em nenhum dos 9 consumidores em produção — lacuna pré-existente, mais antiga que a Etapa 4 de `D-recursal-superficie-por-papel`, só encontrada ao cablear esta etapa.
+Revisitar em etapa própria: IT com Spring Security real provando 403 para CIDADAO cujo CPF não bate com nenhuma parte do processo.
 
 ## D-controllers-recursais-legados-sem-teste-dedicado
 
 **Status:** FECHADA — cobertura completa (sucesso, validação, autorização real) adicionada aos 4 controllers.
 
-Os 4 controllers recursais legados (`AdvogadoCockpitController`, `DefensorPublicoPainelController`, `MinisterioPublicoPainelController`, `ProcuradoriaOperacionalController`) não tinham nenhuma classe de teste dedicada antes da Fatia 2 de `D-recursal-superficie-por-papel` — só os headers de depreciação de `interporRecurso` ganharam cobertura mínima, os demais endpoints seguem sem teste próprio.
+Os 4 controllers recursais legados (`AdvogadoCockpitController`, `DefensorPublicoPainelController`, `MinisterioPublicoPainelController`, `ProcuradoriaOperacionalController`) não tinham nenhuma classe de teste dedicada antes da Etapa 2 de `D-recursal-superficie-por-papel` — só os headers de depreciação de `interporRecurso` ganharam cobertura mínima, os demais endpoints seguem sem teste próprio.
 
 **Fechamento:** cada controller ganhou (a) testes unitários `MockMvc` standalone cobrindo sucesso de todo endpoint restante e falha de validação (400) para todo DTO com constraint real, e (b) uma classe `*IT` nova (`AdvogadoCockpitControllerIT`, `DefensorPublicoPainelControllerIT`, `MinisterioPublicoPainelControllerIT`, `ProcuradoriaOperacionalControllerIT`) contra Postgres real com Spring Security completo, provando anônimo negado (401/403), role fora da lista negada (403) e cada role legítima do `@PreAuthorize` autorizada (200/201) — mesmo padrão de `RecursalPeticionamentoControllerIT`. Totais confirmados via execução real: Advogado 9 unit + 4 IT, Defensor 11 unit + 3 IT, MP 13 unit + 6 IT, Procuradoria 10 unit + 7 IT — 63 testes novos, 0 falhas.
 
@@ -1304,7 +1304,7 @@ Os 4 controllers recursais legados (`AdvogadoCockpitController`, `DefensorPublic
 
 ## D-frontend-delivery-routes-nao-sinaliza-depreciacao
 
-`PjbFrontendDeliveryApplicationService.parseRoutes` escaneia `@PostMapping`/`@GetMapping` via regex e não lê headers HTTP de depreciação — os 4 endpoints recursais legados aparecem no catálogo `/api/v1/frontend/delivery/routes` com o mesmo peso da rota unificada nova, achado ao investigar consumidores antes da Fatia 3.
+`PjbFrontendDeliveryApplicationService.parseRoutes` escaneia `@PostMapping`/`@GetMapping` via regex e não lê headers HTTP de depreciação — os 4 endpoints recursais legados aparecem no catálogo `/api/v1/frontend/delivery/routes` com o mesmo peso da rota unificada nova, achado ao investigar consumidores antes da Etapa 3.
 Revisitar se o catálogo vier a ser consumido por um frontend real: cruzar rota com `RecursalLegacyDeprecationHeaders` ou marcador equivalente antes de expor como pronta para uso.
 
 ## D-tribunal-rule-engine-wiring-manual-de-colaborador
@@ -1329,7 +1329,7 @@ Não revisitar por falta de critério — o critério agora é a própria cadên
 
 ## D-anomaisrecenteconhecido-divergia-da-resolucao-real-de-valorPorAno
 
-**FECHADA nesta mesma fatia.** `SalarioMinimoNacionalService.anoMaisRecenteConhecido()` usava `findTopByAtivoTrueOrderByAnoReferenciaDesc()` (máximo irrestrito do banco) e só considerava a persistência quando o ano superava o teto do fallback — divergindo de `valorPorAno()`, que prioriza qualquer registro do banco de forma incondicional, mesmo mais antigo que o fallback. Cenário real: banco só com registro de 2023, fallback até 2026 — o watchdog reportava "sem defasagem" enquanto `valorPorAno(anoAtual)` de fato servia o valor de 2023.
+**FECHADA nesta mesma etapa.** `SalarioMinimoNacionalService.anoMaisRecenteConhecido()` usava `findTopByAtivoTrueOrderByAnoReferenciaDesc()` (máximo irrestrito do banco) e só considerava a persistência quando o ano superava o teto do fallback — divergindo de `valorPorAno()`, que prioriza qualquer registro do banco de forma incondicional, mesmo mais antigo que o fallback. Cenário real: banco só com registro de 2023, fallback até 2026 — o watchdog reportava "sem defasagem" enquanto `valorPorAno(anoAtual)` de fato servia o valor de 2023.
 Corrigido reusando a mesma query e cadeia de resolução de `valorPorAno` (`findTopByAnoReferenciaLessThanEqualAndAtivoTrueOrderByAnoReferenciaDesc`), retornando o ano que efetivamente governa o valor servido. 3 testes cobrem banco vazio, banco mais antigo que o fallback (o cenário real do achado) e banco no ano corrente.
 
 ## D-mutableclock-duplicado-em-3-testes
