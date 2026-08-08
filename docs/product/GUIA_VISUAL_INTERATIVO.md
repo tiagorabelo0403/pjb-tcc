@@ -6,6 +6,7 @@
 
 - [Quem entra no PJB, e como cada um entra](#quem-entra-no-pjb-e-como-cada-um-entra)
 - [Segurança reforçada de quem decide processo](#segurança-reforçada-de-quem-decide-processo)
+- [Central de Chamados — quando alguém trava, tem pra onde ir](#central-de-chamados--quando-alguém-trava-tem-pra-onde-ir)
 - [A base que todo painel profissional compartilha](#a-base-que-todo-painel-profissional-compartilha)
 - [Passo 1 — Quem pode ajuizar uma ação, e como](#passo-1--quem-pode-ajuizar-uma-ação-e-como)
 - [Passo 2 — A triagem organiza e separa cada processo no lugar certo](#passo-2--a-triagem-organiza-e-separa-cada-processo-no-lugar-certo)
@@ -54,9 +55,25 @@ Juiz, desembargador e ministro passam por quatro camadas antes de qualquer ato �
 
 A ordem importa: login institucional identifica quem está tentando entrar; certificado ICP-Brasil **A3** (token físico, não arquivo) prova a identidade formal; a **passkey vinculada ao TPM do próprio notebook** — a mesma digital ou reconhecimento facial que já destrava o Windows Hello ou o Touch ID — entrega biometria real sem instalar nada; e o **geo-bloqueio** nega na hora qualquer tentativa de fora do Brasil, fora da UF onde o magistrado está lotado, ou atrás de VPN/datacenter. Durante a sessão inteira, mais duas coisas continuam de olho: 10 minutos sem mexer no sistema tranca a tela (destravar é só um novo toque na passkey, não o fluxo inteiro de novo), e uma viagem legítima não deixa o juiz trancado fora do próprio trabalho — basta abrir com antecedência um **chamado de suporte** pedindo a janela de datas e o destino.
 
-Esse canal de suporte, aliás, não é exclusivo da magistratura — **qualquer perfil cadastrado** (cidadão, advogado, servidor, todos) pode abrir um chamado técnico direto do próprio painel, sem precisar sair do sistema pra achar um contato de TI.
+Esse canal de suporte, aliás, não é exclusivo da magistratura — **qualquer perfil cadastrado** (cidadão, advogado, servidor, todos) pode abrir um chamado técnico direto do próprio painel, sem precisar sair do sistema pra achar um contato de TI. Eu mostro como esse canal funciona de verdade, por dentro, na próxima seção.
 
 Um ponto que eu faço questão de deixar claro: nenhuma dessas camadas vira um mapa de "onde o juiz está agora". Não existe painel de localização pra colega, secretaria ou administrador ver — o sistema só decide, no instante do login, se libera ou bloqueia, e guarda o motivo de forma sigilosa, só pra investigação de incidente real. É controle antifraude, não vigilância.
+
+[⬆ Voltar ao topo deste guia](#sumário)
+
+---
+
+## Central de Chamados — quando alguém trava, tem pra onde ir
+
+Eu não quis deixar esse canal só como uma frase solta lá atrás, porque ele resolve um problema de verdade e tem lógica própria por trás — não é um formulário de contato genérico jogado num canto do sistema.
+
+![Central de chamados: abertura, ciclo de vida e ligação com o geo-bloqueio](assets/central-chamados-suporte.svg)
+
+Qualquer pessoa autenticada — cidadão, advogado, servidor, magistrado, qualquer papel — abre um chamado escolhendo uma categoria (técnico, acesso/login, dúvida geral, exceção de viagem da magistratura, ou outro), um assunto e uma descrição. Quando a categoria é a exceção de viagem, aparecem três campos a mais, só ali: UF ou país de destino, data de início e data de fim.
+
+O ciclo de vida é simples de acompanhar: o chamado nasce **aberto**, o suporte técnico **assume**, e depois **resolve** — com uma resposta e um sinalizador de aprovação. Só quem abriu pode cancelar, e só enquanto o chamado ainda está aberto; depois de assumido, cancelar deixa de ser opção. Cada mudança de status notifica quem abriu, com um link direto de volta pro próprio chamado.
+
+O ponto que eu acho mais interessante de mostrar é o que acontece de verdade quando um chamado de viagem é aprovado: o sistema publica um evento de resolução, e é esse evento — não uma pessoa mexendo manualmente numa lista de exceções — que libera o geo-bloqueio da magistratura pra aquela UF ou país, só durante a janela de datas que foi aprovada. Fora dessa janela, a regra volta ao normal sozinha.
 
 [⬆ Voltar ao topo deste guia](#sumário)
 
@@ -128,7 +145,7 @@ A partir daqui, o processo está "vivo" e cada perfil profissional que participa
 
 ![Dashboard do escritório do advogado](assets/painel-advogado.svg)
 
-Prazo crítico, petição pendente, audiência chegando, intimação não lida, recurso vencendo — tudo isso é KPI de verdade calculado pelo sistema, não uma lista que o advogado tem que montar de cabeça. E se o escritório tem mais de um advogado, o dono não precisa ficar emprestando o próprio certificado digital pra ninguém: ele manda um **convite de afiliação com escopo definido** — define o papel de quem entra, quais áreas do direito a pessoa pode tocar (Penal, Execução Penal, Militar e Infância/Juventude ficam sempre bloqueadas por padrão, exigindo liberação explícita à parte), se os casos pessoais do convidado ficam de fora, e a confiança mínima exigida pra ação automática.
+Prazo crítico, petição pendente, audiência chegando, intimação não lida, recurso vencendo — tudo isso é KPI de verdade calculado pelo sistema, não uma lista que o advogado tem que montar de cabeça. E se o escritório tem mais de um advogado, o dono não precisa ficar emprestando o próprio certificado digital pra ninguém: ele manda um **convite de afiliação com escopo definido** — define o papel de quem entra, quais áreas do direito a pessoa pode tocar (Penal, Processual Penal, Execução Penal, Militar e Infância/Juventude ficam sempre bloqueadas por padrão, exigindo liberação explícita à parte), se os casos pessoais do convidado ficam de fora, e a confiança mínima exigida pra ação automática.
 
 ![Como o escritório delega acesso sem repassar o certificado](assets/escritorio-delegacao-exemplo.svg)
 

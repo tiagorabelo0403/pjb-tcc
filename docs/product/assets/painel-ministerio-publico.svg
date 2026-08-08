@@ -1,9 +1,9 @@
-<svg viewBox="0 0 1280 680" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
-  <title id="titulo">Painel do Ministério Público — manifestações pendentes e parecer com fundamentação</title>
-  <desc id="desc">Mockup do painel do promotor, com os campos reais de MinisterioPublicoPayload (promotoriaId, ramo, manifestacoesPendentes) e o formulário de parecer com fundamentação, provas documentais e marcação de sigilo sensível.</desc>
+<svg viewBox="0 0 1280 820" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Painel do Ministério Público — manifestações pendentes, parecer com fundamentação e ofícios expedidos</title>
+  <desc id="desc">Mockup do painel do promotor, com os campos reais de MinisterioPublicoPayload (promotoriaId, ramo, manifestacoesPendentes), o formulário de parecer com fundamentação, provas documentais e marcação de sigilo sensível, e a auditoria de ofícios expedidos com status e prazo de resposta.</desc>
   <defs><filter id="s1" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.35"/></filter></defs>
 
-  <rect x="20" y="20" width="1240" height="640" rx="14" fill="#12172a" stroke="#2a3350" filter="url(#s1)"/>
+  <rect x="20" y="20" width="1240" height="780" rx="14" fill="#12172a" stroke="#2a3350" filter="url(#s1)"/>
   <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
   <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
   <circle cx="46" cy="48" r="6" fill="#e05252"/><circle cx="66" cy="48" r="6" fill="#e0b84f"/><circle cx="86" cy="48" r="6" fill="#4fae6b"/>
@@ -63,5 +63,41 @@
     <text x="76" y="470" font-size="10.5" fill="#5d6785">Dados fictícios — campos reais de MinisterioPublicoPayload e MinisterioPublicoParecerRequest.</text>
   </g>
 
-  <text x="50" y="592" font-size="11" fill="#5d6785">O painel também herda os 6 blocos comuns de segurança de todo perfil profissional do PJB (ver "Anatomia comum a todo painel").</text>
+  <g>
+    <rect x="50" y="558" width="1140" height="176" rx="14" fill="#161c30"/>
+    <text x="76" y="590" font-size="14" font-weight="700" fill="#ffffff">📤 Ofícios expedidos — auditoria e prazo de resposta</text>
+
+    <text x="76" y="616" font-size="10" fill="#7d879e">TRACKING</text>
+    <text x="240" y="616" font-size="10" fill="#7d879e">TIPO</text>
+    <text x="400" y="616" font-size="10" fill="#7d879e">STATUS</text>
+    <text x="560" y="616" font-size="10" fill="#7d879e">PROTOCOLO</text>
+    <text x="760" y="616" font-size="10" fill="#7d879e">ENVIADO EM</text>
+    <text x="960" y="616" font-size="10" fill="#7d879e">ENTREGUE EM</text>
+    <line x1="76" y1="626" x2="1150" y2="626" stroke="#2a3350"/>
+
+    <text x="76" y="650" font-size="11.5" fill="#dfe4ee">OF-2026-00341</text>
+    <text x="240" y="650" font-size="11.5" fill="#dfe4ee">Requisição de laudo</text>
+    <text x="400" y="650" font-size="11.5" fill="#7fd1a0">ENTREGUE</text>
+    <text x="560" y="650" font-size="11.5" fill="#a9b3cc">IML-CE 1123/26</text>
+    <text x="760" y="650" font-size="11.5" fill="#a9b3cc">28/07 09:14</text>
+    <text x="960" y="650" font-size="11.5" fill="#a9b3cc">29/07 15:02</text>
+
+    <text x="76" y="678" font-size="11.5" fill="#dfe4ee">OF-2026-00358</text>
+    <text x="240" y="678" font-size="11.5" fill="#dfe4ee">Solicitação de informação</text>
+    <text x="400" y="678" font-size="11.5" fill="#e0c98a">ENVIADO</text>
+    <text x="560" y="678" font-size="11.5" fill="#a9b3cc">SSP-CE 887/26</text>
+    <text x="760" y="678" font-size="11.5" fill="#a9b3cc">03/08 11:40</text>
+    <text x="960" y="678" font-size="11.5" fill="#5d6785">— aguardando</text>
+
+    <text x="76" y="706" font-size="11.5" fill="#dfe4ee">OF-2026-00362</text>
+    <text x="240" y="706" font-size="11.5" fill="#dfe4ee">Requisição de perícia contábil</text>
+    <text x="400" y="706" font-size="11.5" fill="#c9d3ea">CRIADO</text>
+    <text x="560" y="706" font-size="11.5" fill="#5d6785">—</text>
+    <text x="760" y="706" font-size="11.5" fill="#5d6785">— não enviado</text>
+    <text x="960" y="706" font-size="11.5" fill="#5d6785">—</text>
+
+    <text x="76" y="732" font-size="10" fill="#5d6785">Dados fictícios — campos reais de LaianeOficio/LaianeMpOficioResponse (status CRIADO → ENVIADO → ENTREGUE, ou CANCELADO).</text>
+  </g>
+
+  <text x="50" y="770" font-size="11" fill="#5d6785">O painel também herda os 6 blocos comuns de segurança de todo perfil profissional do PJB (ver "Anatomia comum a todo painel").</text>
 </svg>
