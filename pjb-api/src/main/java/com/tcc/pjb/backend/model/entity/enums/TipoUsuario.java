@@ -80,6 +80,7 @@ public enum TipoUsuario {
     SERVIDOR,
     SERVIDOR_FORUM,
     ADMINISTRADOR,
+    SUPORTE_TECNICO,
 
     PROFESSOR,
     JURISTA;
