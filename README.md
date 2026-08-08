@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.486%20unit%20%2B%20289%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.498%20unit%20%2B%20294%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -379,11 +379,11 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.486** |
+| Total de testes unitários | Surefire | **4.498** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
-| Total de testes de integração | Failsafe | **289** ¹ |
+| Total de testes de integração | Failsafe | **294** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
@@ -495,6 +495,8 @@ Segundo item do cidadão: pedido de assistência judiciária gratuita para quem 
 Com isso fecham os 3 itens reais encontrados para o cidadão — a investigação buscou 10, parou em 3 por decisão deliberada, mesma disciplina de todos os papéis institucionais desta frente. E com isso fecha também o plano original dos seis papéis (advogado, secretário, magistrado, oficial de justiça, outros — MP/Defensoria/Procuradoria —, cidadão): 37 features reais entregues (10 advogado + 9 secretário + 7 magistrado + 3 oficial de justiça + 5 outros + 3 cidadão), cada uma partindo de investigação de código existente, nenhuma API inventada, um item deliberadamente adiado (malote digital do secretário, por falta de fundamento técnico real).
 
 Depois de fechar os seis papéis, revisitei o único item deliberadamente adiado — "malote digital" do secretário — para checar se o fundamento técnico real que faltava tinha surgido. Achei: `service/secretariat/ingest` (`ProcessoExternoCargaService`/`ProcessoExternoImportacaoService`/`ProcessoExternoOrigemResolver`/`ProcessoExternalNormalizationService`) já modela o fluxo inteiro — lote de itens declarados vindos de sistema externo (`SistemaProcessualOrigem`: PJe, PJe 2.x, e-SAJ, eProc, Projudi, Creta, MNI, PDPJ), resolução de origem por texto declarado/formato de envelope, normalização de NPU/classe/rito, e triagem em `IMPORTADO`/`COM_DIVERGENCIA`/`REJEITADO` — só que sem nenhum controller, confirmado por grep: só o próprio teste unitário (`ProcessoExternoCargaServiceTest`) o usava. Isso é literalmente "triagem/malote digital como fluxo próprio". `SecretariatMaloteDigitalController` (novo, `/api/v1/secretariat/malote/processar`, restrito às roles de secretaria) expõe `processarLote` sem duplicar nenhuma regra, seguindo o mesmo padrão leve do `SecretariatDjeController` (construtor único, delegação 1:1). 3 testes novos (`SecretariatMaloteDigitalControllerIT` provando a delegação via MockMvc standalone, `SecretariatMaloteDigitalControllerAccessTest` travando a role por reflexão sobre `@PreAuthorize`) fecham o item — o plano original dos seis papéis chega a 38 features reais entregues, zero itens adiados restantes.
+
+Nova frente: segurança reforçada de magistrado (certificado ICP-Brasil A3, passkey vinculada ao TPM com biometria obrigatória, geo-bloqueio, trava por inatividade, exceção de viagem auditada). A primeira peça dessa frente é a fundação de que a exceção de viagem depende: um canal de suporte geral — investigação confirmou que não existia nada parecido (`Ticket`/`Chamado`/`SAC`/`Ouvidoria`) em lugar nenhum do código, greenfield real. `SupportTicket` (novo, `modules/suporte`) modela o chamado técnico aberto a qualquer usuário cadastrado — cidadão, advogado, servidor, magistrado, todos — atendido por um papel novo e enxuto, `SUPORTE_TECNICO`, sem os poderes de `ADMINISTRADOR`. A costura com a Parte 2 (ainda não implementada) é só um evento de domínio (`SupportTicketResolvedEvent`, publicado via `ApplicationEventPublisher` na resolução de um chamado) — `SupportTicket` não conhece `JudgeTravelException` nem nada do domínio de segurança do magistrado; quem ouve o evento decide o que fazer, mantendo os dois módulos desacoplados. `WorkspaceController.me()` (superfície universal já usada por todo usuário logado, independente de papel) ganhou `openTicketsCount` e a quick action "Abrir chamado de suporte", ao lado do `inboxCount` que já existia. 17 testes novos (12 unitários, 5 de integração via Testcontainers/MockMvc standalone) provam a máquina de estados completa (abrir → assumir → resolver/fechar/cancelar), a publicação do evento com os dados da exceção de viagem, a autorização por papel (fila restrita a suporte/admin, abertura livre a qualquer autenticado) e a integração com o workspace universal.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
