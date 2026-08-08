@@ -104,6 +104,9 @@ class ProcessoCommandControllerIT extends PjbFlowItBase {
         when(completudeDocumentalPolicyService.diagnosticar(any(), any()))
                 .thenAnswer(inv -> new CompletudeDocumentalPolicyService.DiagnosticoCompletudeDocumental(
                         false, List.of(), inv.getArgument(0)));
+        when(completudeDocumentalPolicyService.diagnosticar(any(), any(), any()))
+                .thenAnswer(inv -> new CompletudeDocumentalPolicyService.DiagnosticoCompletudeDocumental(
+                        false, List.of(), inv.getArgument(0)));
     }
 
     @Test
