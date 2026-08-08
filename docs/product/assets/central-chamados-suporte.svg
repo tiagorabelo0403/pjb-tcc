@@ -29,7 +29,7 @@
 
     <text x="76" y="190" font-size="11" fill="#7d879e">Categoria</text>
     <rect x="76" y="200" width="508" height="34" rx="8" fill="#0f1830" stroke="#7a2e3d"/>
-    <text x="92" y="222" font-size="12.5" fill="#ffffff">EXCECAO_VIAGEM_MAGISTRATURA</text>
+    <text x="92" y="222" font-size="12.5" fill="#ffffff">EXCECAO_VIAGEM_CARREIRA_JURIDICA</text>
 
     <text x="76" y="254" font-size="11" fill="#7d879e">Assunto</text>
     <rect x="76" y="264" width="508" height="34" rx="8" fill="#0f1830"/>
@@ -41,7 +41,7 @@
     <text x="92" y="368" font-size="11.5" fill="#dfe4ee">preciso acessar o sistema de lá nesse período."</text>
 
     <rect x="76" y="398" width="508" height="86" rx="10" fill="#3a1f28"/>
-    <text x="92" y="420" font-size="11" font-weight="700" fill="#f4a3a3">Campos exigidos só para EXCECAO_VIAGEM_MAGISTRATURA</text>
+    <text x="92" y="420" font-size="11" font-weight="700" fill="#f4a3a3">Campos exigidos só para EXCECAO_VIAGEM_CARREIRA_JURIDICA</text>
     <text x="92" y="442" font-size="11" fill="#f0d5da">UF/país de destino: MG</text>
     <text x="92" y="460" font-size="11" fill="#f0d5da">Início: 18/08/2026 · Fim: 25/08/2026</text>
     <text x="92" y="476" font-size="10" fill="#c9a3ab">viagemUfOuPaisDestino · viagemDataInicio · viagemDataFim</text>
@@ -85,7 +85,7 @@
   <g>
     <rect x="50" y="522" width="1140" height="150" rx="14" fill="#171d34"/>
     <text x="76" y="554" font-size="14" font-weight="700" fill="#ffffff">🔗 O que acontece de verdade quando um chamado de viagem é aprovado</text>
-    <text x="76" y="582" font-size="12" fill="#dfe4ee">Ao resolver um chamado com <tspan font-weight="700" fill="#ffffff">categoria = EXCECAO_VIAGEM_MAGISTRATURA</tspan> e <tspan font-weight="700" fill="#ffffff">aprovado = true</tspan>, o sistema publica um</text>
+    <text x="76" y="582" font-size="12" fill="#dfe4ee">Ao resolver um chamado com <tspan font-weight="700" fill="#ffffff">categoria = EXCECAO_VIAGEM_CARREIRA_JURIDICA</tspan> e <tspan font-weight="700" fill="#ffffff">aprovado = true</tspan>, o sistema publica um</text>
     <text x="76" y="602" font-size="12" fill="#dfe4ee"><tspan font-weight="700" fill="#ffffff">SupportTicketResolvedEvent</tspan> — não é o suporte técnico mexendo manualmente numa lista de exceções. Esse evento é o único</text>
     <text x="76" y="622" font-size="12" fill="#dfe4ee">gatilho real que libera automaticamente a UF/país informado, e só durante a janela de datas aprovada.</text>
 
@@ -108,9 +108,9 @@
     <text x="285" y="736" text-anchor="middle" fill="#ffffff">ACESSO_LOGIN</text>
     <rect x="370" y="716" width="170" height="30" rx="8" fill="#2c3e67"/>
     <text x="455" y="736" text-anchor="middle" fill="#ffffff">DUVIDA_GERAL</text>
-    <rect x="550" y="716" width="290" height="30" rx="8" fill="#3a1f28"/>
-    <text x="695" y="736" text-anchor="middle" fill="#f4a3a3">EXCECAO_VIAGEM_MAGISTRATURA</text>
-    <rect x="850" y="716" width="130" height="30" rx="8" fill="#2c3e67"/>
+    <rect x="550" y="716" width="330" height="30" rx="8" fill="#3a1f28"/>
+    <text x="695" y="736" text-anchor="middle" fill="#f4a3a3">EXCECAO_VIAGEM_CARREIRA_JURIDICA</text>
+    <rect x="890" y="716" width="130" height="30" rx="8" fill="#2c3e67"/>
     <text x="915" y="736" text-anchor="middle" fill="#ffffff">OUTRO</text>
   </g>
 

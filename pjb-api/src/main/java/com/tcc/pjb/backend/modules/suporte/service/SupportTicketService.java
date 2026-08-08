@@ -43,7 +43,7 @@ public class SupportTicketService {
 
     @Transactional
     public SupportTicketResponse abrir(Usuario usuario, AbrirChamadoRequest request) {
-        if (request.categoria() == SupportTicketCategoria.EXCECAO_VIAGEM_MAGISTRATURA) {
+        if (request.categoria() == SupportTicketCategoria.EXCECAO_VIAGEM_CARREIRA_JURIDICA) {
             if (request.viagemUfOuPaisDestino() == null || request.viagemDataInicio() == null || request.viagemDataFim() == null) {
                 throw new ErroDeValidacaoException(TipoErroValidacao.REGRA_NEGOCIO,
                         "Exceção de viagem exige destino e janela de datas completa.");

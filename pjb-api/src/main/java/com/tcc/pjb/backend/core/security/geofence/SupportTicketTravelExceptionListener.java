@@ -19,7 +19,7 @@ public class SupportTicketTravelExceptionListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void aoResolverChamado(SupportTicketResolvedEvent evento) {
-        if (evento.categoria() != SupportTicketCategoria.EXCECAO_VIAGEM_MAGISTRATURA || !evento.aprovado()) {
+        if (evento.categoria() != SupportTicketCategoria.EXCECAO_VIAGEM_CARREIRA_JURIDICA || !evento.aprovado()) {
             return;
         }
         repository.save(JudgeTravelException.builder()

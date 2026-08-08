@@ -19,7 +19,7 @@ class SupportTicketTravelExceptionListenerTest {
 
     @Test
     void chamadoDeExcecaoDeViagemAprovadoCriaJanela() {
-        var evento = new SupportTicketResolvedEvent(10L, SupportTicketCategoria.EXCECAO_VIAGEM_MAGISTRATURA,
+        var evento = new SupportTicketResolvedEvent(10L, SupportTicketCategoria.EXCECAO_VIAGEM_CARREIRA_JURIDICA,
                 true, 5L, "DF", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 10));
         when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -30,7 +30,7 @@ class SupportTicketTravelExceptionListenerTest {
 
     @Test
     void chamadoNaoAprovadoNaoCriaJanela() {
-        var evento = new SupportTicketResolvedEvent(10L, SupportTicketCategoria.EXCECAO_VIAGEM_MAGISTRATURA,
+        var evento = new SupportTicketResolvedEvent(10L, SupportTicketCategoria.EXCECAO_VIAGEM_CARREIRA_JURIDICA,
                 false, 5L, "DF", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 10));
 
         listener.aoResolverChamado(evento);

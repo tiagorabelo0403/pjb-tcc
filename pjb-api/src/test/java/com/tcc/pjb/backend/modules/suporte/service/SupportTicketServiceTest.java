@@ -59,7 +59,7 @@ class SupportTicketServiceTest {
     @Test
     void abrirExcecaoDeViagemSemDestinoLancaErroDeValidacao() {
         var request = new AbrirChamadoRequest(
-                SupportTicketCategoria.EXCECAO_VIAGEM_MAGISTRATURA, "Viagem a Brasilia", "Evento oficial",
+                SupportTicketCategoria.EXCECAO_VIAGEM_CARREIRA_JURIDICA, "Viagem a Brasilia", "Evento oficial",
                 null, LocalDate.now(), LocalDate.now().plusDays(3), "Congresso");
 
         assertThatThrownBy(() -> service.abrir(cidadao, request))
@@ -69,7 +69,7 @@ class SupportTicketServiceTest {
     @Test
     void abrirExcecaoDeViagemComDataFimAntesDoInicioLancaErro() {
         var request = new AbrirChamadoRequest(
-                SupportTicketCategoria.EXCECAO_VIAGEM_MAGISTRATURA, "Viagem", "Evento",
+                SupportTicketCategoria.EXCECAO_VIAGEM_CARREIRA_JURIDICA, "Viagem", "Evento",
                 "DF", LocalDate.now().plusDays(5), LocalDate.now(), "Justificativa");
 
         assertThatThrownBy(() -> service.abrir(cidadao, request))
@@ -103,7 +103,7 @@ class SupportTicketServiceTest {
     void resolverExcecaoDeViagemAprovadaPublicaEventoComDadosDaViagem() {
         SupportTicket ticket = ticketAberto();
         ticket.setStatus(SupportTicketStatus.EM_ATENDIMENTO);
-        ticket.setCategoria(SupportTicketCategoria.EXCECAO_VIAGEM_MAGISTRATURA);
+        ticket.setCategoria(SupportTicketCategoria.EXCECAO_VIAGEM_CARREIRA_JURIDICA);
         ticket.setViagemUfOuPaisDestino("DF");
         ticket.setViagemDataInicio(LocalDate.of(2026, 9, 1));
         ticket.setViagemDataFim(LocalDate.of(2026, 9, 10));
