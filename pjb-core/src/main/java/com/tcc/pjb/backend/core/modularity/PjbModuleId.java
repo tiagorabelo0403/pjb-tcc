@@ -13,6 +13,7 @@ public enum PjbModuleId {
     IDENTIDADE_SEGURANCA("identidade-seguranca", "Identidade e Segurança", List.of(
             "com.tcc.pjb.backend.core.identity",
             "com.tcc.pjb.backend.core.identidade",
+            "com.tcc.pjb.backend.core.security.geofence",
             "com.tcc.pjb.backend.configs.security",
             "com.tcc.pjb.backend.controller.auth",
             "com.tcc.pjb.backend.controller.security",
