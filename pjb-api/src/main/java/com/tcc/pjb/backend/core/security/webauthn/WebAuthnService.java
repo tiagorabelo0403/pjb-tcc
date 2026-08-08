@@ -174,12 +174,12 @@ public class WebAuthnService {
         if (user == null || user.isBlank()) throw new IllegalArgumentException("email obrigatório");
 
         Usuario u = usuarioRepo.findByEmail(user).orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
-        boolean magistratura = u.getTipoUsuario() != null && u.getTipoUsuario().isMagistratura();
+        boolean hardwareAuthRequired = u.getTipoUsuario() != null && u.getTipoUsuario().requiresHardwareAuthAssurance();
 
         AssertionRequest req = rp.startAssertion(
                 StartAssertionOptions.builder()
                         .username(user)
-                        .userVerification(magistratura || props.isRequireUserVerification()
+                        .userVerification(hardwareAuthRequired || props.isRequireUserVerification()
                                 ? UserVerificationRequirement.REQUIRED
                                 : UserVerificationRequirement.PREFERRED)
                         .build()
@@ -249,12 +249,12 @@ public class WebAuthnService {
         Objects.requireNonNull(usuario, "usuario");
         String a = normalizeAction(action);
         String rh = normalizeReqHash(requestHash);
-        boolean magistratura = usuario.getTipoUsuario() != null && usuario.getTipoUsuario().isMagistratura();
+        boolean hardwareAuthRequired = usuario.getTipoUsuario() != null && usuario.getTipoUsuario().requiresHardwareAuthAssurance();
 
         AssertionRequest req = rp.startAssertion(
                 StartAssertionOptions.builder()
                         .username(usuario.getEmail())
-                        .userVerification(magistratura || props.isRequireUserVerification()
+                        .userVerification(hardwareAuthRequired || props.isRequireUserVerification()
                                 ? UserVerificationRequirement.REQUIRED
                                 : UserVerificationRequirement.PREFERRED)
                         .build()
