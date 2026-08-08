@@ -15,7 +15,8 @@ O PJB serve atores com níveis de confiança radicalmente distintos: do cidadão
 |-------|-----|-----|-----|---------------------|
 | Cidadão (consulta pública) | 1 | 1 | — | Não |
 | Advogado | 2 | 2 | 1 | Peticionamento: sim |
-| Membro MP (Promotor) | 2 | 2 | 1 | Cancelar ofício: AAL3 (GovBr Ouro) |
+| Membro MP (Promotor) | 2 | 3 | 1 | Todo ato: AAL3 obrigatório (certificado A3 + passkey TPM) |
+| Defensor Público | 2 | 3 | 1 | Todo ato: AAL3 obrigatório (certificado A3 + passkey TPM) |
 | Oficial de Justiça | 2 | 2 | 1 | Certidão: sim |
 | Delegado | 2 | 2 | 1 | Inquérito: sim |
 | Juiz | 2 | 3 | 2 | Sentença/despacho: AAL3 obrigatório |
@@ -40,6 +41,10 @@ A matriz já exigia AAL3 para Juiz/Desembargador/Ministro desde a criação dest
 - **`MinisterStepUpFilter` removido**: era redundante com a passkey endurecida acima e emitia credencial sem verificação real — mecanismo de segurança dormente/falso substituído, não apenas desligado.
 - **Trava por inatividade de 10 min** (`MagistraturaIdleLockFilter`) e **geo-bloqueio de país/UF + detecção de VPN** (`MagistraturaGeofencePolicyService`, MaxMind GeoLite2) — controles complementares de defesa em profundidade, fora da matriz IAL/AAL/FAL formal mas reforçando o mesmo objetivo de AAL3 real para magistratura.
 - **Primeiro cadastro guiado** (`MagistradoAtivacaoService`): ativação da conta via código de e-mail (OTP) emite a primeira sessão, pré-requisito para o próprio cadastro de certificado A3/passkey acontecer.
+
+### Extensão do hardware-based authenticator para MP e Defensoria (2026-08-08)
+
+A matriz revisada acima eleva Promotor e Defensor Público de AAL2 para AAL3, equiparando-os à magistratura — decisão de domínio apoiada nas garantias constitucionais análogas dessas carreiras (CF art. 127 e 134, funções essenciais à Justiça). Implementação: `TipoUsuario.requiresHardwareAuthAssurance()` substitui `isMagistratura()` nos 5 pontos que aplicam o endurecimento (`CertificadoAuthFacadeService`, `WebAuthnService`, `PasskeyRequirementEnforcer`, `MagistraturaIdleLockFilter`, `MagistraturaGeofenceFilter`) — certificado A3/A4 obrigatório, passkey platform+TPM/Apple com verificação de usuário obrigatória, trava por inatividade de 10 min e geo-bloqueio de país/UF/VPN agora valem também para promotor e defensor público. A exceção de viagem (`SupportTicketCategoria`) foi renomeada de `EXCECAO_VIAGEM_MAGISTRATURA` para `EXCECAO_VIAGEM_CARREIRA_JURIDICA` para refletir o escopo ampliado. Procuradoria (PGM/PGE/AGU) permanece fora desta extensão — decisão de escopo explícita, não descuido.
 
 ## Pendências documentadas
 
