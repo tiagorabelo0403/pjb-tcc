@@ -56,7 +56,8 @@ public enum PjbModuleId {
             "com.tcc.pjb.backend.controller.notification",
             "com.tcc.pjb.backend.controller.secretariat",
             "com.tcc.pjb.backend.modules.atendimento",
-            "com.tcc.pjb.backend.modules.balcao"
+            "com.tcc.pjb.backend.modules.balcao",
+            "com.tcc.pjb.backend.modules.suporte"
     )),
     PRAZOS_AGENDA("prazos-agenda", "Prazos e Agenda", List.of(
             "com.tcc.pjb.backend.controller.calendar",
