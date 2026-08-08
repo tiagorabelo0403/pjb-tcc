@@ -46,7 +46,10 @@ public class MagistraturaGeofencePolicyService {
         if (!"BR".equalsIgnoreCase(resultado.countryIso())) {
             return new Avaliacao(Decisao.BLOQUEADO_PAIS, "Acesso fora do Brasil não autorizado");
         }
-        if (usuario.getUf() != null && !usuario.getUf().equalsIgnoreCase(resultado.subdivisionIso())) {
+        if (usuario.getUf() == null) {
+            return new Avaliacao(Decisao.BLOQUEADO_UF, "UF de lotação não cadastrada - acesso bloqueado até o cadastro ser completado");
+        }
+        if (!usuario.getUf().equalsIgnoreCase(resultado.subdivisionIso())) {
             return new Avaliacao(Decisao.BLOQUEADO_UF, "Acesso fora da UF de lotação (" + usuario.getUf() + ")");
         }
         return new Avaliacao(Decisao.PERMITIDO, null);

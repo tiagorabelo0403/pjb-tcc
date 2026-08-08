@@ -96,6 +96,19 @@ class MagistraturaGeofencePolicyServiceTest {
         assertThat(avaliacao.decisao()).isEqualTo(MagistraturaGeofencePolicyService.Decisao.INDISPONIVEL);
     }
 
+    @Test
+    void usuarioSemUfDeLotacaoCadastradaEBloqueadoMesmoDentroDoBrasil() {
+        Usuario usuario = new Usuario();
+        usuario.setId(2L);
+        usuario.setUf(null);
+        when(port.lookup("1.2.3.4")).thenReturn(new GeoLookupResult("BR", "CE", false, true));
+        when(travelRepo.existeExcecaoAtivaParaDestino(any(), any(), any(), any())).thenReturn(false);
+
+        var avaliacao = service.avaliar(usuario, "1.2.3.4");
+
+        assertThat(avaliacao.decisao()).isEqualTo(MagistraturaGeofencePolicyService.Decisao.BLOQUEADO_UF);
+    }
+
     private Usuario usuarioCe() {
         Usuario u = new Usuario();
         u.setId(1L);

@@ -26,7 +26,7 @@ O PJB serve atores com níveis de confiança radicalmente distintos: do cidadão
 
 ### Implementação atual no PJB
 
-- `LaianeOficioAccessGuard.requireHighAssuranceForCancellation()` → AAL3 para cancelamento de ofício MP
+- `LaianeOficioAccessGuard.requireHighAssuranceForCancellation()` → AAL3 para cancelamento de ofício MP (controle específico anterior à matriz revisada; hoje o MP já exige AAL3 para todo ato, não só este)
 - `CurrentAuthenticationContextService.current().acr()` → nível GovBr corrente da sessão
 - `GovBrAssuranceLevel.meetsMinimum()` → verificação de patamar mínimo por ato
 - `CapabilityRateLimiter` → proteção de taxa por domínio institucional (INSTITUCIONAL, JURIDICA, LAWYER…)
@@ -45,6 +45,8 @@ A matriz já exigia AAL3 para Juiz/Desembargador/Ministro desde a criação dest
 ### Extensão do hardware-based authenticator para MP e Defensoria (2026-08-08)
 
 A matriz revisada acima eleva Promotor e Defensor Público de AAL2 para AAL3, equiparando-os à magistratura — decisão de domínio apoiada nas garantias constitucionais análogas dessas carreiras (CF art. 127 e 134, funções essenciais à Justiça). Implementação: `TipoUsuario.requiresHardwareAuthAssurance()` substitui `isMagistratura()` nos 5 pontos que aplicam o endurecimento (`CertificadoAuthFacadeService`, `WebAuthnService`, `PasskeyRequirementEnforcer`, `MagistraturaIdleLockFilter`, `MagistraturaGeofenceFilter`) — certificado A3/A4 obrigatório, passkey platform+TPM/Apple com verificação de usuário obrigatória, trava por inatividade de 10 min e geo-bloqueio de país/UF/VPN agora valem também para promotor e defensor público. A exceção de viagem (`SupportTicketCategoria`) foi renomeada de `EXCECAO_VIAGEM_MAGISTRATURA` para `EXCECAO_VIAGEM_CARREIRA_JURIDICA` para refletir o escopo ampliado. Procuradoria (PGM/PGE/AGU) permanece fora desta extensão — decisão de escopo explícita, não descuido.
+
+Na mesma revisão, `MagistraturaGeofencePolicyService.avaliar()` passou a bloquear (`BLOQUEADO_UF`) qualquer usuário sujeito ao geo-bloqueio (magistratura, MP ou Defensoria) que não tenha UF de lotação cadastrada — antes, `Usuario.uf == null` liberava o acesso silenciosamente, validando só o país. É uma mudança fail-closed deliberada: cadastro incompleto agora bloqueia em vez de degradar a proteção prometida pela matriz.
 
 ## Pendências documentadas
 
