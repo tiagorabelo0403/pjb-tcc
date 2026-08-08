@@ -5,6 +5,7 @@
 ## Sumário
 
 - [Quem entra no PJB, e como cada um entra](#quem-entra-no-pjb-e-como-cada-um-entra)
+- [Segurança reforçada de quem decide processo](#segurança-reforçada-de-quem-decide-processo)
 - [A base que todo painel profissional compartilha](#a-base-que-todo-painel-profissional-compartilha)
 - [Passo 1 — Quem pode ajuizar uma ação, e como](#passo-1--quem-pode-ajuizar-uma-ação-e-como)
 - [Passo 2 — A triagem organiza e separa cada processo no lugar certo](#passo-2--a-triagem-organiza-e-separa-cada-processo-no-lugar-certo)
@@ -33,13 +34,29 @@ Antes de qualquer processo existir, tem gente entrando no sistema — e cada per
 
 O sistema reconhece mais de 50 papéis diferentes, mas eles se agrupam em 10 categorias que realmente importam pra entender o fluxo: cidadão, advocacia, magistratura (juiz, desembargador, ministro), assessoria, Ministério Público, Defensoria Pública, Procuradoria, auxiliar da justiça (perito, oficial de justiça, e mais uma dezena de funções de apoio), segurança pública e administrador.
 
-Dois detalhes de segurança que valem a pena entender de cara: o **login por certificado ICP-Brasil** (usado por advogado e magistratura) não é escolher um certificado num menu — o servidor manda um desafio criptográfico, o certificado assina, e só depois de validar a cadeia de confiança inteira é que o acesso libera. E o **magistrado passa por reconhecimento facial** especificamente quando vai praticar um ato de peso — sentenciar, homologar acordo. No dia a dia comum, o login institucional normal já resolve.
+Dois detalhes de segurança que valem a pena entender de cara: o **login por certificado ICP-Brasil** (usado por advogado e magistratura) não é escolher um certificado num menu — o servidor manda um desafio criptográfico, o certificado assina, e só depois de validar a cadeia de confiança inteira é que o acesso libera. E a **magistratura tem uma camada a mais**: certificado A3 obrigatório (o de token/smartcard, não o de arquivo) e uma passkey vinculada ao TPM do próprio notebook — a mesma digital ou reconhecimento facial que já destrava o Windows Hello ou o Touch ID, sem precisar instalar nada novo. Juiz que sair da UF onde está lotado, aparecer atrás de VPN, ou ficar 10 minutos sem mexer no sistema também é barrado ou trancado automaticamente — com uma válvula de escape para viagem legítima, aprovada por chamado de suporte com antecedência.
 
 **O delegado de polícia**, em mais detalhe: ele não precisa tocar pessoalmente em cada passo de uma investigação — pode **delegar uma diligência específica** de um inquérito pra unidade de apuração responsável, com descrição, fundamento operacional e prioridade, sempre vinculada àquele inquérito e processo específico. E o painel dele reflete exatamente isso:
 
 ![Painel do delegado](assets/painel-delegado.svg)
 
 Um policial, por sua vez, só enxerga e atua no que pertence à própria unidade — nunca no inquérito de outra circunscrição, mesmo que quisesse procurar.
+
+[⬆ Voltar ao topo deste guia](#sumário)
+
+---
+
+## Segurança reforçada de quem decide processo
+
+Juiz, desembargador e ministro passam por quatro camadas antes de qualquer ato — não é redundância, é proporcional ao peso de assinar uma sentença ou um acórdão.
+
+![Segurança reforçada da magistratura — quatro camadas de proteção](assets/seguranca-magistrado.svg)
+
+A ordem importa: login institucional identifica quem está tentando entrar; certificado ICP-Brasil **A3** (token físico, não arquivo) prova a identidade formal; a **passkey vinculada ao TPM do próprio notebook** — a mesma digital ou reconhecimento facial que já destrava o Windows Hello ou o Touch ID — entrega biometria real sem instalar nada; e o **geo-bloqueio** nega na hora qualquer tentativa de fora do Brasil, fora da UF onde o magistrado está lotado, ou atrás de VPN/datacenter. Durante a sessão inteira, mais duas coisas continuam de olho: 10 minutos sem mexer no sistema tranca a tela (destravar é só um novo toque na passkey, não o fluxo inteiro de novo), e uma viagem legítima não deixa o juiz trancado fora do próprio trabalho — basta abrir com antecedência um **chamado de suporte** pedindo a janela de datas e o destino.
+
+Esse canal de suporte, aliás, não é exclusivo da magistratura — **qualquer perfil cadastrado** (cidadão, advogado, servidor, todos) pode abrir um chamado técnico direto do próprio painel, sem precisar sair do sistema pra achar um contato de TI.
+
+Um ponto que eu faço questão de deixar claro: nenhuma dessas camadas vira um mapa de "onde o juiz está agora". Não existe painel de localização pra colega, secretaria ou administrador ver — o sistema só decide, no instante do login, se libera ou bloqueia, e guarda o motivo de forma sigilosa, só pra investigação de incidente real. É controle antifraude, não vigilância.
 
 [⬆ Voltar ao topo deste guia](#sumário)
 

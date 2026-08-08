@@ -1,0 +1,93 @@
+<svg viewBox="0 0 1280 760" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Segurança reforçada da magistratura — camadas reais de proteção no login e na sessão</title>
+  <desc id="desc">Diagrama mostrando as quatro camadas sequenciais exigidas para autenticação de juiz, desembargador e ministro (login institucional, certificado ICP-Brasil A3, passkey vinculada ao TPM/biometria do dispositivo, geo-bloqueio de país/UF/VPN), mais a trava por inatividade de 10 minutos e a exceção de viagem aprovada por chamado de suporte, com base real em CertificadoAuthFacadeService, WebAuthnService, MagistraturaIdleLockFilter e MagistraturaGeofencePolicyService.</desc>
+
+  <defs>
+    <filter id="sombraS" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+    <marker id="setaS" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5d6785"/>
+    </marker>
+  </defs>
+
+  <rect x="20" y="20" width="1240" height="720" rx="14" fill="#12172a" stroke="#2a3350" stroke-width="1" filter="url(#sombraS)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/>
+  <circle cx="66" cy="48" r="6" fill="#e0b84f"/>
+  <circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">🛡️ Segurança reforçada da magistratura — quatro camadas, uma sessão</text>
+
+  <text x="50" y="106" font-size="13" fill="#a9b3cc">Juiz, desembargador e ministro passam pelas quatro camadas abaixo, nessa ordem, antes de qualquer ato:</text>
+
+  <!-- 4 camadas sequenciais -->
+  <g font-size="12">
+    <rect x="50" y="126" width="260" height="130" rx="12" fill="#2c3e67"/>
+    <text x="70" y="152" font-size="18" fill="#ffffff">1️⃣ 🔑</text>
+    <text x="70" y="178" font-weight="700" fill="#ffffff">Login institucional</text>
+    <text x="70" y="200" font-size="10.5" fill="#c9d3ea">Identifica quem está tentando</text>
+    <text x="70" y="216" font-size="10.5" fill="#c9d3ea">entrar — ainda sem privilégio.</text>
+    <text x="70" y="238" font-size="9.5" fill="#8894b8">SecurityChallengeService (OTP)</text>
+
+    <path d="M 318 190 L 360 190" stroke="#5d6785" stroke-width="2" marker-end="url(#setaS)"/>
+
+    <rect x="368" y="126" width="260" height="130" rx="12" fill="#2c3e67"/>
+    <text x="388" y="152" font-size="18" fill="#ffffff">2️⃣ 📇</text>
+    <text x="388" y="178" font-weight="700" fill="#ffffff">Certificado A3</text>
+    <text x="388" y="200" font-size="10.5" fill="#c9d3ea">Token/smartcard obrigatório —</text>
+    <text x="388" y="216" font-size="10.5" fill="#c9d3ea">certificado em arquivo (A1) é recusado.</text>
+    <text x="388" y="238" font-size="9.5" fill="#8894b8">IcpBrasilCertProfile.certType()</text>
+
+    <path d="M 636 190 L 678 190" stroke="#5d6785" stroke-width="2" marker-end="url(#setaS)"/>
+
+    <rect x="686" y="126" width="260" height="130" rx="12" fill="#2c3e67"/>
+    <text x="706" y="152" font-size="18" fill="#ffffff">3️⃣ 👆</text>
+    <text x="706" y="178" font-weight="700" fill="#ffffff">Passkey TPM + biometria</text>
+    <text x="706" y="200" font-size="10.5" fill="#c9d3ea">Digital/rosto do próprio notebook —</text>
+    <text x="706" y="216" font-size="10.5" fill="#c9d3ea">Windows Hello / Touch ID, nada novo pra instalar.</text>
+    <text x="706" y="238" font-size="9.5" fill="#8894b8">WebAuthnService · attachment=platform</text>
+
+    <path d="M 954 190 L 996 190" stroke="#5d6785" stroke-width="2" marker-end="url(#setaS)"/>
+
+    <rect x="1004" y="126" width="226" height="130" rx="12" fill="#3a1f28"/>
+    <text x="1024" y="152" font-size="18" fill="#ffffff">4️⃣ 🌎</text>
+    <text x="1024" y="178" font-weight="700" fill="#ffffff">Geo-bloqueio</text>
+    <text x="1024" y="200" font-size="10.5" fill="#f0d5da">Fora do Brasil, fora da UF de</text>
+    <text x="1024" y="216" font-size="10.5" fill="#f0d5da">lotação ou via VPN: barrado na hora.</text>
+    <text x="1024" y="238" font-size="9.5" fill="#c9a3ab">MagistraturaGeofencePolicyService</text>
+  </g>
+
+  <!-- controles complementares -->
+  <text x="640" y="300" text-anchor="middle" font-size="13" fill="#8a8f98">+ dois controles que continuam agindo durante a sessão inteira</text>
+
+  <g font-size="12">
+    <rect x="80" y="322" width="520" height="150" rx="12" fill="#171d34"/>
+    <text x="100" y="352" font-size="18" fill="#ffffff">⏳</text>
+    <text x="128" y="352" font-weight="700" fill="#ffffff">Trava por inatividade — 10 minutos</text>
+    <text x="100" y="378" font-size="11" fill="#a9b3cc">Ninguém mexeu no PJB por 10 min → a tela trava sozinha.</text>
+    <text x="100" y="398" font-size="11" fill="#a9b3cc">Destravar não repete certificado nem login: é só um</text>
+    <text x="100" y="418" font-size="11" fill="#a9b3cc">re-toque rápido na mesma passkey biométrica.</text>
+    <text x="100" y="444" font-size="9.5" fill="#5d6785">MagistraturaIdleLockFilter</text>
+
+    <rect x="620" y="322" width="580" height="150" rx="12" fill="#171d34"/>
+    <text x="640" y="352" font-size="18" fill="#ffffff">✈️</text>
+    <text x="668" y="352" font-weight="700" fill="#ffffff">Viagem legítima não trava o juiz</text>
+    <text x="640" y="378" font-size="11" fill="#a9b3cc">Antes de viajar, o juiz abre um chamado de suporte pedindo</text>
+    <text x="640" y="398" font-size="11" fill="#a9b3cc">a janela de datas e o destino — aprovado, o geo-bloqueio libera</text>
+    <text x="640" y="418" font-size="11" fill="#a9b3cc">automaticamente aquela UF/país só naquele período.</text>
+    <text x="640" y="444" font-size="9.5" fill="#5d6785">SupportTicket → JudgeTravelException</text>
+  </g>
+
+  <!-- rodape privacidade -->
+  <g>
+    <rect x="50" y="504" width="1140" height="140" rx="14" fill="#161c30"/>
+    <text x="76" y="534" font-size="13" font-weight="700" fill="#ffffff">🕵️ Controle antifraude, nunca rastreamento</text>
+    <text x="76" y="560" font-size="12" fill="#dfe4ee">Nenhuma dessas camadas gera um mapa de "onde o juiz está agora" — não existe painel de localização</text>
+    <text x="76" y="578" font-size="12" fill="#dfe4ee">visível a colega, secretaria ou administrador. O sistema só decide, no momento do login, se libera ou</text>
+    <text x="76" y="596" font-size="12" fill="#dfe4ee">bloqueia — e registra o motivo de forma sigilosa, só para investigação de incidente de segurança real.</text>
+    <text x="76" y="620" font-size="11" fill="#8a8f98">A mesma passkey (item 3) resolve dois problemas de uma vez: prova biométrica real e vínculo ao TPM do notebook — sem app novo.</text>
+  </g>
+
+  <text x="50" y="680" font-size="11" fill="#5d6785">Cidadão, advogado e demais papéis seguem o login padrão de sempre — essas quatro camadas extras existem só para quem decide processo.</text>
+</svg>
