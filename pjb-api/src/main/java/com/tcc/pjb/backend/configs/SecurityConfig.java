@@ -64,6 +64,8 @@ import com.tcc.pjb.backend.platform.security.idempotency.PjbIdempotencyFilter;
 import com.tcc.pjb.backend.core.security.webauthn.web.PasskeyAuthenticationFilter;
 import com.tcc.pjb.backend.core.security.webauthn.web.MagistraturaIdleLockFilter;
 import com.tcc.pjb.backend.core.security.webauthn.PasskeySessionActivityService;
+import com.tcc.pjb.backend.core.security.geofence.web.MagistraturaGeofenceFilter;
+import com.tcc.pjb.backend.core.security.geofence.MagistraturaGeofencePolicyService;
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import com.tcc.pjb.backend.configs.security.perimeter.ClientIpResolver;
@@ -99,6 +101,7 @@ public class SecurityConfig {
                                            ObjectProvider<ApiRouteGovernanceFilter> apiRouteGovernanceFilterProvider,
                                            ObjectProvider<PasskeyAuthenticationFilter> passkeyFilterProvider,
                                            ObjectProvider<MagistraturaIdleLockFilter> magistraturaIdleLockFilterProvider,
+                                           ObjectProvider<MagistraturaGeofenceFilter> magistraturaGeofenceFilterProvider,
                                            ObjectProvider<RequestBodyHashFilter> bodyHashFilterProvider,
                                            ObjectProvider<ApiRequestOriginGovernanceFilter> originGovernanceFilterProvider,
                                            ObjectProvider<PjbIdempotencyFilter> pjbIdempotencyFilterProvider,
@@ -251,6 +254,15 @@ public class SecurityConfig {
         MagistraturaIdleLockFilter magistraturaIdleLockFilter = magistraturaIdleLockFilterProvider.getIfAvailable();
         if (magistraturaIdleLockFilter != null && passkey != null) {
             http.addFilterAfter(magistraturaIdleLockFilter, PasskeyAuthenticationFilter.class);
+        }
+
+        MagistraturaGeofenceFilter magistraturaGeofenceFilter = magistraturaGeofenceFilterProvider.getIfAvailable();
+        if (magistraturaGeofenceFilter != null && passkey != null) {
+            if (magistraturaIdleLockFilter != null) {
+                http.addFilterAfter(magistraturaGeofenceFilter, MagistraturaIdleLockFilter.class);
+            } else {
+                http.addFilterAfter(magistraturaGeofenceFilter, PasskeyAuthenticationFilter.class);
+            }
         }
 
         RequestBodyHashFilter bodyHashFilter = bodyHashFilterProvider.getIfAvailable();
@@ -442,6 +454,14 @@ public class SecurityConfig {
                                                                    PasskeySessionActivityService activityService,
                                                                    CurrentUserService currentUserService) {
         return new MagistraturaIdleLockFilter(sessionRepo, activityService, currentUserService);
+    }
+
+    @Bean
+    public MagistraturaGeofenceFilter magistraturaGeofenceFilter(MagistraturaGeofencePolicyService policyService,
+                                                                   CurrentUserService currentUserService,
+                                                                   ClientIpResolver clientIpResolver,
+                                                                   AuditLedgerService auditLedgerService) {
+        return new MagistraturaGeofenceFilter(policyService, currentUserService, clientIpResolver, auditLedgerService);
     }
 
     @Bean
