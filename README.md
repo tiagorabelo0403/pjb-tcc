@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.478%20unit%20%2B%20286%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.478%20unit%20%2B%20287%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -325,7 +325,7 @@ docker compose down
 O projeto tem dois níveis de teste com características bem diferentes:
 
 - **Testes unitários (Surefire):** 4.478 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 286 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes de integração (Failsafe):** 287 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.478 unitários (Surefire) e depois os 286 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.478 unitários (Surefire) e depois os 287 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -383,7 +383,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
-| Total de testes de integração | Failsafe | **286** ¹ |
+| Total de testes de integração | Failsafe | **287** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
@@ -485,6 +485,8 @@ Investigando o painel de inquéritos do MP, achei uma degradação silenciosa: `
 Último item de "outros": painéis de produtividade para Ministério Público, Defensoria e Procuradoria — mesma lacuna já fechada para magistrado e oficial de justiça, só que triplicada. Investigando os pontos de escrita das três instituições (`MinisterioPublicoPainelService.registrarManifestacao`/`.registrarParecer`, `DefensorPublicoPainelService.registrarPeticao`/`.registrarRequerimentoGratuidade`, `DefensoriaPublicaOperacionalService.apresentarDefesa`/`.impetrarHabeasCorpus`/`.solicitarAssistenciaJudiciariaGratuita`, `ProcuradoriaOperacionalService.apresentarContestatacao`/`.emitirParecer`), achei o mesmo problema de raiz do magistrado: nenhum desses 8 métodos grava `MovimentacaoProcessual.ator` — a maioria só publica um evento efêmero de UI (`commons.publishUserHistory`) ou cria um `WorkItem` sem `assignedUser`, sem deixar nenhum rastro consultável de quem praticou o ato. `ajuizarExecucaoFiscal` (Procuradoria) ficou de fora de propósito: não recebe `processoId` — é o próprio ato de criar um processo novo, sem `Processo` existente pra vincular a movimentação. Em vez de repetir o método privado que criei pro magistrado em cada um dos 4 serviços, extraí `MovimentacaoProcessualRegistrar` (novo, `service/institutional/movimentacao/`) — um componente compartilhado com a mesma lógica, correto agora ser reutilizado porque 8 pontos de escrita reais o usam imediatamente, não é abstração especulativa. `InstitutionalProdutividadeService` (novo, também compartilhado) calcula o painel — total, breakdown por tipo classificado pelo prefixo de descrição que cada um dos 8 pontos já controla, e intervalo médio entre atos — a partir da mesma query `MovimentacaoProcessualRepository.findByAtor_IdAndDataMovimentacaoAfterOrderByDataMovimentacaoDesc` já usada pelo painel do magistrado. Três controllers finos (`MinisterioPublicoProdutividadeController`, `DefensorProdutividadeController`, `ProcuradoriaProdutividadeController`) expõem `GET /produtividade?diasJanela=30` cada um no próprio namespace, delegando pro mesmo serviço com o `atorId` resolvido do usuário autenticado. 10 testes novos (`MovimentacaoProcessualRegistrarTest`, `InstitutionalProdutividadeServiceTest`, e 2 testes de integração por controller) provam o registro de movimentação, a classificação por instituição e a delegação de cada painel.
 
 Com isso fecham os 5 itens reais encontrados para "outros" (Ministério Público, Defensoria, Procuradoria) — a investigação buscou 10, parou em 5 por decisão deliberada, mesma disciplina do magistrado e do oficial de justiça: nenhuma API inventada pra completar a contagem. Restam dois papéis do plano original de 60 ideias: cidadão, e o item adiado do secretário (malote digital), este último só se surgir fundamento técnico real.
+
+Último papel do plano: cidadão. É a superfície mais madura das seis investigadas nesta frente — 19 controllers próprios, painel/pendências já agregando prazo/audiência/julgamento/comunicação por CPF, ciência de intimação já aberta, acesso à Laiane para peticionamento já funcionando. Mesmo assim, achei `JusticaGratuidaVerificadorService.avaliar` — motor de auto-avaliação de gratuidade/AJG (CPC art. 99 §3º/art. 100, teto de 5 salários mínimos via `SalarioMinimoNacionalService.valorVigente()`, já corrigido nesta mesma leva de trabalho pelo `D-salario-minimo-hardcoded-em-gratuidade`) — sem nenhum consumidor em `main`, confirmado por grep: só a própria classe e seu teste unitário a mencionavam. É um cálculo puro e sem efeito colateral (sem persistência, sem consulta a processo real), seguro pra expor direto ao cidadão como ferramenta de orientação antes de decidir se declara hipossuficiência. `CidadaoGratuidadeController` (novo, `/api/v1/cidadao/gratuidade`) expõe `POST /avaliacao` delegando ao motor existente sem duplicar a regra do teto. 1 teste de integração novo (`CidadaoGratuidadeControllerIT`, padrão MockMvc standalone, com o serviço real instanciado sobre um `SalarioMinimoNacionalService` mockado) prova a delegação e o cálculo do teto real.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -1032,7 +1034,7 @@ CREATE POLICY processo_sigilo ON processo
 | Métrica | Estado |
 |---------|--------|
 | Testes unitários (Surefire) | **4.478 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **286 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes de integração (Failsafe) | **287 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
