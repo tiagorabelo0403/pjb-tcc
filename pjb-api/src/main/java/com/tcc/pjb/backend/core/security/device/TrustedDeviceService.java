@@ -55,7 +55,7 @@ public class TrustedDeviceService {
                                  String attestationFmt,
                                  boolean attestationTrusted,
                                  String ip) {
-        return registerInternal(usuario, credentialId, publicKey, alias, aaguid, attestationFmt, attestationTrusted, 0L, ip);
+        return registerInternal(usuario, credentialId, publicKey, alias, aaguid, attestationFmt, attestationTrusted, null, 0L, ip);
     }
 
     @Transactional
@@ -66,9 +66,10 @@ public class TrustedDeviceService {
                                          String aaguid,
                                          String attestationFmt,
                                          boolean attestationTrusted,
+                                         String authenticatorAttachment,
                                          long signatureCount,
                                          String ip) {
-        return registerInternal(usuario, credentialId, publicKeyCoseBase64Url, alias, aaguid, attestationFmt, attestationTrusted, signatureCount, ip);
+        return registerInternal(usuario, credentialId, publicKeyCoseBase64Url, alias, aaguid, attestationFmt, attestationTrusted, authenticatorAttachment, signatureCount, ip);
     }
 
     private TrustedDevice registerInternal(Usuario usuario,
@@ -78,6 +79,7 @@ public class TrustedDeviceService {
                                           String aaguid,
                                           String attestationFmt,
                                           boolean attestationTrusted,
+                                          String authenticatorAttachment,
                                           long signatureCount,
                                           String ip) {
 
@@ -112,6 +114,7 @@ public class TrustedDeviceService {
         d.setAaguid(normalize(aaguid, 64, false));
         d.setAttestationFmt(normalize(attestationFmt, 40, false));
         d.setAttestationTrusted(attestationTrusted);
+        d.setAuthenticatorAttachment(normalize(authenticatorAttachment, 20, false));
         d.setSignCount(Math.max(0, signatureCount));
         d.setEnrollIp(normalize(ip, 64, false));
         d.setEnrollNetwork(normalize(risk.networkLabel(), 120, false));

@@ -567,7 +567,9 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
         passkey.setCredentialId(credentialId);
         passkey.setPublicKey("pub-key-" + credentialId);
         passkey.setAlias("passkey-" + credentialId);
-        passkey.setAttestationTrusted(false);
+        passkey.setAuthenticatorAttachment("platform");
+        passkey.setAttestationFmt("tpm");
+        passkey.setAttestationTrusted(true);
         passkey.setEnrollSuspectNetwork(false);
         passkey.setRiskScoreEnroll(0);
         trustedDeviceRepository.save(passkey);

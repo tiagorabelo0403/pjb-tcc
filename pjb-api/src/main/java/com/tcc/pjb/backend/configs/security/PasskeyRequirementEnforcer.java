@@ -23,10 +23,13 @@ public class PasskeyRequirementEnforcer {
             return;
         }
         List<TrustedDevice> devices = trustedDeviceRepository.findActiveByUser(usuarioId);
-        boolean temPasskey = devices.stream()
-                .anyMatch(d -> d.getCredentialId() != null && !d.getCredentialId().isBlank());
-        if (!temPasskey) {
-            throw new PasskeyRequiredException("passkey_obrigatoria_magistratura");
+        boolean temPasskeyForte = devices.stream().anyMatch(d ->
+                d.getCredentialId() != null && !d.getCredentialId().isBlank()
+                        && "platform".equalsIgnoreCase(d.getAuthenticatorAttachment())
+                        && d.isAttestationTrusted()
+                        && ("tpm".equalsIgnoreCase(d.getAttestationFmt()) || "apple".equalsIgnoreCase(d.getAttestationFmt())));
+        if (!temPasskeyForte) {
+            throw new PasskeyRequiredException("passkey_tpm_biometrica_obrigatoria_magistratura");
         }
     }
 }
