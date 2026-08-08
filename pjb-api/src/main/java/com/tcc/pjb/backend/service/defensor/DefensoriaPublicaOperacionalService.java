@@ -234,6 +234,31 @@ PerfilDashboardContext ctx = contextFactory.build();
 Usuario usuario = ctx.usuario();
 authorizationService.requireRole(usuario, "ROLE_DEFENSOR_PUBLICO",
 "ROLE_DEFENSOR_PUBLICO_FEDERAL");
+return criarSolicitacaoAjg(processo, usuario, renda, justificativa,
+"Assistência judiciária gratuita solicitada pela Defensoria Pública.");
+}
+
+@Transactional
+public Map<String, Object> solicitarAssistenciaJudiciariaGratuitaComoParte(Long processoId,
+String renda,
+String justificativa) {
+Processo processo = processoRepository.findById(processoId)
+.orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+PerfilDashboardContext ctx = contextFactory.build();
+Usuario usuario = ctx.usuario();
+if (usuario.getTipoUsuario() != com.tcc.pjb.backend.model.entity.enums.TipoUsuario.CIDADAO) {
+throw new com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException("Apenas o próprio cidadão parte do processo pode solicitar AJG diretamente.");
+}
+String cpf = usuario.getCpf();
+if (cpf == null || cpf.isBlank() || !com.tcc.pjb.backend.core.security.ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)) {
+throw new com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException("Cidadão não é parte do processo.");
+}
+return criarSolicitacaoAjg(processo, usuario, renda, justificativa,
+"Assistência judiciária gratuita solicitada pela própria parte (jus postulandi).");
+}
+
+private Map<String, Object> criarSolicitacaoAjg(Processo processo, Usuario usuario, String renda, String justificativa, String descricaoMovimentacao) {
+Long processoId = processo.getId();
 WorkItem ajgItem = WorkItem.builder()
 .processo(processo)
 .faseOrigem(processo.getFaseAtual())
@@ -251,8 +276,8 @@ WorkItem ajgItem = WorkItem.builder()
 .baseLegal("Art. 98 CPC — Gratuidade da Justiça")
 .dueAt(Instant.now().plus(48, ChronoUnit.HOURS))
 .build();
-workItemRepository.save(ajgItem);
-movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Assistência judiciária gratuita solicitada pela Defensoria Pública.");
+ajgItem = workItemRepository.save(ajgItem);
+movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), descricaoMovimentacao);
 LinkedHashMap<String, Object> response = new LinkedHashMap<>();
 response.put("status", "AJG_SOLICITADA");
 response.put("processoId", processoId);

@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.478%20unit%20%2B%20287%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.481%20unit%20%2B%20288%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -324,8 +324,8 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.478 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 287 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes unitários (Surefire):** 4.481 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes de integração (Failsafe):** 288 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.478 unitários (Surefire) e depois os 287 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.481 unitários (Surefire) e depois os 288 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,11 +379,11 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.478** |
+| Total de testes unitários | Surefire | **4.481** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
-| Total de testes de integração | Failsafe | **287** ¹ |
+| Total de testes de integração | Failsafe | **288** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
@@ -487,6 +487,8 @@ Investigando o painel de inquéritos do MP, achei uma degradação silenciosa: `
 Com isso fecham os 5 itens reais encontrados para "outros" (Ministério Público, Defensoria, Procuradoria) — a investigação buscou 10, parou em 5 por decisão deliberada, mesma disciplina do magistrado e do oficial de justiça: nenhuma API inventada pra completar a contagem. Restam dois papéis do plano original de 60 ideias: cidadão, e o item adiado do secretário (malote digital), este último só se surgir fundamento técnico real.
 
 Último papel do plano: cidadão. É a superfície mais madura das seis investigadas nesta frente — 19 controllers próprios, painel/pendências já agregando prazo/audiência/julgamento/comunicação por CPF, ciência de intimação já aberta, acesso à Laiane para peticionamento já funcionando. Mesmo assim, achei `JusticaGratuidaVerificadorService.avaliar` — motor de auto-avaliação de gratuidade/AJG (CPC art. 99 §3º/art. 100, teto de 5 salários mínimos via `SalarioMinimoNacionalService.valorVigente()`, já corrigido nesta mesma leva de trabalho pelo `D-salario-minimo-hardcoded-em-gratuidade`) — sem nenhum consumidor em `main`, confirmado por grep: só a própria classe e seu teste unitário a mencionavam. É um cálculo puro e sem efeito colateral (sem persistência, sem consulta a processo real), seguro pra expor direto ao cidadão como ferramenta de orientação antes de decidir se declara hipossuficiência. `CidadaoGratuidadeController` (novo, `/api/v1/cidadao/gratuidade`) expõe `POST /avaliacao` delegando ao motor existente sem duplicar a regra do teto. 1 teste de integração novo (`CidadaoGratuidadeControllerIT`, padrão MockMvc standalone, com o serviço real instanciado sobre um `SalarioMinimoNacionalService` mockado) prova a delegação e o cálculo do teto real.
+
+Segundo item do cidadão: pedido de assistência judiciária gratuita para quem exerce jus postulandi (JEC/JEF, Lei 9.099/95 art. 9º e Lei 10.259/2001 art. 10, já validados nesta mesma frente) e não tem defensor pra pedir em seu nome. `DefensoriaPublicaOperacionalService.solicitarAssistenciaJudiciariaGratuita` já existia completo — cria o `WorkItem` roteado com SLA de 48h e já registra `MovimentacaoProcessual.ator` —, mas o gate interno exige `ROLE_DEFENSOR_PUBLICO`/`ROLE_DEFENSOR_PUBLICO_FEDERAL`; um cidadão autorrepresentado não tem como acionar o próprio fluxo. Extraí a construção do `WorkItem` e o registro de movimentação pra um método privado (`criarSolicitacaoAjg`) e adicionei `solicitarAssistenciaJudiciariaGratuitaComoParte`, que troca o gate de papel institucional por verificação de titularidade real: só aceita `CIDADAO` cujo CPF bate com o do processo (`ProcessoPartyCpfLinkPolicy.vinculado`, o mesmo motor unificado que já fecha esse tipo de checagem em outro ponto do sistema). `POST /api/v1/cidadao/gratuidade/processos/{processoId}/solicitar-ajg` (no mesmo `CidadaoGratuidadeController` do item anterior) expõe isso, sem duplicar a lógica de roteamento nem a de movimentação. O teste unitário novo escreveu `workItemRepository.save()` como mock puro e expôs uma fragilidade real, embora pré-existente: o código lia `ajgItem.getId()` sem capturar o retorno de `save()`, contando implicitamente com a mutação in-place que o Hibernate faz em produção — corrigido para capturar o retorno (`ajgItem = workItemRepository.save(ajgItem)`), mais robusto e sem mudar nenhum comportamento real. 4 testes novos (3 unitários em `DefensoriaPublicaOperacionalServiceAjgComoParteTest` provando aceite do titular, rejeição de quem não é parte e rejeição de quem não é cidadão; 1 de integração a mais em `CidadaoGratuidadeControllerIT`) provam o fluxo de ponta a ponta.
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -1033,8 +1035,8 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.478 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **287 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes unitários (Surefire) | **4.481 · 0 falhas · 0 erros** |
+| Testes de integração (Failsafe) | **288 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
@@ -1247,7 +1249,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.478 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.481 testes e 271 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
