@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import com.tcc.pjb.backend.core.security.magistratura.delegation.DelegationCredential;
 import com.tcc.pjb.backend.core.security.sigilo.SigiloCredential;
-import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenPayload;
 import com.tcc.pjb.backend.core.security.stepup.DecisionStepUpTokenPayload;
 import com.tcc.pjb.backend.model.entity.MembroEquipe;
 
@@ -86,17 +85,6 @@ public final class RequestContext {
         c.delegationCredential = credential;
     }
 
-    public static Optional<FaceReauthTokenPayload> getFaceCredential() {
-        Context c = current();
-        return c == null ? Optional.empty() : Optional.ofNullable(c.faceCredential);
-    }
-
-    public static void setFaceCredential(FaceReauthTokenPayload credential) {
-        Context c = current();
-        if (c == null) return;
-        c.faceCredential = credential;
-    }
-
     public static Optional<DecisionStepUpTokenPayload> getDecisionStepUpCredential() {
         Context c = current();
         return c == null ? Optional.empty() : Optional.ofNullable(c.decisionStepUpCredential);
@@ -172,7 +160,6 @@ public final class RequestContext {
         String justificativa;
         SigiloCredential sigiloCredential;
         DelegationCredential delegationCredential;
-        FaceReauthTokenPayload faceCredential;
         DecisionStepUpTokenPayload decisionStepUpCredential;
         String clientWindowBinding;
         String clientTabBinding;

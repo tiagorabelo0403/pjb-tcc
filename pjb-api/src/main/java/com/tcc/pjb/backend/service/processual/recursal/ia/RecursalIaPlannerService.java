@@ -745,7 +745,6 @@ public class RecursalIaPlannerService {
         out.put("tipoRecurso", appealType.name());
         put(out, "govBrStepUpEndpoint", "/api/v1/auth/govbr/stepup/start");
         put(out, "passkeyStepUpEndpoint", "/api/v1/auth/stepup/options");
-        put(out, "faceStepUpEndpoint", "/api/v1/magistratura/face/issue");
         if (documentoAggregate != null) {
             out.put("lotesAssinaveis", documentoAggregate.trilhaAssinavel());
             out.put("alertasDocumentais", documentoAggregate.alertas());

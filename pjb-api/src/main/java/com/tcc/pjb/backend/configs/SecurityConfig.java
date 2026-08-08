@@ -50,8 +50,6 @@ import com.tcc.pjb.backend.core.observability.systemhealth.PjbOperationalCrisisS
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.magistratura.delegation.DelegationTokenService;
 import com.tcc.pjb.backend.core.security.magistratura.web.DelegationTokenAugmentationFilter;
-import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenService;
-import com.tcc.pjb.backend.core.security.stepup.web.MinisterStepUpFilter;
 import com.tcc.pjb.backend.core.security.stepup.web.DecisionStepUpFilter;
 import com.tcc.pjb.backend.core.security.stepup.web.DecisionClientBindingFilter;
 import com.tcc.pjb.backend.core.security.device.web.DevicePolicyFilter;
@@ -105,7 +103,6 @@ public class SecurityConfig {
                                            ObjectProvider<ApiRequestOriginGovernanceFilter> originGovernanceFilterProvider,
                                            ObjectProvider<PjbIdempotencyFilter> pjbIdempotencyFilterProvider,
                                            ObjectProvider<DelegationTokenAugmentationFilter> delegationFilterProvider,
-                                           ObjectProvider<MinisterStepUpFilter> ministerStepUpFilterProvider,
                                            ObjectProvider<DecisionStepUpFilter> decisionStepUpFilterProvider,
                                            ObjectProvider<DecisionClientBindingFilter> decisionClientBindingFilterProvider,
                                            ObjectProvider<AccountFreezeFilter> accountFreezeFilterProvider,
@@ -285,19 +282,9 @@ public class SecurityConfig {
         if (delegationFilter != null) {
             http.addFilterAfter(delegationFilter, BasicAuthenticationFilter.class);
         }
-        MinisterStepUpFilter ministerStepUpFilter = ministerStepUpFilterProvider.getIfAvailable();
-        if (ministerStepUpFilter != null) {
-            if (delegationFilter != null) {
-                http.addFilterAfter(ministerStepUpFilter, DelegationTokenAugmentationFilter.class);
-            } else {
-                http.addFilterAfter(ministerStepUpFilter, BasicAuthenticationFilter.class);
-            }
-        }
         DecisionStepUpFilter decisionStepUpFilter = decisionStepUpFilterProvider.getIfAvailable();
         if (decisionStepUpFilter != null) {
-            if (ministerStepUpFilter != null) {
-                http.addFilterAfter(decisionStepUpFilter, MinisterStepUpFilter.class);
-            } else if (delegationFilter != null) {
+            if (delegationFilter != null) {
                 http.addFilterAfter(decisionStepUpFilter, DelegationTokenAugmentationFilter.class);
             } else {
                 http.addFilterAfter(decisionStepUpFilter, BasicAuthenticationFilter.class);
@@ -307,8 +294,6 @@ public class SecurityConfig {
         if (decisionClientBindingFilter != null) {
             if (decisionStepUpFilter != null) {
                 http.addFilterAfter(decisionClientBindingFilter, DecisionStepUpFilter.class);
-            } else if (ministerStepUpFilter != null) {
-                http.addFilterAfter(decisionClientBindingFilter, MinisterStepUpFilter.class);
             } else if (delegationFilter != null) {
                 http.addFilterAfter(decisionClientBindingFilter, DelegationTokenAugmentationFilter.class);
             } else {
