@@ -30,6 +30,7 @@ import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.SefazNfeCadastroResolve
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.ViaInterceptacao;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
@@ -207,6 +208,7 @@ public class CitacaoIntimacaoEngine {
     private final MatrizComunicacaoJudicialResolver matrizResolver;
     private final PjbHsmProperties hsmProperties;
     private final PjbExecutionOrchestrator executionOrchestrator;
+    private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
 
     public CitacaoIntimacaoEngine(ExpedicaoJudicialRepository expedicaoRepository,
                                   ProcessoRepository processoRepository,
@@ -225,7 +227,8 @@ public class CitacaoIntimacaoEngine {
                                   ObjectProvider<SefazNfeCadastroResolver> sefazCadastroResolverProvider,
                                   MatrizComunicacaoJudicialResolver matrizResolver,
                                   PjbHsmProperties hsmProperties,
-                                  PjbExecutionOrchestrator executionOrchestrator) {
+                                  PjbExecutionOrchestrator executionOrchestrator,
+                                  MovimentacaoProcessualRegistrar movimentacaoRegistrar) {
         this.expedicaoRepository = Objects.requireNonNull(expedicaoRepository, "expedicaoRepository");
         this.processoRepository = Objects.requireNonNull(processoRepository, "processoRepository");
         this.usuarioRepository = Objects.requireNonNull(usuarioRepository, "usuarioRepository");
@@ -244,6 +247,7 @@ public class CitacaoIntimacaoEngine {
         this.matrizResolver = Objects.requireNonNull(matrizResolver, "matrizResolver");
         this.hsmProperties = Objects.requireNonNull(hsmProperties, "hsmProperties");
         this.executionOrchestrator = Objects.requireNonNull(executionOrchestrator, "executionOrchestrator");
+        this.movimentacaoRegistrar = Objects.requireNonNull(movimentacaoRegistrar, "movimentacaoRegistrar");
     }
 
     @Transactional
@@ -353,6 +357,7 @@ public class CitacaoIntimacaoEngine {
         expedicaoRepository.save(expedicao);
         Processo processo = processoRepository.findProcessoCompletoById(expedicao.getProcessoId()).orElse(null);
         iniciarPrazoEReveliaSeCabivel(expedicao);
+        registrarMovimentacaoAcuse(processo, "Ciência da expedição confirmada pelo destinatário (acuse de recebimento).");
         notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
         propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
         publicarWebhookExpedicao(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_ENTREGUE_CONFIRMADA, java.util.Map.of("canal", String.valueOf(expedicao.getModalidade())));
@@ -374,6 +379,7 @@ public class CitacaoIntimacaoEngine {
         expedicaoRepository.save(expedicao);
         Processo processo = processoRepository.findProcessoCompletoById(expedicao.getProcessoId()).orElse(null);
         iniciarPrazoEReveliaSeCabivel(expedicao);
+        registrarMovimentacaoAcuse(processo, "Leitura da expedição confirmada pelo destinatário.");
         notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.LIDA_CONFIRMADA);
         propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.LIDA_CONFIRMADA);
         publicarWebhookExpedicao(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_LIDA_CONFIRMADA, java.util.Map.of("acuseHash", String.valueOf(acuseHash)));
@@ -384,6 +390,17 @@ public class CitacaoIntimacaoEngine {
                 acuseHash,
                 "Leitura confirmada. Prazo de resposta iniciado em " + expedicao.getPrazoRespostaInicioEm()
         );
+    }
+
+    private void registrarMovimentacaoAcuse(Processo processo, String descricao) {
+        if (processo == null) {
+            return;
+        }
+        Usuario ator = currentUserService.getOrNull();
+        if (ator == null) {
+            return;
+        }
+        movimentacaoRegistrar.registrar(processo, ator, processo.getFaseAtual(), descricao);
     }
 
     @Transactional
