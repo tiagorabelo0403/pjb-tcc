@@ -19,7 +19,7 @@ public class PasskeyRequirementEnforcer {
     }
 
     public void exigirParaMagistratura(Long usuarioId, TipoUsuario tipo) {
-        if (tipo == null || !tipo.isMagistratura()) {
+        if (tipo == null || !tipo.requiresHardwareAuthAssurance()) {
             return;
         }
         List<TrustedDevice> devices = trustedDeviceRepository.findActiveByUser(usuarioId);
@@ -29,7 +29,7 @@ public class PasskeyRequirementEnforcer {
                         && d.isAttestationTrusted()
                         && ("tpm".equalsIgnoreCase(d.getAttestationFmt()) || "apple".equalsIgnoreCase(d.getAttestationFmt())));
         if (!temPasskeyForte) {
-            throw new PasskeyRequiredException("passkey_tpm_biometrica_obrigatoria_magistratura");
+            throw new PasskeyRequiredException("passkey_tpm_biometrica_obrigatoria_carreira_juridica_essencial");
         }
     }
 }

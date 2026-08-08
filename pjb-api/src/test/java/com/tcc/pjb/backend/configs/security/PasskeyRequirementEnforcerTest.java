@@ -76,6 +76,28 @@ class PasskeyRequirementEnforcerTest {
     }
 
     @Test
+    void promotorSemPasskey_lancaPasskeyRequiredException() {
+        when(trustedDeviceRepository.findActiveByUser(7L)).thenReturn(List.of());
+        assertThatThrownBy(() -> enforcer().exigirParaMagistratura(7L, TipoUsuario.MEMBRO_MINISTERIO_PUBLICO))
+                .isInstanceOf(PasskeyRequiredException.class);
+    }
+
+    @Test
+    void promotorComPasskeyPlatformTpmConfiavel_permite() {
+        TrustedDevice device = dispositivo("platform", true, "tpm");
+        when(trustedDeviceRepository.findActiveByUser(7L)).thenReturn(List.of(device));
+        assertThatCode(() -> enforcer().exigirParaMagistratura(7L, TipoUsuario.MEMBRO_MINISTERIO_PUBLICO))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void defensorSemPasskey_lancaPasskeyRequiredException() {
+        when(trustedDeviceRepository.findActiveByUser(8L)).thenReturn(List.of());
+        assertThatThrownBy(() -> enforcer().exigirParaMagistratura(8L, TipoUsuario.DEFENSOR_PUBLICO))
+                .isInstanceOf(PasskeyRequiredException.class);
+    }
+
+    @Test
     void cidadaoSemPasskey_naoEVerificado() {
         assertThatCode(() -> enforcer().exigirParaMagistratura(5L, TipoUsuario.CIDADAO))
                 .doesNotThrowAnyException();
