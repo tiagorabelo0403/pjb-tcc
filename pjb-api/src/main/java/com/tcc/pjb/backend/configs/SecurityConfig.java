@@ -353,7 +353,8 @@ public class SecurityConfig {
                             "/api/v1/auth/passkey/options",
                             "/api/v1/auth/passkey/finish",
                             "/api/v1/auth/certificado/desafio",
-                            "/api/v1/auth/certificado/resposta").permitAll();
+                            "/api/v1/auth/certificado/resposta",
+                            "/api/v1/magistratura/ativacao/confirmar").permitAll();
                     authz.requestMatchers("/actuator/info", "/actuator/metrics/**", "/actuator/prometheus")
                             .hasAnyAuthority("ROLE_ADMIN", "ROLE_ADMINISTRADOR");
                     authz.requestMatchers("/api/admin/**", "/api/v1/admin/**")

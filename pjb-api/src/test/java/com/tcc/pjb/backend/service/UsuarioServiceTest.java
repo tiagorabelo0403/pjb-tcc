@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -7,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.security.device.SecurityChallengeService;
 import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
 import com.tcc.pjb.backend.core.validation.oab.OabStrictValidator;
 import com.tcc.pjb.backend.mapper.UsuarioMapper;
@@ -31,6 +33,7 @@ class UsuarioServiceTest {
     private final DocumentoNacionalValidator documentoNacionalValidator = mock(DocumentoNacionalValidator.class);
     private final IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService = mock(IdentidadeJuridicaNacionalService.class);
     private final AuditLedgerService auditLedgerService = mock(AuditLedgerService.class);
+    private final SecurityChallengeService securityChallengeService = mock(SecurityChallengeService.class);
 
     private UsuarioService service;
 
@@ -42,7 +45,8 @@ class UsuarioServiceTest {
                 oabStrictValidator,
                 documentoNacionalValidator,
                 identidadeJuridicaNacionalService,
-                auditLedgerService
+                auditLedgerService,
+                securityChallengeService
         );
     }
 
@@ -137,6 +141,35 @@ class UsuarioServiceTest {
 
         verify(usuarioRepository).findByEmail("servidor@test.local");
         verify(identidadeJuridicaNacionalService).sincronizarUsuario(any());
+        verify(securityChallengeService, org.mockito.Mockito.never()).createEmailOtp(any(), any(), any());
+    }
+
+    @Test
+    void deveMarcarPendenteAtivacaoEEnviarConviteQuandoUsuarioForMagistratura() {
+        when(documentoNacionalValidator.normalizarDocumento("12345678909")).thenReturn("12345678909");
+        when(documentoNacionalValidator.cpfValido("12345678909")).thenReturn(true);
+        when(usuarioRepository.findByEmail("juiz@test.local")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByCpf("12345678909")).thenReturn(Optional.empty());
+
+        Usuario entidade = new Usuario();
+        entidade.setId(2L);
+        entidade.setTipoUsuario(TipoUsuario.JUIZ);
+        when(usuarioMapper.requestParaEntidade(any())).thenReturn(entidade);
+        when(usuarioRepository.save(any())).thenReturn(entidade);
+
+        IdentidadeJuridicaNacional identidade = mock(IdentidadeJuridicaNacional.class);
+        when(identidadeJuridicaNacionalService.sincronizarUsuario(any())).thenReturn(identidade);
+        when(usuarioMapper.entidadeParaResponse(any())).thenReturn(new UsuarioResponse());
+        when(identidadeJuridicaNacionalService.resumirPorId(any())).thenReturn(Optional.empty());
+
+        UsuarioRequest dto = new UsuarioRequest();
+        dto.setCpf("12345678909");
+        dto.setEmail("juiz@test.local");
+
+        service.criarUsuario(dto);
+
+        assertThat(entidade.getSituacaoConta()).isEqualTo(com.tcc.pjb.backend.model.entity.enums.SituacaoConta.PENDENTE_ATIVACAO);
+        verify(securityChallengeService).createEmailOtp(entidade, null, "convite_ativacao_magistrado");
     }
 
     @Test
