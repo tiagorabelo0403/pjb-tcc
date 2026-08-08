@@ -83,6 +83,48 @@ class MagistraturaIdleLockFilterTest {
         verify(chain, never()).doFilter(request, response);
     }
 
+    @Test
+    void promotorComSessaoInativaHaMaisDe10MinutosEBloqueada() throws Exception {
+        when(currentUserService.getOrNull()).thenReturn(usuario(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO));
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getAttribute("PJB_STRONG_AUTH_SESSION_ID")).thenReturn(10L);
+        PasskeySession sessao = new PasskeySession();
+        sessao.setId(10L);
+        sessao.setLastSeenAt(LocalDateTime.now().minusMinutes(15));
+        when(repository.findById(10L)).thenReturn(Optional.of(sessao));
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        StringWriter sw = new StringWriter();
+        when(response.getWriter()).thenReturn(new PrintWriter(sw));
+        FilterChain chain = mock(FilterChain.class);
+
+        filter.doFilter(request, response, chain);
+
+        verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        assertThat(sw.toString()).contains("PJB_SESSAO_INATIVA_REAUTH_REQUIRED");
+        verify(chain, never()).doFilter(request, response);
+    }
+
+    @Test
+    void defensorComSessaoInativaHaMaisDe10MinutosEBloqueada() throws Exception {
+        when(currentUserService.getOrNull()).thenReturn(usuario(TipoUsuario.DEFENSOR_PUBLICO));
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getAttribute("PJB_STRONG_AUTH_SESSION_ID")).thenReturn(11L);
+        PasskeySession sessao = new PasskeySession();
+        sessao.setId(11L);
+        sessao.setLastSeenAt(LocalDateTime.now().minusMinutes(15));
+        when(repository.findById(11L)).thenReturn(Optional.of(sessao));
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        StringWriter sw = new StringWriter();
+        when(response.getWriter()).thenReturn(new PrintWriter(sw));
+        FilterChain chain = mock(FilterChain.class);
+
+        filter.doFilter(request, response, chain);
+
+        verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        assertThat(sw.toString()).contains("PJB_SESSAO_INATIVA_REAUTH_REQUIRED");
+        verify(chain, never()).doFilter(request, response);
+    }
+
     private Usuario usuario(TipoUsuario tipo) {
         Usuario u = new Usuario();
         u.setId(1L);
