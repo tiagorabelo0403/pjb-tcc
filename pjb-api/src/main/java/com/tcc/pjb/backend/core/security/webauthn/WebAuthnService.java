@@ -459,10 +459,10 @@ public class WebAuthnService {
             return;
         }
         if (!"platform".equalsIgnoreCase(authenticatorAttachment)) {
-            throw new IllegalStateException("Magistratura exige passkey embutida no dispositivo (platform authenticator).");
+            throw new IllegalStateException("Magistratura, MP e Defensoria exigem passkey embutida no dispositivo (platform authenticator).");
         }
         if (!"tpm".equalsIgnoreCase(attestationFmt) && !"apple".equalsIgnoreCase(attestationFmt)) {
-            throw new IllegalStateException("Magistratura exige attestation TPM (Windows Hello) ou Apple (Touch/Face ID).");
+            throw new IllegalStateException("Magistratura, MP e Defensoria exigem attestation TPM (Windows Hello) ou Apple (Touch/Face ID).");
         }
     }
 

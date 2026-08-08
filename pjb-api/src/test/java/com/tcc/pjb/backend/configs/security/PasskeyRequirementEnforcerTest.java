@@ -98,6 +98,14 @@ class PasskeyRequirementEnforcerTest {
     }
 
     @Test
+    void defensorComPasskeyPlatformTpmConfiavel_permite() {
+        TrustedDevice device = dispositivo("platform", true, "tpm");
+        when(trustedDeviceRepository.findActiveByUser(8L)).thenReturn(List.of(device));
+        assertThatCode(() -> enforcer().exigirParaMagistratura(8L, TipoUsuario.DEFENSOR_PUBLICO))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
     void cidadaoSemPasskey_naoEVerificado() {
         assertThatCode(() -> enforcer().exigirParaMagistratura(5L, TipoUsuario.CIDADAO))
                 .doesNotThrowAnyException();

@@ -45,7 +45,7 @@ public class MagistraturaGeofenceFilter extends OncePerRequestFilter {
         String ip = clientIpResolver.resolve(request);
         Avaliacao avaliacao = policyService.avaliar(u, ip);
 
-        auditLedgerService.appendSafely("MAGISTRATURA_GEOFENCE", "SECURITY", String.valueOf(u.getId()),
+        auditLedgerService.appendSafely("CARREIRA_JURIDICA_GEOFENCE", "SECURITY", String.valueOf(u.getId()),
                 avaliacao.decisao().name() + (avaliacao.motivo() != null ? " " + avaliacao.motivo() : ""));
 
         if (avaliacao.decisao() == Decisao.BLOQUEADO_VPN) {

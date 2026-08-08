@@ -109,9 +109,9 @@
     <rect x="370" y="716" width="170" height="30" rx="8" fill="#2c3e67"/>
     <text x="455" y="736" text-anchor="middle" fill="#ffffff">DUVIDA_GERAL</text>
     <rect x="550" y="716" width="330" height="30" rx="8" fill="#3a1f28"/>
-    <text x="695" y="736" text-anchor="middle" fill="#f4a3a3">EXCECAO_VIAGEM_CARREIRA_JURIDICA</text>
+    <text x="715" y="736" text-anchor="middle" fill="#f4a3a3">EXCECAO_VIAGEM_CARREIRA_JURIDICA</text>
     <rect x="890" y="716" width="130" height="30" rx="8" fill="#2c3e67"/>
-    <text x="915" y="736" text-anchor="middle" fill="#ffffff">OUTRO</text>
+    <text x="955" y="736" text-anchor="middle" fill="#ffffff">OUTRO</text>
   </g>
 
   <g>

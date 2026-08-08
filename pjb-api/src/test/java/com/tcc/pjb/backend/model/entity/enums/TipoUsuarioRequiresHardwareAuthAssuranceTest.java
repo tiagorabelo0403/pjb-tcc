@@ -30,4 +30,12 @@ class TipoUsuarioRequiresHardwareAuthAssuranceTest {
         assertThat(TipoUsuario.CIDADAO.requiresHardwareAuthAssurance()).isFalse();
         assertThat(TipoUsuario.ADVOGADO.requiresHardwareAuthAssurance()).isFalse();
     }
+
+    @Test
+    void procuradoriaNaoExigeHardwareAuthAssurance() {
+        assertThat(TipoUsuario.PROCURADOR.requiresHardwareAuthAssurance()).isFalse();
+        assertThat(TipoUsuario.PROCURADORIA_MUNICIPAL.requiresHardwareAuthAssurance()).isFalse();
+        assertThat(TipoUsuario.PROCURADORIA_ESTADUAL.requiresHardwareAuthAssurance()).isFalse();
+        assertThat(TipoUsuario.PROCURADORIA_FEDERAL.requiresHardwareAuthAssurance()).isFalse();
+    }
 }
