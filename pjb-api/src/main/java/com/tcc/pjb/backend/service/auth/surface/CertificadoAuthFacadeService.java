@@ -155,7 +155,7 @@ public class CertificadoAuthFacadeService {
         }
         IdentidadeResolvida resolvida = (IdentidadeResolvida) identidade;
         if (resolvida.usuario().getTipoUsuario() != null
-                && resolvida.usuario().getTipoUsuario().isMagistratura()
+                && resolvida.usuario().getTipoUsuario().requiresHardwareAuthAssurance()
                 && !isCertificadoHardwareBacked(validacao.profile().certType())) {
             return respostaNegada("CERTIFICADO_TIPO_INSUFICIENTE");
         }

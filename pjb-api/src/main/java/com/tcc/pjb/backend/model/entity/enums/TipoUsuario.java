@@ -120,6 +120,10 @@ public enum TipoUsuario {
         return this == DEFENSOR_PUBLICO || this == DEFENSOR_PUBLICO_FEDERAL;
     }
 
+    public boolean requiresHardwareAuthAssurance() {
+        return isMagistratura() || isMinisterioPublico() || isDefensoriaPublica();
+    }
+
     public boolean isProcuradoria() {
         return switch (this) {
             case PROCURADOR,

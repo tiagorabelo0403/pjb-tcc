@@ -76,6 +76,31 @@ class CertificadoAuthFacadeServiceMagistraturaA3Test {
         assertThat(bloqueadoPorTipo).isFalse();
     }
 
+    @Test
+    void certificadoA1ParaPromotorENegado() throws Exception {
+        var resposta = executarFluxoAteResolucaoDeIdentidade("A1", TipoUsuario.MEMBRO_MINISTERIO_PUBLICO);
+
+        assertThat(resposta).isInstanceOf(CertificadoAuthDtos.NegadoResponse.class);
+        assertThat(((CertificadoAuthDtos.NegadoResponse) resposta).motivo()).isEqualTo("CERTIFICADO_TIPO_INSUFICIENTE");
+    }
+
+    @Test
+    void certificadoA1ParaDefensorENegado() throws Exception {
+        var resposta = executarFluxoAteResolucaoDeIdentidade("A1", TipoUsuario.DEFENSOR_PUBLICO);
+
+        assertThat(resposta).isInstanceOf(CertificadoAuthDtos.NegadoResponse.class);
+        assertThat(((CertificadoAuthDtos.NegadoResponse) resposta).motivo()).isEqualTo("CERTIFICADO_TIPO_INSUFICIENTE");
+    }
+
+    @Test
+    void certificadoA3ParaPromotorPassaDaCheckagemDeTipo() throws Exception {
+        var resposta = executarFluxoAteResolucaoDeIdentidade("A3", TipoUsuario.MEMBRO_MINISTERIO_PUBLICO);
+
+        boolean bloqueadoPorTipo = resposta instanceof CertificadoAuthDtos.NegadoResponse negado
+                && "CERTIFICADO_TIPO_INSUFICIENTE".equals(negado.motivo());
+        assertThat(bloqueadoPorTipo).isFalse();
+    }
+
     private CertificadoAuthDtos.Resposta executarFluxoAteResolucaoDeIdentidade(String certType, TipoUsuario tipoUsuario) throws Exception {
         X509Certificate certificado = mock(X509Certificate.class);
         when(x509Support.parse(anyString())).thenReturn(certificado);
