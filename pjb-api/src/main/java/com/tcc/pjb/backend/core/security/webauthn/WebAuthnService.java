@@ -66,7 +66,7 @@ public class WebAuthnService {
     @Transactional
     public StartResponse startEnrollment(Usuario usuario) {
         Objects.requireNonNull(usuario, "usuario");
-        boolean magistratura = usuario.getTipoUsuario() != null && usuario.getTipoUsuario().isMagistratura();
+        boolean hardwareAuthRequired = usuario.getTipoUsuario() != null && usuario.getTipoUsuario().requiresHardwareAuthAssurance();
 
         UserIdentity userIdentity = UserIdentity.builder()
                 .name(usuario.getEmail())
@@ -75,11 +75,11 @@ public class WebAuthnService {
                 .build();
 
         var selBuilder = AuthenticatorSelectionCriteria.builder()
-                .userVerification(magistratura || props.isRequireUserVerification()
+                .userVerification(hardwareAuthRequired || props.isRequireUserVerification()
                         ? UserVerificationRequirement.REQUIRED
                         : UserVerificationRequirement.PREFERRED)
                 .residentKey(props.isPreferResidentKey() ? ResidentKeyRequirement.PREFERRED : ResidentKeyRequirement.DISCOURAGED);
-        if (magistratura) {
+        if (hardwareAuthRequired) {
             selBuilder.authenticatorAttachment(com.yubico.webauthn.data.AuthenticatorAttachment.PLATFORM);
         }
         AuthenticatorSelectionCriteria sel = selBuilder.build();
@@ -130,7 +130,7 @@ public class WebAuthnService {
             String aaguid = att.aaguid();
             String attachment = att.authenticatorAttachment();
 
-            boolean magistratura = usuario.getTipoUsuario() != null && usuario.getTipoUsuario().isMagistratura();
+            boolean hardwareAuthRequired = usuario.getTipoUsuario() != null && usuario.getTipoUsuario().requiresHardwareAuthAssurance();
 
             if (props.isRequireAttestationOnEnroll()) {
                 requireAttestationAllowed(fmt);
@@ -146,7 +146,7 @@ public class WebAuthnService {
                 throw new IllegalStateException("Attestation não confiável para cadastro");
             }
 
-            validarRequisitosMagistratura(magistratura, attachment, fmt);
+            validarRequisitosMagistratura(hardwareAuthRequired, attachment, fmt);
 
             TrustedDevice d = trustedDeviceService.registerWebAuthn(
                     usuario,
