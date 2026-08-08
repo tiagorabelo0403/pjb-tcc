@@ -57,6 +57,9 @@ public class PasskeySession {
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
+    @Column(name = "last_seen_at")
+    private LocalDateTime lastSeenAt;
+
     @Column(name = "revogado_em")
     private LocalDateTime revogadoEm;
 
@@ -92,6 +95,9 @@ public class PasskeySession {
 
     public LocalDateTime getCriadoEm() { return criadoEm; }
     public void setCriadoEm(LocalDateTime criadoEm) { this.criadoEm = criadoEm; }
+
+    public LocalDateTime getLastSeenAt() { return lastSeenAt; }
+    public void setLastSeenAt(LocalDateTime lastSeenAt) { this.lastSeenAt = lastSeenAt; }
 
     public LocalDateTime getRevogadoEm() { return revogadoEm; }
     public void setRevogadoEm(LocalDateTime revogadoEm) { this.revogadoEm = revogadoEm; }

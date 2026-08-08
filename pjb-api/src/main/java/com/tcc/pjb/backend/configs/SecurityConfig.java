@@ -64,6 +64,8 @@ import com.tcc.pjb.backend.core.security.device.reqhash.RequestBodyHashFilter;
 import com.tcc.pjb.backend.core.security.device.reqhash.BodyHashService;
 import com.tcc.pjb.backend.platform.security.idempotency.PjbIdempotencyFilter;
 import com.tcc.pjb.backend.core.security.webauthn.web.PasskeyAuthenticationFilter;
+import com.tcc.pjb.backend.core.security.webauthn.web.MagistraturaIdleLockFilter;
+import com.tcc.pjb.backend.core.security.webauthn.PasskeySessionActivityService;
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import com.tcc.pjb.backend.configs.security.perimeter.ClientIpResolver;
@@ -98,6 +100,7 @@ public class SecurityConfig {
                                            ObjectProvider<ApiSecurityHardeningFilter> apiSecurityHardeningFilterProvider,
                                            ObjectProvider<ApiRouteGovernanceFilter> apiRouteGovernanceFilterProvider,
                                            ObjectProvider<PasskeyAuthenticationFilter> passkeyFilterProvider,
+                                           ObjectProvider<MagistraturaIdleLockFilter> magistraturaIdleLockFilterProvider,
                                            ObjectProvider<RequestBodyHashFilter> bodyHashFilterProvider,
                                            ObjectProvider<ApiRequestOriginGovernanceFilter> originGovernanceFilterProvider,
                                            ObjectProvider<PjbIdempotencyFilter> pjbIdempotencyFilterProvider,
@@ -246,6 +249,11 @@ public class SecurityConfig {
         PasskeyAuthenticationFilter passkey = passkeyFilterProvider.getIfAvailable();
         if (passkey != null) {
             http.addFilterBefore(passkey, BasicAuthenticationFilter.class);
+        }
+
+        MagistraturaIdleLockFilter magistraturaIdleLockFilter = magistraturaIdleLockFilterProvider.getIfAvailable();
+        if (magistraturaIdleLockFilter != null && passkey != null) {
+            http.addFilterAfter(magistraturaIdleLockFilter, PasskeyAuthenticationFilter.class);
         }
 
         RequestBodyHashFilter bodyHashFilter = bodyHashFilterProvider.getIfAvailable();
@@ -441,6 +449,13 @@ public class SecurityConfig {
     public PasskeyAuthenticationFilter passkeyAuthenticationFilter(PasskeySessionRepository sessionRepo,
                                                                    UserDetailsService userDetailsService) {
         return new PasskeyAuthenticationFilter(sessionRepo, userDetailsService);
+    }
+
+    @Bean
+    public MagistraturaIdleLockFilter magistraturaIdleLockFilter(PasskeySessionRepository sessionRepo,
+                                                                   PasskeySessionActivityService activityService,
+                                                                   CurrentUserService currentUserService) {
+        return new MagistraturaIdleLockFilter(sessionRepo, activityService, currentUserService);
     }
 
     @Bean
