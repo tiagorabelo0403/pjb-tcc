@@ -241,6 +241,10 @@ pjb:
       idleChannelTtl: ${PJB_SECRETARIAT_SSE_IDLE_CHANNEL_TTL:5m}
       createChannelOnPublish: ${PJB_SECRETARIAT_SSE_CREATE_ON_PUBLISH:false}
 
+  secretaria-institucional:
+    intimacao-tacita:
+      interval: 86400000
+
   ui:
     history:
       sse:
