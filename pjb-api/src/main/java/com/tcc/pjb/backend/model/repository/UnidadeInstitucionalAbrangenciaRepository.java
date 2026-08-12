@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface UnidadeInstitucionalAbrangenciaRepository extends JpaRepository<UnidadeInstitucionalAbrangencia, Long> {
 
     List<UnidadeInstitucionalAbrangencia> findByUnidadeInstitucionalId(Long unidadeInstitucionalId);
+
+    List<UnidadeInstitucionalAbrangencia> findByComarcaAtendida(String comarcaAtendida);
 }
