@@ -26,17 +26,20 @@ public class SecretariaInstitucionalEnfileiramentoService {
     private final UnidadeInstituicaoRepository unidadeRepository;
     private final UnidadeInstitucionalAbrangenciaRepository abrangenciaRepository;
     private final SecretariaInstitucionalItemRepository itemRepository;
+    private final SecretariaInstitucionalItemGravador gravador;
     private final AuditLedgerService auditService;
     private final ProcessoRepository processoRepository;
 
     public SecretariaInstitucionalEnfileiramentoService(UnidadeInstituicaoRepository unidadeRepository,
                                                          UnidadeInstitucionalAbrangenciaRepository abrangenciaRepository,
                                                          SecretariaInstitucionalItemRepository itemRepository,
+                                                         SecretariaInstitucionalItemGravador gravador,
                                                          AuditLedgerService auditService,
                                                          ProcessoRepository processoRepository) {
         this.unidadeRepository = Objects.requireNonNull(unidadeRepository);
         this.abrangenciaRepository = Objects.requireNonNull(abrangenciaRepository);
         this.itemRepository = Objects.requireNonNull(itemRepository);
+        this.gravador = Objects.requireNonNull(gravador);
         this.auditService = Objects.requireNonNull(auditService);
         this.processoRepository = Objects.requireNonNull(processoRepository);
     }
@@ -68,10 +71,8 @@ public class SecretariaInstitucionalEnfileiramentoService {
 
         SecretariaInstitucionalItem salvo;
         try {
-            salvo = itemRepository.save(item);
+            salvo = gravador.gravar(item);
         } catch (DataIntegrityViolationException concorrencia) {
-            // Índice único parcial (Task 2) é quem garante exclusão mútua de verdade contra
-            // dois gatilhos concorrentes — perder essa corrida não é erro, é no-op.
             return null;
         }
         auditService.appendSafely("SECRETARIA_INSTITUCIONAL_ENFILEIRAMENTO",
@@ -98,9 +99,14 @@ public class SecretariaInstitucionalEnfileiramentoService {
             }
             item.setUnidadeInstitucionalId(unidadeResolvidaId);
             item.setStatus(StatusSecretariaInstitucionalItem.PENDENTE);
-            itemRepository.save(item);
+            SecretariaInstitucionalItem salvo;
+            try {
+                salvo = gravador.gravar(item);
+            } catch (DataIntegrityViolationException concorrencia) {
+                continue;
+            }
             auditService.appendSafely("SECRETARIA_INSTITUCIONAL_REPROCESSAMENTO",
-                    "SECRETARIA_INSTITUCIONAL_ITEM " + item.getId() + " resolvido para unidade=" + unidadeResolvidaId);
+                    "SECRETARIA_INSTITUCIONAL_ITEM " + salvo.getId() + " resolvido para unidade=" + unidadeResolvidaId);
             resolvidos++;
         }
         return resolvidos;

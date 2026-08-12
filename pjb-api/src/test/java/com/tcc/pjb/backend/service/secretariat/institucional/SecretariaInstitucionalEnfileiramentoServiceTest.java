@@ -22,6 +22,7 @@ import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 class SecretariaInstitucionalEnfileiramentoServiceTest {
@@ -29,10 +30,11 @@ class SecretariaInstitucionalEnfileiramentoServiceTest {
     private final UnidadeInstituicaoRepository unidadeRepository = mock(UnidadeInstituicaoRepository.class);
     private final UnidadeInstitucionalAbrangenciaRepository abrangenciaRepository = mock(UnidadeInstitucionalAbrangenciaRepository.class);
     private final SecretariaInstitucionalItemRepository itemRepository = mock(SecretariaInstitucionalItemRepository.class);
+    private final SecretariaInstitucionalItemGravador gravador = mock(SecretariaInstitucionalItemGravador.class);
     private final AuditLedgerService auditService = mock(AuditLedgerService.class);
     private final ProcessoRepository processoRepository = mock(ProcessoRepository.class);
     private final SecretariaInstitucionalEnfileiramentoService service =
-            new SecretariaInstitucionalEnfileiramentoService(unidadeRepository, abrangenciaRepository, itemRepository, auditService, processoRepository);
+            new SecretariaInstitucionalEnfileiramentoService(unidadeRepository, abrangenciaRepository, itemRepository, gravador, auditService, processoRepository);
 
     private UnidadeInstituicao unidade(Long id, TipoUnidadeInstitucional tipo) {
         UnidadeInstituicao u = new UnidadeInstituicao();
@@ -46,7 +48,7 @@ class SecretariaInstitucionalEnfileiramentoServiceTest {
         UnidadeInstituicao unidade = unidade(10L, TipoUnidadeInstitucional.PROMOTORIA);
         when(itemRepository.existePendenteOuEmAnalise(1L, TipoUnidadeInstitucional.PROMOTORIA)).thenReturn(false);
         when(unidadeRepository.findByTipoAndComarca(TipoUnidadeInstitucional.PROMOTORIA, "Fortaleza")).thenReturn(List.of(unidade));
-        when(itemRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(gravador.gravar(any())).thenAnswer(inv -> inv.getArgument(0));
 
         SecretariaInstitucionalItem item = service.enfileirar(1L, "Fortaleza", TipoUnidadeInstitucional.PROMOTORIA,
                 MotivoEnfileiramentoInstitucional.PARTE_AUTOMATICA, 15);
@@ -67,7 +69,7 @@ class SecretariaInstitucionalEnfileiramentoServiceTest {
         cobertura.setComarcaAtendida("Aquiraz");
         when(abrangenciaRepository.findByComarcaAtendida("Aquiraz")).thenReturn(List.of(cobertura));
         when(unidadeRepository.findById(11L)).thenReturn(Optional.of(regional));
-        when(itemRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(gravador.gravar(any())).thenAnswer(inv -> inv.getArgument(0));
 
         SecretariaInstitucionalItem item = service.enfileirar(2L, "Aquiraz", TipoUnidadeInstitucional.NUCLEO_DEFENSORIA,
                 MotivoEnfileiramentoInstitucional.PARTE_AUTOMATICA, 15);
@@ -81,7 +83,7 @@ class SecretariaInstitucionalEnfileiramentoServiceTest {
         UnidadeInstituicao unidade = unidade(20L, TipoUnidadeInstitucional.FORUM);
         when(itemRepository.existePendenteOuEmAnalise(3L, TipoUnidadeInstitucional.FORUM)).thenReturn(false);
         when(unidadeRepository.findByTipoAndComarca(TipoUnidadeInstitucional.FORUM, "Fortaleza")).thenReturn(List.of(unidade));
-        when(itemRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(gravador.gravar(any())).thenAnswer(inv -> inv.getArgument(0));
 
         SecretariaInstitucionalItem item = service.enfileirar(3L, "Fortaleza", TipoUnidadeInstitucional.FORUM,
                 MotivoEnfileiramentoInstitucional.DESPACHO_VISTA, 5);
@@ -94,7 +96,7 @@ class SecretariaInstitucionalEnfileiramentoServiceTest {
         UnidadeInstituicao unidade = unidade(30L, TipoUnidadeInstitucional.PROCURADORIA_PUBLICA);
         when(itemRepository.existePendenteOuEmAnalise(4L, TipoUnidadeInstitucional.PROCURADORIA_PUBLICA)).thenReturn(false);
         when(unidadeRepository.findByTipoAndComarca(TipoUnidadeInstitucional.PROCURADORIA_PUBLICA, "Fortaleza")).thenReturn(List.of(unidade));
-        when(itemRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(gravador.gravar(any())).thenAnswer(inv -> inv.getArgument(0));
 
         SecretariaInstitucionalItem item = service.enfileirar(4L, "Fortaleza", TipoUnidadeInstitucional.PROCURADORIA_PUBLICA,
                 MotivoEnfileiramentoInstitucional.DESPACHO_VISTA, 5);
@@ -107,7 +109,7 @@ class SecretariaInstitucionalEnfileiramentoServiceTest {
         when(itemRepository.existePendenteOuEmAnalise(5L, TipoUnidadeInstitucional.NUCLEO_DEFENSORIA)).thenReturn(false);
         when(unidadeRepository.findByTipoAndComarca(TipoUnidadeInstitucional.NUCLEO_DEFENSORIA, "Comarca Sem Cobertura")).thenReturn(List.of());
         when(abrangenciaRepository.findByComarcaAtendida("Comarca Sem Cobertura")).thenReturn(List.of());
-        when(itemRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(gravador.gravar(any())).thenAnswer(inv -> inv.getArgument(0));
 
         SecretariaInstitucionalItem item = service.enfileirar(5L, "Comarca Sem Cobertura", TipoUnidadeInstitucional.NUCLEO_DEFENSORIA,
                 MotivoEnfileiramentoInstitucional.PARTE_AUTOMATICA, 15);
@@ -122,7 +124,7 @@ class SecretariaInstitucionalEnfileiramentoServiceTest {
         UnidadeInstituicao u2 = unidade(2L, TipoUnidadeInstitucional.PROMOTORIA);
         when(itemRepository.existePendenteOuEmAnalise(6L, TipoUnidadeInstitucional.PROMOTORIA)).thenReturn(false);
         when(unidadeRepository.findByTipoAndComarca(TipoUnidadeInstitucional.PROMOTORIA, "Fortaleza")).thenReturn(List.of(u1, u2));
-        when(itemRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(gravador.gravar(any())).thenAnswer(inv -> inv.getArgument(0));
 
         SecretariaInstitucionalItem item = service.enfileirar(6L, "Fortaleza", TipoUnidadeInstitucional.PROMOTORIA,
                 MotivoEnfileiramentoInstitucional.PARTE_AUTOMATICA, 15);
@@ -138,7 +140,7 @@ class SecretariaInstitucionalEnfileiramentoServiceTest {
                 MotivoEnfileiramentoInstitucional.PARTE_AUTOMATICA, 15);
 
         assertThat(item).isNull();
-        verify(itemRepository, never()).save(any());
+        verify(gravador, never()).gravar(any());
         verify(unidadeRepository, never()).findByTipoAndComarca(any(), any());
     }
 
@@ -156,7 +158,7 @@ class SecretariaInstitucionalEnfileiramentoServiceTest {
         when(processoRepository.findById(80L)).thenReturn(Optional.of(processo));
         UnidadeInstituicao unidadeNova = unidade(99L, TipoUnidadeInstitucional.PROMOTORIA);
         when(unidadeRepository.findByTipoAndComarca(TipoUnidadeInstitucional.PROMOTORIA, "Fortaleza")).thenReturn(List.of(unidadeNova));
-        when(itemRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(gravador.gravar(any())).thenAnswer(inv -> inv.getArgument(0));
 
         int resolvidos = service.reprocessarSemUnidade(TipoUnidadeInstitucional.PROMOTORIA);
 
@@ -184,6 +186,20 @@ class SecretariaInstitucionalEnfileiramentoServiceTest {
 
         assertThat(resolvidos).isEqualTo(0);
         assertThat(preso.getStatus()).isEqualTo(StatusSecretariaInstitucionalItem.SEM_UNIDADE_RESOLVIDA);
-        verify(itemRepository, never()).save(any());
+        verify(gravador, never()).gravar(any());
+    }
+
+    @Test
+    void perdaDeCorridaNoGravadorNaoLancaExcecaoERetornaNullSemAuditar() {
+        UnidadeInstituicao unidade = unidade(40L, TipoUnidadeInstitucional.PROMOTORIA);
+        when(itemRepository.existePendenteOuEmAnalise(10L, TipoUnidadeInstitucional.PROMOTORIA)).thenReturn(false);
+        when(unidadeRepository.findByTipoAndComarca(TipoUnidadeInstitucional.PROMOTORIA, "Fortaleza")).thenReturn(List.of(unidade));
+        when(gravador.gravar(any())).thenThrow(new DataIntegrityViolationException("uq_secretaria_inst_item_ativo_por_processo_tipo"));
+
+        SecretariaInstitucionalItem item = service.enfileirar(10L, "Fortaleza", TipoUnidadeInstitucional.PROMOTORIA,
+                MotivoEnfileiramentoInstitucional.PARTE_AUTOMATICA, 15);
+
+        assertThat(item).isNull();
+        verify(auditService, never()).appendSafely(any(), any());
     }
 }
