@@ -1,12 +1,15 @@
 package com.tcc.pjb.backend.core.processo.polo.application;
 
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoParte;
 import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.processo.PoloProcessual;
 import com.tcc.pjb.backend.model.repository.PoloProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.secretariat.institucional.PoloInstitucionalComposicaoEvent;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,14 +24,17 @@ public class PoloProcessualApplicationService {
 
     private final PoloProcessualRepository poloRepository;
     private final ProcessoRepository processoRepository;
+    private final UsuarioRepository usuarioRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Inject
     public PoloProcessualApplicationService(PoloProcessualRepository poloRepository,
                                              ProcessoRepository processoRepository,
+                                             UsuarioRepository usuarioRepository,
                                              ApplicationEventPublisher eventPublisher) {
         this.poloRepository = poloRepository;
         this.processoRepository = processoRepository;
+        this.usuarioRepository = usuarioRepository;
         this.eventPublisher = eventPublisher;
     }
 
@@ -95,6 +101,9 @@ public class PoloProcessualApplicationService {
     private void publicarEventoInstitucionalSeAplicavel(PoloProcessual polo) {
         TipoUnidadeInstitucional tipo = resolverTipoUnidadeInstitucional(polo.getTipoPolo());
         if (tipo == null) {
+            tipo = resolverTipoUnidadeInstitucionalPorRepresentante(polo.getUsuarioId());
+        }
+        if (tipo == null) {
             return;
         }
         Processo processo = processoRepository.findById(polo.getProcessoId()).orElse(null);
@@ -111,6 +120,27 @@ public class PoloProcessualApplicationService {
             case PROCURADORIA -> TipoUnidadeInstitucional.PROCURADORIA_PUBLICA;
             default -> null;
         };
+    }
+
+    private TipoUnidadeInstitucional resolverTipoUnidadeInstitucionalPorRepresentante(Long usuarioId) {
+        if (usuarioId == null) {
+            return null;
+        }
+        Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
+        if (usuario == null || usuario.getTipoUsuario() == null) {
+            return null;
+        }
+        TipoUsuario tipoUsuario = usuario.getTipoUsuario();
+        if (tipoUsuario.isMinisterioPublico()) {
+            return TipoUnidadeInstitucional.PROMOTORIA;
+        }
+        if (tipoUsuario.isDefensoriaPublica()) {
+            return TipoUnidadeInstitucional.NUCLEO_DEFENSORIA;
+        }
+        if (tipoUsuario.isProcuradoria()) {
+            return TipoUnidadeInstitucional.PROCURADORIA_PUBLICA;
+        }
+        return null;
     }
 
     @Transactional

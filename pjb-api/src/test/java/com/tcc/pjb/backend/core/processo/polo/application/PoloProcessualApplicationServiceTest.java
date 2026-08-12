@@ -14,12 +14,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoParte;
 import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.processo.PoloProcessual;
 import com.tcc.pjb.backend.model.repository.PoloProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.secretariat.institucional.PoloInstitucionalComposicaoEvent;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +34,7 @@ class PoloProcessualApplicationServiceTest {
 
     private PoloProcessualRepository repository;
     private ProcessoRepository processoRepository;
+    private UsuarioRepository usuarioRepository;
     private ApplicationEventPublisher eventPublisher;
     private PoloProcessualApplicationService service;
 
@@ -38,8 +42,9 @@ class PoloProcessualApplicationServiceTest {
     void setUp() {
         repository = mock(PoloProcessualRepository.class);
         processoRepository = mock(ProcessoRepository.class);
+        usuarioRepository = mock(UsuarioRepository.class);
         eventPublisher = mock(ApplicationEventPublisher.class);
-        service = new PoloProcessualApplicationService(repository, processoRepository, eventPublisher);
+        service = new PoloProcessualApplicationService(repository, processoRepository, usuarioRepository, eventPublisher);
         when(repository.save(any(PoloProcessual.class))).thenAnswer(inv -> inv.getArgument(0));
         when(repository.findByProcessoIdAndAtivo(anyLong(), anyBoolean())).thenReturn(List.of());
     }
@@ -216,5 +221,66 @@ class PoloProcessualApplicationServiceTest {
         service.excluir(1L, 99L);
 
         verify(eventPublisher, never()).publishEvent(any(PoloInstitucionalComposicaoEvent.class));
+    }
+
+    @Test
+    void incluirParteAtivaRepresentadaPorDefensorPublicoPublicaEventoNucleoDefensoria() {
+        when(usuarioRepository.findById(77L))
+                .thenReturn(Optional.of(Usuario.builder().id(77L).tipoUsuario(TipoUsuario.DEFENSOR_PUBLICO).build()));
+        when(processoRepository.findById(1L))
+                .thenReturn(Optional.of(Processo.builder().id(1L).comarca("Fortaleza").build()));
+
+        service.incluir(1L, TipoPolo.ATIVO, TipoParte.AUTOR,
+                "Cidadão Assistido", "12345678900", "CPF", null, null, 77L, null, null);
+
+        verify(eventPublisher).publishEvent(
+                new PoloInstitucionalComposicaoEvent(1L, "Fortaleza", TipoUnidadeInstitucional.NUCLEO_DEFENSORIA));
+    }
+
+    @Test
+    void incluirParteAtivaRepresentadaPorMembroMinisterioPublicoPublicaEventoPromotoria() {
+        when(usuarioRepository.findById(88L))
+                .thenReturn(Optional.of(Usuario.builder().id(88L).tipoUsuario(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO).build()));
+        when(processoRepository.findById(1L))
+                .thenReturn(Optional.of(Processo.builder().id(1L).comarca("Fortaleza").build()));
+
+        service.incluir(1L, TipoPolo.ATIVO, TipoParte.AUTOR_POPULAR,
+                "Autor Popular", null, null, null, null, 88L, null, null);
+
+        verify(eventPublisher).publishEvent(
+                new PoloInstitucionalComposicaoEvent(1L, "Fortaleza", TipoUnidadeInstitucional.PROMOTORIA));
+    }
+
+    @Test
+    void incluirParteAtivaRepresentadaPorAdvogadoComumNaoPublicaEvento() {
+        when(usuarioRepository.findById(10L))
+                .thenReturn(Optional.of(Usuario.builder().id(10L).tipoUsuario(TipoUsuario.ADVOGADO).build()));
+
+        service.incluir(1L, TipoPolo.ATIVO, TipoParte.AUTOR,
+                "João Silva", "12345678900", "CPF", null, null, 10L, null, null);
+
+        verify(eventPublisher, never()).publishEvent(any(PoloInstitucionalComposicaoEvent.class));
+    }
+
+    @Test
+    void incluirParteAtivaComUsuarioIdNuloNaoPublicaEvento() {
+        service.incluir(1L, TipoPolo.ATIVO, TipoParte.AUTOR,
+                "João Silva", null, null, null, null, null, null, null);
+
+        verify(usuarioRepository, never()).findById(any());
+        verify(eventPublisher, never()).publishEvent(any(PoloInstitucionalComposicaoEvent.class));
+    }
+
+    @Test
+    void incluirMinisterioPublicoComoParteNaoConsultaUsuarioRepository() {
+        when(processoRepository.findById(1L))
+                .thenReturn(Optional.of(Processo.builder().id(1L).comarca("Fortaleza").build()));
+
+        service.incluir(1L, TipoPolo.MINISTERIO_PUBLICO, TipoParte.MINISTERIO_PUBLICO,
+                "MP Federal", null, null, null, null, 5L, null, null);
+
+        verify(usuarioRepository, never()).findById(any());
+        verify(eventPublisher).publishEvent(
+                new PoloInstitucionalComposicaoEvent(1L, "Fortaleza", TipoUnidadeInstitucional.PROMOTORIA));
     }
 }
