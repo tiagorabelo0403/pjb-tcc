@@ -1,13 +1,18 @@
 package com.tcc.pjb.backend.core.processo.polo.application;
 
+import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.TipoParte;
 import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
+import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
 import com.tcc.pjb.backend.model.entity.processo.PoloProcessual;
 import com.tcc.pjb.backend.model.repository.PoloProcessualRepository;
+import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.service.secretariat.institucional.PoloInstitucionalComposicaoEvent;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +20,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class PoloProcessualApplicationService {
 
     private final PoloProcessualRepository poloRepository;
+    private final ProcessoRepository processoRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Inject
-    public PoloProcessualApplicationService(PoloProcessualRepository poloRepository) {
+    public PoloProcessualApplicationService(PoloProcessualRepository poloRepository,
+                                             ProcessoRepository processoRepository,
+                                             ApplicationEventPublisher eventPublisher) {
         this.poloRepository = poloRepository;
+        this.processoRepository = processoRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -35,7 +46,9 @@ public class PoloProcessualApplicationService {
         PoloProcessual polo = new PoloProcessual(processoId, tipoPolo, tipoParte, nomeCompleto,
                 documento, documentoTipo, oabNumero, oabUf, usuarioId, identidadeId,
                 representadoPorId, ordemPolo);
-        return poloRepository.save(polo);
+        PoloProcessual salvo = poloRepository.save(polo);
+        publicarEventoInstitucionalSeAplicavel(salvo);
+        return salvo;
     }
 
     @Transactional
@@ -53,7 +66,9 @@ public class PoloProcessualApplicationService {
         PoloProcessual polo = new PoloProcessual(processoId, tipoPolo, tipoParte, nomeCompleto,
                 documento, documentoTipo, oabNumero, oabUf, usuarioId, identidadeId,
                 representadoPorId, ordemPolo, ufDomicilio, comarcaDomicilio, municipioDomicilio, null);
-        return poloRepository.save(polo);
+        PoloProcessual salvo = poloRepository.save(polo);
+        publicarEventoInstitucionalSeAplicavel(salvo);
+        return salvo;
     }
 
     @Transactional
@@ -72,7 +87,30 @@ public class PoloProcessualApplicationService {
         PoloProcessual polo = new PoloProcessual(processoId, tipoPolo, tipoParte, nomeCompleto,
                 documento, documentoTipo, oabNumero, oabUf, usuarioId, identidadeId,
                 representadoPorId, ordemPolo, ufDomicilio, comarcaDomicilio, municipioDomicilio, razaoSocial);
-        return poloRepository.save(polo);
+        PoloProcessual salvo = poloRepository.save(polo);
+        publicarEventoInstitucionalSeAplicavel(salvo);
+        return salvo;
+    }
+
+    private void publicarEventoInstitucionalSeAplicavel(PoloProcessual polo) {
+        TipoUnidadeInstitucional tipo = resolverTipoUnidadeInstitucional(polo.getTipoPolo());
+        if (tipo == null) {
+            return;
+        }
+        Processo processo = processoRepository.findById(polo.getProcessoId()).orElse(null);
+        if (processo == null || processo.getComarca() == null) {
+            return;
+        }
+        eventPublisher.publishEvent(new PoloInstitucionalComposicaoEvent(processo.getId(), processo.getComarca(), tipo));
+    }
+
+    private static TipoUnidadeInstitucional resolverTipoUnidadeInstitucional(TipoPolo tipoPolo) {
+        return switch (tipoPolo) {
+            case MINISTERIO_PUBLICO -> TipoUnidadeInstitucional.PROMOTORIA;
+            case DEFENSORIA -> TipoUnidadeInstitucional.NUCLEO_DEFENSORIA;
+            case PROCURADORIA -> TipoUnidadeInstitucional.PROCURADORIA_PUBLICA;
+            default -> null;
+        };
     }
 
     @Transactional
