@@ -1,6 +1,6 @@
 <svg viewBox="0 0 1280 760" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
-  <title id="titulo">Segurança reforçada da magistratura — camadas reais de proteção no login e na sessão</title>
-  <desc id="desc">Diagrama mostrando as quatro camadas sequenciais exigidas para autenticação de juiz, desembargador e ministro (login institucional, certificado ICP-Brasil A3, passkey vinculada ao TPM/biometria do dispositivo, geo-bloqueio de país/UF/VPN), mais a trava por inatividade de 10 minutos e a exceção de viagem aprovada por chamado de suporte, com base real em CertificadoAuthFacadeService, WebAuthnService, MagistraturaIdleLockFilter e MagistraturaGeofencePolicyService.</desc>
+  <title id="titulo">Segurança reforçada de magistratura, Ministério Público e Defensoria — camadas reais de proteção no login e na sessão</title>
+  <desc id="desc">Diagrama mostrando as quatro camadas sequenciais exigidas para autenticação de juiz, desembargador, ministro, promotor e defensor público (login institucional, certificado ICP-Brasil A3, passkey vinculada ao TPM/biometria do dispositivo, geo-bloqueio de país/UF/VPN), mais a trava por inatividade de 10 minutos e a exceção de viagem aprovada por chamado de suporte, com base real em CertificadoAuthFacadeService, WebAuthnService, MagistraturaIdleLockFilter, MagistraturaGeofencePolicyService e TipoUsuario.requiresHardwareAuthAssurance().</desc>
 
   <defs>
     <filter id="sombraS" x="-10%" y="-10%" width="120%" height="120%">
@@ -17,9 +17,9 @@
   <circle cx="46" cy="48" r="6" fill="#e05252"/>
   <circle cx="66" cy="48" r="6" fill="#e0b84f"/>
   <circle cx="86" cy="48" r="6" fill="#4fae6b"/>
-  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">🛡️ Segurança reforçada da magistratura — quatro camadas, uma sessão</text>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">🛡️ Segurança reforçada — quatro camadas, uma sessão</text>
 
-  <text x="50" y="106" font-size="13" fill="#a9b3cc">Juiz, desembargador e ministro passam pelas quatro camadas abaixo, nessa ordem, antes de qualquer ato:</text>
+  <text x="50" y="106" font-size="13" fill="#a9b3cc">Juiz, desembargador, ministro, promotor e defensor público passam pelas quatro camadas abaixo, nessa ordem, antes de qualquer ato:</text>
 
   <!-- 4 camadas sequenciais -->
   <g font-size="12">
@@ -89,5 +89,5 @@
     <text x="76" y="620" font-size="11" fill="#8a8f98">A mesma passkey (item 3) resolve dois problemas de uma vez: prova biométrica real e vínculo ao TPM do notebook — sem app novo.</text>
   </g>
 
-  <text x="50" y="680" font-size="11" fill="#5d6785">Cidadão, advogado e demais papéis seguem o login padrão de sempre — essas quatro camadas extras existem só para quem decide processo.</text>
+  <text x="50" y="680" font-size="11" fill="#5d6785">Cidadão, advogado e demais papéis seguem o login padrão de sempre. As quatro camadas extras valem pra magistratura, MP e Defensoria — garantia constitucional de independência funcional (CF art. 127 e 134). Procuradoria fica de fora por decisão deliberada.</text>
 </svg>

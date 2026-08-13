@@ -55,6 +55,8 @@ Juiz, desembargador e ministro passam por quatro camadas antes de qualquer ato �
 
 A ordem importa: login institucional identifica quem está tentando entrar; certificado ICP-Brasil **A3** (token físico, não arquivo) prova a identidade formal; a **passkey vinculada ao TPM do próprio notebook** — a mesma digital ou reconhecimento facial que já destrava o Windows Hello ou o Touch ID — entrega biometria real sem instalar nada; e o **geo-bloqueio** nega na hora qualquer tentativa de fora do Brasil, fora da UF onde o magistrado está lotado, ou atrás de VPN/datacenter. Durante a sessão inteira, mais duas coisas continuam de olho: 10 minutos sem mexer no sistema tranca a tela (destravar é só um novo toque na passkey, não o fluxo inteiro de novo), e uma viagem legítima não deixa o juiz trancado fora do próprio trabalho — basta abrir com antecedência um **chamado de suporte** pedindo a janela de datas e o destino.
 
+Essas mesmas quatro camadas não ficam restritas ao juiz. Promotor de Justiça e Defensor Público têm a garantia constitucional de independência funcional análoga à magistratura (CF art. 127 e 134) — por isso certificado A3, passkey vinculada ao TPM, trava por inatividade e geo-bloqueio valem exatamente da mesma forma pra quem exerce o Ministério Público e a Defensoria Pública. Procuradoria fica de fora dessa camada extra por decisão deliberada: nem toda carreira essencial à Justiça carrega a mesma garantia constitucional de independência que magistratura, MP e Defensoria têm.
+
 Esse canal de suporte, aliás, não é exclusivo da magistratura — **qualquer perfil cadastrado** (cidadão, advogado, servidor, todos) pode abrir um chamado técnico direto do próprio painel, sem precisar sair do sistema pra achar um contato de TI. Eu mostro como esse canal funciona de verdade, por dentro, na próxima seção.
 
 Um ponto que eu faço questão de deixar claro: nenhuma dessas camadas vira um mapa de "onde o juiz está agora". Não existe painel de localização pra colega, secretaria ou administrador ver — o sistema só decide, no instante do login, se libera ou bloqueia, e guarda o motivo de forma sigilosa, só pra investigação de incidente real. É controle antifraude, não vigilância.
@@ -194,6 +196,12 @@ O **defensor público** normalmente carrega um volume de casos muito maior do qu
 ![Painel do Procurador](assets/painel-procurador.svg)
 
 Já o **procurador**, que representa a Fazenda Pública (município, estado ou União), lida com outro problema: consistência de tese entre milhares de execuções fiscais parecidas — por isso o painel dele mostra a malha de processos do mesmo devedor, pra nunca dar tratamento divergente ao mesmo caso em processos diferentes.
+
+Os três compartilham mais uma coisa que eu acho importante mostrar: uma **fila institucional própria**, separada do fórum genérico onde qualquer usuário cai.
+
+![Fila institucional diferenciada — Ministério Público, Defensoria e Procuradoria](assets/fila-institucional-mp-defensoria.svg)
+
+Um processo chega na fila certa de dois jeitos — automaticamente, quando o MP entra como parte (custos legis, ação civil pública), ou explicitamente, quando o juiz determina vista num despacho — e sempre já com o contexto da unidade certa (a promotoria, o núcleo da Defensoria, a procuradoria), não um item genérico esperando alguém adivinhar de onde é. O ato de **"Tomar Ciência"** é quem liga o relógio do prazo, e só quem tem posse real sobre aquela unidade pode praticá-lo. Se ninguém tomar ciência manualmente, o sistema não deixa o prazo refém do esquecimento: em 10 dias, marca a **intimação tácita** sozinho. E o prazo em si respeita uma prerrogativa legal real — Promotoria e Defensoria contam com **prazo em dobro**, calculado em cima do calendário forense de verdade (feriado, recesso, suspensão), não um contador genérico.
 
 **Cidadão**, quando é ele mesmo peticionando (jus postulandi) ou só acompanhando o próprio processo:
 
