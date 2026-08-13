@@ -72,7 +72,7 @@
         <maven.deploy.version>3.1.4</maven.deploy.version>
         <maven.install.version>3.1.4</maven.install.version>
         <maven.jar.version>3.4.2</maven.jar.version>
-        <maven.resources.version>3.3.1</maven.resources.version>
+        <maven.resources.version>3.5.0</maven.resources.version>
         <maven.site.version>3.12.1</maven.site.version>
         <maven.toolchains.version>3.2.0</maven.toolchains.version>
         <maven.dependency.version>3.8.1</maven.dependency.version>
