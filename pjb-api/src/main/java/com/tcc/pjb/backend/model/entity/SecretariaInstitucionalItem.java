@@ -12,8 +12,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 @Entity
+@FilterDef(name = "filtroUnidadeInstitucional", parameters = @ParamDef(name = "unidadeInstitucionalIdParam", type = Long.class))
+@Filter(name = "filtroUnidadeInstitucional", condition = "unidade_institucional_id = :unidadeInstitucionalIdParam")
 @Table(name = "secretaria_institucional_item")
 public class SecretariaInstitucionalItem {
 

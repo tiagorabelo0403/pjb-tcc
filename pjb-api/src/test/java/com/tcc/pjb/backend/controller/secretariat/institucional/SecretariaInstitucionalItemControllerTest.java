@@ -81,11 +81,15 @@ class SecretariaInstitucionalItemControllerTest {
         SecretariaInstitucionalFilaResponse.Item item = new SecretariaInstitucionalFilaResponse.Item(
                 1L, 10L, "PENDENTE", "PARTE_AUTOMATICA", Instant.parse("2026-09-01T00:00:00Z"), true, null, null);
         when(filaService.consultarFila(promotor, 1L))
-                .thenReturn(new SecretariaInstitucionalFilaResponse(1L, List.of(item)));
+                .thenReturn(new SecretariaInstitucionalFilaResponse(1L, "Promotoria de Fortaleza", "PROMOTORIA",
+                        "Fortaleza", List.of(item)));
 
         mockMvc.perform(get("/api/v1/secretaria-institucional/{unidadeId}/fila", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.unidadeInstitucionalId").value(1))
+                .andExpect(jsonPath("$.unidadeNome").value("Promotoria de Fortaleza"))
+                .andExpect(jsonPath("$.unidadeTipo").value("PROMOTORIA"))
+                .andExpect(jsonPath("$.unidadeComarca").value("Fortaleza"))
                 .andExpect(jsonPath("$.itens[0].processoId").value(10));
     }
 
