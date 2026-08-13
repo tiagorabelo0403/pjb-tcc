@@ -127,6 +127,10 @@ jobs:
         working-directory: scripts
         run: python test_isolation_guard.py
 
+      - name: hibernate_filter_definition_guard
+        working-directory: scripts
+        run: python hibernate_filter_definition_guard.py
+
       - name: Upload Guard Reports
         if: always()
         uses: actions/upload-artifact@v4

@@ -23,6 +23,7 @@ import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,6 +77,9 @@ class EquipeSwitchInterceptorHibernateFilterIT extends PjbFlowItBase {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private EntityManager entityManager;
+
     @MockitoBean
     private AdvogadoSurfaceFacadeService facadeService;
 
@@ -110,6 +114,19 @@ class EquipeSwitchInterceptorHibernateFilterIT extends PjbFlowItBase {
     void restaurarLogger() {
         interceptorLogger.detachAppender(appender);
         interceptorLogger.setLevel(originalLevel);
+    }
+
+    @Test
+    void filterDefinitionsFiltroEquipeEFiltroEquipeProcessoEstaoRegistradasNaSessionFactory() {
+        SessionFactory sessionFactory = entityManager.getEntityManagerFactory().unwrap(SessionFactory.class);
+
+        assertThat(sessionFactory.getDefinedFilterNames())
+                .as("guarda contra regressao do bug 'Cliente.filtroEquipe sem @FilterDef "
+                        + "correspondente' (UnknownFilterException em runtime) — se este assert "
+                        + "comecar a falhar, um @FilterDef foi removido ou o nome divergiu do "
+                        + "@Filter que o referencia; ver docs/quality/DEBT_LOG.md, "
+                        + "D-equipe-switch-interceptor-noop-quatro-bugs-empilhados")
+                .contains(EquipeSwitchInterceptor.HIBERNATE_FILTER_EQUIPE, EquipeSwitchInterceptor.HIBERNATE_FILTER_PROCESSO);
     }
 
     @Test

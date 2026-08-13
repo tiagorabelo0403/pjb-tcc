@@ -1,0 +1,11 @@
+{
+  "filesScanned": 8236,
+  "filterDefNamesFound": [
+    "filtroEquipe",
+    "filtroEquipeProcesso",
+    "filtroUnidadeInstitucional"
+  ],
+  "missingFilterDefFindings": [],
+  "unbalancedConditionFindings": [],
+  "conditionalOnBeanOnComponentFindings": []
+}
