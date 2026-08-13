@@ -4,6 +4,9 @@ target/
 build/
 **/build/
 
+# GeoIP database (licenciada individualmente via MaxMind, nunca commitar)
+infra/geoip/*.mmdb
+
 # Python
 __pycache__/
 **/__pycache__/

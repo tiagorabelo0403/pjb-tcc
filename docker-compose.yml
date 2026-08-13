@@ -135,6 +135,14 @@ services:
       PJB_MASTER_KEY_BASE64: ${PJB_MASTER_KEY_BASE64:?defina PJB_MASTER_KEY_BASE64 no .env (openssl rand -base64 32)}
       PJB_JVM_MAX_METASPACE_SIZE: ${PJB_JVM_MAX_METASPACE_SIZE:-512m}
       JAVA_OPTS: ${PJB_JAVA_OPTS:--Dfile.encoding=UTF-8 -Djava.security.egd=file:/dev/urandom}
+      # Geo-bloqueio de magistratura (MagistraturaGeofencePolicyService) precisa de uma base
+      # MaxMind GeoLite2-City real. O .mmdb NAO vem no repositorio (licenciamento MaxMind exige
+      # conta gratuita + license key proprios) — coloque o arquivo baixado em infra/geoip/ (ver
+      # infra/geoip/README.md) que o volume abaixo o expoe ao container. Sem o arquivo, o adapter
+      # loga aviso no boot e o lookup fica gracefully indisponivel (comportamento inalterado).
+      PJB_SECURITY_GEOFENCE_DATABASE_PATH: ${PJB_SECURITY_GEOFENCE_DATABASE_PATH:-/app/geoip/GeoLite2-City.mmdb}
+    volumes:
+      - ./infra/geoip:/app/geoip:ro
     depends_on:
       postgres:
         condition: service_healthy

@@ -64,7 +64,7 @@ import com.tcc.pjb.backend.model.entity.enums.jurisdicao.MateriaJurisdicao;
                 "or ( :includePersonalParam = true and equipe_id is null and usuario_id = :usuarioIdParam )) " +
                 "and ( :allRamosParam = true or ramo_direito is null or ramo_direito in (:allowedRamosParam) ) " +
                 "and ( :allowSensitiveParam = true or nivel_sigilo is null or nivel_sigilo = 'PUBLICO' ) " +
-                "and ( :blockPersonalCasesParam = false or (((parte_autora_cpf is null or parte_autora_cpf <> :userCpfParam) and (parte_reu_cpf is null or parte_reu_cpf <> :userCpfParam)) and (usuario_id is null or usuario_id <> :usuarioIdParam)))"
+                "and ( :blockPersonalCasesParam = false or (((parte_autora_cpf is null or parte_autora_cpf <> :userCpfParam) and (parte_reu_cpf is null or parte_reu_cpf <> :userCpfParam)) and (usuario_id is null or usuario_id <> :usuarioIdParam))))"
 )
 @PjbDataOwnership(module = PjbModuleId.PROCESSO_LIFECYCLE, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
 @Table(name = "tb_processo")

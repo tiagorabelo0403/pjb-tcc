@@ -98,6 +98,16 @@ services:
       PJB_DB_WRITE_FAILOVER_STRICT: ${PJB_DB_WRITE_FAILOVER_STRICT:-false}
       PJB_API_DB_PRESSURE_SHIELD_ENABLED: "true"
       PJB_LIVE_CLUSTER_NODE_ID: backend-a
+      # pgbouncer-rw/ro desta topologia rodam pool_mode=transaction na imagem 1.18.0 (sem suporte a
+      # max_prepared_statements, que só existe a partir do PgBouncer 1.21). Em pool_mode=transaction o
+      # pgbouncer pode entregar uma conexao fisica diferente a cada transacao, entao um prepared
+      # statement nomeado que o driver pgjdbc cria do lado servidor apos a 5a execucao da mesma query
+      # (prepareThreshold=5, default do driver) deixa de existir na proxima conexao fisica — o boot
+      # quebra com "prepared statement ... does not exist" no Flyway. Correcao oficial documentada
+      # tanto pelo pgjdbc quanto pelo FAQ do proprio PgBouncer para essa combinacao: desabilitar
+      # prepared statements do lado servidor via prepareThreshold=0. Nao mexe no pool_mode (mantem o
+      # throughput que a topologia HA foi desenhada pra ter) nem exige trocar a imagem do pgbouncer.
+      PJB_DB_PREPARE_THRESHOLD: "0"
     depends_on:
       db-edge:
         condition: service_healthy
@@ -127,7 +137,13 @@ services:
       PJB_MASTER_KEY_BASE64: ${PJB_MASTER_KEY_BASE64:-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
       PJB_DB_LOAD_BALANCER_MODE: DB_EDGE_TCP
       PJB_LIVE_CLUSTER_NODE_ID: backend-b
-      JAVA_OPTS: ${PJB_JAVA_OPTS:-Dfile.encoding=UTF-8 -XX:+UseG1GC -XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=40 -Djava.security.egd=file:/dev/urandom}
+      # backend (nó 1) herda PJB_LIVE_CLUSTER_ENABLED:-false do docker-compose.yml base; backend-b só
+      # existe aqui, sem esse default, e caía no default proprio do application-docker.yml (true),
+      # habilitando RedisLiveClusterStateStore sem StringRedisTemplate elegível -> UnsatisfiedDependencyException.
+      PJB_LIVE_CLUSTER_ENABLED: ${PJB_LIVE_CLUSTER_ENABLED:-false}
+      # Mesma armadilha pool_mode=transaction + prepared statements do backend-a — ver comentario lá.
+      PJB_DB_PREPARE_THRESHOLD: "0"
+      JAVA_OPTS: ${PJB_JAVA_OPTS:--Dfile.encoding=UTF-8 -XX:+UseG1GC -XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=40 -Djava.security.egd=file:/dev/urandom}
     depends_on:
       db-edge:
         condition: service_healthy

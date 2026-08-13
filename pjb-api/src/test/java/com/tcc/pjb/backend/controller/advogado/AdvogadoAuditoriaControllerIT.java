@@ -72,6 +72,16 @@ class AdvogadoAuditoriaControllerIT extends PjbFlowItBase {
         JsonNode json = objectMapper.readTree(res.getResponse().getContentAsString());
         assertTrue(json.has("content"));
         assertTrue(json.get("content").size() >= 1);
-        assertEquals("ADV_CLIENTE_CREATED", json.get("content").get(0).get("action").asText());
+        boolean contemEventoCriado = false;
+        for (JsonNode entry : json.get("content")) {
+            if ("ADV_CLIENTE_CREATED".equals(entry.get("action").asText())) {
+                contemEventoCriado = true;
+                break;
+            }
+        }
+        assertTrue(contemEventoCriado, "Ledger deveria conter o evento ADV_CLIENTE_CREATED semeado no teste "
+                + "(nao necessariamente na posicao 0 — a propria chamada ao endpoint, sob /api/v1/**, "
+                + "passa pelo EquipeSwitchInterceptor e pode gravar seu proprio evento ADV_OFFICE_MODE_VIEW "
+                + "como efeito colateral legitimo)");
     }
 }

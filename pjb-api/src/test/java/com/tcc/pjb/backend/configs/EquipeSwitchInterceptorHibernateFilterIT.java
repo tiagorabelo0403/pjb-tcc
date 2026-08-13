@@ -14,7 +14,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
+import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.modules.advocacia.repository.ClienteRepository;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.service.advogado.surface.AdvogadoSurfaceFacadeService;
 import jakarta.persistence.EntityManager;
@@ -39,42 +41,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Detector de regressão para um bug CONHECIDO e CONFIRMADO: {@code spring.jpa.open-in-view=false}
- * (ativo em todos os profiles, incluindo integration-test) quebra a ativação dos Hibernate
- * {@code @Filter} dentro de {@link EquipeSwitchInterceptor#preHandle}, que roda antes de
- * qualquer {@code @Transactional} abrir. Ciclo real via MockMvc: DispatcherServlet ->
- * HandlerInterceptor.preHandle() -> controller -> serviço transacional.
+ * Prova de correção (e detector de regressão) para o bug CONFIRMADO de {@code
+ * spring.jpa.open-in-view=false}: um {@code entityManager.unwrap(Session.class)} chamado no
+ * {@link EquipeSwitchInterceptor#preHandle}, antes de qualquer {@code @Transactional} abrir,
+ * nunca afetava a Session que a transação de negócio (aberta depois) de fato usava. A correção
+ * move a ativação dos Hibernate {@code @Filter} para {@link EquipeFiltroRepositoryAspect}, que
+ * intercepta {@code ProcessoRepository}/{@code ClienteRepository} — join point que só existe
+ * depois que a transação de negócio já abriu a Session real.
  *
- * <p>Os dois testes abaixo documentam o comportamento ATUAL (o bug), não o comportamento
- * desejado. A promessa de detectar regressão vale só para {@code probeDireto...}: se algum dia
- * {@code EquipeSwitchInterceptor} for corrigido para ativar o filtro de verdade antes da
- * transação de negócio, aquele teste vai FALHAR (assert de {@code true} vira {@code false} de
- * verdade) — o que é o sinal correto de que a correção aconteceu e que esta classe precisa ser
- * revisada/invertida de volta.
+ * <p>{@code probeDireto...}: prova DIRETA — um endpoint real sob /api/v1/** com um método
+ * @Transactional próprio consulta {@code ProcessoRepository}/{@code ClienteRepository} (para
+ * disparar o aspecto) e então lê, via {@code Session.getEnabledFilter}, se
+ * filtroEquipe/filtroEquipeProcesso estão realmente ativos naquela mesma Session. Chama o
+ * endpoint duas vezes seguidas para provar também que o {@code ThreadLocal} em
+ * {@link EquipeFiltroContexto} é limpo corretamente entre requisições (sem vazamento de estado
+ * de uma requisição para a próxima na mesma thread). Se esta correção regredir (voltar a
+ * ativar o filtro só no preHandle, ou parar de limpar o ThreadLocal), este teste falha.
  *
- * <p>{@code enableFilterNaoRegistraFalha...} NÃO tem essa propriedade — não detecta regressão
- * sozinho. Hoje o interceptor não emite nenhum log DEBUG neste fluxo (os únicos
- * {@code log.debug(...)} do interceptor ficam dentro de blocos {@code catch}, nunca alcançados
- * porque {@code enableFilter} não lança exceção nesse cenário — daí o bug ser silencioso). Um
- * interceptor corrigido também não emitiria log de falha, então este teste continuaria verde
- * mesmo sem o bug. Ele existe como evidência CORROBORANTE de um aspecto específico do bug (a
- * ausência de log/exceção), não como detector independente — a prova de regressão real é
- * {@code probeDireto...}.
- *
- * <p>Duas evidências independentes, ambas confirmando o mesmo bug:
- * <ul>
- *   <li>{@code probeDireto...}: prova DIRETA — um endpoint real sob /api/v1/**
- *   com um método @Transactional próprio consulta, via {@code Session.getEnabledFilter},
- *   se filtroEquipe/filtroEquipeProcesso estão realmente ativos no momento em que uma
- *   query de negócio roda. Não depende de captura de log. Resultado confirmado: ambos
- *   {@code false} — o preHandle não conseguiu ativar os filtros.</li>
- *   <li>{@code enableFilterNaoRegistraFalha...}: evidência de log — captura DEBUG do próprio
- *   interceptor. Investigação confirmou que NENHUMA exceção é lançada por
- *   {@code enableFilter} durante o preHandle (ao contrário do que o nome anterior deste teste
- *   sugeria) — por isso também NENHUM log de falha aparece. O filtro simplesmente não é
- *   aplicado à sessão que a transação de negócio (aberta depois) vai usar, sem erro, sem
- *   log, silenciosamente.</li>
- * </ul>
+ * <p>{@code enableFilterNaoRegistraFalha...}: evidência corroborante — nenhum log de falha é
+ * emitido pelo {@link EquipeSwitchInterceptor} ao resolver o contexto de equipe (o interceptor
+ * não tenta mais ativar filtro nenhum diretamente, então esse tipo de falha não pode mais
+ * acontecer ali; a ativação real, e sua própria captura de exceção, agora vive no aspecto).
  */
 @AutoConfigureMockMvc
 @Import(EquipeSwitchInterceptorHibernateFilterIT.FilterProbeConfig.class)
@@ -127,29 +114,41 @@ class EquipeSwitchInterceptorHibernateFilterIT extends PjbFlowItBase {
 
     @Test
     @WithMockUser(username = "adv-filtro@test.local", authorities = "ROLE_ADVOGADO")
-    void probeDiretoConfirmaQueFiltroContinuaInativoNaTransacaoDeNegocioBugConhecido() throws Exception {
+    void probeDiretoConfirmaQueFiltroEstaAtivoNaTransacaoDeNegocioAoChamarORepositorio() throws Exception {
+        Map<String, Boolean> primeiraChamada = chamarProbe();
+        System.out.println("PROBE DIRETO filtro-probe (1a chamada) => " + primeiraChamada);
+
+        assertThat(primeiraChamada)
+                .as("correcao: EquipeFiltroRepositoryAspect ativa o filtro no momento em que "
+                        + "ProcessoRepository/ClienteRepository sao chamados dentro da transacao de "
+                        + "negocio real — se este assert comecar a falhar (false), a correcao regrediu")
+                .containsEntry("filtroEquipe", true)
+                .containsEntry("filtroEquipeProcesso", true);
+
+        Map<String, Boolean> segundaChamada = chamarProbe();
+        System.out.println("PROBE DIRETO filtro-probe (2a chamada) => " + segundaChamada);
+
+        assertThat(segundaChamada)
+                .as("EquipeFiltroContexto (ThreadLocal) precisa continuar funcionando numa segunda "
+                        + "requisicao na mesma thread — prova de que afterCompletion limpa o estado "
+                        + "e o proximo preHandle o repovoa, sem vazamento nem perda entre requisicoes")
+                .containsEntry("filtroEquipe", true)
+                .containsEntry("filtroEquipeProcesso", true);
+    }
+
+    private Map<String, Boolean> chamarProbe() throws Exception {
         String body = mockMvc.perform(get("/api/v1/_debug/filtro-probe"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
         @SuppressWarnings("unchecked")
         Map<String, Boolean> resultado = objectMapper.readValue(body, Map.class);
-
-        System.out.println("PROBE DIRETO filtro-probe => " + resultado);
-
-        assertThat(resultado)
-                .as("bug conhecido: open-in-view=false faz o preHandle do EquipeSwitchInterceptor "
-                        + "rodar sem transacao aberta, entao os Hibernate Filters continuam "
-                        + "inativos quando a transacao de negocio real (aberta depois) executa a "
-                        + "query — se este assert comecar a falhar (true), o interceptor foi "
-                        + "corrigido e esta classe precisa ser revisada")
-                .containsEntry("filtroEquipe", false)
-                .containsEntry("filtroEquipeProcesso", false);
+        return resultado;
     }
 
     @Test
     @WithMockUser(username = "adv-filtro@test.local", authorities = "ROLE_ADVOGADO")
-    void enableFilterNaoRegistraFalhaPorqueNenhumaExcecaoEhLancadaBugConhecido() throws Exception {
+    void enableFilterNaoRegistraFalhaAoResolverContextoDeEquipe() throws Exception {
         when(facadeService.analiticoPorCliente(anyString())).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/advogado/cockpit/clientes/analitico").param("clienteCpfCnpj", "12345678900"))
@@ -162,12 +161,10 @@ class EquipeSwitchInterceptorHibernateFilterIT extends PjbFlowItBase {
         System.out.println("LOGS CAPTURADOS do EquipeSwitchInterceptor: " + todasAsMensagens);
 
         assertThat(todasAsMensagens)
-                .as("evidencia CORROBORANTE (nao detector de regressao independente — ver Javadoc "
-                        + "da classe): bug conhecido, enableFilter nao lanca excecao ao ser chamado "
-                        + "sem transacao aberta, entao nenhum log de falha e emitido — o filtro "
-                        + "apenas nao pega, silenciosamente, sem nenhum rastro de erro nos logs do "
-                        + "interceptor. Um interceptor corrigido tambem passaria aqui — a prova de "
-                        + "regressao real e o probeDiretoConfirmaQue...BugConhecido")
+                .as("evidencia corroborante: o interceptor so resolve contexto (quem/qual equipe) e "
+                        + "nao ativa filtro nenhum diretamente mais, entao nao pode mais emitir esse "
+                        + "tipo de falha — a ativacao real, com sua propria captura de excecao, agora "
+                        + "vive em EquipeFiltroRepositoryAspect")
                 .noneMatch(m -> m.contains("falha ao habilitar filtro de equipe")
                         || m.contains("falha ao habilitar filtro de processo"));
     }
@@ -175,8 +172,10 @@ class EquipeSwitchInterceptorHibernateFilterIT extends PjbFlowItBase {
     @TestConfiguration
     static class FilterProbeConfig {
         @Bean
-        FilterProbeController filterProbeController(EntityManager entityManager) {
-            return new FilterProbeController(entityManager);
+        FilterProbeController filterProbeController(EntityManager entityManager,
+                                                     ProcessoRepository processoRepository,
+                                                     ClienteRepository clienteRepository) {
+            return new FilterProbeController(entityManager, processoRepository, clienteRepository);
         }
     }
 
@@ -185,14 +184,22 @@ class EquipeSwitchInterceptorHibernateFilterIT extends PjbFlowItBase {
     static class FilterProbeController {
 
         private final EntityManager entityManager;
+        private final ProcessoRepository processoRepository;
+        private final ClienteRepository clienteRepository;
 
-        FilterProbeController(EntityManager entityManager) {
+        FilterProbeController(EntityManager entityManager,
+                              ProcessoRepository processoRepository,
+                              ClienteRepository clienteRepository) {
             this.entityManager = entityManager;
+            this.processoRepository = processoRepository;
+            this.clienteRepository = clienteRepository;
         }
 
         @GetMapping("/filtro-probe")
         @Transactional(readOnly = true)
         public Map<String, Boolean> probe() {
+            processoRepository.count();
+            clienteRepository.count();
             Session session = entityManager.unwrap(Session.class);
             boolean filtroEquipeAtivo = session.getEnabledFilter(EquipeSwitchInterceptor.HIBERNATE_FILTER_EQUIPE) != null;
             boolean filtroProcessoAtivo = session.getEnabledFilter(EquipeSwitchInterceptor.HIBERNATE_FILTER_PROCESSO) != null;

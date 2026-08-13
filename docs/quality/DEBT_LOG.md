@@ -1376,3 +1376,125 @@ Não revisitar — nenhuma cópia privada de `MutableClock` restante no módulo.
 
 Verificação real: `SecretariaInstitucionalReprocessamentoEntidadeSujaIT` ganhou um segundo teste (`criarUnidadeResolveBacklogDeVerdadeQuandoAUnidadeNovaEAQueOsItensPresosEsperavam`) reproduzindo exatamente o cenário real antes evitado — unidade nova = unidade alvo do backlog — provando que o item preso é resolvido de verdade (status `PENDENTE`, `unidadeInstitucionalId` apontando pra unidade recém-criada) depois da correção. `UnidadeInstitucionalAdminServiceTest`/`UnidadeInstitucionalAdminControllerTest` atualizados para provar a ordem das duas chamadas (`InOrder`) e que `criarUnidade` sozinho não reprocessa mais nada. Rodado 2x seguidas contra Testcontainers Postgres limpo, 0 falhas nas duas vezes.
 Não revisitar — o corte de transação está estrutural, não é um workaround pontual.
+
+## D-ha-pgbouncer-prepared-statements
+
+**FECHADA.** Achada durante o round de verificação de boot completo da topologia HA (registrada como dívida aberta em `secretarias-institucionais/fix-round-2-report.md` e narrada no README). `backend`/`backend-a` nunca conseguia subir em `docker-compose.ha.yml`: o Flyway quebrava no boot com `ERROR: prepared statement "S_n" does not exist`. Causa raiz confirmada contra containers reais: `pgbouncer-rw`/`pgbouncer-ro` dessa topologia rodam a imagem 1.18.0 em `pool_mode = transaction`; suporte a prepared statements em modo de pooling por transação (`max_prepared_statements`) só existe a partir do PgBouncer 1.21. Em `pool_mode = transaction` o pgbouncer pode entregar uma conexão física diferente a cada transação — um prepared statement nomeado que o driver pgjdbc cria do lado servidor depois da 5ª execução da mesma query na mesma conexão lógica (`prepareThreshold=5`, default do driver) deixa de existir na física seguinte.
+
+**Correção real aplicada:** `prepareThreshold=0` nas propriedades de datasource (`spring.datasource.hikari.data-source-properties.prepareThreshold` para o caminho de escrita, `pjb.datasource.routing.replica.data-source-properties.prepareThreshold` para o de leitura), desabilitando prepared statements do lado servidor via novo parâmetro `PJB_DB_PREPARE_THRESHOLD` (default `5` = comportamento nativo inalterado em todo lugar que não define a env var — dev, prod, `docker-compose.yml` base, Testcontainers). `docker-compose.ha.yml` passa a fixar `PJB_DB_PREPARE_THRESHOLD: "0"` só em `backend`/`backend-b`. Validado contra a documentação real antes de aplicar: o próprio FAQ do PgBouncer recomenda `prepareThreshold=0` como correção oficial para JDBC nessa combinação (`pool_mode=transaction` + versão sem `max_prepared_statements`); a documentação do driver pgjdbc confirma que o parâmetro desabilita completamente prepared statements do lado servidor. Das 3 alternativas identificadas na investigação anterior (mudar `pool_mode` pra `session`, `prepareThreshold=0`, ou atualizar a imagem do pgbouncer pra ≥1.21), esta foi escolhida por ser a única que não muda o modo de pooling que a topologia HA foi desenhada pra ter nem exige trocar a imagem Docker — menor blast radius, reversível com uma env var.
+
+**Trade-off aceito e documentado:** com `prepareThreshold=0`, o driver nunca usa prepared statement nomeado do lado servidor nessa topologia — perde reuso de plano de execução, binary transfer de parâmetros/resultado, e reenvia o SQL completo a cada execução. Custo aceitável porque é estritamente melhor que o estado anterior (`backend` não subia de jeito nenhum) e porque `pool_mode=transaction` já impunha esse teto de qualquer forma — não há como ter prepared statements nomeados persistentes de verdade sob esse modo de pooling sem subir o pgbouncer pra ≥1.21 (não feito nesta correção).
+
+**Verificação real:** imagem `pjb-backend:local` reconstruída com as mudanças; topologia HA completa subida via `docker compose -f docker-compose.yml -f docker-compose.ha.yml --profile app --profile ha up -d` em projeto Docker isolado (`-p pjb_ha_pgbouncerfix`, volumes novos, `down -v` ao final). `backend` completou as 280 migrations Flyway via `pgbouncer-rw` e alcançou `healthy` (`docker inspect .State.Health.Status`) em **5 boots consecutivos** — zero ocorrência de "prepared statement ... does not exist" em qualquer um. O cenário de >5 execuções da mesma query na mesma conexão lógica foi exercitado de sobra: 280 migrations sequenciais mais o próprio bookkeeping do Flyway em `flyway_schema_history` (INSERT/SELECT repetidos dezenas de vezes) na mesma pool Hikari por trás do `pgbouncer-rw`.
+
+**Achado incidental durante a mesma verificação, não corrigido (fora de escopo):** com o bug de prepared statements resolvido, o boot avança o suficiente para expor uma segunda falha, pré-existente e desta vez encontrada pela primeira vez porque ninguém tinha chegado tão longe: `PjbReplicaTopologyVerifier` (`pjb.datasource.routing.verify-topology-on-startup`, default `true`) executa `select pg_is_in_recovery()` no datasource de leitura e falha com `IllegalStateException: Datasource de leitura padrão: não confirmou réplica PostgreSQL física` — porque `pgbouncer-ro` desta topologia local aponta pro MESMO Postgres que `pgbouncer-rw` (não há réplica física de verdade em `docker-compose.ha.yml`), então `pg_is_in_recovery()` sempre retorna `false`. Isso derruba `backend`/`backend-a` poucos segundos depois de `Started BackendApplication` (confirmado presente já no primeiro boot limpo, antes de qualquer mudança de `backend-b` — não é efeito colateral desta correção). Ver `D-ha-replica-topology-verifier-sem-replica-real` (nova entrada, aberta).
+
+Não revisitar a parte de prepared statements — a causa está eliminada estruturalmente (parâmetro de conexão, não workaround de dado).
+
+## D-ha-replica-topology-verifier-sem-replica-real
+
+**Status:** aberta
+
+**Contexto:** achada durante a verificação de boot completo de `D-ha-pgbouncer-prepared-statements` (mesma investigação, causa diferente). `PjbReplicaTopologyVerifier` valida no startup que o datasource de leitura é uma réplica física real (`select pg_is_in_recovery()` deve retornar `true`), gate controlado por `pjb.datasource.routing.verify-topology-on-startup` (default `true`, não sobrescrito em `docker-compose.ha.yml`). Nessa topologia local, `pgbouncer-ro` aponta pro mesmo Postgres single-node que `pgbouncer-rw` (`PJB_PGBOUNCER_RO_DB_HOST:-postgres`, mesmo host) — não existe réplica física de streaming configurada em `docker-compose.ha.yml`. `pg_is_in_recovery()` portanto sempre retorna `false`, e o verifier derruba a aplicação (`IllegalStateException`) poucos segundos depois de `Started BackendApplication`, entrando em loop de restart (`restart: on-failure:5`) até esgotar as tentativas.
+
+**Risco:** alto pra rodar a topologia HA localmente de ponta a ponta (impede estabilidade indefinida do `backend`), mas não afeta produção real se lá houver uma réplica física de verdade — o verifier está fazendo exatamente o que deveria fazer dado o desenho atual do compose local.
+
+**Cobertura de teste:** nenhuma — só descoberto rodando a topologia real, não há IT que suba `docker-compose.ha.yml` de ponta a ponta.
+
+**Quando revisitar:** ao decidir como o dev local vai simular um read-replica de verdade (ex.: segundo Postgres com `pg_basebackup`/streaming replication, ou desabilitar o verifier via `PJB_DB_READ_VERIFY_TOPOLOGY_ON_STARTUP=false` explicitamente só em `docker-compose.ha.yml` como uma escolha deliberada e documentada, não um bug).
+
+## D-ha-backend-b-elasticsearch-index-race
+
+**Status:** aberta
+
+**Contexto:** achada na mesma rodada de verificação, ao estabilizar `backend-b` o suficiente (depois de corrigir `PJB_LIVE_CLUSTER_ENABLED` ausente, ver abaixo) pra ele avançar além do bug anterior. Com `backend` e `backend-b` subindo ao mesmo tempo contra o mesmo Elasticsearch, `SimpleElasticsearchRepository` (Spring Data Elasticsearch, bean `processoQueryRepository`) chama `createIndexAndMappingIfNeeded()` no construtor sem tratar `resource_already_exists_exception` — quando os dois nós tentam criar o índice `pjb-processos` na mesma janela de boot, o segundo a chegar recebe a exceção do Elasticsearch (`[es/indices.create] failed: [resource_already_exists_exception] index [pjb-processos] already exists`) e falha a inicialização do Spring context inteiro. Race de boot concorrente, não determinístico (depende de qual nó chega primeiro).
+
+**Risco:** médio — só se manifesta quando 2+ instâncias sobem ao mesmo tempo contra um Elasticsearch vazio (primeiro boot de um ambiente novo); uma vez o índice criado por qualquer nó, boots subsequentes não recriam.
+
+**Cobertura de teste:** nenhuma — descoberto rodando a topologia HA real com 2 nós de aplicação simultâneos, cenário que nenhum teste automatizado exercita hoje.
+
+**Quando revisitar:** se a topologia HA precisar bootar de forma confiável com Elasticsearch vazio (ex.: ambiente novo, CI que sobe a stack do zero) — tratar `resource_already_exists_exception` como sucesso idempotente, ou centralizar a criação do índice fora do path de inicialização do repository (migration/init job dedicado).
+
+**Achado corrigido na mesma rodada (não é dívida, já fechado):** `backend-b` também falhava antes disso com `UnsatisfiedDependencyException` em `PjbLivePressureService`/`RedisLiveClusterStateStore` por falta de bean `LiveClusterStateStore` — `backend` (nó 1) herda `PJB_LIVE_CLUSTER_ENABLED: ${PJB_LIVE_CLUSTER_ENABLED:-false}` do `docker-compose.yml` base, mas `backend-b` só existe em `docker-compose.ha.yml` e não tinha essa env var, caindo no default `true` do `application-docker.yml` e tentando montar `RedisLiveClusterStateStore` sem `StringRedisTemplate` elegível. Corrigido adicionando a mesma env var (mesmo default) ao bloco `environment` de `backend-b`.
+
+## D-ha-backend-b-java-opts-sem-hifen
+
+**Status:** FECHADA — 2026-08-13
+
+**Contexto:** achada na mesma verificação. `docker-compose.ha.yml`, serviço `backend-b`: faltava o
+`-` na frente de `Dfile.encoding=UTF-8` no valor default de `JAVA_OPTS` (todas as outras flags do
+mesmo valor têm `-`, essa não). Quando `PJB_JAVA_OPTS` não era definido no ambiente, o entrypoint
+interpretava `Dfile.encoding=UTF-8` como o nome da classe principal a executar: `Error: Could not
+find or load main class Dfile.encoding=UTF-8` — `backend-b` nunca chegava a inicializar a JVM,
+crash-loop imediato (`Exited (1)`) até esgotar `restart: on-failure:5`.
+
+**Correção:** `-Dfile.encoding=UTF-8`, igual ao padrão já usado em `backend`/`backend-a` no
+`docker-compose.yml` base. Mudança de um caractere, sem efeito em nenhum outro serviço.
+
+**Cobertura de teste:** nenhuma — nenhum guard de `docker-compose*.yml` valida sintaxe de JVM
+flags dentro de valores de env var. Risco residual: uma futura edição manual pode reintroduzir o
+mesmo erro sem detecção automática.
+
+## D-equipe-switch-interceptor-noop-quatro-bugs-empilhados
+
+**FECHADA — 2026-08-13.** O isolamento por equipe/usuário via Hibernate `@Filter`
+(`filtroEquipe`/`filtroEquipeProcesso` em `Cliente`/`Processo`) estava confirmado inativo desde a
+investigação anterior (`EquipeSwitchInterceptorHibernateFilterIT`, prova direta contra Postgres
+real). Duas tentativas de correção anteriores (`TransactionSynchronizationManager` e
+`TransactionExecutionListener`, ambas registradas e descartadas em rodadas prévias) falharam
+porque nenhuma delas era a causa real — eram todas tentativas de consertar o *timing* de ativação
+do filtro dentro de `EquipeSwitchInterceptor.preHandle()`, mas o interceptor nunca chegava a
+executar. A causa raiz verdadeira só apareceu depois de instrumentar o `WebConfig` e descobrir que
+o bean do interceptor era `null` no registro de interceptors — o que expôs, em cascata, quatro
+bugs pré-existentes e independentes, cada um mascarando o próximo:
+
+1. **`EquipeSwitchInterceptor` nunca era criado.** A classe é um `@Component` comum (não uma
+   classe de auto-configuração) com `@ConditionalOnBean({MembroEquipeRepository.class,
+   EntityManager.class, ...})` no nível da classe. `@ConditionalOnBean` sobre um `@Component`
+   escaneado é uma armadilha conhecida do Spring Boot: a condição é avaliada durante a fase de
+   component-scan, antes dos beans de infraestrutura JPA/Spring Data (repositórios, EntityManager)
+   estarem registrados — a condição resolvia falso sempre, e `WebConfig` (usando
+   `ObjectProvider.getIfAvailable()`) simplesmente pulava o registro do interceptor sem erro
+   nenhum. Isolamento por equipe morto silenciosamente desde que a anotação foi escrita. Corrigido
+   removendo `@ConditionalOnBean` da classe (mantido `@ConditionalOnWebApplication`).
+2. **`AuditLedgerService.append`/`appendSafely` sem isolamento transacional.** Assim que o
+   interceptor passou a rodar de verdade, qualquer chamador com `@Transactional(readOnly = true)`
+   (ex.: `OfficeWorkspaceModeService.current()` → `buildView()`, chamado de dentro do próprio
+   `preHandle`) tinha o `INSERT` do log de auditoria rejeitado pelo Postgres ("cannot execute
+   INSERT in a read-only transaction"). `persistSafely` engolia a exceção, mas a transação
+   ambiente já ficava marcada rollback-only — a chamada inteira falhava com
+   `UnexpectedRollbackException` no commit, mesmo em requisições que nunca tocaram auditoria
+   diretamente. Corrigido com `@Transactional(propagation = REQUIRES_NEW)` em `append()` e nos 4
+   overloads de `appendSafely` (todos precisam da anotação — `appendSafely` chama `append` por
+   self-invocation, que não passa pelo proxy do Spring).
+3. **`Cliente.filtroEquipe` sem `@FilterDef`.** `Cliente.java` tinha `@Filter(name =
+   "filtroEquipe", ...)` mas nenhum `@FilterDef(name = "filtroEquipe", ...)` em lugar nenhum do
+   código — `session.enableFilter("filtroEquipe")` sempre lançava `UnknownFilterException`. O
+   filtro nunca existiu de verdade na `SessionFactory`. Corrigido adicionando o `@FilterDef`
+   correspondente (parâmetros `usuarioIdParam`/`equipeIdParam`, mesmo padrão já usado em
+   `Processo.filtroEquipeProcesso`).
+4. **`Processo.filtroEquipeProcesso` com parêntese desbalanceado.** A string de `condition` do
+   `@Filter` em `Processo.java` tinha 14 parênteses de abertura e 13 de fechamento — um parêntese
+   externo aberto em `(((` (linha 62) nunca era fechado no final da condição. Nunca fora exercitado
+   porque o filtro nunca chegava a ser habilitado (bug #1). Assim que #1 e #3 foram corrigidos, a
+   primeira consulta real via `ProcessoRepository` quebrou com `ERROR: syntax error at end of
+   input` (SQLState 42601). Corrigido adicionando o parêntese de fechamento faltante.
+
+**Verificação real:** `EquipeSwitchInterceptorHibernateFilterIT` — 2/2 verde contra Postgres real
+(Testcontainers), confirmando `filtroEquipe`/`filtroEquipeProcesso` genuinamente ativos numa Session
+vinculada a uma transação de negócio real, e que o `ThreadLocal` de contexto (`EquipeFiltroContexto`)
+não vaza entre duas requisições sucessivas na mesma thread.
+
+**Efeito colateral capturado e corrigido na mesma rodada:** com o interceptor genuinamente ativo em
+toda rota `/api/v1/**`, `AdvogadoAuditoriaControllerIT.ledgerReturnsEvents` passou a falhar —
+`OfficeWorkspaceModeService.current()` agora grava um evento `ADV_OFFICE_MODE_VIEW` real a cada
+requisição autenticada, inclusive a chamada MockMvc que o próprio teste faz ao endpoint de ledger,
+tornando a asserção posicional (`content.get(0)`) frágil. Teste corrigido para verificar presença
+do evento esperado em vez de posição — o comportamento novo é correto (o interceptor deveria
+mesmo rodar em toda rota `/api/v1/**`), a asserção antiga é que estava desatualizada.
+
+**Cobertura de teste:** `EquipeSwitchInterceptorHibernateFilterIT` (prova direta, 2 testes),
+`AdvogadoAuditoriaControllerIT` (regressão corrigida). Regressão ampla rodada:
+`AdvogadoCockpitControllerIT`, `ProcessoCommandControllerIT`, `AuditLedgerServicePayloadHashNuloIT`
+— todos verdes.
+Não revisitar — os quatro pontos são estruturais, não workarounds.
