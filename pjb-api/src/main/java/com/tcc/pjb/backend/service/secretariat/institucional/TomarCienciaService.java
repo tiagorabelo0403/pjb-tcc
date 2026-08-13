@@ -44,7 +44,7 @@ public class TomarCienciaService {
         SecretariaInstitucionalItem item = repository.findById(itemId)
                 .orElseThrow(() -> new IllegalArgumentException("Item não encontrado: " + itemId));
         verificarPosse(usuario, item);
-        if (item.getIntimadoEm() == null) {
+        if (item.getIntimadoEm() == null && item.getStatus() != StatusSecretariaInstitucionalItem.CONCLUIDO) {
             Instant marco = Instant.now();
             item.setIntimadoEm(marco);
             item.setStatus(StatusSecretariaInstitucionalItem.EM_ANALISE);

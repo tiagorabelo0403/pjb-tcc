@@ -200,6 +200,24 @@ class TomarCienciaServiceTest {
     }
 
     @Test
+    void tomarCienciaEmItemConcluidoNaoReabreOItem() {
+        SecretariaInstitucionalItem item = itemComUnidade(10L, 10L);
+        item.setStatus(StatusSecretariaInstitucionalItem.CONCLUIDO);
+        Usuario usuario = usuarioComum(1L);
+        UnidadeInstituicao unidade = unidade(10L);
+        when(repository.findById(10L)).thenReturn(Optional.of(item));
+        when(unidadeRepository.findById(10L)).thenReturn(Optional.of(unidade));
+        when(visibilityPolicy.podeVer(usuario, unidade)).thenReturn(true);
+
+        service.tomarCiencia(usuario, 10L);
+
+        assertThat(item.getStatus()).isEqualTo(StatusSecretariaInstitucionalItem.CONCLUIDO);
+        assertThat(item.getIntimadoEm()).isNull();
+        verify(repository, never()).save(any());
+        verify(auditService, never()).appendSafely(eq("SECRETARIA_INSTITUCIONAL_CIENCIA"), any());
+    }
+
+    @Test
     void concluirItemJaConcluidoNaoReaplicaAuditoria() {
         SecretariaInstitucionalItem item = itemComUnidade(9L, 10L);
         item.setStatus(StatusSecretariaInstitucionalItem.CONCLUIDO);
