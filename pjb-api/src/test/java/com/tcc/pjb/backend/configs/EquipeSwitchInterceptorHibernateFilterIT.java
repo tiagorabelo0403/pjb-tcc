@@ -46,10 +46,20 @@ import org.springframework.web.bind.annotation.RestController;
  * HandlerInterceptor.preHandle() -> controller -> serviço transacional.
  *
  * <p>Os dois testes abaixo documentam o comportamento ATUAL (o bug), não o comportamento
- * desejado — se algum dia {@code EquipeSwitchInterceptor} for corrigido para ativar o filtro
- * de verdade antes da transação de negócio, estes testes vão FALHAR. Isso é intencional: um
- * teste falhando aqui é o sinal de que a correção aconteceu e que esta classe (e os asserts
- * abaixo) precisam ser revisados/invertidos de volta, não um alarme de regressão real.
+ * desejado. A promessa de detectar regressão vale só para {@code probeDireto...}: se algum dia
+ * {@code EquipeSwitchInterceptor} for corrigido para ativar o filtro de verdade antes da
+ * transação de negócio, aquele teste vai FALHAR (assert de {@code true} vira {@code false} de
+ * verdade) — o que é o sinal correto de que a correção aconteceu e que esta classe precisa ser
+ * revisada/invertida de volta.
+ *
+ * <p>{@code enableFilterNaoRegistraFalha...} NÃO tem essa propriedade — não detecta regressão
+ * sozinho. Hoje o interceptor não emite nenhum log DEBUG neste fluxo (os únicos
+ * {@code log.debug(...)} do interceptor ficam dentro de blocos {@code catch}, nunca alcançados
+ * porque {@code enableFilter} não lança exceção nesse cenário — daí o bug ser silencioso). Um
+ * interceptor corrigido também não emitiria log de falha, então este teste continuaria verde
+ * mesmo sem o bug. Ele existe como evidência CORROBORANTE de um aspecto específico do bug (a
+ * ausência de log/exceção), não como detector independente — a prova de regressão real é
+ * {@code probeDireto...}.
  *
  * <p>Duas evidências independentes, ambas confirmando o mesmo bug:
  * <ul>
@@ -152,9 +162,12 @@ class EquipeSwitchInterceptorHibernateFilterIT extends PjbFlowItBase {
         System.out.println("LOGS CAPTURADOS do EquipeSwitchInterceptor: " + todasAsMensagens);
 
         assertThat(todasAsMensagens)
-                .as("bug conhecido: enableFilter nao lanca excecao ao ser chamado sem transacao "
-                        + "aberta, entao nenhum log de falha e emitido — o filtro apenas nao pega, "
-                        + "silenciosamente, sem nenhum rastro de erro nos logs do interceptor")
+                .as("evidencia CORROBORANTE (nao detector de regressao independente — ver Javadoc "
+                        + "da classe): bug conhecido, enableFilter nao lanca excecao ao ser chamado "
+                        + "sem transacao aberta, entao nenhum log de falha e emitido — o filtro "
+                        + "apenas nao pega, silenciosamente, sem nenhum rastro de erro nos logs do "
+                        + "interceptor. Um interceptor corrigido tambem passaria aqui — a prova de "
+                        + "regressao real e o probeDiretoConfirmaQue...BugConhecido")
                 .noneMatch(m -> m.contains("falha ao habilitar filtro de equipe")
                         || m.contains("falha ao habilitar filtro de processo"));
     }

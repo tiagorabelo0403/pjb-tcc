@@ -89,6 +89,9 @@ services:
       PJB_DB_USER: ${PJB_DB_USER:-pjb}
       PJB_DB_PASS: ${PJB_DB_PASS:-pjb}
       PJB_DB_LOAD_BALANCER_MODE: DB_EDGE_TCP
+      PJB_DB_READ_URL: jdbc:postgresql://db-edge:6433/${PJB_DB_NAME:-pjb}
+      PJB_DB_READ_USER: ${PJB_DB_USER:-pjb}
+      PJB_DB_READ_PASS: ${PJB_DB_PASS:-pjb}
       PJB_DB_READ_ROUTING_ENABLED: "true"
       PJB_DB_READ_ROUTING_STRICT: "true"
       PJB_DB_WRITE_FAILOVER_ENABLED: ${PJB_DB_WRITE_FAILOVER_ENABLED:-false}
