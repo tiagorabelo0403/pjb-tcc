@@ -8,8 +8,15 @@ services:
     image: pgvector/pgvector:pg17
     environment:
       POSTGRES_DB: ${PJB_DB_NAME:-pjb}
+      # POSTGRES_USER/PASSWORD acima criam o superusuario inicial do container — inevitavel,
+      # o initdb da imagem oficial sempre torna o POSTGRES_USER superusuario, e superusuario
+      # ignora RLS (inclusive FORCE ROW LEVEL SECURITY). A aplicacao NAO conecta com este user;
+      # ./infra/docker/postgres/init/01-app-role.sh cria pjb_app (NOSUPERUSER NOBYPASSRLS) logo
+      # em seguida, e e essa role que o backend usa (ver PJB_DB_APP_USER/PASS abaixo).
       POSTGRES_USER: ${PJB_DB_USER:-pjb}
       POSTGRES_PASSWORD: ${PJB_DB_PASS:-pjb}
+      PJB_DB_APP_USER: ${PJB_DB_APP_USER:-pjb_app}
+      PJB_DB_APP_PASS: ${PJB_DB_APP_PASS:-pjb_app_pass}
     ports:
       - "${PJB_PG_PORT:-5432}:5432"
     volumes:
@@ -106,15 +113,18 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${PJB_DB_NAME:-pjb}
-      SPRING_DATASOURCE_USERNAME: ${PJB_DB_USER:-pjb}
-      SPRING_DATASOURCE_PASSWORD: ${PJB_DB_PASS:-pjb}
+      # Conexao real da aplicacao usa pjb_app (NOSUPERUSER), nao o pjb do container do Postgres —
+      # ver comentario no service postgres acima. pjb_app e quem faz a RLS de
+      # secretaria_institucional_item (V316) valer de verdade.
+      SPRING_DATASOURCE_USERNAME: ${PJB_DB_APP_USER:-pjb_app}
+      SPRING_DATASOURCE_PASSWORD: ${PJB_DB_APP_PASS:-pjb_app_pass}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       PJB_LIVE_CLUSTER_ENABLED: ${PJB_LIVE_CLUSTER_ENABLED:-false}
-      PJB_DB_USER: ${PJB_DB_USER:-pjb}
-      PJB_DB_PASS: ${PJB_DB_PASS:-pjb}
+      PJB_DB_USER: ${PJB_DB_APP_USER:-pjb_app}
+      PJB_DB_PASS: ${PJB_DB_APP_PASS:-pjb_app_pass}
       # Chave mestra AES-GCM (Base64, >= 32 bytes). Obrigatoria. Se não setada, o backend falha
       # na subida com mensagem clara de CryptoVaultService (nunca sobe com chave em branco).
       # Para gerar uma chave dev local (sem Vault): 'openssl rand -base64 32' e cole no .env como
