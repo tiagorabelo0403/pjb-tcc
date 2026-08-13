@@ -77,7 +77,17 @@ services:
   backend:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db-edge:6432/${PJB_DB_NAME:-pjb}
-      PJB_DB_READ_URL: jdbc:postgresql://db-edge:6433/${PJB_DB_NAME:-pjb}
+      # pgbouncer desta topologia (ver infra/docker/pgbouncer/entrypoint.sh) so conhece o
+      # usuario pjb no userlist.txt (PJB_PGBOUNCER_DB_USER acima usa PJB_DB_USER, nao
+      # PJB_DB_APP_USER) e sempre abre a conexao real com o Postgres do lado servidor como
+      # pjb (fixo). Herdar PJB_DB_APP_USER/PASS do compose base faria backend-a apresentar
+      # pjb_app ao pgbouncer, que rejeitaria a autenticacao — nó nunca sobe. Fixado
+      # explicitamente em pjb/pjb (estado anterior ao hardening de RLS) ate o pgbouncer
+      # aprender a autenticar/repassar pjb_app; ver db-role-hardening-report.md.
+      SPRING_DATASOURCE_USERNAME: ${PJB_DB_USER:-pjb}
+      SPRING_DATASOURCE_PASSWORD: ${PJB_DB_PASS:-pjb}
+      PJB_DB_USER: ${PJB_DB_USER:-pjb}
+      PJB_DB_PASS: ${PJB_DB_PASS:-pjb}
       PJB_DB_LOAD_BALANCER_MODE: DB_EDGE_TCP
       PJB_DB_READ_ROUTING_ENABLED: "true"
       PJB_DB_READ_ROUTING_STRICT: "true"

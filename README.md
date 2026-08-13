@@ -1043,6 +1043,24 @@ CREATE POLICY processo_sigilo ON processo
     USING (sigilo = false OR current_setting('app.papel') IN ('JUIZ', 'PROMOTOR'));
 ```
 
+### Role de conexão da aplicação (`pjb_app`)
+
+O `POSTGRES_USER` inicial do container Postgres (`pjb` por padrão) é criado pelo `initdb` da imagem oficial como **superusuário** — e superusuário ignora RLS, mesmo com `FORCE ROW LEVEL SECURITY`. Uma política RLS ativa (como a de `secretaria_institucional_item`, V316) não protege nada de verdade se a aplicação conecta como esse usuário.
+
+Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container (`docker-entrypoint-initdb.d`), uma segunda role — `pjb_app` — com `NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE`, com os `GRANT`s necessários para o Flyway rodar todas as migrations (incluindo `CREATE EXTENSION` de extensões trusted). É essa role, não `pjb`, que o `backend` usa para conectar em `docker-compose.yml`, via as novas variáveis de ambiente:
+
+| Variável | Papel |
+|----------|-------|
+| `PJB_DB_USER` / `PJB_DB_PASS` | Superusuário inicial do Postgres (`pjb`/`pjb`) — só inicializa o container, RLS não vale para ele |
+| `PJB_DB_APP_USER` / `PJB_DB_APP_PASS` | Role restrita (`pjb_app`/`pjb_app_pass` por padrão) — é com ela que `SPRING_DATASOURCE_USERNAME`/`PASSWORD` do `backend` conectam de fato; é essa conexão que faz a RLS valer |
+
+**Pendências conhecidas, documentadas explicitamente (não implementadas nesta rodada):**
+
+- **Volume já existente**: scripts de `docker-entrypoint-initdb.d` só rodam com `PGDATA` vazio. Um volume de dev anterior a este hardening (ex.: `pjb_pjb_pg_data` já populado) nunca cria `pjb_app` sozinho — o cabeçalho de `infra/docker/postgres/init/01-app-role.sh` traz o SQL equivalente para rodar manualmente via `docker exec ... psql` num volume desses.
+- **`docker-compose.read-replica.yml` e o caminho de leitura roteada de `docker-compose.ha.yml`**: `PJB_DB_READ_USER`/`PASS` continuam apontando para o superusuário `pjb`, não para `pjb_app`. Isso significa que **a proteção de RLS nasce desligada no caminho de leitura roteada** — não é só uma migração pendente, é uma lacuna de proteção real e conhecida. Consultas que podem ser roteadas para a réplica/HA (ex.: `SecretariaInstitucionalFilaService.consultarFila`, `@Transactional(readOnly = true)`) seguem protegidas hoje só pelas camadas 1 e 2 (checagem de aplicação + Hibernate `@Filter`), não pela camada 3 (RLS). Ver `.superpowers/sdd/2026-08-08-secretarias-institucionais/db-role-hardening-report.md` para o histórico completo da investigação.
+- **`docker-compose.ha.yml`**: os nós `backend`/`backend-b` dessa topologia usam `pjb`/`pjb` explicitamente (não `pjb_app`) porque o `pgbouncer` da topologia (`infra/docker/pgbouncer/entrypoint.sh`) só conhece `pjb` no `userlist.txt` e sempre abre a conexão real com o Postgres do lado servidor como `pjb`, fixo — a RLS ficaria inerte atrás do pgbouncer mesmo corrigindo a autenticação cliente→pgbouncer. Estado explícito, não silenciosamente quebrado; migrar essa topologia para `pjb_app` de ponta a ponta é trabalho futuro.
+- **Produção real (k8s)**: `infra/k8s/base/secret.yaml`/`configmap.yaml` continuam nas credenciais antigas — a mesma lógica de role restrita precisa ser replicada lá separadamente.
+
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---

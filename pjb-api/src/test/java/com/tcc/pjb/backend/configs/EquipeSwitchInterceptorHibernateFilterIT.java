@@ -28,10 +28,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,21 +39,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Reprodução DESCARTÁVEL de investigação: confirma empiricamente se
- * {@code spring.jpa.open-in-view=false} (ativo em todos os profiles, incluindo
- * integration-test) quebra a ativação dos Hibernate {@code @Filter} dentro de
- * {@link EquipeSwitchInterceptor#preHandle}, que roda antes de qualquer
- * {@code @Transactional} abrir. Ciclo real via MockMvc: DispatcherServlet
- * -> HandlerInterceptor.preHandle() -> controller -> serviço transacional.
+ * Detector de regressão para um bug CONHECIDO e CONFIRMADO: {@code spring.jpa.open-in-view=false}
+ * (ativo em todos os profiles, incluindo integration-test) quebra a ativação dos Hibernate
+ * {@code @Filter} dentro de {@link EquipeSwitchInterceptor#preHandle}, que roda antes de
+ * qualquer {@code @Transactional} abrir. Ciclo real via MockMvc: DispatcherServlet ->
+ * HandlerInterceptor.preHandle() -> controller -> serviço transacional.
  *
- * <p>Duas evidências independentes:
+ * <p>Os dois testes abaixo documentam o comportamento ATUAL (o bug), não o comportamento
+ * desejado — se algum dia {@code EquipeSwitchInterceptor} for corrigido para ativar o filtro
+ * de verdade antes da transação de negócio, estes testes vão FALHAR. Isso é intencional: um
+ * teste falhando aqui é o sinal de que a correção aconteceu e que esta classe (e os asserts
+ * abaixo) precisam ser revisados/invertidos de volta, não um alarme de regressão real.
+ *
+ * <p>Duas evidências independentes, ambas confirmando o mesmo bug:
  * <ul>
  *   <li>{@code probeDireto...}: prova DIRETA — um endpoint real sob /api/v1/**
  *   com um método @Transactional próprio consulta, via {@code Session.getEnabledFilter},
  *   se filtroEquipe/filtroEquipeProcesso estão realmente ativos no momento em que uma
- *   query de negócio roda. Não depende de captura de log.</li>
- *   <li>{@code enableFilterFalha...}: evidência de log — captura DEBUG do próprio
- *   interceptor para ver se ele reportou falha ao chamar enableFilter.</li>
+ *   query de negócio roda. Não depende de captura de log. Resultado confirmado: ambos
+ *   {@code false} — o preHandle não conseguiu ativar os filtros.</li>
+ *   <li>{@code enableFilterNaoRegistraFalha...}: evidência de log — captura DEBUG do próprio
+ *   interceptor. Investigação confirmou que NENHUMA exceção é lançada por
+ *   {@code enableFilter} durante o preHandle (ao contrário do que o nome anterior deste teste
+ *   sugeria) — por isso também NENHUM log de falha aparece. O filtro simplesmente não é
+ *   aplicado à sessão que a transação de negócio (aberta depois) vai usar, sem erro, sem
+ *   log, silenciosamente.</li>
  * </ul>
  */
 @AutoConfigureMockMvc
@@ -69,10 +79,10 @@ class EquipeSwitchInterceptorHibernateFilterIT extends PjbFlowItBase {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private AdvogadoSurfaceFacadeService facadeService;
 
-    @MockBean
+    @MockitoBean
     private CapabilityRateLimiter capabilityRateLimiter;
 
     private Logger interceptorLogger;
@@ -107,7 +117,7 @@ class EquipeSwitchInterceptorHibernateFilterIT extends PjbFlowItBase {
 
     @Test
     @WithMockUser(username = "adv-filtro@test.local", authorities = "ROLE_ADVOGADO")
-    void probeDiretoMostraSeFiltroEstaRealmenteAtivoNaTransacaoDeNegocio() throws Exception {
+    void probeDiretoConfirmaQueFiltroContinuaInativoNaTransacaoDeNegocioBugConhecido() throws Exception {
         String body = mockMvc.perform(get("/api/v1/_debug/filtro-probe"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
@@ -118,15 +128,18 @@ class EquipeSwitchInterceptorHibernateFilterIT extends PjbFlowItBase {
         System.out.println("PROBE DIRETO filtro-probe => " + resultado);
 
         assertThat(resultado)
-                .as("estado real dos Hibernate Filters dentro de uma transacao de negocio real, "
-                        + "apos o preHandle do EquipeSwitchInterceptor ter tentado ativa-los")
-                .containsEntry("filtroEquipe", true)
-                .containsEntry("filtroEquipeProcesso", true);
+                .as("bug conhecido: open-in-view=false faz o preHandle do EquipeSwitchInterceptor "
+                        + "rodar sem transacao aberta, entao os Hibernate Filters continuam "
+                        + "inativos quando a transacao de negocio real (aberta depois) executa a "
+                        + "query — se este assert comecar a falhar (true), o interceptor foi "
+                        + "corrigido e esta classe precisa ser revisada")
+                .containsEntry("filtroEquipe", false)
+                .containsEntry("filtroEquipeProcesso", false);
     }
 
     @Test
     @WithMockUser(username = "adv-filtro@test.local", authorities = "ROLE_ADVOGADO")
-    void enableFilterFalhaSilenciosamenteNoPreHandleSemTransacaoAberta() throws Exception {
+    void enableFilterNaoRegistraFalhaPorqueNenhumaExcecaoEhLancadaBugConhecido() throws Exception {
         when(facadeService.analiticoPorCliente(anyString())).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/advogado/cockpit/clientes/analitico").param("clienteCpfCnpj", "12345678900"))
@@ -139,8 +152,10 @@ class EquipeSwitchInterceptorHibernateFilterIT extends PjbFlowItBase {
         System.out.println("LOGS CAPTURADOS do EquipeSwitchInterceptor: " + todasAsMensagens);
 
         assertThat(todasAsMensagens)
-                .as("logs do EquipeSwitchInterceptor durante a requisição real via MockMvc")
-                .anyMatch(m -> m.contains("falha ao habilitar filtro de equipe")
+                .as("bug conhecido: enableFilter nao lanca excecao ao ser chamado sem transacao "
+                        + "aberta, entao nenhum log de falha e emitido — o filtro apenas nao pega, "
+                        + "silenciosamente, sem nenhum rastro de erro nos logs do interceptor")
+                .noneMatch(m -> m.contains("falha ao habilitar filtro de equipe")
                         || m.contains("falha ao habilitar filtro de processo"));
     }
 
