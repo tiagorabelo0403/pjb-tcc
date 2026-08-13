@@ -47,7 +47,7 @@ public class SecretariaInstitucionalEnfileiramentoService {
     @Transactional
     public SecretariaInstitucionalItem enfileirar(Long processoId, String comarca, TipoUnidadeInstitucional tipo,
                                                    MotivoEnfileiramentoInstitucional motivo, int prazoBaseDias) {
-        if (itemRepository.existePendenteOuEmAnalise(processoId, tipo)) {
+        if (itemRepository.existeAtivoOuSemUnidadeResolvida(processoId, tipo)) {
             return null;
         }
 
@@ -97,12 +97,16 @@ public class SecretariaInstitucionalEnfileiramentoService {
             if (unidadeResolvidaId == null) {
                 continue;
             }
+            Long unidadeOriginal = item.getUnidadeInstitucionalId();
+            StatusSecretariaInstitucionalItem statusOriginal = item.getStatus();
             item.setUnidadeInstitucionalId(unidadeResolvidaId);
             item.setStatus(StatusSecretariaInstitucionalItem.PENDENTE);
             SecretariaInstitucionalItem salvo;
             try {
                 salvo = gravador.gravar(item);
             } catch (DataIntegrityViolationException concorrencia) {
+                item.setUnidadeInstitucionalId(unidadeOriginal);
+                item.setStatus(statusOriginal);
                 continue;
             }
             auditService.appendSafely("SECRETARIA_INSTITUCIONAL_REPROCESSAMENTO",

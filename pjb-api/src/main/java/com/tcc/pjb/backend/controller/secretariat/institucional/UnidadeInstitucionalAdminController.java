@@ -35,6 +35,7 @@ public class UnidadeInstitucionalAdminController {
     public ResponseEntity<UnidadeInstituicao> criarUnidade(@Valid @RequestBody CriarUnidadeInstituicaoRequest request) {
         UnidadeInstituicao unidade = service.criarUnidade(request.instituicaoId(), request.nome(), request.tipo(),
                 request.comarca(), request.uf());
+        service.reprocessarBacklogAposCriacaoDeUnidade(unidade);
         return ResponseEntity.ok(unidade);
     }
 

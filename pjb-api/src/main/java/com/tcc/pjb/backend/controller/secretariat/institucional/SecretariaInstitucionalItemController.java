@@ -41,7 +41,19 @@ public class SecretariaInstitucionalItemController {
             + "'PROCURADOR','PROCURADORIA_MUNICIPAL','PROCURADORIA_ESTADUAL','PROCURADORIA_FEDERAL',"
             + "'SERVIDOR_FORUM','ADMINISTRADOR')")
     public ResponseEntity<Void> tomarCiencia(@PathVariable Long itemId) {
-        tomarCienciaService.tomarCiencia(itemId);
+        Usuario usuario = currentUserService.getRequired();
+        tomarCienciaService.tomarCiencia(usuario, itemId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/v1/secretaria-institucional/itens/{itemId}/concluir")
+    @PreAuthorize("hasAnyRole('MEMBRO_MINISTERIO_PUBLICO','PROMOTOR_ELEITORAL','PROMOTOR_TRABALHISTA','PROCURADOR_GERAL_REPUBLICA',"
+            + "'DEFENSOR_PUBLICO','DEFENSOR_PUBLICO_FEDERAL',"
+            + "'PROCURADOR','PROCURADORIA_MUNICIPAL','PROCURADORIA_ESTADUAL','PROCURADORIA_FEDERAL',"
+            + "'SERVIDOR_FORUM','ADMINISTRADOR')")
+    public ResponseEntity<Void> concluir(@PathVariable Long itemId) {
+        Usuario usuario = currentUserService.getRequired();
+        tomarCienciaService.concluir(usuario, itemId);
         return ResponseEntity.ok().build();
     }
 

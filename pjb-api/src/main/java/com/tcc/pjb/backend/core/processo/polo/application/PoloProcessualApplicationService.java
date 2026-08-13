@@ -107,7 +107,7 @@ public class PoloProcessualApplicationService {
             return;
         }
         Processo processo = processoRepository.findById(polo.getProcessoId()).orElse(null);
-        if (processo == null || processo.getComarca() == null) {
+        if (processo == null) {
             return;
         }
         eventPublisher.publishEvent(new PoloInstitucionalComposicaoEvent(processo.getId(), processo.getComarca(), tipo));

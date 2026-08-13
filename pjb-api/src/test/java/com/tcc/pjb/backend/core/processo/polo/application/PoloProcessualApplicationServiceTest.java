@@ -213,6 +213,18 @@ class PoloProcessualApplicationServiceTest {
     }
 
     @Test
+    void incluirInstitucionalComComarcaNulaAindaAssimPublicaEventoParaCairEmSemUnidadeResolvida() {
+        when(processoRepository.findById(5L))
+                .thenReturn(Optional.of(Processo.builder().id(5L).comarca(null).build()));
+
+        service.incluir(5L, TipoPolo.MINISTERIO_PUBLICO, TipoParte.MINISTERIO_PUBLICO,
+                "MP Federal", null, null, null, null, 5L, null, null);
+
+        verify(eventPublisher).publishEvent(
+                new PoloInstitucionalComposicaoEvent(5L, null, TipoUnidadeInstitucional.PROMOTORIA));
+    }
+
+    @Test
     void excluirNuncaPublicaEventoInstitucional() {
         PoloProcessual existente = new PoloProcessual(1L, TipoPolo.MINISTERIO_PUBLICO, TipoParte.MINISTERIO_PUBLICO,
                 "MP", null, null, null, null, null, null, null, 0);

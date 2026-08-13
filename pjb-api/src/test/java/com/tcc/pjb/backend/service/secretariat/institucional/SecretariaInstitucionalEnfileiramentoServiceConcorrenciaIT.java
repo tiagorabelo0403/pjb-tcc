@@ -104,7 +104,7 @@ class SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT extends PjbInte
                 .build()).getId();
 
         // A barreira força as duas chamadas a entrar em enfileirar() no mesmo instante, maximizando
-        // a chance de as duas passarem pelo existePendenteOuEmAnalise antes de qualquer uma commitar —
+        // a chance de as duas passarem pelo existeAtivoOuSemUnidadeResolvida antes de qualquer uma commitar —
         // é exatamente essa janela que faz o índice único (Task 2) disparar em tempo de insert, dentro
         // da transação ambiente de cada chamador, que é o padrão de chamada real das Tasks 4/5.
         CyclicBarrier barreira = new CyclicBarrier(2);

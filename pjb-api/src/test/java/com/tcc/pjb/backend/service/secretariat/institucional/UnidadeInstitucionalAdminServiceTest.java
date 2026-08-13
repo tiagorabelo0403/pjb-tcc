@@ -45,7 +45,7 @@ class UnidadeInstitucionalAdminServiceTest {
     }
 
     @Test
-    void criarUnidadeSalvaEReprocessaItensPresosDoMesmoTipo() {
+    void criarUnidadeSalvaEAuditaSemReprocessarNaMesmaTransacao() {
         Instituicao instituicao = new Instituicao();
         instituicao.setTipo(TipoInstituicao.MINISTERIO_PUBLICO);
         when(instituicaoRepository.findById(1L)).thenReturn(Optional.of(instituicao));
@@ -54,13 +54,38 @@ class UnidadeInstitucionalAdminServiceTest {
             ReflectionTestUtils.setField(u, "id", 10L);
             return u;
         });
-        when(enfileiramentoService.reprocessarSemUnidade(TipoUnidadeInstitucional.PROMOTORIA)).thenReturn(2);
 
         UnidadeInstituicao criada = service.criarUnidade(1L, "1a Promotoria Criminal", TipoUnidadeInstitucional.PROMOTORIA, "Fortaleza", "CE");
 
         assertThat(criada.getId()).isEqualTo(10L);
-        verify(enfileiramentoService).reprocessarSemUnidade(TipoUnidadeInstitucional.PROMOTORIA);
         verify(auditService).appendSafely(org.mockito.ArgumentMatchers.eq("UNIDADE_INSTITUICAO_CRIADA"), any());
+        verify(enfileiramentoService, org.mockito.Mockito.never()).reprocessarSemUnidade(any());
+    }
+
+    @Test
+    void reprocessarBacklogAposCriacaoDeUnidadeChamaEnfileiramentoEAuditaSeHouverResolvidos() {
+        UnidadeInstituicao unidade = new UnidadeInstituicao();
+        ReflectionTestUtils.setField(unidade, "id", 10L);
+        unidade.setTipo(TipoUnidadeInstitucional.PROMOTORIA);
+        when(enfileiramentoService.reprocessarSemUnidade(TipoUnidadeInstitucional.PROMOTORIA)).thenReturn(2);
+
+        service.reprocessarBacklogAposCriacaoDeUnidade(unidade);
+
+        verify(enfileiramentoService).reprocessarSemUnidade(TipoUnidadeInstitucional.PROMOTORIA);
+        verify(auditService).appendSafely(org.mockito.ArgumentMatchers.eq("SECRETARIA_INSTITUCIONAL_REPROCESSAMENTO_EM_LOTE"), any());
+    }
+
+    @Test
+    void reprocessarBacklogAposCriacaoDeUnidadeNaoAuditaQuandoNenhumItemResolvido() {
+        UnidadeInstituicao unidade = new UnidadeInstituicao();
+        ReflectionTestUtils.setField(unidade, "id", 11L);
+        unidade.setTipo(TipoUnidadeInstitucional.NUCLEO_DEFENSORIA);
+        when(enfileiramentoService.reprocessarSemUnidade(TipoUnidadeInstitucional.NUCLEO_DEFENSORIA)).thenReturn(0);
+
+        service.reprocessarBacklogAposCriacaoDeUnidade(unidade);
+
+        verify(auditService, org.mockito.Mockito.never())
+                .appendSafely(org.mockito.ArgumentMatchers.eq("SECRETARIA_INSTITUCIONAL_REPROCESSAMENTO_EM_LOTE"), any());
     }
 
     @Test

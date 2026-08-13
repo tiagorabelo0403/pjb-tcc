@@ -57,10 +57,14 @@ class SecretariaInstitucionalItemControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_SERVIDOR_FORUM")
     void servidorForumAutorizadoTomaCienciaERecebeOk() throws Exception {
+        Usuario servidor = new Usuario();
+        servidor.setId(7L);
+        when(currentUserService.getRequired()).thenReturn(servidor);
+
         mockMvc.perform(post("/api/v1/secretaria-institucional/itens/{itemId}/tomar-ciencia", 5L))
                 .andExpect(status().isOk());
 
-        verify(tomarCienciaService).tomarCiencia(5L);
+        verify(tomarCienciaService).tomarCiencia(servidor, 5L);
     }
 
     @Test
@@ -69,7 +73,42 @@ class SecretariaInstitucionalItemControllerTest {
         mockMvc.perform(post("/api/v1/secretaria-institucional/itens/{itemId}/tomar-ciencia", 5L))
                 .andExpect(status().isForbidden());
 
-        verify(tomarCienciaService, never()).tomarCiencia(any());
+        verify(tomarCienciaService, never()).tomarCiencia(any(), any());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_SERVIDOR_FORUM")
+    void servidorForumAutorizadoConcluiItemERecebeOk() throws Exception {
+        Usuario servidor = new Usuario();
+        servidor.setId(7L);
+        when(currentUserService.getRequired()).thenReturn(servidor);
+
+        mockMvc.perform(post("/api/v1/secretaria-institucional/itens/{itemId}/concluir", 5L))
+                .andExpect(status().isOk());
+
+        verify(tomarCienciaService).concluir(servidor, 5L);
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_ADVOGADO")
+    void advogadoNaoAutorizadoNaoConcluiItemERecebeForbidden() throws Exception {
+        mockMvc.perform(post("/api/v1/secretaria-institucional/itens/{itemId}/concluir", 5L))
+                .andExpect(status().isForbidden());
+
+        verify(tomarCienciaService, never()).concluir(any(), any());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_SERVIDOR_FORUM")
+    void tomarCienciaSemPosseSobreUnidadePropagaSecurityExceptionComoForbidden() throws Exception {
+        Usuario servidorDeOutraUnidade = new Usuario();
+        servidorDeOutraUnidade.setId(8L);
+        when(currentUserService.getRequired()).thenReturn(servidorDeOutraUnidade);
+        org.mockito.Mockito.doThrow(new SecurityException("Usuário não tem visibilidade sobre esta unidade institucional"))
+                .when(tomarCienciaService).tomarCiencia(servidorDeOutraUnidade, 5L);
+
+        mockMvc.perform(post("/api/v1/secretaria-institucional/itens/{itemId}/tomar-ciencia", 5L))
+                .andExpect(status().isForbidden());
     }
 
     @Test

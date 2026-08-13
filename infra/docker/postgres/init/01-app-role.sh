@@ -25,6 +25,32 @@
 #   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO pjb_app;
 #   SQL
 #
+# GRANT sozinho nao basta num volume onde migrations <= V313 ja rodaram como o superusuario
+# antigo (pjb): DDL que muda o tipo de uma coluna existente (ex.: V317, ALTER COLUMN ... TYPE)
+# exige que quem executa seja DONO da tabela, nao so ter privilegio via GRANT. Nesse volume,
+# toda tabela criada antes da migracao para pjb_app ainda pertence a pjb, e o Flyway (rodando
+# como pjb_app) falha com "must be owner of table" na primeira migration que altera uma coluna
+# existente. Rode tambem o bloco abaixo, uma unica vez, antes do proximo boot do backend:
+#
+#   docker exec -i <container_postgres> psql -v ON_ERROR_STOP=1 -U pjb -d pjb <<'SQL'
+#   DO
+#   $$
+#   DECLARE
+#       tabela RECORD;
+#   BEGIN
+#       FOR tabela IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
+#           EXECUTE format('ALTER TABLE public.%I OWNER TO pjb_app', tabela.tablename);
+#       END LOOP;
+#   END
+#   $$;
+#   SQL
+#
+# NAO resolva isso com GRANT pjb_app TO pjb (tornar pjb_app membro da role pjb) — isso permite
+# SET ROLE pjb dentro de uma sessao autenticada como pjb_app, reabrindo exatamente o bypass de
+# RLS (superusuario ignora FORCE ROW LEVEL SECURITY) que a introducao de pjb_app existiu pra
+# fechar. A troca de ownership acima e a unica forma segura: pjb_app passa a poder alterar as
+# tabelas sem herdar nenhum privilegio de pjb.
+#
 # Troque 'pjb_app_pass', 'pjb' (usuario/db de conexao) e a role/senha de destino se o seu .env
 # usa valores diferentes de PJB_DB_APP_USER/PASS. Ver README.md, seção "Banco de dados", para o
 # contexto completo desta role. Depois de rodar o SQL acima, reinicie o backend.

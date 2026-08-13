@@ -58,12 +58,24 @@ public class UnidadeInstitucionalAdminService {
         unidade.setUf(uf);
         UnidadeInstituicao salva = unidadeRepository.save(unidade);
         auditService.appendSafely("UNIDADE_INSTITUICAO_CRIADA", "UNIDADE_INSTITUICAO " + salva.getId() + " tipo=" + tipo);
-        int reprocessados = enfileiramentoService.reprocessarSemUnidade(tipo);
+        return salva;
+    }
+
+    // Transacao propria e separada de criarUnidade de proposito: SecretariaInstitucionalItemGravador.gravar
+    // roda em REQUIRES_NEW (conexao fisica separada, so enxerga dados ja commitados de outras
+    // transacoes). Se este reprocessamento rodasse na MESMA transacao que acabou de inserir a
+    // unidade, a linha ainda nao commitada seria invisivel pro REQUIRES_NEW e o UPDATE do item
+    // falharia por violacao de FK — precisa que criarUnidade ja tenha retornado (e commitado)
+    // antes desta chamada comecar. Por isso o controller invoca os dois metodos em sequencia,
+    // nunca um metodo orquestrando os dois via self-invocation (o proxy @Transactional do Spring
+    // nao intercepta chamadas internas this.metodo(), mesma armadilha do EquipeSwitchInterceptor).
+    @Transactional
+    public void reprocessarBacklogAposCriacaoDeUnidade(UnidadeInstituicao unidade) {
+        int reprocessados = enfileiramentoService.reprocessarSemUnidade(unidade.getTipo());
         if (reprocessados > 0) {
             auditService.appendSafely("SECRETARIA_INSTITUCIONAL_REPROCESSAMENTO_EM_LOTE",
-                    "tipo=" + tipo + " itensResolvidos=" + reprocessados + " apos criacao de unidade " + salva.getId());
+                    "tipo=" + unidade.getTipo() + " itensResolvidos=" + reprocessados + " apos criacao de unidade " + unidade.getId());
         }
-        return salva;
     }
 
     @Transactional
