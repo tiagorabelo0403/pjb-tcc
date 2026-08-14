@@ -20,6 +20,7 @@ import com.tcc.pjb.backend.model.entity.identity.IdentidadeJuridicaNacional;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.exception.RecursoJaExistenteException;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.identity.IdentidadeJuridicaNacionalService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,7 @@ class UsuarioServiceTest {
     private final IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService = mock(IdentidadeJuridicaNacionalService.class);
     private final AuditLedgerService auditLedgerService = mock(AuditLedgerService.class);
     private final SecurityChallengeService securityChallengeService = mock(SecurityChallengeService.class);
+    private final ComarcaResolutionService comarcaResolutionService = mock(ComarcaResolutionService.class);
 
     private UsuarioService service;
 
@@ -46,7 +48,8 @@ class UsuarioServiceTest {
                 documentoNacionalValidator,
                 identidadeJuridicaNacionalService,
                 auditLedgerService,
-                securityChallengeService
+                securityChallengeService,
+                comarcaResolutionService
         );
     }
 

@@ -18,6 +18,7 @@ import com.tcc.pjb.backend.model.dto.UsuarioResponse;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.identity.IdentidadeJuridicaNacional;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.identity.IdentidadeJuridicaNacionalService;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +38,7 @@ class UsuarioServiceAuditoriaTest {
     @Mock private IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService;
     @Mock private AuditLedgerService auditLedgerService;
     @Mock private SecurityChallengeService securityChallengeService;
+    @Mock private ComarcaResolutionService comarcaResolutionService;
 
     private UsuarioService service;
 
@@ -44,7 +46,7 @@ class UsuarioServiceAuditoriaTest {
     void setUp() {
         service = new UsuarioService(usuarioRepository, usuarioMapper, oabStrictValidator,
                 documentoNacionalValidator, identidadeJuridicaNacionalService, auditLedgerService,
-                securityChallengeService);
+                securityChallengeService, comarcaResolutionService);
     }
 
     @Test

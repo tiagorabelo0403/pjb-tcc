@@ -17,10 +17,10 @@ import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.MateriaJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.NaturezaJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.TipoJurisdicao;
-import com.tcc.pjb.backend.model.repository.ComarcaRepository;
 import com.tcc.pjb.backend.model.repository.JurisdicaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaInteligenteService;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ class JurisdicaoServiceTest {
 
     private JurisdicaoRepository jurisdicaoRepository;
     private ProcessoRepository processoRepository;
-    private ComarcaRepository comarcaRepository;
+    private ComarcaResolutionService comarcaResolutionService;
     private JurisdicaoMapper jurisdicaoMapper;
     private AuditoriaInteligenteService auditoriaService;
     private JurisdicaoService service;
@@ -38,10 +38,10 @@ class JurisdicaoServiceTest {
     void setUp() {
         jurisdicaoRepository = mock(JurisdicaoRepository.class);
         processoRepository = mock(ProcessoRepository.class);
-        comarcaRepository = mock(ComarcaRepository.class);
+        comarcaResolutionService = mock(ComarcaResolutionService.class);
         jurisdicaoMapper = mock(JurisdicaoMapper.class);
         auditoriaService = mock(AuditoriaInteligenteService.class);
-        service = new JurisdicaoService(jurisdicaoRepository, processoRepository, comarcaRepository, jurisdicaoMapper, auditoriaService);
+        service = new JurisdicaoService(jurisdicaoRepository, processoRepository, comarcaResolutionService, jurisdicaoMapper, auditoriaService);
     }
 
     @Test
@@ -66,7 +66,7 @@ class JurisdicaoServiceTest {
 
         Tribunal tribunal = new Tribunal("TJCE", "Tribunal de Justiça do Ceará", TipoJustica.ESTADUAL, GrauJurisdicao.PRIMEIRO_GRAU, "CE");
         Comarca comarca = new Comarca("Fortaleza", "CE", "2304400", "Fórum Clóvis Beviláqua", tribunal);
-        when(comarcaRepository.findByNomeIgnoreCaseAndUf("Fortaleza", "CE")).thenReturn(Optional.of(comarca));
+        when(comarcaResolutionService.resolver("Fortaleza", "CE")).thenReturn(Optional.of(comarca));
 
         service.criar(dto);
 
@@ -96,7 +96,7 @@ class JurisdicaoServiceTest {
         when(jurisdicaoMapper.toEntity(dto)).thenReturn(entidadeMapeada);
         when(jurisdicaoRepository.save(any(Jurisdicao.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(jurisdicaoMapper.toResponse(any(Jurisdicao.class))).thenReturn(new JurisdicaoResponse());
-        when(comarcaRepository.findByNomeIgnoreCaseAndUf("Rio Branco", "AC")).thenReturn(Optional.empty());
+        when(comarcaResolutionService.resolver("Rio Branco", "AC")).thenReturn(Optional.empty());
 
         service.criar(dto);
 
@@ -126,6 +126,6 @@ class JurisdicaoServiceTest {
         service.criar(dto);
 
         assertThat(entidadeMapeada.getComarcaEntidade()).isNull();
-        org.mockito.Mockito.verifyNoInteractions(comarcaRepository);
+        org.mockito.Mockito.verifyNoInteractions(comarcaResolutionService);
     }
 }

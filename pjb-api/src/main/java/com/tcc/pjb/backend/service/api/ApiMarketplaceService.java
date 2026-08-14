@@ -16,6 +16,7 @@ import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.service.AjuizamentoService;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
 
 @Service
@@ -27,13 +28,16 @@ public class ApiMarketplaceService {
     private final AjuizamentoService ajuizamentoService;
     private final MarketplaceGovernanceService governanceService;
     private final CompletudeDocumentalPolicyService completudeDocumentalPolicyService;
+    private final ComarcaResolutionService comarcaResolutionService;
 
     public ApiMarketplaceService(AjuizamentoService ajuizamentoService,
                                  MarketplaceGovernanceService governanceService,
-                                 CompletudeDocumentalPolicyService completudeDocumentalPolicyService) {
+                                 CompletudeDocumentalPolicyService completudeDocumentalPolicyService,
+                                 ComarcaResolutionService comarcaResolutionService) {
         this.ajuizamentoService = Objects.requireNonNull(ajuizamentoService);
         this.governanceService = Objects.requireNonNull(governanceService);
         this.completudeDocumentalPolicyService = Objects.requireNonNull(completudeDocumentalPolicyService);
+        this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService);
     }
 
     @Transactional
@@ -54,6 +58,12 @@ public class ApiMarketplaceService {
             processo.setUfReu(request.ufReu());
             processo.setComarcaReu(request.comarcaReu());
         }
+        comarcaResolutionService.resolver(processo.getComarca(), processo.getUf())
+                .ifPresent(processo::setComarcaEntidade);
+        comarcaResolutionService.resolver(processo.getComarcaAutor(), processo.getUfAutor())
+                .ifPresent(processo::setComarcaAutorEntidade);
+        comarcaResolutionService.resolver(processo.getComarcaReu(), processo.getUfReu())
+                .ifPresent(processo::setComarcaReuEntidade);
         processo.setClasseProcessual(request.classeProcessual());
         processo.setAssunto(request.assunto());
         processo.setPedidoPrincipal(request.pedidoPrincipal());

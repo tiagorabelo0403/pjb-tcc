@@ -272,6 +272,7 @@ public class RitoWorkflowService {
                 .dueAt(dueAt)
                 .uf(processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null)
                 .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null)
+                .comarcaEntidade(processo.getJurisdicao() != null ? processo.getJurisdicao().getComarcaEntidade() : null)
                 .baseLegal(template.getLegalBases() == null || template.getLegalBases().isEmpty() ? null : String.join("\n", template.getLegalBases()))
                 .build();
         workItemRepository.save(workItem);
@@ -297,6 +298,7 @@ public class RitoWorkflowService {
                 .dueAt(spec.deadline())
                 .uf(processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null)
                 .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null)
+                .comarcaEntidade(processo.getJurisdicao() != null ? processo.getJurisdicao().getComarcaEntidade() : null)
                 .baseLegal(spec.legalBases() == null || spec.legalBases().isEmpty() ? null : String.join("\n", spec.legalBases()))
                 .build();
         workItemRepository.save(workItem);

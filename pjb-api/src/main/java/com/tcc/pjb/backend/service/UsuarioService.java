@@ -25,6 +25,7 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.exception.RecursoJaExistenteException;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.identity.IdentidadeJuridicaNacionalService;
 import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
@@ -38,6 +39,7 @@ public class UsuarioService {
     private final IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService;
     private final AuditLedgerService auditLedgerService;
     private final SecurityChallengeService securityChallengeService;
+    private final ComarcaResolutionService comarcaResolutionService;
 
     public UsuarioService(UsuarioRepository usuarioRepository,
                           UsuarioMapper usuarioMapper,
@@ -45,7 +47,8 @@ public class UsuarioService {
                           DocumentoNacionalValidator documentoNacionalValidator,
                           IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService,
                           AuditLedgerService auditLedgerService,
-                          SecurityChallengeService securityChallengeService) {
+                          SecurityChallengeService securityChallengeService,
+                          ComarcaResolutionService comarcaResolutionService) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioMapper = usuarioMapper;
         this.oabStrictValidator = oabStrictValidator;
@@ -53,6 +56,7 @@ public class UsuarioService {
         this.identidadeJuridicaNacionalService = identidadeJuridicaNacionalService;
         this.auditLedgerService = auditLedgerService;
         this.securityChallengeService = securityChallengeService;
+        this.comarcaResolutionService = comarcaResolutionService;
     }
 
     @PjbTransactionalBudget(operation = "usuario.listar-todos-paginado", maxMillis = 3000)
@@ -81,6 +85,7 @@ public class UsuarioService {
         novaEntidade.setCpf(cpfNormalizado);
         aplicarTipoUsuarioSeAusente(novaEntidade);
         aplicarValidacaoOabStrict(dto, novaEntidade, null);
+        aplicarComarcaDoCatalogo(novaEntidade);
         boolean magistratura = novaEntidade.getTipoUsuario() != null && novaEntidade.getTipoUsuario().isMagistratura();
         if (magistratura) {
             novaEntidade.setSituacaoConta(SituacaoConta.PENDENTE_ATIVACAO);
@@ -112,6 +117,7 @@ public class UsuarioService {
         }
         aplicarTipoUsuarioSeAusente(entidadeExistente);
         aplicarValidacaoOabStrict(dto, entidadeExistente, id);
+        aplicarComarcaDoCatalogo(entidadeExistente);
 
         Usuario entidadeSalva = usuarioRepository.save(entidadeExistente);
         sincronizarIdentidadeNacional(entidadeSalva);
@@ -202,6 +208,15 @@ public class UsuarioService {
                 throw new RecursoJaExistenteException("OAB já cadastrada no sistema: " + info.normalized());
             }
         }
+    }
+
+    private void aplicarComarcaDoCatalogo(Usuario usuario) {
+        if (usuario.getComarca() == null || usuario.getComarca().isBlank()) {
+            usuario.setComarcaEntidade(null);
+            return;
+        }
+        comarcaResolutionService.resolver(usuario.getComarca(), usuario.getUf())
+                .ifPresent(usuario::setComarcaEntidade);
     }
 
     private void aplicarTipoUsuarioSeAusente(Usuario usuario) {

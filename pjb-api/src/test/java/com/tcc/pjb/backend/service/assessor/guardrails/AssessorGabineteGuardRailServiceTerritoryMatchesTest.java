@@ -78,6 +78,43 @@ class AssessorGabineteGuardRailServiceTerritoryMatchesTest {
         assertThat(invokeTerritoryMatches(assessor, processo, item)).isFalse();
     }
 
+    @Test
+    void workItemComComarcaTextualDivergenteNaoHerdaFkDoProcesso() throws Exception {
+        Usuario assessor = new Usuario();
+        assessor.setComarcaEntidade(comarcaComId(1L));
+        assessor.setUf("CE");
+        assessor.setComarca("Fortaleza");
+
+        Processo processo = new Processo();
+        processo.setComarcaEntidade(comarcaComId(1L));
+        processo.setUf("CE");
+        processo.setComarca("Fortaleza");
+
+        WorkItem item = new WorkItem();
+        item.setUf("CE");
+        item.setComarca("Sobral");
+
+        assertThat(invokeTerritoryMatches(assessor, processo, item)).isFalse();
+    }
+
+    @Test
+    void workItemSemComarcaAlgumaAindaHerdaFkDoProcesso() throws Exception {
+        Usuario assessor = new Usuario();
+        assessor.setComarcaEntidade(comarcaComId(1L));
+        assessor.setUf("CE");
+        assessor.setComarca("Fortaleza");
+
+        Processo processo = new Processo();
+        processo.setComarcaEntidade(comarcaComId(1L));
+        processo.setUf("CE");
+        processo.setComarca("Fortaleza - Capital");
+
+        WorkItem item = new WorkItem();
+        item.setUf("CE");
+
+        assertThat(invokeTerritoryMatches(assessor, processo, item)).isTrue();
+    }
+
     private Comarca comarcaComId(Long id) {
         Comarca comarca = mock(Comarca.class);
         when(comarca.getId()).thenReturn(id);

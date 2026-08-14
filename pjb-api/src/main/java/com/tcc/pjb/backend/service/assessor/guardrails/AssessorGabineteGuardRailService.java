@@ -263,7 +263,7 @@ public class AssessorGabineteGuardRailService {
 
     private boolean territoryMatches(Usuario assessor, Processo processo, WorkItem item) {
         Comarca actorEntidade = assessor.getComarcaEntidade();
-        Comarca processoEntidade = item.getComarcaEntidade() != null ? item.getComarcaEntidade() : processo.getComarcaEntidade();
+        Comarca processoEntidade = comarcaResolvidaDoLadoDoProcesso(processo, item);
         if (actorEntidade != null && processoEntidade != null) {
             return Objects.equals(actorEntidade.getId(), processoEntidade.getId());
         }
@@ -274,6 +274,16 @@ public class AssessorGabineteGuardRailService {
         boolean ufOk = actorUf.isEmpty() || processoUf.isEmpty() || Objects.equals(actorUf, processoUf);
         boolean comarcaOk = actorComarca.isEmpty() || processoComarca.isEmpty() || Objects.equals(actorComarca, processoComarca);
         return ufOk && comarcaOk;
+    }
+
+    private Comarca comarcaResolvidaDoLadoDoProcesso(Processo processo, WorkItem item) {
+        if (item.getComarcaEntidade() != null) {
+            return item.getComarcaEntidade();
+        }
+        if (item.getComarca() != null && !item.getComarca().isBlank()) {
+            return null;
+        }
+        return processo.getComarcaEntidade();
     }
 
     private boolean isActive(WorkItem item) {
