@@ -36,8 +36,35 @@ SET comarca_id = c.id
 FROM tb_comarca c
 WHERE c.uf = u.uf AND upper(unaccent(c.nome)) = upper(unaccent(u.comarca));
 
+DO $$
+DECLARE
+    pendentes INT;
+BEGIN
+    SELECT count(*) INTO pendentes
+    FROM tb_unidade_judiciaria_competencia
+    WHERE tribunal_id IS NULL;
+    IF pendentes > 0 THEN
+        RAISE EXCEPTION 'Backfill de tb_unidade_judiciaria_competencia incompleto: % linha(s) sem tribunal_id resolvido. Corrigir o cadastro de Tribunal (V319) ou o dado de origem antes de reaplicar esta migration.', pendentes;
+    END IF;
+END $$;
+
 ALTER TABLE tb_unidade_judiciaria_competencia ALTER COLUMN tribunal_id SET NOT NULL;
 ALTER TABLE tb_unidade_judiciaria_competencia DROP COLUMN tribunal_codigo;
+
+DO $$
+DECLARE
+    pendentes INT;
+BEGIN
+    SELECT count(*) INTO pendentes
+    FROM tb_unidade_judiciaria_competencia u
+    WHERE u.comarca IS NOT NULL
+      AND u.comarca_id IS NULL
+      AND EXISTS (SELECT 1 FROM tb_comarca c WHERE c.uf = u.uf);
+    IF pendentes > 0 THEN
+        RAISE EXCEPTION 'Backfill de comarca em tb_unidade_judiciaria_competencia incompleto: % linha(s) com comarca textual sem comarca_id resolvido, apesar do catalogo tb_comarca ja cobrir a UF dessas linhas. Corrigir o dado de origem ou a normalizacao de nome (unaccent/case) antes de reaplicar esta migration. UF sem nenhuma linha em tb_comarca fica com comarca_id nulo ate o catalogo (Task 1) ser expandido para essa UF — esse caso e esperado e nao dispara esta guarda.', pendentes;
+    END IF;
+END $$;
+
 ALTER TABLE tb_unidade_judiciaria_competencia DROP COLUMN comarca;
 
 CREATE INDEX idx_unidade_competencia_tribunal ON tb_unidade_judiciaria_competencia (tribunal_id);
@@ -45,6 +72,18 @@ CREATE INDEX idx_unidade_competencia_territorio ON tb_unidade_judiciaria_compete
 
 ALTER TABLE tb_jurisdicao_territorial ADD COLUMN tribunal_id BIGINT REFERENCES tb_tribunal(id);
 UPDATE tb_jurisdicao_territorial j SET tribunal_id = t.id FROM tb_tribunal t WHERE t.sigla = j.tribunal_codigo;
+DO $$
+DECLARE
+    pendentes INT;
+BEGIN
+    SELECT count(*) INTO pendentes
+    FROM tb_jurisdicao_territorial
+    WHERE tribunal_id IS NULL;
+    IF pendentes > 0 THEN
+        RAISE EXCEPTION 'Backfill de tb_jurisdicao_territorial incompleto: % linha(s) sem tribunal_id resolvido. Corrigir o cadastro de Tribunal (V319) ou o dado de origem antes de reaplicar esta migration.', pendentes;
+    END IF;
+END $$;
+
 ALTER TABLE tb_jurisdicao_territorial ALTER COLUMN tribunal_id SET NOT NULL;
 ALTER TABLE tb_jurisdicao_territorial DROP COLUMN tribunal_codigo;
 
