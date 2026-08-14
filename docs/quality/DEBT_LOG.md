@@ -1630,3 +1630,33 @@ mesmo rodar em toda rota `/api/v1/**`), a asserção antiga é que estava desatu
 `AdvogadoCockpitControllerIT`, `ProcessoCommandControllerIT`, `AuditLedgerServicePayloadHashNuloIT`
 — todos verdes.
 Não revisitar — os quatro pontos são estruturais, não workarounds.
+
+## D-funcao-servidor-proferir-nao-implementado
+
+**Status:** aberta
+
+**Contexto:** a fatia que conecta `FuncaoServidorJudiciario` ao motor ABAC real
+(`PjbAuthorizationService.requireFuncaoServidorCapability(Processo, AcaoProcessualServidor)`)
+fechou os 4 gates que já tinham um fluxo real chamando o motor: `CONCLUIR` (conclusão processual),
+`INTIMAR` (intimação de audiência), `ARQUIVAR` e `DISTRIBUIR`. O enum `AcaoProcessualServidor`
+também declara `PROFERIR`, e `FuncaoServidorJudiciario.podeProferir()` já existe e é testado
+isoladamente (ex.: `DIRETOR_SECRETARIA.podeProferir()` retorna `true`), mas **nenhum endpoint ou
+fluxo real do sistema chama `requireFuncaoServidorCapability(processo, AcaoProcessualServidor.PROFERIR)`**
+— o caso de uso que essa capacidade representa (despacho de mero expediente praticado por
+servidor, sem decisão de mérito, nos termos do art. 93, XIV da CF/88 e do art. 203, §4º do CPC) não
+tem nenhuma feature construída no PJB ainda.
+
+Diferente dos outros 4 valores do enum, `PROFERIR` hoje só existe no modelo (enum +
+`possuiCapacidade()` no `switch` de `PjbAuthorizationFuncaoServidorFacade` + booleano na entidade
+`FuncaoServidorJudiciario`) — não há controller, service ou comando que o invoque. Isso é
+esperado e está fora do escopo desta fatia, que conecta capacidades **já existentes** à
+autorização real; construir o fluxo de despacho de mero expediente por servidor é uma feature nova,
+não uma conexão de fiação já pronta.
+
+**Risco:** nenhum imediato — `PROFERIR` sem chamador não é uma porta aberta (o gate nega por
+padrão na ausência de chamada, não existe bypass). O risco é de expectativa: alguém lendo o enum
+ou a entidade pode presumir que a capacidade já está em uso.
+
+**Cobertura de teste:** nenhuma direta para o caminho `PROFERIR` fim-a-fim (não existe fim-a-fim
+para testar). `possuiCapacidade()`/`podeProferir()` cobertos isoladamente por
+`PjbAuthorizationFuncaoServidorFacadeTest` e `FuncaoServidorApplicationServiceTest`.
