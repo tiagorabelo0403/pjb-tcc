@@ -5,6 +5,7 @@ import com.tcc.pjb.backend.core.security.abac.policy.PolicyRegistry;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
 import com.tcc.pjb.backend.model.entity.enums.CapacidadeCaixaInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import java.util.Objects;
@@ -143,6 +144,41 @@ final class PjbAuthorizationTrailAssembler {
                         governance
                 )
         );
+    }
+
+    PjbAuthorizationEvaluation assembleFuncaoServidorCapability(Processo processo,
+                                                                Long unidadeId,
+                                                                AcaoProcessualServidor acao,
+                                                                boolean autorizado,
+                                                                PjbAuthorizationDecisionContext context,
+                                                                PolicyRegistry.ActivePolicy activePolicy,
+                                                                AuthzDecision decision) {
+        String resourceId = normalizeFuncaoServidorResourceId(unidadeId, acao, processo);
+        String scope = acao == null ? "funcao_servidor" : acao.name();
+        PjbAuthorizationGovernanceAssessment governance = autorizado
+                ? PjbAuthorizationGovernanceAssessment.satisfied("FUNCAO_SERVIDOR", "funcao_servidor_capacidade_satisfeita", scope)
+                : PjbAuthorizationGovernanceAssessment.requiredButMissing("FUNCAO_SERVIDOR", "funcao_servidor_capacidade_ausente", scope,
+                        "Servidor não possui função ativa com a capacidade exigida na unidade do processo.");
+        return new PjbAuthorizationEvaluation(
+                decision,
+                assemble(
+                        "FUNCAO_SERVIDOR_CAPABILITY",
+                        "FUNCAO_SERVIDOR",
+                        resourceId,
+                        context,
+                        activePolicy,
+                        decision,
+                        NivelSigilo.PUBLICO,
+                        PjbAuthorizationStepUpAssessment.notRequired("NONE", "funcao_servidor_capability"),
+                        governance
+                )
+        );
+    }
+
+    private String normalizeFuncaoServidorResourceId(Long unidadeId, AcaoProcessualServidor acao, Processo processo) {
+        String unidade = unidadeId == null ? "UNIDADE_DESCONHECIDA" : String.valueOf(unidadeId);
+        String acaoStr = acao == null ? "ACAO_DESCONHECIDA" : acao.name();
+        return unidade + ':' + acaoStr + ':' + resolveProcessId(processo);
     }
 
     PjbAuthorizationEvaluation assembleExternalAccess(String action,

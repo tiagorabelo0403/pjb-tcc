@@ -11,10 +11,14 @@ import com.tcc.pjb.backend.core.security.abac.policy.PolicyRegistry;
 import com.tcc.pjb.backend.core.security.sigilo.service.SigiloAccessService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia;
 import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
 import com.tcc.pjb.backend.model.entity.enums.CapacidadeCaixaInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
+import com.tcc.pjb.backend.model.repository.FuncaoServidorJudiciarioRepository;
+import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
 import com.tcc.pjb.backend.platform.security.rbac.RbacGrantedRoleResolver;
 import com.tcc.pjb.backend.service.processo.ProcessoObservabilidadeAcessoService;
 import org.springframework.stereotype.Service;
@@ -29,6 +33,8 @@ public class PjbAuthorizationService {
     private final PjbAuthorizationExternalSystemAccessPolicy externalSystemAccessPolicy;
     private final PjbAuthorizationInstitutionalCapabilityFacade institutionalCapabilityFacade;
     private final PjbAuthorizationSensitiveIntegrationFacade sensitiveIntegrationFacade;
+    private final PjbAuthorizationFuncaoServidorFacade funcaoServidorFacade;
+    private final UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository;
     private final RbacGrantedRoleResolver rbacGrantedRoleResolver;
 
     public PjbAuthorizationService(CurrentUserService currentUserService,
@@ -43,7 +49,9 @@ public class PjbAuthorizationService {
                                    PjbAuthorizationTrailAnalyticsRefreshQueueService authorizationTrailAnalyticsRefreshQueueService,
                                    GovBrAssuranceExtractor govBrAssuranceExtractor,
                                    GovBrAssurancePolicy govBrAssurancePolicy,
-                                   ProfessionalDocumentScopePolicyService professionalDocumentScopePolicyService) {
+                                   ProfessionalDocumentScopePolicyService professionalDocumentScopePolicyService,
+                                   FuncaoServidorJudiciarioRepository funcaoServidorJudiciarioRepository,
+                                   UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository) {
         this.currentUserService = currentUserService;
         PjbAuthorizationDecisionContextResolver contextResolver = new PjbAuthorizationDecisionContextResolver(currentUserService, govBrAssuranceExtractor);
         PjbAuthorizationTrailAssembler trailAssembler = new PjbAuthorizationTrailAssembler();
@@ -72,6 +80,13 @@ public class PjbAuthorizationService {
                 policyRegistry,
                 contextResolver,
                 externalSystemAccessPolicy,
+                trailAssembler
+        );
+        this.unidadeJudiciariaCompetenciaRepository = unidadeJudiciariaCompetenciaRepository;
+        this.funcaoServidorFacade = new PjbAuthorizationFuncaoServidorFacade(
+                policyRegistry,
+                contextResolver,
+                funcaoServidorJudiciarioRepository,
                 trailAssembler
         );
         this.rbacGrantedRoleResolver = rbacGrantedRoleResolver;
@@ -111,6 +126,25 @@ public class PjbAuthorizationService {
         if (!evaluation.allowed()) {
             throw accessDenied("Acesso negado à capacidade institucional", evaluation);
         }
+    }
+
+    public void requireFuncaoServidorCapability(Processo processo, AcaoProcessualServidor acao) {
+        Long unidadeId = resolveUnidadeId(processo);
+        PjbAuthorizationEvaluation evaluation = funcaoServidorFacade.evaluate(unidadeId, acao, processo);
+        auditFacade.registerDecision(evaluation);
+        if (!evaluation.allowed()) {
+            throw accessDenied("Acesso negado à ação processual do servidor", evaluation);
+        }
+    }
+
+    private Long resolveUnidadeId(Processo processo) {
+        if (processo == null || processo.getUnidadeJudiciariaCodigo() == null
+                || processo.getUnidadeJudiciariaCodigo().isBlank()) {
+            return null;
+        }
+        return unidadeJudiciariaCompetenciaRepository.findByCodigo(processo.getUnidadeJudiciariaCodigo())
+                .map(UnidadeJudiciariaCompetencia::getId)
+                .orElse(null);
     }
 
     public AuthzDecision canReadVotosColegiados(Processo processo) {
