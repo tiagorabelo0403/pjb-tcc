@@ -4,6 +4,7 @@ import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
@@ -261,6 +262,11 @@ public class AssessorGabineteGuardRailService {
     }
 
     private boolean territoryMatches(Usuario assessor, Processo processo, WorkItem item) {
+        Comarca actorEntidade = assessor.getComarcaEntidade();
+        Comarca processoEntidade = item.getComarcaEntidade() != null ? item.getComarcaEntidade() : processo.getComarcaEntidade();
+        if (actorEntidade != null && processoEntidade != null) {
+            return Objects.equals(actorEntidade.getId(), processoEntidade.getId());
+        }
         String actorUf = normalize(firstNonBlank(assessor.getUf()));
         String actorComarca = normalize(firstNonBlank(assessor.getComarca()));
         String processoUf = normalize(firstNonBlank(item.getUf(), processo.getUf()));

@@ -6,6 +6,7 @@ import com.tcc.pjb.backend.core.procedural.ProceduralRoutingReport;
 import com.tcc.pjb.backend.core.procedural.ProceduralSubmissionBlueprintReport;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.integration.judicial.JudicialSystem;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.ModuloProcesso;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
@@ -292,6 +293,18 @@ public class Processo {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "equipe_id")
     private Equipe equipe;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_autor_id")
+    private Comarca comarcaAutorEntidade;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_reu_id")
+    private Comarca comarcaReuEntidade;
 
     @Transient
     private Long catalogVersionId;
