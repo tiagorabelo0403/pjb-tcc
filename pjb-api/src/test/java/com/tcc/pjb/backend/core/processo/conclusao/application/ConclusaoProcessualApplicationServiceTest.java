@@ -8,15 +8,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.processo.estado.application.ProcessoEstadoApplicationService;
-import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorApplicationService;
+import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
+import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
+import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.processo.ConclusaoProcessual;
 import com.tcc.pjb.backend.model.repository.ConclusaoProcessualRepository;
+import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -28,23 +34,33 @@ import org.springframework.data.domain.Pageable;
 class ConclusaoProcessualApplicationServiceTest {
 
     private ConclusaoProcessualRepository conclusaoRepository;
-    private FuncaoServidorApplicationService funcaoServidorService;
+    private ProcessoRepository processoRepository;
+    private PjbAuthorizationService authorizationService;
     private ProcessoEstadoApplicationService estadoService;
     private ConclusaoProcessualApplicationService service;
 
     @BeforeEach
     void setUp() {
         conclusaoRepository = mock(ConclusaoProcessualRepository.class);
-        funcaoServidorService = mock(FuncaoServidorApplicationService.class);
+        processoRepository = mock(ProcessoRepository.class);
+        authorizationService = mock(PjbAuthorizationService.class);
         estadoService = mock(ProcessoEstadoApplicationService.class);
         service = new ConclusaoProcessualApplicationService(
-                conclusaoRepository, funcaoServidorService, estadoService);
+                conclusaoRepository, processoRepository, authorizationService, estadoService);
         when(conclusaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    }
+
+    private Processo processoComUnidade() {
+        Processo processo = new Processo();
+        processo.setUnidadeJudiciariaCodigo("UNIDADE-1");
+        return processo;
     }
 
     @Test
     void concluirRetornaStatusPendenteEDataLimite10DiasUteis() {
-        when(funcaoServidorService.temPermissaoEmQualquerUnidade(1L, "concluir")).thenReturn(true);
+        when(processoRepository.findById(10L)).thenReturn(Optional.of(processoComUnidade()));
+        doNothing().when(authorizationService)
+                .requireFuncaoServidorCapability(any(Processo.class), eq(AcaoProcessualServidor.CONCLUIR));
         ConclusaoProcessual c = service.concluir(10L, 5L, 1L, "PARA_DECISAO", "urgente");
         assertEquals("PENDENTE", c.getStatus());
         assertNotNull(c.getDataLimite());
@@ -53,7 +69,10 @@ class ConclusaoProcessualApplicationServiceTest {
 
     @Test
     void concluirServidorSemPodeConcluirLancaExcecao() {
-        when(funcaoServidorService.temPermissaoEmQualquerUnidade(1L, "concluir")).thenReturn(false);
+        when(processoRepository.findById(10L)).thenReturn(Optional.of(processoComUnidade()));
+        doThrow(new AccessDeniedPjbException("Acesso negado à ação processual do servidor"))
+                .when(authorizationService)
+                .requireFuncaoServidorCapability(any(Processo.class), eq(AcaoProcessualServidor.CONCLUIR));
         assertThrows(SecurityException.class,
                 () -> service.concluir(10L, 5L, 1L, "PARA_DECISAO", null));
     }
@@ -126,7 +145,9 @@ class ConclusaoProcessualApplicationServiceTest {
 
     @Test
     void concluirTransitaProcessoParaConclusoJuiz() {
-        when(funcaoServidorService.temPermissaoEmQualquerUnidade(1L, "concluir")).thenReturn(true);
+        when(processoRepository.findById(10L)).thenReturn(Optional.of(processoComUnidade()));
+        doNothing().when(authorizationService)
+                .requireFuncaoServidorCapability(any(Processo.class), eq(AcaoProcessualServidor.CONCLUIR));
         service.concluir(10L, 5L, 1L, "PARA_DECISAO", null);
         verify(estadoService).transitar(eq(10L), eq(StatusProcesso.CONCLUSO_JUIZ), eq(1L), anyString());
     }
@@ -142,7 +163,9 @@ class ConclusaoProcessualApplicationServiceTest {
 
     @Test
     void dataLimiteIgnoraSabadosEDomingos() {
-        when(funcaoServidorService.temPermissaoEmQualquerUnidade(1L, "concluir")).thenReturn(true);
+        when(processoRepository.findById(10L)).thenReturn(Optional.of(processoComUnidade()));
+        doNothing().when(authorizationService)
+                .requireFuncaoServidorCapability(any(Processo.class), eq(AcaoProcessualServidor.CONCLUIR));
         ConclusaoProcessual c = service.concluir(10L, 5L, 1L, "PARA_DECISAO", null);
         assertTrue(c.getDataLimite().isAfter(Instant.now().plus(11, ChronoUnit.DAYS)),
                 "10 dias úteis deve ser > 11 dias corridos (inclui finais de semana)");
