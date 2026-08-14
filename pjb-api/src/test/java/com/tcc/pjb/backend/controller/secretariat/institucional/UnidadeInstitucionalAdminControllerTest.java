@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tcc.pjb.backend.configs.EquipeSwitchInterceptor;
 import com.tcc.pjb.backend.configs.SecurityConfig;
 import com.tcc.pjb.backend.model.entity.Instituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
@@ -32,7 +33,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(
         controllers = UnidadeInstitucionalAdminController.class,
-        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+                classes = {SecurityConfig.class, EquipeSwitchInterceptor.class}))
 @Import(WebMvcTestSecurityConfig.class)
 @TestPropertySource(properties = "spring.main.web-application-type=servlet")
 class UnidadeInstitucionalAdminControllerTest {

@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.tcc.pjb.backend.configs.EquipeSwitchInterceptor;
 import com.tcc.pjb.backend.configs.SecurityConfig;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.dto.secretariat.SecretariaInstitucionalFilaResponse;
@@ -34,7 +35,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(
         controllers = SecretariaInstitucionalItemController.class,
-        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+                classes = {SecurityConfig.class, EquipeSwitchInterceptor.class}))
 @Import(WebMvcTestSecurityConfig.class)
 @TestPropertySource(properties = "spring.main.web-application-type=servlet")
 class SecretariaInstitucionalItemControllerTest {
