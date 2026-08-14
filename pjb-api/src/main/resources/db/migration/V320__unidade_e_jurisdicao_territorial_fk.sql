@@ -1,5 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS unaccent;
 
+ALTER TABLE tb_comarca ADD CONSTRAINT uk_comarca_municipio UNIQUE (municipio_sede_ibge);
+
 ALTER TABLE tb_unidade_judiciaria_competencia ADD COLUMN tribunal_id BIGINT REFERENCES tb_tribunal(id);
 ALTER TABLE tb_unidade_judiciaria_competencia ADD COLUMN comarca_id BIGINT REFERENCES tb_comarca(id);
 
@@ -65,9 +67,9 @@ BEGIN
     END IF;
 END $$;
 
-ALTER TABLE tb_unidade_judiciaria_competencia DROP COLUMN comarca;
-
 CREATE INDEX idx_unidade_competencia_tribunal ON tb_unidade_judiciaria_competencia (tribunal_id);
+
+DROP INDEX IF EXISTS idx_unidade_competencia_territorio;
 CREATE INDEX idx_unidade_competencia_territorio ON tb_unidade_judiciaria_competencia (uf, comarca_id);
 
 ALTER TABLE tb_jurisdicao_territorial ADD COLUMN tribunal_id BIGINT REFERENCES tb_tribunal(id);
@@ -87,4 +89,11 @@ END $$;
 ALTER TABLE tb_jurisdicao_territorial ALTER COLUMN tribunal_id SET NOT NULL;
 ALTER TABLE tb_jurisdicao_territorial DROP COLUMN tribunal_codigo;
 
-ALTER TABLE tb_comarca ADD CONSTRAINT uk_comarca_municipio_tribunal UNIQUE (municipio_sede_ibge, tribunal_id);
+ALTER TABLE tb_jurisdicao_territorial ADD COLUMN comarca_id BIGINT REFERENCES tb_comarca(id);
+
+UPDATE tb_jurisdicao_territorial j
+SET comarca_id = c.id
+FROM tb_comarca c
+WHERE c.municipio_sede_ibge = j.municipio_ibge;
+
+CREATE INDEX idx_jurisdicao_territorial_comarca ON tb_jurisdicao_territorial (comarca_id);

@@ -27,7 +27,8 @@ import jakarta.persistence.Table;
 @Table(
         name = "tb_jurisdicao_territorial",
         indexes = {
-                @Index(name = "idx_jurisdicao_lookup", columnList = "municipio_ibge, tipo_justica, vigencia_inicio DESC")
+                @Index(name = "idx_jurisdicao_lookup", columnList = "municipio_ibge, tipo_justica, vigencia_inicio DESC"),
+                @Index(name = "idx_jurisdicao_territorial_comarca", columnList = "comarca_id")
         }
 )
 public class JurisdicaoTerritorial {
@@ -59,6 +60,10 @@ public class JurisdicaoTerritorial {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tribunal_id", nullable = false)
     private Tribunal tribunal;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
 
     @Column(name = "fonte_normativa", length = 240, nullable = false)
     private String fonteNormativa;
@@ -121,6 +126,14 @@ public class JurisdicaoTerritorial {
 
     public Tribunal getTribunal() {
         return tribunal;
+    }
+
+    public Comarca getComarcaEntidade() {
+        return comarcaEntidade;
+    }
+
+    public void setComarcaEntidade(Comarca comarcaEntidade) {
+        this.comarcaEntidade = comarcaEntidade;
     }
 
     public String getFonteNormativa() {

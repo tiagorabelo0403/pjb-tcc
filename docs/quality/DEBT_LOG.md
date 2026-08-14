@@ -7,6 +7,45 @@ nenhuma entrega em andamento — para que não fiquem só na memória de quem in
 Cada entrada sai daqui quando a dívida é fechada; o fechamento é então narrado no `README.md`, seguindo
 o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
+## D-territorio-string-solta-entidades-legadas
+
+**Status:** aberta
+
+**Contexto:** a fatia "Organização Judiciária" (Tasks 1-6, `Tribunal`/`Comarca` como entidade real)
+migrou território (uf/comarca) de String solta para FK `Comarca` em 5 entidades: `UnidadeJudiciariaCompetencia`,
+`Jurisdicao`, `Usuario`, `Processo`, `WorkItem` — mantendo `uf`/`comarca` como fallback String real ao lado
+da FK, porque o catálogo `tb_comarca` (Task 1) só cobre 3 dos 27 estados (CE/MG/RN). O teste de arquitetura
+novo (`OrganizacaoJudiciariaArchitectureTest`, Task 6) trava qualquer entidade NOVA que reintroduza `uf`/`comarca`
+String sem a FK `Comarca` correspondente na mesma classe — mas, ao rodar essa regra contra o projeto inteiro
+pela primeira vez, apareceram **22 entidades pré-existentes**, fora do escopo desta fatia, que já declaravam
+`uf`/`comarca` String sem nenhuma FK `Comarca`:
+
+`CalendarioForenseEntry`, `AtlasAcessoMunicipio`, `NoFederacaoJudicial`, `EscrituraExtrajudicialRegistro`,
+`InqueritoPolicialDigital`, `EventoInstitucional`, `Estados`, `CidadaoProcessoNacionalProjection`, `Municipios`,
+`ProcessoZonaEleitoral`, `UnidadeInstituicao`, `CalendarioEleitoral`, `OperationalFunctionCredential`,
+`GovServiceRegistry`, `InstitutionalCompetenceRuleSnapshot`, `InstitutionalCatalogUnitSnapshot`,
+`InstitutionalCatalogGovernanceSnapshot`, `ProfessionalInstitutionalAccessGrant`, `PeritoSorteioAudit`,
+`PeritoDisponibilidade`, `PainelTribunalMetrica`, `OrgaoJudiciario`.
+
+Essas 22 classes foram registradas numa allowlist nomeada (`ENTIDADES_LEGADAS_TERRITORIO_STRING_SEM_FK_COMARCA`)
+dentro do próprio teste de arquitetura — a regra continua ativa e bloqueia qualquer entidade nova fora dessa
+lista, mas não força a migração retroativa das 22 nesta fatia (fora de escopo: cada uma pertence a um domínio
+diferente — eleitoral, criminal, atlas, perícia, extrajudicial, gov, federalismo, snapshots institucionais —
+e migrar todas exigiria repetir o ciclo completo desta fatia 22 vezes).
+
+`JurisdicaoTerritorial` saiu da allowlist na rodada de correção da revisão final: é a tabela de onde `tb_comarca`
+é semeada (`V319` lê `municipio_ibge`/`municipio_nome`/`uf`), então a FK `Comarca` resolve por código IBGE com
+match exato, sem a ambiguidade de nome que motivou o adiamento das demais.
+
+**Risco:** as mesmas classes de bug que motivaram esta fatia (grafia divergente entre UF/comarca cadastrados
+em textos diferentes) continuam presentes nessas 22 entidades — nenhuma delas ganhou o benefício da comparação
+por identidade real via FK.
+
+**Quando revisitar:** ao planejar a próxima fatia de território — priorizar por volume de uso real
+(`Estados`/`Municipios`/`OrgaoJudiciario` parecem candidatos de alto impacto por serem catálogos amplamente
+referenciados). Cada migração fecha reduzindo a allowlist em `OrganizacaoJudiciariaArchitectureTest`,
+nunca alargando.
+
 ## D-classificacao-contextual-default-permissivo
 
 **Status:** aberta

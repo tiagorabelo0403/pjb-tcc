@@ -14,11 +14,15 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @PjbDataOwnership(module = PjbModuleId.COMPETENCIA_ROTEAMENTO, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
 @Entity
 @Table(
         name = "tb_comarca",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_comarca_municipio", columnNames = "municipio_sede_ibge")
+        },
         indexes = {
                 @Index(name = "idx_comarca_ibge", columnList = "municipio_sede_ibge"),
                 @Index(name = "idx_comarca_nome_uf", columnList = "nome, uf")
@@ -43,10 +47,14 @@ public class Comarca {
     private String nomeForo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tribunal_id", nullable = false)
+    @JoinColumn(name = "tribunal_id")
     private Tribunal tribunal;
 
     protected Comarca() {
+    }
+
+    public Comarca(String nome, String uf, String municipioSedeIbge, String nomeForo) {
+        this(nome, uf, municipioSedeIbge, nomeForo, null);
     }
 
     public Comarca(String nome, String uf, String municipioSedeIbge, String nomeForo, Tribunal tribunal) {
@@ -54,7 +62,7 @@ public class Comarca {
         this.uf = Objects.requireNonNull(uf, "uf");
         this.municipioSedeIbge = Objects.requireNonNull(municipioSedeIbge, "municipioSedeIbge");
         this.nomeForo = nomeForo;
-        this.tribunal = Objects.requireNonNull(tribunal, "tribunal");
+        this.tribunal = tribunal;
     }
 
     public Long getId() {

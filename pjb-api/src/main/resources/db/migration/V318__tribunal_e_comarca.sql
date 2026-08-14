@@ -15,7 +15,7 @@ CREATE TABLE tb_comarca (
     uf VARCHAR(2) NOT NULL,
     municipio_sede_ibge VARCHAR(7) NOT NULL,
     nome_foro VARCHAR(200),
-    tribunal_id BIGINT NOT NULL REFERENCES tb_tribunal(id)
+    tribunal_id BIGINT REFERENCES tb_tribunal(id)
 );
 
 CREATE INDEX idx_comarca_ibge ON tb_comarca (municipio_sede_ibge);

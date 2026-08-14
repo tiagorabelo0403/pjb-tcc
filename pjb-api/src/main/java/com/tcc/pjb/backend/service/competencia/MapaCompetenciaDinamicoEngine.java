@@ -32,6 +32,7 @@ import com.tcc.pjb.backend.model.dto.competencia.DynamicCompetenceDistributionRe
 import com.tcc.pjb.backend.model.dto.competencia.DynamicCompetenceRedistributionResponse;
 import com.tcc.pjb.backend.model.entity.Jurisdicao;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.competencia.ModoOperacaoUnidadeJudiciaria;
 import com.tcc.pjb.backend.model.entity.competencia.ProcessoDistribuicaoCompetencia;
 import com.tcc.pjb.backend.model.entity.competencia.StatusDistribuicaoCompetencia;
@@ -125,7 +126,7 @@ public class MapaCompetenciaDinamicoEngine {
                     .filter(item -> !Objects.equals(item.getId(), origem.getId()))
                     .filter(UnidadeJudiciariaCompetencia::estaAptaParaDistribuicao)
                     .filter(item -> Objects.equals(tribunalSigla(item), tribunalSigla(origem)))
-                    .filter(item -> Objects.equals(normalizeUpper(comarcaNome(item)), normalizeUpper(comarcaNome(origem))))
+                    .filter(item -> mesmaComarcaResolvida(item, origem))
                     .filter(item -> ufCompativelOuDesconhecida(comarcaUf(item), comarcaUf(origem)))
                     .filter(item -> item.getTipoVara() == origem.getTipoVara())
                     .filter(item -> Objects.equals(item.getTipoJustica(), origem.getTipoJustica()))
@@ -548,6 +549,9 @@ public class MapaCompetenciaDinamicoEngine {
         processo.setTribunal(firstNonBlank(tribunalCodigo, processo.getTribunal()));
         processo.setComarca(firstNonBlank(comarcaNome(unidade), processo.getComarca()));
         processo.setUf(firstNonBlank(comarcaUf(unidade), processo.getUf()));
+        if (unidade.getComarcaEntidade() != null) {
+            processo.setComarcaEntidade(unidade.getComarcaEntidade());
+        }
         processo.setVara(resolveVaraSnapshot(unidade, processo.getVara()));
         if (distribuicaoAutomatica) {
             processo.setDataDistribuicao(java.time.LocalDateTime.now());
@@ -819,16 +823,15 @@ public class MapaCompetenciaDinamicoEngine {
     private double scoreTerritorial(UnidadeJudiciariaCompetencia unidade, DynamicRequest request, List<String> fatoresRevisao) {
         double score = 0.0d;
         if (equalOrBlank(comarcaUf(unidade), request.ufReu())) {
-            score += 18.0d;
+            score = Math.max(score, 18.0d);
             if (equalOrBlank(comarcaNome(unidade), request.comarcaReu())) {
-                score += 12.0d;
-                return round2(score);
+                return round2(30.0d);
             }
         }
         if (equalOrBlank(comarcaUf(unidade), request.ufAutor())) {
-            score = 14.0d;
+            score = Math.max(score, 14.0d);
             if (equalOrBlank(comarcaNome(unidade), request.comarcaAutor())) {
-                score = 22.0d;
+                score = Math.max(score, 22.0d);
             }
         }
         if (score == 0.0d) {
@@ -1177,7 +1180,21 @@ public class MapaCompetenciaDinamicoEngine {
     }
 
     private static String comarcaNome(UnidadeJudiciariaCompetencia unidade) {
-        return unidade.getComarca() != null ? unidade.getComarca().getNome() : null;
+        return unidade.getComarcaEntidade() != null ? unidade.getComarcaEntidade().getNome() : unidade.getComarca();
+    }
+
+    private static boolean mesmaComarcaResolvida(UnidadeJudiciariaCompetencia item, UnidadeJudiciariaCompetencia origem) {
+        Comarca itemEntidade = item.getComarcaEntidade();
+        Comarca origemEntidade = origem.getComarcaEntidade();
+        if (itemEntidade != null && origemEntidade != null) {
+            return Objects.equals(itemEntidade.getId(), origemEntidade.getId());
+        }
+        String itemNome = normalizeUpper(comarcaNome(item));
+        String origemNome = normalizeUpper(comarcaNome(origem));
+        if (itemNome == null || origemNome == null) {
+            return false;
+        }
+        return itemNome.equals(origemNome);
     }
 
     private static String comarcaUf(UnidadeJudiciariaCompetencia unidade) {

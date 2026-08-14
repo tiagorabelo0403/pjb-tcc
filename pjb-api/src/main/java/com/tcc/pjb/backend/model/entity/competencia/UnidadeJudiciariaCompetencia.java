@@ -62,7 +62,10 @@ public class UnidadeJudiciariaCompetencia {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comarca_id")
-    private Comarca comarca;
+    private Comarca comarcaEntidade;
+
+    @Column(name = "comarca", length = 120)
+    private String comarca;
 
     @Column(name = "uf", length = 2)
     private String uf;
@@ -165,14 +168,15 @@ public class UnidadeJudiciariaCompetencia {
 
     public UnidadeJudiciariaCompetencia(String codigo,
                                         Tribunal tribunal,
-                                        Comarca comarca,
+                                        Comarca comarcaEntidade,
                                         String uf,
                                         TipoJustica tipoJustica,
                                         RamoDireito ramoDireito,
                                         TipoVaraDistribuicao tipoVara) {
         this.codigo = Objects.requireNonNull(codigo);
         this.tribunal = Objects.requireNonNull(tribunal);
-        this.comarca = comarca;
+        this.comarcaEntidade = comarcaEntidade;
+        this.comarca = comarcaEntidade != null ? comarcaEntidade.getNome() : null;
         this.uf = uf;
         this.tipoJustica = tipoJustica;
         this.ramoDireito = ramoDireito;
@@ -193,6 +197,7 @@ public class UnidadeJudiciariaCompetencia {
         }
         this.codigo = normalizeUpper(this.codigo);
         this.uf = normalizeUpper(this.uf);
+        this.comarca = normalizeText(this.comarca);
         this.enderecoFisico = normalizeText(this.enderecoFisico);
         this.enderecoDigital = normalizeText(this.enderecoDigital);
         this.classesTpu = sanitizeSet(this.classesTpu, true);
@@ -347,8 +352,20 @@ public class UnidadeJudiciariaCompetencia {
         return tribunal;
     }
 
-    public Comarca getComarca() {
+    public Comarca getComarcaEntidade() {
+        return comarcaEntidade;
+    }
+
+    public void setComarcaEntidade(Comarca comarcaEntidade) {
+        this.comarcaEntidade = comarcaEntidade;
+    }
+
+    public String getComarca() {
         return comarca;
+    }
+
+    public void setComarca(String comarca) {
+        this.comarca = comarca;
     }
 
     public String getUf() {

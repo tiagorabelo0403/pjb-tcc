@@ -25,7 +25,6 @@ class OrganizacaoJudiciariaArchitectureTest {
             "com.tcc.pjb.backend.model.entity.federalismo.NoFederacaoJudicial",
             "com.tcc.pjb.backend.model.entity.extrajudicial.EscrituraExtrajudicialRegistro",
             "com.tcc.pjb.backend.model.entity.criminal.InqueritoPolicialDigital",
-            "com.tcc.pjb.backend.model.entity.competencia.JurisdicaoTerritorial",
             "com.tcc.pjb.backend.model.entity.EventoInstitucional",
             "com.tcc.pjb.backend.model.entity.Estados",
             "com.tcc.pjb.backend.model.entity.cidadao.CidadaoProcessoNacionalProjection",

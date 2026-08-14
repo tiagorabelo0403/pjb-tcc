@@ -997,7 +997,7 @@ public class ConfiguracaoDistribuicaoVaraService {
     }
 
     private static String comarcaNome(UnidadeJudiciariaCompetencia unidade) {
-        return unidade.getComarca() != null ? unidade.getComarca().getNome() : null;
+        return unidade.getComarcaEntidade() != null ? unidade.getComarcaEntidade().getNome() : unidade.getComarca();
     }
 
     private static String comarcaUf(UnidadeJudiciariaCompetencia unidade) {

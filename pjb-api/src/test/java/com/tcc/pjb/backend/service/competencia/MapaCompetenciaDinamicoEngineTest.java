@@ -80,6 +80,59 @@ class MapaCompetenciaDinamicoEngineTest {
         assertThat(score).isEqualTo(0);
     }
 
+    @Test
+    void scoreTerritorial_unidadeForaDoCatalogoDeComarcaPontuaAcimaDoLimiarDeAutomacaoPorTextoDeComarca() throws Exception {
+        MapaCompetenciaDinamicoEngine engine = criarEngine();
+        UnidadeJudiciariaCompetencia unidade = unidadeSemFkComComarcaTextual("TJAC-CIVEL-AC-CAP", "AC", "Rio Branco");
+        MapaCompetenciaDinamicoEngine.DynamicRequest request =
+                requestComTerritorioAutorEReu("AC", "Rio Branco", "AC", "Rio Branco");
+
+        double score = invokeScoreTerritorial(engine, unidade, request);
+
+        assertThat(score).isGreaterThanOrEqualTo(18.0d);
+    }
+
+    @Test
+    void scoreTerritorial_ufDoReuBateMasComarcaDaUnidadeEDesconhecidaNaoRebaixaScorePeloBlocoDoAutor() throws Exception {
+        MapaCompetenciaDinamicoEngine engine = criarEngine();
+        UnidadeJudiciariaCompetencia unidade = unidadeComUf("VARA-AC-SEM-COMARCA", "AC");
+        MapaCompetenciaDinamicoEngine.DynamicRequest request =
+                requestComTerritorioAutorEReu("AC", "Rio Branco", "AC", "Rio Branco");
+
+        double score = invokeScoreTerritorial(engine, unidade, request);
+
+        assertThat(score).isGreaterThanOrEqualTo(18.0d);
+    }
+
+    private static double invokeScoreTerritorial(MapaCompetenciaDinamicoEngine engine,
+                                                 UnidadeJudiciariaCompetencia unidade,
+                                                 MapaCompetenciaDinamicoEngine.DynamicRequest request) throws Exception {
+        java.lang.reflect.Method metodo = MapaCompetenciaDinamicoEngine.class.getDeclaredMethod(
+                "scoreTerritorial",
+                UnidadeJudiciariaCompetencia.class,
+                MapaCompetenciaDinamicoEngine.DynamicRequest.class,
+                List.class);
+        metodo.setAccessible(true);
+        return (double) metodo.invoke(engine, unidade, request, new java.util.ArrayList<String>());
+    }
+
+    private static UnidadeJudiciariaCompetencia unidadeSemFkComComarcaTextual(String codigo, String uf, String comarca) {
+        Tribunal tribunal = new Tribunal("TJAC", "Tribunal de Justica do Acre", TipoJustica.ESTADUAL, GrauJurisdicao.SEGUNDO_GRAU, uf);
+        UnidadeJudiciariaCompetencia unidade = new UnidadeJudiciariaCompetencia(
+                codigo, tribunal, null, uf, TipoJustica.ESTADUAL, RamoDireito.CIVIL, TipoVaraDistribuicao.CIVEL_GERAL);
+        unidade.setComarca(comarca);
+        return unidade;
+    }
+
+    private static MapaCompetenciaDinamicoEngine.DynamicRequest requestComTerritorioAutorEReu(String ufAutor,
+                                                                                             String comarcaAutor,
+                                                                                             String ufReu,
+                                                                                             String comarcaReu) {
+        return new MapaCompetenciaDinamicoEngine.DynamicRequest(
+                null, null, null, null, null, ufAutor, comarcaAutor, ufReu, comarcaReu,
+                false, false, null, null, false, false, null);
+    }
+
     private static MapaCompetenciaDinamicoEngine criarEngine() {
         return new MapaCompetenciaDinamicoEngine(
                 mock(UnidadeJudiciariaCompetenciaRepository.class),
