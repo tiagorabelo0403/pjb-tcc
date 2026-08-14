@@ -1,7 +1,9 @@
 package com.tcc.pjb.backend.service.secretariat.operational;
 
+import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
@@ -28,15 +30,18 @@ public class SecretariatOperationalRedistributionService {
     private final WorkItemRepository workItemRepository;
     private final UsuarioRepository usuarioRepository;
     private final SecretariatQueueProjectionService projectionService;
+    private final PjbAuthorizationService authorizationService;
 
     public SecretariatOperationalRedistributionService(SecretariatOperationalAssignmentService assignmentService,
                                                        WorkItemRepository workItemRepository,
                                                        UsuarioRepository usuarioRepository,
-                                                       SecretariatQueueProjectionService projectionService) {
+                                                       SecretariatQueueProjectionService projectionService,
+                                                       PjbAuthorizationService authorizationService) {
         this.assignmentService = Objects.requireNonNull(assignmentService);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
         this.usuarioRepository = Objects.requireNonNull(usuarioRepository);
         this.projectionService = Objects.requireNonNull(projectionService);
+        this.authorizationService = Objects.requireNonNull(authorizationService);
     }
 
     @Transactional(readOnly = true)
@@ -84,6 +89,9 @@ public class SecretariatOperationalRedistributionService {
                                                Usuario actor,
                                                SecretariatOperationalRoutingProfile routing,
                                                String stage) {
+        if (actor.getTipoUsuario() != null && actor.getTipoUsuario().isServidorJudiciario()) {
+            authorizationService.requireFuncaoServidorCapability(processo, AcaoProcessualServidor.DISTRIBUIR);
+        }
         RedistributionSnapshot snapshot = avaliar(processo, routing, stage);
         if (!snapshot.redistributionSuggested() || snapshot.recommended() == null || snapshot.targetWorkItemIds().isEmpty()) {
             return snapshot;
