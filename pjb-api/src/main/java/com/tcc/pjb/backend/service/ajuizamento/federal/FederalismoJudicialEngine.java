@@ -398,7 +398,6 @@ public class FederalismoJudicialEngine {
     private String resolveUf(Processo processo) {
         return firstNonBlank(
                 processo.getUf(),
-                processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null,
                 processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null
         );
     }

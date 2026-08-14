@@ -104,6 +104,15 @@ public class Jurisdicao {
     @Column(name = "competencia_territorial", length = 500)
     private String competenciaTerritorial;
 
+    @Size(max = 100)
+    @Column(length = 100)
+    private String comarca;
+
+    @Size(min = 2, max = 2)
+    @Pattern(regexp = "^[A-Z]{2}$")
+    @Column(length = 2)
+    private String estado;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comarca_id")
     private Comarca comarcaEntidade;
@@ -165,19 +174,35 @@ public class Jurisdicao {
 
     
     public String getCidade() {
-        return comarcaEntidade != null ? comarcaEntidade.getNome() : null;
+        return comarcaEntidade != null ? comarcaEntidade.getNome() : comarca;
     }
 
     public String getUf() {
-        return comarcaEntidade != null ? comarcaEntidade.getUf() : null;
+        return comarcaEntidade != null ? comarcaEntidade.getUf() : estado;
     }
 
     public void setUf(String uf) {
-        throw new UnsupportedOperationException("uf agora deriva de comarcaEntidade — usar setComarcaEntidade(Comarca)");
+        this.estado = uf;
     }
 
     public String getMunicipioOuComarca() {
         return getCidade();
+    }
+
+    public String getComarca() {
+        return comarca;
+    }
+
+    public void setComarca(String comarca) {
+        this.comarca = comarca;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
     public String getForo() {
@@ -253,9 +278,11 @@ public class Jurisdicao {
         
         this.codigo = normalizeUpperTrim(this.codigo);
         this.sigla = normalizeUpperTrim(this.sigla);
+        this.estado = normalizeUpperTrim(this.estado);
 
 
         this.nome = normalizeSpaces(this.nome);
+        this.comarca = normalizeSpaces(this.comarca);
         this.secaoJudiciaria = normalizeSpaces(this.secaoJudiciaria);
         this.subsecaoJudiciaria = normalizeSpaces(this.subsecaoJudiciaria);
         this.circunscricao = normalizeSpaces(this.circunscricao);
@@ -335,10 +362,12 @@ public class Jurisdicao {
 
     
     public String getComarcaUf() {
-        if (comarcaEntidade == null) {
-            return null;
-        }
-        return comarcaEntidade.getNome() + "/" + comarcaEntidade.getUf();
+        String c = getCidade();
+        String uf = getUf();
+        if (c == null && uf == null) return null;
+        if (c == null) return uf;
+        if (uf == null) return c;
+        return c + "/" + uf;
     }
 
     

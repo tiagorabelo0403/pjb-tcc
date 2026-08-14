@@ -76,7 +76,7 @@ class JurisdicaoServiceTest {
     }
 
     @Test
-    void criar_naoFalhaQuandoComarcaNaoEstaNoCatalogo() {
+    void criar_usaFallbackStringQuandoComarcaNaoEstaNoCatalogo() {
         JurisdicaoRequest dto = new JurisdicaoRequest();
         dto.setCodigo("TJAC-RB-1");
         dto.setSigla("TJAC");
@@ -91,6 +91,8 @@ class JurisdicaoServiceTest {
 
         Jurisdicao entidadeMapeada = new Jurisdicao();
         entidadeMapeada.setSigla("TJAC");
+        entidadeMapeada.setComarca(dto.getComarca());
+        entidadeMapeada.setEstado(dto.getEstado());
         when(jurisdicaoMapper.toEntity(dto)).thenReturn(entidadeMapeada);
         when(jurisdicaoRepository.save(any(Jurisdicao.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(jurisdicaoMapper.toResponse(any(Jurisdicao.class))).thenReturn(new JurisdicaoResponse());
@@ -99,7 +101,8 @@ class JurisdicaoServiceTest {
         service.criar(dto);
 
         assertThat(entidadeMapeada.getComarcaEntidade()).isNull();
-        assertThat(entidadeMapeada.getUf()).isNull();
+        assertThat(entidadeMapeada.getUf()).isEqualTo("AC");
+        assertThat(entidadeMapeada.getCidade()).isEqualTo("Rio Branco");
     }
 
     @Test
