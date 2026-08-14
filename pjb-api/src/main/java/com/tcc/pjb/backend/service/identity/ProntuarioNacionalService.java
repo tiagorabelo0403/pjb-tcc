@@ -465,7 +465,7 @@ public class ProntuarioNacionalService {
             return normalizarTribunalCodigo(processo.getJurisdicao().getSigla());
         }
         TipoJustica tipoJustica = processo.getTipoJustica();
-        String uf = processo.getJurisdicao() != null ? processo.getJurisdicao().getEstado() : null;
+        String uf = processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null;
         if (tipoJustica == null) {
             return "PJB";
         }

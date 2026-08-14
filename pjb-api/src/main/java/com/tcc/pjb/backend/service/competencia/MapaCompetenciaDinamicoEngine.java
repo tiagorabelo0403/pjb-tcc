@@ -616,8 +616,8 @@ public class MapaCompetenciaDinamicoEngine {
 
     private DynamicRequest buildFromProcesso(Processo processo) {
         Jurisdicao jurisdicao = processo.getJurisdicao();
-        String ufJuridicao = jurisdicao != null ? jurisdicao.getEstado() : null;
-        String comarcaJurisdicao = jurisdicao != null ? jurisdicao.getComarca() : null;
+        String ufJuridicao = jurisdicao != null ? jurisdicao.getUf() : null;
+        String comarcaJurisdicao = jurisdicao != null ? jurisdicao.getCidade() : null;
         String ufBase = firstNonBlank(processo.getUf(), ufJuridicao);
         String comarcaBase = firstNonBlank(processo.getComarca(), comarcaJurisdicao, processo.getVara());
         CanonicalContext canonicalContext = proceduralCanonicalResolver.resolve(Map.ofEntries(
@@ -666,8 +666,8 @@ public class MapaCompetenciaDinamicoEngine {
 
     private DynamicRequest buildFallbackFromProcesso(Processo processo) {
         Jurisdicao jurisdicao = processo.getJurisdicao();
-        String ufBase = firstNonBlank(processo.getUf(), jurisdicao != null ? jurisdicao.getEstado() : null);
-        String comarcaBase = firstNonBlank(processo.getComarca(), jurisdicao != null ? jurisdicao.getComarca() : null, processo.getVara());
+        String ufBase = firstNonBlank(processo.getUf(), jurisdicao != null ? jurisdicao.getUf() : null);
+        String comarcaBase = firstNonBlank(processo.getComarca(), jurisdicao != null ? jurisdicao.getCidade() : null, processo.getVara());
         return new DynamicRequest(
                 firstNonBlank(processo.getNumeroUnificado(), processo.getNumeroProcesso()),
                 null,

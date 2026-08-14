@@ -189,7 +189,7 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
               LEFT JOIN p.usuario u
             WHERE (:cpf IS NULL OR :cpf = '' OR p.parteAutoraCpf = :cpf OR p.parteReuCpf = :cpf OR u.cpf = :cpf)
               AND (:numero IS NULL OR :numero = '' OR p.numeroUnificado = :numero OR p.numeroProcesso = :numero)
-              AND (:uf IS NULL OR :uf = '' OR j.estado = :uf)
+              AND (:uf IS NULL OR :uf = '' OR j.comarcaEntidade.uf = :uf)
               AND (:status IS NULL OR p.statusProcesso = :status)
             ORDER BY p.dataUltimaMovimentacao DESC NULLS LAST, p.id DESC
             """)
@@ -202,8 +202,8 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
     
     @EntityGraph(attributePaths = {"jurisdicao"})
     @Query("SELECT p FROM Processo p JOIN p.jurisdicao j " +
-            "WHERE (:uf IS NULL OR j.estado = :uf) " +
-            "AND (:comarca IS NULL OR j.comarca = :comarca) " +
+            "WHERE (:uf IS NULL OR j.comarcaEntidade.uf = :uf) " +
+            "AND (:comarca IS NULL OR j.comarcaEntidade.nome = :comarca) " +
             "AND p.statusProcesso <> 'ARQUIVADO'")
     Page<Processo> findForMagistradoDashboard(@Param("uf") String uf,
                                              @Param("comarca") String comarca,
@@ -407,28 +407,28 @@ Optional<Processo> findMagistraturaActsScopedById(@Param("id") Long id);
     @EntityGraph(attributePaths = {"jurisdicao"})
     @Query("""
             SELECT p FROM Processo p JOIN p.jurisdicao j
-            WHERE (:comarca IS NULL OR j.comarca = :comarca)
-              AND (:uf IS NULL OR j.estado = :uf)
+            WHERE (:comarca IS NULL OR j.comarcaEntidade.nome = :comarca)
+              AND (:uf IS NULL OR j.comarcaEntidade.uf = :uf)
             ORDER BY p.dataUltimaMovimentacao DESC NULLS LAST, p.id DESC
             """)
     Page<Processo> findByComarcaAndUf(@Param("comarca") String comarca, @Param("uf") String uf, Pageable pageable);
 
     @Query("""
             SELECT COUNT(p) FROM Processo p JOIN p.jurisdicao j
-            WHERE (:uf IS NULL OR j.estado = :uf)
+            WHERE (:uf IS NULL OR j.comarcaEntidade.uf = :uf)
             """)
     long countByUf(@Param("uf") String uf);
 
     @Query("""
             SELECT COUNT(p) FROM Processo p JOIN p.jurisdicao j
-            WHERE (:uf IS NULL OR j.estado = :uf)
-              AND (:comarca IS NULL OR j.comarca = :comarca)
+            WHERE (:uf IS NULL OR j.comarcaEntidade.uf = :uf)
+              AND (:comarca IS NULL OR j.comarcaEntidade.nome = :comarca)
             """)
     long countByUfAndComarca(@Param("uf") String uf, @Param("comarca") String comarca);
 
     @Query("""
             SELECT COUNT(p) FROM Processo p JOIN p.jurisdicao j
-            WHERE (:uf IS NULL OR j.estado = :uf)
+            WHERE (:uf IS NULL OR j.comarcaEntidade.uf = :uf)
               AND p.statusProcesso <> 'ARQUIVADO'
               AND p.faseAtual IS NOT NULL
             """)

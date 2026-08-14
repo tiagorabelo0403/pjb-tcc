@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service;
 
 import java.util.List;
+import java.util.Optional;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -12,7 +13,9 @@ import com.tcc.pjb.backend.mapper.JurisdicaoMapper;
 import com.tcc.pjb.backend.model.dto.JurisdicaoRequest;
 import com.tcc.pjb.backend.model.dto.JurisdicaoResponse;
 import com.tcc.pjb.backend.model.entity.Jurisdicao;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
+import com.tcc.pjb.backend.model.repository.ComarcaRepository;
 import com.tcc.pjb.backend.model.repository.JurisdicaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaInteligenteService;
@@ -30,6 +33,7 @@ public class JurisdicaoService {
 
     private final JurisdicaoRepository jurisdicaoRepository;
     private final ProcessoRepository processoRepository;
+    private final ComarcaRepository comarcaRepository;
     private final JurisdicaoMapper jurisdicaoMapper;
     private final AuditoriaInteligenteService auditoriaService;
 
@@ -73,8 +77,9 @@ public class JurisdicaoService {
         validarRegrasCnj(dto);
 
         Jurisdicao entidade = jurisdicaoMapper.toEntity(dto);
+        aplicarComarca(entidade, dto);
 
-        
+
         if (dto.getSigla() != null) {
             entidade.setSigla(dto.getSigla().toUpperCase().trim());
         }
@@ -134,10 +139,11 @@ public class JurisdicaoService {
             throw new RegraNegocioException("Não é permitido alterar Código CNJ de jurisdição com processos ativos.");
         }
 
-        
-        jurisdicaoMapper.updateEntityFromDto(dto, entidade);
 
-        
+        jurisdicaoMapper.updateEntityFromDto(dto, entidade);
+        aplicarComarca(entidade, dto);
+
+
         if (entidade.getSigla() != null) {
             entidade.setSigla(entidade.getSigla().toUpperCase().trim());
         }
@@ -188,6 +194,20 @@ public class JurisdicaoService {
         }
         if (sigla != null && jurisdicaoRepository.existsBySiglaIgnoreCase(sigla)) {
             throw new RecursoJaExistenteException("Sigla já existe: " + sigla);
+        }
+    }
+
+    private void aplicarComarca(Jurisdicao entidade, JurisdicaoRequest dto) {
+        String comarcaNome = dto.getComarca();
+        String uf = dto.getEstado();
+        if (comarcaNome == null || comarcaNome.isBlank() || uf == null || uf.isBlank()) {
+            return;
+        }
+        Optional<Comarca> comarca = comarcaRepository.findByNomeIgnoreCaseAndUf(comarcaNome.trim(), uf.trim().toUpperCase());
+        if (comarca.isPresent()) {
+            entidade.setComarcaEntidade(comarca.get());
+        } else {
+            log.warn("Comarca não encontrada no catálogo para nome={} uf={}; comarcaEntidade não alterada", comarcaNome, uf);
         }
     }
 

@@ -626,8 +626,8 @@ public class NationalPrazoEngine {
         String codigo = normalizarTribunal(tribunalCodigo);
         ConfiguracaoPrazo configuracao = localizarConfiguracao(codigo, ramo, grau);
         Jurisdicao jurisdicao = localizarJurisdicao(codigo);
-        String uf = jurisdicao != null ? normalizarUf(jurisdicao.getEstado()) : null;
-        String comarca = jurisdicao != null ? normalizarTexto(jurisdicao.getComarca()) : null;
+        String uf = jurisdicao != null ? normalizarUf(jurisdicao.getUf()) : null;
+        String comarca = jurisdicao != null ? normalizarTexto(jurisdicao.getCidade()) : null;
         boolean contarSabado = configuracao != null && configuracao.contarSabado();
         boolean integralmenteCorrido = configuracao != null && configuracao.integralmenteCorrido();
         Set<LocalDate> feriadosAdicionais = configuracao != null && configuracao.feriadosAdicionais() != null

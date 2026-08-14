@@ -92,7 +92,7 @@ public class PsicossocialRiskService {
                                 .status(WorkItemStatus.PENDENTE)
                                 .prioridade(prioridade)
                                 .uf(processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null)
-                                .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getComarca() : null)
+                                .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null)
                                 .baseLegal("Analise psicossocial assistida por IA do PJB")
                                 .dueAt(analisadoEm.plus(prazoHoras, ChronoUnit.HOURS))
                                 .build();

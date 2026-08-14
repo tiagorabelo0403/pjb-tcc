@@ -83,7 +83,7 @@ public class JudgeAgreementApprovalService {
                         .blocking(true)
                         .prioridade(0)
                         .uf(processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : processo.getUf())
-                        .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getComarca() : processo.getComarca())
+                        .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : processo.getComarca())
                         .dueAt(Instant.now().plus(48, ChronoUnit.HOURS))
                         .build()));
         item.setDescricao(buildDescription(processo, proposta, settlementAdvisory, outcomePrediction, resumoExecutivo));
@@ -200,7 +200,7 @@ public class JudgeAgreementApprovalService {
 
     private boolean sameTerritory(Usuario usuario, Processo processo) {
         String processoUf = processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : processo.getUf();
-        String processoComarca = processo.getJurisdicao() != null ? processo.getJurisdicao().getComarca() : processo.getComarca();
+        String processoComarca = processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : processo.getComarca();
         boolean ufMatches = processoUf == null || processoUf.isBlank() || equalsIgnoreCase(processoUf, usuario.getUf());
         boolean comarcaMatches = processoComarca == null || processoComarca.isBlank() || equalsIgnoreCase(processoComarca, usuario.getComarca());
         return ufMatches && comarcaMatches;

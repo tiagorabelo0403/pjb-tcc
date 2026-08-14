@@ -65,7 +65,7 @@ public final class ProcessoCanonicalPayloadFactory {
         putText(payload, "unidade_grau", jurisdicao.getGrau() != null ? jurisdicao.getGrau().name() : null);
         putText(payload, "unidade_esfera", jurisdicao.getEsfera() != null ? jurisdicao.getEsfera().name() : null);
         putText(payload, "unidade_materia", jurisdicao.getMateria() != null ? jurisdicao.getMateria().name() : null);
-        putText(payload, "unidade_comarca", jurisdicao.getComarca());
+        putText(payload, "unidade_comarca", jurisdicao.getCidade());
         putText(payload, "unidade_cidade", jurisdicao.getCidade());
         putText(payload, "unidade_foro", jurisdicao.getForo());
         putText(payload, "unidade_secao_judiciaria", jurisdicao.getSecaoJudiciaria());
@@ -76,7 +76,7 @@ public final class ProcessoCanonicalPayloadFactory {
         putText(payload, "uf", jurisdicao.getUf());
         putText(payload, "estado", jurisdicao.getUf());
         putText(payload, "cidade", jurisdicao.getCidade());
-        putText(payload, "comarca", jurisdicao.getComarca());
+        putText(payload, "comarca", jurisdicao.getCidade());
         putText(payload, "foro", jurisdicao.getForo());
         putText(payload, "secaoJudiciaria", jurisdicao.getSecaoJudiciaria());
         putText(payload, "subsecaoJudiciaria", jurisdicao.getSubsecaoJudiciaria());

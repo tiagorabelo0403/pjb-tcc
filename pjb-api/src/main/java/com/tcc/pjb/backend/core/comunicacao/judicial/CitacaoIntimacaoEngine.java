@@ -1157,7 +1157,7 @@ public class CitacaoIntimacaoEngine {
         }
         String uf = processo.getUf();
         if ((uf == null || uf.isBlank()) && processo.getJurisdicao() != null) {
-            uf = processo.getJurisdicao().getEstado();
+            uf = processo.getJurisdicao().getUf();
         }
         return resolver.resolver(cnpj, uf, processo.getTribunalCodigoRoteado());
     }

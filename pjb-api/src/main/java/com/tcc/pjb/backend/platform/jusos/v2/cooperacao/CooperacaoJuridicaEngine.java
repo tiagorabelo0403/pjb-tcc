@@ -586,7 +586,7 @@ public class CooperacaoJuridicaEngine {
         } else if (processo.getStatusProcesso() == StatusProcesso.CUMPRIMENTO_SENTENCA || containsAny(assunto, "penhora", "cumprimento", "execucao", "execução")) {
             tipoPreferencial = TipoCooperacao.CARTA_PRECATORIA_CUMPRIMENTO_SENTENCA;
             racional = "Atos executivos ou de constrição fora da jurisdição do juízo de origem";
-        } else if (ufDestino != null && !ufDestino.isBlank() && processo.getJurisdicao() != null && !Objects.equals(normalizeUpper(processo.getJurisdicao().getEstado()), ufDestino)) {
+        } else if (ufDestino != null && !ufDestino.isBlank() && processo.getJurisdicao() != null && !Objects.equals(normalizeUpper(processo.getJurisdicao().getUf()), ufDestino)) {
             tipoPreferencial = TipoCooperacao.DEPRECADA_PJE_MNI;
             racional = "Troca eletrônica entre tribunais com ênfase em MNI/PJe";
         } else {

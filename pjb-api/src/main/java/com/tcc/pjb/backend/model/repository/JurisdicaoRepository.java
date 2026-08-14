@@ -53,7 +53,7 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
     """)
     Page<Jurisdicao> pesquisar(@Param("termo") String termo, Pageable pageable);
 
-    @Query("SELECT j FROM Jurisdicao j WHERE j.estado = :uf AND j.ativo = true")
+    @Query("SELECT j FROM Jurisdicao j WHERE j.comarcaEntidade.uf = :uf AND j.ativo = true")
     List<Jurisdicao> findByUf(@Param("uf") String uf);
 
     
@@ -92,8 +92,8 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
         WHERE j.ativo = true
           AND j.esfera = :esfera
           AND j.grau = :grau
-          AND UPPER(j.estado) = UPPER(:uf)
-          AND LOWER(j.comarca) = LOWER(:comarca)
+          AND UPPER(j.comarcaEntidade.uf) = UPPER(:uf)
+          AND LOWER(j.comarcaEntidade.nome) = LOWER(:comarca)
         ORDER BY j.nome ASC
     """)
     List<JurisdicaoContextProjection> listarContextoPorPrimeiroGrau(
@@ -109,7 +109,7 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
         WHERE j.ativo = true
           AND j.esfera = :esfera
           AND j.grau = :grau
-          AND UPPER(j.estado) = UPPER(:uf)
+          AND UPPER(j.comarcaEntidade.uf) = UPPER(:uf)
         ORDER BY j.nome ASC
     """)
     List<JurisdicaoContextProjection> listarContextoPorSegundoGrau(
@@ -137,8 +137,8 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
         WHERE j.ativo = true
           AND j.esfera = :esfera
           AND j.grau = :grau
-          AND UPPER(j.estado) = UPPER(:uf)
-          AND LOWER(j.comarca) = LOWER(:comarca)
+          AND UPPER(j.comarcaEntidade.uf) = UPPER(:uf)
+          AND LOWER(j.comarcaEntidade.nome) = LOWER(:comarca)
         ORDER BY j.nome ASC
     """)
     List<JurisdicaoResumoProjection> listarResumosPorContexto(
@@ -154,7 +154,7 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
         WHERE j.ativo = true
           AND j.esfera = :esfera
           AND j.grau = :grau
-          AND UPPER(j.estado) = UPPER(:uf)
+          AND UPPER(j.comarcaEntidade.uf) = UPPER(:uf)
         ORDER BY j.nome ASC
     """)
     List<JurisdicaoResumoProjection> listarResumosPorUfEsferaGrau(
@@ -186,8 +186,8 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
         WHERE j.ativo = true
           AND j.esfera = :esfera
           AND j.grau = :grau
-          AND UPPER(j.estado) = UPPER(:uf)
-          AND LOWER(j.comarca) = LOWER(:comarca)
+          AND UPPER(j.comarcaEntidade.uf) = UPPER(:uf)
+          AND LOWER(j.comarcaEntidade.nome) = LOWER(:comarca)
         ORDER BY j.nome ASC
     """)
     List<JurisdicaoContextProjection> listarContextoPorEsferaGrauUfComarca(
@@ -203,7 +203,7 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
         WHERE j.ativo = true
           AND j.esfera = :esfera
           AND j.grau = :grau
-          AND UPPER(j.estado) = UPPER(:uf)
+          AND UPPER(j.comarcaEntidade.uf) = UPPER(:uf)
         ORDER BY j.nome ASC
     """)
     List<JurisdicaoContextProjection> listarContextoPorEsferaGrauUf(
