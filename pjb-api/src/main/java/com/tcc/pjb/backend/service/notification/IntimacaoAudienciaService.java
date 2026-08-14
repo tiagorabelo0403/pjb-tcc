@@ -1,9 +1,11 @@
 package com.tcc.pjb.backend.service.notification;
 
+import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.dto.intimacao.CriarIntimacaoRequest;
 import com.tcc.pjb.backend.model.dto.intimacao.IntimacaoAudienciaResponse;
 import com.tcc.pjb.backend.model.entity.Audiencia;
 import com.tcc.pjb.backend.model.entity.IntimacaoAudiencia;
+import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
 import com.tcc.pjb.backend.model.entity.enums.StatusIntimacaoAudiencia;
 import com.tcc.pjb.backend.model.repository.AudienciaRepository;
 import com.tcc.pjb.backend.model.repository.IntimacaoAudienciaRepository;
@@ -23,16 +25,20 @@ public class IntimacaoAudienciaService {
 
     private final IntimacaoAudienciaRepository intimacaoRepository;
     private final AudienciaRepository audienciaRepository;
+    private final PjbAuthorizationService authorizationService;
 
     public IntimacaoAudienciaService(IntimacaoAudienciaRepository intimacaoRepository,
-                                      AudienciaRepository audienciaRepository) {
+                                      AudienciaRepository audienciaRepository,
+                                      PjbAuthorizationService authorizationService) {
         this.intimacaoRepository = Objects.requireNonNull(intimacaoRepository);
         this.audienciaRepository = Objects.requireNonNull(audienciaRepository);
+        this.authorizationService = Objects.requireNonNull(authorizationService);
     }
 
     @Transactional
     public Optional<IntimacaoAudienciaResponse> intimar(Long audienciaId, CriarIntimacaoRequest request) {
         return audienciaRepository.findById(audienciaId).map(audiencia -> {
+            authorizationService.requireFuncaoServidorCapability(audiencia.getProcesso(), AcaoProcessualServidor.INTIMAR);
             Instant prazo = request.prazoCiencia() != null
                     ? request.prazoCiencia()
                     : Instant.now().plus(PRAZO_CIENCIA_DIAS_PADRAO, ChronoUnit.DAYS);
