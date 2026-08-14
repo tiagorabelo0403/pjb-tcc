@@ -215,8 +215,8 @@ public class UsuarioService {
             usuario.setComarcaEntidade(null);
             return;
         }
-        comarcaResolutionService.resolver(usuario.getComarca(), usuario.getUf())
-                .ifPresent(usuario::setComarcaEntidade);
+        usuario.setComarcaEntidade(comarcaResolutionService.resolver(usuario.getComarca(), usuario.getUf())
+                .orElse(null));
     }
 
     private void aplicarTipoUsuarioSeAusente(Usuario usuario) {

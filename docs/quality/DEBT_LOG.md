@@ -17,8 +17,9 @@ migrou território (uf/comarca) de String solta para FK `Comarca` em 5 entidades
 da FK, porque o catálogo `tb_comarca` (Task 1) só cobre 3 dos 27 estados (CE/MG/RN). O teste de arquitetura
 novo (`OrganizacaoJudiciariaArchitectureTest`, Task 6) trava qualquer entidade NOVA que reintroduza `uf`/`comarca`
 String sem a FK `Comarca` correspondente na mesma classe — mas, ao rodar essa regra contra o projeto inteiro
-pela primeira vez, apareceram **22 entidades pré-existentes**, fora do escopo desta fatia, que já declaravam
-`uf`/`comarca` String sem nenhuma FK `Comarca`:
+pela primeira vez, apareceram 23 entidades pré-existentes, fora do escopo desta fatia, que já declaravam
+`uf`/`comarca` String sem nenhuma FK `Comarca`. Uma delas (`JurisdicaoTerritorial`) saiu da allowlist ainda
+nesta fatia — ver nota abaixo —, restando **22 entidades pré-existentes**:
 
 `CalendarioForenseEntry`, `AtlasAcessoMunicipio`, `NoFederacaoJudicial`, `EscrituraExtrajudicialRegistro`,
 `InqueritoPolicialDigital`, `EventoInstitucional`, `Estados`, `CidadaoProcessoNacionalProjection`, `Municipios`,
@@ -45,6 +46,38 @@ por identidade real via FK.
 (`Estados`/`Municipios`/`OrgaoJudiciario` parecem candidatos de alto impacto por serem catálogos amplamente
 referenciados). Cada migração fecha reduzindo a allowlist em `OrganizacaoJudiciariaArchitectureTest`,
 nunca alargando.
+
+## D-workitem-fk-comarca-propagacao-parcial
+
+**Status:** aberta
+
+**Contexto:** a revisão final da fatia "Organização Judiciária" achou que nenhum caminho de produção
+escrevia a FK `comarcaEntidade` de `Usuario`/`Processo`/`WorkItem` — todo dado novo ficava com `comarca_id`
+permanentemente nulo, e a comparação territorial por identidade real (`AssessorGabineteGuardRailService.territoryMatches`)
+nunca disparava para dado novo. A rodada de correção ligou a FK nos pontos que efetivamente alimentam essa
+comparação: os dois `WorkItem.builder()` de `RitoWorkflowService` (que herdam a FK já resolvida da `Jurisdicao`
+do processo), o snapshot de distribuição em `MapaCompetenciaDinamicoEngine`, e os três pontos de resolução
+por texto (`UsuarioService.criar/atualizar`, `ApiMarketplaceService.protocolar`, `MniRecepcaoService.receberAutos`,
+via `ComarcaResolutionService`).
+
+Uma varredura de `WorkItem.builder()` no restante do projeto (não feita durante a rodada de correção — o
+implementador relatou "~12 outros pontos" de memória; a contagem real, feita na re-revisão, é **44 arquivos**
+em `pjb-api/src/main` que constroem `WorkItem` setando `.comarca(...)` textual sem `.comarcaEntidade(...)`)
+mostra que `RitoWorkflowService` é o único ponto de criação de `WorkItem` com FK — exemplos confirmados:
+`RecursalWorkItemMaterializerService`, `TransitoJulgadoArquivamentoEngine`, `DesembargadorColegialdoPainelService`,
+`NationalCommunicationFlowFacade`, `OficialJusticaPainelService`, `JuizGabineteDecisionalService`, entre outros,
+em domínios de recursal, colegiado, comunicação processual, secretariado e gabinete.
+
+**Risco:** baixo, não é regressão — confirmado por leitura de código e teste (`territoryMatches` após o fix
+do achado I2 da mesma revisão final): um `WorkItem` sem `comarcaEntidade` mas com `comarca` textual própria
+cai inteiro no caminho de comparação textual normalizada (o comportamento anterior à fatia inteira), nunca
+tenta usar a FK do `Processo` no lugar. Os 44 sites simplesmente não ganham o benefício da comparação por
+identidade real — não produzem nenhum match incorreto.
+
+**Quando revisitar:** ao planejar a próxima fatia que toque roteamento de `WorkItem` por gabinete/assessoria —
+extrair um método `WorkItem.herdarTerritorioDe(Processo)` (ou equivalente) que copie `uf`/`comarca` E
+`comarcaEntidade` juntos, e aplicar nos 44 sites incrementalmente, priorizando os que já são usados pelo
+guard-rail de território (`AssessorGabineteGuardRailService`) com mais frequência em produção.
 
 ## D-classificacao-contextual-default-permissivo
 

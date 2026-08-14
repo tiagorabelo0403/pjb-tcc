@@ -29,13 +29,13 @@ public class ComarcaResolutionService {
         String ufNormalizada = trimToNull(uf);
         if (ufNormalizada != null) {
             Optional<Comarca> encontrada =
-                    comarcaRepository.findByNomeIgnoreCaseAndUf(nomeNormalizado, ufNormalizada.toUpperCase(Locale.ROOT));
+                    comarcaRepository.findByNomeAccentInsensitiveAndUf(nomeNormalizado, ufNormalizada.toUpperCase(Locale.ROOT));
             if (encontrada.isEmpty()) {
                 log.warn("Comarca não encontrada no catálogo para nome={} uf={}; FK não resolvida", nomeNormalizado, ufNormalizada);
             }
             return encontrada;
         }
-        List<Comarca> candidatas = comarcaRepository.findAllByNomeIgnoreCase(nomeNormalizado);
+        List<Comarca> candidatas = comarcaRepository.findAllByNomeAccentInsensitive(nomeNormalizado);
         if (candidatas.size() == 1) {
             return Optional.of(candidatas.get(0));
         }
