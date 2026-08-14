@@ -1,12 +1,16 @@
 package com.tcc.pjb.backend.model.repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
+import com.tcc.pjb.backend.model.entity.competencia.Tribunal;
 import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia;
 
 @Repository
@@ -14,9 +18,17 @@ public interface UnidadeJudiciariaCompetenciaRepository extends JpaRepository<Un
 
     Optional<UnidadeJudiciariaCompetencia> findByCodigo(String codigo);
 
-    java.util.List<UnidadeJudiciariaCompetencia> findAllByTribunalCodigo(String tribunalCodigo);
+    @Override
+    @EntityGraph(attributePaths = {"tribunal", "comarca", "especialidades", "classesTpu", "assuntosTpu"})
+    List<UnidadeJudiciariaCompetencia> findAll();
 
-    java.util.List<UnidadeJudiciariaCompetencia> findAllByTribunalCodigoAndComarcaIgnoreCase(String tribunalCodigo, String comarca);
+    @Override
+    @EntityGraph(attributePaths = {"tribunal", "comarca", "especialidades", "classesTpu", "assuntosTpu"})
+    Optional<UnidadeJudiciariaCompetencia> findById(Long id);
+
+    java.util.List<UnidadeJudiciariaCompetencia> findAllByTribunal(Tribunal tribunal);
+
+    java.util.List<UnidadeJudiciariaCompetencia> findAllByTribunalAndComarca(Tribunal tribunal, Comarca comarca);
 
     @Modifying(flushAutomatically = false, clearAutomatically = false)
     @Query(value = """

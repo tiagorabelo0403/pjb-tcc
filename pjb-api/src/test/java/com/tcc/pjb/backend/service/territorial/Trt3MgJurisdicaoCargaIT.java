@@ -97,15 +97,15 @@ class Trt3MgJurisdicaoCargaIT extends PjbIntegrationTestBase {
     @Test
     void cargaDeMgCobreOs847MunicipiosComOs1498ParesDeUnidade() {
         Integer totalMunicipios = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM tb_jurisdicao_territorial WHERE tribunal_codigo = 'TRT3'", Integer.class);
+                "SELECT COUNT(*) FROM tb_jurisdicao_territorial WHERE tribunal_id = (SELECT id FROM tb_tribunal WHERE sigla = 'TRT3')", Integer.class);
         Integer totalPares = jdbcTemplate.queryForObject("""
                 SELECT COUNT(*) FROM tb_jurisdicao_territorial_unidade u
                 JOIN tb_jurisdicao_territorial j ON j.id = u.jurisdicao_territorial_id
-                WHERE j.tribunal_codigo = 'TRT3'
+                WHERE j.tribunal_id = (SELECT id FROM tb_tribunal WHERE sigla = 'TRT3')
                 """, Integer.class);
         Integer municipiosSemUnidade = jdbcTemplate.queryForObject("""
                 SELECT COUNT(*) FROM tb_jurisdicao_territorial j
-                WHERE j.tribunal_codigo = 'TRT3'
+                WHERE j.tribunal_id = (SELECT id FROM tb_tribunal WHERE sigla = 'TRT3')
                   AND NOT EXISTS (
                       SELECT 1 FROM tb_jurisdicao_territorial_unidade u
                       WHERE u.jurisdicao_territorial_id = j.id
@@ -122,7 +122,7 @@ class Trt3MgJurisdicaoCargaIT extends PjbIntegrationTestBase {
         List<Integer> quantidadePorMunicipio = jdbcTemplate.queryForList("""
                 SELECT COUNT(u.unidade_codigo) FROM tb_jurisdicao_territorial j
                 JOIN tb_jurisdicao_territorial_unidade u ON u.jurisdicao_territorial_id = j.id
-                WHERE j.tribunal_codigo = 'TRT3'
+                WHERE j.tribunal_id = (SELECT id FROM tb_tribunal WHERE sigla = 'TRT3')
                 GROUP BY j.id
                 """, Integer.class);
 

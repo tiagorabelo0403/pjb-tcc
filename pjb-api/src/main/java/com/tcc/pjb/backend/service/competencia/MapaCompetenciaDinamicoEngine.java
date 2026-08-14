@@ -124,9 +124,9 @@ public class MapaCompetenciaDinamicoEngine {
             List<UnidadeJudiciariaCompetencia> destinos = unidades.stream()
                     .filter(item -> !Objects.equals(item.getId(), origem.getId()))
                     .filter(UnidadeJudiciariaCompetencia::estaAptaParaDistribuicao)
-                    .filter(item -> Objects.equals(item.getTribunalCodigo(), origem.getTribunalCodigo()))
-                    .filter(item -> Objects.equals(normalizeUpper(item.getComarca()), normalizeUpper(origem.getComarca())))
-                    .filter(item -> equalOrBlank(item.getUf(), origem.getUf()))
+                    .filter(item -> Objects.equals(tribunalSigla(item), tribunalSigla(origem)))
+                    .filter(item -> Objects.equals(normalizeUpper(comarcaNome(item)), normalizeUpper(comarcaNome(origem))))
+                    .filter(item -> equalOrBlank(comarcaUf(item), comarcaUf(origem)))
                     .filter(item -> item.getTipoVara() == origem.getTipoVara())
                     .filter(item -> Objects.equals(item.getTipoJustica(), origem.getTipoJustica()))
                     .filter(item -> Objects.equals(item.getRamoDireito(), origem.getRamoDireito()))
@@ -240,9 +240,9 @@ public class MapaCompetenciaDinamicoEngine {
                 .limit(3)
                 .map(candidate -> new DynamicCompetenceDistributionResponse.AlternativeUnit(
                         candidate.unidade().getCodigo(),
-                        candidate.unidade().getTribunalCodigo(),
-                        candidate.unidade().getComarca(),
-                        candidate.unidade().getUf(),
+                        tribunalSigla(candidate.unidade()),
+                        comarcaNome(candidate.unidade()),
+                        comarcaUf(candidate.unidade()),
                         candidate.unidade().getTipoVara().name(),
                         round2(candidate.scoreFinal())
                 ))
@@ -254,9 +254,9 @@ public class MapaCompetenciaDinamicoEngine {
                 Instant.now(),
                 request.nupn(),
                 melhor.unidade().getCodigo(),
-                melhor.unidade().getTribunalCodigo(),
-                melhor.unidade().getComarca(),
-                melhor.unidade().getUf(),
+                tribunalSigla(melhor.unidade()),
+                comarcaNome(melhor.unidade()),
+                comarcaUf(melhor.unidade()),
                 melhor.unidade().getTipoVara().name(),
                 round2(melhor.scoreFinal()),
                 distribuicaoAutomatica,
@@ -321,9 +321,9 @@ public class MapaCompetenciaDinamicoEngine {
                 Instant.now(),
                 request.nupn(),
                 unidade.getCodigo(),
-                unidade.getTribunalCodigo(),
-                unidade.getComarca(),
-                unidade.getUf(),
+                tribunalSigla(unidade),
+                comarcaNome(unidade),
+                comarcaUf(unidade),
                 unidade.getTipoVara().name(),
                 scoreFinal,
                 distribuicaoAutomatica,
@@ -503,7 +503,7 @@ public class MapaCompetenciaDinamicoEngine {
         payload.put("nupn", request.nupn());
         payload.put("processoId", request.processoId());
         payload.put("unidadeCodigo", melhor.unidade().getCodigo());
-        payload.put("tribunalCodigo", melhor.unidade().getTribunalCodigo());
+        payload.put("tribunalCodigo", tribunalSigla(melhor.unidade()));
         payload.put("scoreFinal", response.scoreFinal());
         payload.put("distribuicaoAutomatica", distribuicaoAutomatica);
         payload.put("alertas", response.alertas());
@@ -546,8 +546,8 @@ public class MapaCompetenciaDinamicoEngine {
         processo.setTribunalCodigoRoteado(tribunalCodigo);
         processo.setUnidadeJudiciariaCodigo(unidade.getCodigo());
         processo.setTribunal(firstNonBlank(tribunalCodigo, processo.getTribunal()));
-        processo.setComarca(firstNonBlank(unidade.getComarca(), processo.getComarca()));
-        processo.setUf(firstNonBlank(unidade.getUf(), processo.getUf()));
+        processo.setComarca(firstNonBlank(comarcaNome(unidade), processo.getComarca()));
+        processo.setUf(firstNonBlank(comarcaUf(unidade), processo.getUf()));
         processo.setVara(resolveVaraSnapshot(unidade, processo.getVara()));
         if (distribuicaoAutomatica) {
             processo.setDataDistribuicao(java.time.LocalDateTime.now());
@@ -568,7 +568,7 @@ public class MapaCompetenciaDinamicoEngine {
                                           DynamicCompetenceDistributionResponse response,
                                           String atual) {
         String direto = firstNonBlank(
-                unidade != null ? unidade.getTribunalCodigo() : null,
+                unidade != null ? tribunalSigla(unidade) : null,
                 response != null ? response.tribunalCodigo() : null
         );
         if (direto != null) {
@@ -818,21 +818,21 @@ public class MapaCompetenciaDinamicoEngine {
 
     private double scoreTerritorial(UnidadeJudiciariaCompetencia unidade, DynamicRequest request, List<String> fatoresRevisao) {
         double score = 0.0d;
-        if (equalOrBlank(unidade.getUf(), request.ufReu())) {
+        if (equalOrBlank(comarcaUf(unidade), request.ufReu())) {
             score += 18.0d;
-            if (equalOrBlank(unidade.getComarca(), request.comarcaReu())) {
+            if (equalOrBlank(comarcaNome(unidade), request.comarcaReu())) {
                 score += 12.0d;
                 return round2(score);
             }
         }
-        if (equalOrBlank(unidade.getUf(), request.ufAutor())) {
+        if (equalOrBlank(comarcaUf(unidade), request.ufAutor())) {
             score = 14.0d;
-            if (equalOrBlank(unidade.getComarca(), request.comarcaAutor())) {
+            if (equalOrBlank(comarcaNome(unidade), request.comarcaAutor())) {
                 score = 22.0d;
             }
         }
         if (score == 0.0d) {
-            if (unidade.getUf() == null || unidade.getComarca() == null) {
+            if (comarcaUf(unidade) == null || comarcaNome(unidade) == null) {
                 score = 8.0d;
                 fatoresRevisao.add("Catastro territorial incompleto da unidade");
             } else {
@@ -843,17 +843,19 @@ public class MapaCompetenciaDinamicoEngine {
     }
 
     private int aderenciaTerritorialMinima(UnidadeJudiciariaCompetencia unidade, DynamicRequest request) {
-        String ufUnidade = normalizeUpper(unidade.getUf());
-        String comarcaUnidade = normalizeUpper(unidade.getComarca());
+        String ufUnidade = normalizeUpper(comarcaUf(unidade));
+        String comarcaUnidade = normalizeUpper(comarcaNome(unidade));
         String ufProcesso = normalizeUpper(firstNonBlank(request.ufReu(), request.ufAutor()));
         String comarcaProcesso = normalizeUpper(firstNonBlank(request.comarcaReu(), request.comarcaAutor()));
         int score = 0;
-        if (ufProcesso == null || ufUnidade == null || ufUnidade.equals(ufProcesso)) {
+        if (ufProcesso == null || (ufUnidade != null && ufUnidade.equals(ufProcesso))) {
             score += 2;
+        } else if (ufUnidade == null) {
+            return 1;
         } else {
             return 0;
         }
-        if (comarcaProcesso == null || comarcaUnidade == null || comarcaUnidade.equals(comarcaProcesso)) {
+        if (comarcaProcesso == null || (comarcaUnidade != null && comarcaUnidade.equals(comarcaProcesso))) {
             score += 2;
         }
         return score;
@@ -1159,6 +1161,18 @@ public class MapaCompetenciaDinamicoEngine {
 
     private static double round2(double value) {
         return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    private static String tribunalSigla(UnidadeJudiciariaCompetencia unidade) {
+        return unidade.getTribunal() != null ? unidade.getTribunal().getSigla() : null;
+    }
+
+    private static String comarcaNome(UnidadeJudiciariaCompetencia unidade) {
+        return unidade.getComarca() != null ? unidade.getComarca().getNome() : null;
+    }
+
+    private static String comarcaUf(UnidadeJudiciariaCompetencia unidade) {
+        return unidade.getComarca() != null ? unidade.getComarca().getUf() : null;
     }
 
     private record DynamicRequest(

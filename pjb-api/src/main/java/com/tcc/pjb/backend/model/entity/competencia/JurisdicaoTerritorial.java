@@ -19,6 +19,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @PjbDataOwnership(module = PjbModuleId.COMPETENCIA_ROTEAMENTO, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
@@ -55,8 +56,9 @@ public class JurisdicaoTerritorial {
     @Column(name = "unidade_codigo", nullable = false, length = 80)
     private Set<String> unidadesElegiveis = new LinkedHashSet<>();
 
-    @Column(name = "tribunal_codigo", length = 20, nullable = false)
-    private String tribunalCodigo;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tribunal_id", nullable = false)
+    private Tribunal tribunal;
 
     @Column(name = "fonte_normativa", length = 240, nullable = false)
     private String fonteNormativa;
@@ -71,7 +73,7 @@ public class JurisdicaoTerritorial {
     }
 
     public JurisdicaoTerritorial(String municipioIbge, String municipioNome, String uf, String tipoJustica,
-            String modoCompetencia, Set<String> unidadesElegiveis, String tribunalCodigo, String fonteNormativa,
+            String modoCompetencia, Set<String> unidadesElegiveis, Tribunal tribunal, String fonteNormativa,
             LocalDate vigenciaInicio, LocalDate vigenciaFim) {
         this.municipioIbge = Objects.requireNonNull(municipioIbge, "municipioIbge");
         this.municipioNome = Objects.requireNonNull(municipioNome, "municipioNome");
@@ -83,7 +85,7 @@ public class JurisdicaoTerritorial {
             throw new IllegalArgumentException("unidadesElegiveis não pode ser vazio");
         }
         this.unidadesElegiveis = new LinkedHashSet<>(unidadesElegiveis);
-        this.tribunalCodigo = Objects.requireNonNull(tribunalCodigo, "tribunalCodigo");
+        this.tribunal = Objects.requireNonNull(tribunal, "tribunal");
         this.fonteNormativa = Objects.requireNonNull(fonteNormativa, "fonteNormativa");
         this.vigenciaInicio = Objects.requireNonNull(vigenciaInicio, "vigenciaInicio");
         this.vigenciaFim = vigenciaFim;
@@ -117,8 +119,8 @@ public class JurisdicaoTerritorial {
         return Collections.unmodifiableSet(unidadesElegiveis);
     }
 
-    public String getTribunalCodigo() {
-        return tribunalCodigo;
+    public Tribunal getTribunal() {
+        return tribunal;
     }
 
     public String getFonteNormativa() {

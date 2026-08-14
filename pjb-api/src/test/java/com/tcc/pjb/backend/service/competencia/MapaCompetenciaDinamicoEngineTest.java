@@ -8,9 +8,12 @@ import static org.mockito.Mockito.when;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.procedural.ProceduralCanonicalResolver;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.competencia.TipoVaraDistribuicao;
+import com.tcc.pjb.backend.model.entity.competencia.Tribunal;
 import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
+import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.repository.ProcessoDistribuicaoCompetenciaRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
@@ -44,11 +47,12 @@ class MapaCompetenciaDinamicoEngineTest {
     }
 
     private static UnidadeJudiciariaCompetencia unidade(String codigo) {
+        Tribunal tribunal = new Tribunal("TJCE", "Tribunal de Justica do Ceara", TipoJustica.ESTADUAL, GrauJurisdicao.PRIMEIRO_GRAU, "CE");
+        Comarca comarca = new Comarca("Fortaleza", "CE", "2304400", null, tribunal);
         UnidadeJudiciariaCompetencia unidade = new UnidadeJudiciariaCompetencia(
                 codigo,
-                "TJCE",
-                "Fortaleza",
-                "CE",
+                tribunal,
+                comarca,
                 TipoJustica.ESTADUAL,
                 RamoDireito.CIVIL,
                 TipoVaraDistribuicao.CIVEL_GERAL

@@ -559,7 +559,7 @@ public class ConfiguracaoDistribuicaoVaraService {
                 .max(BigDecimal.ZERO);
         unidade.atualizarCarga(novosAtivos, congestionamento);
 
-        TribunalRuleEngine.ContextoResolucao contexto = TribunalRuleEngine.ContextoResolucao.agora(unidade.getTribunalCodigo(), unidade.getComarca(), unidade.getCodigo(), unidade.getRamoDireito(), null);
+        TribunalRuleEngine.ContextoResolucao contexto = TribunalRuleEngine.ContextoResolucao.agora(tribunalSigla(unidade), comarcaNome(unidade), unidade.getCodigo(), unidade.getRamoDireito(), null);
         BigDecimal limiar = tribunalRuleEngine.resolverLimiarCongestionamento(contexto, new BigDecimal("0.85"));
         boolean bloquear = congestionamento.compareTo(limiar) >= 0;
 
@@ -742,8 +742,8 @@ public class ConfiguracaoDistribuicaoVaraService {
 
     private PerfilVara toPerfil(UnidadeJudiciariaCompetencia unidade, RestricaoOperacional restricao) {
         TribunalRuleEngine.ContextoResolucao contexto = TribunalRuleEngine.ContextoResolucao.agora(
-                unidade.getTribunalCodigo(),
-                unidade.getComarca(),
+                tribunalSigla(unidade),
+                comarcaNome(unidade),
                 unidade.getCodigo(),
                 unidade.getRamoDireito(),
                 null
@@ -756,9 +756,9 @@ public class ConfiguracaoDistribuicaoVaraService {
                 normalizeUpper(unidade.getCodigo()),
                 unidade.getCodigo(),
                 unidade.getTipoVara(),
-                unidade.getTribunalCodigo(),
-                unidade.getComarca(),
-                unidade.getUf(),
+                tribunalSigla(unidade),
+                comarcaNome(unidade),
+                comarcaUf(unidade),
                 unidade.getTipoJustica(),
                 unidade.getRamoDireito(),
                 restricao == null ? unidade.isAceitaDistribuicao() : restricao.aceitaNovasDistribuicoes(),
@@ -993,6 +993,18 @@ public class ConfiguracaoDistribuicaoVaraService {
 
     private static String vagaToNull(String value) {
         return blankToNull(value);
+    }
+
+    private static String tribunalSigla(UnidadeJudiciariaCompetencia unidade) {
+        return unidade.getTribunal() != null ? unidade.getTribunal().getSigla() : null;
+    }
+
+    private static String comarcaNome(UnidadeJudiciariaCompetencia unidade) {
+        return unidade.getComarca() != null ? unidade.getComarca().getNome() : null;
+    }
+
+    private static String comarcaUf(UnidadeJudiciariaCompetencia unidade) {
+        return unidade.getComarca() != null ? unidade.getComarca().getUf() : null;
     }
 
     private static double round4(double value) {

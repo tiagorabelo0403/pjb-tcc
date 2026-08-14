@@ -68,7 +68,7 @@ public class NationalForumMeshGovernanceService {
             int classesBefore = unit.getClassesTpu().size();
             int assuntosBefore = unit.getAssuntosTpu().size();
             String endpointBefore = safe(unit.getEnderecoDigital());
-            String connectorHint = safe(unit.getTribunalCodigo());
+            String connectorHint = safe(tribunalSigla(unit));
 
             Set<String> recommendedClasses = recommendClasses(unit, snapshot);
             if (!recommendedClasses.isEmpty()) {
@@ -88,8 +88,8 @@ public class NationalForumMeshGovernanceService {
                 changed = true;
             }
             String normalizedComarca = normalizedComarca(unit);
-            if (normalizedComarca != null && !normalizedComarca.equals(unit.getComarca())) {
-                unit.setEnderecoFisico(normalizedComarca + " - " + firstNonBlank(unit.getUf(), "BR"));
+            if (normalizedComarca != null && !normalizedComarca.equals(comarcaNome(unit))) {
+                unit.setEnderecoFisico(normalizedComarca + " - " + firstNonBlank(comarcaUf(unit), "BR"));
                 changed = true;
             }
             if (connectorHint != null && connectorHint.startsWith("TJM-") && unit.getTipoJustica() != TipoJustica.MILITAR_ESTADUAL) {
@@ -104,7 +104,7 @@ public class NationalForumMeshGovernanceService {
             if (!Objects.equals(endpointBefore, safe(unit.getEnderecoDigital()))) {
                 digitalAdjusted++;
             }
-            if (!Objects.equals(connectorHint, safe(unit.getTribunalCodigo()))) {
+            if (!Objects.equals(connectorHint, safe(tribunalSigla(unit)))) {
                 connectorAdjusted++;
             }
             if (unit.getClassesTpu().isEmpty()) {
@@ -242,12 +242,12 @@ public class NationalForumMeshGovernanceService {
     }
 
     private String expectedDigitalEndpoint(UnidadeJudiciariaCompetencia unit) {
-        String tribunal = normalizeToken(unit.getTribunalCodigo());
+        String tribunal = normalizeToken(tribunalSigla(unit));
         if (tribunal == null) {
             return null;
         }
         String slug = tribunal.toLowerCase(Locale.ROOT).replace('_', '-');
-        String suffix = normalizeToken(firstNonBlank(unit.getCodigo(), unit.getComarca(), unit.getUf()));
+        String suffix = normalizeToken(firstNonBlank(unit.getCodigo(), comarcaNome(unit), comarcaUf(unit)));
         if (suffix == null) {
             suffix = slug;
         }
@@ -255,11 +255,23 @@ public class NationalForumMeshGovernanceService {
     }
 
     private String normalizedComarca(UnidadeJudiciariaCompetencia unit) {
-        String uf = safe(unit.getUf());
+        String uf = safe(comarcaUf(unit));
         if (uf == null) {
-            return safe(unit.getComarca());
+            return safe(comarcaNome(unit));
         }
-        return firstNonBlank(safe(unit.getComarca()), CAPITALS.get(uf.toUpperCase(Locale.ROOT)));
+        return firstNonBlank(safe(comarcaNome(unit)), CAPITALS.get(uf.toUpperCase(Locale.ROOT)));
+    }
+
+    private static String tribunalSigla(UnidadeJudiciariaCompetencia unit) {
+        return unit.getTribunal() != null ? unit.getTribunal().getSigla() : null;
+    }
+
+    private static String comarcaNome(UnidadeJudiciariaCompetencia unit) {
+        return unit.getComarca() != null ? unit.getComarca().getNome() : null;
+    }
+
+    private static String comarcaUf(UnidadeJudiciariaCompetencia unit) {
+        return unit.getComarca() != null ? unit.getComarca().getUf() : null;
     }
 
     private String normalizeToken(String value) {
