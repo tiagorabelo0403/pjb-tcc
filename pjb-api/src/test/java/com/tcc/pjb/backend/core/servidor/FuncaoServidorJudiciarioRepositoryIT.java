@@ -7,6 +7,7 @@ import com.tcc.pjb.backend.PjbTransactionalRepositoryItBase;
 import com.tcc.pjb.backend.model.entity.enums.FuncaoServidorJudiciario;
 import com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorJudiciarioEntity;
 import com.tcc.pjb.backend.model.repository.FuncaoServidorJudiciarioRepository;
+import com.tcc.pjb.backend.model.repository.TribunalRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,7 @@ class FuncaoServidorJudiciarioRepositoryIT extends PjbTransactionalRepositoryItB
     @Autowired private FuncaoServidorJudiciarioRepository repository;
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private TransactionTemplate transactionTemplate;
+    @Autowired private TribunalRepository tribunalRepository;
 
     private Long usuarioId;
     private Long unidadeId;
@@ -35,15 +37,17 @@ class FuncaoServidorJudiciarioRepositoryIT extends PjbTransactionalRepositoryItB
     @BeforeEach
     void setUp() {
         String s = UUID.randomUUID().toString().substring(0, 8);
+        Long tribunalId = tribunalRepository.findBySigla("TJCE").orElseThrow(
+                () -> new IllegalStateException("TJCE nao encontrado - verificar seed de tb_tribunal")).getId();
         usuarioId = jdbcTemplate.queryForObject(
                 "INSERT INTO tb_usuario (nome, email, perfil, senha, cpf, ativo, tipo_usuario) " +
                 "VALUES (?, ?, 'SERVIDOR', 'hash', ?, true, 'SERVIDOR') RETURNING id",
                 Long.class, "Srv " + s, "srv.fn." + s + "@pjb.test",
                 String.format("%011d", Long.parseUnsignedLong(s, 16)));
         unidadeId = jdbcTemplate.queryForObject(
-                "INSERT INTO tb_unidade_judiciaria_competencia (codigo, tribunal_codigo, tipo_vara) " +
-                "VALUES (?, 'TJCE', 'CIVEL_GERAL') RETURNING id",
-                Long.class, "VARA-" + s);
+                "INSERT INTO tb_unidade_judiciaria_competencia (codigo, tribunal_id, tipo_vara) " +
+                "VALUES (?, ?, 'CIVEL_GERAL') RETURNING id",
+                Long.class, "VARA-" + s, tribunalId);
     }
 
     @Test

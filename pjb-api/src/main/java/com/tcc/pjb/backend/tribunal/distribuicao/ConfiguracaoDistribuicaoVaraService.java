@@ -13,7 +13,8 @@ import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaReposito
 import com.tcc.pjb.backend.service.ajuizamento.federal.FederalismoJudicialEngine;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import com.tcc.pjb.backend.tribunal.regras.TribunalRuleEngine;
-import jakarta.annotation.PostConstruct;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -421,11 +422,7 @@ public class ConfiguracaoDistribuicaoVaraService {
         this.objectMapper = Objects.requireNonNull(objectMapper);
     }
 
-    @PostConstruct
-    public void inicializar() {
-        recarregarDoRepositorio();
-    }
-
+    @EventListener(ApplicationReadyEvent.class)
     @PjbTransactionalBudget(operation = "tribunal.distribuicao-vara.recarregar-repositorio", maxMillis = 8000)
     @Transactional(readOnly = true)
     public int recarregarDoRepositorio() {
@@ -1004,7 +1001,7 @@ public class ConfiguracaoDistribuicaoVaraService {
     }
 
     private static String comarcaUf(UnidadeJudiciariaCompetencia unidade) {
-        return unidade.getComarca() != null ? unidade.getComarca().getUf() : null;
+        return unidade.getUf();
     }
 
     private static double round4(double value) {

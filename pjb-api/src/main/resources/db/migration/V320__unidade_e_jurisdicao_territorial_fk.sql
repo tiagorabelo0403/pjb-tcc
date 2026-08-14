@@ -39,7 +39,9 @@ WHERE c.uf = u.uf AND upper(unaccent(c.nome)) = upper(unaccent(u.comarca));
 ALTER TABLE tb_unidade_judiciaria_competencia ALTER COLUMN tribunal_id SET NOT NULL;
 ALTER TABLE tb_unidade_judiciaria_competencia DROP COLUMN tribunal_codigo;
 ALTER TABLE tb_unidade_judiciaria_competencia DROP COLUMN comarca;
-ALTER TABLE tb_unidade_judiciaria_competencia DROP COLUMN uf;
+
+CREATE INDEX idx_unidade_competencia_tribunal ON tb_unidade_judiciaria_competencia (tribunal_id);
+CREATE INDEX idx_unidade_competencia_territorio ON tb_unidade_judiciaria_competencia (uf, comarca_id);
 
 ALTER TABLE tb_jurisdicao_territorial ADD COLUMN tribunal_id BIGINT REFERENCES tb_tribunal(id);
 UPDATE tb_jurisdicao_territorial j SET tribunal_id = t.id FROM tb_tribunal t WHERE t.sigla = j.tribunal_codigo;

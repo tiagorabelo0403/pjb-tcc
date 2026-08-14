@@ -271,7 +271,7 @@ public class NationalForumMeshGovernanceService {
     }
 
     private static String comarcaUf(UnidadeJudiciariaCompetencia unit) {
-        return unit.getComarca() != null ? unit.getComarca().getUf() : null;
+        return unit.getUf();
     }
 
     private String normalizeToken(String value) {

@@ -26,12 +26,13 @@ class NationalForumMeshGovernanceServiceTest {
     void reconcilesClassesAndAssuntosForUnitWithoutCatalog() {
         UnidadeJudiciariaCompetenciaRepository repository = Mockito.mock(UnidadeJudiciariaCompetenciaRepository.class);
         CnjTpuSyncService cnjTpuSyncService = Mockito.mock(CnjTpuSyncService.class);
-        Tribunal tribunal = new Tribunal("TJCE", "Tribunal de Justica do Ceara", TipoJustica.ESTADUAL, GrauJurisdicao.PRIMEIRO_GRAU, "CE");
+        Tribunal tribunal = new Tribunal("TJCE", "Tribunal de Justica do Ceara", TipoJustica.ESTADUAL, GrauJurisdicao.SEGUNDO_GRAU, "CE");
         Comarca comarca = new Comarca("Fortaleza", "CE", "2304400", null, tribunal);
         UnidadeJudiciariaCompetencia unit = new UnidadeJudiciariaCompetencia(
                 "TJCE-CIVEL-CE-CAP",
                 tribunal,
                 comarca,
+                "CE",
                 TipoJustica.ESTADUAL,
                 RamoDireito.CIVIL,
                 TipoVaraDistribuicao.CIVEL_GERAL

@@ -16,14 +16,15 @@ import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia
 @Repository
 public interface UnidadeJudiciariaCompetenciaRepository extends JpaRepository<UnidadeJudiciariaCompetencia, Long> {
 
+    @EntityGraph(attributePaths = {"tribunal", "comarca"})
     Optional<UnidadeJudiciariaCompetencia> findByCodigo(String codigo);
 
     @Override
-    @EntityGraph(attributePaths = {"tribunal", "comarca", "especialidades", "classesTpu", "assuntosTpu"})
+    @EntityGraph(attributePaths = {"tribunal", "comarca"})
     List<UnidadeJudiciariaCompetencia> findAll();
 
     @Override
-    @EntityGraph(attributePaths = {"tribunal", "comarca", "especialidades", "classesTpu", "assuntosTpu"})
+    @EntityGraph(attributePaths = {"tribunal", "comarca"})
     Optional<UnidadeJudiciariaCompetencia> findById(Long id);
 
     java.util.List<UnidadeJudiciariaCompetencia> findAllByTribunal(Tribunal tribunal);

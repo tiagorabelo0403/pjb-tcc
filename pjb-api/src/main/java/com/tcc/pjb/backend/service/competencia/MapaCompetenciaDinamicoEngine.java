@@ -126,7 +126,7 @@ public class MapaCompetenciaDinamicoEngine {
                     .filter(UnidadeJudiciariaCompetencia::estaAptaParaDistribuicao)
                     .filter(item -> Objects.equals(tribunalSigla(item), tribunalSigla(origem)))
                     .filter(item -> Objects.equals(normalizeUpper(comarcaNome(item)), normalizeUpper(comarcaNome(origem))))
-                    .filter(item -> equalOrBlank(comarcaUf(item), comarcaUf(origem)))
+                    .filter(item -> ufCompativelOuDesconhecida(comarcaUf(item), comarcaUf(origem)))
                     .filter(item -> item.getTipoVara() == origem.getTipoVara())
                     .filter(item -> Objects.equals(item.getTipoJustica(), origem.getTipoJustica()))
                     .filter(item -> Objects.equals(item.getRamoDireito(), origem.getRamoDireito()))
@@ -842,7 +842,7 @@ public class MapaCompetenciaDinamicoEngine {
         return round2(score);
     }
 
-    private int aderenciaTerritorialMinima(UnidadeJudiciariaCompetencia unidade, DynamicRequest request) {
+    int aderenciaTerritorialMinima(UnidadeJudiciariaCompetencia unidade, DynamicRequest request) {
         String ufUnidade = normalizeUpper(comarcaUf(unidade));
         String comarcaUnidade = normalizeUpper(comarcaNome(unidade));
         String ufProcesso = normalizeUpper(firstNonBlank(request.ufReu(), request.ufAutor()));
@@ -1126,6 +1126,15 @@ public class MapaCompetenciaDinamicoEngine {
         return a.equals(b);
     }
 
+    private static boolean ufCompativelOuDesconhecida(String left, String right) {
+        String a = normalizeUpper(left);
+        String b = normalizeUpper(right);
+        if (a == null || b == null) {
+            return true;
+        }
+        return a.equals(b);
+    }
+
     private static String normalizeUpper(String value) {
         if (value == null) {
             return null;
@@ -1172,10 +1181,10 @@ public class MapaCompetenciaDinamicoEngine {
     }
 
     private static String comarcaUf(UnidadeJudiciariaCompetencia unidade) {
-        return unidade.getComarca() != null ? unidade.getComarca().getUf() : null;
+        return unidade.getUf();
     }
 
-    private record DynamicRequest(
+    record DynamicRequest(
             String nupn,
             String classeTpu,
             String assuntoTpu,

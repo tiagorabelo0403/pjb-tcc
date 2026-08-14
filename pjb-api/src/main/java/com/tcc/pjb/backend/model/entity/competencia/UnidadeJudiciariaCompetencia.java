@@ -42,7 +42,7 @@ import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
         },
         indexes = {
                 @Index(name = "idx_unidade_competencia_tribunal", columnList = "tribunal_id"),
-                @Index(name = "idx_unidade_competencia_territorio", columnList = "comarca_id"),
+                @Index(name = "idx_unidade_competencia_territorio", columnList = "uf, comarca_id"),
                 @Index(name = "idx_unidade_competencia_status", columnList = "aceita_distribuicao, status_operacional"),
                 @Index(name = "idx_unidade_competencia_justica", columnList = "tipo_justica, ramo_direito, tipo_vara")
         }
@@ -63,6 +63,9 @@ public class UnidadeJudiciariaCompetencia {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comarca_id")
     private Comarca comarca;
+
+    @Column(name = "uf", length = 2)
+    private String uf;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_justica", length = 30)
@@ -163,12 +166,14 @@ public class UnidadeJudiciariaCompetencia {
     public UnidadeJudiciariaCompetencia(String codigo,
                                         Tribunal tribunal,
                                         Comarca comarca,
+                                        String uf,
                                         TipoJustica tipoJustica,
                                         RamoDireito ramoDireito,
                                         TipoVaraDistribuicao tipoVara) {
         this.codigo = Objects.requireNonNull(codigo);
         this.tribunal = Objects.requireNonNull(tribunal);
         this.comarca = comarca;
+        this.uf = uf;
         this.tipoJustica = tipoJustica;
         this.ramoDireito = ramoDireito;
         this.tipoVara = Objects.requireNonNull(tipoVara);
@@ -187,6 +192,7 @@ public class UnidadeJudiciariaCompetencia {
             this.versao = 0L;
         }
         this.codigo = normalizeUpper(this.codigo);
+        this.uf = normalizeUpper(this.uf);
         this.enderecoFisico = normalizeText(this.enderecoFisico);
         this.enderecoDigital = normalizeText(this.enderecoDigital);
         this.classesTpu = sanitizeSet(this.classesTpu, true);
@@ -343,6 +349,10 @@ public class UnidadeJudiciariaCompetencia {
 
     public Comarca getComarca() {
         return comarca;
+    }
+
+    public String getUf() {
+        return uf;
     }
 
     public TipoJustica getTipoJustica() {
