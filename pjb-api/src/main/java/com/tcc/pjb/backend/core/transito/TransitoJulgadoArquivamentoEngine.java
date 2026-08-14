@@ -5,6 +5,7 @@ import com.tcc.pjb.backend.core.processo.lifecycle.ProcessoLifecycleDecision;
 import com.tcc.pjb.backend.core.processo.lifecycle.ProcessoLifecycleMachine;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
@@ -578,6 +579,9 @@ public class TransitoJulgadoArquivamentoEngine {
         Processo processo = loadProcesso(processoId);
         var ctx = contextFactory.build();
         authorizationService.requireRole(ctx.usuario(), "ROLE_JUIZ", "ROLE_MAGISTRADO", "ROLE_SERVIDOR", "ROLE_SERVIDOR_FORUM");
+        if (ctx.usuario().getTipoUsuario() != null && ctx.usuario().getTipoUsuario().isServidorJudiciario()) {
+            authorizationService.requireFuncaoServidorCapability(processo, AcaoProcessualServidor.ARQUIVAR);
+        }
         ProcessoLifecycleDecision decision = enforceLifecycle(processo, ProcessoLifecycleAction.ARQUIVAR);
         PostJudgmentOperationalProfile profile = operationalResolver.resolve(processo, ProcessoLifecycleAction.ARQUIVAR, motivoArquivamento, 0D);
         String dedupKey = UUID.nameUUIDFromBytes(("ARQUIVO:" + processoId).getBytes(StandardCharsets.UTF_8)).toString();
