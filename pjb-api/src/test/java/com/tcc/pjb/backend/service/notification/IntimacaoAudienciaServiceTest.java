@@ -23,6 +23,7 @@ import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
 import com.tcc.pjb.backend.model.entity.enums.TipoDestinatarioIntimacao;
 import com.tcc.pjb.backend.model.repository.AudienciaRepository;
 import com.tcc.pjb.backend.model.repository.IntimacaoAudienciaRepository;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,5 +102,35 @@ class IntimacaoAudienciaServiceTest {
         assertTrue(resultado.isEmpty());
         verify(authorizationService, never())
                 .requireFuncaoServidorCapability(any(), any());
+    }
+
+    @Test
+    void intimarLoteComFuncaoAtivaCriaTodasAsIntimacoes() {
+        Audiencia audiencia = audienciaComProcesso();
+        when(audienciaRepository.findById(1L)).thenReturn(Optional.of(audiencia));
+        doNothing().when(authorizationService)
+                .requireFuncaoServidorCapability(any(Processo.class), eq(AcaoProcessualServidor.INTIMAR));
+        when(intimacaoRepository.save(any(IntimacaoAudiencia.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        var resultado = service.intimarLote(1L, List.of(request(), request()));
+
+        assertEquals(2, resultado.size());
+        verify(authorizationService)
+                .requireFuncaoServidorCapability(eq(audiencia.getProcesso()), eq(AcaoProcessualServidor.INTIMAR));
+    }
+
+    @Test
+    void intimarLoteSemFuncaoAtivaLancaExcecaoSemSalvarNenhumaIntimacao() {
+        Audiencia audiencia = audienciaComProcesso();
+        when(audienciaRepository.findById(1L)).thenReturn(Optional.of(audiencia));
+        doThrow(new AccessDeniedPjbException("Acesso negado à ação processual do servidor"))
+                .when(authorizationService)
+                .requireFuncaoServidorCapability(any(Processo.class), eq(AcaoProcessualServidor.INTIMAR));
+
+        assertThrows(AccessDeniedPjbException.class,
+                () -> service.intimarLote(1L, List.of(request(), request())));
+
+        verify(intimacaoRepository, never()).save(any());
     }
 }

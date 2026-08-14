@@ -61,6 +61,7 @@ public class IntimacaoAudienciaService {
     public List<IntimacaoAudienciaResponse> intimarLote(Long audienciaId, List<CriarIntimacaoRequest> requests) {
         Audiencia audiencia = audienciaRepository.findById(audienciaId)
                 .orElseThrow(() -> new IllegalArgumentException("Audiência não encontrada: " + audienciaId));
+        authorizationService.requireFuncaoServidorCapability(audiencia.getProcesso(), AcaoProcessualServidor.INTIMAR);
         Instant agora = Instant.now();
         return requests.stream().map(req -> {
             Instant prazo = req.prazoCiencia() != null
