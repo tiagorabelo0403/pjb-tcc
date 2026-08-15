@@ -12,6 +12,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.dto.intimacao.CriarIntimacaoRequest;
@@ -19,8 +20,10 @@ import com.tcc.pjb.backend.model.dto.intimacao.IntimacaoAudienciaResponse;
 import com.tcc.pjb.backend.model.entity.Audiencia;
 import com.tcc.pjb.backend.model.entity.IntimacaoAudiencia;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
 import com.tcc.pjb.backend.model.entity.enums.TipoDestinatarioIntimacao;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.AudienciaRepository;
 import com.tcc.pjb.backend.model.repository.IntimacaoAudienciaRepository;
 import java.util.List;
@@ -33,6 +36,7 @@ class IntimacaoAudienciaServiceTest {
     private IntimacaoAudienciaRepository intimacaoRepository;
     private AudienciaRepository audienciaRepository;
     private PjbAuthorizationService authorizationService;
+    private CurrentUserService currentUserService;
     private IntimacaoAudienciaService service;
 
     @BeforeEach
@@ -40,7 +44,17 @@ class IntimacaoAudienciaServiceTest {
         intimacaoRepository = mock(IntimacaoAudienciaRepository.class);
         audienciaRepository = mock(AudienciaRepository.class);
         authorizationService = mock(PjbAuthorizationService.class);
-        service = new IntimacaoAudienciaService(intimacaoRepository, audienciaRepository, authorizationService);
+        currentUserService = mock(CurrentUserService.class);
+        service = new IntimacaoAudienciaService(intimacaoRepository, audienciaRepository, authorizationService, currentUserService);
+        when(currentUserService.getRequired()).thenReturn(servidor());
+    }
+
+    private Usuario servidor() {
+        return Usuario.builder().id(1L).tipoUsuario(TipoUsuario.SERVIDOR_FORUM).build();
+    }
+
+    private Usuario administrador() {
+        return Usuario.builder().id(2L).tipoUsuario(TipoUsuario.ADMINISTRADOR).build();
     }
 
     private Audiencia audienciaComProcesso() {
@@ -132,5 +146,35 @@ class IntimacaoAudienciaServiceTest {
                 () -> service.intimarLote(1L, List.of(request(), request())));
 
         verify(intimacaoRepository, never()).save(any());
+    }
+
+    @Test
+    void administradorIntimaSemSerBloqueadoPelaNovaChecagemDeFuncaoServidor() {
+        Audiencia audiencia = audienciaComProcesso();
+        when(audienciaRepository.findById(1L)).thenReturn(Optional.of(audiencia));
+        when(currentUserService.getRequired()).thenReturn(administrador());
+        when(intimacaoRepository.save(any(IntimacaoAudiencia.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        Optional<IntimacaoAudienciaResponse> resultado = service.intimar(1L, request());
+
+        assertTrue(resultado.isPresent());
+        verify(authorizationService, never())
+                .requireFuncaoServidorCapability(any(), any());
+    }
+
+    @Test
+    void administradorIntimaLoteSemSerBloqueadoPelaNovaChecagemDeFuncaoServidor() {
+        Audiencia audiencia = audienciaComProcesso();
+        when(audienciaRepository.findById(1L)).thenReturn(Optional.of(audiencia));
+        when(currentUserService.getRequired()).thenReturn(administrador());
+        when(intimacaoRepository.save(any(IntimacaoAudiencia.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        var resultado = service.intimarLote(1L, List.of(request(), request()));
+
+        assertEquals(2, resultado.size());
+        verify(authorizationService, never())
+                .requireFuncaoServidorCapability(any(), any());
     }
 }

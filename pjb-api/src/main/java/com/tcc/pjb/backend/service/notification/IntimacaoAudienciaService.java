@@ -1,10 +1,12 @@
 package com.tcc.pjb.backend.service.notification;
 
+import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.dto.intimacao.CriarIntimacaoRequest;
 import com.tcc.pjb.backend.model.dto.intimacao.IntimacaoAudienciaResponse;
 import com.tcc.pjb.backend.model.entity.Audiencia;
 import com.tcc.pjb.backend.model.entity.IntimacaoAudiencia;
+import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
 import com.tcc.pjb.backend.model.entity.enums.StatusIntimacaoAudiencia;
 import com.tcc.pjb.backend.model.repository.AudienciaRepository;
@@ -26,19 +28,25 @@ public class IntimacaoAudienciaService {
     private final IntimacaoAudienciaRepository intimacaoRepository;
     private final AudienciaRepository audienciaRepository;
     private final PjbAuthorizationService authorizationService;
+    private final CurrentUserService currentUserService;
 
     public IntimacaoAudienciaService(IntimacaoAudienciaRepository intimacaoRepository,
                                       AudienciaRepository audienciaRepository,
-                                      PjbAuthorizationService authorizationService) {
+                                      PjbAuthorizationService authorizationService,
+                                      CurrentUserService currentUserService) {
         this.intimacaoRepository = Objects.requireNonNull(intimacaoRepository);
         this.audienciaRepository = Objects.requireNonNull(audienciaRepository);
         this.authorizationService = Objects.requireNonNull(authorizationService);
+        this.currentUserService = Objects.requireNonNull(currentUserService);
     }
 
     @Transactional
     public Optional<IntimacaoAudienciaResponse> intimar(Long audienciaId, CriarIntimacaoRequest request) {
         return audienciaRepository.findById(audienciaId).map(audiencia -> {
-            authorizationService.requireFuncaoServidorCapability(audiencia.getProcesso(), AcaoProcessualServidor.INTIMAR);
+            Usuario atorAtual = currentUserService.getRequired();
+            if (atorAtual.getTipoUsuario() != null && atorAtual.getTipoUsuario().isServidorJudiciario()) {
+                authorizationService.requireFuncaoServidorCapability(audiencia.getProcesso(), AcaoProcessualServidor.INTIMAR);
+            }
             Instant prazo = request.prazoCiencia() != null
                     ? request.prazoCiencia()
                     : Instant.now().plus(PRAZO_CIENCIA_DIAS_PADRAO, ChronoUnit.DAYS);
@@ -61,7 +69,10 @@ public class IntimacaoAudienciaService {
     public List<IntimacaoAudienciaResponse> intimarLote(Long audienciaId, List<CriarIntimacaoRequest> requests) {
         Audiencia audiencia = audienciaRepository.findById(audienciaId)
                 .orElseThrow(() -> new IllegalArgumentException("Audiência não encontrada: " + audienciaId));
-        authorizationService.requireFuncaoServidorCapability(audiencia.getProcesso(), AcaoProcessualServidor.INTIMAR);
+        Usuario atorAtual = currentUserService.getRequired();
+        if (atorAtual.getTipoUsuario() != null && atorAtual.getTipoUsuario().isServidorJudiciario()) {
+            authorizationService.requireFuncaoServidorCapability(audiencia.getProcesso(), AcaoProcessualServidor.INTIMAR);
+        }
         Instant agora = Instant.now();
         return requests.stream().map(req -> {
             Instant prazo = req.prazoCiencia() != null

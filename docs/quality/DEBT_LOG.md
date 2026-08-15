@@ -1658,5 +1658,44 @@ padrão na ausência de chamada, não existe bypass). O risco é de expectativa:
 ou a entidade pode presumir que a capacidade já está em uso.
 
 **Cobertura de teste:** nenhuma direta para o caminho `PROFERIR` fim-a-fim (não existe fim-a-fim
-para testar). `possuiCapacidade()`/`podeProferir()` cobertos isoladamente por
-`PjbAuthorizationFuncaoServidorFacadeTest` e `FuncaoServidorApplicationServiceTest`.
+para testar). `possuiCapacidade()` (privado em `PjbAuthorizationFuncaoServidorFacade`, chaveado por
+`AcaoProcessualServidor`) é coberto isoladamente por `PjbAuthorizationFuncaoServidorFacadeTest` —
+`FuncaoServidorApplicationServiceTest` **não** o toca, apesar do que a versão anterior desta
+entrada afirmava. `podeProferir()` (o booleano do enum `FuncaoServidorJudiciario` em si, não o
+`switch` do facade) é, esse sim, coberto diretamente por `FuncaoServidorApplicationServiceTest`
+(`diretorSecretariaPoderProferirTrue`/`tecnicoJudiciarioPoderProferirFalse`, linhas 87-93), que
+também cobre `verificarPermissao(String)` do próprio `FuncaoServidorApplicationService` — ver
+`D-duas-tabelas-verdade-capacidade-servidor` abaixo para a duplicação entre esse método e
+`possuiCapacidade()`.
+
+## D-duas-tabelas-verdade-capacidade-servidor
+
+**Status:** aberta
+
+**Contexto:** a regra de negócio "quais ações um `FuncaoServidorJudiciario` pode praticar" — os 5
+booleanos do enum (`podeProferir`, `podeConcluir`, `podeIntimar`, `podeDistribuir`, `podeArquivar`)
+— está codificada em dois lugares paralelos:
+
+1. `PjbAuthorizationFuncaoServidorFacade.possuiCapacidade(FuncaoServidorJudiciario, AcaoProcessualServidor)`
+   (privado, chaveado pelo enum `AcaoProcessualServidor`) — é o caminho real, chamado por
+   `PjbAuthorizationService.requireFuncaoServidorCapability(...)` em produção.
+2. `FuncaoServidorApplicationService.verificarPermissao(FuncaoServidorJudiciario, String)` (privado,
+   chaveado por `String` solto) — chamado apenas por `podeExecutar(...)`, que por sua vez não tem
+   nenhum chamador real em produção, só uso em `FuncaoServidorApplicationServiceTest`. Foi mantido
+   deliberadamente como API pública do service (base potencial para um endpoint administrativo
+   futuro de consulta de permissão), não é código morto para remover sem decisão de produto.
+
+**Risco:** os dois `switch` fazem o mesmo mapeamento função→ação hoje, mas nada os mantém
+sincronizados. Se a regra de capacidade mudar (novo cargo no enum, nova ação em
+`AcaoProcessualServidor`), quem alterar `possuiCapacidade()` pode esquecer de atualizar
+`verificarPermissao()` (ou vice-versa) — a segunda tabela-verdade ficaria desatualizada em
+silêncio, já que não é exercitada por nenhum fluxo real hoje.
+
+**Cobertura de teste:** cada `switch` é coberto isoladamente por sua própria suíte
+(`PjbAuthorizationFuncaoServidorFacadeTest` para o primeiro, `FuncaoServidorApplicationServiceTest`
+para o segundo) — não existe teste que prove que os dois concordam entre si.
+
+**Não revisitar sem decisão de produto:** consolidar os dois em uma única fonte de verdade (ex.:
+`FuncaoServidorApplicationService` delegando ao facade, ou ambos delegando a um método único no
+enum) é uma limpeza estrutural legítima, mas está fora do escopo de correção pontual — depende de
+decidir se `verificarPermissao`/`podeExecutar` seguem como API pública do service ou são removidos.

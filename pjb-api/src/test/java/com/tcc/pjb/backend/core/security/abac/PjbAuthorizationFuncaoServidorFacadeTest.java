@@ -16,6 +16,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -109,5 +111,44 @@ class PjbAuthorizationFuncaoServidorFacadeTest {
                 facade.evaluate(5L, AcaoProcessualServidor.PROFERIR, Processo.builder().build());
 
         assertThat(evaluation.allowed()).isFalse();
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "PROFERIR, false",
+            "CONCLUIR, false",
+            "INTIMAR, true",
+            "DISTRIBUIR, false",
+            "ARQUIVAR, false"
+    })
+    void escrivaoJudicial_soPossuiCapacidadeDeIntimar(AcaoProcessualServidor acao, boolean esperado) {
+        FuncaoServidorJudiciarioEntity entidade = new FuncaoServidorJudiciarioEntity(
+                10L, 5L, FuncaoServidorJudiciario.ESCRIVAO_JUDICIAL, LocalDate.now().minusDays(30), null, null);
+        when(funcaoServidorRepository.findByUsuarioIdAndUnidadeIdAndAtivo(10L, 5L, true))
+                .thenReturn(List.of(entidade));
+
+        PjbAuthorizationEvaluation evaluation = facade.evaluate(5L, acao, Processo.builder().build());
+
+        assertThat(evaluation.allowed()).isEqualTo(esperado);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "PROFERIR, false",
+            "CONCLUIR, true",
+            "INTIMAR, true",
+            "DISTRIBUIR, true",
+            "ARQUIVAR, false"
+    })
+    void oficialMaior_possuiCapacidadeDeConcluirIntimarEDistribuir_masNaoProferirNemArquivar(
+            AcaoProcessualServidor acao, boolean esperado) {
+        FuncaoServidorJudiciarioEntity entidade = new FuncaoServidorJudiciarioEntity(
+                10L, 5L, FuncaoServidorJudiciario.OFICIAL_MAIOR, LocalDate.now().minusDays(30), null, null);
+        when(funcaoServidorRepository.findByUsuarioIdAndUnidadeIdAndAtivo(10L, 5L, true))
+                .thenReturn(List.of(entidade));
+
+        PjbAuthorizationEvaluation evaluation = facade.evaluate(5L, acao, Processo.builder().build());
+
+        assertThat(evaluation.allowed()).isEqualTo(esperado);
     }
 }

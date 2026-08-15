@@ -68,12 +68,12 @@ class ConclusaoProcessualApplicationServiceTest {
     }
 
     @Test
-    void concluirServidorSemPodeConcluirLancaExcecao() {
+    void concluirServidorSemFuncaoAtivaLancaAccessDenied() {
         when(processoRepository.findById(10L)).thenReturn(Optional.of(processoComUnidade()));
         doThrow(new AccessDeniedPjbException("Acesso negado à ação processual do servidor"))
                 .when(authorizationService)
                 .requireFuncaoServidorCapability(any(Processo.class), eq(AcaoProcessualServidor.CONCLUIR));
-        assertThrows(SecurityException.class,
+        assertThrows(AccessDeniedPjbException.class,
                 () -> service.concluir(10L, 5L, 1L, "PARA_DECISAO", null));
     }
 
