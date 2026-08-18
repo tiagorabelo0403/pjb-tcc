@@ -23,11 +23,14 @@ public record GovBrOidcProperties(
     String clientSecret,
     String redirectUri,
     String redirectUriStepUp,
+    String redirectUriLogin,
     String stepUpScope,
     String jwksUrl,
     String issuer,
     String frontendSuccessRedirect,
     String frontendErrorRedirect,
+    String frontendLoginSuccessRedirect,
+    String frontendLoginErrorRedirect,
     Duration connectTimeout,
     Duration requestTimeout,
     Duration stateTtl
@@ -95,6 +98,9 @@ public record GovBrOidcProperties(
     validateHttpsOrLoopback(redirectUri, "redirect-uri", true);
     if (redirectUriStepUp != null && !redirectUriStepUp.isBlank()) {
       validateHttpsOrLoopback(redirectUriStepUp, "redirect-uri-step-up", true);
+    }
+    if (redirectUriLogin != null && !redirectUriLogin.isBlank()) {
+      validateHttpsOrLoopback(redirectUriLogin, "redirect-uri-login", true);
     }
     if (frontendSuccessRedirect != null && !frontendSuccessRedirect.isBlank()) {
       validateHttpsOrLoopback(frontendSuccessRedirect, "frontend-success-redirect", true);
