@@ -70,7 +70,7 @@ public class PainelActionSurfaceCompositionService {
             actions.add(action("ABRIR_ALERTA", "Abrir alerta investigativo", "/api/v1/delegado/alertas", priorityTag));
         } else if (panelCode.contains("MINISTERIO_PUBLICO")) {
             actions.add(action("LANCAR_MANIFESTACAO", "Lançar manifestação prioritária", "/api/v1/mp/manifestacoes", priorityTag));
-            actions.add(action("PREPARAR_RECURSO", "Preparar recurso", "/api/v1/mp/recursos", highlightedSection));
+            actions.add(action("PREPARAR_RECURSO", "Preparar recurso", "/api/v1/recursal/processos/{processoId}/recurso", highlightedSection));
         } else if (panelCode.contains("DEFENSOR_PUBLICO")) {
             actions.add(action("REDIGIR_PETICAO", "Redigir petição prioritária", "/api/v1/defensoria/peticoes", priorityTag));
             actions.add(action("REVISAR_AUDIENCIAS", "Revisar audiências", "/api/v1/defensoria/audiencias", highlightedSection));
@@ -97,7 +97,7 @@ public class PainelActionSurfaceCompositionService {
             shortcuts.add(shortcut("Workbench multimídia", "/api/v1/delegado/multimidia", "WORKBENCH"));
         } else if (panelCode.contains("MINISTERIO_PUBLICO")) {
             shortcuts.add(shortcut("Processos prioritários", "/api/v1/mp/processos", highlightedSection));
-            shortcuts.add(shortcut("Recursos", "/api/v1/mp/recursos", "RECURSOS"));
+            shortcuts.add(shortcut("Recursos", "/api/v1/recursal/processos/{processoId}/recurso", "RECURSOS"));
         } else if (panelCode.contains("DEFENSOR_PUBLICO")) {
             shortcuts.add(shortcut("Assistidos", "/api/v1/defensoria/assistidos", highlightedSection));
             shortcuts.add(shortcut("Petições", "/api/v1/defensoria/peticoes", "PETICOES"));

@@ -108,7 +108,7 @@ public class PainelTribunalMetrica {
     void normalize() {
         this.codigoTribunal = normalizeUpper(codigoTribunal);
         this.tribunalNome = normalizeText(tribunalNome);
-        this.uf = normalizeUpper(uf);
+        this.uf = normalizeUf(uf);
         if (this.indiceCongestionamento == null) {
             this.indiceCongestionamento = BigDecimal.ZERO;
         }
@@ -155,6 +155,14 @@ public class PainelTribunalMetrica {
         }
         String normalized = value.strip();
         return normalized.isEmpty() ? null : normalized.toUpperCase(Locale.ROOT);
+    }
+
+    private static String normalizeUf(String value) {
+        String normalized = normalizeUpper(value);
+        if (normalized == null) {
+            return null;
+        }
+        return normalized.matches("[A-Z]{2}") ? normalized : null;
     }
 
     private static String normalizeText(String value) {

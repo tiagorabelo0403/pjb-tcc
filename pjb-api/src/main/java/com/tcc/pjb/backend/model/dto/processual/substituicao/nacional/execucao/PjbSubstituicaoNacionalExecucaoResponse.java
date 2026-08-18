@@ -8,6 +8,9 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import java.util.UUID;
 
 public record PjbSubstituicaoNacionalExecucaoResponse(
@@ -29,7 +32,13 @@ public record PjbSubstituicaoNacionalExecucaoResponse(
         String requestedBy,
         String justificativa,
         String ondaAlvo,
+        @Schema(description = "Payload de execucao nacional — heterogeneo por rito de substituicao", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> payload,
+        @Schema(description = "Resultado de execucao nacional — heterogeneo por rito de substituicao", implementation = Object.class)
+        @Size(max = 30)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> resultado,
         List<PjbSubstituicaoNacionalExecucaoEventoResponse> eventos,
         Instant criadoEm,
@@ -45,3 +54,4 @@ public record PjbSubstituicaoNacionalExecucaoResponse(
         atualizadoEm = atualizadoEm == null ? criadoEm : atualizadoEm;
     }
 }
+

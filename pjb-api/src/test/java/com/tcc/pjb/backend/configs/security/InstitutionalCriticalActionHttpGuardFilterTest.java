@@ -68,6 +68,21 @@ class InstitutionalCriticalActionHttpGuardFilterTest {
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation")).isEqualTo("OFICIAL_OFICIO");
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Allowed")).isEqualTo("true");
     }
+    @Test
+    void mustProtectUnifiedRecursalSurface() throws Exception {
+        InstitutionalDocumentSecurityGateApplicationService gateService = mock(InstitutionalDocumentSecurityGateApplicationService.class);
+        when(gateService.enforce(any(), any(), eq(InstitutionalSensitiveAct.PETICIONAR_EM_NOME_DO_ORGAO), eq("RECURSAL_UNIFICADO"), eq(true)))
+                .thenReturn(new InstitutionalDocumentSecurityGate("RECURSAL_UNIFICADO", "aff-r", "nom-r", null, null, true, true, true, true, true, false, false, List.of(), List.of(), Instant.now()));
+        InstitutionalCriticalActionHttpGuardFilter filter = filterWith(gateService);
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/recursal/processos/55/recurso");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, new MockFilterChain());
+
+        assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation")).isEqualTo("RECURSAL_UNIFICADO");
+        assertThat(response.getHeader("X-PJB-Institutional-Gate-Allowed")).isEqualTo("true");
+    }
+
     @SuppressWarnings("unchecked")
     private InstitutionalCriticalActionHttpGuardFilter filterWith(InstitutionalDocumentSecurityGateApplicationService gateService) {
         ObjectProvider<InstitutionalDocumentSecurityGateApplicationService> provider = mock(ObjectProvider.class);

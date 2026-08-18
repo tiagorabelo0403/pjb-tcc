@@ -61,7 +61,7 @@ public class InstitutionalSupportOperationsService {
         InstitutionalSupportLaneResolver.InstitutionalSupportLaneSnapshot lane = requireLane(branchCode);
         List<WorkItem> items = activeItems(lane, 160);
         OperationalCompetenceMatrixService.MatrixProjection projection = competenceMatrixService.resolveInstitutional(branchCode, lane, null, items);
-        LinkedHashMap<String, Object> routes = new LinkedHashMap<>();
+        LinkedHashMap<String, String> routes = new LinkedHashMap<>();
         routes.put("snapshotPath", OperationalApiRoutes.institutionalSupportSnapshot(lane.branchCode()));
         routes.put("agendaPath", OperationalApiRoutes.institutionalSupportAgenda(lane.branchCode()));
         routes.put("competenceMatrixPath", OperationalApiRoutes.institutionalSupportCompetenceMatrix(lane.branchCode()));
@@ -94,7 +94,7 @@ public class InstitutionalSupportOperationsService {
         InstitutionalSupportLaneResolver.InstitutionalSupportLaneSnapshot lane = requireLane(branchCode);
         List<WorkItem> items = activeItems(lane, 220);
         OperationalCoveragePlannerService.CoverageProjection projection = coveragePlannerService.resolveInstitutional(branchCode, items);
-        LinkedHashMap<String, Object> routes = new LinkedHashMap<>();
+        LinkedHashMap<String, String> routes = new LinkedHashMap<>();
         routes.put("coveragePath", OperationalApiRoutes.institutionalSupportCoverage(lane.branchCode()));
         routes.put("snapshotPath", OperationalApiRoutes.institutionalSupportSnapshot(lane.branchCode()));
         return new InstitutionalSupportCoverageSnapshotResponse(
@@ -178,7 +178,7 @@ public class InstitutionalSupportOperationsService {
         if (processo.getNivelSigilo() != null && processo.getNivelSigilo().name().startsWith("SIGILO")) {
             warnings.add("Processo sensível: restringir dossiê, contatos e peças à célula institucional autorizada.");
         }
-        LinkedHashMap<String, Object> routes = new LinkedHashMap<>();
+        LinkedHashMap<String, String> routes = new LinkedHashMap<>();
         routes.put("snapshotPath", OperationalApiRoutes.institutionalSupportSnapshot(lane.branchCode()));
         routes.put("prePautaPath", OperationalApiRoutes.institutionalSupportProcessPrePauta(lane.branchCode(), processoId));
         routes.put("coveragePath", OperationalApiRoutes.institutionalSupportCoverage(lane.branchCode()));
@@ -307,3 +307,4 @@ public class InstitutionalSupportOperationsService {
         return null;
     }
 }
+

@@ -7,8 +7,10 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.InfojudConsultaRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -21,18 +23,19 @@ class InfojudConsultaFlowIT extends PjbIntegrationTestBase {
     private InfojudConsultaService infojudConsultaService;
     @Autowired
     private InfojudConsultaRepository infojudConsultaRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @MockitoBean
     private InfojudHttpClient infojudHttpClient;
     @MockitoBean
     private com.tcc.pjb.backend.core.security.CurrentUserService currentUserService;
-    @MockitoBean
-    private com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService authorizationService;
 
     @Test
     void devePersistirConsultaConfirmada() {
-        Usuario usuario = new Usuario();
-        usuario.setId(11L);
+        Usuario usuario = usuarioRepository.save(Usuario.builder()
+                .nome("Juiz Infojud").email("juiz-infojud-test").cpf("00000000011").senha("x")
+                .tipoUsuario(TipoUsuario.JUIZ_ESTADUAL).perfil("JUIZ_ESTADUAL").ativo(true).build());
         org.mockito.Mockito.when(currentUserService.getRequired()).thenReturn(usuario);
         org.mockito.Mockito.when(infojudHttpClient.consultar(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new com.tcc.pjb.backend.integration.judicial.financeiro.domain.InfojudConsultaResponse("INFO-1", "retorno-ok"));

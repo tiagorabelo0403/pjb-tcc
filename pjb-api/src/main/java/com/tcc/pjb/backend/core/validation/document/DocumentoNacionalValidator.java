@@ -96,6 +96,18 @@ public class DocumentoNacionalValidator {
         return dv2 == digits[13];
     }
 
+    public DocumentoValidado validar(String raw) {
+        String digits = normalizarDocumento(raw);
+        if (digits.isEmpty()) return new DocumentoValidado.Ausente();
+        if (digits.length() == 11)
+            return cpfValido(digits) ? new DocumentoValidado.Valido(TipoDocumento.CPF)
+                                     : new DocumentoValidado.Invalido(TipoDocumento.CPF, "dígitos verificadores inválidos");
+        if (digits.length() == 14)
+            return cnpjValido(digits) ? new DocumentoValidado.Valido(TipoDocumento.CNPJ)
+                                      : new DocumentoValidado.Invalido(TipoDocumento.CNPJ, "dígitos verificadores inválidos");
+        return new DocumentoValidado.Invalido(null, "deve ter 11 (CPF) ou 14 (CNPJ) dígitos");
+    }
+
     public void validarDocumento(String raw) {
         TipoDocumento tipo = detectarTipoDocumento(raw);
         boolean valido = tipo == TipoDocumento.CPF ? cpfValido(raw) : cnpjValido(raw);

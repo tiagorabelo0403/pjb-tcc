@@ -24,10 +24,18 @@ class TribunalRuleEngineBehaviorTest {
         when(salario.multiplicar(any(BigDecimal.class), any(LocalDate.class)))
                 .thenAnswer(invocation -> ((BigDecimal) invocation.getArgument(0)).multiply(new BigDecimal("1500.00")));
 
+        NationalRulePackEngine nationalRulePackEngine = mock(NationalRulePackEngine.class);
+        NationalPrazoEngine nationalPrazoEngine = mock(NationalPrazoEngine.class);
+        TribunalRuleResolutionSupport resolutionSupport = new TribunalRuleResolutionSupport(
+                nationalRulePackEngine, nationalPrazoEngine, salario);
+        TribunalRulePackSynchronizationSupport rulePackSynchronizationSupport = new TribunalRulePackSynchronizationSupport(
+                nationalRulePackEngine, resolutionSupport);
         TribunalRuleEngine engine = new TribunalRuleEngine(
-                mock(NationalRulePackEngine.class),
-                mock(NationalPrazoEngine.class),
-                salario
+                nationalRulePackEngine,
+                nationalPrazoEngine,
+                salario,
+                resolutionSupport,
+                rulePackSynchronizationSupport
         );
         engine.seedRegrasPadraoNacional();
         engine.cadastrarParaTribunal(
@@ -72,10 +80,18 @@ class TribunalRuleEngineBehaviorTest {
         when(salario.multiplicar(any(BigDecimal.class), any(LocalDate.class)))
                 .thenAnswer(invocation -> ((BigDecimal) invocation.getArgument(0)).multiply(new BigDecimal("1500.00")));
 
+        NationalRulePackEngine nationalRulePackEngine = mock(NationalRulePackEngine.class);
+        NationalPrazoEngine nationalPrazoEngine = mock(NationalPrazoEngine.class);
+        TribunalRuleResolutionSupport resolutionSupport = new TribunalRuleResolutionSupport(
+                nationalRulePackEngine, nationalPrazoEngine, salario);
+        TribunalRulePackSynchronizationSupport rulePackSynchronizationSupport = new TribunalRulePackSynchronizationSupport(
+                nationalRulePackEngine, resolutionSupport);
         TribunalRuleEngine engine = new TribunalRuleEngine(
-                mock(NationalRulePackEngine.class),
-                mock(NationalPrazoEngine.class),
-                salario
+                nationalRulePackEngine,
+                nationalPrazoEngine,
+                salario,
+                resolutionSupport,
+                rulePackSynchronizationSupport
         );
         engine.seedRegrasPadraoNacional();
         engine.cadastrarParaTribunal(

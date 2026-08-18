@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.model.entity.jurisprudencia.Precedente;
 import com.tcc.pjb.backend.model.entity.jurisprudencia.PrecedenteEdge;
 import com.tcc.pjb.backend.model.repository.PrecedenteEdgeRepository;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class JurisprudenceGraphService {
@@ -21,6 +22,7 @@ public class JurisprudenceGraphService {
         this.edgeRepository = edgeRepository;
     }
 
+    @PjbTransactionalBudget(operation = "jurisprudencia.graph.upsert-edges-for", maxMillis = 5000)
     @Transactional
     public void upsertEdgesFor(Precedente precedente) {
         if (precedente == null || precedente.getId() == null) return;

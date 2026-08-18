@@ -5,10 +5,34 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import com.tcc.pjb.backend.testsupport.PjbTestPaths;
 import org.junit.jupiter.api.Test;
 
 class DatabaseInfrastructureGovernanceTest {
+
+    /**
+     * Casa apenas a diretiva {@code image:} do servico postgres — ignora comentarios,
+     * variaveis e valores em outros campos. Aceita tanto {@code postgres:17} puro quanto
+     * a variante {@code pgvector/pgvector:pg17} (mesma versao 17 do Postgres, com a extensao
+     * vector precompilada, exigida pela migration V307 e pelo VectorSearchServicePgVector).
+     * Rejeita qualquer outra versao (18+, 15-).
+     */
+    private static void assertPostgres17Image(String composeYaml) {
+        Pattern imageLine = Pattern.compile("^\\s*image:\\s*(\\S+)\\s*$", Pattern.MULTILINE);
+        Matcher matcher = imageLine.matcher(composeYaml);
+        boolean foundValidPostgresImage = false;
+        while (matcher.find()) {
+            String image = matcher.group(1);
+            if (image.equals("postgres:17") || image.equals("pgvector/pgvector:pg17")) {
+                foundValidPostgresImage = true;
+                break;
+            }
+        }
+        assertTrue(foundValidPostgresImage,
+                "compose deve declarar image: postgres:17 ou pgvector/pgvector:pg17 (ambos = Postgres 17)");
+    }
 
     private static final Path ROOT = PjbTestPaths.projectRoot();
     private static final Path DOCKER_COMPOSE = ROOT.resolve("docker-compose.yml");
@@ -22,7 +46,7 @@ class DatabaseInfrastructureGovernanceTest {
     @Test
     void composeDoBancoDeveUsarPostgres17EConfigProfissional() throws IOException {
         String compose = Files.readString(DOCKER_COMPOSE);
-        assertTrue(compose.contains("postgres:17"));
+        assertPostgres17Image(compose);
         assertTrue(compose.contains("./infra/docker/postgres/postgresql-pjb.conf:/etc/postgresql/postgresql-pjb.conf:ro"));
         assertTrue(compose.contains("./infra/docker/postgres/init:/docker-entrypoint-initdb.d:ro"));
         assertTrue(compose.contains("config_file=/etc/postgresql/postgresql-pjb.conf"));
@@ -31,7 +55,7 @@ class DatabaseInfrastructureGovernanceTest {
     @Test
     void malhaReplicaEHaDevemExporEdgeTcpPgBouncerEEntradaRwRo() throws IOException {
         String readReplica = Files.readString(DOCKER_COMPOSE_READ_REPLICA);
-        assertTrue(readReplica.contains("postgres:17"));
+        assertPostgres17Image(readReplica);
         assertTrue(readReplica.contains("/etc/postgresql/postgresql-pjb.conf:ro"));
         assertTrue(readReplica.contains("PJB_DB_READ_ROUTING_ENABLED: \"true\""));
 

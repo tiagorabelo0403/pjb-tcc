@@ -3,6 +3,9 @@ package com.tcc.pjb.backend.model.dto.processual.peticionamento.studio;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record PeticionamentoStudioDraftDiffResponse(
         String status,
@@ -10,9 +13,21 @@ public record PeticionamentoStudioDraftDiffResponse(
         String actorProfile,
         String title,
         String draftingMode,
+        @Schema(description = "Contexto procedimental — classeProcessual, ramoDireito, ritoProcessual, justicaSugerida, petitionFamily (Categoria D: passado de projection)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> procedure,
+        @Schema(description = "Resumo do diff entre versões do draft — alterações por seção (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> diffSummary,
+        @Schema(description = "Governança de revisão — regras e aprovadores do processo (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> reviewGovernance,
+        @Schema(description = "Matriz de risco — checklist, blockingIssues, alerts (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> riskMatrix,
         List<String> nextSteps
 ) {
@@ -40,3 +55,4 @@ public record PeticionamentoStudioDraftDiffResponse(
         return value.trim();
     }
 }
+

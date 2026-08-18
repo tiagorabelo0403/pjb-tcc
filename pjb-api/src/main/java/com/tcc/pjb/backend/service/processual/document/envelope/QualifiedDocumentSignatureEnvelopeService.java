@@ -8,14 +8,20 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TemplateDocumentoOficial;
 import com.tcc.pjb.backend.modules.advocacia.office.enums.OfficeActionType;
 import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeProcessWorkspaceScopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.QualifiedSignatureMetadata;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.SovereignValidationResult;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.ValidationRule;
 import com.tcc.pjb.backend.service.processual.document.identity.QualifiedSignatureIdentityContextService;
 import com.tcc.pjb.backend.service.processual.document.identity.ResolvedSignatureIdentity;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,12 +51,12 @@ public class QualifiedDocumentSignatureEnvelopeService {
         this.officeProcessWorkspaceScopeService = officeProcessWorkspaceScopeServiceProvider.getIfAvailable();
     }
 
-    public SignedContent signOfficialTemplate(Processo processo,
-                                              Usuario usuario,
-                                              TemplateDocumentoOficial template,
-                                              String titulo,
-                                              String conteudo,
-                                              boolean preservaSigilo) {
+    public SignedDocumentEnvelope signOfficialTemplate(Processo processo,
+                                                       Usuario usuario,
+                                                       TemplateDocumentoOficial template,
+                                                       String titulo,
+                                                       String conteudo,
+                                                       boolean preservaSigilo) {
         String papel = resolveTemplateRole(template, usuario);
         String politica = resolvePolicy(template, papel);
         LinkedHashSet<String> governanceTags = new LinkedHashSet<>();
@@ -59,40 +65,40 @@ public class QualifiedDocumentSignatureEnvelopeService {
         governanceTags.add("envelope_assinatura_soberana");
         governanceTags.add("antifraude_anti_replay");
         governanceTags.add(template == null ? "template_nao_informado" : template.name().toLowerCase(Locale.ROOT));
-        return signFreeContent(processo, usuario, titulo, conteudo, papel, politica, preservaSigilo, List.copyOf(governanceTags));
+        return signContent(processo, usuario, titulo, conteudo, papel, politica, preservaSigilo, List.copyOf(governanceTags), true).envelope();
     }
 
-    public SignedContent signFreeContent(Processo processo,
+    public SignedDocumentEnvelope signFreeContent(Processo processo,
+                                                       Usuario usuario,
+                                                       String titulo,
+                                                       String conteudo,
+                                                       String papelAssinante,
+                                                       String politicaAssinatura,
+                                                       boolean preservaSigilo,
+                                                       List<String> governanceTags) {
+        return signContent(processo, usuario, titulo, conteudo, papelAssinante, politicaAssinatura, preservaSigilo, governanceTags, true).envelope();
+    }
+
+    public SignedDocumentEnvelope signGovernedContent(Processo processo,
+                                                      Usuario usuario,
+                                                      String titulo,
+                                                      String conteudo,
+                                                      String papelAssinante,
+                                                      String politicaAssinatura,
+                                                      boolean preservaSigilo,
+                                                      List<String> governanceTags) {
+        return signContent(processo, usuario, titulo, conteudo, papelAssinante, politicaAssinatura, preservaSigilo, governanceTags, false).envelope();
+    }
+
+    private EnvelopeAssembly signContent(Processo processo,
                                          Usuario usuario,
                                          String titulo,
                                          String conteudo,
                                          String papelAssinante,
                                          String politicaAssinatura,
                                          boolean preservaSigilo,
-                                         List<String> governanceTags) {
-        return signContent(processo, usuario, titulo, conteudo, papelAssinante, politicaAssinatura, preservaSigilo, governanceTags, true);
-    }
-
-    public SignedContent signGovernedContent(Processo processo,
-                                             Usuario usuario,
-                                             String titulo,
-                                             String conteudo,
-                                             String papelAssinante,
-                                             String politicaAssinatura,
-                                             boolean preservaSigilo,
-                                             List<String> governanceTags) {
-        return signContent(processo, usuario, titulo, conteudo, papelAssinante, politicaAssinatura, preservaSigilo, governanceTags, false);
-    }
-
-    private SignedContent signContent(Processo processo,
-                                      Usuario usuario,
-                                      String titulo,
-                                      String conteudo,
-                                      String papelAssinante,
-                                      String politicaAssinatura,
-                                      boolean preservaSigilo,
-                                      List<String> governanceTags,
-                                      boolean enforceWorkspaceAccess) {
+                                         List<String> governanceTags,
+                                         boolean enforceWorkspaceAccess) {
         String normalizedContent = conteudo == null ? "" : conteudo.trim();
         String normalizedTitle = titulo == null || titulo.isBlank() ? "DOCUMENTO_PROCESSUAL" : titulo.trim();
         String baseHash = Hashes.sha256Hex(normalizedContent);
@@ -251,14 +257,38 @@ public class QualifiedDocumentSignatureEnvelopeService {
         String signedHash = Hashes.sha256Hex(signedContent);
         assinaturaQualificada.put("documentoAssinadoHash", signedHash);
 
+        List<String> regrasAplicadasLegado = List.of(
+                "ENVELOPE_SOBERANO_APPEND_ONLY",
+                "ASSINATURA_QUALIFICADA_COMPLETA",
+                "RUBRICA_DATA_HORA_LOCAL",
+                "CLASSIFICACAO_HIERARQUICA_POR_PAPEL_E_ESFERA",
+                "CERTIFICADO_ENTRADA_VINCULADO_AO_ATO",
+                "IDENTIDADE_PESSOAL_E_PROFISSIONAL_CONFERIDA",
+                "ANTIFRAUDE_BINDING_SESSAO_REDE_DISPOSITIVO",
+                "ANTI_REPLAY_ATIVO"
+        );
+
+        boolean certificadoPresente = identity.entryCertificate() != null && identity.entryCertificate().presente();
+        boolean cadeiaCustodiaElegivel = certificadoPresente
+                && identity.entryCertificate().issuerRfc2253() != null
+                && !identity.entryCertificate().issuerRfc2253().isBlank();
+        boolean assinaturaCompletaMaterializada = envelopeId != null && !envelopeId.isBlank()
+                && assinaturaHash != null && !assinaturaHash.isBlank()
+                && signedHash != null && !signedHash.isBlank()
+                && rubrica != null && !rubrica.isBlank();
+        boolean rubricaDataHoraLocalPresentes = rubrica != null && !rubrica.isBlank()
+                && localTime.toLocalDate() != null
+                && localTime.toLocalTime() != null;
+        boolean classificacaoContextualCoerente = resolveClassificacaoContextualCoerente(normalize(papelAssinante), identity);
+
         LinkedHashMap<String, Object> validacaoSoberana = new LinkedHashMap<>();
         validacaoSoberana.put("status", "VALIDO");
         validacaoSoberana.put("fonte", "PJB_QUALIFIED_SIGNATURE_SPINE");
         validacaoSoberana.put("politicaAssinatura", normalize(politicaAssinatura));
-        validacaoSoberana.put("cadeiaCustodiaElegivel", Boolean.TRUE);
-        validacaoSoberana.put("assinaturaCompletaMaterializada", Boolean.TRUE);
-        validacaoSoberana.put("rubricaDataHoraLocalPresentes", Boolean.TRUE);
-        validacaoSoberana.put("classificacaoContextualCoerente", Boolean.TRUE);
+        validacaoSoberana.put("cadeiaCustodiaElegivel", cadeiaCustodiaElegivel);
+        validacaoSoberana.put("assinaturaCompletaMaterializada", assinaturaCompletaMaterializada);
+        validacaoSoberana.put("rubricaDataHoraLocalPresentes", rubricaDataHoraLocalPresentes);
+        validacaoSoberana.put("classificacaoContextualCoerente", classificacaoContextualCoerente);
         validacaoSoberana.put("certificadoEntradaVinculado", identity.entryCertificate() != null && identity.entryCertificate().presente());
         validacaoSoberana.put("papelAssinanteDetalhado", identity.papelDetalhado());
         validacaoSoberana.put("ramoJustica", identity.ramoJustica());
@@ -277,18 +307,88 @@ public class QualifiedDocumentSignatureEnvelopeService {
         validacaoSoberana.put("sessionBindingHash", sessionBindingHash);
         validacaoSoberana.put("replayShieldHash", replayShieldHash);
         validacaoSoberana.put("documentoAssinadoHash", signedHash);
-        validacaoSoberana.put("regrasAplicadas", List.of(
-                "ENVELOPE_SOBERANO_APPEND_ONLY",
-                "ASSINATURA_QUALIFICADA_COMPLETA",
-                "RUBRICA_DATA_HORA_LOCAL",
-                "CLASSIFICACAO_HIERARQUICA_POR_PAPEL_E_ESFERA",
-                "CERTIFICADO_ENTRADA_VINCULADO_AO_ATO",
-                "IDENTIDADE_PESSOAL_E_PROFISSIONAL_CONFERIDA",
-                "ANTIFRAUDE_BINDING_SESSAO_REDE_DISPOSITIVO",
-                "ANTI_REPLAY_ATIVO"
-        ));
+        validacaoSoberana.put("regrasAplicadas", regrasAplicadasLegado);
 
-        return new SignedContent(signedContent, signedHash, Map.copyOf(assinaturaQualificada), Map.copyOf(validacaoSoberana));
+        SovereignValidationResult typedValidation = new SovereignValidationResult(
+                "VALIDO",
+                "PJB_QUALIFIED_SIGNATURE_SPINE",
+                normalize(politicaAssinatura),
+                cadeiaCustodiaElegivel,
+                assinaturaCompletaMaterializada,
+                rubricaDataHoraLocalPresentes,
+                classificacaoContextualCoerente,
+                identity.entryCertificate() != null && identity.entryCertificate().presente(),
+                identity.papelDetalhado(),
+                identity.ramoJustica(),
+                identity.instancia(),
+                identity.lotacaoAssinante(),
+                sessionBindingHash,
+                replayShieldHash,
+                signedHash,
+                validationRules(regrasAplicadasLegado)
+        );
+        LocalDate assinaturaData = localTime.toLocalDate();
+        LocalTime assinaturaHora = localTime.toLocalTime();
+        boolean identidadeConferida = identity.personIdentity() != null && identity.personIdentity().identidadeConferida();
+        QualifiedSignatureMetadata typedSignature = new QualifiedSignatureMetadata(
+                envelopeId,
+                assinaturaHash,
+                baseHash,
+                signedHash,
+                rubrica != null && !rubrica.isBlank(),
+                rubrica,
+                assinaturaData,
+                assinaturaHora,
+                local,
+                resolveSignerName(usuario),
+                normalize(papelAssinante),
+                identity.papelDetalhado(),
+                identity.segmentoInstitucional(),
+                identity.ramoJustica(),
+                identity.esferaInstitucional(),
+                identity.instancia(),
+                identity.orgaoAssinante(),
+                identity.lotacaoAssinante(),
+                resolveProfessionalRegistration(usuario),
+                identidadeConferida,
+                identity.personIdentity() == null ? "NAO_CONFERIDA" : identity.personIdentity().coerenciaResumo(),
+                sessionBindingHash,
+                replayShieldHash,
+                typedValidation
+        );
+        SignedDocumentEnvelope envelope = new SignedDocumentEnvelope(
+                normalizedTitle,
+                signedContent,
+                signedHash,
+                true,
+                typedSignature,
+                typedValidation
+        );
+
+        return new EnvelopeAssembly(envelope, Map.copyOf(assinaturaQualificada), Map.copyOf(validacaoSoberana));
+    }
+
+    private List<ValidationRule> validationRules(List<String> rules) {
+        return rules.stream()
+                .map(rule -> new ValidationRule(rule, null, null))
+                .toList();
+    }
+
+    private boolean resolveClassificacaoContextualCoerente(String papelAssinante, ResolvedSignatureIdentity identity) {
+        if (papelAssinante == null || papelAssinante.isBlank()) {
+            return false;
+        }
+        String segmento = identity.segmentoInstitucional();
+        return switch (papelAssinante) {
+            case "MINISTERIO_PUBLICO", "MEMBRO_MINISTERIO_PUBLICO", "PROMOTOR_ELEITORAL",
+                 "PROMOTOR_TRABALHISTA", "PROCURADOR_GERAL_REPUBLICA" -> "MINISTERIO_PUBLICO".equals(segmento);
+            case "DELEGADO_POLICIA", "DELEGADO_POLICIA_FEDERAL", "AGENTE_POLICIAL",
+                 "ESCRIVAO_POLICIAL" -> "POLICIA_JUDICIARIA".equals(segmento);
+            case "ADVOGADO", "ADVOGADO_PATRONO" -> "ADVOCACIA".equals(segmento);
+            case "OFICIAL_JUSTICA" -> "OFICIAL_JUSTICA".equals(segmento);
+            case "UNIDADE_JUDICIAL" -> "UNIDADE_JUDICIAL".equals(segmento);
+            default -> true;
+        };
     }
 
     private String renderSignatureIdentityLine(String label, Object value) {
@@ -424,14 +524,10 @@ public class QualifiedDocumentSignatureEnvelopeService {
         return value == null ? "" : value.trim();
     }
 
-    public record SignedContent(
-            String renderedContent,
-            String contentHash,
+    private record EnvelopeAssembly(
+            SignedDocumentEnvelope envelope,
             Map<String, Object> assinaturaQualificada,
             Map<String, Object> validacaoSoberana
     ) {
-        public String documentHash() {
-            return contentHash;
-        }
     }
 }

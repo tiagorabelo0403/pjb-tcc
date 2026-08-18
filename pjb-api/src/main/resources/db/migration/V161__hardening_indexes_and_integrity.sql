@@ -22,5 +22,10 @@ CREATE INDEX IF NOT EXISTS idx_sigilo_proof_challenge_status_expira
 CREATE INDEX IF NOT EXISTS idx_tema_recurso_repetitivo_status_updated
     ON tb_tema_recurso_repetitivo (status, updated_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_notification_history_tracking_usuario
-    ON notification_history (tracking_token, usuario_id);
+DO $$
+BEGIN
+    IF to_regclass('public.notification_history') IS NOT NULL THEN
+        CREATE INDEX IF NOT EXISTS idx_notification_history_tracking_usuario
+            ON notification_history (tracking_token, usuario_id);
+    END IF;
+END $$;

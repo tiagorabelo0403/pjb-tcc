@@ -5,19 +5,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.security.device.SecurityChallengeService;
 import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
 import com.tcc.pjb.backend.core.validation.oab.OabStrictValidator;
 import com.tcc.pjb.backend.mapper.UsuarioMapper;
 import com.tcc.pjb.backend.model.dto.UsuarioRequest;
 import com.tcc.pjb.backend.model.dto.UsuarioResponse;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.SituacaoConta;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.exception.RecursoJaExistenteException;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.identity.IdentidadeJuridicaNacionalService;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class UsuarioService {
@@ -27,25 +37,35 @@ public class UsuarioService {
     private final OabStrictValidator oabStrictValidator;
     private final DocumentoNacionalValidator documentoNacionalValidator;
     private final IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService;
+    private final AuditLedgerService auditLedgerService;
+    private final SecurityChallengeService securityChallengeService;
+    private final ComarcaResolutionService comarcaResolutionService;
 
     public UsuarioService(UsuarioRepository usuarioRepository,
                           UsuarioMapper usuarioMapper,
                           OabStrictValidator oabStrictValidator,
                           DocumentoNacionalValidator documentoNacionalValidator,
-                          IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService) {
+                          IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService,
+                          AuditLedgerService auditLedgerService,
+                          SecurityChallengeService securityChallengeService,
+                          ComarcaResolutionService comarcaResolutionService) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioMapper = usuarioMapper;
         this.oabStrictValidator = oabStrictValidator;
         this.documentoNacionalValidator = documentoNacionalValidator;
         this.identidadeJuridicaNacionalService = identidadeJuridicaNacionalService;
+        this.auditLedgerService = auditLedgerService;
+        this.securityChallengeService = securityChallengeService;
+        this.comarcaResolutionService = comarcaResolutionService;
     }
 
+    @PjbTransactionalBudget(operation = "usuario.listar-todos-paginado", maxMillis = 3000)
     @Transactional(readOnly = true)
-    public List<UsuarioResponse> listarTodosUsuarios() {
-        List<Usuario> entidades = usuarioRepository.findAll();
-        List<UsuarioResponse> responses = usuarioMapper.entidadeParaResponseLista(entidades);
-        enrichResponses(entidades, responses);
-        return responses;
+    public Page<UsuarioResponse> listarTodosUsuarios(Pageable pageable) {
+        Page<Usuario> pagina = usuarioRepository.findAll(pageable);
+        List<UsuarioResponse> responses = usuarioMapper.entidadeParaResponseLista(pagina.getContent());
+        enrichResponses(pagina.getContent(), responses);
+        return new PageImpl<>(responses, pageable, pagina.getTotalElements());
     }
 
     @Transactional(readOnly = true)
@@ -65,10 +85,21 @@ public class UsuarioService {
         novaEntidade.setCpf(cpfNormalizado);
         aplicarTipoUsuarioSeAusente(novaEntidade);
         aplicarValidacaoOabStrict(dto, novaEntidade, null);
+        aplicarComarcaDoCatalogo(novaEntidade);
+        boolean magistratura = novaEntidade.getTipoUsuario() != null && novaEntidade.getTipoUsuario().isMagistratura();
+        if (magistratura) {
+            novaEntidade.setSituacaoConta(SituacaoConta.PENDENTE_ATIVACAO);
+        }
 
         Usuario entidadeSalva = usuarioRepository.save(novaEntidade);
         sincronizarIdentidadeNacional(entidadeSalva);
         Usuario entidadeFinal = usuarioRepository.save(entidadeSalva);
+        auditLedgerService.appendSafely("USUARIO_CRIADO", "USUARIO", String.valueOf(entidadeFinal.getId()),
+                null, "por:" + obterAtorAtual());
+
+        if (magistratura) {
+            securityChallengeService.createEmailOtp(entidadeFinal, null, "convite_ativacao_magistrado");
+        }
 
         UsuarioResponse response = usuarioMapper.entidadeParaResponse(entidadeFinal);
         enrichResponse(entidadeFinal, response);
@@ -86,10 +117,13 @@ public class UsuarioService {
         }
         aplicarTipoUsuarioSeAusente(entidadeExistente);
         aplicarValidacaoOabStrict(dto, entidadeExistente, id);
+        aplicarComarcaDoCatalogo(entidadeExistente);
 
         Usuario entidadeSalva = usuarioRepository.save(entidadeExistente);
         sincronizarIdentidadeNacional(entidadeSalva);
         Usuario entidadeFinal = usuarioRepository.save(entidadeSalva);
+        auditLedgerService.appendSafely("USUARIO_PERFIL_ALTERADO", "USUARIO", String.valueOf(id),
+                null, "por:" + obterAtorAtual());
 
         UsuarioResponse response = usuarioMapper.entidadeParaResponse(entidadeFinal);
         enrichResponse(entidadeFinal, response);
@@ -101,6 +135,13 @@ public class UsuarioService {
         Usuario entidade = buscarUsuarioPeloId(id);
         entidade.setAtivo(false);
         usuarioRepository.save(entidade);
+        auditLedgerService.appendSafely("USUARIO_DESATIVADO", "USUARIO", String.valueOf(id),
+                null, "por:" + obterAtorAtual());
+    }
+
+    private String obterAtorAtual() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (auth != null && auth.getName() != null) ? auth.getName() : "SISTEMA";
     }
 
     private Usuario buscarUsuarioPeloId(Long id) {
@@ -167,6 +208,15 @@ public class UsuarioService {
                 throw new RecursoJaExistenteException("OAB já cadastrada no sistema: " + info.normalized());
             }
         }
+    }
+
+    private void aplicarComarcaDoCatalogo(Usuario usuario) {
+        if (usuario.getComarca() == null || usuario.getComarca().isBlank()) {
+            usuario.setComarcaEntidade(null);
+            return;
+        }
+        usuario.setComarcaEntidade(comarcaResolutionService.resolver(usuario.getComarca(), usuario.getUf())
+                .orElse(null));
     }
 
     private void aplicarTipoUsuarioSeAusente(Usuario usuario) {

@@ -2,23 +2,34 @@ package com.tcc.pjb.backend.command;
 
 import com.tcc.pjb.backend.core.compiler.LegalCompilerService;
 import com.tcc.pjb.backend.core.procedural.NationalProceduralRoutingService;
+import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
+import com.tcc.pjb.backend.core.validation.document.DocumentoValidado;
 import com.tcc.pjb.backend.core.procedural.ProceduralConnectorExecutionReport;
 import com.tcc.pjb.backend.core.procedural.ProceduralConnectorExecutionService;
 import com.tcc.pjb.backend.core.procedural.ProceduralRoutingReport;
 import com.tcc.pjb.backend.core.procedural.ProceduralSubmissionBlueprintReport;
 import com.tcc.pjb.backend.core.procedural.ProceduralSubmissionBlueprintService;
+import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloCompositionPolicy;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloComposto;
 import com.tcc.pjb.backend.model.dto.Attachment;
+import com.tcc.pjb.backend.model.dto.ProcessoRequest;
 import com.tcc.pjb.backend.model.dto.event.ProcessoAjuizadoEvent;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
+import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 import com.tcc.pjb.backend.service.casefile.CaseContinuityOrchestratorService;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
 import com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao;
+import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
 import com.tcc.pjb.backend.service.policy.SigiloPolicyFactory;
+import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
+import com.tcc.pjb.backend.model.entity.enums.InstrumentoRepresentacaoProcessual;
 import com.tcc.pjb.backend.service.procedural.AjuizamentoCanonicalContextService;
 import com.tcc.pjb.backend.service.processo.ProcessoMaterialObjetoEnrichmentService;
 import com.tcc.pjb.backend.service.territorial.TerritorialProcessualService;
@@ -49,11 +60,17 @@ public class AjuizarProcessoCommand {
     private final AjuizamentoCanonicalContextService ajuizamentoCanonicalContextService;
     private final TetoProcessualService tetoProcessualService;
     private final TerritorialProcessualService territorialProcessualService;
+    private final CompletudeDocumentalPolicyService completudeDocumentalPolicyService;
+    private final RepresentacaoProcessualPolicyService representacaoProcessualPolicyService;
+    private final PoloProcessualApplicationService poloProcessualApplicationService;
+    private final PoloCompositionPolicy poloCompositionPolicy;
+    private final DocumentoNacionalValidator documentoNacionalValidator;
 
     @Transactional
     @PjbTransactionalBudget(operation = "ajuizamento.command.persist", maxMillis = 3200, critical = true)
     public Processo execute(Processo processo,
                             Usuario advogado,
+                            ProcessoRequest request,
                             List<Attachment> anexos,
                             boolean juizo100Digital) {
 
@@ -73,10 +90,10 @@ public class AjuizarProcessoCommand {
                     .addMetadado("metadata", compiled.getMetadata());
         }
 
-        validateCpfIfPresent(processo.getParteAutoraCpf(), "parteAutoraCpf");
-        validateCpfIfPresent(processo.getParteReuCpf(), "parteReuCpf");
+        validateDocumentIfPresent(processo.getParteAutoraCpf(), "parteAutoraCpf");
+        validateDocumentIfPresent(processo.getParteReuCpf(), "parteReuCpf");
 
-        ProceduralRoutingReport routing = nationalProceduralRoutingService.analyzeProcess(processo);
+        ProceduralRoutingReport routing = nationalProceduralRoutingService.analyzeProcess(processo, request, anexos);
         ajuizamentoCanonicalContextService.consolidate(processo, compiled, routing);
         var diagnosticoTerritorial = territorialProcessualService.diagnosticar(processo, routing);
         if (diagnosticoTerritorial.bloqueante()) {
@@ -94,12 +111,19 @@ public class AjuizarProcessoCommand {
         validateSubmissionBlueprint(submissionBlueprint);
         validateConnectorExecution(connectorExecution);
 
+        var diagnosticoCompl = completudeDocumentalPolicyService.diagnosticar(
+                processo.getRito(), anexos, resolveInstrumentoRepresentacao(processo, advogado));
+        if (diagnosticoCompl.bloqueante()) {
+            throw completudeDocumentalPolicyService.toException(diagnosticoCompl);
+        }
+
         NivelSigilo nivel = sigiloPolicyFactory
                 .obterPoliticaDeSigilo(processo)
                 .definirNivel(processo);
         processo.setNivelSigilo(nivel);
 
         Processo salvo = processoRepository.save(processo);
+        materializarPolosIniciais(salvo, advogado);
         caseContinuityOrchestratorService.ensureRootCase(salvo.getId(), "AJUIZAMENTO_INICIAL");
 
         try {
@@ -207,6 +231,69 @@ public class AjuizarProcessoCommand {
         }
     }
 
+    private void materializarPolosIniciais(Processo processo, Usuario advogado) {
+        if (processo == null || processo.getId() == null) {
+            return;
+        }
+        Long usuarioIdRepresentante = resolveUsuarioIdDestinatario(advogado);
+        List<PoloComposto> composicao = poloCompositionPolicy.compor(processo);
+        for (PoloComposto pc : composicao) {
+            poloProcessualApplicationService.incluir(
+                    processo.getId(),
+                    pc.tipoPolo(),
+                    pc.tipoParte(),
+                    pc.nome(),
+                    pc.cpf(),
+                    documentoNacionalValidator.validar(pc.cpf()) instanceof DocumentoValidado.Valido v ? v.tipo().name() : null,
+                    null, null,
+                    pc.tipoPolo() == TipoPolo.ATIVO ? usuarioIdRepresentante : null,
+                    null, null,
+                    pc.ufDomicilio(), pc.comarcaDomicilio(), pc.municipioDomicilio());
+        }
+    }
+
+    private InstrumentoRepresentacaoProcessual resolveInstrumentoRepresentacao(Processo processo, Usuario ator) {
+        var policy = representacaoProcessualPolicyService.resolve(
+                processo, ator, null, null, null, false, false, null, null);
+        if (!policy.regularidadeSuficiente()) {
+            return null;
+        }
+        return InstrumentoRepresentacaoProcessual.fromString(policy.resolvedInstrument());
+    }
+
+    private Long resolveUsuarioIdDestinatario(Usuario usuario) {
+        if (usuario == null || usuario.getTipoUsuario() == null) {
+            return null;
+        }
+        TipoUsuario tipo = usuario.getTipoUsuario();
+        if (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isMinisterioPublico() || tipo.isProcuradoria()) {
+            return usuario.getId();
+        }
+        return null;
+    }
+
+    private void validateDocumentIfPresent(String doc, String fieldName) {
+        if (doc == null) return;
+        String digits = doc.replaceAll("\\D+", "");
+        if (digits.isBlank()) return;
+        switch (documentoNacionalValidator.validar(digits)) {
+            case DocumentoValidado.Valido ignored -> { /* ok */ }
+            case DocumentoValidado.Invalido i when i.tipo() == DocumentoNacionalValidator.TipoDocumento.CPF ->
+                    throw new ErroDeValidacaoException(TipoErroValidacao.CPF_INVALIDO, fieldName)
+                            .addMetadado("valor_informado", doc)
+                            .addMetadado("regra", i.motivo());
+            case DocumentoValidado.Invalido i when i.tipo() == DocumentoNacionalValidator.TipoDocumento.CNPJ ->
+                    throw new ErroDeValidacaoException(TipoErroValidacao.CNPJ_INVALIDO, fieldName)
+                            .addMetadado("valor_informado", doc)
+                            .addMetadado("regra", i.motivo());
+            case DocumentoValidado.Invalido i ->
+                    throw new ErroDeValidacaoException(TipoErroValidacao.DOCUMENTO_INVALIDO, fieldName)
+                            .addMetadado("valor_informado", doc)
+                            .addMetadado("regra", i.motivo());
+            case DocumentoValidado.Ausente ignored -> { /* ok */ }
+        }
+    }
+
     private static String firstNonBlank(String... values) {
         if (values == null) {
             return null;
@@ -219,46 +306,4 @@ public class AjuizarProcessoCommand {
         return null;
     }
 
-    private static void validateCpfIfPresent(String cpf, String fieldName) {
-        if (cpf == null) {
-            return;
-        }
-        String digits = cpf.replaceAll("\\D+", "");
-        if (digits.isBlank()) {
-            return;
-        }
-        if (digits.length() != 11 || !isValidCpfDigits(digits)) {
-            throw new ErroDeValidacaoException(TipoErroValidacao.CPF_INVALIDO, fieldName)
-                    .addMetadado("valor_informado", cpf)
-                    .addMetadado("regra", "cpf deve ter 11 dígitos e dígitos verificadores válidos");
-        }
-    }
-
-    private static boolean isValidCpfDigits(String digits) {
-        boolean allSame = true;
-        for (int i = 1; i < 11; i++) {
-            if (digits.charAt(i) != digits.charAt(0)) {
-                allSame = false;
-                break;
-            }
-        }
-        if (allSame) {
-            return false;
-        }
-        int d1 = calcCpfDigit(digits.substring(0, 9), 10);
-        int d2 = calcCpfDigit(digits.substring(0, 9) + d1, 11);
-        return digits.equals(digits.substring(0, 9) + d1 + d2);
-    }
-
-    private static int calcCpfDigit(String base, int weightStart) {
-        int sum = 0;
-        int weight = weightStart;
-        for (int i = 0; i < base.length(); i++) {
-            int num = base.charAt(i) - '0';
-            sum += num * weight;
-            weight--;
-        }
-        int mod = sum % 11;
-        return mod < 2 ? 0 : 11 - mod;
-    }
 }

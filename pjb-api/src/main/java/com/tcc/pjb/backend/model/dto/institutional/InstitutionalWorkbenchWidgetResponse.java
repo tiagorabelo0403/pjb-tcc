@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record InstitutionalWorkbenchWidgetResponse(
         String code,
@@ -13,6 +16,9 @@ public record InstitutionalWorkbenchWidgetResponse(
         int priority,
         String route,
         String summary,
+        @Schema(description = "Payload de widget institucional — polimorfico por tipo e configuracao de widget", implementation = Object.class)
+        @Size(max = 30)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> payload,
         List<String> warnings
 ) {
@@ -34,3 +40,4 @@ public record InstitutionalWorkbenchWidgetResponse(
         return Collections.unmodifiableMap(new LinkedHashMap<>(out));
     }
 }
+

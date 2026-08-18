@@ -66,6 +66,7 @@ public class WebAuthnService {
     @Transactional
     public StartResponse startEnrollment(Usuario usuario) {
         Objects.requireNonNull(usuario, "usuario");
+        boolean hardwareAuthRequired = usuario.getTipoUsuario() != null && usuario.getTipoUsuario().requiresHardwareAuthAssurance();
 
         UserIdentity userIdentity = UserIdentity.builder()
                 .name(usuario.getEmail())
@@ -73,10 +74,15 @@ public class WebAuthnService {
                 .id(WebAuthnCredentialRepository.userHandleFor(usuario.getId()))
                 .build();
 
-        AuthenticatorSelectionCriteria sel = AuthenticatorSelectionCriteria.builder()
-                .userVerification(props.isRequireUserVerification() ? UserVerificationRequirement.REQUIRED : UserVerificationRequirement.PREFERRED)
-                .residentKey(props.isPreferResidentKey() ? ResidentKeyRequirement.PREFERRED : ResidentKeyRequirement.DISCOURAGED)
-                .build();
+        var selBuilder = AuthenticatorSelectionCriteria.builder()
+                .userVerification(hardwareAuthRequired || props.isRequireUserVerification()
+                        ? UserVerificationRequirement.REQUIRED
+                        : UserVerificationRequirement.PREFERRED)
+                .residentKey(props.isPreferResidentKey() ? ResidentKeyRequirement.PREFERRED : ResidentKeyRequirement.DISCOURAGED);
+        if (hardwareAuthRequired) {
+            selBuilder.authenticatorAttachment(com.yubico.webauthn.data.AuthenticatorAttachment.PLATFORM);
+        }
+        AuthenticatorSelectionCriteria sel = selBuilder.build();
 
         AttestationConveyancePreference att = props.isRequireAttestationOnEnroll()
                 ? AttestationConveyancePreference.DIRECT
@@ -122,6 +128,9 @@ public class WebAuthnService {
             AttestationInfo att = parseAttestationInfo(credentialJson);
             String fmt = att.fmt();
             String aaguid = att.aaguid();
+            String attachment = att.authenticatorAttachment();
+
+            boolean hardwareAuthRequired = usuario.getTipoUsuario() != null && usuario.getTipoUsuario().requiresHardwareAuthAssurance();
 
             if (props.isRequireAttestationOnEnroll()) {
                 requireAttestationAllowed(fmt);
@@ -137,6 +146,8 @@ public class WebAuthnService {
                 throw new IllegalStateException("Attestation não confiável para cadastro");
             }
 
+            validarRequisitosMagistratura(hardwareAuthRequired, attachment, fmt);
+
             TrustedDevice d = trustedDeviceService.registerWebAuthn(
                     usuario,
                     credIdB64,
@@ -145,6 +156,7 @@ public class WebAuthnService {
                     aaguid,
                     fmt,
                     trusted,
+                    attachment,
                     signCount,
                     ip
             );
@@ -162,11 +174,14 @@ public class WebAuthnService {
         if (user == null || user.isBlank()) throw new IllegalArgumentException("email obrigatório");
 
         Usuario u = usuarioRepo.findByEmail(user).orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+        boolean hardwareAuthRequired = u.getTipoUsuario() != null && u.getTipoUsuario().requiresHardwareAuthAssurance();
 
         AssertionRequest req = rp.startAssertion(
                 StartAssertionOptions.builder()
                         .username(user)
-                        .userVerification(props.isRequireUserVerification() ? UserVerificationRequirement.REQUIRED : UserVerificationRequirement.PREFERRED)
+                        .userVerification(hardwareAuthRequired || props.isRequireUserVerification()
+                                ? UserVerificationRequirement.REQUIRED
+                                : UserVerificationRequirement.PREFERRED)
                         .build()
         );
 
@@ -208,6 +223,7 @@ public class WebAuthnService {
             if (d != null && d.getUsuario() != null && Objects.equals(d.getUsuario().getId(), u.getId())) {
                 d.setSignCount(Math.max(d.getSignCount(), result.getSignatureCount()));
                 d.setUltimoUsoEm(LocalDateTime.now());
+                d.setUserVerified(result.isUserVerified());
                 deviceRepo.save(d);
                 deviceId = d.getId();
             }
@@ -233,11 +249,14 @@ public class WebAuthnService {
         Objects.requireNonNull(usuario, "usuario");
         String a = normalizeAction(action);
         String rh = normalizeReqHash(requestHash);
+        boolean hardwareAuthRequired = usuario.getTipoUsuario() != null && usuario.getTipoUsuario().requiresHardwareAuthAssurance();
 
         AssertionRequest req = rp.startAssertion(
                 StartAssertionOptions.builder()
                         .username(usuario.getEmail())
-                        .userVerification(props.isRequireUserVerification() ? UserVerificationRequirement.REQUIRED : UserVerificationRequirement.PREFERRED)
+                        .userVerification(hardwareAuthRequired || props.isRequireUserVerification()
+                                ? UserVerificationRequirement.REQUIRED
+                                : UserVerificationRequirement.PREFERRED)
                         .build()
         );
 
@@ -279,6 +298,7 @@ public class WebAuthnService {
             if (d != null && d.getUsuario() != null && Objects.equals(d.getUsuario().getId(), usuario.getId())) {
                 d.setSignCount(Math.max(d.getSignCount(), result.getSignatureCount()));
                 d.setUltimoUsoEm(LocalDateTime.now());
+                d.setUserVerified(result.isUserVerified());
                 deviceRepo.save(d);
                 deviceId = d.getId();
             }
@@ -434,6 +454,18 @@ public class WebAuthnService {
 
     private record StepUpWrapped(String assertionRequestJson, String scopeAction, String scopeRequestHash) {}
 
+    static void validarRequisitosMagistratura(boolean magistratura, String authenticatorAttachment, String attestationFmt) {
+        if (!magistratura) {
+            return;
+        }
+        if (!"platform".equalsIgnoreCase(authenticatorAttachment)) {
+            throw new IllegalStateException("Magistratura, MP e Defensoria exigem passkey embutida no dispositivo (platform authenticator).");
+        }
+        if (!"tpm".equalsIgnoreCase(attestationFmt) && !"apple".equalsIgnoreCase(attestationFmt)) {
+            throw new IllegalStateException("Magistratura, MP e Defensoria exigem attestation TPM (Windows Hello) ou Apple (Touch/Face ID).");
+        }
+    }
+
     private void requireAttestationAllowed(String fmt) {
         if (props.getAllowedAttestationFormats() == null || props.getAllowedAttestationFormats().isEmpty()) return;
         String f = fmt == null ? "" : fmt.trim().toLowerCase(Locale.ROOT);
@@ -462,11 +494,14 @@ public class WebAuthnService {
     }
 
     private AttestationInfo parseAttestationInfo(String credentialJson) {
+        String authenticatorAttachment;
         try {
             JsonNode root = objectMapper.readTree(credentialJson);
+            authenticatorAttachment = text(root, "authenticatorAttachment");
+
             String attObjB64 = text(root, "response", "attestationObject");
             if (attObjB64 == null || attObjB64.isBlank()) {
-                return new AttestationInfo("unknown", null);
+                return new AttestationInfo("unknown", null, authenticatorAttachment);
             }
 
             byte[] attObj = base64UrlDecode(attObjB64);
@@ -478,9 +513,9 @@ public class WebAuthnService {
                 aaguid = extractAaguid(top.authData);
             }
 
-            return new AttestationInfo(fmt, aaguid);
+            return new AttestationInfo(fmt, aaguid, authenticatorAttachment);
         } catch (Exception e) {
-            return new AttestationInfo("unknown", null);
+            return new AttestationInfo("unknown", null, null);
         }
     }
 
@@ -535,7 +570,7 @@ public class WebAuthnService {
 
     public record PasskeyLoginResult(String token, LocalDateTime expiresAt, Long deviceId) {}
 
-    public record AttestationInfo(String fmt, String aaguid) {}
+    public record AttestationInfo(String fmt, String aaguid, String authenticatorAttachment) {}
 
     private static final class CborTopLevel {
         private final String fmt;

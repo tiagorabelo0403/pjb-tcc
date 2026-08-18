@@ -6,6 +6,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import com.tcc.pjb.backend.PjbIntegrationTestBase;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FlywayPostgresMigrationIT {
 
     @Container
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
+    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(PjbIntegrationTestBase.POSTGRES_IMAGE)
             .withDatabaseName("pjb")
             .withUsername("pjb")
             .withPassword("pjb");
@@ -33,8 +34,8 @@ class FlywayPostgresMigrationIT {
 
         try (Connection c = DriverManager.getConnection(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())) {
             assertTrue(tableExists(c, "pjb_outbox_event"), "Tabela pjb_outbox_event deve existir");
-            assertTrue(tableExists(c, "usuario"), "Tabela usuario deve existir");
-            assertTrue(tableExists(c, "processo"), "Tabela processo deve existir");
+            assertTrue(tableExists(c, "tb_usuario"), "Tabela tb_usuario deve existir");
+            assertTrue(tableExists(c, "tb_processo"), "Tabela tb_processo deve existir");
             assertTrue(tableExists(c, "flyway_schema_history"), "Flyway history deve existir");
         }
     }

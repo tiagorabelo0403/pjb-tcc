@@ -232,4 +232,18 @@ public class AudienciaCustodiaService {
         return new com.tcc.pjb.backend.core.criminal.custodia.domain.CustodiaAuditoriaSnapshot(entity.getId(), entity.getProcessoId(), entity.getStatus(), Instant.now());
     }
 
+    @Transactional(readOnly = true)
+    public List<com.tcc.pjb.backend.core.criminal.custodia.domain.CustodiaPendenteView> pendentes() {
+        Instant now = Instant.now();
+        return custodiaRepository.findByStatusOrderByPrazoLimite24hAsc("PENDENTE").stream()
+                .map(custodia -> new com.tcc.pjb.backend.core.criminal.custodia.domain.CustodiaPendenteView(
+                        custodia.getId(),
+                        custodia.getProcessoId(),
+                        custodia.getPresoNome(),
+                        custodia.getDataPrisao(),
+                        custodia.getPrazoLimite24h(),
+                        custodia.getPrazoLimite24h() != null && now.isAfter(custodia.getPrazoLimite24h())))
+                .toList();
+    }
+
 }

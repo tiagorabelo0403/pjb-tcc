@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.processo.documental.domain;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 
 public record ProcessoDocumentoVersao(
@@ -8,7 +9,8 @@ public record ProcessoDocumentoVersao(
         String titulo,
         String estado,
         String sha256,
-        String criadoEm,
+        @Schema(description = "Data/hora de criação da versão do documento processual", format = "date-time",
+                example = "2026-06-01T10:00:00-03:00") String criadoEm,
         boolean custodioAtivo,
         boolean assinaturaExigida
 ) {

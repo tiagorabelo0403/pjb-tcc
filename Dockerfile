@@ -3,7 +3,6 @@ WORKDIR /workspace
 COPY pom.xml .
 COPY pjb-core/pom.xml pjb-core/pom.xml
 COPY pjb-api/pom.xml pjb-api/pom.xml
-RUN mvn -q -pl pjb-api -am -DskipTests dependency:go-offline
 COPY pjb-core/src pjb-core/src
 COPY pjb-api/src pjb-api/src
 RUN mvn -q -pl pjb-api -am -DskipTests package

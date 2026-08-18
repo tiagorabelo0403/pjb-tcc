@@ -2,6 +2,9 @@ package com.tcc.pjb.backend.model.dto.oficial_justica;
 
 import java.time.Instant;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record OficialJusticaBalcaoVirtualChatResponse(
         String territorio,
@@ -47,7 +50,10 @@ public record OficialJusticaBalcaoVirtualChatResponse(
             int unreadEstimate,
             int responseSlaMinutos,
             String chatPartitionKey,
-            java.util.Map<String, Object> unidadeContexto,
+            @Schema(description = "Contexto da unidade judicial executora — chaves variam por tribunal e tipo de diligencia", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        java.util.Map<String, Object> unidadeContexto,
             boolean reativavelPorReintimacao,
             List<String> templatesRapidos,
             List<MessagePreview> preview,
@@ -72,3 +78,5 @@ public record OficialJusticaBalcaoVirtualChatResponse(
     ) {
     }
 }
+
+

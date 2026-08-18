@@ -230,7 +230,7 @@ public class TetoProcessualService {
         payload.put("assunto", contexto.assunto());
         if (contexto.jurisdicao() != null) {
             payload.put("tribunalCodigo", contexto.jurisdicao().getCodigo());
-            payload.put("uf", contexto.jurisdicao().getEstado());
+            payload.put("uf", contexto.jurisdicao().getUf());
         }
         return payload;
     }

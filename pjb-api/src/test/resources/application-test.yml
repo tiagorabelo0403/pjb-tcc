@@ -1,7 +1,7 @@
 spring:
   main:
     lazy-initialization: true
-    web-application-type: none
+    web-application-type: servlet
   task:
     execution:
       mode: force
@@ -112,7 +112,13 @@ pjb:
       enabled: false
     vital-monitor:
       enabled: false
+  bnmp:
+    mock-enabled: true
+  dje:
+    mock-enabled: true
   integrations:
+    govbr:
+      mock-enabled: true
     pje:
       submission:
         mock-enabled: false
@@ -148,6 +154,8 @@ pjb:
     ingest:
       enabled: false
   security:
+    crypto:
+      allow-plaintext-fallback: true
     honeypot:
       enabled: false
     perimeter:
@@ -170,6 +178,8 @@ pjb:
     seed:
       enabled: false
   runtime:
+    admission:
+      enabled: false
     barrier:
       integrations:
         datajud: false

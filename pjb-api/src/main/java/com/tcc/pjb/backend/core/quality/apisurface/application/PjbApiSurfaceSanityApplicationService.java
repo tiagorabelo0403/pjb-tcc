@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import com.tcc.pjb.backend.core.quality.codebase.application.PjbProjectPathResolver;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class PjbApiSurfaceSanityApplicationService {
@@ -38,6 +39,7 @@ public class PjbApiSurfaceSanityApplicationService {
 
     private final Path projectRoot;
 
+    @Inject
     public PjbApiSurfaceSanityApplicationService() {
         this(Path.of("").toAbsolutePath().normalize());
     }

@@ -8,6 +8,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class PjbAuthorizationTrailAnalyticsMaterializationService {
@@ -23,6 +24,7 @@ public class PjbAuthorizationTrailAnalyticsMaterializationService {
         this.materializationAssembler = new PjbAuthorizationTrailAnalyticsMaterializationAssembler();
     }
 
+    @PjbTransactionalBudget(operation = "security.authz-trail-analytics.materialize", maxMillis = 15000)
     @Transactional
     public PjbAuthorizationTrailAnalyticsMaterializationResponse materialize(PjbAuthorizationTrailTemporalGranularity granularity,
                                                                             Instant occurredAfter,

@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.ai.juridica.testsupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.tcc.pjb.backend.ai.common.VectorSearchServiceMock;
+import com.tcc.pjb.backend.ai.common.VectorSearchTestFactory;
 import com.tcc.pjb.backend.ai.juridica.conversation.LegalAiConversationApprovalService;
 import com.tcc.pjb.backend.ai.juridica.conversation.LegalAiConversationCapabilityCooldownService;
 import com.tcc.pjb.backend.ai.juridica.conversation.LegalAiConversationCapabilityRecurrenceService;
@@ -189,7 +190,7 @@ public final class LegalAiTestFixtures {
         return new LegalAiConversationOrchestrator(
                 new LegalAiConversationRoutingService(),
                 new LegalAiConversationContextAssemblerService(mesh, spine, catalog),
-                new JuridicaResearchDossierService(new VectorSearchServiceMock(), mesh, spine, catalog),
+                new JuridicaResearchDossierService(VectorSearchTestFactory.forTest(), mesh, spine, catalog),
                 new JuridicaValidationEnvelopeService(spine, symbolicExecutionService()),
                 new JuridicaHallucinationGuardService(spine),
                 new JuridicaVirtualTrendsCouncilService(),

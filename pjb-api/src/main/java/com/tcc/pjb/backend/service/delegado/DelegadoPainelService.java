@@ -1,16 +1,25 @@
 package com.tcc.pjb.backend.service.delegado;
 
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
+import com.tcc.pjb.backend.core.security.scope.AcaoEscopo;
+import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
+import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuard;
+import com.tcc.pjb.backend.core.security.scope.TipoObjetoProtegido;
 import com.tcc.pjb.backend.model.dto.dashboard.PerfilDashboardPayload;
+import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoDiligenciaRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoInqueritoMultimidiaRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.criminal.InqueritoPolicialDigital;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
+import com.tcc.pjb.backend.service.criminal.BoletimOcorrenciaDigitalService;
+import com.tcc.pjb.backend.service.criminal.InqueritoPolicialDigitalService;
 import com.tcc.pjb.backend.service.criminal.InqueritoMultimidiaWorkspaceService;
 import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeExecutionService;
 import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeToolbeltService;
@@ -27,6 +36,7 @@ import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopo
 import com.tcc.pjb.backend.service.intelligence.PessoaLocalizacaoIntelligenceSummaryService;
 import com.tcc.pjb.backend.service.intelligence.PessoaLocalizacaoService;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 import com.tcc.pjb.backend.service.profile.PerfilCapabilityMatrixService;
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
 import com.tcc.pjb.backend.service.ui.branding.InstitutionalPanelBrandingService;
@@ -41,6 +51,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +62,10 @@ public class DelegadoPainelService {
     private final PainelServiceCommons commons;
     private final ProcessoRepository processoRepository;
     private final WorkItemRepository workItemRepository;
+    private final InqueritoPolicialDigitalService inqueritoPolicialDigitalService;
+    private final BoletimOcorrenciaDigitalService boletimOcorrenciaDigitalService;
+    private final DelegaciaInstitucionalScopeService delegaciaScopeService;
+    private final PjbObjectScopeGuard scopeGuard;
     private final PjbAuthorizationService authorizationService;
     private final PerfilCapabilityMatrixService capabilityMatrixService;
     private final PessoaLocalizacaoIntelligenceSummaryService intelligenceSummaryService;
@@ -76,6 +91,10 @@ public class DelegadoPainelService {
                                  PainelServiceCommons commons,
                                  ProcessoRepository processoRepository,
                                  WorkItemRepository workItemRepository,
+                                 InqueritoPolicialDigitalService inqueritoPolicialDigitalService,
+                                 BoletimOcorrenciaDigitalService boletimOcorrenciaDigitalService,
+                                 DelegaciaInstitucionalScopeService delegaciaScopeService,
+                                 PjbObjectScopeGuard scopeGuard,
                                  PjbAuthorizationService authorizationService,
                                  PerfilCapabilityMatrixService capabilityMatrixService,
                                  PessoaLocalizacaoIntelligenceSummaryService intelligenceSummaryService,
@@ -100,6 +119,10 @@ public class DelegadoPainelService {
         this.commons = commons;
         this.processoRepository = processoRepository;
         this.workItemRepository = workItemRepository;
+        this.inqueritoPolicialDigitalService = inqueritoPolicialDigitalService;
+        this.boletimOcorrenciaDigitalService = boletimOcorrenciaDigitalService;
+        this.delegaciaScopeService = delegaciaScopeService;
+        this.scopeGuard = scopeGuard;
         this.authorizationService = authorizationService;
         this.capabilityMatrixService = capabilityMatrixService;
         this.intelligenceSummaryService = intelligenceSummaryService;
@@ -129,7 +152,7 @@ public class DelegadoPainelService {
         int inqueritos = (int) inbox.stream().filter(this::isInquerito).count();
         int tcos = (int) inbox.stream().filter(this::isTco).count();
         int mandados = (int) inbox.stream().filter(this::isMandado).count();
-        List<String> bos = inbox.stream().filter(this::isInquerito).limit(8).map(commons::resumo).toList();
+        List<String> bos = boletimOcorrenciaDigitalService.resumosPainel(usuario, 8);
         List<String> alertas = listarAlertasCrime();
         PerfilDashboardPayload.LocalizadorGovernadoResumo localizadorGovernado = new PerfilDashboardPayload.LocalizadorGovernadoResumo(
                 authorizationService.canLocatePessoaByCpf(usuario),
@@ -231,46 +254,32 @@ public class DelegadoPainelService {
     }
 
     @Transactional
-    public Map<String, Object> registrarDiligencia(Object request) {
+    public Map<String, Object> registrarDiligencia(DelegadoDiligenciaRequest request) {
+        Objects.requireNonNull(request);
+        scopeGuard.requireAccess(TipoObjetoProtegido.INQUERITO, request.inqueritoId(), AcaoEscopo.MOVIMENTAR);
         Usuario usuario = contextFactory.build().usuario();
-        String resumo = String.valueOf(request);
-        Processo processo = resolveProcessoFromRequest(request);
-        if (processo != null) {
-            institutionalMaterialActionGuardService.requireAllowedForProcessAction(processo, InstitutionalMaterialActionGuardService.MaterialAction.DELEGADO_DILIGENCIA);
-        }
-        else {
-            institutionalMaterialActionGuardService.requireAllowedForCatalogAction(
-                    InstitutionalMaterialActionGuardService.MaterialAction.DELEGADO_DILIGENCIA,
-                    new InstitutionalMaterialActionGuardService.CatalogActionContext(
-                            InstitutionalMaterialActionGuardService.TargetSphere.INDETERMINADA,
-                            null,
-                            RamoDireito.PENAL,
-                            null,
-                            "DILIGENCIA_INVESTIGATIVA",
-                            resumo,
-                            true
-                    )
-            );
-        }
-        InstitutionalActorRoutingService.InstitutionalRoute route = processo != null
-                ? institutionalActorRoutingService.ministerioPublico(processo.getId(), "DILIGENCIA_REQUISITADA")
-                : null;
+        UnidadeInstituicao unidadeApuracao = delegaciaScopeService.requireDelegaciaDiligenciaLotada(usuario, request.unidadeApuracaoId());
+        InqueritoPolicialDigital inquerito = inqueritoPolicialDigitalService.carregar(request.inqueritoId());
+        Processo processo = requireProcessoVinculado(inquerito, request.processoId());
+        String resumo = resumoDiligencia(request, unidadeApuracao, inquerito, processo);
+        institutionalMaterialActionGuardService.requireAllowedForProcessAction(processo, InstitutionalMaterialActionGuardService.MaterialAction.DELEGADO_DILIGENCIA);
+        InstitutionalActorRoutingService.InstitutionalRoute route = institutionalActorRoutingService.ministerioPublico(processo.getId(), "DILIGENCIA_REQUISITADA");
         WorkItem workItem = WorkItem.builder()
                 .processo(processo)
-                .faseOrigem(processo != null ? processo.getFaseAtual() : null)
+                .faseOrigem(processo.getFaseAtual())
                 .templateCode("MP_DILIGENCIA:" + Instant.now().toEpochMilli())
                 .type(WorkItemType.DILIGENCIA)
                 .titulo("Analisar diligência requisitada pelo delegado")
                 .descricao(resumo)
-                .queueCode(route == null ? "MP_DILIGENCIA" : route.queueCode())
-                .inboxKey(route == null ? "MP_DILIGENCIA" : route.inboxKey())
-                .assignedRole(route == null ? com.tcc.pjb.backend.model.entity.enums.TipoUsuario.MEMBRO_MINISTERIO_PUBLICO : route.assignedRole())
+                .queueCode(route.queueCode())
+                .inboxKey(route.inboxKey())
+                .assignedRole(route.assignedRole())
                 .status(WorkItemStatus.PENDENTE)
                 .prioridade(1)
                 .blocking(false)
                 .dueAt(Instant.now().plus(48, ChronoUnit.HOURS))
-                .uf(usuario.getUf())
-                .comarca(usuario.getComarca())
+                .uf(unidadeApuracao.getUf())
+                .comarca(unidadeApuracao.getComarca())
                 .baseLegal("CPP e diligências investigativas")
                 .build();
         workItem = workItemRepository.save(workItem);
@@ -278,6 +287,10 @@ public class DelegadoPainelService {
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "CRIADO");
         out.put("workItemId", workItem.getId());
+        out.put("processoId", processo.getId());
+        out.put("inqueritoId", inquerito.getId());
+        out.put("unidadeApuracaoId", unidadeApuracao.getId());
+        out.put("unidadeApuracaoNome", unidadeApuracao.getNome());
         out.put("assignedRole", workItem.getAssignedRole());
         out.put("dueAt", workItem.getDueAt());
         out.put("encaminhadoPara", workItem.getInboxKey());
@@ -316,7 +329,7 @@ public class DelegadoPainelService {
                                                               Long inqueritoId,
                                                               DelegadoInqueritoMultimidiaRequest request) {
         String titulo = resolveInvestigativePieceTitle(request);
-        QualifiedDocumentSignatureEnvelopeService.SignedContent signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
+        SignedDocumentEnvelope signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
                 null,
                 usuario,
                 titulo,
@@ -402,20 +415,24 @@ public class DelegadoPainelService {
         return commons.titleContains(item, "MANDADO", "PRISAO", "BUSCA", "APREENSAO");
     }
 
-    private Processo resolveProcessoFromRequest(Object request) {
-        if (request instanceof Map<?, ?> map) {
-            Object v = map.get("processoId");
-            if (v instanceof Number n) {
-                return processoRepository.findById(n.longValue()).orElse(null);
-            }
-            if (v != null) {
-                try {
-                    return processoRepository.findById(Long.parseLong(String.valueOf(v))).orElse(null);
-                } catch (Exception ignored) {
-                }
-            }
+    private Processo requireProcessoVinculado(InqueritoPolicialDigital inquerito, Long processoId) {
+        if (inquerito.getProcessoVinculado() == null || !processoId.equals(inquerito.getProcessoVinculado().getId())) {
+            throw new IllegalStateException("Inquérito não está vinculado ao processo informado.");
         }
-        return null;
+        return inquerito.getProcessoVinculado();
+    }
+
+    private String resumoDiligencia(DelegadoDiligenciaRequest request,
+                                    UnidadeInstituicao unidadeApuracao,
+                                    InqueritoPolicialDigital inquerito,
+                                    Processo processo) {
+        return String.join(" | ",
+                "processoId=" + processo.getId(),
+                "inqueritoId=" + inquerito.getId(),
+                "unidadeApuracaoId=" + unidadeApuracao.getId(),
+                "descricao=" + request.descricao(),
+                "fundamento=" + normalizeFreeText(request.fundamentoOperacional()),
+                "prioridade=" + normalizeToken(request.prioridade()));
     }
 
     @SuppressWarnings("unchecked")

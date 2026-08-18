@@ -21,6 +21,7 @@ import java.util.Objects;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ProcessoAnomaliaGovernancaApplicationService {
@@ -46,6 +47,7 @@ public class ProcessoAnomaliaGovernancaApplicationService {
         this.auditLedgerService = auditLedgerServiceProvider.getIfAvailable();
     }
 
+    @PjbTransactionalBudget(operation = "processo.anomalia-governanca.escalar-se-necessario", maxMillis = 3000)
     @Transactional
     public ProcessoAnomaliaGovernancaAggregate escalarSeNecessario(Long processoId) {
         Processo processo = processoRepository.findById(processoId)

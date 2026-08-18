@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.model.dto.calendar;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,7 +24,8 @@ public record CalendarInstitutionalFocusResponse(
             int criticalEvents,
             int overdueEvents,
             int processCount,
-            LocalDateTime nextAt,
+            @Schema(description = "Data/hora do próximo evento nesta fatia de foco", format = "date-time",
+                    example = "2026-06-01T14:00:00-03:00") LocalDateTime nextAt,
             List<String> highlights,
             List<FocusDetailDto> detailBuckets,
             String presentationCode,
@@ -41,7 +43,8 @@ public record CalendarInstitutionalFocusResponse(
             int criticalEvents,
             int overdueEvents,
             int processCount,
-            LocalDateTime nextAt,
+            @Schema(description = "Data/hora do próximo evento neste detalhe de foco", format = "date-time",
+                    example = "2026-06-01T14:00:00-03:00") LocalDateTime nextAt,
             List<String> highlights,
             String presentationCode,
             String iconCode,
@@ -71,7 +74,8 @@ public record CalendarInstitutionalFocusResponse(
             String cardKey,
             String title,
             String subtitle,
-            LocalDateTime nextAt,
+            @Schema(description = "Data/hora do marco processual", format = "date-time",
+                    example = "2026-06-01T14:00:00-03:00") LocalDateTime nextAt,
             String color,
             String detailsUrl,
             String presentationCode,

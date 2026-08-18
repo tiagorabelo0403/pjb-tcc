@@ -1,14 +1,21 @@
 package com.tcc.pjb.backend.core.procedural;
 
+import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.dto.ProcessoRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import java.util.LinkedHashMap;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
 public class NationalProceduralProcessoEntityPayloadAssembler {
 
     LinkedHashMap<String, Object> assemble(Processo processo, ProcessoRequest request) {
+        return assemble(processo, request, List.of());
+    }
+
+    LinkedHashMap<String, Object> assemble(Processo processo, ProcessoRequest request, List<Attachment> anexos) {
         LinkedHashMap<String, Object> payload = new LinkedHashMap<>();
         if (processo != null) {
             payload.put("classe", processo.getClasseProcessual());
@@ -30,7 +37,7 @@ public class NationalProceduralProcessoEntityPayloadAssembler {
             payload.put("parteReuNome", processo.getParteReuNome());
             payload.put("parteAutoraCpf", processo.getParteAutoraCpf());
             payload.put("parteReuCpf", processo.getParteReuCpf());
-            payload.put("ufAutor", NationalProceduralRoutingSupport.firstNonBlank(processo.getUf(), processo.getJurisdicao() != null ? processo.getJurisdicao().getEstado() : null));
+            payload.put("ufAutor", NationalProceduralRoutingSupport.firstNonBlank(processo.getUf(), processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null));
             payload.put("comarcaAutor", NationalProceduralRoutingSupport.firstNonBlank(processo.getComarca(), processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null));
             payload.put("varaPretendida", NationalProceduralRoutingSupport.firstNonBlank(processo.getVara(), processo.getUnidadeJudiciariaCodigo()));
             payload.put("tribunalCodigo", NationalProceduralRoutingSupport.firstNonBlank(processo.getTribunalCodigoRoteado(), processo.getTribunal(), processo.getJurisdicao() != null ? processo.getJurisdicao().getCodigo() : null));
@@ -39,7 +46,7 @@ public class NationalProceduralProcessoEntityPayloadAssembler {
             }
             if (processo.getJurisdicao() != null) {
                 payload.put("tribunalCodigo", NationalProceduralRoutingSupport.firstNonBlank(NationalProceduralRoutingSupport.text(payload.get("tribunalCodigo")), processo.getJurisdicao().getCodigo()));
-                payload.put("ufAutor", NationalProceduralRoutingSupport.firstNonBlank(NationalProceduralRoutingSupport.text(payload.get("ufAutor")), processo.getJurisdicao().getEstado()));
+                payload.put("ufAutor", NationalProceduralRoutingSupport.firstNonBlank(NationalProceduralRoutingSupport.text(payload.get("ufAutor")), processo.getJurisdicao().getUf()));
                 payload.put("comarcaAutor", NationalProceduralRoutingSupport.firstNonBlank(NationalProceduralRoutingSupport.text(payload.get("comarcaAutor")), processo.getJurisdicao().getCidade()));
                 payload.put("foro", processo.getJurisdicao().getNome());
                 payload.put("__jurisdicaoEntity", processo.getJurisdicao());
@@ -54,6 +61,15 @@ public class NationalProceduralProcessoEntityPayloadAssembler {
             }
             if (request.getComarcaAutor() != null) {
                 payload.put("comarcaAutor", request.getComarcaAutor());
+            }
+            if (request.getCidadeAutor() != null) {
+                payload.put("cidadeAutor", request.getCidadeAutor());
+            }
+            if (request.getCidadeFato() != null) {
+                payload.put("cidadeFato", request.getCidadeFato());
+            }
+            if (request.getMunicipioFato() != null) {
+                payload.put("municipioFato", request.getMunicipioFato());
             }
             if (request.getUfReu() != null) {
                 payload.put("ufReu", request.getUfReu());
@@ -73,6 +89,15 @@ public class NationalProceduralProcessoEntityPayloadAssembler {
             if (request.getTipoJusticaPretendida() != null) {
                 payload.put("tipoJustica", request.getTipoJusticaPretendida());
             }
+        }
+        List<Attachment> anexosSafe = anexos == null ? List.of() : anexos;
+        List<String> tipados = anexosSafe.stream()
+                .map(Attachment::getTipoDocumento)
+                .filter(t -> t != null)
+                .map(TipoDocumento::name)
+                .toList();
+        if (!tipados.isEmpty()) {
+            payload.put("documentosTipados", tipados);
         }
         return payload;
     }

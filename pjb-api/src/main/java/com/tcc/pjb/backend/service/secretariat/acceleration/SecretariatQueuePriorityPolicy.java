@@ -4,10 +4,12 @@ import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatQueuePanelItem
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
+@Component
 public final class SecretariatQueuePriorityPolicy {
 
-    private SecretariatQueuePriorityPolicy() {}
+    public SecretariatQueuePriorityPolicy() {}
 
     private static final String TAG_REU_PRESO = "REU_PRESO";
     private static final String TAG_TUTELA = "TUTELA_URGENCIA";

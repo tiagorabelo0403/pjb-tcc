@@ -1,0 +1,35 @@
+<svg viewBox="0 0 1280 560" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Painel do Cartório Extrajudicial — certidões pendentes por serventia</title>
+  <desc id="desc">Mockup do painel do tabelião, registrador de imóveis ou escrevente, com os campos reais de CartorioExtrajudicialPayload (serventia, subperfil, certidoesPendentes).</desc>
+  <defs><filter id="s8" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.35"/></filter></defs>
+
+  <rect x="20" y="20" width="1240" height="520" rx="14" fill="#12172a" stroke="#2a3350" filter="url(#s8)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/><circle cx="66" cy="48" r="6" fill="#e0b84f"/><circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">📜 PJB — Painel do Cartório Extrajudicial</text>
+  <text x="1195" y="53" text-anchor="end" font-size="12.5" fill="#c9d3ea">subperfil: Registrador de Imóveis</text>
+
+  <g font-size="12">
+    <rect x="50" y="96" width="300" height="90" rx="12" fill="#555a63"/>
+    <text x="66" y="122" font-size="10.5" fill="#d8dade">serventia</text>
+    <text x="66" y="150" font-size="14" font-weight="700" fill="#ffffff">2º Ofício de Registro de Imóveis</text>
+
+    <rect x="366" y="96" width="220" height="90" rx="12" fill="#3a3320"/>
+    <text x="382" y="122" font-size="10.5" fill="#e0c98a">certidoesPendentes</text>
+    <text x="382" y="150" font-size="26" font-weight="700" fill="#f4c542">9</text>
+  </g>
+
+  <g>
+    <rect x="50" y="206" width="1140" height="250" rx="14" fill="#161c30"/>
+    <text x="76" y="238" font-size="14" font-weight="700" fill="#ffffff">📋 Certidões pendentes de emissão</text>
+
+    <rect x="76" y="256" width="1074" height="46" rx="8" fill="#171d34"/>
+    <text x="92" y="284" font-size="12" fill="#dfe4ee">Certidão de matrícula — vinculada ao processo 0008030-77.2026.8.06.0001</text>
+
+    <rect x="76" y="308" width="1074" height="46" rx="8" fill="#171d34"/>
+    <text x="92" y="336" font-size="12" fill="#dfe4ee">Certidão de ônus reais — solicitação avulsa</text>
+
+    <text x="76" y="392" font-size="10.5" fill="#5d6785">Dados fictícios — campos reais de CartorioExtrajudicialPayload.</text>
+  </g>
+</svg>

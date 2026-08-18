@@ -5,9 +5,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerRepository;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerEntry;
+import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.repository.IcpCertificateCacheRepository;
 import com.tcc.pjb.backend.model.repository.IcpSignatureEventRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.math.BigInteger;
 import java.security.Principal;
 import java.security.PublicKey;
@@ -37,6 +41,32 @@ class IcpBrasilChainValidatorTest {
         assertThat(result.valid()).isTrue();
         assertThat(result.profile()).isNotNull();
         assertThat(result.profile().acSigla()).containsIgnoringCase("AC-JUS");
+    }
+
+    @Test
+    void eventoIcpChainOkNaoContemCpfNoPayload() {
+        IcpCertificateCacheRepository cacheRepository = mock(IcpCertificateCacheRepository.class);
+        IcpSignatureEventRepository eventRepository = mock(IcpSignatureEventRepository.class);
+        when(cacheRepository.findByIssuerDnAndSerialHex(any(), any())).thenReturn(java.util.Optional.empty());
+        when(cacheRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        AuditLedgerService auditLedger = new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class), new SimpleMeterRegistry());
+        IcpBrasilChainValidator validator = new IcpBrasilChainValidator(
+                cacheRepository,
+                eventRepository,
+                certificate -> com.tcc.pjb.backend.core.icp.domain.IcpBrasilOcspResult.good(),
+                new IcpBrasilSignatureProperties(true, true, List.of("AC-JUS"), "pjb:icp:ocsp:", 3600, 86400, null, null, null, "LTA", false),
+                auditLedger
+        );
+        validator.validate(new FakeCertificate());
+        java.util.List<AuditLedgerEntry> icpOkEntries = auditLedger.entries().stream()
+                .filter(e -> "ICP_CHAIN_OK".equals(e.getAction()))
+                .toList();
+        assertThat(icpOkEntries).hasSize(1);
+        AuditLedgerEntry entry = icpOkEntries.get(0);
+        assertThat(entry.getPayloadHash()).doesNotContain("cpf=");
+        assertThat(entry.getPayloadHash()).doesNotContain("12345678901");
+        assertThat(entry.getPayloadHash()).contains("tipo=A1");
+        assertThat(entry.getResourceId()).isEqualTo("75BCD15");
     }
 
     static final class FakeCertificate extends X509Certificate {

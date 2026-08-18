@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 class IntimacaoMulticanalServiceFlowIT extends PjbIntegrationTestBase {
@@ -54,6 +55,7 @@ class IntimacaoMulticanalServiceFlowIT extends PjbIntegrationTestBase {
     private OfficialDocumentTemplateService officialDocumentTemplateService;
 
     @MockitoBean
+    @Qualifier("logNotificationChannel")
     private NotificationChannel notificationChannel;
 
     @Test
@@ -64,6 +66,7 @@ class IntimacaoMulticanalServiceFlowIT extends PjbIntegrationTestBase {
 
         doNothing().when(authorizationService).requireReadProcesso(any(Processo.class));
         when(notificationChannel.channelId()).thenReturn("EMAIL");
+        when(notificationChannel.supports(any())).thenReturn(true);
         doNothing().when(notificationChannel).send(any(NotificationDispatchContext.class));
         when(officialDocumentTemplateService.renderizar(any())).thenReturn(new OfficialDocumentTemplateRenderResponse(
                 processo.getId(),

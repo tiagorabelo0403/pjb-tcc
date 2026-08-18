@@ -17,6 +17,7 @@ import com.tcc.pjb.backend.model.dto.profile.operational.OficialJusticaOficioReq
 import com.tcc.pjb.backend.model.dto.profile.operational.OficialJusticaOficioRetryRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.PsicossocialParecerRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.PsicossocialRelatorioRequest;
+import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoDiligenciaRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoInqueritoMultimidiaRequest;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceCollectionResponse;
@@ -116,7 +117,6 @@ public class InstitutionalPainelSurfaceFacadeService {
     public SurfaceCollectionResponse defensorAssistidos() { return projectionSupport.collection("defensoria.assistidos", defensorService.listarAssistidosAtivos()); }
     public SurfaceSnapshotResponse defensorProcessosAssistido(Long assistidoId) { return projectionSupport.snapshot("defensoria.processos-assistido", defensorService.listarProcessosDoAssistido(assistidoId)); }
     public SurfaceActionResponse defensorRegistrarPeticao(Long processoId, Object request) { return projectionSupport.action("defensoria.peticao", "registrar-peticao", processoId, defensorService.registrarPeticao(processoId, request)); }
-    public SurfaceActionResponse defensorInterporRecurso(Long processoId, String tipoRecurso, String razoes, String fundamentacao, boolean pedidoEfeitoSuspensivo, boolean preparoDispensado, String observacoes) { return projectionSupport.action("defensoria.recurso", "interpor-recurso", processoId, defensorService.interporRecurso(processoId, tipoRecurso, razoes, fundamentacao, pedidoEfeitoSuspensivo, preparoDispensado, observacoes)); }
     public SurfaceCollectionResponse defensorAudienciasHoje() { return projectionSupport.collection("defensoria.audiencias-hoje", defensorService.listarAudienciasHoje()); }
     public SurfaceCollectionResponse defensorPrazosCriticos() { return projectionSupport.collection("defensoria.prazos-criticos", defensorService.listarPrazosCriticos()); }
     public SurfaceActionResponse defensorRequerimentoGratuidade(Long processoId, Object request) { return projectionSupport.action("defensoria.gratuidade", "registrar-requerimento-gratuidade", processoId, defensorService.registrarRequerimentoGratuidade(processoId, request)); }
@@ -124,7 +124,6 @@ public class InstitutionalPainelSurfaceFacadeService {
     public SurfaceSnapshotResponse ministerioPublicoMalhaProcesso(Long processoId) { return projectionSupport.snapshot("mp.malha-processo", ministerioPublicoService.malhaProcesso(processoId)); }
     public SurfaceActionResponse ministerioPublicoRegistrarManifestacao(Long processoId, Object request) { return projectionSupport.action("mp.manifestacao", "registrar-manifestacao", processoId, ministerioPublicoService.registrarManifestacao(processoId, request)); }
     public SurfaceActionResponse ministerioPublicoRegistrarParecer(Long processoId, MinisterioPublicoParecerRequest request) { return projectionSupport.action("mp.parecer", "registrar-parecer", processoId, ministerioPublicoService.registrarParecer(processoId, request)); }
-    public SurfaceActionResponse ministerioPublicoInterporRecurso(Long processoId, String tipoRecurso, String razoes, String fundamentacao, boolean pedidoEfeitoSuspensivo, boolean preparoDispensado, String observacoes) { return projectionSupport.action("mp.recurso", "interpor-recurso", processoId, ministerioPublicoService.interporRecurso(processoId, tipoRecurso, razoes, fundamentacao, pedidoEfeitoSuspensivo, preparoDispensado, observacoes)); }
     public SurfaceCollectionResponse ministerioPublicoInqueritosAcompanhamento() { return projectionSupport.collection("mp.inqueritos-acompanhamento", ministerioPublicoService.listarInqueritosEmAcompanhamento()); }
     public SurfaceActionResponse ministerioPublicoRequisitarDiligencia(Long processoId, Object request) { return projectionSupport.action("mp.diligencia", "requisitar-diligencia", processoId, ministerioPublicoService.requisitarDiligencia(processoId, request)); }
     public SurfaceCollectionResponse ministerioPublicoPrazosCriticos() { return projectionSupport.collection("mp.prazos-criticos", ministerioPublicoService.listarPrazosDentroDe48h()); }
@@ -161,7 +160,10 @@ public class InstitutionalPainelSurfaceFacadeService {
     public SurfaceCollectionResponse delegadoInqueritosPendentes() { return projectionSupport.collection("delegado.inqueritos-pendentes", delegadoService.listarInqueritosPendentes()); }
     public SurfaceCollectionResponse delegadoMandadosPendentes() { return projectionSupport.collection("delegado.mandados-pendentes", delegadoService.listarMandadosPendentes()); }
     public SurfaceActionResponse delegadoSolicitarAcessoProcesso(Long processoId) { return projectionSupport.action("delegado.processo", "solicitar-acesso", processoId, delegadoService.solicitarAcessoProcesso(processoId)); }
-    public SurfaceActionResponse delegadoRequisitarDiligencia(Object request) { return projectionSupport.action("delegado.diligencia", "requisitar", null, delegadoService.registrarDiligencia(request)); }
+    public SurfaceActionResponse delegadoRequisitarDiligencia(DelegadoDiligenciaRequest request) {
+        Objects.requireNonNull(request);
+        return projectionSupport.action("delegado.diligencia", "requisitar", request.processoId(), delegadoService.registrarDiligencia(request));
+    }
     public SurfaceActionResponse delegadoRegistrarPecaInquerito(Long inqueritoId, DelegadoInqueritoMultimidiaRequest request) { return projectionSupport.action("delegado.inquerito", "registrar-peca-multimidia", inqueritoId, delegadoService.registrarPecaInquerito(inqueritoId, request)); }
     public SurfaceCollectionResponse delegadoAlertas() { return projectionSupport.collection("delegado.alertas", delegadoService.listarAlertasCrime()); }
     public SurfaceCollectionResponse delegadoConsultasRecentes() { return projectionSupport.collection("delegado.localizador.consultas-recentes", pessoaLocalizacaoService.listarRecentes(PessoaLocalizacaoService.CanalConsulta.DELEGADO, 20)); }

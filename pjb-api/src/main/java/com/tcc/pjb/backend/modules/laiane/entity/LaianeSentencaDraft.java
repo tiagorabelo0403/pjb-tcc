@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import com.tcc.pjb.backend.core.id.PjbUuidV7Generator;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.modules.laiane.model.LaianeSentencaStatus;
@@ -31,7 +32,7 @@ public class LaianeSentencaDraft {
 
     @Column(name = "uuid", nullable = false, unique = true)
     @Builder.Default
-    private UUID uuid = UUID.randomUUID();
+    private UUID uuid = PjbUuidV7Generator.generate();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "processo_id", nullable = false)

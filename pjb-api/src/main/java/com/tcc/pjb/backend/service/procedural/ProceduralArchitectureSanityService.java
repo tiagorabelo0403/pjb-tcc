@@ -13,9 +13,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -55,15 +57,21 @@ public class ProceduralArchitectureSanityService {
     private final RitoPackService ritoPackService;
     private final CnjTpuSyncService cnjTpuSyncService;
     private final JudicialConnectorRegistry connectorRegistry;
+    private final ProceduralBootstrapGovernanceProperties bootstrapProperties;
+    private final Environment environment;
 
     public ProceduralArchitectureSanityService(ProceduralCatalogService proceduralCatalogService,
                                                RitoPackService ritoPackService,
                                                CnjTpuSyncService cnjTpuSyncService,
-                                               JudicialConnectorRegistry connectorRegistry) {
+                                               JudicialConnectorRegistry connectorRegistry,
+                                               ProceduralBootstrapGovernanceProperties bootstrapProperties,
+                                               Environment environment) {
         this.proceduralCatalogService = Objects.requireNonNull(proceduralCatalogService);
         this.ritoPackService = Objects.requireNonNull(ritoPackService);
         this.cnjTpuSyncService = Objects.requireNonNull(cnjTpuSyncService);
         this.connectorRegistry = Objects.requireNonNull(connectorRegistry);
+        this.bootstrapProperties = Objects.requireNonNull(bootstrapProperties);
+        this.environment = Objects.requireNonNull(environment);
     }
 
     public SanityReport report() {
@@ -106,6 +114,7 @@ public class ProceduralArchitectureSanityService {
 
         List<String> routingCoverage = new ArrayList<>();
         int connectorsResolved = 0;
+        boolean strictConnectorRegistry = isStrictConnectorRegistry();
         for (var tribunal : proceduralCatalogService.listNationalTribunals()) {
             Object pref = tribunal.get("connectorPreferido");
             if (pref == null) {
@@ -123,7 +132,7 @@ public class ProceduralArchitectureSanityService {
                 routingCoverage.add("Conector preferido inválido: " + tribunal.get("codigo") + " -> " + pref);
             }
         }
-        if (!routingCoverage.isEmpty()) {
+        if (strictConnectorRegistry && !routingCoverage.isEmpty()) {
             issues.add("Conector preferido ausente, inválido ou sem registro no registry judicial para tribunais catalogados.");
         }
 
@@ -131,6 +140,7 @@ public class ProceduralArchitectureSanityService {
         routing.put("missingPreferredConnectors", List.copyOf(routingCoverage));
         routing.put("resolvedPreferredConnectors", connectorsResolved);
         routing.put("totalTribunais", proceduralCatalogService.listNationalTribunals().size());
+        routing.put("strictConnectorRegistry", strictConnectorRegistry);
 
         Map<String, Object> divergenceMap = new LinkedHashMap<>();
         divergenceMap.put("integridadeOk", divergence.integridadeOk());
@@ -170,5 +180,24 @@ public class ProceduralArchitectureSanityService {
 
     private Number asNumber(Object value) {
         return value instanceof Number number ? number : 0;
+    }
+
+    private boolean isStrictConnectorRegistry() {
+        if (bootstrapProperties.isStrictConnectorRegistry()) {
+            return true;
+        }
+        List<String> actives = List.of(environment.getActiveProfiles());
+        if (actives.isEmpty()) {
+            return false;
+        }
+        for (String active : actives) {
+            String normalized = active == null ? "" : active.trim().toLowerCase(Locale.ROOT);
+            for (String profile : bootstrapProperties.getStrictConnectorRegistryProfiles()) {
+                if (normalized.equals(profile.trim().toLowerCase(Locale.ROOT))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

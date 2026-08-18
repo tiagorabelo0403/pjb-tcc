@@ -53,7 +53,7 @@ public class CalendarioForenseSeeder implements ApplicationRunner {
             inserted += persistir(null, null, it.getKey(), "FERIADO", it.getValue()) ? 1 : 0;
         }
 
-        List<CalendarioForenseTribunalService.EntradaCalendario> exemplos = calendarioForenseTribunalService.seedFeriadosEstaduaisExemplo(year);
+        List<CalendarioForenseTribunalService.EntradaCalendario> exemplos = calendarioForenseTribunalService.construirFeriadosEstaduaisExemplo(year);
         for (CalendarioForenseTribunalService.EntradaCalendario entrada : exemplos) {
             inserted += persistir(entrada.uf(), entrada.comarca(), entrada.data(), entrada.tipo().name(), entrada.descricao()) ? 1 : 0;
             prazoEngine.adicionarFeriadoTribunal(entrada.tribunalCodigo(), year, entrada.data());

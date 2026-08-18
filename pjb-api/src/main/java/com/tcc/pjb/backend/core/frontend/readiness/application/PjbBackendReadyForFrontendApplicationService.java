@@ -46,6 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import com.tcc.pjb.backend.core.quality.codebase.application.PjbProjectPathResolver;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +68,7 @@ public class PjbBackendReadyForFrontendApplicationService {
     private final AuditLedgerService auditLedgerService;
     private final Path projectRoot;
 
+    @Inject
     public PjbBackendReadyForFrontendApplicationService(PjbFrontendDeliveryApplicationService frontendDeliveryApplicationService,
                                                         PjbFinalClosureApplicationService finalClosureApplicationService,
                                                         PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService,
@@ -76,13 +78,13 @@ public class PjbBackendReadyForFrontendApplicationService {
         this(frontendDeliveryApplicationService, finalClosureApplicationService, apiSurfaceSanityApplicationService, buildGateGovernanceService, testQualityMatrixService, auditLedgerService, Path.of(""));
     }
 
-    public PjbBackendReadyForFrontendApplicationService(PjbFrontendDeliveryApplicationService frontendDeliveryApplicationService,
-                                                        PjbFinalClosureApplicationService finalClosureApplicationService,
-                                                        PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService,
-                                                        BuildGateGovernanceService buildGateGovernanceService,
-                                                        TestQualityMatrixService testQualityMatrixService,
-                                                        AuditLedgerService auditLedgerService,
-                                                        Path projectRoot) {
+    PjbBackendReadyForFrontendApplicationService(PjbFrontendDeliveryApplicationService frontendDeliveryApplicationService,
+                                                 PjbFinalClosureApplicationService finalClosureApplicationService,
+                                                 PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService,
+                                                 BuildGateGovernanceService buildGateGovernanceService,
+                                                 TestQualityMatrixService testQualityMatrixService,
+                                                 AuditLedgerService auditLedgerService,
+                                                 Path projectRoot) {
         this.frontendDeliveryApplicationService = Objects.requireNonNull(frontendDeliveryApplicationService);
         this.finalClosureApplicationService = Objects.requireNonNull(finalClosureApplicationService);
         this.apiSurfaceSanityApplicationService = Objects.requireNonNull(apiSurfaceSanityApplicationService);

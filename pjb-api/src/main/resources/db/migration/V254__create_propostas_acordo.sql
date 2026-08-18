@@ -29,3 +29,17 @@ CREATE INDEX IF NOT EXISTS idx_proposta_uuid
 
 CREATE INDEX IF NOT EXISTS idx_proposta_processo_status
     ON propostas_acordo (processo_id, status);
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'fk_batna_proposta'
+          AND conrelid = 'tb_batna_relatorio'::regclass
+    ) THEN
+        ALTER TABLE tb_batna_relatorio
+            ADD CONSTRAINT fk_batna_proposta
+            FOREIGN KEY (proposta_acordo_id) REFERENCES propostas_acordo(id);
+    END IF;
+END $$;

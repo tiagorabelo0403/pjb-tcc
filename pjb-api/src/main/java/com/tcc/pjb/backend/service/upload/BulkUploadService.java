@@ -36,6 +36,7 @@ import com.tcc.pjb.backend.repository.upload.UploadItemRepository;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class BulkUploadService {
@@ -168,6 +169,7 @@ public class BulkUploadService {
         return new UploadItemReserveResponse(itemId, uploadUrl, item.getStatus().name());
     }
 
+    @PjbTransactionalBudget(operation = "upload.bulk.finalize-batch", maxMillis = 8000)
     @Transactional
     public UploadBatchFinalizeResponse finalizeBatch(UUID batchId) {
         UploadBatch batch = batchRepository.findById(batchId)

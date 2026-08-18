@@ -5,6 +5,7 @@ import com.tcc.pjb.backend.core.procedural.ProceduralCatalogSupport.DocumentSpec
 import com.tcc.pjb.backend.core.procedural.ProceduralCatalogSupport.PartyRoleSpec;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.service.rito.model.RitoStage;
@@ -289,11 +290,11 @@ final class ProceduralCatalogStageSupport {
     static List<DocumentSpec> deduplicateDocuments(List<DocumentSpec> documents) {
         Map<String, DocumentSpec> out = new LinkedHashMap<>();
         for (DocumentSpec item : documents) {
-            if (item == null || item.code() == null || item.code().isBlank()) {
+            if (item == null || item.code() == null) {
                 continue;
             }
-            String key = normalizeToken(item.code());
-            out.merge(key, item, (a, b) -> new DocumentSpec(a.code(), a.required() || b.required(), firstNonBlank(a.rationale(), b.rationale(), a.code())));
+            String key = normalizeToken(item.code().name());
+            out.merge(key, item, (a, b) -> new DocumentSpec(a.code(), a.required() || b.required(), firstNonBlank(a.rationale(), b.rationale(), a.code().name())));
         }
         return List.copyOf(out.values());
     }
@@ -313,7 +314,7 @@ final class ProceduralCatalogStageSupport {
         return new PartyRoleSpec(code, required, external, aliases);
     }
 
-    static DocumentSpec doc(String code, boolean required, String rationale) {
+    static DocumentSpec doc(TipoDocumento code, boolean required, String rationale) {
         return new DocumentSpec(code, required, rationale);
     }
 

@@ -31,6 +31,7 @@ import com.tcc.pjb.backend.model.repository.MunicipiosRepository;
 import com.tcc.pjb.backend.model.repository.PainelTribunalMetricaRepository;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import com.tcc.pjb.backend.platform.runtime.execution.PjbTransactionalExecutionSupport;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class AtlasAcessoJusticaService {
@@ -391,6 +392,7 @@ public class AtlasAcessoJusticaService {
     ) {
     }
 
+    @PjbTransactionalBudget(operation = "atlas.acesso-justica.gerar-relatorio-uf", maxMillis = 5000)
     @Transactional(readOnly = true)
     public RelatorioPoliticaPublica gerarRelatorioUF(String uf) {
         String siglaUf = normalizeUf(uf);

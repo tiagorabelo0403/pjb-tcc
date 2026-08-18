@@ -21,6 +21,7 @@ import com.tcc.pjb.backend.model.dto.profile.ChainOfCustodyLedgerResponse;
 import com.tcc.pjb.backend.model.dto.profile.ChainOfCustodySealResponse;
 import com.tcc.pjb.backend.model.entity.pericia.CadeiaCustodiaDigitalLedgerEntry;
 import com.tcc.pjb.backend.model.repository.CadeiaCustodiaDigitalLedgerEntryRepository;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class DigitalCustodyChainLedgerService {
@@ -43,6 +44,7 @@ public class DigitalCustodyChainLedgerService {
     }
 
     @Transactional
+    @PjbTransactionalBudget(operation = "profile.digital-custody.persist", maxMillis = 5000)
     public ChainOfCustodySealResponse persist(String loteReferencia,
                                               String digestColecao,
                                               String chaveCustodia,

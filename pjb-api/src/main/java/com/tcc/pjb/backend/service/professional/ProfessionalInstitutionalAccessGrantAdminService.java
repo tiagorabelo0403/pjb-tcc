@@ -5,6 +5,7 @@ import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalAccessGrantType;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalActorClass;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalGrantApprovalStatus;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalGrantEventType;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalProcessAccessVector;
@@ -395,6 +396,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
     }
 
     @Transactional
+    @PjbTransactionalBudget(operation = "professional.access-grant.issue-batch", maxMillis = 15000)
     public ProfessionalGrantBatchOperationResponse issueBatch(ProfessionalGrantBatchIssueRequest request) {
         Usuario actor = currentUserService.getRequired();
         ProfessionalActorClass managerClass = accessVectorService.actorClass(actor);
@@ -567,6 +569,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
     }
 
     @Transactional
+    @PjbTransactionalBudget(operation = "professional.access-grant.issue-batch-from-template", maxMillis = 15000)
     public ProfessionalGrantBatchOperationResponse issueBatchFromTemplate(ProfessionalGrantTemplateBatchIssueRequest request) {
         Usuario actor = currentUserService.getRequired();
         ProfessionalActorClass managerClass = accessVectorService.actorClass(actor);

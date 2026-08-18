@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.NotBlank;
@@ -33,6 +34,7 @@ import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.processual.document.template.RecursalQualifiedDocumentMaterializerService;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class TemaRecursoRepetitivoService {
@@ -186,6 +188,7 @@ public class TemaRecursoRepetitivoService {
         return toView(saved, documentoFormalAssinado);
     }
 
+    @PjbTransactionalBudget(operation = "ministro.tema-recurso-repetitivo.aplicar-resultado", maxMillis = 8000)
     @Transactional
     public TemaRecursoRepetitivoView aplicarResultado(Long temaId, RelacionarProcessosRequest request) {
         requireMagistradoSuperior();
@@ -198,10 +201,20 @@ public class TemaRecursoRepetitivoService {
         if (processos.isEmpty()) {
             throw new IllegalArgumentException("Nenhum processo localizado para aplicacao do tema.");
         }
+        List<Long> processoIds = processos.stream().map(Processo::getId).toList();
+        List<String> templateCodes = processos.stream()
+                .map(processo -> "TEMA-REPETITIVO-APLICAR:" + tema.getCodigo() + ":" + processo.getId())
+                .toList();
+        Set<Long> processosComWorkItemAplicado = workItemRepository.findAllByProcesso_IdInAndTemplateCodeIn(processoIds, templateCodes).stream()
+                .map(item -> item.getProcesso().getId())
+                .collect(Collectors.toSet());
         for (Processo processo : processos) {
             String marcador = "Tema repetitivo " + tema.getCodigo() + ": " + defaultText(tema.getTeseFirmada(), tema.getEmenta());
             String anterior = trimToNull(processo.getResultadoFinal());
             processo.setResultadoFinal(anterior == null ? marcador : anterior + " | " + marcador);
+            if (processosComWorkItemAplicado.contains(processo.getId())) {
+                continue;
+            }
             criarWorkItem(
                     processo,
                     "TEMA-REPETITIVO-APLICAR:" + tema.getCodigo() + ":" + processo.getId(),

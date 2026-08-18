@@ -10,7 +10,8 @@ class PjbApiRouteGovernanceCoverageTest {
 
     @Test
     void governancaDeRotaDeveCobrirChatEIndicesAdministrativosDeJurisprudencia() throws Exception {
-        String content = Files.readString(Path.of("src/main/resources/application.yml"));
+        String content = Files.readString(Path.of("src/main/resources/application.yml"))
+                + "\n" + Files.readString(Path.of("src/main/resources/application-api-governance.yml"));
         assertTrue(content.contains("- name: chat-operational"), "application.yml deve declarar policy chat-operational.");
         assertTrue(content.contains("/api/v1/chat/**"), "application.yml deve cobrir /api/v1/chat/** na governanca de rota.");
         assertTrue(content.contains("- name: jurisprudencia-index-admin"), "application.yml deve declarar policy jurisprudencia-index-admin.");

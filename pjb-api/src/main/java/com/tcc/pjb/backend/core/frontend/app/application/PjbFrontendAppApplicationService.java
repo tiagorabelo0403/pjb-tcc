@@ -630,11 +630,11 @@ public PjbFrontendProfessionalOrganExecutiveDashboardView procuradoriaOrganExecu
 
 @Transactional(readOnly = true)
 public OfficeBinaryPayload officeTeamMemberAvatar(Long userId, HttpServletRequest request) throws java.io.IOException {
-    ObjectReadResult rr = officeWorkspaceTeamAvatarService.read(userId, request);
-    byte[] bytes = rr.resource().getInputStream().readAllBytes();
+    var result = officeWorkspaceTeamAvatarService.read(userId, request);
+    byte[] bytes = result.content().resource().getInputStream().readAllBytes();
     Usuario usuario = currentUserService.getRequired();
     auditLedgerService.appendSafely("FRONTEND_APP_OFFICE_TEAM_AVATAR", "FRONTEND", String.valueOf(usuario.getId()), "target=" + userId);
-    return new OfficeBinaryPayload(rr.contentType(), bytes);
+    return new OfficeBinaryPayload(result.content().contentType(), bytes, result.sha256());
 }
 
     @Transactional(readOnly = true)
@@ -791,7 +791,7 @@ public OfficeBinaryPayload officeTeamMemberAvatar(Long userId, HttpServletReques
         }
     }
 
-    public record OfficeBinaryPayload(String contentType, byte[] bytes) {}
+    public record OfficeBinaryPayload(String contentType, byte[] bytes, String etag) {}
 
     private String activeHat(List<SecurityHatResponse> hats) {
         if (hats == null || hats.isEmpty()) {

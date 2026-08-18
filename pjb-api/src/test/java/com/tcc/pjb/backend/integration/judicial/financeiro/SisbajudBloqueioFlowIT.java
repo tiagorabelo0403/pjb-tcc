@@ -7,8 +7,10 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.SisbajudOperacaoRepository;
+import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,18 +25,19 @@ class SisbajudBloqueioFlowIT extends PjbIntegrationTestBase {
     private SisbajudBloqueioService sisbajudBloqueioService;
     @Autowired
     private SisbajudOperacaoRepository operacaoRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @MockitoBean
     private SisbajudHttpClient sisbajudHttpClient;
     @MockitoBean
     private com.tcc.pjb.backend.core.security.CurrentUserService currentUserService;
-    @MockitoBean
-    private com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService authorizationService;
 
     @Test
     void devePersistirOperacaoConfirmada() {
-        Usuario usuario = new Usuario();
-        usuario.setId(5L);
+        Usuario usuario = usuarioRepository.save(Usuario.builder()
+                .nome("Juiz Sisbajud").email("juiz-sisbajud-test").cpf("00000000005").senha("x")
+                .tipoUsuario(TipoUsuario.JUIZ_ESTADUAL).perfil("JUIZ_ESTADUAL").ativo(true).build());
         org.mockito.Mockito.when(currentUserService.getRequired()).thenReturn(usuario);
         org.mockito.Mockito.when(sisbajudHttpClient.solicitarBloqueio(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new com.tcc.pjb.backend.integration.judicial.financeiro.domain.SisbajudHttpResponse("PROTO-1", "ok"));

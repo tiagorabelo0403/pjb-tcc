@@ -17,6 +17,7 @@ import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.tribunal.regras.TribunalRuleEngine;
+import jakarta.inject.Inject;
 
 @Service
 public class NationalProcessRoutingService {
@@ -31,6 +32,7 @@ public class NationalProcessRoutingService {
     private final NationalProcessRoutingNarrativeFactory narrativeFactory;
     private final NationalProcessRoutingMetadataFactory metadataFactory;
 
+    @Inject
     public NationalProcessRoutingService(TribunalRuleEngine tribunalRuleEngine,
                                          TerritorialRoutingResolver territorialRoutingResolver,
                                          RelationalRoutingResolver relationalRoutingResolver,

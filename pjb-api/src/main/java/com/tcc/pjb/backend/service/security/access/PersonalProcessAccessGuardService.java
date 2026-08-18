@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.ProcessoPartyCpfLinkPolicy;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
@@ -152,10 +153,7 @@ public class PersonalProcessAccessGuardService {
         if (cpf == null || cpf.isBlank() || processo == null) {
             throw new AccessDeniedPjbException("Acesso pessoal ao processo bloqueado: usuário sem CPF civil válido ou processo ausente.");
         }
-        boolean linked = cpf.equals(processo.getParteAutoraCpf())
-                || cpf.equals(processo.getParteReuCpf())
-                || (processo.getUsuario() != null && cpf.equals(processo.getUsuario().getCpf()));
-        if (!linked) {
+        if (!ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)) {
             throw new AccessDeniedPjbException("Acesso pessoal ao processo bloqueado: a identidade civil autenticada não está vinculada ao processo informado.");
         }
     }

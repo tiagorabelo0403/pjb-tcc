@@ -80,6 +80,6 @@ class ProcessReadingEcosystemResolverTest {
         assertEquals("PDPJ_CONVERGENCIA_COM_HTML_NATIVO_PRIORITARIO", response.convergenceMode());
         assertEquals("ASSINATURA_NUVEM_MFA_COM_HTML_PRIMARIO_E_PDF_FORMAL", response.signatureMode());
         assertTrue(response.strategicCapabilities().contains("PAINEL_CONVERGENTE_COM_PDPJ_E_INTEROPERABILIDADE_NACIONAL"));
-        assertTrue(response.frontend().containsKey("supportsCloudSigning"));
+        assertTrue(response.frontend().supportsCloudSigning());
     }
 }

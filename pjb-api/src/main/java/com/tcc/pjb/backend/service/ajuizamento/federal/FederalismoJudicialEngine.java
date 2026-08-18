@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.util.Hashes;
+import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.dto.ajuizamento.federal.FederalismoEventoRequest;
 import com.tcc.pjb.backend.model.dto.ajuizamento.federal.FederalismoHeartbeatRequest;
 import com.tcc.pjb.backend.model.dto.ajuizamento.federal.FederalismoLedgerResponse;
@@ -36,6 +37,7 @@ import com.tcc.pjb.backend.model.repository.FederacaoEventoOutboxRepository;
 import com.tcc.pjb.backend.model.repository.FederacaoLedgerEntryRepository;
 import com.tcc.pjb.backend.model.repository.NoFederacaoJudicialRepository;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class FederalismoJudicialEngine {
@@ -118,6 +120,7 @@ public class FederalismoJudicialEngine {
         return FederalismoNodeResponse.of(salvo);
     }
 
+    @PjbTransactionalBudget(operation = "federalismo.engine.listar-nos", maxMillis = 3000)
     @Transactional(readOnly = true)
     public List<FederalismoNodeResponse> listarNos() {
         CachedNodes cache = nodesCache.get();
@@ -134,6 +137,7 @@ public class FederalismoJudicialEngine {
         return noRepository.findByCodigoTribunal(normalizeUpper(codigoTribunal)).map(FederalismoNodeResponse::of);
     }
 
+    @PjbTransactionalBudget(operation = "federalismo.engine.health", maxMillis = 3000)
     @Transactional(readOnly = true)
     public FederacaoHealth healthFederacao() {
         CachedHealth cache = healthCache.get();
@@ -174,7 +178,7 @@ public class FederalismoJudicialEngine {
     public FederalismoLedgerResponse registrarEventoFederado(FederalismoEventoRequest request) {
         Objects.requireNonNull(request);
         NoFederacaoJudicial no = noRepository.findByCodigoTribunal(normalizeUpper(request.tribunalCodigo()))
-                .orElseThrow(() -> new IllegalArgumentException("No federativo nao encontrado"));
+                .orElseGet(() -> criarNoOperacionalMinimo(request));
         if (!no.isAceitaRecepcaoEventos()) {
             throw new IllegalStateException("No federativo nao aceita recepcao de eventos");
         }
@@ -328,14 +332,12 @@ public class FederalismoJudicialEngine {
         if (processo == null || processo.getNumeroUnificado() == null || processo.getNumeroUnificado().isBlank()) {
             return;
         }
-        String tribunalCodigo = processo.getJurisdicao() != null && processo.getJurisdicao().getCodigo() != null
-                ? processo.getJurisdicao().getCodigo()
-                : defaultTribunalCodigo(processo);
+        String tribunalCodigo = resolveTribunalCodigo(processo);
         if (noRepository.findByCodigoTribunal(normalizeUpper(tribunalCodigo)).isEmpty()) {
             upsertNo(new FederalismoNodeUpsertRequest(
                     tribunalCodigo,
                     "Tribunal " + tribunalCodigo,
-                    processo.getJurisdicao() != null ? processo.getJurisdicao().getEstado() : null,
+                    resolveUf(processo),
                     processo.getTipoJustica() != null ? processo.getTipoJustica() : com.tcc.pjb.backend.domain.enums.TipoJustica.ESTADUAL,
                     "https://" + tribunalCodigo.toLowerCase() + ".pjb.local",
                     null,
@@ -378,6 +380,26 @@ public class FederalismoJudicialEngine {
                 toJson(payload),
                 Map.of("aggregateType", "Processo", "aggregateId", processo.getId())
         ));
+    }
+
+    private String resolveTribunalCodigo(Processo processo) {
+        String explicit = firstNonBlank(
+                processo.getTribunalCodigoRoteado(),
+                processo.getTribunal(),
+                processo.getJurisdicao() != null ? processo.getJurisdicao().getCodigo() : null,
+                processo.getJurisdicao() != null ? processo.getJurisdicao().getSigla() : null
+        );
+        if (explicit != null) {
+            return explicit;
+        }
+        return defaultTribunalCodigo(processo);
+    }
+
+    private String resolveUf(Processo processo) {
+        return firstNonBlank(
+                processo.getUf(),
+                processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null
+        );
     }
 
     private FederacaoEventoOutbox enfileirarInterno(NoFederacaoJudicial no,
@@ -461,6 +483,34 @@ public class FederalismoJudicialEngine {
         );
     }
 
+    private NoFederacaoJudicial criarNoOperacionalMinimo(FederalismoEventoRequest request) {
+        String codigo = normalizeUpper(request.tribunalCodigo());
+        if (codigo == null) {
+            throw new IllegalArgumentException("Codigo do tribunal obrigatorio");
+        }
+        String topic = normalizeUpper(request.topicKafka());
+        NoFederacaoJudicial no = new NoFederacaoJudicial(
+                codigo,
+                "Tribunal " + codigo,
+                null,
+                TipoJustica.ESTADUAL,
+                "https://" + codigo.toLowerCase() + ".pjb.local"
+        );
+        no.setStatusAtual(StatusNoFederacao.ONLINE);
+        no.setVersaoSchemaAtual(SCHEMA_VERSION_ATUAL);
+        no.setCapacidadeBacklog(20000L);
+        no.setOperacaoAutonomaAtiva(true);
+        no.setAceitaRecepcaoEventos(true);
+        no.setRegiao("BRASIL");
+        no.setZona("DEFAULT");
+        no.setPrioridadeFailover(50);
+        no.setTopicosPermitidos(topic == null ? Set.of(TOPIC_FEDERACAO_EVENTOS) : Set.of(topic));
+        no.setCapacidades(Set.of("SYNC", "LEDGER", "OUTBOX", "PROCESSO"));
+        NoFederacaoJudicial salvo = noRepository.saveAndFlush(no);
+        invalidateNodeCaches();
+        return salvo;
+    }
+
     private Map<String, Object> buildMetadata(NoFederacaoJudicial no, FederalismoEventoRequest request, String payloadHash, ClassificacaoConflitoFederacao conflito) {
         Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("tribunalCodigo", no.getCodigoTribunal());
@@ -528,7 +578,7 @@ public class FederalismoJudicialEngine {
             return "PJB";
         }
         return switch (processo.getTipoJustica()) {
-            case ESTADUAL -> "TJ" + (processo.getJurisdicao() != null && processo.getJurisdicao().getEstado() != null ? processo.getJurisdicao().getEstado() : "BR");
+            case ESTADUAL -> "TJ" + Objects.requireNonNullElse(resolveUf(processo), "BR");
             case FEDERAL -> "TRF";
             case TRABALHO -> "TRT";
             case ELEITORAL -> "TRE";
@@ -544,6 +594,19 @@ public class FederalismoJudicialEngine {
         }
         String normalized = value.trim();
         return normalized.isEmpty() ? null : normalized.toUpperCase();
+    }
+
+    private static String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            String normalized = normalizeNullable(value);
+            if (normalized != null) {
+                return normalized;
+            }
+        }
+        return null;
     }
 
     private static String normalizeNullable(String value) {

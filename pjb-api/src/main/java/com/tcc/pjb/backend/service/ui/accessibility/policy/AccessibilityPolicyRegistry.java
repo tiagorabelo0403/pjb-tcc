@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
-public final class AccessibilityPolicyRegistry {
+public class AccessibilityPolicyRegistry {
 
   private static final Logger log = LoggerFactory.getLogger(AccessibilityPolicyRegistry.class);
 

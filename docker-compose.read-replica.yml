@@ -26,7 +26,11 @@ services:
 
   postgres-replica:
     profiles: ["replica"]
-    image: postgres:17
+    # Deve usar exatamente a mesma imagem do primario (docker-compose.yml). Replicacao fisica
+    # do PostgreSQL exige que o standby carregue todas as extensoes que o primario tem — se o
+    # primario ativa 'vector' via migration V307 e o standby estiver em postgres:17 puro, o
+    # startup falha ao replicar catalogos de sistema com referencias a essa extensao.
+    image: pgvector/pgvector:pg17
     environment:
       POSTGRES_USER: ${PJB_DB_USER:-pjb}
       POSTGRES_PASSWORD: ${PJB_DB_PASS:-pjb}
@@ -50,6 +54,8 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_POSTGRES_REPLICA_MEM_LIMIT:-1g}
+    cpus: ${PJB_POSTGRES_REPLICA_CPUS:-2.0}
 
   backend:
     environment:

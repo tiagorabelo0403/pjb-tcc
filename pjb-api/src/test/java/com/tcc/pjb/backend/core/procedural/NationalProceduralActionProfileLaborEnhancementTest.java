@@ -90,9 +90,9 @@ class NationalProceduralActionProfileLaborEnhancementTest {
         var inquerito = ProceduralCatalogSupport.snapshot(RitoProcessual.TRABALHISTA_INQUERITO_FALTA_GRAVE);
         var cumprimento = ProceduralCatalogSupport.snapshot(RitoProcessual.TRABALHISTA_ACAO_CUMPRIMENTO);
 
-        assertTrue(alcada.documents().stream().anyMatch(doc -> doc.code().equals("MEMORIA_VALOR_CAUSA") && doc.required()));
-        assertTrue(inquerito.documents().stream().anyMatch(doc -> doc.code().equals("CONTROLE_PRAZO_DECADENCIAL") && doc.required()));
-        assertTrue(cumprimento.documents().stream().anyMatch(doc -> doc.code().equals("INSTRUMENTO_COLETIVO") && doc.required()));
+        assertTrue(alcada.documents().stream().anyMatch(doc -> doc.code().name().equals("MEMORIA_VALOR_CAUSA") && doc.required()));
+        assertTrue(inquerito.documents().stream().anyMatch(doc -> doc.code().name().equals("CONTROLE_PRAZO_DECADENCIAL") && doc.required()));
+        assertTrue(cumprimento.documents().stream().anyMatch(doc -> doc.code().name().equals("INSTRUMENTO_COLETIVO") && doc.required()));
         assertTrue(cumprimento.stages().stream().anyMatch(stage -> stage.getFase().equals("CUMPRIMENTO_SENTENCA")));
 
         ProceduralCatalogService catalogService = new ProceduralCatalogService();

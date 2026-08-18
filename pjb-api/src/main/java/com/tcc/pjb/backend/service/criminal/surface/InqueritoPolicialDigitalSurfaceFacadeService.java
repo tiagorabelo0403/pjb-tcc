@@ -43,6 +43,7 @@ public class InqueritoPolicialDigitalSurfaceFacadeService {
                                 request.indiciosResumo(),
                                 request.diligenciasPendentes(),
                                 request.orgaoApuracao(),
+                                request.unidadeApuracaoId(),
                                 request.uf(),
                                 request.municipio(),
                                 request.nivelSigilo(),

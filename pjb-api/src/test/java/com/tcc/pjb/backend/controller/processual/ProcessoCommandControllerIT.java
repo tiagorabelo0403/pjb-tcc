@@ -12,11 +12,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.ai.contract.IAResponse;
 import com.tcc.pjb.backend.ai.orchestrator.IAOrchestrator;
+import com.tcc.pjb.backend.core.procedural.NationalProceduralRoutingService;
+import com.tcc.pjb.backend.core.procedural.ProceduralRoutingReport;
 import com.tcc.pjb.backend.integration.judicial.JudicialConnectorLifecycleService;
 import com.tcc.pjb.backend.model.dto.ProcessoRequest;
+import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
@@ -29,6 +32,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -51,7 +55,7 @@ import org.springframework.test.web.servlet.MockMvc;
         "spring.cache.type=none",
         "pjb.workflow.enabled=false"
 })
-class ProcessoCommandControllerIT extends PjbIntegrationTestBase {
+class ProcessoCommandControllerIT extends PjbFlowItBase {
 
     @Autowired
     private MockMvc mockMvc;
@@ -74,11 +78,14 @@ class ProcessoCommandControllerIT extends PjbIntegrationTestBase {
     @MockitoBean
     private IAOrchestrator iaOrchestrator;
 
+    @MockitoBean
+    private NationalProceduralRoutingService nationalProceduralRoutingService;
+
+    @MockitoBean
+    private CompletudeDocumentalPolicyService completudeDocumentalPolicyService;
+
     @BeforeEach
     void setup() {
-        processoRepository.deleteAll();
-        auditoriaRepository.deleteAll();
-        usuarioRepository.deleteAll();
         usuarioRepository.save(novoAdvogado());
         when(judicialConnectorLifecycleService.submitAndSynchronize(any(), any(), any(), anyBoolean())).thenReturn(Optional.empty());
         when(iaOrchestrator.processar(any())).thenReturn(IAResponse.builder()
@@ -88,6 +95,18 @@ class ProcessoCommandControllerIT extends PjbIntegrationTestBase {
                 .confianca(1.0)
                 .dataGeracao(Instant.parse("2026-04-16T12:00:00Z"))
                 .build());
+        when(nationalProceduralRoutingService.analyzeProcess(any(), any(), any()))
+                .thenAnswer(inv -> {
+                    Processo p = inv.getArgument(0);
+                    String rito = p.getRito() != null ? p.getRito().name() : "COMUM_ORDINARIO";
+                    return passingRoutingReport(rito);
+                });
+        when(completudeDocumentalPolicyService.diagnosticar(any(), any()))
+                .thenAnswer(inv -> new CompletudeDocumentalPolicyService.DiagnosticoCompletudeDocumental(
+                        false, List.of(), inv.getArgument(0)));
+        when(completudeDocumentalPolicyService.diagnosticar(any(), any(), any()))
+                .thenAnswer(inv -> new CompletudeDocumentalPolicyService.DiagnosticoCompletudeDocumental(
+                        false, List.of(), inv.getArgument(0)));
     }
 
     @Test
@@ -108,11 +127,15 @@ class ProcessoCommandControllerIT extends PjbIntegrationTestBase {
 
         Processo processo = awaitAtMost(
                 "processo persistido via boundary HTTP",
-                () -> processoRepository.findAll().stream().findFirst().orElse(null),
+                () -> processoRepository.findAll().stream().findFirst()
+                        .map(p -> processoRepository.findProcessoCompletoById(p.getId()).orElse(null))
+                        .orElse(null),
                 value -> value != null && value.getId() != null && value.getUsuario() != null
         );
 
         assertThat(processo.getUsuario().getEmail()).isEqualTo("advogado@test.local");
+        assertThat(processo.getTribunalCodigoRoteado()).isEqualTo("TJCE");
+        assertThat(processo.getUf()).isEqualTo("CE");
         verify(judicialConnectorLifecycleService, timeout(5000)).submitAndSynchronize(any(), any(), any(), org.mockito.ArgumentMatchers.eq(true));
 
         AuditoriaEventoComportamental audit = awaitAtMost(
@@ -199,7 +222,9 @@ class ProcessoCommandControllerIT extends PjbIntegrationTestBase {
 
         Processo processo = awaitAtMost(
                 "processo persistido mesmo com falha no conector judicial",
-                () -> processoRepository.findAll().stream().findFirst().orElse(null),
+                () -> processoRepository.findAll().stream().findFirst()
+                        .map(p -> processoRepository.findProcessoCompletoById(p.getId()).orElse(null))
+                        .orElse(null),
                 value -> value != null && value.getId() != null
         );
 
@@ -266,6 +291,21 @@ class ProcessoCommandControllerIT extends PjbIntegrationTestBase {
             document.save(output);
             return output.toByteArray();
         }
+    }
+
+    private static ProceduralRoutingReport passingRoutingReport(String ritoSugerido) {
+        return new ProceduralRoutingReport(
+                Instant.now(), null, null, null, null,
+                "ESTADUAL", ritoSugerido,
+                "TJCE", null, null,
+                "Fortaleza", "Fortaleza", "CE",
+                null, null, null, null,
+                false, false, false,
+                0.9d, "LOW",
+                List.of(), null, null,
+                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(),
+                Map.of()
+        );
     }
 
     private static <T> T awaitAtMost(String description, Supplier<T> supplier, Predicate<T> predicate) {

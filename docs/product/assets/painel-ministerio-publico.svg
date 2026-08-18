@@ -1,0 +1,103 @@
+<svg viewBox="0 0 1280 820" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Painel do Ministério Público — manifestações pendentes, parecer com fundamentação e ofícios expedidos</title>
+  <desc id="desc">Mockup do painel do promotor, com os campos reais de MinisterioPublicoPayload (promotoriaId, ramo, manifestacoesPendentes), o formulário de parecer com fundamentação, provas documentais e marcação de sigilo sensível, e a auditoria de ofícios expedidos com status e prazo de resposta.</desc>
+  <defs><filter id="s1" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.35"/></filter></defs>
+
+  <rect x="20" y="20" width="1240" height="780" rx="14" fill="#12172a" stroke="#2a3350" filter="url(#s1)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/><circle cx="66" cy="48" r="6" fill="#e0b84f"/><circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">⚖️ PJB — Painel do Ministério Público</text>
+  <text x="1195" y="53" text-anchor="end" font-size="12.5" fill="#c9d3ea">Dr. Marcelo Prado · 3ª Promotoria Cível</text>
+
+  <g font-size="12">
+    <rect x="50" y="96" width="220" height="90" rx="12" fill="#7a2e3d"/>
+    <text x="66" y="122" font-size="10.5" fill="#f0d5da">promotoriaId</text>
+    <text x="66" y="146" font-size="15" font-weight="700" fill="#ffffff">3ª Promotoria Cível</text>
+    <text x="66" y="166" font-size="10.5" fill="#f0d5da">ramo: Cível</text>
+
+    <rect x="286" y="96" width="220" height="90" rx="12" fill="#3a1f28"/>
+    <text x="302" y="122" font-size="10.5" fill="#f0d5da">manifestacoesPendentes</text>
+    <text x="302" y="152" font-size="26" font-weight="700" fill="#f4a3a3">7</text>
+
+    <rect x="522" y="96" width="220" height="90" rx="12" fill="#171d34"/>
+    <text x="538" y="122" font-size="10.5" fill="#a9b3cc">Radar de prazo (comum)</text>
+    <text x="538" y="146" font-size="13" fill="#ffffff">2 vencendo em 48h</text>
+
+    <rect x="758" y="96" width="220" height="90" rx="12" fill="#171d34"/>
+    <text x="774" y="122" font-size="10.5" fill="#a9b3cc">Sigilo ativo (comum)</text>
+    <text x="774" y="146" font-size="13" fill="#ffffff">1 acesso · expira em 34min</text>
+
+    <rect x="994" y="96" width="196" height="90" rx="12" fill="#171d34"/>
+    <text x="1010" y="122" font-size="10.5" fill="#a9b3cc">Auditoria comportamental</text>
+    <text x="1010" y="146" font-size="12" fill="#7fd1a0">Normal — sem anomalia</text>
+  </g>
+
+  <g>
+    <rect x="50" y="210" width="1140" height="330" rx="14" fill="#161c30"/>
+    <text x="76" y="242" font-size="14" font-weight="700" fill="#ffffff">📝 Manifestação — parecer com fundamentação</text>
+
+    <text x="76" y="274" font-size="11" fill="#7d879e">Parecer</text>
+    <rect x="76" y="284" width="500" height="60" rx="8" fill="#0f1830"/>
+    <text x="92" y="306" font-size="11" fill="#dfe4ee">"Pelo prosseguimento do feito, com deferimento</text>
+    <text x="92" y="324" font-size="11" fill="#dfe4ee">da produção de prova pericial requerida..."</text>
+
+    <text x="76" y="366" font-size="11" fill="#7d879e">Fundamentação</text>
+    <rect x="76" y="376" width="500" height="60" rx="8" fill="#0f1830"/>
+    <text x="92" y="398" font-size="11" fill="#dfe4ee">"CPC art. 370 — necessidade de prova técnica</text>
+    <text x="92" y="416" font-size="11" fill="#dfe4ee">para elucidação de fato controvertido"</text>
+
+    <text x="620" y="274" font-size="11" fill="#7d879e">Provas documentais anexadas</text>
+    <text x="620" y="296" font-size="11.5" fill="#ffffff">• Laudo técnico preliminar</text>
+    <text x="620" y="316" font-size="11.5" fill="#ffffff">• Ata de inspeção judicial</text>
+
+    <g>
+      <rect x="620" y="346" width="18" height="18" rx="4" fill="#3a1f28" stroke="#f4a3a3"/>
+      <text x="626" y="360" font-size="11" fill="#f4a3a3">✓</text>
+      <text x="646" y="360" font-size="11" fill="#dfe4ee">Sigilo sensível — acesso restrito</text>
+    </g>
+
+    <rect x="620" y="380" width="240" height="46" rx="10" fill="#2c3e67"/>
+    <text x="740" y="408" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">▶ Protocolar manifestação</text>
+
+    <text x="76" y="470" font-size="10.5" fill="#5d6785">Dados fictícios — campos reais de MinisterioPublicoPayload e MinisterioPublicoParecerRequest.</text>
+  </g>
+
+  <g>
+    <rect x="50" y="558" width="1140" height="176" rx="14" fill="#161c30"/>
+    <text x="76" y="590" font-size="14" font-weight="700" fill="#ffffff">📤 Ofícios expedidos — auditoria e prazo de resposta</text>
+
+    <text x="76" y="616" font-size="10" fill="#7d879e">TRACKING</text>
+    <text x="240" y="616" font-size="10" fill="#7d879e">TIPO</text>
+    <text x="400" y="616" font-size="10" fill="#7d879e">STATUS</text>
+    <text x="560" y="616" font-size="10" fill="#7d879e">PROTOCOLO</text>
+    <text x="760" y="616" font-size="10" fill="#7d879e">ENVIADO EM</text>
+    <text x="960" y="616" font-size="10" fill="#7d879e">ENTREGUE EM</text>
+    <line x1="76" y1="626" x2="1150" y2="626" stroke="#2a3350"/>
+
+    <text x="76" y="650" font-size="11.5" fill="#dfe4ee">OF-2026-00341</text>
+    <text x="240" y="650" font-size="11.5" fill="#dfe4ee">Requisição de laudo</text>
+    <text x="400" y="650" font-size="11.5" fill="#7fd1a0">ENTREGUE</text>
+    <text x="560" y="650" font-size="11.5" fill="#a9b3cc">IML-CE 1123/26</text>
+    <text x="760" y="650" font-size="11.5" fill="#a9b3cc">28/07 09:14</text>
+    <text x="960" y="650" font-size="11.5" fill="#a9b3cc">29/07 15:02</text>
+
+    <text x="76" y="678" font-size="11.5" fill="#dfe4ee">OF-2026-00358</text>
+    <text x="240" y="678" font-size="11.5" fill="#dfe4ee">Solicitação de informação</text>
+    <text x="400" y="678" font-size="11.5" fill="#e0c98a">ENVIADO</text>
+    <text x="560" y="678" font-size="11.5" fill="#a9b3cc">SSP-CE 887/26</text>
+    <text x="760" y="678" font-size="11.5" fill="#a9b3cc">03/08 11:40</text>
+    <text x="960" y="678" font-size="11.5" fill="#5d6785">— aguardando</text>
+
+    <text x="76" y="706" font-size="11.5" fill="#dfe4ee">OF-2026-00362</text>
+    <text x="240" y="706" font-size="11.5" fill="#dfe4ee">Requisição de perícia contábil</text>
+    <text x="400" y="706" font-size="11.5" fill="#c9d3ea">CRIADO</text>
+    <text x="560" y="706" font-size="11.5" fill="#5d6785">—</text>
+    <text x="760" y="706" font-size="11.5" fill="#5d6785">— não enviado</text>
+    <text x="960" y="706" font-size="11.5" fill="#5d6785">—</text>
+
+    <text x="76" y="732" font-size="10" fill="#5d6785">Dados fictícios — campos reais de LaianeOficio/LaianeMpOficioResponse (status CRIADO → ENVIADO → ENTREGUE, ou CANCELADO).</text>
+  </g>
+
+  <text x="50" y="770" font-size="11" fill="#5d6785">O painel também herda os 6 blocos comuns de segurança de todo perfil profissional do PJB (ver "Anatomia comum a todo painel").</text>
+</svg>

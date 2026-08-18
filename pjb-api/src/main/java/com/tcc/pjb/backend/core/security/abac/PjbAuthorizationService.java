@@ -5,6 +5,7 @@ import com.tcc.pjb.backend.core.comunicacao.institucional.access.AutorizacaoCaix
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.GovBrAssuranceExtractor;
 import com.tcc.pjb.backend.core.security.GovBrAssurancePolicy;
+import com.tcc.pjb.backend.core.security.ProcessoPartyCpfLinkPolicy;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalDocumentScopePolicyService;
 import com.tcc.pjb.backend.core.security.abac.policy.PolicyRegistry;
 import com.tcc.pjb.backend.core.security.sigilo.service.SigiloAccessService;
@@ -144,13 +145,7 @@ public class PjbAuthorizationService {
         if (cpf == null || cpf.isBlank()) {
             throw new AccessDeniedPjbException("CPF não encontrado no perfil");
         }
-        if (processo == null) {
-            throw new AccessDeniedPjbException("Cidadão não é parte do processo.");
-        }
-        boolean parteDoProcesso = cpf.equals(processo.getParteAutoraCpf())
-                || cpf.equals(processo.getParteReuCpf())
-                || (processo.getUsuario() != null && cpf.equals(processo.getUsuario().getCpf()));
-        if (!parteDoProcesso) {
+        if (!ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)) {
             throw new AccessDeniedPjbException("Cidadão não é parte do processo.");
         }
     }

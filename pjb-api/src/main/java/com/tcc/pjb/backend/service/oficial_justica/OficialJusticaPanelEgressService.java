@@ -9,6 +9,7 @@ import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.forum.ForumOfficialReturnInboxService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
@@ -56,6 +57,7 @@ public class OficialJusticaPanelEgressService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @PjbTransactionalBudget(operation = "oficial-justica.panel-egress.reconcile-visibility", maxMillis = 8000)
     public VisibilitySnapshot reconcileVisibility(Usuario usuario, List<WorkItem> source) {
         List<WorkItem> incoming = source == null ? List.of() : source.stream().filter(Objects::nonNull).toList();
         if (incoming.isEmpty()) {

@@ -21,8 +21,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.tcc.pjb.backend.configs.security.perimeter.PerimeterSecurityFilter;
 import com.tcc.pjb.backend.configs.security.perimeter.ForwardedHeaderGuardFilter;
@@ -47,8 +50,6 @@ import com.tcc.pjb.backend.core.observability.systemhealth.PjbOperationalCrisisS
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.magistratura.delegation.DelegationTokenService;
 import com.tcc.pjb.backend.core.security.magistratura.web.DelegationTokenAugmentationFilter;
-import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenService;
-import com.tcc.pjb.backend.core.security.stepup.web.MinisterStepUpFilter;
 import com.tcc.pjb.backend.core.security.stepup.web.DecisionStepUpFilter;
 import com.tcc.pjb.backend.core.security.stepup.web.DecisionClientBindingFilter;
 import com.tcc.pjb.backend.core.security.device.web.DevicePolicyFilter;
@@ -61,6 +62,10 @@ import com.tcc.pjb.backend.core.security.device.reqhash.RequestBodyHashFilter;
 import com.tcc.pjb.backend.core.security.device.reqhash.BodyHashService;
 import com.tcc.pjb.backend.platform.security.idempotency.PjbIdempotencyFilter;
 import com.tcc.pjb.backend.core.security.webauthn.web.PasskeyAuthenticationFilter;
+import com.tcc.pjb.backend.core.security.webauthn.web.MagistraturaIdleLockFilter;
+import com.tcc.pjb.backend.core.security.webauthn.PasskeySessionActivityService;
+import com.tcc.pjb.backend.core.security.geofence.web.MagistraturaGeofenceFilter;
+import com.tcc.pjb.backend.core.security.geofence.MagistraturaGeofencePolicyService;
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import com.tcc.pjb.backend.configs.security.perimeter.ClientIpResolver;
@@ -68,6 +73,8 @@ import com.tcc.pjb.backend.model.repository.security.TrustedDeviceRepository;
 import com.tcc.pjb.backend.model.repository.security.PasskeySessionRepository;
 import com.tcc.pjb.backend.model.repository.security.UserSecurityProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tcc.pjb.backend.configs.security.DbUserDetailsService;
+import com.tcc.pjb.backend.configs.security.InstitutionalCriticalActionHttpGuardFilter;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.security.ratelimit.RateLimiterStore;
 import com.tcc.pjb.backend.service.infra.scaling.JudicialScaleProfileResolver;
@@ -76,6 +83,9 @@ import com.tcc.pjb.backend.service.infra.scaling.JudicialScaleProfileResolver;
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
+    private static final String STRICT_CONTENT_SECURITY_POLICY = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
+    private static final String SWAGGER_UI_CONTENT_SECURITY_POLICY = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
@@ -90,15 +100,17 @@ public class SecurityConfig {
                                            ObjectProvider<ApiSecurityHardeningFilter> apiSecurityHardeningFilterProvider,
                                            ObjectProvider<ApiRouteGovernanceFilter> apiRouteGovernanceFilterProvider,
                                            ObjectProvider<PasskeyAuthenticationFilter> passkeyFilterProvider,
+                                           ObjectProvider<MagistraturaIdleLockFilter> magistraturaIdleLockFilterProvider,
+                                           ObjectProvider<MagistraturaGeofenceFilter> magistraturaGeofenceFilterProvider,
                                            ObjectProvider<RequestBodyHashFilter> bodyHashFilterProvider,
                                            ObjectProvider<ApiRequestOriginGovernanceFilter> originGovernanceFilterProvider,
                                            ObjectProvider<PjbIdempotencyFilter> pjbIdempotencyFilterProvider,
-                                           DelegationTokenAugmentationFilter delegationFilter,
-                                           MinisterStepUpFilter ministerStepUpFilter,
-                                           DecisionStepUpFilter decisionStepUpFilter,
-                                           DecisionClientBindingFilter decisionClientBindingFilter,
+                                           ObjectProvider<DelegationTokenAugmentationFilter> delegationFilterProvider,
+                                           ObjectProvider<DecisionStepUpFilter> decisionStepUpFilterProvider,
+                                           ObjectProvider<DecisionClientBindingFilter> decisionClientBindingFilterProvider,
                                            ObjectProvider<AccountFreezeFilter> accountFreezeFilterProvider,
                                            ObjectProvider<DevicePolicyFilter> devicePolicyFilterProvider,
+                                           ObjectProvider<InstitutionalCriticalActionHttpGuardFilter> institutionalCriticalActionHttpGuardFilterProvider,
                                            ObjectProvider<JwtDecoder> jwtDecoderProvider,
                                            ApiRouteGovernanceProperties apiRouteGovernanceProperties,
                                            Environment env) throws Exception {
@@ -239,6 +251,20 @@ public class SecurityConfig {
             http.addFilterBefore(passkey, BasicAuthenticationFilter.class);
         }
 
+        MagistraturaIdleLockFilter magistraturaIdleLockFilter = magistraturaIdleLockFilterProvider.getIfAvailable();
+        if (magistraturaIdleLockFilter != null && passkey != null) {
+            http.addFilterAfter(magistraturaIdleLockFilter, PasskeyAuthenticationFilter.class);
+        }
+
+        MagistraturaGeofenceFilter magistraturaGeofenceFilter = magistraturaGeofenceFilterProvider.getIfAvailable();
+        if (magistraturaGeofenceFilter != null && passkey != null) {
+            if (magistraturaIdleLockFilter != null) {
+                http.addFilterAfter(magistraturaGeofenceFilter, MagistraturaIdleLockFilter.class);
+            } else {
+                http.addFilterAfter(magistraturaGeofenceFilter, PasskeyAuthenticationFilter.class);
+            }
+        }
+
         RequestBodyHashFilter bodyHashFilter = bodyHashFilterProvider.getIfAvailable();
         if (bodyHashFilter != null) {
             http.addFilterAfter(bodyHashFilter, BasicAuthenticationFilter.class);
@@ -264,10 +290,28 @@ public class SecurityConfig {
             }
         }
 
-        http.addFilterAfter(delegationFilter, BasicAuthenticationFilter.class);
-        http.addFilterAfter(ministerStepUpFilter, DelegationTokenAugmentationFilter.class);
-        http.addFilterAfter(decisionStepUpFilter, MinisterStepUpFilter.class);
-        http.addFilterAfter(decisionClientBindingFilter, DecisionStepUpFilter.class);
+        DelegationTokenAugmentationFilter delegationFilter = delegationFilterProvider.getIfAvailable();
+        if (delegationFilter != null) {
+            http.addFilterAfter(delegationFilter, BasicAuthenticationFilter.class);
+        }
+        DecisionStepUpFilter decisionStepUpFilter = decisionStepUpFilterProvider.getIfAvailable();
+        if (decisionStepUpFilter != null) {
+            if (delegationFilter != null) {
+                http.addFilterAfter(decisionStepUpFilter, DelegationTokenAugmentationFilter.class);
+            } else {
+                http.addFilterAfter(decisionStepUpFilter, BasicAuthenticationFilter.class);
+            }
+        }
+        DecisionClientBindingFilter decisionClientBindingFilter = decisionClientBindingFilterProvider.getIfAvailable();
+        if (decisionClientBindingFilter != null) {
+            if (decisionStepUpFilter != null) {
+                http.addFilterAfter(decisionClientBindingFilter, DecisionStepUpFilter.class);
+            } else if (delegationFilter != null) {
+                http.addFilterAfter(decisionClientBindingFilter, DelegationTokenAugmentationFilter.class);
+            } else {
+                http.addFilterAfter(decisionClientBindingFilter, BasicAuthenticationFilter.class);
+            }
+        }
 
         AccountFreezeFilter accountFreezeFilter = accountFreezeFilterProvider.getIfAvailable();
         if (accountFreezeFilter != null) {
@@ -284,6 +328,11 @@ public class SecurityConfig {
             }
         }
 
+        InstitutionalCriticalActionHttpGuardFilter institutionalCriticalActionHttpGuardFilter = institutionalCriticalActionHttpGuardFilterProvider.getIfAvailable();
+        if (institutionalCriticalActionHttpGuardFilter != null) {
+            http.addFilterAfter(institutionalCriticalActionHttpGuardFilter, AuthorizationFilter.class);
+        }
+
         JwtDecoder jwtDecoder = jwtDecoderProvider.getIfAvailable();
         if (jwtDecoder != null) {
             http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)));
@@ -298,13 +347,26 @@ public class SecurityConfig {
                 .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
                 .referrerPolicy(referrer -> referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
                 .cacheControl(Customizer.withDefaults())
-                .addHeaderWriter(new StaticHeadersWriter("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"))
+                .addHeaderWriter((request, response) -> response.setHeader(
+                        "Content-Security-Policy",
+                        publicDocs && isSwaggerUiPath(request.getServletPath())
+                                ? SWAGGER_UI_CONTENT_SECURITY_POLICY
+                                : STRICT_CONTENT_SECURITY_POLICY))
                 .addHeaderWriter(new StaticHeadersWriter("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()"))
                 .addHeaderWriter(new StaticHeadersWriter("Cross-Origin-Opener-Policy", "same-origin"))
                 .addHeaderWriter(new StaticHeadersWriter("Cross-Origin-Resource-Policy", "same-origin")));
 
         http.authorizeHttpRequests(authz -> {
                     authz.requestMatchers("/actuator/health", "/actuator/health/**", "/livez", "/readyz", "/startupz").permitAll();
+                    authz.requestMatchers("/demo/**")
+                            .hasAnyAuthority("ROLE_ADMIN", "ROLE_ADMINISTRADOR");
+                    authz.requestMatchers("/api/v1/public/**").permitAll();
+                    authz.requestMatchers(
+                            "/api/v1/auth/passkey/options",
+                            "/api/v1/auth/passkey/finish",
+                            "/api/v1/auth/certificado/desafio",
+                            "/api/v1/auth/certificado/resposta",
+                            "/api/v1/magistratura/ativacao/confirmar").permitAll();
                     authz.requestMatchers("/actuator/info", "/actuator/metrics/**", "/actuator/prometheus")
                             .hasAnyAuthority("ROLE_ADMIN", "ROLE_ADMINISTRADOR");
                     authz.requestMatchers("/api/admin/**", "/api/v1/admin/**")
@@ -318,7 +380,7 @@ public class SecurityConfig {
                             if (paths.isEmpty() || rule.getAuthorities().isEmpty()) {
                                 continue;
                             }
-                            authz.requestMatchers(paths.toArray(String[]::new))
+                            authz.requestMatchers(antPathMatchers(paths))
                                     .hasAnyAuthority(rule.getAuthorities().toArray(String[]::new));
                         }
                     }
@@ -382,6 +444,27 @@ public class SecurityConfig {
     }
 
     @Bean
+    public PasskeyAuthenticationFilter passkeyAuthenticationFilter(PasskeySessionRepository sessionRepo,
+                                                                   UserDetailsService userDetailsService) {
+        return new PasskeyAuthenticationFilter(sessionRepo, userDetailsService);
+    }
+
+    @Bean
+    public MagistraturaIdleLockFilter magistraturaIdleLockFilter(PasskeySessionRepository sessionRepo,
+                                                                   PasskeySessionActivityService activityService,
+                                                                   CurrentUserService currentUserService) {
+        return new MagistraturaIdleLockFilter(sessionRepo, activityService, currentUserService);
+    }
+
+    @Bean
+    public MagistraturaGeofenceFilter magistraturaGeofenceFilter(MagistraturaGeofencePolicyService policyService,
+                                                                   CurrentUserService currentUserService,
+                                                                   ClientIpResolver clientIpResolver,
+                                                                   AuditLedgerService auditLedgerService) {
+        return new MagistraturaGeofenceFilter(policyService, currentUserService, clientIpResolver, auditLedgerService);
+    }
+
+    @Bean
     public CorsConfigurationSource corsConfigurationSource(SecurityPerimeterProperties perimeterProperties, Environment env) {
         CorsConfiguration config = new CorsConfiguration();
         List<String> origins = perimeterProperties.getCorsAllowedOrigins();
@@ -413,8 +496,23 @@ public class SecurityConfig {
                 .toList();
     }
 
+    private static RequestMatcher[] antPathMatchers(List<String> paths) {
+        return paths.stream()
+                .map(AntPathRequestMatcher::new)
+                .toArray(RequestMatcher[]::new);
+    }
+
+    private static boolean isSwaggerUiPath(String path) {
+        return "/swagger-ui.html".equals(path) || path.startsWith("/swagger-ui/");
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService(UsuarioRepository usuarioRepository) {
+        return new DbUserDetailsService(usuarioRepository);
     }
 }

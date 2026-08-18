@@ -21,11 +21,16 @@ CREATE TABLE IF NOT EXISTS tb_usuario_notification_preference (
 
 CREATE INDEX IF NOT EXISTS idx_notif_pref_status ON tb_usuario_notification_preference (ativo);
 
-ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS tracking_token VARCHAR(120);
-ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS tracking_hash VARCHAR(128);
-ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS lido_em TIMESTAMPTZ;
-ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS ciencia_confirmada_em TIMESTAMPTZ;
+DO $$
+BEGIN
+    IF to_regclass('public.notification_history') IS NOT NULL THEN
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS tracking_token VARCHAR(120);
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS tracking_hash VARCHAR(128);
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS lido_em TIMESTAMPTZ;
+        ALTER TABLE notification_history ADD COLUMN IF NOT EXISTS ciencia_confirmada_em TIMESTAMPTZ;
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_notification_history_tracking_token ON notification_history (tracking_token);
-CREATE INDEX IF NOT EXISTS idx_notification_history_usuario_processo_canal ON notification_history (usuario_id, processo_id, canal);
-CREATE INDEX IF NOT EXISTS idx_notification_history_status_enviado_em ON notification_history (status, enviado_em);
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_notification_history_tracking_token ON notification_history (tracking_token);
+        CREATE INDEX IF NOT EXISTS idx_notification_history_usuario_processo_canal ON notification_history (usuario_id, processo_id, canal);
+        CREATE INDEX IF NOT EXISTS idx_notification_history_status_enviado_em ON notification_history (status, enviado_em);
+    END IF;
+END $$;

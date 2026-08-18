@@ -1,6 +1,6 @@
 -- V237: documento operational state and extended custody fields
 
-ALTER TABLE pjb_documento_processual
+ALTER TABLE tb_documento_processual
     ADD COLUMN IF NOT EXISTS estado_operacional    VARCHAR(40),
     ADD COLUMN IF NOT EXISTS cadeia_custodia_id    UUID,
     ADD COLUMN IF NOT EXISTS protocolo_externo     VARCHAR(120),
@@ -8,5 +8,5 @@ ALTER TABLE pjb_documento_processual
     ADD COLUMN IF NOT EXISTS quantidade_paginas    INTEGER,
     ADD COLUMN IF NOT EXISTS lido_por_json         TEXT;
 
-CREATE INDEX IF NOT EXISTS idx_doc_estado_operacional ON pjb_documento_processual (estado_operacional) WHERE estado_operacional IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_doc_cadeia_custodia    ON pjb_documento_processual (cadeia_custodia_id) WHERE cadeia_custodia_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_doc_estado_operacional ON tb_documento_processual (estado_operacional) WHERE estado_operacional IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_doc_cadeia_custodia    ON tb_documento_processual (cadeia_custodia_id) WHERE cadeia_custodia_id IS NOT NULL;

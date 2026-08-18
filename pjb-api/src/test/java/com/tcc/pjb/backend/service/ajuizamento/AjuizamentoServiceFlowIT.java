@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.service.ajuizamento;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
@@ -19,21 +19,27 @@ import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.repository.outbox.OutboxEventRepository;
 import com.tcc.pjb.backend.service.AjuizamentoService;
 import com.tcc.pjb.backend.service.exception.ErroDeTetoException;
+import com.tcc.pjb.backend.service.triagem.TriagemNacionalIAEngine;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestPropertySource(properties = {
         "spring.cache.type=none",
-        "pjb.workflow.enabled=false"
+        "pjb.workflow.enabled=false",
+        "pjb.outbox.ingress.enabled=false"
 })
-class AjuizamentoServiceFlowIT extends PjbIntegrationTestBase {
+class AjuizamentoServiceFlowIT extends PjbFlowItBase {
 
     @Autowired
     private AjuizamentoService ajuizamentoService;
@@ -46,6 +52,14 @@ class AjuizamentoServiceFlowIT extends PjbIntegrationTestBase {
 
     @Autowired
     private OutboxEventRepository outboxEventRepository;
+
+    @MockitoBean
+    private TriagemNacionalIAEngine triagemNacionalIAEngine;
+
+    @AfterAll
+    void truncateAfterAll() {
+        truncateAllTrackedTables();
+    }
 
     @Test
     void deveAjuizarEmitirOutboxECriarFilaDeRevisaoDaSecretariaQuandoHouverPendenciaInicial() {

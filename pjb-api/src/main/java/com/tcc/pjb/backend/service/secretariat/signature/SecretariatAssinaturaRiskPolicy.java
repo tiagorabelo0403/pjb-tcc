@@ -2,10 +2,12 @@ package com.tcc.pjb.backend.service.secretariat.signature;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
+@Component
 public final class SecretariatAssinaturaRiskPolicy {
 
-    private SecretariatAssinaturaRiskPolicy() {}
+    public SecretariatAssinaturaRiskPolicy() {}
 
     public record AssinaturaRiskInput(
             String hashSha256,

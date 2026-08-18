@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.core.dje.domain.DjeEnvioCommand;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
@@ -32,7 +33,7 @@ class DjePublicacaoFailureFlowIT extends PjbIntegrationTestBase {
 
     @Test
     void devePersistirFalhaSemPerderTrilhaDePublicacao() {
-        when(djeHttpClient.enviar(any(), any(), any())).thenThrow(new IllegalStateException("dje indisponivel"));
+        when(djeHttpClient.enviar(any(DjeEnvioCommand.class))).thenThrow(new IllegalStateException("dje indisponivel"));
         Processo processo = processoRepository.save(Processo.builder()
                 .numeroProcesso("DJE-FALHA-1")
                 .numeroUnificado("0005555-66.2026.8.06.0001")

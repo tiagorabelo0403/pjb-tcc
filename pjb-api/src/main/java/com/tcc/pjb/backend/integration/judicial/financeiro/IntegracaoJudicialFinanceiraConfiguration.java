@@ -16,6 +16,7 @@ public class IntegracaoJudicialFinanceiraConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "pjb.integracoes.judicial-financeiro", name = "enabled", havingValue = "false", matchIfMissing = true)
     SisbajudHttpClient sisbajudHttpClient(IntegracaoJudicialFinanceiraProperties properties) {
         return (cpf, valor, oficio) -> new com.tcc.pjb.backend.integration.judicial.financeiro.domain.SisbajudHttpResponse(
                 properties.dryRun() ? "SISB-DRY-RUN" : "SISB-MOCK",
@@ -25,6 +26,7 @@ public class IntegracaoJudicialFinanceiraConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "pjb.integracoes.judicial-financeiro", name = "enabled", havingValue = "false", matchIfMissing = true)
     RenajudHttpClient renajudHttpClient(IntegracaoJudicialFinanceiraProperties properties) {
         return (placa, renavam, tipo) -> new RenajudRestricaoResponse(
                 properties.dryRun() ? "RENA-DRY-RUN" : "RENA-MOCK",
@@ -34,6 +36,7 @@ public class IntegracaoJudicialFinanceiraConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "pjb.integracoes.judicial-financeiro", name = "enabled", havingValue = "false", matchIfMissing = true)
     InfojudHttpClient infojudHttpClient(IntegracaoJudicialFinanceiraProperties properties) {
         return cpfCnpj -> new InfojudConsultaResponse(
                 properties.dryRun() ? "INFO-DRY-RUN" : "INFO-MOCK",

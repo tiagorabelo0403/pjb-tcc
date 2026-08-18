@@ -1,0 +1,91 @@
+<svg viewBox="0 0 1280 740" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Painel de equipe do escritório — convite de afiliação com escopo definido</title>
+  <desc id="desc">Mockup de interface do painel de gestão de equipe do escritório: o advogado sênior dono do escritório envia um convite de afiliação a outro advogado, definindo papel, áreas do direito permitidas e regras de aprovação, sem nunca compartilhar seu certificado ICP-Brasil.</desc>
+
+  <defs>
+    <filter id="sombra7" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect x="20" y="20" width="1240" height="700" rx="14" fill="#12172a" stroke="#2a3350" stroke-width="1" filter="url(#sombra7)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/>
+  <circle cx="66" cy="48" r="6" fill="#e0b84f"/>
+  <circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">🏢 PJB — Equipe do Escritório</text>
+  <text x="1195" y="53" text-anchor="end" font-size="12.5" fill="#c9d3ea">Dr. Ricardo Alves · Advogado Sênior (dono)</text>
+
+  <!-- equipe atual -->
+  <g>
+    <rect x="50" y="96" width="360" height="400" rx="14" fill="#171d34"/>
+    <text x="76" y="128" font-size="14" font-weight="700" fill="#ffffff">Equipe atual</text>
+
+    <rect x="76" y="146" width="308" height="56" rx="10" fill="#16321f"/>
+    <text x="92" y="168" font-size="12.5" font-weight="600" fill="#ffffff">Dr. Ricardo Alves</text>
+    <text x="92" y="188" font-size="10.5" fill="#bfe8cc">Advogado Sênior · dono · peso 70</text>
+
+    <rect x="76" y="212" width="308" height="56" rx="10" fill="#1a2540"/>
+    <text x="92" y="234" font-size="12.5" font-weight="600" fill="#ffffff">Dra. Beatriz Souza</text>
+    <text x="92" y="254" font-size="10.5" fill="#a9b3cc">Advogada Júnior · peso 70 · Cível/Trabalhista</text>
+
+    <rect x="76" y="278" width="308" height="56" rx="10" fill="#1a2540"/>
+    <text x="92" y="300" font-size="12.5" font-weight="600" fill="#ffffff">João Pedro Lima</text>
+    <text x="92" y="320" font-size="10.5" fill="#a9b3cc">Estagiário · peso 30 · somente apoio</text>
+
+    <rect x="76" y="360" width="308" height="46" rx="10" fill="#2c3e67"/>
+    <text x="230" y="388" text-anchor="middle" font-size="12.5" font-weight="600" fill="#ffffff">+ Convidar novo membro</text>
+  </g>
+
+  <!-- convite em edicao -->
+  <g>
+    <rect x="430" y="96" width="380" height="400" rx="14" fill="#161c30"/>
+    <text x="456" y="128" font-size="14" font-weight="700" fill="#ffffff">📩 Novo convite de afiliação</text>
+
+    <text x="456" y="160" font-size="11" fill="#7d879e">Advogado convidado</text>
+    <text x="456" y="180" font-size="13" fill="#ffffff">Dr. Felipe Santos · OAB/CE 45.678</text>
+
+    <text x="456" y="212" font-size="11" fill="#7d879e">Papel na equipe</text>
+    <text x="456" y="232" font-size="13" fill="#ffffff">Advogado Júnior (peso 70)</text>
+
+    <text x="456" y="264" font-size="11" fill="#7d879e">Áreas do direito permitidas</text>
+    <text x="456" y="284" font-size="13" fill="#ffffff">☑ Cível  ☑ Trabalhista</text>
+    <text x="456" y="302" font-size="10.5" fill="#f4a3a3">🔒 Penal, Processual Penal, Execução Penal,</text>
+    <text x="456" y="318" font-size="10.5" fill="#f4a3a3">Militar e Infância/Juventude — bloqueadas por padrão</text>
+
+    <text x="456" y="350" font-size="11" fill="#7d879e">Casos pessoais do convidado</text>
+    <text x="456" y="370" font-size="13" fill="#ffffff">☑ Bloqueados neste escopo</text>
+
+    <text x="456" y="402" font-size="11" fill="#7d879e">Confiança mínima (Gov.br) p/ ações automáticas</text>
+    <text x="456" y="422" font-size="13" fill="#ffffff">Prata</text>
+
+    <text x="456" y="454" font-size="11" fill="#7d879e">Aprovação final</text>
+    <text x="456" y="474" font-size="13" fill="#ffffff">Exigida, com prazo de expiração</text>
+  </g>
+
+  <!-- convidado -->
+  <g>
+    <rect x="840" y="96" width="350" height="200" rx="14" fill="#b3811a"/>
+    <text x="866" y="128" font-size="14" font-weight="700" fill="#ffffff">👤 Dr. Felipe Santos recebe</text>
+    <text x="866" y="156" font-size="12" fill="#f8e6c4">Aceita com o próprio login —</text>
+    <text x="866" y="176" font-size="12" fill="#f8e6c4">nunca com o certificado do Dr. Ricardo</text>
+    <text x="866" y="208" font-size="12.5" font-weight="600" fill="#ffffff">Acesso liberado apenas dentro</text>
+    <text x="866" y="228" font-size="12.5" font-weight="600" fill="#ffffff">do escopo combinado acima</text>
+    <text x="866" y="264" font-size="10.5" fill="#f8e6c4">Mesma estrutura de papéis também</text>
+    <text x="866" y="280" font-size="10.5" fill="#f8e6c4">vale para assessoria em gabinete de juiz</text>
+  </g>
+
+  <!-- auditoria -->
+  <g>
+    <rect x="840" y="312" width="350" height="184" rx="14" fill="#0f1830"/>
+    <text x="866" y="342" font-size="13" font-weight="700" fill="#ffffff">📜 Trilha de auditoria</text>
+    <text x="866" y="366" font-size="11" fill="#a9b3cc">✓ Convite enviado — 30/07 14:02</text>
+    <text x="866" y="386" font-size="11" fill="#a9b3cc">✓ Aceito pelo convidado — 30/07 16:40</text>
+    <text x="866" y="406" font-size="11" fill="#a9b3cc">⏳ Aguardando aprovação final</text>
+    <text x="866" y="440" font-size="10" fill="#5d6785">Cada etapa registra quem fez, quando</text>
+    <text x="866" y="454" font-size="10" fill="#5d6785">e sob qual regra de escopo.</text>
+  </g>
+
+  <text x="50" y="540" font-size="11" fill="#5d6785">Dados fictícios, apenas para ilustrar a interface — campos reais de AdvOfficeAffiliationInvite e PapelEquipe.</text>
+</svg>

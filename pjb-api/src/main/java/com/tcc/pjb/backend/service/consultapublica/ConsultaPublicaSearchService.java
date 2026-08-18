@@ -13,6 +13,7 @@ import com.tcc.pjb.backend.repository.document.DocumentoPaginaRepository;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.Optional;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.SqlParameterValue;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,8 +59,8 @@ public class ConsultaPublicaSearchService {
         params.put("queryExact", queryLower);
         params.put("offset", safePage * safeSize);
         params.put("limit", safeSize);
-        params.put("tipoJustica", tipoJustica != null ? tipoJustica.name() : null);
-        params.put("ramoDireito", ramoDireito != null ? ramoDireito.name() : null);
+        params.put("tipoJustica", new SqlParameterValue(Types.VARCHAR, tipoJustica != null ? tipoJustica.name() : null));
+        params.put("ramoDireito", new SqlParameterValue(Types.VARCHAR, ramoDireito != null ? ramoDireito.name() : null));
         String from = """
                 from tb_processo p
                 where p.nivel_sigilo = 'PUBLICO'

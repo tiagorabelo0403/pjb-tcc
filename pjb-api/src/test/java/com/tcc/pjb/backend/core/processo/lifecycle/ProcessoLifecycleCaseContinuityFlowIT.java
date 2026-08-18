@@ -139,7 +139,7 @@ class ProcessoLifecycleCaseContinuityFlowIT extends PjbIntegrationTestBase {
                 .findFirst()
                 .orElseThrow();
         assertThat(rootAfterReopen.getProceedingRole()).isEqualTo(CaseProceedingRole.ROOT);
-        assertThat(rootAfterReopen.getContinuityTrack()).isEqualTo(CaseContinuityTrack.CONHECIMENTO);
+        assertThat(rootAfterReopen.getContinuityTrack()).isEqualTo(CaseContinuityTrack.REATIVADO);
         assertThat(caseEdgeRepository.findAllByCaseFileId(caseFile.getId()).stream()
                 .sorted(Comparator.comparing(edge -> edge.getRelationType().name()))
                 .map(edge -> edge.getRelationType().name())
@@ -173,7 +173,7 @@ class ProcessoLifecycleCaseContinuityFlowIT extends PjbIntegrationTestBase {
         assertThat(processo.getStatusProcesso()).isEqualTo(StatusProcesso.TRANSITO_EM_JULGADO);
         assertThat(caseProceedingRepository.findAllByCaseFileId(before.getId())).singleElement().satisfies(item -> {
             assertThat(item.getProceedingRole()).isEqualTo(CaseProceedingRole.ROOT);
-            assertThat(item.getStatus()).isEqualTo(CaseProceedingStatus.ACTIVE);
+            assertThat(item.getStatus()).isEqualTo(CaseProceedingStatus.RECONCILED);
             assertThat(item.getContinuityTrack()).isEqualTo(CaseContinuityTrack.TRANSITO);
         });
         assertThat(caseEdgeRepository.findAllByCaseFileId(before.getId())).isEmpty();

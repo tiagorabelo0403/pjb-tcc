@@ -1,9 +1,8 @@
 package com.tcc.pjb.backend.model.dto.leitura;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import com.tcc.pjb.backend.model.dto.shared.reading.ProcessReadingEcosystemFrontendCapabilitiesDto;
+import com.tcc.pjb.backend.model.dto.shared.reading.ProcessReadingEcosystemIntegrityContextDto;
 import java.util.List;
-import java.util.Map;
 
 public record ProcessReadingEcosystemResponse(
         Long processoId,
@@ -23,14 +22,12 @@ public record ProcessReadingEcosystemResponse(
         List<String> strategicCapabilities,
         List<String> migrationTracks,
         List<String> productionDifferentials,
-        Map<String, Object> frontend,
-        Map<String, Object> integrity
+        ProcessReadingEcosystemFrontendCapabilitiesDto frontend,
+        ProcessReadingEcosystemIntegrityContextDto integrity
 ) {
     public ProcessReadingEcosystemResponse {
         strategicCapabilities = strategicCapabilities == null ? List.of() : List.copyOf(strategicCapabilities);
         migrationTracks = migrationTracks == null ? List.of() : List.copyOf(migrationTracks);
         productionDifferentials = productionDifferentials == null ? List.of() : List.copyOf(productionDifferentials);
-        frontend = frontend == null ? Map.of() : Collections.unmodifiableMap(new LinkedHashMap<>(frontend));
-        integrity = integrity == null ? Map.of() : Collections.unmodifiableMap(new LinkedHashMap<>(integrity));
     }
 }

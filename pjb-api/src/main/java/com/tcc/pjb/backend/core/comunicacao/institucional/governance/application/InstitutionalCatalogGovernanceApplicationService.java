@@ -23,6 +23,7 @@ import com.tcc.pjb.backend.model.entity.enums.DestinatarioInstitucionalKind;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.PapelProcessualInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
+import jakarta.inject.Inject;
 
 @Service
 public class InstitutionalCatalogGovernanceApplicationService {
@@ -31,6 +32,7 @@ public class InstitutionalCatalogGovernanceApplicationService {
     private final InstitutionalCatalogGovernanceOverlayService overlayService;
     private final Clock clock;
 
+    @Inject
     public InstitutionalCatalogGovernanceApplicationService(CatalogoInstitucionalUnificadoService catalogo,
                                                             InstitutionalCatalogGovernanceOverlayService overlayService) {
         this(catalogo, overlayService, Clock.systemUTC());

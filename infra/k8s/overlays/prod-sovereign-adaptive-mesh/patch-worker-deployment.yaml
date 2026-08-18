@@ -9,6 +9,13 @@ spec:
         app.kubernetes.io/part-of: pjb
         pjb.scale/profile: adaptive-processual
     spec:
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: topology.kubernetes.io/zone

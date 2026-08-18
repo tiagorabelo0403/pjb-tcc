@@ -9,6 +9,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.HexFormat;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import org.springframework.core.io.FileSystemResource;
@@ -75,7 +76,8 @@ public final class LocalFilesystemObjectStorageAdapter implements ObjectStorageP
         if (!Files.exists(p)) {
             throw new IOException("objeto não encontrado: " + key);
         }
-        return new ObjectReadResult(new FileSystemResource(p), Files.size(p), "application/pdf");
+        String ct = detectContentType(p, key);
+        return new ObjectReadResult(new FileSystemResource(p), Files.size(p), ct);
     }
 
     @Override
@@ -96,6 +98,53 @@ public final class LocalFilesystemObjectStorageAdapter implements ObjectStorageP
     @Override
     public void delete(String key) throws IOException {
         Files.deleteIfExists(resolveKey(key));
+    }
+
+    static String detectContentType(Path path, String key) {
+        try (InputStream in = Files.newInputStream(path)) {
+            byte[] header = in.readNBytes(16);
+            if (header.length >= 3) {
+                int b0 = header[0] & 0xFF;
+                int b1 = header[1] & 0xFF;
+                int b2 = header[2] & 0xFF;
+
+                // JPEG: FF D8 FF
+                if (b0 == 0xFF && b1 == 0xD8 && b2 == 0xFF) return "image/jpeg";
+
+                // PNG: 89 50 4E 47
+                if (b0 == 0x89 && b1 == 0x50 && b2 == 0x4E && header.length >= 4 && (header[3] & 0xFF) == 0x47)
+                    return "image/png";
+
+                // PDF: %PDF
+                if (b0 == 0x25 && b1 == 0x50 && b2 == 0x44 && header.length >= 4 && (header[3] & 0xFF) == 0x46)
+                    return "application/pdf";
+
+                // GIF: GIF8
+                if (b0 == 0x47 && b1 == 0x49 && b2 == 0x46) return "image/gif";
+            }
+            // WebP: RIFF????WEBP (needs 12 bytes)
+            if (header.length >= 12
+                    && header[0] == 0x52 && header[1] == 0x49 && header[2] == 0x46 && header[3] == 0x46
+                    && header[8] == 0x57 && header[9] == 0x45 && header[10] == 0x42 && header[11] == 0x50)
+                return "image/webp";
+
+        } catch (IOException ignored) {
+            // fall through to extension-based detection
+        }
+        return detectByExtension(key);
+    }
+
+    private static String detectByExtension(String key) {
+        if (key == null) return "application/octet-stream";
+        String lower = key.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+        if (lower.endsWith(".png"))  return "image/png";
+        if (lower.endsWith(".webp")) return "image/webp";
+        if (lower.endsWith(".gif"))  return "image/gif";
+        if (lower.endsWith(".svg"))  return "image/svg+xml";
+        if (lower.endsWith(".pdf"))  return "application/pdf";
+        if (lower.endsWith(".txt"))  return "text/plain; charset=UTF-8";
+        return "application/octet-stream";
     }
 
     private Path resolveKey(String key) {

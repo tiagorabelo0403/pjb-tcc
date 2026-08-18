@@ -1,11 +1,7 @@
 package com.tcc.pjb.backend.configs.live;
 
 import java.util.function.Consumer;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.stereotype.Component;
 
-@Component
-@ConditionalOnMissingBean(LiveClusterBus.class)
 public class NoOpLiveClusterBus implements LiveClusterBus {
 
     @Override

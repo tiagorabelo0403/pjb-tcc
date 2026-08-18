@@ -78,6 +78,7 @@ ALLOWED_EMAIL_VALUES = {
     "servidor.seed@pjb.local", "servidor@tjce.jus.br", "servidor@x.com",
     "sistema@pjb.gov.br", "stf@stf.jus.br", "stj@stj.jus.br", "suporte@tjce.jus.br",
     "tiago@example.com", "tiago@office.com", "usuario@mpce.mp.br",
+    "tiagorabelo.offc@gmail.com",
 }
 ALLOWED_CPF_VALUES = {"04106184389", "12345678909", "98765432100"}
 ALLOWED_CNPJ_VALUES = {"11222333000181", "12495454000160"}

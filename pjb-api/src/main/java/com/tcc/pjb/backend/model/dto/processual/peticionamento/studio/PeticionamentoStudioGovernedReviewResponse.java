@@ -3,16 +3,34 @@ package com.tcc.pjb.backend.model.dto.processual.peticionamento.studio;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record PeticionamentoStudioGovernedReviewResponse(
         String status,
         String sessionKey,
         String actorProfile,
         String draftingMode,
+        @Schema(description = "Contexto procedimental — classeProcessual, ramoDireito, ritoProcessual, justicaSugerida, petitionFamily (Categoria D: passado de projection)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> procedure,
+        @Schema(description = "Matriz de gaps documentais — documentos faltantes por tipo (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> documentGapMatrix,
+        @Schema(description = "Checklist de protocolo — itens de conformidade procedimental (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> protocolChecklist,
+        @Schema(description = "Matriz de risco — checklist, blockingIssues, alerts (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> riskMatrix,
+        @Schema(description = "Governança de revisão — regras e aprovadores do processo (Categoria D)")
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> reviewGovernance,
         List<String> nextSteps
 ) {
@@ -40,3 +58,4 @@ public record PeticionamentoStudioGovernedReviewResponse(
         return value.trim();
     }
 }
+

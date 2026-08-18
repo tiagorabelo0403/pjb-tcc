@@ -36,9 +36,10 @@ public class PublicProcessoConsultaService {
             throw new RecursoNaoEncontradoException("Processo", "numero_vazio");
         }
 
-        Optional<Processo> opt = processoRepository.findByNumeroUnificado(key);
-        if (opt.isEmpty()) {
-            opt = processoRepository.findByNumeroProcesso(key);
+        Optional<Processo> opt = localizarProcesso(key);
+        String normalizedKey = normalizarCnjNumerico(key);
+        if (opt.isEmpty() && !normalizedKey.equals(key)) {
+            opt = localizarProcesso(normalizedKey);
         }
         Processo p = opt.orElseThrow(() -> new RecursoNaoEncontradoException("Processo", key));
 
@@ -118,5 +119,26 @@ public class PublicProcessoConsultaService {
     private static String safeNumero(Processo p) {
         if (p.getNumeroUnificado() != null && !p.getNumeroUnificado().isBlank()) return p.getNumeroUnificado();
         return p.getNumeroProcesso();
+    }
+
+    private Optional<Processo> localizarProcesso(String key) {
+        Optional<Processo> opt = processoRepository.findByNumeroUnificado(key);
+        if (opt.isEmpty()) {
+            opt = processoRepository.findByNumeroProcesso(key);
+        }
+        return opt;
+    }
+
+    private static String normalizarCnjNumerico(String raw) {
+        String digits = raw.replaceAll("\\D", "");
+        if (digits.length() != 20) {
+            return raw;
+        }
+        return digits.substring(0, 7) + "-" +
+                digits.substring(7, 9) + "." +
+                digits.substring(9, 13) + "." +
+                digits.substring(13, 14) + "." +
+                digits.substring(14, 16) + "." +
+                digits.substring(16);
     }
 }

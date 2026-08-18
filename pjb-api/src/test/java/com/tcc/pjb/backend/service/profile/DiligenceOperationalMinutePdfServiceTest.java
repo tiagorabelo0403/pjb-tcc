@@ -14,41 +14,27 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.intelligence.DiligenciaOperadorCertidao;
 import com.tcc.pjb.backend.model.entity.intelligence.DiligenciaOperadorCertidaoDocumento;
 import com.tcc.pjb.backend.model.entity.intelligence.DiligenciaOperadorEncerramento;
+import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.QualifiedSignatureMetadata;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.SovereignValidationResult;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
 
 class DiligenceOperationalMinutePdfServiceTest {
 
     @Test
     void geraPdfInstitucionalValido() {
         QualifiedDocumentSignatureEnvelopeService signatureService = Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class);
+        SovereignValidationResult sovereignResult = new SovereignValidationResult("VALIDO", "PJB_QUALIFIED_SIGNATURE_SPINE", "DELEGADO_POLICIA_QUALIFICADA_SOBERANA", false, false, false, false, false, "DELEGADO_POLICIA", null, null, null, "SESSION", "REPLAY", "DOC-HASH", List.of());
+        QualifiedSignatureMetadata qsm = new QualifiedSignatureMetadata("PJB-ENV-123", "ASSINATURA", null, null, true, "PJB-RUB-123", LocalDate.of(2026, 3, 12), LocalTime.of(12, 0), "Quixadá/CE", null, "DELEGADO_POLICIA", null, null, null, null, null, null, null, null, true, null, null, null, sovereignResult);
         when(signatureService.signFreeContent(any(), any(), any(), any(), any(), any(), anyBoolean(), any()))
-                .thenReturn(new QualifiedDocumentSignatureEnvelopeService.SignedContent(
-                        "conteudo",
-                        "hash-conteudo",
-                        Map.of(
-                                "rubrica", "PJB-RUB-123",
-                                "data", "12/03/2026",
-                                "hora", "12:00:00",
-                                "local", "Quixadá/CE",
-                                "envelopeId", "PJB-ENV-123",
-                                "assinaturaHash", "ASSINATURA",
-                                "politicaAssinatura", "DELEGADO_POLICIA_QUALIFICADA_SOBERANA",
-                                "papelAssinante", "DELEGADO_POLICIA"
-                        ),
-                        Map.of(
-                                "status", "VALIDO",
-                                "fonte", "PJB_QUALIFIED_SIGNATURE_SPINE",
-                                "sessionBindingHash", "SESSION",
-                                "replayShieldHash", "REPLAY",
-                                "documentoAssinadoHash", "DOC-HASH"
-                        )
-                ));
+                .thenReturn(new SignedDocumentEnvelope("conteudo-titulo", "conteudo", "hash-conteudo", true, qsm, sovereignResult));
         DiligenceOperationalMinutePdfService service = new DiligenceOperationalMinutePdfService(signatureService);
         var pdf = service.render(usuario(), TelemetriaOperacionalCanal.DELEGADO, "101", processo(), certidao(), encerramento(), List.of(
                 DiligenciaOperadorCertidaoDocumento.builder()

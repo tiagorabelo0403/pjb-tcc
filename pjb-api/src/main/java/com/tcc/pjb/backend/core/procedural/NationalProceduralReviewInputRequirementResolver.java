@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,6 +16,7 @@ public class NationalProceduralReviewInputRequirementResolver {
     private final NationalProceduralReviewPartyRequirementResolver partyRequirementResolver;
     private final NationalProceduralReviewJurisdictionRequirementResolver jurisdictionRequirementResolver;
 
+    @Inject
     public NationalProceduralReviewInputRequirementResolver(NationalProceduralReviewCoreFieldRequirementResolver coreFieldRequirementResolver,
                                                             NationalProceduralReviewEconomicRequirementResolver economicRequirementResolver,
                                                             NationalProceduralReviewLocationRequirementResolver locationRequirementResolver,
@@ -29,10 +31,10 @@ public class NationalProceduralReviewInputRequirementResolver {
 
 
 
-    public NationalProceduralReviewInputRequirementResolver(NationalProceduralReviewCoreFieldRequirementResolver coreFieldRequirementResolver,
-                                                            NationalProceduralReviewEconomicRequirementResolver economicRequirementResolver,
-                                                            NationalProceduralReviewLocationRequirementResolver locationRequirementResolver,
-                                                            NationalProceduralReviewPartyRequirementResolver partyRequirementResolver) {
+    NationalProceduralReviewInputRequirementResolver(NationalProceduralReviewCoreFieldRequirementResolver coreFieldRequirementResolver,
+                                                     NationalProceduralReviewEconomicRequirementResolver economicRequirementResolver,
+                                                     NationalProceduralReviewLocationRequirementResolver locationRequirementResolver,
+                                                     NationalProceduralReviewPartyRequirementResolver partyRequirementResolver) {
         this(coreFieldRequirementResolver, economicRequirementResolver, locationRequirementResolver, partyRequirementResolver,
                 new NationalProceduralReviewJurisdictionRequirementResolver(new NationalProceduralReviewMessages()));
     }

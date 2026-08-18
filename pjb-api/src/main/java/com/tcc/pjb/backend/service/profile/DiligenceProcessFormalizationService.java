@@ -44,6 +44,7 @@ import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 
 @Service
 public class DiligenceProcessFormalizationService {
@@ -475,7 +476,7 @@ public class DiligenceProcessFormalizationService {
 
     private DiligenceProcessFormalizationResponse toResponse(Usuario actor,
                                                              DiligenciaOperadorFormalizacaoProcessual entity) {
-        QualifiedDocumentSignatureEnvelopeService.SignedContent signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
+        SignedDocumentEnvelope signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
                 null,
                 actor,
                 entity.getMinutaTitulo() != null ? entity.getMinutaTitulo() : "FORMALIZACAO_PROCESSUAL",

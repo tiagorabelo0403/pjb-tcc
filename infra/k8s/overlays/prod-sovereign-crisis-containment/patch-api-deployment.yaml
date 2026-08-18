@@ -8,3 +8,11 @@ spec:
       annotations:
         pjb.io/operational-crisis-profile: containment-v1
         pjb.io/operational-crisis-updated-at: "2026-04-02T00:00:00Z"
+    spec:
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault

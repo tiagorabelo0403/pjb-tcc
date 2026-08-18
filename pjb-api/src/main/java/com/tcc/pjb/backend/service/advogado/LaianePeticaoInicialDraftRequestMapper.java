@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.advogado;
 
 import com.tcc.pjb.backend.model.dto.advogado.LaianePeticaoInicialEstruturarRequest;
+import com.tcc.pjb.backend.model.dto.processual.EnderecosProcessuaisRequest;
 import java.util.Objects;
 
 public final class LaianePeticaoInicialDraftRequestMapper {
@@ -29,7 +30,8 @@ public final class LaianePeticaoInicialDraftRequestMapper {
                 null,
                 null,
                 null,
-                null
+                null,
+                EnderecosProcessuaisRequest.vazio()
         );
     }
 }

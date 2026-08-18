@@ -20,16 +20,40 @@ pjb:
       client-secret: ${PJB_GOVBR_CLIENT_SECRET:}
       redirect-uri: ${PJB_GOVBR_REDIRECT_URI:http://localhost:8080/api/v1/cidadao/govbr/link/callback}
       redirect-uri-step-up: ${PJB_GOVBR_REDIRECT_URI_STEPUP:http://localhost:8080/api/v1/auth/govbr/stepup/callback}
+      redirect-uri-login: ${PJB_GOVBR_REDIRECT_URI_LOGIN:http://localhost:8080/api/v1/auth/govbr/login/callback}
       step-up-scope: ${PJB_GOVBR_STEPUP_SCOPE:openid email profile govbr_confiabilidades}
       jwks-url: ${PJB_GOVBR_JWKS_URL:}
       issuer: ${PJB_GOVBR_ISSUER:}
       mock-enabled: ${PJB_GOVBR_MOCK_ENABLED:false}
       frontend-success-redirect: ${PJB_GOVBR_FE_SUCCESS_REDIRECT:http://localhost:3000/cidadao/perfil?govbr=ok}
       frontend-error-redirect: ${PJB_GOVBR_FE_ERROR_REDIRECT:http://localhost:3000/cidadao/perfil?govbr=erro}
+      frontend-login-success-redirect: ${PJB_GOVBR_FE_LOGIN_SUCCESS_REDIRECT:http://localhost:3000/entrar/govbr/callback}
+      frontend-login-error-redirect: ${PJB_GOVBR_FE_LOGIN_ERROR_REDIRECT:http://localhost:3000/entrar/govbr/callback}
       connect-timeout: ${PJB_GOVBR_CONNECT_TIMEOUT:4s}
       request-timeout: ${PJB_GOVBR_REQUEST_TIMEOUT:6s}
       state-ttl: ${PJB_GOVBR_STATE_TTL:5m}
       cleanup-interval: ${PJB_GOVBR_CLEANUP_INTERVAL:3600000}
+    serpro:
+      datavalid:
+        enabled: ${PJB_SERPRO_DATAVALID_ENABLED:false}
+        consumer-key: ${PJB_SERPRO_DATAVALID_CONSUMER_KEY:}
+        consumer-secret: ${PJB_SERPRO_DATAVALID_CONSUMER_SECRET:}
+        base-url: ${PJB_SERPRO_DATAVALID_BASE_URL:https://apigateway.serpro.gov.br/datavalid/v2/cpf}
+        token-url: ${PJB_SERPRO_DATAVALID_TOKEN_URL:https://autenticacao.sapi.serpro.gov.br/authenticate}
+        connect-timeout: ${PJB_SERPRO_DATAVALID_CONNECT_TIMEOUT:5s}
+        read-timeout: ${PJB_SERPRO_DATAVALID_READ_TIMEOUT:3s}
+    sisbajud:
+      base-url: ${PJB_SISBAJUD_BASE_URL:}
+      token: ${PJB_SISBAJUD_TOKEN:}
+      timeout-seconds: ${PJB_SISBAJUD_TIMEOUT_SECONDS:30}
+    renajud:
+      base-url: ${PJB_RENAJUD_BASE_URL:}
+      token: ${PJB_RENAJUD_TOKEN:}
+      timeout-seconds: ${PJB_RENAJUD_TIMEOUT_SECONDS:30}
+    infojud:
+      base-url: ${PJB_INFOJUD_BASE_URL:}
+      token: ${PJB_INFOJUD_TOKEN:}
+      timeout-seconds: ${PJB_INFOJUD_TIMEOUT_SECONDS:30}
 
   integration:
     n8n:
@@ -224,6 +248,9 @@ pjb:
     retry-max-tentativas: ${PJB_MNI_RETRY_MAX:5}
     reconciliation-fixed-rate-ms: ${PJB_MNI_RECONCILIATION_RATE_MS:300000}
     reconciliation-batch-size: ${PJB_MNI_RECONCILIATION_BATCH_SIZE:20}
+    base-url: ${PJB_MNI_BASE_URL:}
+    token: ${PJB_MNI_TOKEN:}
+    timeout-seconds: ${PJB_MNI_TIMEOUT_SECONDS:30}
 
   datajud:
     feed:
@@ -232,9 +259,13 @@ pjb:
       scheduler-fixed-rate-ms: ${PJB_DATAJUD_FEED_SCHEDULER_RATE_MS:300000}
       max-batches-per-run: ${PJB_DATAJUD_FEED_MAX_BATCHES_PER_RUN:3}
       tribunais: ${PJB_DATAJUD_FEED_TRIBUNAIS:CNJ}
+      base-url: ${PJB_DATAJUD_FEED_BASE_URL:}
+      api-key: ${PJB_DATAJUD_FEED_API_KEY:}
+      timeout-seconds: ${PJB_DATAJUD_FEED_TIMEOUT_SECONDS:30}
 
   dje:
     enabled: ${PJB_DJE_ENABLED:false}
+    mock-enabled: ${PJB_DJE_MOCK_ENABLED:false}
     scheduler-fixed-rate-ms: ${PJB_DJE_SCHEDULER_RATE_MS:300000}
     max-batch-size: ${PJB_DJE_MAX_BATCH_SIZE:100}
 

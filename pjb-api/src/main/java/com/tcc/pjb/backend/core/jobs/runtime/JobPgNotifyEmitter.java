@@ -32,12 +32,15 @@ public final class JobPgNotifyEmitter {
 
     private void emit(String payload) {
         String p = payload.length() > 256 ? payload.substring(0, 256) : payload;
-        jdbc.execute((org.springframework.jdbc.core.ConnectionCallback<Void>) con -> {
-            try (var ps = con.prepareStatement("select pg_notify('pjb_job', ?)") ) {
-                ps.setString(1, p);
-                ps.execute();
-                return null;
-            }
-        });
+        try {
+            jdbc.execute((org.springframework.jdbc.core.ConnectionCallback<Void>) con -> {
+                try (var ps = con.prepareStatement("select pg_notify('pjb_job', ?)")) {
+                    ps.setString(1, p);
+                    ps.execute();
+                    return null;
+                }
+            });
+        } catch (Exception ignored) {
+        }
     }
 }

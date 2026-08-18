@@ -40,6 +40,7 @@ import com.tcc.pjb.backend.model.repository.PainelTribunalMetricaRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.service.ajuizamento.federal.FederalismoJudicialEngine;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class PainelNacionalJusticaService {
@@ -302,6 +303,7 @@ public class PainelNacionalJusticaService {
         evictSnapshotCache();
     }
 
+    @PjbTransactionalBudget(operation = "painel.nacional-justica.registrar-alerta-prazo", maxMillis = 3000)
     @Transactional
     public void registrarAlertaPrazo(AlertaPrazo alerta) {
         Objects.requireNonNull(alerta, "alerta");
@@ -320,9 +322,7 @@ public class PainelNacionalJusticaService {
         entity.setAtivo(alerta.diasExcedidos() > 0L);
         PainelAlertaPrazo salvo = alertaRepository.save(entity);
         tribunalRepository.findByCodigoTribunal(salvo.getTribunalCodigo()).ifPresent(tribunal -> {
-            long ativos = alertaRepository.findAllByAtivoTrueOrderByDiasExcedidosDesc().stream()
-                    .filter(item -> Objects.equals(item.getTribunalCodigo(), salvo.getTribunalCodigo()))
-                    .count();
+            long ativos = alertaRepository.countByAtivoTrueAndTribunalCodigo(salvo.getTribunalCodigo());
             tribunal.setProcessosComPrazoExcedido(ativos);
             tribunal.setClassificacaoDesempenho(classificacao(tribunal, disponibilidadeFederativa(tribunal.getCodigoTribunal())));
             tribunalRepository.save(tribunal);
@@ -350,6 +350,7 @@ public class PainelNacionalJusticaService {
         evictSnapshotCache();
     }
 
+    @PjbTransactionalBudget(operation = "painel.nacional-justica.gerar-snapshot", maxMillis = 5000)
     @Transactional(readOnly = true)
     public SnapshotNacional gerarSnapshot() {
         CachedSnapshot cached = snapshotCache.get();
@@ -476,7 +477,7 @@ public class PainelNacionalJusticaService {
         String ramo = normalizeUpper(ramoDireito) == null ? "NAO_INFORMADO" : normalizeUpper(ramoDireito);
         LocalDate referencia = ocorridoEm == null ? LocalDate.now() : LocalDateTime.ofInstant(ocorridoEm, java.time.ZoneOffset.UTC).toLocalDate();
         PainelTribunalMetrica item = tribunalRepository.findByCodigoTribunal(tribunal)
-                .orElseGet(() -> new PainelTribunalMetrica(tribunal, tribunal, noFederacaoRepository.findByCodigoTribunal(tribunal).map(NoFederacaoJudicial::getUf).orElse("N/D")));
+                .orElseGet(() -> new PainelTribunalMetrica(tribunal, tribunal, noFederacaoRepository.findByCodigoTribunal(tribunal).map(NoFederacaoJudicial::getUf).map(this::normalizeUf).orElse(null)));
         item.setProcessosAtivos(item.getProcessosAtivos() + 1L);
         item.setAjuizadosHoje(item.getAjuizadosHoje() + 1L);
         item.setAjuizadosSemana(item.getAjuizadosSemana() + 1L);
@@ -594,11 +595,18 @@ public class PainelNacionalJusticaService {
     }
 
     private String resolveUf(Processo processo) {
-        if (processo.getJurisdicao() != null && processo.getJurisdicao().getEstado() != null && !processo.getJurisdicao().getEstado().isBlank()) {
-            return normalizeUpper(processo.getJurisdicao().getEstado());
+        String processoUf = normalizeUf(processo.getUf());
+        if (processoUf != null) {
+            return processoUf;
+        }
+        if (processo.getJurisdicao() != null && processo.getJurisdicao().getUf() != null && !processo.getJurisdicao().getUf().isBlank()) {
+            String jurisdicaoUf = normalizeUf(processo.getJurisdicao().getUf());
+            if (jurisdicaoUf != null) {
+                return jurisdicaoUf;
+            }
         }
         String tribunalCodigo = resolveTribunalCodigo(processo);
-        return noFederacaoRepository.findByCodigoTribunal(tribunalCodigo).map(NoFederacaoJudicial::getUf).map(this::normalizeUpper).orElse("N/D");
+        return noFederacaoRepository.findByCodigoTribunal(tribunalCodigo).map(NoFederacaoJudicial::getUf).map(this::normalizeUf).orElse(null);
     }
 
     private String resolveRamo(Processo processo) {
@@ -778,6 +786,14 @@ public class PainelNacionalJusticaService {
         }
         String normalized = value.strip();
         return normalized.isEmpty() ? null : normalized.toUpperCase(Locale.ROOT);
+    }
+
+    private String normalizeUf(String value) {
+        String normalized = normalizeUpper(value);
+        if (normalized == null) {
+            return null;
+        }
+        return normalized.matches("[A-Z]{2}") ? normalized : null;
     }
 
     private String normalizeText(String value) {

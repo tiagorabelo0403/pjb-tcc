@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class InstitutionalOfficialSourceConnectorProbeApplicationService {
@@ -32,6 +33,7 @@ public class InstitutionalOfficialSourceConnectorProbeApplicationService {
     private final InstitutionalOfficialSourceConnectorCatalogApplicationService connectorCatalogApplicationService;
     private final Clock clock;
 
+    @Inject
     public InstitutionalOfficialSourceConnectorProbeApplicationService(InstitutionalOfficialSourceCatalogService catalogService,
                                                                       InstitutionalOfficialSourceConnectorRegistry connectorRegistry,
                                                                       InstitutionalOfficialSourceConnectorProperties properties,

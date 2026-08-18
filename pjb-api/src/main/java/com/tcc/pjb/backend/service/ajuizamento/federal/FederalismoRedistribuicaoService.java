@@ -6,19 +6,17 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.model.entity.Jurisdicao;
-import com.tcc.pjb.backend.model.entity.Processo;
-import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.repository.JurisdicaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class FederalismoRedistribuicaoService {
@@ -36,6 +34,7 @@ public class FederalismoRedistribuicaoService {
         this.processoRepository = Objects.requireNonNull(processoRepository);
     }
 
+    @PjbTransactionalBudget(operation = "federalismo.redistribuicao.sugerir", maxMillis = 8000)
     @Transactional(readOnly = true)
     public RedistribuicaoFederativaReport sugerir(double indiceCritico) {
         double corte = indiceCritico <= 0.0d ? 0.85d : Math.min(0.98d, Math.max(0.50d, indiceCritico));
@@ -47,7 +46,13 @@ public class FederalismoRedistribuicaoService {
         Instant now = Instant.now();
         LocalDateTime staleThreshold = LocalDateTime.now().minus(90, ChronoUnit.DAYS);
         List<Jurisdicao> jurisdicoes = jurisdicaoRepository.findAll();
-        Map<Long, JurisdicaoLoad> loadByJurisdicaoId = computeLoadByJurisdicao(processoRepository.findAll(), staleThreshold);
+        Map<Long, JurisdicaoLoad> loadByJurisdicaoId = processoRepository.computeLoadByJurisdicao(staleThreshold)
+                .stream()
+                .collect(Collectors.toMap(
+                        ProcessoRepository.JurisdicaoLoadProjection::getJurisdicaoId,
+                        p -> new JurisdicaoLoad(
+                                p.getTotalAtivos() == null ? 0L : p.getTotalAtivos(),
+                                p.getAtrasoEstrutural() == null ? 0L : p.getAtrasoEstrutural())));
         List<VaraAnalise> analises = new ArrayList<>();
         for (Jurisdicao jurisdicao : jurisdicoes) {
             if (jurisdicao == null || Boolean.FALSE.equals(jurisdicao.getAtivo())) {
@@ -61,7 +66,7 @@ public class FederalismoRedistribuicaoService {
                         jurisdicao.getSigla(),
                         jurisdicao.getNome(),
                         jurisdicao.getUf(),
-                        jurisdicao.getComarca(),
+                        jurisdicao.getCidade(),
                         jurisdicao.getMateria() != null ? jurisdicao.getMateria().name() : null,
                         load.totalAtivos(),
                         load.atrasoEstrutural(),
@@ -99,26 +104,6 @@ public class FederalismoRedistribuicaoService {
                 .forEach(reportCache::remove);
     }
 
-    private Map<Long, JurisdicaoLoad> computeLoadByJurisdicao(List<Processo> processos,
-                                                           LocalDateTime staleThreshold) {
-        Map<Long, JurisdicaoLoadAccumulator> accumulators = new LinkedHashMap<>();
-        for (Processo processo : processos) {
-            if (processo == null || processo.getJurisdicao() == null || processo.getJurisdicao().getId() == null) {
-                continue;
-            }
-            JurisdicaoLoadAccumulator accumulator = accumulators.computeIfAbsent(processo.getJurisdicao().getId(), ignored -> new JurisdicaoLoadAccumulator());
-            if (isActiveStatus(processo)) {
-                accumulator.totalAtivos++;
-            }
-            if (processo.getDataUltimaMovimentacao() != null && processo.getDataUltimaMovimentacao().isBefore(staleThreshold)) {
-                accumulator.atrasoEstrutural++;
-            }
-        }
-        Map<Long, JurisdicaoLoad> result = new HashMap<>();
-        accumulators.forEach((jurisdicaoId, accumulator) -> result.put(jurisdicaoId, accumulator.toLoad()));
-        return result;
-    }
-
     private List<CandidataRedistribuicao> localizarCandidatas(Jurisdicao origem,
                                                               List<Jurisdicao> jurisdicoes,
                                                               Map<Long, JurisdicaoLoad> loadByJurisdicaoId) {
@@ -130,26 +115,11 @@ public class FederalismoRedistribuicaoService {
                 .map(destino -> {
                     JurisdicaoLoad load = loadByJurisdicaoId.getOrDefault(destino.getId(), JurisdicaoLoad.EMPTY);
                     double indice = load.totalAtivos() == 0 ? 0.0d : (double) load.atrasoEstrutural() / (double) load.totalAtivos();
-                    return new CandidataRedistribuicao(destino.getId(), destino.getSigla(), destino.getNome(), destino.getComarca(), load.totalAtivos(), indice);
+                    return new CandidataRedistribuicao(destino.getId(), destino.getSigla(), destino.getNome(), destino.getCidade(), load.totalAtivos(), indice);
                 })
                 .sorted(Comparator.comparingDouble(CandidataRedistribuicao::indiceSobrecarga))
                 .limit(5)
                 .toList();
-    }
-
-    private boolean isActiveStatus(Processo processo) {
-        return processo != null
-                && processo.getStatusProcesso() != null
-                && processo.getStatusProcesso() != StatusProcesso.ARQUIVADO;
-    }
-
-    private static final class JurisdicaoLoadAccumulator {
-        private long totalAtivos;
-        private long atrasoEstrutural;
-
-        private JurisdicaoLoad toLoad() {
-            return new JurisdicaoLoad(totalAtivos, atrasoEstrutural);
-        }
     }
 
     private record JurisdicaoLoad(long totalAtivos, long atrasoEstrutural) {

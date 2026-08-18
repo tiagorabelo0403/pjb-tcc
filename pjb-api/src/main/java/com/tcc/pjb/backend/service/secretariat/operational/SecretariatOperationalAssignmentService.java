@@ -21,6 +21,7 @@ import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 
 @Service
@@ -70,6 +71,7 @@ public class SecretariatOperationalAssignmentService {
         return new AssignmentSnapshot(stageRoute.stageToken(), stageRoute.cellCode(), targetItems.stream().map(WorkItem::getId).toList(), primary, backup, candidateLoads, List.copyOf(fundamentos), Map.copyOf(metrics));
     }
 
+    @PjbTransactionalBudget(operation = "secretariat.operational.atribuir", maxMillis = 3000)
     @Transactional
     public AssignmentSnapshot atribuir(Processo processo,
                                        SecretariatOperationalRoutingProfile routing,

@@ -1,8 +1,10 @@
 package com.tcc.pjb.backend.modules.laiane.service;
 
+import com.tcc.pjb.backend.core.time.PjbTimeService;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +27,7 @@ import com.tcc.pjb.backend.modules.laiane.model.LaianeDeadlineDelegationStatus;
 import com.tcc.pjb.backend.modules.laiane.model.LaianeProcuracaoStatus;
 import com.tcc.pjb.backend.modules.laiane.repository.*;
 import com.tcc.pjb.backend.model.dto.processual.representacao.RepresentacaoProcessualPolicyResponse;
+import com.tcc.pjb.backend.model.entity.enums.InstrumentoRepresentacaoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.modules.laiane.util.LaianeRitoAttachmentPolicy;
 import com.tcc.pjb.backend.service.procedural.ProceduralCatalogService;
@@ -50,6 +53,7 @@ public class LaianeLawyerService {
     private final ObjectMapper objectMapper;
     private final ProceduralCatalogService proceduralCatalogService;
     private final RepresentacaoProcessualPolicyService representacaoProcessualPolicyService;
+    private final PjbTimeService timeService;
 
     
     
@@ -218,6 +222,58 @@ public class LaianeLawyerService {
     }
 
     @Transactional
+    public LaianeProcuracao substabelecer(Long procuracaoOrigemId, Long advogadoDestinoId, boolean comReservaDePoderes) {
+        var adv = guard.requireAdvogado();
+        var origem = procuracaoRepository.findById(procuracaoOrigemId)
+                .orElseThrow(() -> new NoSuchElementException("Procuração não encontrada"));
+        if (!origem.getAdvogado().getId().equals(adv.getId())) {
+            throw new SecurityException("Não autorizado");
+        }
+        if (origem.getStatus() != LaianeProcuracaoStatus.ATIVA) {
+            throw new com.tcc.pjb.backend.service.exception.ErroDeValidacaoException(com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao.REGRA_NEGOCIO, "substabelecimento")
+                    .addMetadado("motivo", "Só é possível substabelecer uma procuração ativa")
+                    .addMetadado("procuracaoId", procuracaoOrigemId)
+                    .addMetadado("statusAtual", origem.getStatus());
+        }
+        if (advogadoDestinoId == null || advogadoDestinoId.equals(adv.getId())) {
+            throw new com.tcc.pjb.backend.service.exception.ErroDeValidacaoException(com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao.REGRA_NEGOCIO, "substabelecimento")
+                    .addMetadado("motivo", "Advogado destinatário deve ser diferente do substabelecente");
+        }
+        var destino = usuarioRepository.findById(advogadoDestinoId)
+                .orElseThrow(() -> new NoSuchElementException("Advogado destinatário não encontrado"));
+        if (destino.getTipoUsuario() == null || !destino.getTipoUsuario().isAdvocacia()) {
+            throw new com.tcc.pjb.backend.service.exception.ErroDeValidacaoException(com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao.REGRA_NEGOCIO, "substabelecimento")
+                    .addMetadado("motivo", "Destinatário do substabelecimento deve ser advogado")
+                    .addMetadado("advogadoDestinoId", advogadoDestinoId);
+        }
+
+        var novaProcuracao = LaianeProcuracao.builder()
+                .advogado(destino)
+                .clienteId(origem.getClienteId())
+                .processoId(origem.getProcessoId())
+                .status(LaianeProcuracaoStatus.ATIVA)
+                .inicioVigencia(LocalDate.now())
+                .fimVigencia(origem.getFimVigencia())
+                .poderes(origem.getPoderes())
+                .substabelecidoDe(origem)
+                .comReservaDePoderes(comReservaDePoderes)
+                .build();
+        novaProcuracao = procuracaoRepository.save(novaProcuracao);
+
+        if (!comReservaDePoderes) {
+            origem.setStatus(LaianeProcuracaoStatus.REVOGADA);
+            if (origem.getFimVigencia() == null) {
+                origem.setFimVigencia(LocalDate.now());
+            }
+            procuracaoRepository.save(origem);
+        }
+
+        auditoria.registrarEventoImutavel("ADV_PROCURACAO_SUBSTABELECIDA", "LAIANE_PROCURACAO", novaProcuracao.getId(),
+                "origemId=" + procuracaoOrigemId + ";destinoId=" + advogadoDestinoId + ";comReserva=" + comReservaDePoderes);
+        return novaProcuracao;
+    }
+
+    @Transactional
     public LaianeTese createTese(String area, String tese, String fundamentacao, String tagsCsv) {
         var adv = guard.requireAdvogado();
         String tagsJson = null;
@@ -336,7 +392,7 @@ public class LaianeLawyerService {
         }
 
         d.setStatus(LaianeDeadlineDelegationStatus.ACEITA);
-        d.setAcceptedAt(LocalDateTime.now());
+        d.setAcceptedAt(LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone()));
         d = delegationRepository.save(d);
 
         auditoria.registrarEventoImutavelJustificado(
@@ -365,7 +421,7 @@ public class LaianeLawyerService {
         }
 
         d.setStatus(LaianeDeadlineDelegationStatus.CONCLUIDA);
-        d.setCompletedAt(LocalDateTime.now());
+        d.setCompletedAt(LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone()));
         d = delegationRepository.save(d);
 
         auditoria.registrarEventoImutavelJustificado(
@@ -553,12 +609,12 @@ public class LaianeLawyerService {
                 .delegatorId(d.getDelegator() != null ? d.getDelegator().getId() : null)
                 .delegateeId(d.getDelegatee() != null ? d.getDelegatee().getId() : null)
                 .workItemId(d.getWorkItem() != null ? d.getWorkItem().getId() : null)
-                .status(d.getStatus() != null ? d.getStatus().name() : null)
+                .status(d.getStatus())
                 .descricao(d.getDescricao())
-                .createdAt(d.getCreatedAt())
-                .updatedAt(d.getUpdatedAt())
-                .acceptedAt(d.getAcceptedAt())
-                .completedAt(d.getCompletedAt())
+                .createdAt(toOffset(d.getCreatedAt()))
+                .updatedAt(toOffset(d.getUpdatedAt()))
+                .acceptedAt(toOffset(d.getAcceptedAt()))
+                .completedAt(toOffset(d.getCompletedAt()))
                 .build();
     }
 
@@ -567,13 +623,17 @@ public class LaianeLawyerService {
         return LaianeCaseBundleResponse.builder()
                 .id(b.getId())
                 .advogadoId(b.getAdvogado() != null ? b.getAdvogado().getId() : null)
-                .status(b.getStatus() != null ? b.getStatus().name() : null)
+                .status(b.getStatus())
                 .processosIds(processos)
                 .teseId(b.getTeseId())
                 .descricao(b.getDescricao())
-                .createdAt(b.getCreatedAt())
-                .updatedAt(b.getUpdatedAt())
+                .createdAt(toOffset(b.getCreatedAt()))
+                .updatedAt(toOffset(b.getUpdatedAt()))
                 .build();
+    }
+
+    private OffsetDateTime toOffset(LocalDateTime ldt) {
+        return ldt == null ? null : ldt.atZone(timeService.legalZone()).toOffsetDateTime();
     }
 
     private List<Long> readProcessos(String json) {
@@ -602,7 +662,8 @@ public class LaianeLawyerService {
                     .addMetadado("motivo", firstAlert(policy.alertas()))
                     .addMetadado("instrumento", policy.resolvedInstrument());
         }
-        if ("JUS_POSTULANDI_TRABALHISTA".equalsIgnoreCase(policy.resolvedInstrument())) {
+        InstrumentoRepresentacaoProcessual instrumentoResolvido = InstrumentoRepresentacaoProcessual.fromString(policy.resolvedInstrument());
+        if (instrumentoResolvido != null && instrumentoResolvido.isJusPostulandi()) {
             throw new com.tcc.pjb.backend.service.exception.ErroDeValidacaoException(com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao.REGRA_NEGOCIO, "tipoInstrumento")
                     .addMetadado("motivo", "Jus postulandi e regime de autorrepresentacao da parte e nao deve ser cadastrado pela rota exclusiva da advocacia.");
         }

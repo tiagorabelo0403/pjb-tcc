@@ -95,6 +95,19 @@ final class RecursalPeticionamentoSupport {
                     true
             );
         }
+        if (tipoUsuario.isPeticionantePessoal()) {
+            return new PerfilRecursalDescriptor(
+                    "CIDADAO",
+                    "CIDADAO",
+                    new String[]{"ROLE_CIDADAO"},
+                    "CIDADAO_PETICAO_RECURSAL",
+                    "CIDADAO_RECURSO",
+                    2,
+                    false,
+                    false,
+                    false
+            );
+        }
         throw new IllegalArgumentException("Perfil sem habilitação recursal ativa no PJB.");
     }
 

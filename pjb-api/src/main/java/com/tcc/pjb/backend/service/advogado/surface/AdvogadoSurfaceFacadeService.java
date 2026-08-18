@@ -12,8 +12,10 @@ import com.tcc.pjb.backend.model.dto.advogado.AdvogadoDashboardDto;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoClienteAnaliticoItemResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCockpitSnapshotResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoDashboardSummaryResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoHonorariosResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOfficeBulkApproveResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOperacaoResponse;
+import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
 import com.tcc.pjb.backend.model.entity.MembroEquipe;
 import com.tcc.pjb.backend.modules.advocacia.office.dto.BulkApproveRequest;
 import com.tcc.pjb.backend.modules.advocacia.office.dto.DecisionRequest;
@@ -122,8 +124,33 @@ public class AdvogadoSurfaceFacadeService {
         return toOperacaoResponse(advogadoCockpitService.darCienciaIntimacaoEmLote(workItemIds));
     }
 
-    public AdvogadoOperacaoResponse interporRecurso(Long processoId, String tipoRecurso, String razoes, String fundamentacao, boolean pedidoEfeitoSuspensivo, boolean preparoDispensado, String observacoes) {
-        return toOperacaoResponse(advogadoCockpitService.interprorRecurso(processoId, tipoRecurso, razoes, fundamentacao, pedidoEfeitoSuspensivo, preparoDispensado, observacoes));
+    public AdvogadoOperacaoResponse prorrogarPrazoEmLote(List<Long> processoIds, String justificativa) {
+        return toOperacaoResponse(advogadoCockpitService.prorrogarPrazoEmLote(processoIds, justificativa));
+    }
+
+    public AdvogadoHonorariosResponse calcularHonorarios(Long processoId, AdvogadoHonorariosCalculoRequest request) {
+        return advogadoCockpitService.calcularHonorarios(processoId, request);
+    }
+
+    public List<com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCustaItemResponse> listarCustas(Long processoId) {
+        return advogadoCockpitService.listarCustas(processoId);
+    }
+
+    public com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOabRegularidadeResponse consultarRegularidadeOab() {
+        return advogadoCockpitService.consultarRegularidadeOab();
+    }
+
+    public com.tcc.pjb.backend.model.dto.jurisprudencia.JurisprudenceContextualSearchResponse buscarJurisprudenciaDoProcesso(
+            Long processoId, String query, int topK) {
+        return advogadoCockpitService.buscarJurisprudenciaDoProcesso(processoId, query, topK);
+    }
+
+    public com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoPainelFinanceiroResponse consultarPainelFinanceiro(Long processoId) {
+        return advogadoCockpitService.consultarPainelFinanceiro(processoId);
+    }
+
+    public com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoProdutividadeEscritorioResponse consultarProdutividadeEscritorio() {
+        return advogadoCockpitService.consultarProdutividadeEscritorio();
     }
 
     public List<AdvogadoClienteAnaliticoItemResponse> analiticoPorCliente(String clienteCpfCnpj) {

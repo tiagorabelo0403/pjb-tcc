@@ -20,6 +20,8 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -41,6 +43,13 @@ import lombok.Setter;
                 @Index(name = "idx_cliente_advogado_status", columnList = "advogado_id, status"),
                 @Index(name = "idx_cliente_advogado_cpf_hash", columnList = "advogado_id, cpf_hash", unique = true),
                 @Index(name = "idx_cliente_cpf_hash", columnList = "cpf_hash")
+        }
+)
+@FilterDef(
+        name = "filtroEquipe",
+        parameters = {
+                @ParamDef(name = "usuarioIdParam", type = Long.class),
+                @ParamDef(name = "equipeIdParam", type = Long.class)
         }
 )
 @Filter(

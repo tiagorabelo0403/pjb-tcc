@@ -71,7 +71,8 @@ class JuridicaLegalAiSurfaceArchitectureTest {
         assertTrue(Files.exists(resourceRoot.resolve("PjbLegalAiConsumer-PjbLegalAiProvider.json")));
         Path scriptsRoot = PjbTestPaths.projectRoot().resolve("scripts/legal_ai_surface_split_guard.py");
         assertTrue(Files.exists(scriptsRoot));
-        String yaml = Files.readString(configRoot);
+        String yaml = Files.readString(configRoot)
+                + Files.readString(configRoot.resolveSibling("application-api-governance.yml"));
         assertTrue(yaml.contains("name: legal-ai-governed-surfaces"));
         assertTrue(yaml.contains("/api/ai/legal/minuta"));
         assertTrue(yaml.contains("/api/ai/legal/grounding/check"));

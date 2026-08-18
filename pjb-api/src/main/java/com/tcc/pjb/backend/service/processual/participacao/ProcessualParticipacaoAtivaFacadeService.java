@@ -47,6 +47,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ProcessualParticipacaoAtivaFacadeService {
@@ -135,6 +136,7 @@ public class ProcessualParticipacaoAtivaFacadeService {
         );
     }
 
+    @PjbTransactionalBudget(operation = "processual.participacao-ativa.protocolar", maxMillis = 3000)
     @Transactional
     public SubmissionResponse protocolar(Long processoId, @Valid SubmissionRequest request) {
         Objects.requireNonNull(request, "request");

@@ -8,6 +8,7 @@ import com.tcc.pjb.backend.model.entity.enums.DestinatarioInstitucionalKind;
 import com.tcc.pjb.backend.model.entity.enums.PapelProcessualInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -233,7 +234,7 @@ public class OficialJusticaOficioCatalogService {
         }
         List<String> governanceTags = buildGovernanceTags(type, resposta);
         String titulo = type.displayName() + " — " + values.get("numero_processo");
-        QualifiedDocumentSignatureEnvelopeService.SignedContent signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
+        SignedDocumentEnvelope signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
                 processo,
                 usuario,
                 titulo,

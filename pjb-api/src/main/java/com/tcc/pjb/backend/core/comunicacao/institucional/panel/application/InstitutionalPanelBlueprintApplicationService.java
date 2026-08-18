@@ -10,12 +10,14 @@ import com.tcc.pjb.backend.core.comunicacao.institucional.panel.domain.Instituti
 import java.util.Comparator;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class InstitutionalPanelBlueprintApplicationService {
 
     private final List<InstitutionalPanelBlueprintCatalog> catalogs;
 
+    @Inject
     public InstitutionalPanelBlueprintApplicationService() {
         this(defaultCatalogs());
     }

@@ -825,7 +825,7 @@ public class FacilitadorBatnaService {
         if (processo == null || processo.getJurisdicao() == null) {
             return null;
         }
-        return firstNonBlank(processo.getJurisdicao().getEstado(), null);
+        return firstNonBlank(processo.getJurisdicao().getUf(), null);
     }
 
     private static double defaultDiasPorRamo(String ramoDireito) {

@@ -12,7 +12,9 @@ import com.tcc.pjb.backend.model.dto.secretariat.governance.SecretariatInboxSumm
 import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatQueueAgendaSnapshotDto;
 import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatQueueItemDto;
 import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatQueuePanelSnapshotDto;
+import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.secretariat.SecretariatQueueItem;
+import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.repository.secretariat.SecretariatQueueItemRepository;
 import com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityService;
 import com.tcc.pjb.backend.service.secretariat.governance.SecretariatGovernanceService;
@@ -47,6 +49,7 @@ import org.springframework.stereotype.Service;
 public class SecretariatQueueQueryService {
 
   private final SecretariatQueueItemRepository repo;
+  private final ProcessoRepository processoRepository;
   private final ObjectMapper mapper;
   private final UiHintService uiHints;
   private final SecretariatQueueInboxContextResolver inboxContextResolver;
@@ -67,6 +70,7 @@ public class SecretariatQueueQueryService {
 
   public SecretariatQueueQueryService(
       SecretariatQueueItemRepository repo,
+      ProcessoRepository processoRepository,
       ObjectMapper mapper,
       UiHintService uiHints,
       SecretariatQueueInboxContextResolver inboxContextResolver,
@@ -83,6 +87,7 @@ public class SecretariatQueueQueryService {
       SecretariatHearingMediaLaneService hearingMediaLaneService
   ) {
     this.repo = Objects.requireNonNull(repo);
+    this.processoRepository = Objects.requireNonNull(processoRepository);
     this.mapper = Objects.requireNonNull(mapper);
     this.uiHints = Objects.requireNonNull(uiHints);
     this.inboxContextResolver = Objects.requireNonNull(inboxContextResolver);
@@ -105,7 +110,10 @@ public class SecretariatQueueQueryService {
   public Page<SecretariatQueueItemDto> list(String inboxKey, Collection<String> statuses, Pageable pageable) {
     SecretariatQueueInboxContext context = inboxContextResolver.resolve(inboxKey, statuses);
     Page<SecretariatQueueItem> page = repo.listInbox(context.inboxKey(), context.statuses(), pageable);
-    return page.map(item -> toDto(item, context.loadProfile(), context.deskProfile(), context.portfolio(), context.inboxDescriptor(), context.dashboardBucket(), context.inboxProfile()));
+    List<Long> processoIds = page.getContent().stream().map(SecretariatQueueItem::getProcessoId).filter(Objects::nonNull).distinct().toList();
+    Map<Long, Processo> processosPorId = processoIds.isEmpty() ? Map.of()
+        : processoRepository.findAllById(processoIds).stream().collect(java.util.stream.Collectors.toMap(Processo::getId, p -> p));
+    return page.map(item -> toDto(item, context.loadProfile(), context.deskProfile(), context.portfolio(), context.inboxDescriptor(), context.dashboardBucket(), context.inboxProfile(), processosPorId.get(item.getProcessoId())));
   }
 
   public SecretariatInboxSummaryDto summary(String inboxKey, Collection<String> statuses) {
@@ -254,7 +262,8 @@ public class SecretariatQueueQueryService {
       ForumDeskPortfolioProfile portfolio,
       String inboxDescriptor,
       String dashboardBucket,
-      SecretariatInstitutionalVisibilityService.SecretariatInboxInstitutionalProfile inboxProfile
+      SecretariatInstitutionalVisibilityService.SecretariatInboxInstitutionalProfile inboxProfile,
+      Processo processo
   ) {
     List<String> tags = parseTags(q.getTagsJson());
     SecretariatFlowBridgeProfile bridgeProfile = flowBridgeResolver.resolve(q.getInboxKey(), q.getQueueCode(), q.getTitulo(), tags, portfolio);
@@ -329,6 +338,10 @@ public class SecretariatQueueQueryService {
         q.getScore(),
         tags,
         q.getTitulo(),
+        processo == null ? null : firstNonBlank(processo.getNumeroUnificado(), processo.getNumeroProcesso()),
+        processo == null ? null : processo.getClasseProcessual(),
+        processo == null || processo.getRito() == null ? null : processo.getRito().name(),
+        processo == null ? null : resumoDoProcesso(processo),
         q.getQueueCode(),
         slaBucket(q.getDueAt()),
         inboxDescriptor,
@@ -463,6 +476,25 @@ public class SecretariatQueueQueryService {
       return "DUE_24H";
     }
     return "SCHEDULED";
+  }
+
+  static String resumoDoProcesso(Processo processo) {
+    String resumoIA = processo.getResumoIA();
+    if (resumoIA != null && !resumoIA.isBlank()) {
+      return resumoIA.trim();
+    }
+    String classe = firstNonBlank(processo.getClasseProcessual());
+    String assunto = firstNonBlank(processo.getAssunto());
+    if (classe == null && assunto == null) {
+      return null;
+    }
+    if (classe == null) {
+      return assunto;
+    }
+    if (assunto == null) {
+      return classe;
+    }
+    return classe + " — " + assunto;
   }
 
   private static String firstNonBlank(String... values) {

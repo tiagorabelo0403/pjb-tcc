@@ -13,6 +13,10 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.RenajudRestricaoRepository;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +38,7 @@ class RenajudRestricaoServiceTest {
                 currentUserService,
                 authorizationService,
                 mock(AuditLedgerService.class),
-                new ReadAfterWriteConsistencyPolicy()
+                new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5))
         );
         var result = service.solicitarRestricao(
                 new com.tcc.pjb.backend.integration.judicial.financeiro.domain.RenajudRestricaoRequest(11L, "RESTRICAO", "ABC1D23", "12345678901"),

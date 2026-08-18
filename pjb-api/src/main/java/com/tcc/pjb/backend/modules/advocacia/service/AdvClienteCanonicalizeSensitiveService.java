@@ -15,6 +15,7 @@ import com.tcc.pjb.backend.modules.advocacia.entity.Cliente;
 import com.tcc.pjb.backend.modules.advocacia.entity.util.CriptografiaPJB;
 import com.tcc.pjb.backend.modules.advocacia.enums.StatusCliente;
 import com.tcc.pjb.backend.modules.advocacia.repository.ClienteRepository;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class AdvClienteCanonicalizeSensitiveService {
@@ -32,6 +33,7 @@ public class AdvClienteCanonicalizeSensitiveService {
                               boolean done) {
     }
 
+    @PjbTransactionalBudget(operation = "advocacia.cliente.canonicalize-batch", maxMillis = 8000)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public BatchResult canonicalizeBatch(long afterId, Long untilId, int batchSize, boolean dryRun) {
         int size = Math.max(1, Math.min(batchSize, 2000));

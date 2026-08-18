@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import jakarta.inject.Inject;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -22,6 +23,7 @@ import com.tcc.pjb.backend.model.repository.recursalmesh.RecursalProcessIntegrat
 import com.tcc.pjb.backend.platform.cluster.PjbClusterLockService;
 import com.tcc.pjb.backend.query.recursalmesh.RecursalMeshQueryModel;
 import com.tcc.pjb.backend.query.recursalmesh.RecursalMeshQueryRepository;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class RecursalMeshSearchReindexService {
@@ -37,23 +39,24 @@ public class RecursalMeshSearchReindexService {
     private final ObjectProvider<RecursalMeshOperationalTelemetryService> telemetryProvider;
     private final ObjectProvider<RecursalMeshRetryExecutor> retryExecutorProvider;
 
-    public RecursalMeshSearchReindexService(RecursalProcessIntegrationStateRepository projectionRepository,
-                                            ObjectProvider<RecursalMeshSearchIndexerService> indexerServiceProvider,
-                                            ObjectProvider<ElasticsearchOperations> elasticsearchOperationsProvider,
-                                            ObjectProvider<RecursalMeshQueryRepository> queryRepositoryProvider) {
+    RecursalMeshSearchReindexService(RecursalProcessIntegrationStateRepository projectionRepository,
+                                     ObjectProvider<RecursalMeshSearchIndexerService> indexerServiceProvider,
+                                     ObjectProvider<ElasticsearchOperations> elasticsearchOperationsProvider,
+                                     ObjectProvider<RecursalMeshQueryRepository> queryRepositoryProvider) {
         this(projectionRepository, indexerServiceProvider, elasticsearchOperationsProvider, queryRepositoryProvider, null, null, null, null);
     }
 
-    public RecursalMeshSearchReindexService(RecursalProcessIntegrationStateRepository projectionRepository,
-                                            ObjectProvider<RecursalMeshSearchIndexerService> indexerServiceProvider,
-                                            ObjectProvider<ElasticsearchOperations> elasticsearchOperationsProvider,
-                                            ObjectProvider<RecursalMeshQueryRepository> queryRepositoryProvider,
-                                            RecursalMeshReindexCheckpointRepository checkpointRepository,
-                                            PjbClusterLockService clusterLockService,
-                                            ObjectProvider<RecursalMeshOperationalTelemetryService> telemetryProvider) {
+    RecursalMeshSearchReindexService(RecursalProcessIntegrationStateRepository projectionRepository,
+                                     ObjectProvider<RecursalMeshSearchIndexerService> indexerServiceProvider,
+                                     ObjectProvider<ElasticsearchOperations> elasticsearchOperationsProvider,
+                                     ObjectProvider<RecursalMeshQueryRepository> queryRepositoryProvider,
+                                     RecursalMeshReindexCheckpointRepository checkpointRepository,
+                                     PjbClusterLockService clusterLockService,
+                                     ObjectProvider<RecursalMeshOperationalTelemetryService> telemetryProvider) {
         this(projectionRepository, indexerServiceProvider, elasticsearchOperationsProvider, queryRepositoryProvider, checkpointRepository, clusterLockService, telemetryProvider, null);
     }
 
+    @Inject
     public RecursalMeshSearchReindexService(RecursalProcessIntegrationStateRepository projectionRepository,
                                             ObjectProvider<RecursalMeshSearchIndexerService> indexerServiceProvider,
                                             ObjectProvider<ElasticsearchOperations> elasticsearchOperationsProvider,
@@ -72,6 +75,7 @@ public class RecursalMeshSearchReindexService {
         this.retryExecutorProvider = retryExecutorProvider;
     }
 
+    @PjbTransactionalBudget(operation = "recursal.mesh.reindex", maxMillis = 15000)
     @Transactional
     public RecursalMeshReindexResponse reindex(RecursalMeshReindexRequest request) {
         RecursalMeshReindexRequest normalized = request == null

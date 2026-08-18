@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.core.dje;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import com.tcc.pjb.backend.core.dje.DjeTestFactory;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -29,7 +30,7 @@ class DjeApplicationServiceTest {
                 .thenReturn(new DjeLifecycleExecutionSummary(2, 3));
         DjeApplicationService applicationService = new DjeApplicationService(
                 publicacaoService,
-                new DjeProperties(true, 300000, 30),
+                DjeTestFactory.propertiesForTest(true, 300000, 30),
                 auditLedgerService);
 
         var result = applicationService.lifecycleRun(LocalDate.of(2026, 4, 11), null);
@@ -55,7 +56,7 @@ class DjeApplicationServiceTest {
                         new DjeTimelineEntry("ENVIADO", Instant.parse("2026-04-11T12:05:00Z"), "ED-1"))));
         DjeApplicationService applicationService = new DjeApplicationService(
                 publicacaoService,
-                new DjeProperties(true, 300000, 25),
+                DjeTestFactory.propertiesForTest(true, 300000, 25),
                 auditLedgerService);
 
         var result = applicationService.timeline(15L);
@@ -71,7 +72,7 @@ class DjeApplicationServiceTest {
         when(publicacaoService.tribunalHealthView("TJCE")).thenReturn(new DjeTribunalHealthView("TJCE", "OK", "total=4"));
         DjeApplicationService applicationService = new DjeApplicationService(
                 publicacaoService,
-                new DjeProperties(true, 300000, 25),
+                DjeTestFactory.propertiesForTest(true, 300000, 25),
                 auditLedgerService);
 
         var result = applicationService.tribunalHealth("tjce");
@@ -87,7 +88,7 @@ class DjeApplicationServiceTest {
         when(publicacaoService.edicaoMetrics("ED-2026-10")).thenReturn(new DjeEdicaoMetricsView("ED-2026-10", 8, 1, 2));
         DjeApplicationService applicationService = new DjeApplicationService(
                 publicacaoService,
-                new DjeProperties(true, 300000, 25),
+                DjeTestFactory.propertiesForTest(true, 300000, 25),
                 auditLedgerService);
 
         var result = applicationService.edicaoMetrics("ed-2026-10");

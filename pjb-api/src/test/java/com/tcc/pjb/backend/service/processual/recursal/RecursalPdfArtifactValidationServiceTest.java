@@ -1,8 +1,12 @@
 package com.tcc.pjb.backend.service.processual.recursal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerRepository;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.HsmTestFactory;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHardwareSecurityModule;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHsmProperties;
 import com.tcc.pjb.backend.core.icp.RecursalIcpBrasilIntegrationService;
@@ -26,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalTimestampAuthorityProperties;
 import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalTimestampAuthorityService;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 class RecursalPdfArtifactValidationServiceTest {
 
@@ -34,8 +39,8 @@ class RecursalPdfArtifactValidationServiceTest {
 
     @BeforeEach
     void setUp() {
-        AuditLedgerService auditLedgerService = new AuditLedgerService();
-        PjbHardwareSecurityModule hsm = new PjbHardwareSecurityModule(new PjbHsmProperties(
+        AuditLedgerService auditLedgerService = new AuditLedgerService(mock(AuditLedgerRepository.class), mock(CurrentUserService.class), new SimpleMeterRegistry());
+        PjbHardwareSecurityModule hsm = HsmTestFactory.forTest(new PjbHsmProperties(
                 false,
                 true,
                 null,

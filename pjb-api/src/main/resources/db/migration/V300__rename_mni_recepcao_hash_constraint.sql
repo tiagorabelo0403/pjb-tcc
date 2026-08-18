@@ -1,0 +1,1 @@
+ALTER TABLE pjb_mni_recepcao RENAME CONSTRAINT pjb_mni_recepcao_mni_payload_hash_key TO uk_mni_recepcao_hash;

@@ -35,6 +35,7 @@ import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalPeticionamentoFacadeService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -331,7 +332,7 @@ public class OfficeGovernedProcessOperationService {
         Usuario resolvedSigner = signer == null ? usuario : signer;
         authorizationService.requireRole(usuario, "ROLE_ADVOGADO", "ROLE_OAB_PRESIDENTE_SECCIONAL");
         authorizationService.requireReadProcesso(processo);
-        QualifiedDocumentSignatureEnvelopeService.SignedContent signedContent = qualifiedDocumentSignatureEnvelopeService.signGovernedContent(
+        SignedDocumentEnvelope signedContent = qualifiedDocumentSignatureEnvelopeService.signGovernedContent(
                 processo,
                 resolvedSigner,
                 petitionTitle(tipoPeticao),
@@ -367,7 +368,7 @@ public class OfficeGovernedProcessOperationService {
             signatureSnapshot.put("assinaturaQualificada", signedContent.assinaturaQualificada());
             signatureSnapshot.put("validacaoSoberana", signedContent.validacaoSoberana());
             operation.setSignaturePayloadJson(writeJson(signatureSnapshot));
-            operation.setSignatureHash(signedContent.documentHash());
+            operation.setSignatureHash(signedContent.contentHash());
             operation.setSignerNameSnapshot(resolveSignerName(resolvedSigner));
             operation.setSignerRegistrationSnapshot(resolveSignerRegistration(resolvedSigner));
         }
@@ -383,7 +384,7 @@ public class OfficeGovernedProcessOperationService {
         out.put("signerRegistration", resolveSignerRegistration(resolvedSigner));
         out.put("signatureMode", resolveSignatureMode(usuario, resolvedSigner));
         out.put("signatureEnvelopeReady", Boolean.TRUE);
-        out.put("signedContentHash", signedContent.documentHash());
+        out.put("signedContentHash", signedContent.contentHash());
         out.put("signedContent", signedContent.renderedContent());
         out.put("signatureEnvelope", signedContent.assinaturaQualificada());
         return out;

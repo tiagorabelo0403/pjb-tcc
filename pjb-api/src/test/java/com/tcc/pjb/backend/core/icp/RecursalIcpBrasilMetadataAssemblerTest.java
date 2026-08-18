@@ -20,5 +20,7 @@ class RecursalIcpBrasilMetadataAssemblerTest {
         assertThat(metadata.get("serialHex")).isEqualTo("abc");
         assertThat(metadata.get("signerUserId")).isEqualTo(99L);
         assertThat(metadata).doesNotContainKey("failureReason");
+        assertThat(metadata).doesNotContainKey("cpfTitular");
+        assertThat(metadata).doesNotContainKey("cnpjTitular");
     }
 }

@@ -24,6 +24,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import lombok.Getter;
@@ -37,6 +38,7 @@ import lombok.Setter;
                 @Index(name = "idx_inquerito_numero", columnList = "numero_procedimento", unique = true),
                 @Index(name = "idx_inquerito_status", columnList = "status"),
                 @Index(name = "idx_inquerito_autoridade", columnList = "autoridade_responsavel_id,status"),
+                @Index(name = "idx_inquerito_unidade_apuracao", columnList = "unidade_apuracao_id,status"),
                 @Index(name = "idx_inquerito_processo", columnList = "processo_vinculado_id")
         })
 @EntityListeners(AuditingEntityListener.class)
@@ -87,6 +89,10 @@ public class InqueritoPolicialDigital {
 
     @Column(name = "orgao_apuracao", length = 120)
     private String orgaoApuracao;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unidade_apuracao_id")
+    private UnidadeInstituicao unidadeApuracao;
 
     @Column(name = "uf", length = 2)
     private String uf;

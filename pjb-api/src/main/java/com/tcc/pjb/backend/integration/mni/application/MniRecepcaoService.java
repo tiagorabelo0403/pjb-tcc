@@ -2,7 +2,14 @@ package com.tcc.pjb.backend.integration.mni.application;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloCompositionPolicy;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloComposto;
 import com.tcc.pjb.backend.core.util.Hashes;
+import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
+import com.tcc.pjb.backend.core.validation.document.DocumentoValidado;
+import com.tcc.pjb.backend.integration.mni.adapter.MniAdapterResult;
+import com.tcc.pjb.backend.integration.mni.adapter.MniParteParsed;
 import com.tcc.pjb.backend.integration.mni.adapter.MniXmlToProcessoAdapter;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoAtoSummary;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoEnvelope;
@@ -12,11 +19,19 @@ import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoProcessoSnapshot;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoRequest;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoResult;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.enums.TipoParte;
+import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.judicial.MniRecepcao;
 import com.tcc.pjb.backend.model.repository.MniRecepcaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.time.Instant;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoAuditSnapshot;
@@ -30,17 +45,29 @@ public class MniRecepcaoService {
     private final MniXmlToProcessoAdapter xmlToProcessoAdapter;
     private final ReadAfterWriteConsistencyPolicy readAfterWriteConsistencyPolicy;
     private final AuditLedgerService auditLedger;
+    private final PoloCompositionPolicy poloCompositionPolicy;
+    private final PoloProcessualApplicationService poloProcessualApplicationService;
+    private final DocumentoNacionalValidator documentoNacionalValidator;
+    private final ComarcaResolutionService comarcaResolutionService;
 
     public MniRecepcaoService(ProcessoRepository processoRepository,
                               MniRecepcaoRepository recepcaoRepository,
                               MniXmlToProcessoAdapter xmlToProcessoAdapter,
                               ReadAfterWriteConsistencyPolicy readAfterWriteConsistencyPolicy,
-                              AuditLedgerService auditLedger) {
+                              AuditLedgerService auditLedger,
+                              PoloCompositionPolicy poloCompositionPolicy,
+                              PoloProcessualApplicationService poloProcessualApplicationService,
+                              DocumentoNacionalValidator documentoNacionalValidator,
+                              ComarcaResolutionService comarcaResolutionService) {
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.recepcaoRepository = Objects.requireNonNull(recepcaoRepository);
         this.xmlToProcessoAdapter = Objects.requireNonNull(xmlToProcessoAdapter);
         this.readAfterWriteConsistencyPolicy = Objects.requireNonNull(readAfterWriteConsistencyPolicy);
         this.auditLedger = Objects.requireNonNull(auditLedger);
+        this.poloCompositionPolicy = Objects.requireNonNull(poloCompositionPolicy);
+        this.poloProcessualApplicationService = Objects.requireNonNull(poloProcessualApplicationService);
+        this.documentoNacionalValidator = Objects.requireNonNull(documentoNacionalValidator);
+        this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService);
     }
 
     @Transactional
@@ -59,8 +86,12 @@ public class MniRecepcaoService {
         if (existente != null) {
             return toResult(existente);
         }
-        Processo processo = xmlToProcessoAdapter.fromXml(xml, tribunalOrigem, motivo);
+        MniAdapterResult adapterResult = xmlToProcessoAdapter.fromXml(xml, tribunalOrigem, motivo);
+        Processo processo = adapterResult.processo();
+        comarcaResolutionService.resolver(processo.getComarca(), processo.getUf())
+                .ifPresent(processo::setComarcaEntidade);
         Processo salvo = processoRepository.save(processo);
+        materializarPolosIniciais(salvo, adapterResult.partes());
         MniRecepcao recepcao = MniRecepcao.builder()
                 .tribunalOrigem(tribunalOrigem)
                 .numeroUnificado(salvo.getNumeroUnificado())
@@ -77,6 +108,71 @@ public class MniRecepcaoService {
         return toResult(persisted);
     }
 
+
+    private void materializarPolosIniciais(Processo processo, java.util.List<MniParteParsed> partesMni) {
+        if (processo == null || processo.getId() == null) {
+            return;
+        }
+        java.util.List<PoloComposto> composicao = poloCompositionPolicy.compor(processo);
+        Map<TipoPolo, TipoParte> tipoParteByPolo = new EnumMap<>(TipoPolo.class);
+        for (PoloComposto pc : composicao) {
+            tipoParteByPolo.putIfAbsent(pc.tipoPolo(), pc.tipoParte());
+        }
+        if (partesMni.isEmpty()) {
+            for (PoloComposto pc : composicao) {
+                poloProcessualApplicationService.incluir(
+                        processo.getId(),
+                        pc.tipoPolo(),
+                        pc.tipoParte(),
+                        pc.nome(),
+                        pc.cpf(),
+                        documentoNacionalValidator.validar(pc.cpf()) instanceof DocumentoValidado.Valido v ? v.tipo().name() : null,
+                        null, null,
+                        null,
+                        null, null,
+                        pc.ufDomicilio(), pc.comarcaDomicilio(), pc.municipioDomicilio());
+            }
+            return;
+        }
+        for (MniParteParsed p : partesMni) {
+            String poloKey = p.tipoPolo() == null ? "PA" : p.tipoPolo().toUpperCase(Locale.ROOT);
+            TipoPolo tipoPolo = mapMniPoloCode(poloKey);
+            TipoParte tipoParte = tipoParteByPolo.getOrDefault(tipoPolo, defaultTipoParteForPolo(tipoPolo));
+            boolean isPj = "juridica".equalsIgnoreCase(p.tipoPessoa()) || "interesse_publico".equals(p.tipoPessoa());
+            String razaoSocial = isPj ? p.nome() : null;
+            poloProcessualApplicationService.incluir(
+                    processo.getId(),
+                    tipoPolo,
+                    tipoParte,
+                    p.nome(),
+                    p.documento(),
+                    documentoNacionalValidator.validar(p.documento()) instanceof DocumentoValidado.Valido v ? v.tipo().name() : null,
+                    null, null,
+                    null,
+                    null, null,
+                    p.uf(), null, null,
+                    razaoSocial);
+        }
+    }
+
+    private static TipoPolo mapMniPoloCode(String code) {
+        return switch (code) {
+            case "AT" -> TipoPolo.ATIVO;
+            case "PA" -> TipoPolo.PASSIVO;
+            case "TC", "TJ" -> TipoPolo.TERCEIRO;
+            case "FL" -> TipoPolo.MINISTERIO_PUBLICO;
+            default -> TipoPolo.TERCEIRO;
+        };
+    }
+
+    private static TipoParte defaultTipoParteForPolo(TipoPolo polo) {
+        return switch (polo) {
+            case ATIVO -> TipoParte.AUTOR;
+            case PASSIVO -> TipoParte.REU;
+            case MINISTERIO_PUBLICO -> TipoParte.MINISTERIO_PUBLICO;
+            default -> TipoParte.TERCEIRO_INTERESSADO;
+        };
+    }
 
     @Transactional(readOnly = true)
     public MniRecepcaoEnvelope envelope(Long recepcaoId) {

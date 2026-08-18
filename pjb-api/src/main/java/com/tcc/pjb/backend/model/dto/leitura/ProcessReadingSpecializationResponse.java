@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record ProcessReadingSpecializationResponse(
         String scopeCode,
@@ -20,6 +23,9 @@ public record ProcessReadingSpecializationResponse(
         List<String> openingSequence,
         List<String> preferredActModes,
         List<String> markers,
+        @Schema(description = "Metadados tecnicos da especializacao de leitura — varia por rito")
+        @Size(max = 30)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> metadata
 ) {
     public ProcessReadingSpecializationResponse {
@@ -29,3 +35,4 @@ public record ProcessReadingSpecializationResponse(
         metadata = metadata == null ? Map.of() : Collections.unmodifiableMap(new LinkedHashMap<>(metadata));
     }
 }
+

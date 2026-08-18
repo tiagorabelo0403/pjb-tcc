@@ -6,6 +6,7 @@ import com.tcc.pjb.backend.platform.security.idempotency.PjbIdempotencyApplicati
 import com.tcc.pjb.backend.service.api.ApiResponseFactory;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Validated
+@ConditionalOnBean(PjbIdempotencyApplicationService.class)
 @RequestMapping("/api/v1/admin/idempotency")
 @PreAuthorize("hasAnyRole('ADMINISTRADOR','ADMIN')")
 public class AdminIdempotencyController {

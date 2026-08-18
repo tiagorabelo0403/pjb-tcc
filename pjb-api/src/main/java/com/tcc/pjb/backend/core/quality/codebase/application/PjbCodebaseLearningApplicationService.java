@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class PjbCodebaseLearningApplicationService {
@@ -17,6 +18,7 @@ public class PjbCodebaseLearningApplicationService {
     private final PjbCodebaseLearningSnapshotBuilder snapshotBuilder;
     private final AtomicReference<SnapshotCacheEntry> cache;
 
+    @Inject
     public PjbCodebaseLearningApplicationService() {
         this(Path.of(""), PjbCodebaseLearningSettings.defaults(), Clock.systemUTC());
     }

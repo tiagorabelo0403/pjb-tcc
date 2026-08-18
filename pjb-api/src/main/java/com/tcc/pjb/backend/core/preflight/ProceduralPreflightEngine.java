@@ -214,7 +214,7 @@ public class ProceduralPreflightEngine {
         List<String> missingParties = checkParties(ctx, snapshot.parties(), issues);
 
         List<String> requiredDocs = snapshot.documents().stream()
-                .filter(DocumentSpec::required).map(DocumentSpec::code).toList();
+                .filter(DocumentSpec::required).map(d -> d.code().name()).toList();
         List<String> missingDocs = checkDocuments(ctx, snapshot.documents(), issues);
 
         checkValorCausa(ctx, rito, classe, issues);
@@ -412,14 +412,14 @@ public class ProceduralPreflightEngine {
 
         for (DocumentSpec doc : schema) {
             if (!doc.required()) continue;
-            if (!presenteNorm.contains(normalizeToken(doc.code()))) {
-                missing.add(doc.code());
-                issues.add(issue("DOCUMENTO_OBRIGATORIO_AUSENTE_" + doc.code(),
+            if (!presenteNorm.contains(normalizeToken(doc.code().name()))) {
+                missing.add(doc.code().name());
+                issues.add(issue("DOCUMENTO_OBRIGATORIO_AUSENTE_" + doc.code().name(),
                         new Severity.BLOQUEANTE(),
-                        "Documento obrigatório ausente: '" + humanize(doc.code()) + "'. " +
+                        "Documento obrigatório ausente: '" + humanize(doc.code().name()) + "'. " +
                         "Motivo: " + doc.rationale() + ".",
                         "documentos",
-                        "Anexe o documento '" + humanize(doc.code()) + "' antes de prosseguir. " +
+                        "Anexe o documento '" + humanize(doc.code().name()) + "' antes de prosseguir. " +
                         "Formatos aceitos: PDF/A, PDF asssinado digitalmente."));
             }
         }

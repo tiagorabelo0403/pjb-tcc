@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ProcessoMalhaOperacaoInstitucionalApplicationService {
@@ -55,6 +56,7 @@ public class ProcessoMalhaOperacaoInstitucionalApplicationService {
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
     }
 
+    @PjbTransactionalBudget(operation = "processo.malha-operacao-institucional.materializar", maxMillis = 3000)
     @Transactional
     public ProcessoMalhaOperacaoInstitucionalAggregate materializar(Long processoId,
                                                                     ProcessoMalhaActorContext actor,

@@ -36,3 +36,12 @@ CREATE INDEX IF NOT EXISTS idx_notification_user_process_ciencia_time
 
 CREATE INDEX IF NOT EXISTS idx_notification_history_tracking_token
     ON notification_history (tracking_token);
+
+CREATE INDEX IF NOT EXISTS idx_notification_history_tracking_usuario
+    ON notification_history (tracking_token, usuario_id);
+
+CREATE INDEX IF NOT EXISTS idx_notification_history_usuario_processo_canal
+    ON notification_history (usuario_id, processo_id, canal);
+
+CREATE INDEX IF NOT EXISTS idx_notification_history_status_enviado_em
+    ON notification_history (status, enviado_em);

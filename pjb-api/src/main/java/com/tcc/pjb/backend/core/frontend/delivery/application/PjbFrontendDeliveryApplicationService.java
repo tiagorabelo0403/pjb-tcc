@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import com.tcc.pjb.backend.core.quality.codebase.application.PjbProjectPathResolver;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +58,7 @@ public class PjbFrontendDeliveryApplicationService {
     private final AuditLedgerService auditLedgerService;
     private final Path projectRoot;
 
+    @Inject
     public PjbFrontendDeliveryApplicationService(PjbFinalClosureApplicationService finalClosureApplicationService,
                                                  PjbRoadmapClosureApplicationService roadmapClosureApplicationService,
                                                  PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService,
@@ -64,11 +66,11 @@ public class PjbFrontendDeliveryApplicationService {
         this(finalClosureApplicationService, roadmapClosureApplicationService, apiSurfaceSanityApplicationService, auditLedgerService, Path.of(""));
     }
 
-    public PjbFrontendDeliveryApplicationService(PjbFinalClosureApplicationService finalClosureApplicationService,
-                                                 PjbRoadmapClosureApplicationService roadmapClosureApplicationService,
-                                                 PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService,
-                                                 AuditLedgerService auditLedgerService,
-                                                 Path projectRoot) {
+    PjbFrontendDeliveryApplicationService(PjbFinalClosureApplicationService finalClosureApplicationService,
+                                          PjbRoadmapClosureApplicationService roadmapClosureApplicationService,
+                                          PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService,
+                                          AuditLedgerService auditLedgerService,
+                                          Path projectRoot) {
         this.finalClosureApplicationService = Objects.requireNonNull(finalClosureApplicationService);
         this.roadmapClosureApplicationService = Objects.requireNonNull(roadmapClosureApplicationService);
         this.apiSurfaceSanityApplicationService = Objects.requireNonNull(apiSurfaceSanityApplicationService);

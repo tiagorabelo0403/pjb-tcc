@@ -22,6 +22,7 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.EventoProcessual;
 import com.tcc.pjb.backend.model.entity.document.DocumentoPagina;
 import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
+import com.tcc.pjb.backend.model.dto.shared.reading.ProcessReadingWorkspaceIntegrityDto;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.workflow.MovimentacaoProcessual;
 import com.tcc.pjb.backend.model.dto.ui.presentation.UiReadingIntensity;
@@ -256,7 +257,7 @@ final class ProcessReadingWorkspaceFacade {
         ProcessReadingEcosystemResponse ecosystem = ecosystemResolver.resolve(processo, modeProfile, proceduralContext, specialization);
         List<ProcessReadingLaneResponse> lanes = buildLanes(processo, usuario, modeProfile, presetProfile, docs, navigation, processFlow, proceduralContext, specialization, ecosystem);
         List<ProcessReadingActionResponse> actions = buildActions(processo, modeProfile, presetProfile, docs, navigation, processFlow, proceduralContext, specialization, ecosystem);
-        LinkedHashMap<String, Object> integrity = buildIntegrity(modeProfile, presetProfile, paginas, navigation, processFlow, proceduralContext, specialization);
+        ProcessReadingWorkspaceIntegrityDto integrity = buildIntegrity(modeProfile, presetProfile, paginas, navigation, processFlow, proceduralContext, specialization);
         LinkedHashMap<String, Object> frontend = buildFrontend(processo, modeProfile, presetProfile, lanes, preference, navigation, processFlow, proceduralContext, specialization, ecosystem);
         frontend.put("ecosystemEndpoint", "/api/v1/processos/" + processo.getId() + "/painel-leitura/ecossistema");
         frontend.put("ecosystem", ecosystem);
@@ -640,36 +641,36 @@ final class ProcessReadingWorkspaceFacade {
         return List.copyOf(actions);
     }
 
-    private LinkedHashMap<String, Object> buildIntegrity(ProcessReadingModeProfile modeProfile,
-                                                         ProcessReadingPresetProfile presetProfile,
-                                                         List<DocumentoPagina> paginas,
-                                                         ProcessReadingNavigationResponse navigation,
-                                                         ProcessReadingFlowResponse processFlow,
-                                                         ProcessReadingProceduralContextResponse proceduralContext,
-                                                         ProcessReadingSpecializationResponse specialization) {
-        LinkedHashMap<String, Object> integrity = new LinkedHashMap<>();
-        integrity.put("hasPages", !paginas.isEmpty());
-        integrity.put("textCoverageHealthy", modeProfile.coberturaTextualPercentual() >= 65);
-        integrity.put("supportsFocusReading", modeProfile.totalPaginas() > 0L || processFlow.totalEntries() > 0);
-        integrity.put("supportsAmberMode", true);
-        integrity.put("supportsChunkNavigation", modeProfile.totalPaginas() >= 12L);
-        integrity.put("supportsDocumentSearch", true);
-        integrity.put("supportsInstitutionalPreset", true);
-        integrity.put("supportsNavigationMap", navigation.totalNodes() > 0);
-        integrity.put("supportsNativeActs", processFlow.totalEntries() > 0);
-        integrity.put("supportsInlineDecisions", processFlow.totalInlineActs() > 0);
-        integrity.put("supportsPrivacyVeil", modeProfile.sigiloReforcado() || !"SEM_MASCARA".equals(presetProfile.privacyVeilMode()));
-        integrity.put("supportsKeyboardBias", true);
-        integrity.put("supportsProceduralContextMesh", true);
-        integrity.put("supportsAllBrazilianRites", true);
-        integrity.put("supportsAllBrazilianRights", true);
-        integrity.put("supportsAllProceduralGuarantees", true);
-        integrity.put("supportsInlineHtmlActs", proceduralContext.htmlInlinePreferred());
-        integrity.put("supportsReadingSpecialization", true);
-        integrity.put("supportsAllInstancesAndEmbargos", true);
-        integrity.put("supportsOpeningSequence", !specialization.openingSequence().isEmpty());
-        integrity.put("supportsSignedPdfInspection", specialization.signedPdfInspectionRequired());
-        return integrity;
+    private ProcessReadingWorkspaceIntegrityDto buildIntegrity(ProcessReadingModeProfile modeProfile,
+                                                               ProcessReadingPresetProfile presetProfile,
+                                                               List<DocumentoPagina> paginas,
+                                                               ProcessReadingNavigationResponse navigation,
+                                                               ProcessReadingFlowResponse processFlow,
+                                                               ProcessReadingProceduralContextResponse proceduralContext,
+                                                               ProcessReadingSpecializationResponse specialization) {
+        return new ProcessReadingWorkspaceIntegrityDto(
+                !paginas.isEmpty(),
+                modeProfile.coberturaTextualPercentual() >= 65,
+                modeProfile.totalPaginas() > 0L || processFlow.totalEntries() > 0,
+                true,
+                modeProfile.totalPaginas() >= 12L,
+                true,
+                true,
+                navigation.totalNodes() > 0,
+                processFlow.totalEntries() > 0,
+                processFlow.totalInlineActs() > 0,
+                modeProfile.sigiloReforcado() || !"SEM_MASCARA".equals(presetProfile.privacyVeilMode()),
+                true,
+                true,
+                true,
+                true,
+                true,
+                proceduralContext.htmlInlinePreferred(),
+                true,
+                true,
+                !specialization.openingSequence().isEmpty(),
+                specialization.signedPdfInspectionRequired()
+        );
     }
 
     private LinkedHashMap<String, Object> buildFrontend(Processo processo,

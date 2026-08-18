@@ -13,6 +13,10 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.repository.InfojudConsultaRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +38,7 @@ class InfojudConsultaServiceTest {
                 currentUserService,
                 authorizationService,
                 mock(AuditLedgerService.class),
-                new ReadAfterWriteConsistencyPolicy()
+                new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5))
         );
         var result = service.consultar(
                 new com.tcc.pjb.backend.integration.judicial.financeiro.domain.InfojudConsultaRequest(10L, "12345678901", false),

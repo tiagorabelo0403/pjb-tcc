@@ -3,7 +3,9 @@ package com.tcc.pjb.backend.controller.magistratura;
 import java.time.Instant;
 import jakarta.validation.Valid;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,11 +18,8 @@ import com.tcc.pjb.backend.core.processual.ato.AtoProcessualSecurityPolicyServic
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.stepup.DecisionStepUpTokenPayload;
 import com.tcc.pjb.backend.core.security.stepup.DecisionStepUpTokenService;
-import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenPayload;
-import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenService;
 import com.tcc.pjb.backend.model.dto.julgamento.safety.DecisionStepUpIssueRequest;
 import com.tcc.pjb.backend.model.dto.julgamento.safety.DecisionStepUpIssueResponse;
-import com.tcc.pjb.backend.model.dto.julgamento.safety.FaceStepUpIssueResponse;
 import com.tcc.pjb.backend.model.entity.Usuario;
 
 @RestController
@@ -29,21 +28,16 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 @PreAuthorize("isAuthenticated()")
 public class FaceStepUpController {
 
-    private static final long TTL_SECONDS = 3L * 60L * 60L;
-
     private final CurrentUserService currentUserService;
-    private final FaceReauthTokenService faceTokenService;
     private final DecisionStepUpTokenService decisionStepUpTokenService;
     private final AuditLedgerService auditLedgerService;
     private final AtoProcessualSecurityPolicyService atoProcessualSecurityPolicyService;
 
     public FaceStepUpController(CurrentUserService currentUserService,
-                                FaceReauthTokenService faceTokenService,
                                 DecisionStepUpTokenService decisionStepUpTokenService,
                                 AuditLedgerService auditLedgerService,
                                 AtoProcessualSecurityPolicyService atoProcessualSecurityPolicyService) {
         this.currentUserService = currentUserService;
-        this.faceTokenService = faceTokenService;
         this.decisionStepUpTokenService = decisionStepUpTokenService;
         this.auditLedgerService = auditLedgerService;
         this.atoProcessualSecurityPolicyService = atoProcessualSecurityPolicyService;
@@ -90,31 +84,14 @@ public class FaceStepUpController {
     }
 
     @PostMapping("/issue")
-    public FaceStepUpIssueResponse issue() {
+    public ResponseEntity<Void> issue() {
         Usuario u = currentUserService.getRequired();
-        long now = Instant.now().getEpochSecond();
-
-        FaceReauthTokenPayload payload = new FaceReauthTokenPayload(
-                UUID.randomUUID().toString(),
-                u.getId(),
-                now,
-                now + TTL_SECONDS,
-                "FACE"
-        );
-
-        String token = faceTokenService.sign(payload);
-
         auditLedgerService.appendSafely(
-                "FACE_STEPUP_ISSUED",
+                "FACE_STEPUP_ISSUE_REJECTED",
                 "STEPUP",
-                payload.jti(),
-                "user=" + u.getId() + " exp=" + payload.exp()
+                UUID.randomUUID().toString(),
+                "user=" + u.getId() + " mecanismo aposentado - substituido por passkey platform+TPM+UV"
         );
-
-        return new FaceStepUpIssueResponse(
-                token,
-                payload.exp(),
-                TTL_SECONDS
-        );
+        return ResponseEntity.status(HttpStatus.GONE).build();
     }
 }

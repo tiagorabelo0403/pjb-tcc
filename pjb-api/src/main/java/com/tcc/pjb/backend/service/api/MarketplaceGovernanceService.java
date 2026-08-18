@@ -28,6 +28,7 @@ import com.tcc.pjb.backend.model.repository.MarketplaceClientSubscriptionReposit
 import com.tcc.pjb.backend.model.repository.MarketplaceIntegrationPlanRepository;
 import com.tcc.pjb.backend.model.repository.MarketplaceWebhookDeliveryRepository;
 import com.tcc.pjb.backend.model.repository.MarketplaceWebhookEndpointRepository;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class MarketplaceGovernanceService {
@@ -56,6 +57,7 @@ public class MarketplaceGovernanceService {
         this.cryptoVaultService = Objects.requireNonNull(cryptoVaultService);
     }
 
+    @PjbTransactionalBudget(operation = "marketplace.governance.listar-planos", maxMillis = 3000)
     @Transactional(readOnly = true)
     public List<PlanView> listarPlanos() {
         return planRepository.findAll().stream()
@@ -195,6 +197,44 @@ public class MarketplaceGovernanceService {
                     MarketplaceWebhookDelivery delivery = new MarketplaceWebhookDelivery();
                     delivery.setEndpoint(endpoint);
                     delivery.setEventType("PROCESSO_PROTOCOLADO");
+                    delivery.setPayloadHash(payloadHash);
+                    delivery.setStatus("PENDENTE");
+                    delivery.setPayloadJson(serialized);
+                    delivery.setResponseCode(null);
+                    delivery.setAttempts(0);
+                    delivery.setNextRetryAt(Instant.now());
+                    delivery.setResponseExcerpt("Queued for outbound delivery by marketplace dispatcher.");
+                    MarketplaceWebhookDelivery saved = deliveryRepository.save(delivery);
+                    return new WebhookDeliveryView(saved.getId(), endpoint.getId(), endpoint.getCallbackUrl(), saved.getEventType(),
+                            saved.getStatus(), saved.getResponseCode(), saved.getAttempts(), saved.getCreatedAt(), saved.getNextRetryAt(), saved.getDeliveredAt());
+                })
+                .toList();
+    }
+
+    @Transactional
+    public List<WebhookDeliveryView> publicarEventoPendenciaDocumental(String clientId, Long processoId, String numeroProcesso,
+                                                                        String protocoloMarketplace, List<String> documentosFaltantes) {
+        requireSubscription(clientId);
+        List<MarketplaceWebhookEndpoint> endpoints = webhookEndpointRepository.findByClientApp_ClientIdIgnoreCaseAndStatusIgnoreCaseOrderByCreatedAtDesc(clientId, "ATIVO");
+        if (endpoints.isEmpty()) {
+            return List.of();
+        }
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("eventType", "PROCESSO_PENDENTE_DOCUMENTACAO");
+        payload.put("clientId", clientId);
+        payload.put("processoId", processoId);
+        payload.put("numeroProcesso", numeroProcesso);
+        payload.put("protocoloMarketplace", protocoloMarketplace);
+        payload.put("documentosFaltantes", documentosFaltantes);
+        payload.put("occurredAt", Instant.now().toString());
+        String serialized = writeJson(payload);
+        String payloadHash = Hashes.sha256HexBytes(serialized.getBytes(StandardCharsets.UTF_8));
+        return endpoints.stream()
+                .filter(endpoint -> acceptsEvent(endpoint.getEventFilter(), "PROCESSO_PENDENTE_DOCUMENTACAO"))
+                .map(endpoint -> {
+                    MarketplaceWebhookDelivery delivery = new MarketplaceWebhookDelivery();
+                    delivery.setEndpoint(endpoint);
+                    delivery.setEventType("PROCESSO_PENDENTE_DOCUMENTACAO");
                     delivery.setPayloadHash(payloadHash);
                     delivery.setStatus("PENDENTE");
                     delivery.setPayloadJson(serialized);

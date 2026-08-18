@@ -65,4 +65,56 @@ class SigiloServiceTest {
         assertTrue(decision.signals().contains(SigiloService.SigiloSignal.LGPD));
         assertTrue(decision.recomendacoes().contains("minimizar_divulgacao_de_medidas_sigilosas"));
     }
+
+    @Test
+    void shouldReturnPublicoForNullProcessoAndDefinirNivelZero() {
+        SigiloService.SigiloDecision decision = service.avaliar(null);
+        assertEquals(NivelSigilo.PUBLICO, decision.nivel());
+        assertTrue(decision.recomendacoes().contains("processo_null"));
+        assertEquals(0, service.definirNivelSigilo(null));
+    }
+
+    @Test
+    void shouldReturnPublicoForEmptyProcesso() {
+        Processo empty = Processo.builder().build();
+        SigiloService.SigiloDecision decision = service.avaliar(empty);
+        assertEquals(NivelSigilo.PUBLICO, decision.nivel());
+        assertTrue(decision.recomendacoes().contains("corpus_vazio"));
+    }
+
+    @Test
+    void shouldEscalateInfanciaAndViolenciaDomesticaSignals() {
+        Processo infancia = Processo.builder().assunto("infancia").build();
+        SigiloService.SigiloDecision d1 = service.avaliar(infancia);
+        assertTrue(d1.nivel().nivel() >= NivelSigilo.SIGILO_N2.nivel());
+        assertTrue(d1.signals().contains(SigiloService.SigiloSignal.INFANCIA));
+
+        Processo vd = Processo.builder().assunto("violencia domestica").build();
+        SigiloService.SigiloDecision d2 = service.avaliar(vd);
+        assertTrue(d2.nivel().nivel() >= NivelSigilo.SIGILO_N2.nivel());
+        assertTrue(d2.signals().contains(SigiloService.SigiloSignal.VIOLENCIA_DOMESTICA));
+    }
+
+    @Test
+    void shouldEscalateSaudeSignalAndDefinirNivelAtLeastTwo() {
+        Processo saude = Processo.builder().assunto("saude prontuario").build();
+        SigiloService.SigiloDecision decision = service.avaliar(saude);
+        assertTrue(decision.nivel().nivel() >= NivelSigilo.SIGILO_N2.nivel());
+        assertTrue(decision.signals().contains(SigiloService.SigiloSignal.SAUDE));
+        assertTrue(service.definirNivelSigilo(saude) >= 2);
+    }
+
+    @Test
+    void shouldEscalatePenalSensivelFromSingleInterceptacaoCorpus() {
+        SigiloService.SigiloDecision decision = service.avaliarCorpus("interceptacao");
+        assertTrue(decision.nivel().nivel() >= NivelSigilo.SIGILO_N3.nivel());
+        assertTrue(decision.signals().contains(SigiloService.SigiloSignal.PENAL_SENSIVEL));
+    }
+
+    @Test
+    void shouldEscalateInfanciaFromCriancaGuardaCorpus() {
+        SigiloService.SigiloDecision decision = service.avaliarCorpus("crianca guarda");
+        assertTrue(decision.nivel().nivel() >= NivelSigilo.SIGILO_N2.nivel());
+        assertTrue(decision.signals().contains(SigiloService.SigiloSignal.INFANCIA));
+    }
 }

@@ -21,6 +21,7 @@ import com.tcc.pjb.backend.core.comunicacao.institucional.workflow.domain.Instit
 import com.tcc.pjb.backend.core.comunicacao.institucional.workflow.domain.InstitutionalSlaPredictiveDashboard;
 import com.tcc.pjb.backend.model.entity.enums.DestinatarioInstitucionalKind;
 import com.tcc.pjb.backend.model.entity.enums.StatusComunicacaoInstitucional;
+import jakarta.inject.Inject;
 
 @Service
 public class InstitutionalSlaPredictiveApplicationService {
@@ -32,6 +33,7 @@ public class InstitutionalSlaPredictiveApplicationService {
     private final Clock clock;
     private final AtomicReference<CachedDashboard> dashboardCache = new AtomicReference<>();
 
+    @Inject
     public InstitutionalSlaPredictiveApplicationService(InstitutionalInboxStateRepository inboxRepository,
                                                         CatalogoInstitucionalUnificadoService catalogo) {
         this(inboxRepository, catalogo, Clock.systemUTC());

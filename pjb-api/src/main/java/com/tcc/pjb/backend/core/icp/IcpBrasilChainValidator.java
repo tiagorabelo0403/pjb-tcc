@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.icp.domain.IcpBrasilOcspEvidence;
@@ -50,11 +51,11 @@ public class IcpBrasilChainValidator {
     private final IcpBrasilSignatureProperties properties;
     private final AuditLedgerService auditLedger;
 
-    public IcpBrasilChainValidator(IcpCertificateCacheRepository certificateCacheRepository,
-                                   IcpSignatureEventRepository signatureEventRepository,
-                                   IcpBrasilOcspVerifier ocspVerifier,
-                                   IcpBrasilSignatureProperties properties,
-                                   AuditLedgerService auditLedger) {
+    IcpBrasilChainValidator(IcpCertificateCacheRepository certificateCacheRepository,
+                            IcpSignatureEventRepository signatureEventRepository,
+                            IcpBrasilOcspVerifier ocspVerifier,
+                            IcpBrasilSignatureProperties properties,
+                            AuditLedgerService auditLedger) {
         this.certificateCacheRepository = Objects.requireNonNull(certificateCacheRepository);
         this.signatureEventRepository = Objects.requireNonNull(signatureEventRepository);
         this.ocspVerifier = Objects.requireNonNull(ocspVerifier);
@@ -63,6 +64,7 @@ public class IcpBrasilChainValidator {
         this.auditLedger = Objects.requireNonNull(auditLedger);
     }
 
+    @Inject
     public IcpBrasilChainValidator(IcpCertificateCacheRepository certificateCacheRepository,
                                    IcpSignatureEventRepository signatureEventRepository,
                                    IcpBrasilOcspVerifier ocspVerifier,
@@ -136,7 +138,7 @@ public class IcpBrasilChainValidator {
             return IcpBrasilValidationResult.fail("ac não aceita: " + profile.acSigla());
         }
         cache(profile, cert);
-        auditLedger.appendSafely("ICP_CHAIN_OK", "ICP", profile.serialHex(), "cpf=" + profile.cpfTitular() + " tipo=" + profile.certType());
+        auditLedger.appendSafely("ICP_CHAIN_OK", "ICP", profile.serialHex(), "tipo=" + profile.certType());
         return IcpBrasilValidationResult.ok(profile);
     }
 
@@ -162,7 +164,6 @@ public class IcpBrasilChainValidator {
                 .processoId(processoId)
                 .docHash(docHash)
                 .certSerialHex(profile.serialHex())
-                .cpfSignatario(profile.cpfTitular())
                 .profileCandidate(profileCandidate)
                 .profileAchieved(profileAchieved)
                 .tsRfc3161Embedded(tsRfc3161Embedded)
@@ -181,8 +182,6 @@ public class IcpBrasilChainValidator {
         entity.setSubjectDn(profile.subjectDn());
         entity.setIssuerDn(profile.issuerDn());
         entity.setSerialHex(profile.serialHex());
-        entity.setCpfTitular(profile.cpfTitular());
-        entity.setCnpjTitular(profile.cnpjTitular());
         entity.setCertType(profile.certType());
         entity.setAcSigla(profile.acSigla());
         entity.setValidFrom(profile.validFrom());

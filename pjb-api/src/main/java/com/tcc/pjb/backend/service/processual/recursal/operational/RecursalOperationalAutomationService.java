@@ -64,7 +64,7 @@ public class RecursalOperationalAutomationService {
                 "RECEBIMENTO",
                 routing.receiptInboxKey(),
                 routing.receiptQueueCode(),
-                "/api/v1/secretaria/especializada/processos/" + processo.getId() + "/distribuicao-interna",
+                "/api/v1/secretariat/especializada/processos/" + processo.getId() + "/distribuicao-interna",
                 List.of("petição protocolada", "peça vinculada ao processo"),
                 "recebimento recursal certificado e encaminhado à fila competente",
                 "RECURSO_RECEBIDO"
@@ -77,7 +77,7 @@ public class RecursalOperationalAutomationService {
                 "RECEBIMENTO",
                 routing.receiptInboxKey(),
                 routing.receiptQueueCode(),
-                "/api/v1/secretaria/especializada/processos/" + processo.getId() + "/distribuicao-interna",
+                "/api/v1/secretariat/especializada/processos/" + processo.getId() + "/distribuicao-interna",
                 List.of("petição protocolada", "peça vinculada ao processo"),
                 "recebimento recursal certificado e encaminhado à fila competente",
                 "RECURSO_RECEBIDO"
@@ -195,7 +195,7 @@ public class RecursalOperationalAutomationService {
                 "RECEBIMENTO",
                 routing.receiptInboxKey(),
                 routing.receiptQueueCode(),
-                "/api/v1/secretaria/especializada/processos/" + processo.getId() + "/distribuicao-interna",
+                "/api/v1/secretariat/especializada/processos/" + processo.getId() + "/distribuicao-interna",
                 List.of("recebimento", "distribuição interna", "retorno ao gabinete"),
                 "recurso recebido e reposicionado na trilha operacional existente",
                 "RECURSO_RECEBIDO"

@@ -37,7 +37,7 @@ class PjbRepositoryLayoutGovernanceTest {
             List<Path> offenders = stream
                     .filter(Files::isRegularFile)
                     .filter(path -> path.getFileName().toString().endsWith(".md"))
-                    .filter(path -> !path.getFileName().toString().equals("README.md") && !path.getFileName().toString().equals("CLAUDE.md"))
+                    .filter(path -> !path.getFileName().toString().equals("README.md") && !path.getFileName().toString().equals("README.en.md") && !path.getFileName().toString().equals("CLAUDE.md"))
                     .toList();
             assertFalse(!offenders.isEmpty(), "Unexpected markdown files in root: " + offenders);
         }

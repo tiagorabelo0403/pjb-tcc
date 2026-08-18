@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.controller.admin;
 
 import com.tcc.pjb.backend.BackendApplication;
+import com.tcc.pjb.backend.PjbH2ItBase;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,7 +35,7 @@ import org.springframework.test.web.servlet.MvcResult;
         }
 )
 @AutoConfigureMockMvc
-class AdminAdvocaciaOpsSummaryControllerIT {
+class AdminAdvocaciaOpsSummaryControllerIT extends PjbH2ItBase {
 
     @Autowired
     private MockMvc mockMvc;
@@ -53,10 +54,6 @@ class AdminAdvocaciaOpsSummaryControllerIT {
 
     @BeforeEach
     void setup() {
-        backfillRunRepository.deleteAll();
-        clienteRepository.deleteAll();
-        usuarioRepository.deleteAll();
-
         Usuario admin = Usuario.builder()
                 .nome("Admin")
                 .email("admin@test.local")

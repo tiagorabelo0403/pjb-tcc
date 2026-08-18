@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,11 +26,12 @@ public class PjbModuleScaffoldApplicationService {
 
     private final AuditLedgerService auditLedgerService;
     private final Path projectRoot;
+    @Inject
     public PjbModuleScaffoldApplicationService(AuditLedgerService auditLedgerService) {
         this(auditLedgerService, Path.of(""));
     }
 
-    public PjbModuleScaffoldApplicationService(AuditLedgerService auditLedgerService, Path projectRoot) {
+    PjbModuleScaffoldApplicationService(AuditLedgerService auditLedgerService, Path projectRoot) {
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
         this.projectRoot = projectRoot == null ? Path.of("").toAbsolutePath().normalize() : projectRoot.toAbsolutePath().normalize();
     }

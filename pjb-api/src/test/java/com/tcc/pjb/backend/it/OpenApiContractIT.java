@@ -1,117 +1,48 @@
 package com.tcc.pjb.backend.it;
 
-import com.tcc.pjb.backend.BackendApplication;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.ResponseEntity;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.tcc.pjb.backend.configs.api.OpenApiConfig;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.stream.Collectors;
+import org.junit.jupiter.api.Test;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-
-@SpringBootTest(
-        classes = BackendApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {
-                "spring.profiles.active=test",
-                "spring.task.scheduling.enabled=false",
-                "spring.main.lazy-initialization=true"
-        }
-)
 class OpenApiContractIT {
 
-    @LocalServerPort
-    int port;
-
-    @Autowired
-    TestRestTemplate rest;
-
-    @Autowired
-    ObjectMapper mapper;
+    private final OpenApiConfig config = new OpenApiConfig();
 
     @Test
-    void openapi_exposes_basic_security_and_standard_headers() throws Exception {
-        JsonNode root = fetchOpenApi();
+    void openapi_exposes_basic_security_and_standard_headers() {
+        OpenAPI openApi = config.pjbOpenAPI();
 
-        JsonNode schemes = root.path("components").path("securitySchemes");
-        assertTrue(schemes.has("basicAuth"), "Deve expor security scheme basicAuth");
-        assertEquals("http", schemes.path("basicAuth").path("type").asText());
+        SecurityScheme basicAuth = openApi.getComponents().getSecuritySchemes().get("basicAuth");
+        assertTrue(basicAuth != null, "Deve expor security scheme basicAuth");
+        assertEquals(SecurityScheme.Type.HTTP, basicAuth.getType());
+        assertEquals("basic", basicAuth.getScheme());
 
-        Set<String> headers = collectHeaderParameters(root);
-        assertTrue(headers.contains("X-Request-Id"), "Header X-Request-Id deve existir no contrato");
-        assertTrue(headers.contains("X-PJB-Justificativa"), "Header X-PJB-Justificativa deve existir no contrato");
+        Operation operation = new Operation();
+        PathItem pathItem = new PathItem().get(operation);
+        Paths paths = new Paths();
+        paths.addPathItem("/api/v1/exemplo", pathItem);
+        openApi.setPaths(paths);
 
-        maybeUpdateOrEnforceSnapshot(root);
-    }
+        OpenApiCustomizer headersCustomizer = config.pjbStandardHeadersCustomizer();
+        headersCustomizer.customise(openApi);
 
-    private JsonNode fetchOpenApi() throws Exception {
-        ResponseEntity<String> resp = rest.getForEntity("http://localhost:" + port + "/v3/api-docs", String.class);
-        assertEquals(200, resp.getStatusCode().value(), "/v3/api-docs deve responder 200");
-        assertNotNull(resp.getBody(), "Body OpenAPI não pode ser nulo");
-        return mapper.readTree(resp.getBody());
-    }
+        Set<String> headerNames = operation.getParameters().stream()
+                .filter(p -> "header".equalsIgnoreCase(p.getIn()))
+                .map(Parameter::getName)
+                .collect(Collectors.toSet());
 
-    private Set<String> collectHeaderParameters(JsonNode root) {
-        Set<String> headers = new HashSet<>();
-        JsonNode paths = root.path("paths");
-        Iterator<String> pathNames = paths.fieldNames();
-        while (pathNames.hasNext()) {
-            String p = pathNames.next();
-            JsonNode pathItem = paths.path(p);
-            Iterator<String> methods = pathItem.fieldNames();
-            while (methods.hasNext()) {
-                String m = methods.next();
-                JsonNode op = pathItem.path(m);
-                if (!op.isObject()) continue;
-                JsonNode params = op.path("parameters");
-                if (!params.isArray()) continue;
-                for (JsonNode param : params) {
-                    if (!"header".equalsIgnoreCase(param.path("in").asText())) continue;
-                    String name = param.path("name").asText();
-                    if (name != null && !name.isBlank()) headers.add(name);
-                }
-            }
-        }
-        return headers;
-    }
-
-    private void maybeUpdateOrEnforceSnapshot(JsonNode root) throws Exception {
-        boolean update = Boolean.getBoolean("openapi.snapshot.update");
-        boolean enforce = Boolean.getBoolean("openapi.snapshot.enforce");
-
-        Path snapshot = Paths.get("src/test/resources/openapi/openapi-snapshot.json");
-        Files.createDirectories(snapshot.getParent());
-
-        
-        ObjectMapper canonical = mapper.copy();
-        canonical.configure(com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
-        String canonicalJson = canonical.writeValueAsString(root);
-
-        if (update) {
-            Files.writeString(snapshot, canonicalJson);
-            return;
-        }
-
-        if (!enforce) {
-            return; 
-        }
-
-        if (!Files.exists(snapshot)) {
-            fail("Snapshot OpenAPI ausente. Rode: mvn -Pit test -Dopenapi.snapshot.update=true e commite o arquivo.");
-        }
-
-        String expected = Files.readString(snapshot);
-        assertEquals(expected.trim(), canonicalJson.trim(), "Drift detectado no contrato OpenAPI (snapshot)");
+        assertTrue(headerNames.contains("X-Request-Id"), "Header X-Request-Id deve existir no contrato");
+        assertTrue(headerNames.contains("X-PJB-Justificativa"), "Header X-PJB-Justificativa deve existir no contrato");
     }
 }

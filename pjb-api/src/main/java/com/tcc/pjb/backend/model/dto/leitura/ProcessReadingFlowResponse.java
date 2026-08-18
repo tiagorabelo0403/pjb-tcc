@@ -1,9 +1,7 @@
 package com.tcc.pjb.backend.model.dto.leitura;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import com.tcc.pjb.backend.model.dto.shared.reading.ProcessReadingFlowMetadataDto;
 import java.util.List;
-import java.util.Map;
 
 public record ProcessReadingFlowResponse(
         long totalEntries,
@@ -13,10 +11,9 @@ public record ProcessReadingFlowResponse(
         String chronologyMode,
         String defaultOpenMode,
         List<ProcessReadingProcessEntryResponse> entries,
-        Map<String, Object> metadata
+        ProcessReadingFlowMetadataDto metadata
 ) {
     public ProcessReadingFlowResponse {
         entries = entries == null ? List.of() : List.copyOf(entries);
-        metadata = metadata == null ? Map.of() : Collections.unmodifiableMap(new LinkedHashMap<>(metadata));
     }
 }

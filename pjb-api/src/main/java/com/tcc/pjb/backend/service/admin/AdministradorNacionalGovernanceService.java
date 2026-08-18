@@ -15,6 +15,7 @@ import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 @Service
 public class AdministradorNacionalGovernanceService {
 private final PerfilDashboardContextFactory contextFactory;
@@ -85,6 +86,7 @@ workItemRepository.countByUfAndComarcaAndStatus(uf, comarca, WorkItemStatus.PEND
 out.put("geradoEm", Instant.now());
 return out;
 }
+    @PjbTransactionalBudget(operation = "admin.governance.reconciliacao-global", maxMillis = 8000)
 @Transactional
 public Map<String, Object> executarReconciliacaoGlobal() {
 PerfilDashboardContext ctx = contextFactory.build();

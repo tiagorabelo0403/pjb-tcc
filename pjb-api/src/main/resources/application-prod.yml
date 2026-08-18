@@ -111,6 +111,11 @@ server:
     max-connections: ${PJB_SERVER_MAX_CONNECTIONS:12000}
 
 pjb:
+  procedural:
+    bootstrap:
+      strict-connector-registry: ${PJB_PROCEDURAL_BOOTSTRAP_STRICT_CONNECTOR_REGISTRY:true}
+      fail-fast: ${PJB_PROCEDURAL_BOOTSTRAP_FAIL_FAST:true}
+      validate-legacy-boundary: ${PJB_PROCEDURAL_BOOTSTRAP_VALIDATE_LEGACY_BOUNDARY:true}
   datasource:
     budget:
       enabled: ${PJB_DB_BUDGET_ENABLED:true}
@@ -489,12 +494,18 @@ pjb:
       sefaz-nfe:
         enabled: ${PJB_COMJUD_SEFAZ_NFE_ENABLED:true}
         strict-mode: ${PJB_COMJUD_SEFAZ_NFE_STRICT_MODE:true}
+  ai:
+    vector:
+      mode: ${PJB_AI_VECTOR_MODE:disabled}
+  bnmp:
+    mock-enabled: ${PJB_BNMP_MOCK_ENABLED:false}
+  dje:
+    mock-enabled: ${PJB_DJE_MOCK_ENABLED:false}
   hsm:
     mock-enabled: ${PJB_HSM_MOCK_ENABLED:false}
+  integrations:
+    govbr:
+      mock-enabled: ${PJB_GOVBR_MOCK_ENABLED:false}
   cache:
     redis:
       enabled: ${PJB_CACHE_REDIS_ENABLED:false}
-  procedural:
-    bootstrap:
-      fail-fast: ${PJB_PROCEDURAL_BOOTSTRAP_FAIL_FAST:true}
-      validate-legacy-boundary: ${PJB_PROCEDURAL_BOOTSTRAP_VALIDATE_LEGACY_BOUNDARY:true}

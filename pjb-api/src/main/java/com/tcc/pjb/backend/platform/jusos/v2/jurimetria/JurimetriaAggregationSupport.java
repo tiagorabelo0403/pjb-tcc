@@ -6,7 +6,7 @@ import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.TribunalFonte;
 import com.tcc.pjb.backend.model.entity.jurisprudencia.Precedente;
-import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.core.processo.analytics.application.ProcessoAnalyticsAggregationService;
 import com.tcc.pjb.backend.platform.jusos.v2.prazo.NationalPrazoEngine;
 import com.tcc.pjb.backend.platform.jusos.v2.rules.NationalRulePackEngine;
 import java.util.ArrayList;
@@ -20,13 +20,13 @@ import org.springframework.stereotype.Service;
 @Service
 class JurimetriaAggregationSupport {
 
-    JurimetriaEngine.BaseLocalAnalitica carregarBaseLocal(ProcessoRepository processoRepository,
+    JurimetriaEngine.BaseLocalAnalitica carregarBaseLocal(ProcessoAnalyticsAggregationService analyticsService,
                                                           RamoDireito ramo,
                                                           GrauJurisdicao grau,
                                                           String tribunal) {
-        List<Object[]> porRamo = processoRepository.agregadosPorRamo(ramo.name());
+        List<Object[]> porRamo = analyticsService.agregadosPorRamo(ramo.name());
         List<Object[]> porTribunal = tribunal != null && !tribunal.isBlank()
-                ? processoRepository.agregadosPorRamoETribunal(ramo.name(), tribunal)
+                ? analyticsService.agregadosPorRamoETribunal(ramo.name(), tribunal)
                 : List.of();
 
         Object[] linhaRamo = porRamo.isEmpty() ? null : porRamo.get(0);

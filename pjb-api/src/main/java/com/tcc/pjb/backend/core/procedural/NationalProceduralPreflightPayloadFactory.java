@@ -138,6 +138,16 @@ public class NationalProceduralPreflightPayloadFactory {
 
     private List<String> extractPresentDocuments(Map<String, Object> payload,
                                                  ProceduralCanonicalResolver.CanonicalContext canonical) {
+        if (payload.containsKey("documentosTipados")) {
+            Object raw = payload.get("documentosTipados");
+            if (raw instanceof List<?> lista) {
+                return lista.stream()
+                        .filter(item -> item instanceof String)
+                        .map(item -> (String) item)
+                        .toList();
+            }
+            return List.of();
+        }
         Map<String, Object> source = payload;
         String provas = text(source.get("provas"));
         String materialProbatorioResumo = text(source.get("materialProbatorioResumo"));

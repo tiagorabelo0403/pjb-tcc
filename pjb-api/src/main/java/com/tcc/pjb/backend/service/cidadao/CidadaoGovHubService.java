@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.service.cidadao;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -46,14 +47,17 @@ public class CidadaoGovHubService {
         return hubForUf(uf);
     }
 
+    public CidadaoGovHubCacheToken cacheTokenForUf(String uf) {
+        String u = normalizeUf(uf);
+        Instant max = repo.findMaxUpdatedAtEnabledByUfs(ufsFor(u));
+        long version = max != null ? max.getEpochSecond() : 0L;
+        return new CidadaoGovHubCacheToken("W/\"govhub-" + u + "-" + version + "\"");
+    }
+
     @Cacheable(cacheNames = "govHubByUf", key = "#uf")
     public CidadaoGovHubDto hubForUf(String uf) {
         String u = normalizeUf(uf);
-        List<String> ufs = new ArrayList<>();
-        ufs.add(u);
-        if (!"BR".equals(u)) {
-            ufs.add("BR");
-        }
+        List<String> ufs = ufsFor(u);
 
         List<GovServiceRegistry> entries = repo.findEnabledByUfs(ufs);
         Map<String, List<GovServiceRegistry>> byCat = new LinkedHashMap<>();
@@ -133,6 +137,15 @@ public class CidadaoGovHubService {
         return s == null ? List.of() : List.of(s);
     }
 
+    private static List<String> ufsFor(String uf) {
+        List<String> ufs = new ArrayList<>();
+        ufs.add(uf);
+        if (!"BR".equals(uf)) {
+            ufs.add("BR");
+        }
+        return ufs;
+    }
+
     private String normalizeUf(String uf) {
         if (uf == null || uf.isBlank()) return "BR";
         String u = uf.trim().toUpperCase(Locale.ROOT);
@@ -156,5 +169,20 @@ public class CidadaoGovHubService {
         t.put("MP", "Ministério Público");
         t.put("OUTROS", "Outros serviços");
         return t.getOrDefault(cat, cat);
+    }
+
+    public record CidadaoGovHubCacheToken(String etag) {
+
+        public boolean matches(String candidate) {
+            return etag.equals(trimToNull(candidate));
+        }
+
+        private static String trimToNull(String value) {
+            if (value == null) {
+                return null;
+            }
+            String trimmed = value.trim();
+            return trimmed.isEmpty() ? null : trimmed;
+        }
     }
 }

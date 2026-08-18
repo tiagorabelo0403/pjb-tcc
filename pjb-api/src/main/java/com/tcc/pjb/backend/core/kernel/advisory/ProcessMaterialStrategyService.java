@@ -6,6 +6,7 @@ import com.tcc.pjb.backend.modules.laiane.dto.legal.LaianePeticaoAssistRequest;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class ProcessMaterialStrategyService {
@@ -13,6 +14,7 @@ public class ProcessMaterialStrategyService {
     private final ProcessMaterialStrategyInputFactory inputFactory;
     private final ProcessMaterialStrategyReportFactory reportFactory;
 
+    @Inject
     public ProcessMaterialStrategyService() {
         ProcessMaterialStrategyTextSupport textSupport = new ProcessMaterialStrategyTextSupport();
         ProcessMaterialStrategyScoringPolicy scoringPolicy = new ProcessMaterialStrategyScoringPolicy(textSupport);

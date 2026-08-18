@@ -38,7 +38,7 @@ public class JurisprudenciaSyncJob {
     }
 
     @PjbClusterSingletonTask(key = "jurisprudencia-sync", ttl = "PT1H")
-    @Scheduled(cron = "${pjb.jurisprudencia.sync.cron:0 0 3 1 1 ? 2099}")
+    @Scheduled(cron = "${pjb.jurisprudencia.sync.cron:-}")
     public void sync() {
         if (!lock.tryLock()) return;
         try {

@@ -244,7 +244,7 @@ public class BpmnWorkflowGenerator {
         out.put("title", snapshot.title());
         out.put("ramo", snapshot.ramo());
         out.put("competenceHints", snapshot.competenceHints());
-        out.put("requiredDocuments", snapshot.documents().stream().filter(d -> d.required()).map(d -> d.code()).toList());
+        out.put("requiredDocuments", snapshot.documents().stream().filter(d -> d.required()).map(d -> d.code().name()).toList());
         out.put("requiredPartyRoles", snapshot.parties().stream().filter(PartyRoleSpec::required).map(PartyRoleSpec::code).toList());
         out.put("stageCount", snapshot.stages().size());
         out.put("externalTaskCount", externalCount);

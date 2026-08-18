@@ -9,12 +9,16 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
+import com.tcc.pjb.backend.core.processo.polo.motor.PoloCompositionPolicy;
+import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
 import com.tcc.pjb.backend.integration.mni.adapter.MniXmlToProcessoAdapter;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoCommand;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.judicial.MniRecepcao;
 import com.tcc.pjb.backend.model.repository.MniRecepcaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -43,7 +47,11 @@ class MniRecepcaoServiceFailureAndIdempotencyTest {
                 recepcaoRepository,
                 mock(MniXmlToProcessoAdapter.class),
                 rawPolicy,
-                mock(AuditLedgerService.class));
+                mock(AuditLedgerService.class),
+                new PoloCompositionPolicy(),
+                mock(PoloProcessualApplicationService.class),
+                new DocumentoNacionalValidator(),
+                comarcaResolutionServiceVazio());
 
         var result = service.receberAutos(new MniRecepcaoCommand("TJSP", "CARTA", "<mni/>"));
 
@@ -64,10 +72,21 @@ class MniRecepcaoServiceFailureAndIdempotencyTest {
                 recepcaoRepository,
                 adapter,
                 mock(ReadAfterWriteConsistencyPolicy.class),
-                mock(AuditLedgerService.class));
+                mock(AuditLedgerService.class),
+                new PoloCompositionPolicy(),
+                mock(PoloProcessualApplicationService.class),
+                new DocumentoNacionalValidator(),
+                comarcaResolutionServiceVazio());
 
         assertThatThrownBy(() -> service.receberAutos(new MniRecepcaoCommand("TJSP", "CARTA", "<broken>")))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("xml inválido");
+    }
+
+    private static ComarcaResolutionService comarcaResolutionServiceVazio() {
+        ComarcaResolutionService service = mock(ComarcaResolutionService.class);
+        when(service.resolver(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(java.util.Optional.empty());
+        return service;
     }
 }

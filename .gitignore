@@ -4,6 +4,9 @@ target/
 build/
 **/build/
 
+# GeoIP database (licenciada individualmente via MaxMind, nunca commitar)
+infra/geoip/*.mmdb
+
 # Python
 __pycache__/
 **/__pycache__/
@@ -66,6 +69,9 @@ dist/
 Thumbs.db
 .claude/
 .codex/
+CLAUDE.md
+docs/superpowers/
+docs/reports/claude_continuation_of_codex_audit.md
 
 # Local environment and credentials
 .env
@@ -98,9 +104,54 @@ secret*.txt
 prompt-round*.txt
 prompt*.txt
 
+# Kubernetes — evitar commit acidental de secrets K8s preenchidos com valores reais
+# (arquivos template com REPLACE_ME são intencionais e pertencem ao repo)
+infra/k8s/**/*-real.yaml
+infra/k8s/**/*-filled.yaml
+infra/k8s/**/*-local.yaml
+infra/k8s/**/*.kubeconfig
+
 # Data exports that may carry personal or procedural data
 *.csv
 *.tsv
 *.xls
 *.xlsx
 *.ods
+
+# Guard reports — regenerados a cada run de script, não têm valor histórico
+docs/reports/architecture_hygiene_guard.json
+docs/reports/architecture_hygiene_guard.md
+docs/reports/constructor_injection_guard.json
+docs/reports/constructor_injection_guard.md
+docs/reports/transactional_hotspot_guard.json
+docs/reports/transactional_hotspot_guard.md
+docs/reports/repository_layout_guard.json
+docs/reports/repository_layout_guard.md
+docs/reports/internal_reference_drift_guard.json
+docs/reports/internal_reference_drift_guard.md
+docs/reports/internal_type_hygiene_guard.json
+docs/reports/internal_type_hygiene_guard.md
+docs/reports/config_taxonomy_guard.json
+docs/reports/config_taxonomy_guard.md
+docs/reports/docker_compose_guard.json
+docs/reports/docker_compose_guard.md
+docs/reports/test_isolation_guard.json
+docs/reports/test_isolation_guard.md
+docs/reports/modular_monolith_guard_report.json
+docs/reports/modular_monolith_guard_report.md
+docs/reports/runtime_concurrency_guard.json
+docs/reports/runtime_concurrency_hotspots_remaining.md
+docs/reports/salario_minimo_hardcoded_guard.json
+docs/reports/salario_minimo_hardcoded_guard.md
+docs/reports/spring_ambiguous_constructor_guard.json
+docs/reports/spring_ambiguous_constructor_guard.md
+
+# Snapshots historicos ponto-a-ponto de rodadas de script — nao tem valor de referencia continua
+docs/reports/*_iteration[0-9]*.json
+docs/reports/*_iteration[0-9]*.md
+docs/reports/*_iteration[0-9]*.txt
+docs/reports/iteration[0-9]*_*.json
+docs/reports/iteration[0-9]*_*.md
+
+# Build artifacts do compilador Java
+pjb-api/javac.*.args

@@ -16,11 +16,13 @@ import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.repository.JurisdicaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaInteligenteService;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.exception.RecursoJaExistenteException;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.exception.RegraNegocioException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Slf4j
 @Service
@@ -29,11 +31,13 @@ public class JurisdicaoService {
 
     private final JurisdicaoRepository jurisdicaoRepository;
     private final ProcessoRepository processoRepository;
+    private final ComarcaResolutionService comarcaResolutionService;
     private final JurisdicaoMapper jurisdicaoMapper;
     private final AuditoriaInteligenteService auditoriaService;
 
     
 
+    @PjbTransactionalBudget(operation = "jurisdicao.listar-todas", maxMillis = 3000)
     @Transactional(readOnly = true)
     @Cacheable(value = "jurisdicoes")
     public List<JurisdicaoResponse> listarTodas() {
@@ -71,8 +75,9 @@ public class JurisdicaoService {
         validarRegrasCnj(dto);
 
         Jurisdicao entidade = jurisdicaoMapper.toEntity(dto);
+        aplicarComarca(entidade, dto);
 
-        
+
         if (dto.getSigla() != null) {
             entidade.setSigla(dto.getSigla().toUpperCase().trim());
         }
@@ -88,6 +93,7 @@ public class JurisdicaoService {
         return jurisdicaoMapper.toResponse(salvo);
     }
 
+    @PjbTransactionalBudget(operation = "jurisdicao.listar-paginado", maxMillis = 3000)
     @Transactional(readOnly = true)
     public Page<JurisdicaoResponse> listarPaginado(Pageable pageable) {
         return jurisdicaoRepository.findAll(pageable)
@@ -131,10 +137,11 @@ public class JurisdicaoService {
             throw new RegraNegocioException("Não é permitido alterar Código CNJ de jurisdição com processos ativos.");
         }
 
-        
-        jurisdicaoMapper.updateEntityFromDto(dto, entidade);
 
-        
+        jurisdicaoMapper.updateEntityFromDto(dto, entidade);
+        aplicarComarca(entidade, dto);
+
+
         if (entidade.getSigla() != null) {
             entidade.setSigla(entidade.getSigla().toUpperCase().trim());
         }
@@ -186,6 +193,15 @@ public class JurisdicaoService {
         if (sigla != null && jurisdicaoRepository.existsBySiglaIgnoreCase(sigla)) {
             throw new RecursoJaExistenteException("Sigla já existe: " + sigla);
         }
+    }
+
+    private void aplicarComarca(Jurisdicao entidade, JurisdicaoRequest dto) {
+        String comarcaNome = dto.getComarca();
+        String uf = dto.getEstado();
+        if (comarcaNome == null || comarcaNome.isBlank() || uf == null || uf.isBlank()) {
+            return;
+        }
+        comarcaResolutionService.resolver(comarcaNome, uf).ifPresent(entidade::setComarcaEntidade);
     }
 
     private void validarRegrasCnj(JurisdicaoRequest dto) {

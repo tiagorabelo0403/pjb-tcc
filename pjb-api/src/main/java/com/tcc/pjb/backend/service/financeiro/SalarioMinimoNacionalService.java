@@ -17,7 +17,7 @@ import com.tcc.pjb.backend.model.repository.SalarioMinimoNacionalRepository;
 @Service
 public class SalarioMinimoNacionalService {
 
-    private static final Map<Integer, BigDecimal> FALLBACK_OFICIAL = fallbackOficial();
+    static final Map<Integer, BigDecimal> FALLBACK_OFICIAL = fallbackOficial();
 
     private final SalarioMinimoNacionalRepository repository;
 
@@ -84,6 +84,22 @@ public class SalarioMinimoNacionalService {
     @Transactional(readOnly = true)
     public List<SalarioMinimoNacional> listarAtivos() {
         return repository.findAllByAtivoTrueOrderByAnoReferenciaAsc();
+    }
+
+    @Transactional(readOnly = true)
+    public int anoMaisRecenteConhecido() {
+        int anoAtual = LocalDate.now().getYear();
+        Optional<SalarioMinimoNacional> registro = repository.findTopByAnoReferenciaLessThanEqualAndAtivoTrueOrderByAnoReferenciaDesc(anoAtual);
+        if (registro.isPresent()) {
+            return registro.get().getAnoReferencia();
+        }
+        if (FALLBACK_OFICIAL.containsKey(anoAtual)) {
+            return anoAtual;
+        }
+        return FALLBACK_OFICIAL.keySet().stream()
+                .filter(ano -> ano <= anoAtual)
+                .max(Integer::compareTo)
+                .orElseGet(() -> FALLBACK_OFICIAL.keySet().stream().max(Integer::compareTo).orElse(anoAtual));
     }
 
     private static Map<Integer, BigDecimal> fallbackOficial() {

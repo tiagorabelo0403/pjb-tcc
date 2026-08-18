@@ -6,6 +6,7 @@ import com.tcc.pjb.backend.core.comunicacao.institucional.panel.domain.Instituti
 import com.tcc.pjb.backend.core.comunicacao.institucional.processual.domain.InstitutionalProcessWorkspace;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class InstitutionalOperationalDeskGovernanceApplicationService {
@@ -13,6 +14,7 @@ public class InstitutionalOperationalDeskGovernanceApplicationService {
     private final InstitutionalOperationalDeskSnapshotResolver snapshotResolver;
     private final InstitutionalOperationalDeskGovernanceAssembler governanceAssembler;
 
+    @Inject
     public InstitutionalOperationalDeskGovernanceApplicationService() {
         this(new InstitutionalOperationalDeskSupport());
     }

@@ -29,8 +29,10 @@ import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
+import com.tcc.pjb.backend.model.entity.security.TrustedDevice;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.model.repository.security.TrustedDeviceRepository;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDecision;
 import com.tcc.pjb.backend.service.casefile.CaseContinuityDecisionGateService;
@@ -78,6 +80,9 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
 
     @Autowired
     private ProcessoRepository processoRepository;
+
+    @Autowired
+    private TrustedDeviceRepository trustedDeviceRepository;
 
     @MockitoBean
     private UserPersonaService personaService;
@@ -128,15 +133,21 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
     private MagistraturaJudicialProvidenceAutomationService providenceAutomationService;
 
     private Processo processo;
+    private Usuario ministro;
 
     @BeforeEach
     void setup() {
         processoRepository.deleteAll();
+        trustedDeviceRepository.deleteAll();
         usuarioRepository.deleteAll();
 
         Usuario juiz = usuarioRepository.save(novoJuiz());
-        usuarioRepository.save(novoDesembargador());
-        usuarioRepository.save(novoMinistro());
+        Usuario desembargador = usuarioRepository.save(novoDesembargador());
+        this.ministro = usuarioRepository.save(novoMinistro());
+
+        registrarPasskey(juiz, "cred-juiz-atos-it");
+        registrarPasskey(desembargador, "cred-desemb-atos-it");
+        registrarPasskey(this.ministro, "cred-ministro-atos-it");
         processo = processoRepository.save(Processo.builder()
                 .numeroProcesso("MAG-ATOS-2026-01")
                 .numeroUnificado("0009001-11.2026.8.06.0001")
@@ -157,7 +168,8 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
         when(personaService.getRequiredPersona()).thenReturn(personaJuiz());
         doNothing().when(authorizationService).requireReadProcesso(any());
         when(capabilityRateLimiter.enforce(any(), any(), any(), any())).thenReturn(new CapabilityRateLimitDecision(true, 100L, 99L, 0L, 60, 1));
-        when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(guardAllow());
+        JuizProcessoGuardRailService.GuardRailSnapshot allowSnapshot = guardAllow();
+        when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(allowSnapshot);
         when(juizGabineteDecisionalService.assinarDespacho(eq(processo.getId()), eq("Intime-se."), eq("CPC")))
                 .thenReturn(Map.of("status", "ASSINADO", "processoId", processo.getId(), "documentoId", "DOC-9001"));
         when(providenceAutomationService.preview(any(), any(), any(), any())).thenReturn(List.of());
@@ -213,7 +225,7 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
                 .andExpect(jsonPath("$.processoNumero").value("MAG-ATOS-2026-01"))
                 .andExpect(jsonPath("$.acts[0].code").value("DESPACHO"))
                 .andExpect(jsonPath("$.acts[0].enabled").value(true))
-                .andExpect(jsonPath("$.acts[0].nativeRoute").value("/api/v1/magistratura/processos/" + processo.getId() + "/atos"));
+                .andExpect(jsonPath("$.acts[0].nativeRoute").value("/api/v1/juiz/gabinete-decisoes/processos/" + processo.getId() + "/despacho"));
     }
 
     @Test
@@ -225,7 +237,7 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
                 .andExpect(jsonPath("$.processoId").value(processo.getId()))
                 .andExpect(jsonPath("$.action").value("DESPACHO"))
                 .andExpect(jsonPath("$.allowed").value(true))
-                .andExpect(jsonPath("$.nativeRoute").value("/api/v1/magistratura/processos/" + processo.getId() + "/atos"))
+                .andExpect(jsonPath("$.nativeRoute").value("/api/v1/juiz/gabinete-decisoes/processos/" + processo.getId() + "/despacho"))
                 .andExpect(jsonPath("$.providences[0].code").value("PROVIDENCIAR_PUBLICACAO"))
                 .andExpect(jsonPath("$.providences[0].targetQueueCode").value("PUB:DESPACHO"));
     }
@@ -233,7 +245,8 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
     @Test
     @WithMockUser(username = "juiz@test.local", roles = "JUIZ_ESTADUAL")
     void deveProjetarPreviewBloqueadoQuandoGuardRailNegarAto() throws Exception {
-        when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(guardBlock());
+        JuizProcessoGuardRailService.GuardRailSnapshot blockSnapshot = guardBlock();
+        when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(blockSnapshot);
 
         mockMvc.perform(get("/api/v1/magistratura/processos/{processoId}/atos/preview", processo.getId())
                         .param("action", "SENTENCA"))
@@ -322,7 +335,8 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
     @Test
     @WithMockUser(username = "juiz@test.local", roles = "JUIZ_ESTADUAL")
     void deveNegarExecucaoQuandoGuardRailBloquearAto() throws Exception {
-        when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(guardBlock());
+        JuizProcessoGuardRailService.GuardRailSnapshot blockSnapshot = guardBlock();
+        when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(blockSnapshot);
         MagistraturaJudicialActCommandRequest request = new MagistraturaJudicialActCommandRequest(
                 "DESPACHO",
                 "Intime-se.",
@@ -545,6 +559,20 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
                 EsferaJurisdicao.JUSTICA_ESTADUAL,
                 false
         );
+    }
+
+    private void registrarPasskey(Usuario usuario, String credentialId) {
+        TrustedDevice passkey = new TrustedDevice();
+        passkey.setUsuario(usuario);
+        passkey.setCredentialId(credentialId);
+        passkey.setPublicKey("pub-key-" + credentialId);
+        passkey.setAlias("passkey-" + credentialId);
+        passkey.setAuthenticatorAttachment("platform");
+        passkey.setAttestationFmt("tpm");
+        passkey.setAttestationTrusted(true);
+        passkey.setEnrollSuspectNetwork(false);
+        passkey.setRiskScoreEnroll(0);
+        trustedDeviceRepository.save(passkey);
     }
 
     private JuizProcessoGuardRailService.GuardRailSnapshot guardAllow() {

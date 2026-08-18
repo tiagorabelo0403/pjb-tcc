@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Locale;
 import com.tcc.pjb.backend.core.moderation.ContentBlockedException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,7 @@ import com.tcc.pjb.backend.adapter.factory.PJeAdapterNotFoundException;
 import com.tcc.pjb.backend.core.governance.idempotency.IdempotencyInProgressException;
 import com.tcc.pjb.backend.core.observability.RequestContext;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
+import com.tcc.pjb.backend.core.security.scope.AcessoForaDeEscopoException;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitExceededException;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalConstraintViolationException;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalRevisionConflictException;
@@ -43,14 +45,19 @@ import com.tcc.pjb.backend.service.exception.RegraNegocioException;
 import com.tcc.pjb.backend.service.sse.TooManySseConnectionsException;
 import com.tcc.pjb.backend.service.upload.TooManyUploadsException;
 import com.tcc.pjb.backend.modules.atendimento.service.AtendimentoTosNotAcceptedException;
+import com.tcc.pjb.backend.core.protocolo.completude.ProtocoloPendenteException;
 import com.tcc.pjb.backend.service.exception.EquipeNaoSelecionadaException;
 import com.tcc.pjb.backend.service.processual.calculo.CalculoJudicialDomainSupport;
 import com.tcc.pjb.backend.service.processual.calculo.CalculoJudicialUnsupportedDomainException;
 import com.tcc.pjb.backend.service.processual.calculo.CalculoJudicialFrontendContractService;
 import com.tcc.pjb.backend.service.processual.calculo.CalculoJudicialApiObservabilityService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
     private final CalculoJudicialFrontendContractService frontendContractService;
     private final CalculoJudicialApiObservabilityService observabilityService;
@@ -131,6 +138,13 @@ public class ApiExceptionHandler {
     @ExceptionHandler(AccessDeniedPjbException.class)
     public ResponseEntity<ProblemDetail> handleAccessDenied(AccessDeniedPjbException ex, HttpServletRequest request) {
         return build(HttpStatus.FORBIDDEN, "forbidden", "Acesso negado.", request, null);
+    }
+
+    @ExceptionHandler(AcessoForaDeEscopoException.class)
+    public ResponseEntity<ProblemDetail> handleAcessoForaDeEscopo(AcessoForaDeEscopoException ex, HttpServletRequest request) {
+        Map<String, Object> extra = new LinkedHashMap<>();
+        extra.put("motivo", ex.getMotivo().name());
+        return build(HttpStatus.FORBIDDEN, "fora_de_escopo", "Acesso negado.", request, extra);
     }
 
     @ExceptionHandler(CalculoJudicialUnsupportedDomainException.class)
@@ -234,6 +248,21 @@ public class ApiExceptionHandler {
         extra.put("sugestaoCorrecao", ex.getSugestaoCorrecao());
         extra.put("proof", ex.getProvaIntegridade());
         return build(HttpStatus.UNPROCESSABLE_ENTITY, "processual_territorial_violation", safeMessage(ex), request, extra);
+    }
+
+    @ExceptionHandler(com.tcc.pjb.backend.configs.security.PasskeyRequiredException.class)
+    public ResponseEntity<ProblemDetail> handlePasskeyRequired(
+            com.tcc.pjb.backend.configs.security.PasskeyRequiredException ex, HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, "passkey_required",
+                "Autenticação forte por passkey obrigatória para este perfil.", request, null);
+    }
+
+    @ExceptionHandler(com.tcc.pjb.backend.integration.serpro.datavalid.CpfSituacaoBloqueadaException.class)
+    public ResponseEntity<ProblemDetail> handleCpfBloqueado(com.tcc.pjb.backend.integration.serpro.datavalid.CpfSituacaoBloqueadaException ex, HttpServletRequest request) {
+        Map<String, Object> extra = new LinkedHashMap<>();
+        extra.put("errorCode", ex.getCodigoPjb());
+        return build(HttpStatus.UNPROCESSABLE_ENTITY, "cpf_situacao_bloqueada",
+                "Peticionamento não permitido para o CPF informado.", request, extra);
     }
 
     @ExceptionHandler(RegraNegocioException.class)
@@ -364,8 +393,53 @@ public class ApiExceptionHandler {
         return build(HttpStatus.SERVICE_UNAVAILABLE, "request_timeout", "Tempo limite da requisicao excedido.", request, calculoFrontendExtra(request, null));
     }
 
+    @ExceptionHandler(ProtocoloPendenteException.class)
+    public ResponseEntity<ProblemDetail> handleProtocoloPendente(ProtocoloPendenteException ex, HttpServletRequest request) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY,
+                "Protocolo pendente de documentação obrigatória. Regularize a documentação e reenvie.");
+        pd.setTitle("Completude Documental Insuficiente");
+        pd.setType(URI.create("https://pjb.local/problems/protocolo_pendente_documentacao"));
+        pd.setInstance(URI.create(request.getRequestURI()));
+        pd.setProperty("timestamp", Instant.now().toString());
+        RequestContext.getRequestId().ifPresent(id -> pd.setProperty("requestId", id));
+        pd.setProperty("protocoloId", ex.protocoloId());
+        pd.setProperty("status", ex.resultado().statusResultante().name());
+        if (ex.prazoRegularizacao() != null) {
+            pd.setProperty("prazoRegularizacao", ex.prazoRegularizacao().toString());
+        }
+        java.util.List<Map<String, Object>> violacoes = ex.resultado().violacoes().stream().map(v -> {
+            Map<String, Object> m = new LinkedHashMap<>();
+            boolean sensivel = v.nivelSensibilidade() != null && v.nivelSensibilidade().exigeCredencial();
+            m.put("codigo", v.codigo());
+            m.put("severidade", v.severidade().name());
+            m.put("campo", sensivel ? "DADO_SENSIVEL" : v.campo());
+            m.put("acaoCorretiva", sensivel
+                    ? "Contacte a secretaria para orientações sobre este documento."
+                    : v.acaoCorretiva());
+            if (v.fundamento() != null) {
+                Map<String, Object> fund = new LinkedHashMap<>();
+                fund.put("tipo", v.fundamento().tipo() != null ? v.fundamento().tipo().name() : null);
+                fund.put("identificador", v.fundamento().identificador());
+                fund.put("resumo", v.fundamento().resumo());
+                fund.put("grau", v.fundamento().grau() != null ? v.fundamento().grau().name() : null);
+                m.put("fundamento", fund);
+            }
+            return m;
+        }).toList();
+        pd.setProperty("violacoes", violacoes);
+        return problemResponse(HttpStatus.UNPROCESSABLE_ENTITY, pd, request, null);
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ProblemDetail> handleGeneric(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ProblemDetail> handleGeneric(Exception ex, HttpServletRequest request, HttpServletResponse response) {
+        if (response.isCommitted()) {
+            return null;
+        }
+        log.error("Unhandled exception on {}", request.getRequestURI(), ex);
+        String ct = response.getContentType();
+        if (ct != null && !ct.startsWith("application/json") && !ct.startsWith("application/problem")) {
+            response.reset();
+        }
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "internal_error", "Erro interno.", request, calculoFrontendExtra(request, null));
     }
 

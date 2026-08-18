@@ -4,6 +4,7 @@ import com.tcc.pjb.backend.core.catalog.TpuClasseCnj;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
+import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.service.rito.model.RitoDefinition;
@@ -33,7 +34,7 @@ public final class ProceduralCatalogSupport {
         }
     }
 
-    public record DocumentSpec(String code, boolean required, String rationale) {
+    public record DocumentSpec(TipoDocumento code, boolean required, String rationale) {
     }
 
     public record DefinitionSnapshot(
@@ -77,7 +78,7 @@ public final class ProceduralCatalogSupport {
     }
 
     public static List<String> requiredDocuments(RitoProcessual rito) {
-        return snapshot(rito).documents().stream().filter(DocumentSpec::required).map(DocumentSpec::code).toList();
+        return snapshot(rito).documents().stream().filter(DocumentSpec::required).map(d -> d.code().name()).toList();
     }
 
     public static List<PartyRoleSpec> requiredParties(RitoProcessual rito) {
@@ -101,7 +102,7 @@ public final class ProceduralCatalogSupport {
         }).toList());
         out.put("documentRequirements", snapshot.documents().stream().map(d -> {
             Map<String, Object> item = new LinkedHashMap<>();
-            item.put("code", d.code());
+            item.put("code", d.code().name());
             item.put("required", d.required());
             item.put("rationale", d.rationale());
             return item;
@@ -440,8 +441,8 @@ public final class ProceduralCatalogSupport {
         register(raw, "PACIENTE", "paciente");
         register(raw, "SEGURADO", "segurado", "beneficiário", "beneficiario");
         register(raw, "INSS", "inss");
-        register(raw, "RECLAMANTE", "reclamante", "empregado");
-        register(raw, "RECLAMADA", "reclamada", "empregador");
+        register(raw, "RECLAMANTE", "reclamante", "empregado", "autor");
+        register(raw, "RECLAMADA", "reclamada", "empregador", "reu", "réu");
         register(raw, "SUSCITANTE", "suscitante");
         register(raw, "SUSCITADO", "suscitado");
         register(raw, "FAZENDA_PUBLICA", "fazenda pública", "fazenda publica", "ente público", "ente publico");

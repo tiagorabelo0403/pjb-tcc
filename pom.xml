@@ -58,7 +58,9 @@
         <pact.version>4.6.14</pact.version>
         <surefireArgLine></surefireArgLine>
         <failsafeArgLine></failsafeArgLine>
+        <test.forked.jvm.xmx>4g</test.forked.jvm.xmx>
         <commons-compress.version>1.27.1</commons-compress.version>
+        <commons-io.version>2.19.0</commons-io.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <assertj.version>3.27.7</assertj.version>
         <postgresql.version>42.7.11</postgresql.version>
@@ -131,6 +133,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>${commons-compress.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -567,8 +574,21 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.version}</version>
                 <configuration>
-                    <argLine>${surefireArgLine} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.io.tmpdir=${project.build.directory}</argLine>
+                    <argLine>${surefireArgLine} -Xmx${test.forked.jvm.xmx} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.io.tmpdir=${project.build.directory} -Dpjb.runtime.lifecycle.drain-quiet-period=10ms</argLine>
                     <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+                    <excludedGroups>integration</excludedGroups>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/Test*.java</include>
+                        <include>**/*TestCase.java</include>
+                    </includes>
+                    <properties>
+                        <property>
+                            <name>junit.jupiter.execution.timeout.default</name>
+                            <value>10 m</value>
+                        </property>
+                    </properties>
                 </configuration>
             </plugin>
             <plugin>
@@ -576,8 +596,14 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${maven.failsafe.version}</version>
                 <configuration>
-                    <argLine>${failsafeArgLine} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.io.tmpdir=${project.build.directory}</argLine>
+                    <argLine>${failsafeArgLine} -Xmx${test.forked.jvm.xmx} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=UTF-8 -Duser.timezone=UTC -Djava.io.tmpdir=${project.build.directory} -Dpjb.runtime.lifecycle.drain-quiet-period=10ms</argLine>
                     <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+                    <properties>
+                        <property>
+                            <name>junit.jupiter.execution.timeout.default</name>
+                            <value>10 m</value>
+                        </property>
+                    </properties>
                 </configuration>
                 <executions>
                     <execution>
@@ -711,6 +737,17 @@
                                 <requireMavenVersion>
                                     <version>[3.9.6,)</version>
                                 </requireMavenVersion>
+                                <requireReleaseVersion>
+                                    <failWhenParentIsSnapshot>true</failWhenParentIsSnapshot>
+                                </requireReleaseVersion>
+                                <requireReleaseDeps>
+                                    <onlyWhenRelease>false</onlyWhenRelease>
+                                    <failWhenParentIsSnapshot>true</failWhenParentIsSnapshot>
+                                    <searchTransitive>true</searchTransitive>
+                                </requireReleaseDeps>
+                                <requirePluginVersions>
+                                    <banSnapshots>true</banSnapshots>
+                                </requirePluginVersions>
                             </rules>
                         </configuration>
                     </execution>
@@ -724,6 +761,27 @@
             <id>quality-gates</id>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.cyclonedx</groupId>
+                        <artifactId>cyclonedx-maven-plugin</artifactId>
+                        <version>2.9.1</version>
+                        <executions>
+                            <execution>
+                                <id>sbom</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>makeAggregateBom</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <projectType>application</projectType>
+                            <schemaVersion>1.6</schemaVersion>
+                            <includeBomSerialNumber>true</includeBomSerialNumber>
+                            <includeCompileScope>true</includeCompileScope>
+                            <includeRuntimeScope>true</includeRuntimeScope>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-checkstyle-plugin</artifactId>

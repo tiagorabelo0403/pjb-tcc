@@ -23,6 +23,7 @@ import com.tcc.pjb.backend.model.entity.intelligence.DiligenciaOperadorCertidao;
 import com.tcc.pjb.backend.model.entity.intelligence.DiligenciaOperadorEncerramento;
 import com.tcc.pjb.backend.model.entity.intelligence.DiligenciaOperadorCertidaoDocumento;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 
 @Service
 public class DiligenceOperationalMinutePdfService {
@@ -53,7 +54,7 @@ public class DiligenceOperationalMinutePdfService {
         Objects.requireNonNull(certidao);
         String titulo = resolveTitle(tituloSolicitado, canal, processo, certidao, encerramento);
         List<String> lines = composeLines(actor, canal, diligenceReference, processo, certidao, encerramento, documentos, complementoNarrativo, evidenceChaveCustodia, evidenceIntegrityOk);
-        QualifiedDocumentSignatureEnvelopeService.SignedContent assinatura = signMinute(actor, canal, processo, titulo, lines);
+        SignedDocumentEnvelope assinatura = signMinute(actor, canal, processo, titulo, lines);
         List<String> signedLines = composeSignedLines(lines, assinatura);
         byte[] pdf = generatePdf(titulo, processo, signedLines, assinatura);
         return new RenderedOperationalMinute(titulo, pdf, signedLines.size(), documentos != null ? documentos.size() : 0);
@@ -146,11 +147,11 @@ public class DiligenceOperationalMinutePdfService {
         return lines;
     }
 
-    private QualifiedDocumentSignatureEnvelopeService.SignedContent signMinute(Usuario actor,
-                                                                                 TelemetriaOperacionalCanal canal,
-                                                                                 Processo processo,
-                                                                                 String titulo,
-                                                                                 List<String> lines) {
+    private SignedDocumentEnvelope signMinute(Usuario actor,
+                                              TelemetriaOperacionalCanal canal,
+                                              Processo processo,
+                                              String titulo,
+                                              List<String> lines) {
         return qualifiedDocumentSignatureEnvelopeService.signFreeContent(
                 processo,
                 actor,
@@ -168,27 +169,27 @@ public class DiligenceOperationalMinutePdfService {
     }
 
     private List<String> composeSignedLines(List<String> lines,
-                                            QualifiedDocumentSignatureEnvelopeService.SignedContent assinatura) {
+                                            SignedDocumentEnvelope assinatura) {
         List<String> signedLines = new ArrayList<>(lines);
         signedLines.add("");
         signedLines.add("ASSINATURA QUALIFICADA");
         signedLines.add("");
-        signedLines.add("rubrica=" + nv(assinatura.assinaturaQualificada().get("rubrica")));
-        signedLines.add("data=" + nv(assinatura.assinaturaQualificada().get("data")));
-        signedLines.add("hora=" + nv(assinatura.assinaturaQualificada().get("hora")));
-        signedLines.add("local=" + nv(assinatura.assinaturaQualificada().get("local")));
-        signedLines.add("envelope_id=" + nv(assinatura.assinaturaQualificada().get("envelopeId")));
-        signedLines.add("assinatura_hash=" + nv(assinatura.assinaturaQualificada().get("assinaturaHash")));
-        signedLines.add("politica_assinatura=" + nv(assinatura.assinaturaQualificada().get("politicaAssinatura")));
-        signedLines.add("papel_assinante=" + nv(assinatura.assinaturaQualificada().get("papelAssinante")));
-        signedLines.add("documento_assinado_hash=" + nv(assinatura.validacaoSoberana().get("documentoAssinadoHash")));
+        signedLines.add("rubrica=" + nv(assinatura.assinaturaQualificada().rubricaEletronica()));
+        signedLines.add("data=" + nv(assinatura.assinaturaQualificada().data()));
+        signedLines.add("hora=" + nv(assinatura.assinaturaQualificada().hora()));
+        signedLines.add("local=" + nv(assinatura.assinaturaQualificada().local()));
+        signedLines.add("envelope_id=" + nv(assinatura.assinaturaQualificada().envelopeId()));
+        signedLines.add("assinatura_hash=" + nv(assinatura.assinaturaQualificada().assinaturaHash()));
+        signedLines.add("politica_assinatura=" + nv(assinatura.validacaoSoberana().politicaAssinatura()));
+        signedLines.add("papel_assinante=" + nv(assinatura.assinaturaQualificada().papelAssinante()));
+        signedLines.add("documento_assinado_hash=" + nv(assinatura.validacaoSoberana().documentoAssinadoHash()));
         signedLines.add("");
         signedLines.add("VALIDACAO SOBERANA");
         signedLines.add("");
-        signedLines.add("status=" + nv(assinatura.validacaoSoberana().get("status")));
-        signedLines.add("fonte=" + nv(assinatura.validacaoSoberana().get("fonte")));
-        signedLines.add("session_binding_hash=" + nv(assinatura.validacaoSoberana().get("sessionBindingHash")));
-        signedLines.add("replay_shield_hash=" + nv(assinatura.validacaoSoberana().get("replayShieldHash")));
+        signedLines.add("status=" + nv(assinatura.validacaoSoberana().status()));
+        signedLines.add("fonte=" + nv(assinatura.validacaoSoberana().fonte()));
+        signedLines.add("session_binding_hash=" + nv(assinatura.validacaoSoberana().sessionBindingHash()));
+        signedLines.add("replay_shield_hash=" + nv(assinatura.validacaoSoberana().replayShieldHash()));
         return signedLines;
     }
 
@@ -209,7 +210,7 @@ public class DiligenceOperationalMinutePdfService {
     private byte[] generatePdf(String title,
                                Processo processo,
                                List<String> lines,
-                               QualifiedDocumentSignatureEnvelopeService.SignedContent assinatura) {
+                               SignedDocumentEnvelope assinatura) {
         try (PDDocument doc = new PDDocument()) {
             PDDocumentInformation info = new PDDocumentInformation();
             info.setTitle(title);
@@ -217,9 +218,9 @@ public class DiligenceOperationalMinutePdfService {
             info.setAuthor("PJB");
             info.setCreator("PJB - DiligenceOperationalMinutePdfService");
             info.setKeywords("PJB, Formalização, Certidão, Diligência, Assinatura Qualificada");
-            info.setCustomMetadataValue("PJB-Envelope-Assinatura", nv(assinatura.assinaturaQualificada().get("envelopeId")));
-            info.setCustomMetadataValue("PJB-Rubrica", nv(assinatura.assinaturaQualificada().get("rubrica")));
-            info.setCustomMetadataValue("PJB-Documento-Assinado-Hash", nv(assinatura.validacaoSoberana().get("documentoAssinadoHash")));
+            info.setCustomMetadataValue("PJB-Envelope-Assinatura", nv(assinatura.assinaturaQualificada().envelopeId()));
+            info.setCustomMetadataValue("PJB-Rubrica", nv(assinatura.assinaturaQualificada().rubricaEletronica()));
+            info.setCustomMetadataValue("PJB-Documento-Assinado-Hash", nv(assinatura.validacaoSoberana().documentoAssinadoHash()));
             if (processo.getNumeroProcesso() != null) {
                 info.setCustomMetadataValue("PJB-Processo-Numero", processo.getNumeroProcesso());
             }

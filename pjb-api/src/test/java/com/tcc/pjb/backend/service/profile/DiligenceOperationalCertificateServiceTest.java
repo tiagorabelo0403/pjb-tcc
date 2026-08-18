@@ -20,6 +20,11 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.QualifiedSignatureMetadata;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.SovereignValidationResult;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -35,7 +40,9 @@ class DiligenceOperationalCertificateServiceTest {
         DiligenciaOperadorCheckpointEventoRepository checkpointRepository = Mockito.mock(DiligenciaOperadorCheckpointEventoRepository.class);
         DiligenciaOperadorCertidaoRepository certidaoRepository = Mockito.mock(DiligenciaOperadorCertidaoRepository.class);
         QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService = Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class);
-        when(qualifiedDocumentSignatureEnvelopeService.signFreeContent(any(), any(), any(), any(), any(), any(), Mockito.anyBoolean(), any())).thenReturn(new QualifiedDocumentSignatureEnvelopeService.SignedContent("CERTIDAO_ASSINADA", "aa".repeat(32), java.util.Map.of("rubrica", "PJB-RUB-TESTE"), java.util.Map.of("status", "VALIDO")));
+        SovereignValidationResult sovereignResult = new SovereignValidationResult("VALIDO", null, null, false, false, false, false, false, null, null, null, null, null, null, null, List.of());
+        QualifiedSignatureMetadata qsm = new QualifiedSignatureMetadata("ENV-TEST", null, null, null, true, "PJB-RUB-TESTE", LocalDate.of(2026, 3, 11), LocalTime.of(15, 0), "QUIXADÁ", "Delegado Operacional", "DELEGADO_POLICIA", null, null, null, null, null, null, null, null, true, null, null, null, sovereignResult);
+        when(qualifiedDocumentSignatureEnvelopeService.signFreeContent(any(), any(), any(), any(), any(), any(), Mockito.anyBoolean(), any())).thenReturn(new SignedDocumentEnvelope("CERTIDAO_TITULO", "CERTIDAO_ASSINADA", "aa".repeat(32), true, qsm, sovereignResult));
         DiligenceOperationalCertificateService service = new DiligenceOperationalCertificateService(currentUserService, keyMaterialService, referenceResolverService, templateService, checkpointService, checkpointRepository, certidaoRepository, qualifiedDocumentSignatureEnvelopeService);
         when(currentUserService.getRequired()).thenReturn(usuario());
         DiligenciaOperadorCheckpointEvento checkpoint = DiligenciaOperadorCheckpointEvento.builder()
@@ -81,8 +88,9 @@ class DiligenceOperationalCertificateServiceTest {
         assertThat(response.signatureHmacSha256()).hasSize(64);
         assertThat(response.attemptTrailDigestSha256()).hasSize(64);
         assertThat(response.narrativa()).isEqualTo("CERTIDAO_ASSINADA");
-        assertThat(response.assinaturaQualificada()).containsKey("rubrica");
-        assertThat(response.validacaoSoberana()).containsEntry("status", "VALIDO");
+        assertThat(response.assinaturaQualificada()).isNotNull();
+        assertThat(response.assinaturaQualificada().rubricaEletronica()).isEqualTo("PJB-RUB-TESTE");
+        assertThat(response.validacaoSoberana().status()).isEqualTo("VALIDO");
     }
 
     private static Usuario usuario() {

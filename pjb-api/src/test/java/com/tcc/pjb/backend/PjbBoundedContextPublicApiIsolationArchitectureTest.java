@@ -74,10 +74,6 @@ class PjbBoundedContextPublicApiIsolationArchitectureTest {
     }
 
     private PjbPublicApi readPublicApi(JavaClass source) {
-        try {
-            return Class.forName(source.getFullName()).getAnnotation(PjbPublicApi.class);
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException("Classe não carregável para inspeção de bounded context: " + source.getFullName(), ex);
-        }
+        return source.tryGetAnnotationOfType(PjbPublicApi.class).orElse(null);
     }
 }

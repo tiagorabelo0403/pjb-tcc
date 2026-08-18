@@ -14,10 +14,12 @@ class PjbPermitAllExposureDisciplineTest {
     private static final Set<String> APPROVED_PERMIT_ALL_FILES = Set.of(
             "src/main/java/com/tcc/pjb/backend/controller/IdeaCatalogController.java",
             "src/main/java/com/tcc/pjb/backend/controller/OrgaoJudiciarioController.java",
+            "src/main/java/com/tcc/pjb/backend/controller/auth/CertificadoAuthController.java",
             "src/main/java/com/tcc/pjb/backend/controller/auth/PasskeyAuthController.java",
             "src/main/java/com/tcc/pjb/backend/controller/auth/PasskeyStepUpController.java",
             "src/main/java/com/tcc/pjb/backend/controller/consulta/ConsultasRapidasController.java",
             "src/main/java/com/tcc/pjb/backend/controller/integration/N8nIntegrationController.java",
+            "src/main/java/com/tcc/pjb/backend/controller/magistratura/MagistradoAtivacaoController.java",
             "src/main/java/com/tcc/pjb/backend/controller/notification/NotificationTrackingController.java",
             "src/main/java/com/tcc/pjb/backend/controller/publico/AtlasAcessoJusticaController.java",
             "src/main/java/com/tcc/pjb/backend/controller/publico/ConsultasPublicasController.java",
@@ -36,9 +38,11 @@ class PjbPermitAllExposureDisciplineTest {
     );
 
     private static final Set<String> APPROVED_PUBLIC_WRITE_FILES = Set.of(
+            "src/main/java/com/tcc/pjb/backend/controller/auth/CertificadoAuthController.java",
             "src/main/java/com/tcc/pjb/backend/controller/auth/PasskeyAuthController.java",
             "src/main/java/com/tcc/pjb/backend/controller/auth/PasskeyStepUpController.java",
             "src/main/java/com/tcc/pjb/backend/controller/integration/N8nIntegrationController.java",
+            "src/main/java/com/tcc/pjb/backend/controller/magistratura/MagistradoAtivacaoController.java",
             "src/main/java/com/tcc/pjb/backend/controller/notification/NotificationTrackingController.java",
             "src/main/java/com/tcc/pjb/backend/controller/security/AdvogadoBaptismController.java",
             "src/main/java/com/tcc/pjb/backend/controller/security/BodyHashController.java",

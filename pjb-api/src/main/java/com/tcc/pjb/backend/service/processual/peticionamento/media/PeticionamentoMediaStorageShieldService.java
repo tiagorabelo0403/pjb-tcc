@@ -11,6 +11,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class PeticionamentoMediaStorageShieldService {
@@ -19,6 +20,7 @@ public class PeticionamentoMediaStorageShieldService {
     private final UploadContentPolicyService uploadContentPolicyService;
     private final UploadCapacityGovernanceService uploadCapacityGovernanceService;
 
+    @Inject
     public PeticionamentoMediaStorageShieldService() {
         this(new ObjectStorageProperties(), new UploadContentPolicyService(), new UploadCapacityGovernanceService(new ObjectStorageProperties(), new UploadContentPolicyService()));
     }

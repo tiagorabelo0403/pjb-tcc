@@ -1,0 +1,85 @@
+<svg viewBox="0 0 1280 760" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Laiane — assistente jurídica de IA, travada até revisão humana</title>
+  <desc id="desc">Mockup de interface da Laiane mostrando o playbook de ações recomendadas, os diferenciais estratégicos do caso e uma minuta assistida de decisão judicial travada por publicationLocked até revisão humana, com base nos campos reais de LaianeCockpitResponse e LaianeJudicialDecisionAdvisoryService.</desc>
+
+  <defs>
+    <filter id="sombra9" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect x="20" y="20" width="1240" height="720" rx="14" fill="#12172a" stroke="#2a3350" stroke-width="1" filter="url(#sombra9)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/>
+  <circle cx="66" cy="48" r="6" fill="#e0b84f"/>
+  <circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">🤖 Laiane — Assistente Jurídica</text>
+  <text x="1195" y="53" text-anchor="end" font-size="12.5" fill="#c9d3ea">Painel do Juiz · minuta assistida</text>
+
+  <!-- playbook -->
+  <g>
+    <rect x="50" y="96" width="380" height="330" rx="14" fill="#171d34"/>
+    <text x="76" y="128" font-size="14" font-weight="700" fill="#ffffff">📋 Playbook sugerido</text>
+
+    <rect x="76" y="146" width="328" height="52" rx="8" fill="#16321f"/>
+    <text x="92" y="168" font-size="12" fill="#ffffff">Confirmar tutela de urgência</text>
+    <text x="92" y="186" font-size="10" fill="#bfe8cc">sinal de risco à saúde confirmado por laudo</text>
+
+    <rect x="76" y="206" width="328" height="52" rx="8" fill="#1a2540"/>
+    <text x="92" y="228" font-size="12" fill="#ffffff">Intimar réu para manifestação</text>
+    <text x="92" y="246" font-size="10" fill="#a9b3cc">prazo de 15 dias, rito comum</text>
+
+    <rect x="76" y="266" width="328" height="52" rx="8" fill="#1a2540"/>
+    <text x="92" y="288" font-size="12" fill="#ffffff">Agendar audiência de instrução</text>
+    <text x="92" y="306" font-size="10" fill="#a9b3cc">testemunha já arrolada pelo autor</text>
+
+    <text x="76" y="352" font-size="12.5" font-weight="700" fill="#ffffff">✨ Diferenciais estratégicos</text>
+    <text x="76" y="374" font-size="11" fill="#dfe4ee">"Laudo médico anexado com data</text>
+    <text x="76" y="390" font-size="11" fill="#dfe4ee">recente reforça a urgência alegada"</text>
+    <text x="76" y="410" font-size="11" fill="#dfe4ee">"Réu já citado em processo conexo</text>
+    <text x="76" y="426" font-size="11" fill="#dfe4ee">sobre a mesma obrigação"</text>
+  </g>
+
+  <!-- minuta travada -->
+  <g>
+    <rect x="450" y="96" width="740" height="330" rx="14" fill="#161c30"/>
+    <text x="476" y="128" font-size="14" font-weight="700" fill="#ffffff">📝 Minuta assistida — Tutela de Urgência (Saúde/UTI)</text>
+
+    <rect x="476" y="146" width="688" height="130" rx="10" fill="#0f1830"/>
+    <text x="492" y="170" font-size="11.5" fill="#a9b3cc">"Vistos. Diante do laudo médico que atesta necessidade urgente de leito de UTI,</text>
+    <text x="492" y="190" font-size="11.5" fill="#a9b3cc">e considerando o risco à vida evidenciado nos autos, DEFIRO a tutela de urgência</text>
+    <text x="492" y="210" font-size="11.5" fill="#a9b3cc">pleiteada, nos termos do art. 300 do CPC, determinando que a parte requerida...</text>
+    <text x="492" y="238" font-size="10.5" fill="#5d6785">[minuta continua — texto completo gerado a partir do template TUTELA_URGENTE_LEITO_UTI]</text>
+
+    <rect x="476" y="290" width="215" height="34" rx="8" fill="#3a3320"/>
+    <text x="486" y="312" font-size="10.5" font-weight="700" fill="#e0c98a">advisoryMode: ADVISORY_DRAFT_ONLY</text>
+
+    <rect x="702" y="290" width="200" height="34" rx="8" fill="#3a1f28"/>
+    <text x="712" y="312" font-size="10.5" font-weight="700" fill="#f4a3a3">reviewRequired: true</text>
+
+    <rect x="912" y="290" width="212" height="34" rx="8" fill="#3a1f28"/>
+    <text x="922" y="312" font-size="10.5" font-weight="700" fill="#f4a3a3">🔒 publicationLocked: true</text>
+
+    <text x="476" y="350" font-size="11.5" fill="#dfe4ee">A minuta fica travada até o magistrado revisar, editar ou descartar — nunca é publicada sozinha,</text>
+    <text x="476" y="368" font-size="11.5" fill="#dfe4ee">para nenhum caso, nem mesmo os mais urgentes. Mesmo padrão vale para homologação de acordo,</text>
+    <text x="476" y="386" font-size="11.5" fill="#dfe4ee">extinção sem mérito, reconhecimento de procedência e medida protetiva da Lei Maria da Penha.</text>
+
+    <rect x="476" y="404" width="200" height="42" rx="8" fill="#2c3e67"/>
+    <text x="576" y="430" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">👤 Revisar e decidir</text>
+  </g>
+
+  <!-- memoria e homenagem -->
+  <g>
+    <rect x="50" y="446" width="1140" height="200" rx="14" fill="#0f1830"/>
+    <text x="76" y="478" font-size="13" font-weight="700" fill="#ffffff">🧠 Memory Stores e Dreams</text>
+    <text x="76" y="504" font-size="11.5" fill="#dfe4ee">Memory Stores acumulam aprendizado entre sessões, com redact auditável por versão (conformidade LGPD).</text>
+    <text x="76" y="524" font-size="11.5" fill="#dfe4ee">Dreams é um processo assíncrono fora do horário de pico que revisita conversas, elimina contradições e</text>
+    <text x="76" y="544" font-size="11.5" fill="#dfe4ee">organiza padrões por rito processual — a Laiane fica mais consistente com o tempo, sem retrabalho manual.</text>
+    <text x="76" y="564" font-size="11" fill="#5d6785">Processo sigiloso nunca tem conteúdo enviado a serviços externos.</text>
+
+    <text x="76" y="600" font-size="12" fill="#e8b93a">🕯️ O nome "Laiane" é uma homenagem — não um acrônimo. Ver a nota completa no guia.</text>
+  </g>
+
+  <text x="50" y="680" font-size="10.5" fill="#5d6785">Dados fictícios, apenas para ilustrar a interface — campos reais de LaianeCockpitResponse e LaianeJudicialDecisionAdvisoryService.</text>
+</svg>

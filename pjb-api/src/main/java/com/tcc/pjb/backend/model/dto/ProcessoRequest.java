@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.model.dto;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -126,4 +127,8 @@ public class ProcessoRequest {
 
     private boolean envolveMenor;
     private boolean envolveSaude;
+
+    @Valid
+    @Builder.Default
+    private List<AnexoDeclarado> anexosDeclarados = new ArrayList<>();
 }

@@ -107,6 +107,21 @@ public class LaianePeticaoInicialDraftSession {
     @Column(name = "checklist_json", columnDefinition = "TEXT")
     private String checklistJson;
 
+    @Column(name = "uf_autor", length = 2)
+    private String ufAutor;
+
+    @Column(name = "comarca_autor", length = 120)
+    private String comarcaAutor;
+
+    @Column(name = "uf_reu", length = 2)
+    private String ufReu;
+
+    @Column(name = "comarca_reu", length = 120)
+    private String comarcaReu;
+
+    @Column(name = "endereco_reu_desconhecido", nullable = false)
+    private boolean enderecoReuDesconhecido;
+
     @Column(name = "minuta_inicial", columnDefinition = "TEXT", nullable = false)
     private String minutaInicial;
 

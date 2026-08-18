@@ -111,7 +111,7 @@ public class InstitutionalSupportPanelService {
         metrics.put("intimacaoItems", projected.stream().filter(this::looksLikeIntimacao).count());
         metrics.put("processosUnicos", projected.stream().map(InstitutionalSupportPanelItemResponse::processoId).filter(Objects::nonNull).distinct().count());
         metrics.put("ritosUnicos", projected.stream().map(InstitutionalSupportPanelItemResponse::ritoProcessual).filter(Objects::nonNull).distinct().count());
-        LinkedHashMap<String, Object> routes = new LinkedHashMap<>();
+        LinkedHashMap<String, String> routes = new LinkedHashMap<>();
         routes.put("snapshotPath", lane.snapshotPath());
         routes.put("agendaPath", lane.snapshotPath().replace("/snapshot", "/agenda"));
         routes.put("credentialBasePath", lane.credentialBasePath());
@@ -130,7 +130,7 @@ public class InstitutionalSupportPanelService {
                 groupByRito(projected),
                 groupByData(projected),
                 credentialPayload(lane, credential),
-                compactMap(routes),
+                Map.copyOf(routes),
                 List.copyOf(new LinkedHashSet<>(warnings))
         );
     }
@@ -168,7 +168,7 @@ public class InstitutionalSupportPanelService {
         if (projected.isEmpty()) {
             warnings.add("A agenda institucional não encontrou audiência, sessão ou prazo operacional na janela consultada.");
         }
-        LinkedHashMap<String, Object> routes = new LinkedHashMap<>();
+        LinkedHashMap<String, String> routes = new LinkedHashMap<>();
         routes.put("snapshotPath", lane.snapshotPath());
         routes.put("agendaPath", lane.snapshotPath().replace("/snapshot", "/agenda"));
         routes.put("credentialBasePath", lane.credentialBasePath());
@@ -182,7 +182,7 @@ public class InstitutionalSupportPanelService {
                 groupByRito(projected),
                 groupByData(projected),
                 credentialPayload(lane, credential),
-                compactMap(routes),
+                Map.copyOf(routes),
                 List.copyOf(new LinkedHashSet<>(warnings))
         );
     }
@@ -214,13 +214,13 @@ public class InstitutionalSupportPanelService {
         if (looksLikeIntimacao(item)) {
             tags.add("INTIMACAO");
         }
-        LinkedHashMap<String, Object> routes = new LinkedHashMap<>();
+        LinkedHashMap<String, String> routes = new LinkedHashMap<>();
         routes.put("memberPanelPath", lane.memberPanelPath());
         routes.put("supportSnapshotPath", lane.snapshotPath());
         routes.put("supportAgendaPath", lane.snapshotPath().replace("/snapshot", "/agenda"));
         if (processo != null && processo.getId() != null) {
             routes.put("processoPath", lane.memberPanelPath());
-            routes.put("processoId", processo.getId());
+            routes.put("processoId", String.valueOf(processo.getId()));
         }
         return new InstitutionalSupportPanelItemResponse(
                 item.getId(),
@@ -242,7 +242,7 @@ public class InstitutionalSupportPanelService {
                 stringOf(principal.get("email")),
                 compactMap(envelope),
                 List.copyOf(new LinkedHashSet<>(tags)),
-                compactMap(routes)
+                Map.copyOf(routes)
         );
     }
 
@@ -430,3 +430,4 @@ public class InstitutionalSupportPanelService {
         return null;
     }
 }
+

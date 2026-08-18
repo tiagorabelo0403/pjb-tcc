@@ -5,13 +5,13 @@ import com.tcc.pjb.backend.integration.judicial.JudicialSystem;
 import com.tcc.pjb.backend.model.dto.leitura.ProcessReadingEcosystemResponse;
 import com.tcc.pjb.backend.model.dto.leitura.ProcessReadingProceduralContextResponse;
 import com.tcc.pjb.backend.model.dto.leitura.ProcessReadingSpecializationResponse;
+import com.tcc.pjb.backend.model.dto.shared.reading.ProcessReadingEcosystemFrontendCapabilitiesDto;
+import com.tcc.pjb.backend.model.dto.shared.reading.ProcessReadingEcosystemIntegrityContextDto;
 import com.tcc.pjb.backend.model.entity.Processo;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -37,28 +37,30 @@ public class ProcessReadingEcosystemResolver {
         List<String> strategicCapabilities = resolveStrategicCapabilities(primarySystem, fallbackSystem, proceduralContext, specialization, modeProfile);
         List<String> migrationTracks = resolveMigrationTracks(primarySystem, fallbackSystem, competence, proceduralContext, specialization);
         List<String> productionDifferentials = resolveProductionDifferentials(primarySystem, fallbackSystem, modeProfile, proceduralContext, specialization);
-        LinkedHashMap<String, Object> frontend = new LinkedHashMap<>();
-        frontend.put("readerMode", "PROCESSO_CENTRICO_CONVERGENTE");
-        frontend.put("defaultSurface", proceduralContext.htmlInlinePreferred() ? "HTML_NATIVO" : "PDF_ASSINADO");
-        frontend.put("preferInlineHtml", proceduralContext.htmlInlinePreferred());
-        frontend.put("preferSignedPdfInspection", specialization.signedPdfInspectionRequired());
-        frontend.put("supportsCloudSigning", true);
-        frontend.put("supportsMobileMfa", true);
-        frontend.put("supportsOcrPipeline", true);
-        frontend.put("supportsNationalDeadlineAggregation", true);
-        frontend.put("supportsAiCopilot", true);
-        frontend.put("supportsLegacyMigrationMesh", true);
-        frontend.put("supportsBrowserNativeAccess", true);
-        frontend.put("capabilityBadges", List.of(convergenceMode, signatureMode, aiAssistMode, deadlineAggregationMode));
-        LinkedHashMap<String, Object> integrity = new LinkedHashMap<>();
-        integrity.put("competenceResolved", competence != null);
-        integrity.put("primarySystem", primarySystem.name());
-        integrity.put("fallbackSystem", fallbackSystem.name());
-        integrity.put("textCoverage", modeProfile.coberturaTextualPercentual());
-        integrity.put("htmlInlinePreferred", proceduralContext.htmlInlinePreferred());
-        integrity.put("signedPdfInspectionRequired", specialization.signedPdfInspectionRequired());
-        integrity.put("recursalTrack", proceduralContext.recursalTrack());
-        integrity.put("embargoTrack", proceduralContext.embargoTrack());
+        ProcessReadingEcosystemFrontendCapabilitiesDto frontend = new ProcessReadingEcosystemFrontendCapabilitiesDto(
+                "PROCESSO_CENTRICO_CONVERGENTE",
+                proceduralContext.htmlInlinePreferred() ? "HTML_NATIVO" : "PDF_ASSINADO",
+                proceduralContext.htmlInlinePreferred(),
+                specialization.signedPdfInspectionRequired(),
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of(convergenceMode, signatureMode, aiAssistMode, deadlineAggregationMode)
+        );
+        ProcessReadingEcosystemIntegrityContextDto integrity = new ProcessReadingEcosystemIntegrityContextDto(
+                competence != null,
+                primarySystem.name(),
+                fallbackSystem.name(),
+                modeProfile.coberturaTextualPercentual(),
+                proceduralContext.htmlInlinePreferred(),
+                specialization.signedPdfInspectionRequired(),
+                proceduralContext.recursalTrack(),
+                proceduralContext.embargoTrack()
+        );
         return new ProcessReadingEcosystemResponse(
                 processo.getId(),
                 competence != null ? competence.codigo() : processo.getTribunal(),

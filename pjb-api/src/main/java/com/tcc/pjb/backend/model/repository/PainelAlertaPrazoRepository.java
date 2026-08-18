@@ -13,4 +13,6 @@ public interface PainelAlertaPrazoRepository extends JpaRepository<PainelAlertaP
     List<PainelAlertaPrazo> findAllByAtivoTrueOrderByDiasExcedidosDesc();
 
     long countByAtivoTrue();
+
+    long countByAtivoTrueAndTribunalCodigo(String tribunalCodigo);
 }

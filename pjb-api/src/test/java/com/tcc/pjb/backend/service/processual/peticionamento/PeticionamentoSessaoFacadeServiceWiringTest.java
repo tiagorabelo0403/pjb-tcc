@@ -24,6 +24,7 @@ import com.tcc.pjb.backend.service.processual.peticionamento.media.Peticionament
 import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaStorageShieldService;
 import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMultimidiaComposerService;
 import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoThreatSentinelService;
+import com.tcc.pjb.backend.integration.serpro.datavalid.CpfValidacaoService;
 
 class PeticionamentoSessaoFacadeServiceWiringTest {
 
@@ -51,6 +52,7 @@ class PeticionamentoSessaoFacadeServiceWiringTest {
         PeticionamentoJurisprudenciaWorkspaceService jurisprudenciaWorkspaceService = mock(PeticionamentoJurisprudenciaWorkspaceService.class);
         InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService = mock(InstitutionalMultimediaWorkspaceService.class);
         OfficeProcessWorkspaceScopeService officeProcessWorkspaceScopeService = mock(OfficeProcessWorkspaceScopeService.class);
+        CpfValidacaoService cpfValidacaoService = mock(CpfValidacaoService.class);
 
         PeticionamentoSessaoFacadeService service = new PeticionamentoSessaoFacadeService(
                 currentUserService,
@@ -74,7 +76,8 @@ class PeticionamentoSessaoFacadeServiceWiringTest {
                 uploadCapacityGovernanceService,
                 jurisprudenciaWorkspaceService,
                 institutionalMultimediaWorkspaceService,
-                officeScopeProvider(officeProcessWorkspaceScopeService)
+                officeScopeProvider(officeProcessWorkspaceScopeService),
+                cpfValidacaoService
         );
 
         for (Field field : PeticionamentoSessaoFacadeService.class.getDeclaredFields()) {

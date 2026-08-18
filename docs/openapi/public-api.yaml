@@ -168,24 +168,6 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/advogado/cockpit/processos/{processoId}/recurso:
-    post:
-      summary: "AdvogadoCockpitController::POST /api/v1/advogado/cockpit/processos/{processoId}/recurso"
-      tags:
-        - "advogado"
-      responses:
-        200:
-          description: "OK"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AdvogadoRecursoRequest"
-      security:
-        -
-          bearerAuth:
-
   /api/v1/advogado/cockpit/snapshot:
     get:
       summary: "AdvogadoCockpitController::GET /api/v1/advogado/cockpit/snapshot"
@@ -1936,24 +1918,6 @@ paths:
       responses:
         200:
           description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/defensor/recurso/{processoId}:
-    post:
-      summary: "DefensorPublicoPainelController::POST /api/v1/defensor/recurso/{processoId}"
-      tags:
-        - "defensor"
-      responses:
-        200:
-          description: "OK"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InstitutionalRecursoRequest"
       security:
         -
           bearerAuth:
@@ -5307,24 +5271,6 @@ paths:
       responses:
         200:
           description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/mp/recurso/{processoId}:
-    post:
-      summary: "MinisterioPublicoPainelController::POST /api/v1/mp/recurso/{processoId}"
-      tags:
-        - "mp"
-      responses:
-        200:
-          description: "OK"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InstitutionalRecursoRequest"
       security:
         -
           bearerAuth:
@@ -9477,24 +9423,6 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/procuradoria/operacional/processos/{processoId}/recurso:
-    post:
-      summary: "ProcuradoriaOperacionalController::POST /api/v1/procuradoria/operacional/processos/{processoId}/recurso"
-      tags:
-        - "procuradoria"
-      responses:
-        200:
-          description: "OK"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InstitutionalRecursoRequest"
-      security:
-        -
-          bearerAuth:
-
   /api/v1/procuradoria/operacional/snapshot:
     get:
       summary: "ProcuradoriaOperacionalController::GET /api/v1/procuradoria/operacional/snapshot"
@@ -10292,9 +10220,9 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}:
+  /api/v1/secretariat/especializada/processos/{processoId}:
     get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}"
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}"
       tags:
         - "secretaria"
       responses:
@@ -10304,9 +10232,9 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}/atos:
+  /api/v1/secretariat/especializada/processos/{processoId}/atos:
     get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/atos"
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/atos"
       tags:
         - "secretaria"
       responses:
@@ -10316,9 +10244,9 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}/audiencias/avaliar:
+  /api/v1/secretariat/especializada/processos/{processoId}/audiencias/avaliar:
     post:
-      summary: "SecretariaEspecializadaController::POST /api/v1/secretaria/especializada/processos/{processoId}/audiencias/avaliar"
+      summary: "SecretariaEspecializadaController::POST /api/v1/secretariat/especializada/processos/{processoId}/audiencias/avaliar"
       tags:
         - "secretaria"
       responses:
@@ -10328,32 +10256,9 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}/audiencias/presenca:
+  /api/v1/secretariat/especializada/processos/{processoId}/audiencias/presenca:
     get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/audiencias/presenca"
-      tags:
-        - "secretaria"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-    post:
-      summary: "SecretariaEspecializadaController::POST /api/v1/secretaria/especializada/processos/{processoId}/audiencias/presenca"
-      tags:
-        - "secretaria"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/secretaria/especializada/processos/{processoId}/audiencias/recursos:
-    get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/audiencias/recursos"
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/audiencias/presenca"
       tags:
         - "secretaria"
       responses:
@@ -10364,7 +10269,7 @@ paths:
           bearerAuth:
 
     post:
-      summary: "SecretariaEspecializadaController::POST /api/v1/secretaria/especializada/processos/{processoId}/audiencias/recursos"
+      summary: "SecretariaEspecializadaController::POST /api/v1/secretariat/especializada/processos/{processoId}/audiencias/presenca"
       tags:
         - "secretaria"
       responses:
@@ -10374,33 +10279,9 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}/audiencias/registrar:
-    post:
-      summary: "SecretariaEspecializadaController::POST /api/v1/secretaria/especializada/processos/{processoId}/audiencias/registrar"
-      tags:
-        - "secretaria"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/secretaria/especializada/processos/{processoId}/checklist:
+  /api/v1/secretariat/especializada/processos/{processoId}/audiencias/recursos:
     get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/checklist"
-      tags:
-        - "secretaria"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/secretaria/especializada/processos/{processoId}/distribuicao-interna:
-    get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/distribuicao-interna"
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/audiencias/recursos"
       tags:
         - "secretaria"
       responses:
@@ -10411,7 +10292,7 @@ paths:
           bearerAuth:
 
     post:
-      summary: "SecretariaEspecializadaController::POST /api/v1/secretaria/especializada/processos/{processoId}/distribuicao-interna"
+      summary: "SecretariaEspecializadaController::POST /api/v1/secretariat/especializada/processos/{processoId}/audiencias/recursos"
       tags:
         - "secretaria"
       responses:
@@ -10421,9 +10302,9 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}/enfileirar:
+  /api/v1/secretariat/especializada/processos/{processoId}/audiencias/registrar:
     post:
-      summary: "SecretariaEspecializadaController::POST /api/v1/secretaria/especializada/processos/{processoId}/enfileirar"
+      summary: "SecretariaEspecializadaController::POST /api/v1/secretariat/especializada/processos/{processoId}/audiencias/registrar"
       tags:
         - "secretaria"
       responses:
@@ -10433,9 +10314,9 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}/estabilidade:
+  /api/v1/secretariat/especializada/processos/{processoId}/checklist:
     get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/estabilidade"
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/checklist"
       tags:
         - "secretaria"
       responses:
@@ -10445,21 +10326,9 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}/estabilidade/estabilizar:
-    post:
-      summary: "SecretariaEspecializadaController::POST /api/v1/secretaria/especializada/processos/{processoId}/estabilidade/estabilizar"
-      tags:
-        - "secretaria"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/secretaria/especializada/processos/{processoId}/expedicao/lotes:
+  /api/v1/secretariat/especializada/processos/{processoId}/distribuicao-interna:
     get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/expedicao/lotes"
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/distribuicao-interna"
       tags:
         - "secretaria"
       responses:
@@ -10470,7 +10339,7 @@ paths:
           bearerAuth:
 
     post:
-      summary: "SecretariaEspecializadaController::POST /api/v1/secretaria/especializada/processos/{processoId}/expedicao/lotes"
+      summary: "SecretariaEspecializadaController::POST /api/v1/secretariat/especializada/processos/{processoId}/distribuicao-interna"
       tags:
         - "secretaria"
       responses:
@@ -10480,69 +10349,9 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}/gargalos:
-    get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/gargalos"
-      tags:
-        - "secretaria"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/secretaria/especializada/processos/{processoId}/handoff:
-    get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/handoff"
-      tags:
-        - "secretaria"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/secretaria/especializada/processos/{processoId}/malha:
-    get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/malha"
-      tags:
-        - "secretaria"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/secretaria/especializada/processos/{processoId}/matriz:
-    get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/matriz"
-      tags:
-        - "secretaria"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/secretaria/especializada/processos/{processoId}/radar:
-    get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/radar"
-      tags:
-        - "secretaria"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/secretaria/especializada/processos/{processoId}/receber:
+  /api/v1/secretariat/especializada/processos/{processoId}/enfileirar:
     post:
-      summary: "SecretariaEspecializadaController::POST /api/v1/secretaria/especializada/processos/{processoId}/receber"
+      summary: "SecretariaEspecializadaController::POST /api/v1/secretariat/especializada/processos/{processoId}/enfileirar"
       tags:
         - "secretaria"
       responses:
@@ -10552,9 +10361,33 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}/redistribuicao:
+  /api/v1/secretariat/especializada/processos/{processoId}/estabilidade:
     get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/redistribuicao"
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/estabilidade"
+      tags:
+        - "secretaria"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/secretariat/especializada/processos/{processoId}/estabilidade/estabilizar:
+    post:
+      summary: "SecretariaEspecializadaController::POST /api/v1/secretariat/especializada/processos/{processoId}/estabilidade/estabilizar"
+      tags:
+        - "secretaria"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/secretariat/especializada/processos/{processoId}/expedicao/lotes:
+    get:
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/expedicao/lotes"
       tags:
         - "secretaria"
       responses:
@@ -10565,7 +10398,7 @@ paths:
           bearerAuth:
 
     post:
-      summary: "SecretariaEspecializadaController::POST /api/v1/secretaria/especializada/processos/{processoId}/redistribuicao"
+      summary: "SecretariaEspecializadaController::POST /api/v1/secretariat/especializada/processos/{processoId}/expedicao/lotes"
       tags:
         - "secretaria"
       responses:
@@ -10575,9 +10408,9 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}/sla:
+  /api/v1/secretariat/especializada/processos/{processoId}/gargalos:
     get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/sla"
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/gargalos"
       tags:
         - "secretaria"
       responses:
@@ -10587,9 +10420,57 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}/sla/escalar:
+  /api/v1/secretariat/especializada/processos/{processoId}/handoff:
+    get:
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/handoff"
+      tags:
+        - "secretaria"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/secretariat/especializada/processos/{processoId}/malha:
+    get:
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/malha"
+      tags:
+        - "secretaria"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/secretariat/especializada/processos/{processoId}/matriz:
+    get:
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/matriz"
+      tags:
+        - "secretaria"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/secretariat/especializada/processos/{processoId}/radar:
+    get:
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/radar"
+      tags:
+        - "secretaria"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/secretariat/especializada/processos/{processoId}/receber:
     post:
-      summary: "SecretariaEspecializadaController::POST /api/v1/secretaria/especializada/processos/{processoId}/sla/escalar"
+      summary: "SecretariaEspecializadaController::POST /api/v1/secretariat/especializada/processos/{processoId}/receber"
       tags:
         - "secretaria"
       responses:
@@ -10599,9 +10480,9 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/processos/{processoId}/topologia:
+  /api/v1/secretariat/especializada/processos/{processoId}/redistribuicao:
     get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/processos/{processoId}/topologia"
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/redistribuicao"
       tags:
         - "secretaria"
       responses:
@@ -10611,9 +10492,56 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/secretaria/especializada/ramo:
+    post:
+      summary: "SecretariaEspecializadaController::POST /api/v1/secretariat/especializada/processos/{processoId}/redistribuicao"
+      tags:
+        - "secretaria"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/secretariat/especializada/processos/{processoId}/sla:
     get:
-      summary: "SecretariaEspecializadaController::GET /api/v1/secretaria/especializada/ramo"
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/sla"
+      tags:
+        - "secretaria"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/secretariat/especializada/processos/{processoId}/sla/escalar:
+    post:
+      summary: "SecretariaEspecializadaController::POST /api/v1/secretariat/especializada/processos/{processoId}/sla/escalar"
+      tags:
+        - "secretaria"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/secretariat/especializada/processos/{processoId}/topologia:
+    get:
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/processos/{processoId}/topologia"
+      tags:
+        - "secretaria"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/secretariat/especializada/ramo:
+    get:
+      summary: "SecretariaEspecializadaController::GET /api/v1/secretariat/especializada/ramo"
       tags:
         - "secretaria"
       responses:

@@ -1,0 +1,78 @@
+<svg viewBox="0 0 1200 560" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="title desc">
+  <title id="title">How a virtual hearing works in PJB</title>
+  <desc id="desc">The hearing is scheduled on the docket, participants join by WebRTC video call with biometric presence verification, the session is transcribed automatically, and it closes with minutes generated from the transcript.</desc>
+
+  <text x="30" y="36" font-size="18" font-weight="700" fill="#e8b93a">🎥 Virtual Hearing — illustrative example</text>
+
+  <!-- steps -->
+  <g font-size="13" fill="#ffffff">
+    <rect x="30" y="65" width="205" height="90" rx="14" fill="#2c3e67"/>
+    <text x="132" y="98" text-anchor="middle" font-size="20">📅</text>
+    <text x="132" y="122" text-anchor="middle" font-weight="600">Docket schedules</text>
+    <text x="132" y="140" text-anchor="middle" font-size="10.5" fill="#c9d3ea">the hearing at the court</text>
+
+    <text x="255" y="118" font-size="20" fill="#8a8f98">→</text>
+
+    <rect x="280" y="65" width="205" height="90" rx="14" fill="#2c3e67"/>
+    <text x="382" y="98" text-anchor="middle" font-size="20">📧</text>
+    <text x="382" y="122" text-anchor="middle" font-weight="600">Parties are summoned</text>
+    <text x="382" y="140" text-anchor="middle" font-size="10.5" fill="#c9d3ea">with the room link</text>
+
+    <text x="505" y="118" font-size="20" fill="#8a8f98">→</text>
+
+    <rect x="530" y="65" width="205" height="90" rx="14" fill="#b3811a"/>
+    <text x="632" y="98" text-anchor="middle" font-size="20">🪪</text>
+    <text x="632" y="122" text-anchor="middle" font-weight="600">Biometric check</text>
+    <text x="632" y="140" text-anchor="middle" font-size="10.5" fill="#f8e6c4">confirms who joined</text>
+
+    <text x="755" y="118" font-size="20" fill="#8a8f98">→</text>
+
+    <rect x="780" y="65" width="200" height="90" rx="14" fill="#2f5d62"/>
+    <text x="880" y="98" text-anchor="middle" font-size="20">🎙️</text>
+    <text x="880" y="122" text-anchor="middle" font-weight="600">WebRTC session</text>
+    <text x="880" y="140" text-anchor="middle" font-size="10.5" fill="#cfe6e5">with automatic transcription</text>
+
+    <text x="1000" y="118" font-size="20" fill="#8a8f98">→</text>
+
+    <rect x="1000" y="65" width="170" height="90" rx="14" fill="#7a2e3d"/>
+    <text x="1085" y="98" text-anchor="middle" font-size="20">📝</text>
+    <text x="1085" y="122" text-anchor="middle" font-weight="600">Closes with minutes</text>
+    <text x="1085" y="140" text-anchor="middle" font-size="10.5" fill="#f0d5da">generated from the transcript</text>
+  </g>
+
+  <!-- hearing room -->
+  <g>
+    <rect x="30" y="190" width="1140" height="220" rx="18" fill="#161c30"/>
+    <text x="55" y="222" font-size="14" font-weight="700" fill="#ffffff">🖥️ Virtual room — who takes part</text>
+
+    <g font-size="12" fill="#dfe4ee">
+      <rect x="55" y="240" width="170" height="60" rx="10" fill="#2c3e67"/>
+      <text x="140" y="265" text-anchor="middle" fill="#ffffff">👨‍⚖️ Judge</text>
+      <text x="140" y="284" text-anchor="middle" font-size="10.5" fill="#c9d3ea">conducts the session</text>
+
+      <rect x="240" y="240" width="170" height="60" rx="10" fill="#2c3e67"/>
+      <text x="325" y="265" text-anchor="middle" fill="#ffffff">🏛️ Court staff</text>
+      <text x="325" y="284" text-anchor="middle" font-size="10.5" fill="#c9d3ea">operational support</text>
+
+      <rect x="425" y="240" width="170" height="60" rx="10" fill="#b3811a"/>
+      <text x="510" y="265" text-anchor="middle" fill="#ffffff">⚖️ Attorney(s)</text>
+      <text x="510" y="284" text-anchor="middle" font-size="10.5" fill="#f8e6c4">for the parties</text>
+
+      <rect x="610" y="240" width="170" height="60" rx="10" fill="#7a2e3d"/>
+      <text x="695" y="265" text-anchor="middle" fill="#ffffff">⚖️ Public Prosecutor</text>
+      <text x="695" y="284" text-anchor="middle" font-size="10.5" fill="#f0d5da">when overseeing the case</text>
+
+      <rect x="795" y="240" width="170" height="60" rx="10" fill="#7a2e3d"/>
+      <text x="880" y="265" text-anchor="middle" fill="#ffffff">🤝 Public Defender</text>
+      <text x="880" y="284" text-anchor="middle" font-size="10.5" fill="#f0d5da">when representing a party</text>
+
+      <rect x="980" y="240" width="170" height="60" rx="10" fill="#2f5d62"/>
+      <text x="1065" y="265" text-anchor="middle" fill="#ffffff">🔬 Expert / witness</text>
+      <text x="1065" y="284" text-anchor="middle" font-size="10.5" fill="#cfe6e5">when summoned</text>
+    </g>
+
+    <text x="55" y="335" font-size="12" fill="#a9b3cc">Access to the room is restricted by role — it is not an open video call; every profile must be formally</text>
+    <text x="55" y="355" font-size="12" fill="#a9b3cc">linked to that case to join. The connection's offer and answer (WebRTC signaling) is audited,</text>
+    <text x="55" y="375" font-size="12" fill="#a9b3cc">and so is the session's closing — there is no "leaving without a trace."</text>
+  </g>
+</svg>

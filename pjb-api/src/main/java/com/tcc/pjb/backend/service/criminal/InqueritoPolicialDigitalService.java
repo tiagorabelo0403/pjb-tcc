@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -13,8 +14,13 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.scope.AcaoEscopo;
+import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
+import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuard;
+import com.tcc.pjb.backend.core.security.scope.TipoObjetoProtegido;
 import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.criminal.InqueritoPolicialDigital;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
@@ -34,15 +40,21 @@ public class InqueritoPolicialDigitalService {
     private final InqueritoPolicialDigitalRepository repository;
     private final ProcessoRepository processoRepository;
     private final WorkItemRepository workItemRepository;
+    private final DelegaciaInstitucionalScopeService delegaciaScopeService;
+    private final PjbObjectScopeGuard scopeGuard;
     private final CurrentUserService currentUserService;
 
     public InqueritoPolicialDigitalService(InqueritoPolicialDigitalRepository repository,
                                            ProcessoRepository processoRepository,
                                            WorkItemRepository workItemRepository,
+                                           DelegaciaInstitucionalScopeService delegaciaScopeService,
+                                           PjbObjectScopeGuard scopeGuard,
                                            CurrentUserService currentUserService) {
         this.repository = Objects.requireNonNull(repository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
+        this.delegaciaScopeService = Objects.requireNonNull(delegaciaScopeService);
+        this.scopeGuard = Objects.requireNonNull(scopeGuard);
         this.currentUserService = Objects.requireNonNull(currentUserService);
     }
 
@@ -51,7 +63,7 @@ public class InqueritoPolicialDigitalService {
         Usuario usuario = currentUserService.getRequired();
         List<InqueritoPolicialDigital> base;
         if (usuario.getTipoUsuario() != null && usuario.getTipoUsuario().isSegurancaPublica()) {
-            base = repository.findTop100ByAutoridadeResponsavel_IdOrderByUpdatedAtDesc(usuario.getId());
+            base = listarInqueritosSegurancaPublica(usuario);
         } else if (status != null && !status.isBlank()) {
             base = repository.findTop100ByStatusOrderByUpdatedAtDesc(status.trim().toUpperCase(Locale.ROOT));
         } else {
@@ -69,9 +81,16 @@ public class InqueritoPolicialDigitalService {
         return repository.findTop100ByProcessoVinculado_IdOrderByUpdatedAtDesc(processoId).stream().map(this::toView).toList();
     }
 
+    @Transactional(readOnly = true)
+    public InqueritoPolicialDigital carregar(Long inqueritoId) {
+        return repository.findById(inqueritoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("InqueritoPolicialDigital", inqueritoId));
+    }
+
     @Transactional
     public InqueritoView registrar(InqueritoCadastroRequest request) {
         Usuario usuario = requireInvestigativeActor();
+        UnidadeInstituicao unidadeApuracao = delegaciaScopeService.requireDelegaciaApuracaoLotada(usuario, request.unidadeApuracaoId());
         InqueritoPolicialDigital inquerito = new InqueritoPolicialDigital();
         inquerito.setNumeroProcedimento(resolveNumeroProcedimento(request.numeroProcedimento()));
         inquerito.setTipo(normalizeUpper(request.tipo(), "INQUERITO_POLICIAL"));
@@ -83,9 +102,10 @@ public class InqueritoPolicialDigitalService {
         inquerito.setVitimasResumo(request.vitimasResumo());
         inquerito.setIndiciosResumo(request.indiciosResumo());
         inquerito.setDiligenciasPendentes(request.diligenciasPendentes());
-        inquerito.setOrgaoApuracao(request.orgaoApuracao());
-        inquerito.setUf(request.uf());
-        inquerito.setMunicipio(request.municipio());
+        inquerito.setUnidadeApuracao(unidadeApuracao);
+        inquerito.setOrgaoApuracao(firstText(request.orgaoApuracao(), unidadeApuracao.getNome()));
+        inquerito.setUf(firstText(request.uf(), unidadeApuracao.getUf()));
+        inquerito.setMunicipio(firstText(request.municipio(), unidadeApuracao.getComarca()));
         inquerito.setNivelSigilo(request.nivelSigilo() == null ? NivelSigilo.SIGILO_N2 : request.nivelSigilo());
         inquerito.setAutoridadeResponsavel(usuario);
         inquerito.setPrazoConclusao(request.prazoConclusao() == null ? LocalDate.now().plusDays(30) : request.prazoConclusao());
@@ -105,12 +125,9 @@ public class InqueritoPolicialDigitalService {
 
     @Transactional
     public InqueritoView movimentar(Long inqueritoId, InqueritoMovimentacaoRequest request) {
+        scopeGuard.requireAccess(TipoObjetoProtegido.INQUERITO, inqueritoId, AcaoEscopo.MOVIMENTAR);
         InqueritoPolicialDigital inquerito = repository.findById(inqueritoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("InqueritoPolicialDigital", inqueritoId));
-        Usuario usuario = currentUserService.getRequired();
-        if (!canAct(usuario, inquerito)) {
-            throw new IllegalStateException("Usuário sem permissão para movimentar o inquérito.");
-        }
 
         if (request.status() != null && !request.status().isBlank()) {
             inquerito.setStatus(request.status().trim().toUpperCase(Locale.ROOT));
@@ -155,6 +172,7 @@ public class InqueritoPolicialDigitalService {
 
     @Transactional
     public InqueritoView vincularProcesso(Long inqueritoId, Long processoId) {
+        scopeGuard.requireAccess(TipoObjetoProtegido.INQUERITO, inqueritoId, AcaoEscopo.MOVIMENTAR);
         InqueritoPolicialDigital inquerito = repository.findById(inqueritoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("InqueritoPolicialDigital", inqueritoId));
         Processo processo = processoRepository.findById(processoId)
@@ -176,15 +194,27 @@ public class InqueritoPolicialDigitalService {
         return usuario;
     }
 
-    private boolean canAct(Usuario usuario, InqueritoPolicialDigital inquerito) {
-        if (usuario.getTipoUsuario() == null) {
-            return false;
+    private List<InqueritoPolicialDigital> listarInqueritosSegurancaPublica(Usuario usuario) {
+        LinkedHashMap<Long, InqueritoPolicialDigital> merged = new LinkedHashMap<>();
+        List<Long> unidadeIds = delegaciaScopeService.unidadesAtivasDoUsuarioAtual(usuario).stream()
+                .map(UnidadeInstituicao::getId)
+                .filter(Objects::nonNull)
+                .toList();
+        if (!unidadeIds.isEmpty()) {
+            repository.findTop100ByUnidadeApuracao_IdInOrderByUpdatedAtDesc(unidadeIds)
+                    .forEach(item -> putMerged(merged, item));
         }
-        if (usuario.getTipoUsuario().isSegurancaPublica() && inquerito.getAutoridadeResponsavel() != null
-                && Objects.equals(inquerito.getAutoridadeResponsavel().getId(), usuario.getId())) {
-            return true;
+        repository.findTop100ByAutoridadeResponsavel_IdOrderByUpdatedAtDesc(usuario.getId())
+                .forEach(item -> putMerged(merged, item));
+        return new ArrayList<>(merged.values());
+    }
+
+    private void putMerged(Map<Long, InqueritoPolicialDigital> merged, InqueritoPolicialDigital item) {
+        Long key = item.getId();
+        if (key == null) {
+            key = (long) System.identityHashCode(item);
         }
-        return usuario.getTipoUsuario().isMinisterioPublico() || usuario.getTipoUsuario().isMagistratura();
+        merged.putIfAbsent(key, item);
     }
 
     private void sincronizarResumoProcesso(Processo processo, InqueritoPolicialDigital inquerito, String marcador) {
@@ -253,6 +283,7 @@ public class InqueritoPolicialDigitalService {
                 defaultText(inquerito.getVitimasResumo(), ""),
                 defaultText(inquerito.getIndiciosResumo(), ""),
                 defaultText(inquerito.getDiligenciasPendentes(), ""),
+                inquerito.getUnidadeApuracao() == null || inquerito.getUnidadeApuracao().getId() == null ? "" : String.valueOf(inquerito.getUnidadeApuracao().getId()),
                 inquerito.getPrazoConclusao() == null ? "" : inquerito.getPrazoConclusao().toString(),
                 inquerito.getProcessoVinculado() == null || inquerito.getProcessoVinculado().getId() == null ? "" : String.valueOf(inquerito.getProcessoVinculado().getId()));
         return Hashes.sha256HexBytes(base.getBytes(StandardCharsets.UTF_8));
@@ -274,7 +305,17 @@ public class InqueritoPolicialDigitalService {
         return value == null || value.isBlank() ? fallback : value.trim();
     }
 
+    private String firstText(String primary, String fallback) {
+        return primary == null || primary.isBlank() ? fallback : primary.trim();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
     private InqueritoView toView(InqueritoPolicialDigital item) {
+        UnidadeInstituicao unidade = item.getUnidadeApuracao();
+        var instituicao = unidade == null ? null : unidade.getInstituicao();
         return new InqueritoView(
                 item.getId(),
                 item.getNumeroProcedimento(),
@@ -290,6 +331,10 @@ public class InqueritoPolicialDigitalService {
                 item.getUltimaMovimentacaoResumo(),
                 item.getCadeiaCustodiaHash(),
                 item.getOrgaoApuracao(),
+                unidade == null ? null : unidade.getId(),
+                unidade == null ? null : unidade.getNome(),
+                instituicao == null ? null : instituicao.getId(),
+                instituicao == null ? null : instituicao.getNome(),
                 item.getUf(),
                 item.getMunicipio(),
                 item.getNivelSigilo(),
@@ -314,6 +359,7 @@ public class InqueritoPolicialDigitalService {
             String indiciosResumo,
             String diligenciasPendentes,
             String orgaoApuracao,
+            Long unidadeApuracaoId,
             String uf,
             String municipio,
             NivelSigilo nivelSigilo,
@@ -349,6 +395,10 @@ public class InqueritoPolicialDigitalService {
             String ultimaMovimentacaoResumo,
             String cadeiaCustodiaHash,
             String orgaoApuracao,
+            Long unidadeApuracaoId,
+            String unidadeApuracaoNome,
+            Long instituicaoApuracaoId,
+            String instituicaoApuracaoNome,
             String uf,
             String municipio,
             NivelSigilo nivelSigilo,

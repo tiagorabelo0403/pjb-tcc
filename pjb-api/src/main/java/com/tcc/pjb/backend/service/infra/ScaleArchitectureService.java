@@ -36,6 +36,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ScaleArchitectureService {
@@ -142,6 +143,7 @@ public class ScaleArchitectureService {
                 saved.getStaleWhileRevalidateSeconds(), saved.isEnabled(), saved.getNotes(), "OVERRIDE");
     }
 
+    @PjbTransactionalBudget(operation = "infra.scale-architecture.listar-planos-particao", maxMillis = 3000)
     @Transactional(readOnly = true)
     public List<PartitionPlanView> listarPlanosParticao() {
         return partitionPlanRepository.findAll().stream()

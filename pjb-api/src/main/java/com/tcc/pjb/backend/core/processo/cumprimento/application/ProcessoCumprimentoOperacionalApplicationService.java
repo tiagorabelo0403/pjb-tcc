@@ -25,9 +25,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ProcessoCumprimentoOperacionalApplicationService {
@@ -50,15 +53,19 @@ public class ProcessoCumprimentoOperacionalApplicationService {
         this.outboxPublisher = Objects.requireNonNull(outboxPublisher);
     }
 
+    @PjbTransactionalBudget(operation = "processo.cumprimento-operacional.materializar", maxMillis = 5000)
     @Transactional
     public ProcessoCumprimentoOperacionalAggregate materializar(Long processoId) {
         ProcessoRuntimeContext contexto = processoRuntimeResolver.resolver(processoId);
         ProcessoDistribuicaoMalhaOrquestracaoAggregate distribuicao = processoDistribuicaoMalhaOrquestracaoApplicationService.executar(processoId);
         List<ProcessoCumprimentoOperacionalItem> planejados = planejar(contexto, distribuicao);
+        List<String> codigosPlanejados = planejados.stream().map(ProcessoCumprimentoOperacionalItem::codigo).toList();
+        Set<String> codigosJaMaterializados = workItemRepository.findAllByProcesso_IdAndTemplateCodeInAndStatusNot(processoId, codigosPlanejados, WorkItemStatus.CANCELADO).stream()
+                .map(WorkItem::getTemplateCode)
+                .collect(Collectors.toSet());
         int materializados = 0;
         for (ProcessoCumprimentoOperacionalItem item : planejados) {
-            WorkItem existente = workItemRepository.findFirstByProcesso_IdAndTemplateCodeAndStatusNot(processoId, item.codigo(), WorkItemStatus.CANCELADO).orElse(null);
-            if (existente == null) {
+            if (!codigosJaMaterializados.contains(item.codigo())) {
                 WorkItem workItem = new WorkItem();
                 workItem.setProcesso(contexto.processo());
                 workItem.setFaseOrigem(resolveFase(contexto));

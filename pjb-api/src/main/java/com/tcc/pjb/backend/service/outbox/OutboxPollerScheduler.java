@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.service.outbox;
 
 import java.time.Duration;
 import java.time.Instant;
+import com.tcc.pjb.backend.model.entity.outbox.OutboxEventId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -61,10 +62,11 @@ public class OutboxPollerScheduler {
     Instant now = Instant.now();
 
     List<OutboxEvent> claimed = java.util.Objects.requireNonNullElseGet(tx.execute(status -> {
-      List<UUID> ids = repo.claimIdsForUpdate("PENDING", now, Math.max(1, batchSize * 4));
-      if (ids == null || ids.isEmpty()) {
+      List<Object[]> rawRows = repo.claimRawForUpdate("PENDING", Math.max(1, batchSize * 4));
+      if (rawRows == null || rawRows.isEmpty()) {
         return List.of();
       }
+      List<OutboxEventId> ids = rawRows.stream().map(OutboxEventId::fromRow).toList();
       List<OutboxEvent> events = repo.findAllById(ids);
       if (events.isEmpty()) {
         return List.of();
@@ -95,7 +97,7 @@ public class OutboxPollerScheduler {
     try {
       dispatcher.dispatch(snapshot);
       tx.execute(status -> {
-        repo.findById(snapshot.getId()).ifPresent(ev -> {
+        repo.findById(new OutboxEventId(snapshot.getId(), snapshot.getCreatedMonth())).ifPresent(ev -> {
           ev.markDone();
           repo.save(ev);
         });
@@ -106,7 +108,7 @@ public class OutboxPollerScheduler {
           snapshot.getEventType(), snapshot.getId(), snapshot.getAttempts(), ex.getMessage());
 
       tx.execute(status -> {
-        repo.findById(snapshot.getId()).ifPresent(ev -> {
+        repo.findById(new OutboxEventId(snapshot.getId(), snapshot.getCreatedMonth())).ifPresent(ev -> {
           int nextAttempts = ev.getAttempts() + 1;
           String err = truncate(ex.toString(), 500);
           if (nextAttempts >= maxAttempts) {

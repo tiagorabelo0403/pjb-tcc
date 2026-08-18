@@ -7,6 +7,7 @@ import com.tcc.pjb.backend.modules.laiane.dto.legal.LaianePeticaoAssistRequest;
 import com.tcc.pjb.backend.service.rito.dto.RitoPlanDto;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class StrategicCopilotService {
@@ -14,6 +15,7 @@ public class StrategicCopilotService {
     private final StrategicCopilotRequestReportFactory requestReportFactory;
     private final StrategicCopilotProcessReportFactory processReportFactory;
 
+    @Inject
     public StrategicCopilotService() {
         StrategicCopilotSupport support = new StrategicCopilotSupport();
         StrategicCopilotDiagnosticsFactory diagnosticsFactory = new StrategicCopilotDiagnosticsFactory(support);

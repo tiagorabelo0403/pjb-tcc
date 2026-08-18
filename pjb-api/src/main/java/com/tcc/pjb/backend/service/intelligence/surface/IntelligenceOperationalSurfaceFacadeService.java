@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.service.intelligence.surface;
 
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.inovacao.radar.RadarPadroesService;
 import com.tcc.pjb.backend.model.dto.intelligence.TetoSalarioMinimoResponse;
@@ -29,17 +30,20 @@ public class IntelligenceOperationalSurfaceFacadeService {
     private final SalarioMinimoNacionalService salarioMinimoNacionalService;
     private final ProcessoRepository processoRepository;
     private final SurfaceProjectionSupport surfaceProjectionSupport;
+    private final AuditLedgerService auditLedgerService;
 
     public IntelligenceOperationalSurfaceFacadeService(RadarPadroesService radarPadroesService,
                                                        TetoProcessualService tetoProcessualService,
                                                        SalarioMinimoNacionalService salarioMinimoNacionalService,
                                                        ProcessoRepository processoRepository,
-                                                       SurfaceProjectionSupport surfaceProjectionSupport) {
+                                                       SurfaceProjectionSupport surfaceProjectionSupport,
+                                                       AuditLedgerService auditLedgerService) {
         this.radarPadroesService = Objects.requireNonNull(radarPadroesService);
         this.tetoProcessualService = Objects.requireNonNull(tetoProcessualService);
         this.salarioMinimoNacionalService = Objects.requireNonNull(salarioMinimoNacionalService);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.surfaceProjectionSupport = Objects.requireNonNull(surfaceProjectionSupport);
+        this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
     }
 
     public SurfaceSnapshotResponse analisarRadar(RadarPadroesRequest request) {
@@ -117,6 +121,13 @@ public class IntelligenceOperationalSurfaceFacadeService {
                 request.valorMensal(),
                 request.normaReferencia(),
                 request.fonteOficial()
+        );
+        auditLedgerService.appendSafely(
+                "SALARIO_MINIMO_ATUALIZADO",
+                "SALARIO_MINIMO_NACIONAL",
+                String.valueOf(saved.getAnoReferencia()),
+                null,
+                "valorMensal=" + saved.getValorMensal()
         );
         return surfaceProjectionSupport.snapshot("intelligence.teto.salario-minimo.save", mapSalario(saved));
     }

@@ -1,6 +1,8 @@
 package com.tcc.pjb.backend.service.processual.document.envelope;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
@@ -12,6 +14,7 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeProcessWorkspaceScopeService;
 import com.tcc.pjb.backend.model.entity.identity.IdentidadeJuridicaNacional;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 import com.tcc.pjb.backend.service.processual.document.identity.QualifiedSignatureIdentityContextService;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -28,6 +31,146 @@ class QualifiedDocumentSignatureEnvelopeServiceTest {
     @AfterEach
     void clearRequestContext() {
         RequestContextHolder.resetRequestAttributes();
+    }
+
+    @Test
+    void signFreeContent_retornaEnvelopeCanonico() {
+        InstitutionalSessionSecuritySignalService securitySignalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        when(securitySignalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of("govbr=OURO")
+        ));
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Promotor");
+        usuario.setCpf("12345678901");
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Ofício",
+                "Conteúdo oficial",
+                "MINISTERIO_PUBLICO",
+                "MINISTERIO_PUBLICO_QUALIFICADA_SOBERANA",
+                true,
+                List.of("LAIANE_MP")
+        );
+
+        assertEquals("Ofício", signed.tituloDocumento());
+        assertNotNull(signed.assinaturaQualificada());
+        assertNotNull(signed.validacaoSoberana());
+        assertTrue(signed.assinaturaQualificada().rubrica());
+    }
+
+    @Test
+    void signFreeContent_retornaEnvelopeComRubricaERegras() {
+        InstitutionalSessionSecuritySignalService securitySignalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        when(securitySignalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of("govbr=OURO")
+        ));
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Promotor");
+        usuario.setCpf("12345678901");
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Ofício",
+                "Conteúdo oficial",
+                "MINISTERIO_PUBLICO",
+                "MINISTERIO_PUBLICO_QUALIFICADA_SOBERANA",
+                true,
+                List.of("LAIANE_MP")
+        );
+
+        assertNotNull(signed.renderedContent());
+        assertNotNull(signed.contentHash());
+        assertNotNull(signed.assinaturaQualificada().rubricaEletronica());
+        assertNotNull(signed.validacaoSoberana().regrasAplicadas());
+    }
+
+    @Test
+    void signFreeContent_camposCriticosNaoNulos() {
+        InstitutionalSessionSecuritySignalService securitySignalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        when(securitySignalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of("govbr=OURO")
+        ));
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Promotor");
+        usuario.setCpf("12345678901");
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Ofício",
+                "Conteúdo oficial",
+                "MINISTERIO_PUBLICO",
+                "MINISTERIO_PUBLICO_QUALIFICADA_SOBERANA",
+                true,
+                List.of("LAIANE_MP")
+        );
+
+        assertNotNull(signed.contentHash());
+        assertNotNull(signed.renderedContent());
+        assertNotNull(signed.assinaturaQualificada());
+        assertNotNull(signed.validacaoSoberana());
+        assertNotNull(signed.assinaturaQualificada().envelopeId());
+        assertNotNull(signed.assinaturaQualificada().documentoAssinadoHash());
+        assertNotNull(signed.validacaoSoberana().documentoAssinadoHash());
+    }
+
+    @Test
+    void signFreeContent_semCertificadoEntrada_cadeiaCustodiaElegivelFalse() {
+        InstitutionalSessionSecuritySignalService securitySignalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        when(securitySignalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of("govbr=OURO")
+        ));
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Promotor");
+        usuario.setCpf("12345678901");
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Ofício",
+                "Conteúdo oficial",
+                "MINISTERIO_PUBLICO",
+                "MINISTERIO_PUBLICO_QUALIFICADA_SOBERANA",
+                true,
+                List.of("LAIANE_MP")
+        );
+
+        assertFalse(signed.validacaoSoberana().cadeiaCustodiaElegivel());
     }
 
     @Test
@@ -64,11 +207,11 @@ class QualifiedDocumentSignatureEnvelopeServiceTest {
         assertTrue(signed.renderedContent().contains("ASSINATURA QUALIFICADA PJB"));
         assertTrue(signed.renderedContent().contains("Rubrica eletrônica:"));
         assertTrue(signed.renderedContent().contains("Local: Morada Nova/CE"));
-        assertTrue(signed.assinaturaQualificada().containsKey("rubrica"));
-        assertTrue(signed.assinaturaQualificada().containsKey("data"));
-        assertTrue(signed.assinaturaQualificada().containsKey("hora"));
-        assertEquals("VALIDO", signed.validacaoSoberana().get("status"));
-        assertEquals(Boolean.TRUE, signed.validacaoSoberana().get("assinaturaCompletaMaterializada"));
+        assertNotNull(signed.assinaturaQualificada().rubricaEletronica());
+        assertNotNull(signed.assinaturaQualificada().data());
+        assertNotNull(signed.assinaturaQualificada().hora());
+        assertEquals("VALIDO", signed.validacaoSoberana().status());
+        assertTrue(signed.validacaoSoberana().assinaturaCompletaMaterializada());
     }
 
     @Test
@@ -116,14 +259,14 @@ class QualifiedDocumentSignatureEnvelopeServiceTest {
                 true
         );
 
-        assertEquals("JUIZ_ELEITORAL_PRIMEIRO_GRAU", signed.assinaturaQualificada().get("papelAssinanteDetalhado"));
-        assertEquals("ELEITORAL", signed.assinaturaQualificada().get("ramoJustica"));
-        assertEquals("PRIMEIRO_GRAU", signed.assinaturaQualificada().get("instancia"));
-        assertTrue(((String) signed.renderedContent()).contains("Certificado de entrada: FP=AABBCCDDEEFF"));
-        assertTrue(((String) signed.renderedContent()).contains("Lotação: TRE-CE | 87ª Zona Eleitoral de Fortaleza | COD=TRE-CE-ZE-0087 | Fortaleza/CE"));
-        assertEquals("TRE-CE | 87ª Zona Eleitoral de Fortaleza | COD=TRE-CE-ZE-0087 | Fortaleza/CE", signed.assinaturaQualificada().get("lotacaoAssinante"));
-        assertEquals(Boolean.TRUE, signed.validacaoSoberana().get("certificadoEntradaVinculado"));
-        assertTrue(((java.util.Map<?, ?>) signed.assinaturaQualificada().get("certificadoEntrada")).containsKey("fingerprintSha256"));
+        assertEquals("JUIZ_ELEITORAL_PRIMEIRO_GRAU", signed.assinaturaQualificada().papelAssinanteDetalhado());
+        assertEquals("ELEITORAL", signed.assinaturaQualificada().ramoJustica());
+        assertEquals("PRIMEIRO_GRAU", signed.assinaturaQualificada().instancia());
+        assertTrue(signed.renderedContent().contains("Certificado de entrada: FP=AABBCCDDEEFF"));
+        assertTrue(signed.renderedContent().contains("Lotação: TRE-CE | 87ª Zona Eleitoral de Fortaleza | COD=TRE-CE-ZE-0087 | Fortaleza/CE"));
+        assertEquals("TRE-CE | 87ª Zona Eleitoral de Fortaleza | COD=TRE-CE-ZE-0087 | Fortaleza/CE", signed.assinaturaQualificada().lotacaoAssinante());
+        assertTrue(signed.validacaoSoberana().certificadoEntradaVinculado());
+        assertTrue(signed.assinaturaQualificada().rubrica());
     }
 
     @Test
@@ -176,14 +319,14 @@ class QualifiedDocumentSignatureEnvelopeServiceTest {
                 true
         );
 
-        assertEquals("JUIZ_FEDERAL_PRIMEIRO_GRAU", signed.assinaturaQualificada().get("papelAssinanteDetalhado"));
-        assertEquals("FEDERAL", signed.assinaturaQualificada().get("ramoJustica"));
-        assertEquals("TRF5 | 2ª Vara Federal de Sobral | COD=JFCE-SOBRAL-2VF | Sobral/CE", signed.assinaturaQualificada().get("lotacaoAssinante"));
-        assertEquals("USUARIO_CERTIFICADO_MEDIA", signed.assinaturaQualificada().get("coerenciaCertificadoUsuario"));
-        assertEquals("Secretaria da 2ª Vara Federal de Sobral", signed.assinaturaQualificada().get("secretariaRecursal"));
-        assertEquals("Mesa de Embargos da 2ª Vara Federal de Sobral", signed.assinaturaQualificada().get("secretariaEmbargos"));
-        assertTrue(((java.util.Map<?, ?>) signed.assinaturaQualificada().get("lotacaoInstitucional")).containsKey("unidadeJudiciariaCodigo"));
-        assertTrue(((java.util.Map<?, ?>) signed.assinaturaQualificada().get("identidadeAssinante")).containsKey("cpfCoerente"));
+        assertEquals("JUIZ_FEDERAL_PRIMEIRO_GRAU", signed.assinaturaQualificada().papelAssinanteDetalhado());
+        assertEquals("FEDERAL", signed.assinaturaQualificada().ramoJustica());
+        assertEquals("TRF5 | 2ª Vara Federal de Sobral | COD=JFCE-SOBRAL-2VF | Sobral/CE", signed.assinaturaQualificada().lotacaoAssinante());
+        assertEquals("USUARIO_CERTIFICADO_MEDIA", signed.assinaturaQualificada().coerenciaCertificadoUsuarioResumo());
+        assertTrue(signed.renderedContent().contains("Secretaria recursal: Secretaria da 2ª Vara Federal de Sobral"));
+        assertTrue(signed.renderedContent().contains("Secretaria de embargos: Mesa de Embargos da 2ª Vara Federal de Sobral"));
+        assertTrue(signed.renderedContent().contains("COD=JFCE-SOBRAL-2VF"));
+        assertNotNull(signed.assinaturaQualificada().coerenciaCertificadoUsuarioResumo());
     }
     @Test
     void shouldClassifySecondInstanceElectoralSecretariatAndExposePjbPanel() {
@@ -230,12 +373,10 @@ class QualifiedDocumentSignatureEnvelopeServiceTest {
                 true
         );
 
-        assertEquals("SECRETARIA_SEGUNDA_INSTANCIA_ELEITORAL", signed.assinaturaQualificada().get("papelAssinanteDetalhado"));
-        assertEquals("PJB_SEGUNDA_INSTANCIA", signed.assinaturaQualificada().get("namespacePjb"));
-        assertEquals("PJB Segunda Instância | ELEITORAL", signed.assinaturaQualificada().get("painelPjb"));
-        assertEquals("Secretaria Judiciária Eleitoral - TRE-CE", signed.assinaturaQualificada().get("secretariaEspecializada"));
+        assertEquals("SECRETARIA_SEGUNDA_INSTANCIA_ELEITORAL", signed.assinaturaQualificada().papelAssinanteDetalhado());
         assertTrue(signed.renderedContent().contains("Namespace PJB: PJB_SEGUNDA_INSTANCIA"));
         assertTrue(signed.renderedContent().contains("Painel PJB: PJB Segunda Instância | ELEITORAL"));
+        assertTrue(signed.renderedContent().contains("Secretaria especializada: Secretaria Judiciária Eleitoral - TRE-CE"));
     }
 
     @Test
@@ -285,6 +426,105 @@ class QualifiedDocumentSignatureEnvelopeServiceTest {
         );
 
         verify(officeProcessWorkspaceScopeService).requireAccess(Mockito.eq(55L), Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void signFreeContent_papelMinisterioPublicoComTipoUsuarioReal_classificacaoContextualCoerenteTrue() {
+        InstitutionalSessionSecuritySignalService securitySignalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        when(securitySignalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of("govbr=OURO")
+        ));
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Promotor");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Ofício",
+                "Conteúdo oficial",
+                "MINISTERIO_PUBLICO",
+                "MINISTERIO_PUBLICO_QUALIFICADA_SOBERANA",
+                true,
+                List.of("LAIANE_MP")
+        );
+
+        assertTrue(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
+    @Test
+    void signFreeContent_papelUnidadeJudicialComTipoUsuarioCidadao_classificacaoContextualCoerenteFalse() {
+        InstitutionalSessionSecuritySignalService securitySignalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        when(securitySignalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of("govbr=OURO")
+        ));
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Cidadão Qualquer");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.CIDADAO);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Minuta",
+                "Conteúdo",
+                "UNIDADE_JUDICIAL",
+                "ATO_OFICIAL_QUALIFICADO_SOBERANO",
+                true,
+                List.of("minuta")
+        );
+
+        assertFalse(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
+    @Test
+    void signFreeContent_papelForaDoSwitchMapeado_classificacaoContextualCoerenteTrueSemChecagem() {
+        InstitutionalSessionSecuritySignalService securitySignalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        when(securitySignalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of("govbr=OURO")
+        ));
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Cidadão Parte");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.CIDADAO);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Termo de acordo",
+                "Conteúdo",
+                "CIDADAO",
+                "CIDADAO_QUALIFICADA_SOBERANA",
+                true,
+                List.of("termo_acordo")
+        );
+
+        assertTrue(signed.validacaoSoberana().classificacaoContextualCoerente());
     }
 
     private static ObjectProvider<OfficeProcessWorkspaceScopeService> officeScopeProvider(OfficeProcessWorkspaceScopeService service) {

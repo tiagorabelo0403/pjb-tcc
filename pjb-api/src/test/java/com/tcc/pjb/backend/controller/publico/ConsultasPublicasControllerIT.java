@@ -12,6 +12,7 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.document.DocumentoPagina;
 import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
+import com.tcc.pjb.backend.model.entity.enums.DocumentoCategoria;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
@@ -92,6 +93,7 @@ class ConsultasPublicasControllerIT extends PjbIntegrationTestBase {
                 .titulo("Acórdão público")
                 .nomeOriginal("acordao-publico.pdf")
                 .nivelSigilo(NivelSigilo.PUBLICO)
+                .categoria(DocumentoCategoria.PUBLICO)
                 .criadoEm(LocalDateTime.of(2026, 4, 16, 10, 0))
                 .build());
 
@@ -153,6 +155,6 @@ class ConsultasPublicasControllerIT extends PjbIntegrationTestBase {
         mockMvc.perform(get("/api/v1/public/consultas-publicas/processos/{numero}", "0009102-22.2026.8.06.0001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resumo.acessoRestrito").value(true))
-                .andExpect(jsonPath("$.resumo.orientacaoAcesso", containsString("advogados habilitados")));
+                .andExpect(jsonPath("$.resumo.orientacaoAcesso", containsString("credencial temporária de sigilo")));
     }
 }

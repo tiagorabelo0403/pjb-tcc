@@ -770,6 +770,9 @@ public class AjuizamentoCanonicalContextService {
         if (candidate == null || candidate == current) {
             return false;
         }
+        if (current == TipoJustica.ESTADUAL && candidate == TipoJustica.SUPERIOR) {
+            return false;
+        }
         return current == null || current == TipoJustica.ESTADUAL && candidate != TipoJustica.ESTADUAL;
     }
 
@@ -785,9 +788,6 @@ public class AjuizamentoCanonicalContextService {
             return false;
         }
         if (current == null) {
-            return true;
-        }
-        if (current == RitoProcessual.COMUM_ORDINARIO && candidate != RitoProcessual.COMUM_ORDINARIO) {
             return true;
         }
         if (current == RitoProcessual.JUIZADO_ESPECIAL && candidate.isJuizado() && candidate != RitoProcessual.JUIZADO_ESPECIAL) {

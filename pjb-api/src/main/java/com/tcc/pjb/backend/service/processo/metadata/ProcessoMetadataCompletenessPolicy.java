@@ -2,10 +2,12 @@ package com.tcc.pjb.backend.service.processo.metadata;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
+@Component
 public final class ProcessoMetadataCompletenessPolicy {
 
-    private ProcessoMetadataCompletenessPolicy() {}
+    public ProcessoMetadataCompletenessPolicy() {}
 
     public record CompletenessInput(
             boolean temClasse,

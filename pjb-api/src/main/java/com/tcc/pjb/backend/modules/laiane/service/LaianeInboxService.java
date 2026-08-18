@@ -1,5 +1,8 @@
 package com.tcc.pjb.backend.modules.laiane.service;
 
+import com.tcc.pjb.backend.core.time.PjbTimeService;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
@@ -17,13 +20,16 @@ public class LaianeInboxService {
     private final CurrentUserService currentUserService;
     private final WorkItemService workItemService;
     private final NotificationHistoryRepository notificationHistoryRepository;
+    private final PjbTimeService timeService;
 
     public LaianeInboxService(CurrentUserService currentUserService,
                              WorkItemService workItemService,
-                             NotificationHistoryRepository notificationHistoryRepository) {
+                             NotificationHistoryRepository notificationHistoryRepository,
+                             PjbTimeService timeService) {
         this.currentUserService = currentUserService;
         this.workItemService = workItemService;
         this.notificationHistoryRepository = notificationHistoryRepository;
+        this.timeService = timeService;
     }
 
     public LaianeInboxResponse inbox() {
@@ -49,8 +55,12 @@ public class LaianeInboxService {
                 .canal(h.getCanal())
                 .titulo(h.getTitulo())
                 .mensagem(h.getMensagem())
-                .enviadoEm(h.getEnviadoEm())
+                .enviadoEm(toOffset(h.getEnviadoEm()))
                 .status(h.getStatus())
                 .build();
+    }
+
+    private OffsetDateTime toOffset(LocalDateTime ldt) {
+        return ldt == null ? null : ldt.atZone(timeService.legalZone()).toOffsetDateTime();
     }
 }

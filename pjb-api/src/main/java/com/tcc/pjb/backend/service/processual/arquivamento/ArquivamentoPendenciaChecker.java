@@ -2,10 +2,12 @@ package com.tcc.pjb.backend.service.processual.arquivamento;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
+@Component
 public final class ArquivamentoPendenciaChecker {
 
-    private ArquivamentoPendenciaChecker() {}
+    public ArquivamentoPendenciaChecker() {}
 
     public record ArquivamentoInput(
             boolean custasQuitadas,

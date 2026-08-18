@@ -40,6 +40,7 @@ import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 import com.tcc.pjb.backend.model.dto.processual.document.template.OfficialDocumentTemplateRenderRequest;
 import com.tcc.pjb.backend.model.dto.processual.document.template.OfficialDocumentTemplateRenderResponse;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 @Service
 public class ServidorSecretariaOperacionalService {
 private final PerfilDashboardContextFactory contextFactory;
@@ -301,6 +302,95 @@ return normalized.isEmpty() ? null : normalized;
 }
 
 @Transactional
+public Map<String, Object> expedirMandadoCitacao(Long processoId, Long oficialId, String enderecoCitacao, String observacaoOperacional) {
+Processo processo = processoRepository.findById(processoId)
+.orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+PerfilDashboardContext ctx = contextFactory.build();
+Usuario servidor = ctx.usuario();
+authorizationService.requireRole(servidor, "ROLE_SERVIDOR", "ROLE_SERVIDOR_FORUM");
+Instant dueAt = Instant.now().plus(15, ChronoUnit.DAYS);
+ForumOfficialReturnReactivationRequest reactivationRequest = new ForumOfficialReturnReactivationRequest(
+        oficialId,
+        "SECRETARIA_MANDADO_CITACAO",
+        "Mandado de citação expedido pela secretaria após admissão da petição inicial.",
+        normalizeText(observacaoOperacional),
+        dueAt,
+        Boolean.FALSE
+);
+Map<String, Object> automatic = forumOfficialReturnOperationalService.reativarPorExpedicaoAutomatica(
+        processo, reactivationRequest, "OFICIAL DE JUSTIÇA", enderecoCitacao);
+WorkItem officialItem = resolveOfficialItem(automatic);
+officialItem.setType(WorkItemType.DILIGENCIA);
+officialItem.setTitulo("Mandado de Citação — " + processo.getNumeroProcesso());
+officialItem.setDescricao("Cumprir citação da parte ré no endereço informado: " + enderecoCitacao
+        + (observacaoOperacional == null || observacaoOperacional.isBlank() ? "" : " Observação: " + observacaoOperacional));
+officialItem.setDueAt(dueAt);
+officialItem.setPrioridade(1);
+officialItem = workItemRepository.save(officialItem);
+OfficialDocumentTemplateRenderResponse mandadoFormal = officialDocumentTemplateService.renderizar(new OfficialDocumentTemplateRenderRequest(
+        processoId,
+        TemplateDocumentoOficial.MANDADO,
+        "Mandado de citação — " + processo.getNumeroProcesso(),
+        Map.of(
+                "qualificacaoPartes", firstNonBlank(processo.getParteReuNome(), "PARTE_RE_NAO_IDENTIFICADA") + " — " + enderecoCitacao,
+                "ordemJudicial", "Cite-se a parte ré para responder no prazo legal, nos termos da admissão da petição inicial.",
+                "prazoCumprimento", String.valueOf(dueAt)
+        ),
+        Boolean.TRUE,
+        Boolean.TRUE
+));
+lifecycleMachine.apply(processo, ProcessoLifecycleAction.EXPEDIR_INTIMACAO);
+processoRepository.save(processo);
+LinkedHashMap<String, Object> out = new LinkedHashMap<>();
+out.put("status", "MANDADO_CITACAO_EXPEDIDO");
+out.put("processoId", processoId);
+out.put("workItemId", officialItem.getId());
+out.put("dueAt", dueAt);
+out.put("enderecoCitacao", enderecoCitacao);
+out.put("mandadoFormalAssinado", summarizeRenderedDocument(mandadoFormal));
+out.put("reativacaoOficial", automatic.get("reativacao"));
+out.put("processoReapareceNoPainelDoOficial", Boolean.TRUE);
+return out;
+}
+
+private WorkItem resolveOfficialItem(Map<String, Object> automatic) {
+Object nested = automatic == null ? null : automatic.get("reativacao");
+Object workItemId = nested instanceof Map<?, ?> map ? map.get("workItemId") : null;
+Long id = asLong(workItemId);
+if (id == null) {
+throw new RecursoNaoEncontradoException("Não foi possível resolver o WorkItem do oficial após a expedição do mandado.");
+}
+return workItemRepository.findById(id)
+.orElseThrow(() -> new RecursoNaoEncontradoException("WorkItem do oficial", id));
+}
+
+private Long asLong(Object value) {
+if (value == null) {
+return null;
+}
+if (value instanceof Number number) {
+return number.longValue();
+}
+try {
+return Long.parseLong(String.valueOf(value).trim());
+} catch (NumberFormatException ex) {
+return null;
+}
+}
+
+private String firstNonBlank(String... values) {
+if (values == null) {
+return null;
+}
+for (String value : values) {
+if (value != null && !value.isBlank()) {
+return value.trim();
+}
+}
+return null;
+}
+
+@Transactional
 public Map<String, Object> conclusaoParaDespacho(Long processoId, String motivoConclusa) {
 Processo processo = processoRepository.findById(processoId)
 .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
@@ -334,6 +424,7 @@ response.put("workItemId", concluso.getId());
 response.put("slaDespachoDiasUteis", sla.prazoDespachoInicialDiasUteis());
 return Map.copyOf(response);
 }
+    @PjbTransactionalBudget(operation = "servidor.secretaria.saneamento-bulk-fila", maxMillis = 5000)
 @Transactional
 public Map<String, Object> saneamentoBulkFila(String queueCode, int limite) {
 PerfilDashboardContext ctx = contextFactory.build();

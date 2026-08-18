@@ -12,6 +12,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ComunicacaoJudicialStateStore {
@@ -81,6 +82,7 @@ public class ComunicacaoJudicialStateStore {
         return Optional.of(fromJson(payloadJson, type));
     }
 
+    @PjbTransactionalBudget(operation = "comunicacao-judicial.state-store.find-all", maxMillis = 3000)
     @Transactional(readOnly = true)
     public <T> List<T> findAll(String domain, Class<T> type) {
         Objects.requireNonNull(domain, "domain");

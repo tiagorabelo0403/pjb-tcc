@@ -1,0 +1,64 @@
+<svg viewBox="0 0 1200 560" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="title desc">
+  <title id="title">How the lead attorney delegates access without handing over their digital certificate</title>
+  <desc id="desc">The senior attorney who owns the firm sends an affiliation invite to another attorney, defining their team role, allowed areas of law, and approval rules — without ever sharing their ICP-Brasil certificate.</desc>
+
+  <text x="30" y="36" font-size="18" font-weight="700" fill="#e8b93a">🏢 Law Firm — delegation without sharing a certificate (illustrative example)</text>
+
+  <!-- lead attorney -->
+  <g>
+    <rect x="30" y="70" width="330" height="140" rx="18" fill="#2c3e67"/>
+    <text x="50" y="100" font-size="22" fill="#ffffff">👤⚖️</text>
+    <text x="90" y="100" font-size="14" font-weight="700" fill="#ffffff">Senior Attorney — firm owner</text>
+    <text x="50" y="126" font-size="12" fill="#dfe4ee">Their own ICP-Brasil certificate,</text>
+    <text x="50" y="144" font-size="12" fill="#dfe4ee">never shared with anyone</text>
+    <text x="50" y="172" font-size="12.5" font-weight="600" fill="#f4c542">Sends an affiliation invite →</text>
+    <text x="50" y="192" font-size="11.5" fill="#a9b3cc">role: JUNIOR ATTORNEY</text>
+  </g>
+
+  <text x="420" y="150" text-anchor="middle" font-size="26" fill="#8a8f98">→</text>
+
+  <!-- invite / rules -->
+  <g>
+    <rect x="460" y="60" width="330" height="330" rx="18" fill="#161c30"/>
+    <text x="480" y="90" font-size="14" font-weight="700" fill="#ffffff">📩 The invite defines the scope</text>
+
+    <text x="480" y="122" font-size="12" fill="#a9b3cc">Team role</text>
+    <text x="480" y="140" font-size="13" fill="#ffffff">Junior Attorney (weight 70)</text>
+
+    <text x="480" y="170" font-size="12" fill="#a9b3cc">Allowed areas of law</text>
+    <text x="480" y="188" font-size="13" fill="#ffffff">Civil and Labor</text>
+    <text x="480" y="204" font-size="11" fill="#7a2e3d">🔒 Criminal, Criminal Enforcement, Military and</text>
+    <text x="480" y="219" font-size="11" fill="#7a2e3d">Child/Juvenile are always flagged as sensitive —</text>
+    <text x="480" y="234" font-size="11" fill="#7a2e3d">they require a separate, explicit release</text>
+
+    <text x="480" y="262" font-size="12" fill="#a9b3cc">Invitee's own personal cases</text>
+    <text x="480" y="280" font-size="13" fill="#ffffff">Blocked within this scope</text>
+
+    <text x="480" y="308" font-size="12" fill="#a9b3cc">Minimum trust level (Gov.br)</text>
+    <text x="480" y="326" font-size="13" fill="#ffffff">Silver, for automatic actions</text>
+
+    <text x="480" y="354" font-size="12" fill="#a9b3cc">Final approval</text>
+    <text x="480" y="372" font-size="13" fill="#ffffff">Required before activation, with a deadline</text>
+  </g>
+
+  <text x="850" y="150" text-anchor="middle" font-size="26" fill="#8a8f98">→</text>
+
+  <!-- invited attorney -->
+  <g>
+    <rect x="890" y="70" width="280" height="140" rx="18" fill="#b3811a"/>
+    <text x="910" y="100" font-size="22" fill="#ffffff">👤</text>
+    <text x="940" y="100" font-size="14" font-weight="700" fill="#ffffff">Invited attorney</text>
+    <text x="910" y="126" font-size="12" fill="#f8e6c4">Accepts the invite with their</text>
+    <text x="910" y="144" font-size="12" fill="#f8e6c4">own login — never the owner's</text>
+    <text x="910" y="172" font-size="12.5" font-weight="600" fill="#ffffff">Access granted only within</text>
+    <text x="910" y="190" font-size="12.5" font-weight="600" fill="#ffffff">the agreed scope</text>
+  </g>
+
+  <!-- audit -->
+  <g>
+    <rect x="30" y="420" width="1140" height="90" rx="16" fill="#0f1830"/>
+    <text x="55" y="450" font-size="13" font-weight="700" fill="#ffffff">📜 Every step is recorded in the audit trail</text>
+    <text x="55" y="475" font-size="12" fill="#a9b3cc">Invite sent → accepted (or declined) → final approval → activated — each step with who did it, when, and under which rule.</text>
+    <text x="55" y="495" font-size="12" fill="#a9b3cc">The firm owner's certificate never leaves their control; the invited attorney always signs with their own identity.</text>
+  </g>
+</svg>

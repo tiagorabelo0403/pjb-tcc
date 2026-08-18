@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
 
 @Service
 public class InstitutionalOfficialSourceDossierApplicationService {
@@ -27,6 +28,7 @@ public class InstitutionalOfficialSourceDossierApplicationService {
     private final InstitutionalPublicRecognitionGateApplicationService publicRecognitionGateApplicationService;
     private final Clock clock;
 
+    @Inject
     public InstitutionalOfficialSourceDossierApplicationService(InstitutionalAffiliationStateRepository affiliationRepository,
                                                                InstitutionalAffiliationRequestStateRepository requestRepository,
                                                                InstitutionalPublicRecognitionGateApplicationService publicRecognitionGateApplicationService) {

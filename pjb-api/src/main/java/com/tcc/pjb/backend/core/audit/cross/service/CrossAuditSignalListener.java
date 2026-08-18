@@ -13,6 +13,7 @@ import com.tcc.pjb.backend.core.audit.cross.persistence.entity.CrossAuditLinkEnt
 import com.tcc.pjb.backend.core.audit.cross.persistence.repo.AuditCorrelationIndexRepository;
 import com.tcc.pjb.backend.core.audit.cross.persistence.repo.CrossAuditLinkRepository;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Component
 public class CrossAuditSignalListener {
@@ -29,6 +30,7 @@ public class CrossAuditSignalListener {
         this.ledger = ledger;
     }
 
+    @PjbTransactionalBudget(operation = "audit.cross-signal-listener.on", maxMillis = 3000)
     @EventListener
     @Transactional
     public void on(CrossAuditSignal signal) {

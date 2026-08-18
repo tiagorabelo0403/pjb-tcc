@@ -1,11 +1,22 @@
 name: pjb
 services:
   postgres:
-    image: postgres:17
+    # Imagem oficial pgvector/pgvector:pg17 = postgres:17 + extensao vector precompilada.
+    # Necessaria para o VectorSearchServicePgVector (pjb.ai.vector.mode=pgvector) e
+    # habilitada pela migration V307__ai_vector_store_pgvector.sql. Sem trocar de imagem,
+    # a migration falha com "extension vector is not available".
+    image: pgvector/pgvector:pg17
     environment:
       POSTGRES_DB: ${PJB_DB_NAME:-pjb}
+      # POSTGRES_USER/PASSWORD acima criam o superusuario inicial do container — inevitavel,
+      # o initdb da imagem oficial sempre torna o POSTGRES_USER superusuario, e superusuario
+      # ignora RLS (inclusive FORCE ROW LEVEL SECURITY). A aplicacao NAO conecta com este user;
+      # ./infra/docker/postgres/init/01-app-role.sh cria pjb_app (NOSUPERUSER NOBYPASSRLS) logo
+      # em seguida, e e essa role que o backend usa (ver PJB_DB_APP_USER/PASS abaixo).
       POSTGRES_USER: ${PJB_DB_USER:-pjb}
       POSTGRES_PASSWORD: ${PJB_DB_PASS:-pjb}
+      PJB_DB_APP_USER: ${PJB_DB_APP_USER:-pjb_app}
+      PJB_DB_APP_PASS: ${PJB_DB_APP_PASS:-pjb_app_pass}
     ports:
       - "${PJB_PG_PORT:-5432}:5432"
     volumes:
@@ -19,6 +30,8 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+    mem_limit: ${PJB_POSTGRES_MEM_LIMIT:-1g}
+    cpus: ${PJB_POSTGRES_CPUS:-2.0}
 
   kafka:
     image: apache/kafka:3.8.0
@@ -34,16 +47,21 @@ services:
       - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
       - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_NUM_PARTITIONS=3
+      - KAFKA_LOG_RETENTION_HOURS=168
+      - KAFKA_LOG_SEGMENT_BYTES=536870912
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
       - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
       - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1 || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 5
       start_period: 30s
     restart: unless-stopped
+    mem_limit: ${PJB_KAFKA_MEM_LIMIT:-1g}
+    cpus: ${PJB_KAFKA_CPUS:-1.5}
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
@@ -63,6 +81,11 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
+    # ES_JAVA_OPTS acima ja fixa o heap em 512m; o container precisa de folga extra
+    # (off-heap: buffers de indexacao, cache de campo, overhead da JVM) — 1.5g cobre isso
+    # com margem sem deixar o container crescer sem teto.
+    mem_limit: ${PJB_ES_MEM_LIMIT:-1.5g}
+    cpus: ${PJB_ES_CPUS:-1.5}
 
   redis:
     image: redis:7.4
@@ -77,6 +100,8 @@ services:
       timeout: 5s
       retries: 3
     restart: unless-stopped
+    mem_limit: ${PJB_REDIS_MEM_LIMIT:-256m}
+    cpus: ${PJB_REDIS_CPUS:-0.5}
 
   backend:
     profiles: ["app"]
@@ -88,16 +113,36 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${PJB_DB_NAME:-pjb}
-      SPRING_DATASOURCE_USERNAME: ${PJB_DB_USER:-pjb}
-      SPRING_DATASOURCE_PASSWORD: ${PJB_DB_PASS:-pjb}
+      # Conexao real da aplicacao usa pjb_app (NOSUPERUSER), nao o pjb do container do Postgres —
+      # ver comentario no service postgres acima. pjb_app e quem faz a RLS de
+      # secretaria_institucional_item (V316) valer de verdade.
+      SPRING_DATASOURCE_USERNAME: ${PJB_DB_APP_USER:-pjb_app}
+      SPRING_DATASOURCE_PASSWORD: ${PJB_DB_APP_PASS:-pjb_app_pass}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
-      PJB_DB_USER: ${PJB_DB_USER:-pjb}
-      PJB_DB_PASS: ${PJB_DB_PASS:-pjb}
-      PJB_MASTER_KEY_BASE64: ${PJB_MASTER_KEY_BASE64:-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
+      PJB_LIVE_CLUSTER_ENABLED: ${PJB_LIVE_CLUSTER_ENABLED:-false}
+      PJB_DB_USER: ${PJB_DB_APP_USER:-pjb_app}
+      PJB_DB_PASS: ${PJB_DB_APP_PASS:-pjb_app_pass}
+      # Chave mestra AES-GCM (Base64, >= 32 bytes). Obrigatoria. Se não setada, o backend falha
+      # na subida com mensagem clara de CryptoVaultService (nunca sobe com chave em branco).
+      # Para gerar uma chave dev local (sem Vault): 'openssl rand -base64 32' e cole no .env como
+      # PJB_MASTER_KEY_BASE64=<valor>. Em produção, usar Vault (perfil pjb.db.credentials.rotation.enabled=true).
+      # ATENCAO: nunca commitar a chave. O default anterior era um bloco de zeros — chave valida em
+      # tamanho e catastroficamente insegura em valor; removido de proposito para forcar definição
+      # explicita antes do container subir.
+      PJB_MASTER_KEY_BASE64: ${PJB_MASTER_KEY_BASE64:?defina PJB_MASTER_KEY_BASE64 no .env (openssl rand -base64 32)}
+      PJB_JVM_MAX_METASPACE_SIZE: ${PJB_JVM_MAX_METASPACE_SIZE:-512m}
       JAVA_OPTS: ${PJB_JAVA_OPTS:--Dfile.encoding=UTF-8 -Djava.security.egd=file:/dev/urandom}
+      # Geo-bloqueio de magistratura (MagistraturaGeofencePolicyService) precisa de uma base
+      # MaxMind GeoLite2-City real. O .mmdb NAO vem no repositorio (licenciamento MaxMind exige
+      # conta gratuita + license key proprios) — coloque o arquivo baixado em infra/geoip/ (ver
+      # infra/geoip/README.md) que o volume abaixo o expoe ao container. Sem o arquivo, o adapter
+      # loga aviso no boot e o lookup fica gracefully indisponivel (comportamento inalterado).
+      PJB_SECURITY_GEOFENCE_DATABASE_PATH: ${PJB_SECURITY_GEOFENCE_DATABASE_PATH:-/app/geoip/GeoLite2-City.mmdb}
+    volumes:
+      - ./infra/geoip:/app/geoip:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -115,7 +160,47 @@ services:
       timeout: 5s
       retries: 10
       start_period: 45s
+    # on-failure (nao unless-stopped): o backend tem dependencias externas que podem falhar
+    # de forma persistente (ex.: postgres nunca sobe por erro de config no compose). Reiniciar
+    # sem limite nesse cenario produz um container preso em loop de retry indefinidamente —
+    # incidente real: pjb-backend-1 rodou 7 dias em retry do Flyway, sozinho consumindo 72% da
+    # RAM do host porque MaxRAMPercentage (pjb-runtime.sh) sem mem_limit no container calcula
+    # sobre a RAM total visivel, nao sobre um teto real. mem_limit abaixo fecha as duas pontas:
+    # da RAM visivel ao container e do que o container pode tentar reivindicar sem limite.
+    restart: on-failure:5
+    mem_limit: ${PJB_BACKEND_MEM_LIMIT:-2g}
+    cpus: ${PJB_BACKEND_CPUS:-2.0}
+
+  # Vault em dev-mode: cofre de segredos para dev/demo apenas. Sobe SEM persistencia (in-memory),
+  # com token fixo definido em PJB_VAULT_DEV_ROOT_TOKEN. NAO usar como cofre real de producao —
+  # em prod, apontar VaultDbCredentialsProvider (pjb.db.credentials.rotation.enabled=true) para
+  # uma instancia gerenciada externamente (HashiCorp Vault, AWS/GCP KMS via provider adequado).
+  # Fica no profile "vault" para nao ser subido por padrao: 'docker compose --profile vault up -d'.
+  vault:
+    profiles: ["vault"]
+    image: hashicorp/vault:1.17
+    # Comando explicito e obrigatorio para dev-mode desde versoes recentes da imagem oficial —
+    # so as env VAULT_DEV_* nao bastam mais para auto-iniciar o server. -dev-listen-address
+    # obriga bind em 0.0.0.0 para o port publish do Docker Desktop enxergar.
+    command: ["server", "-dev", "-dev-listen-address=0.0.0.0:8200"]
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${PJB_VAULT_DEV_ROOT_TOKEN:?defina PJB_VAULT_DEV_ROOT_TOKEN no .env (dev only)}
+      VAULT_ADDR: http://127.0.0.1:8200
+    ports:
+      - "${PJB_VAULT_PORT:-8200}:8200"
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      # Usa /v1/sys/health com sealedcode=200 (dev-mode nunca fica sealed, mas mantido por consistencia)
+      # e wget -qO -: falha real de conexao propaga exit != 0, healthcheck reporta unhealthy.
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8200/v1/sys/health?standbyok=true&sealedcode=200"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
+    mem_limit: ${PJB_VAULT_MEM_LIMIT:-256m}
+    cpus: ${PJB_VAULT_CPUS:-0.5}
 
 volumes:
   pjb_pg_data:

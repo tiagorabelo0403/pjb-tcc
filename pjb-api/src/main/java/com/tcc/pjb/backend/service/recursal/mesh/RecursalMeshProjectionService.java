@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import jakarta.inject.Inject;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,13 +24,14 @@ public class RecursalMeshProjectionService {
     private final ObjectProvider<RecursalMeshSearchIndexerService> searchIndexerProvider;
     private final ObjectProvider<RecursalMeshRetryExecutor> retryExecutorProvider;
 
-    public RecursalMeshProjectionService(RecursalProcessIntegrationStateRepository repository,
-                                         RecursalMeshFingerprintService fingerprintService,
-                                         RecursalMeshSlaService slaService,
-                                         ObjectProvider<RecursalMeshSearchIndexerService> searchIndexerProvider) {
+    RecursalMeshProjectionService(RecursalProcessIntegrationStateRepository repository,
+                                  RecursalMeshFingerprintService fingerprintService,
+                                  RecursalMeshSlaService slaService,
+                                  ObjectProvider<RecursalMeshSearchIndexerService> searchIndexerProvider) {
         this(repository, fingerprintService, slaService, searchIndexerProvider, null);
     }
 
+    @Inject
     public RecursalMeshProjectionService(RecursalProcessIntegrationStateRepository repository,
                                          RecursalMeshFingerprintService fingerprintService,
                                          RecursalMeshSlaService slaService,

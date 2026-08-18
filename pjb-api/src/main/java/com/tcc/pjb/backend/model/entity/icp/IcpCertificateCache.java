@@ -19,8 +19,6 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "pjb_icp_certificate_cache", indexes = {
-        @Index(name = "idx_icp_cert_cpf", columnList = "cpf_titular"),
-        @Index(name = "idx_icp_cert_cnpj", columnList = "cnpj_titular"),
         @Index(name = "idx_icp_cert_valid", columnList = "valid_until")
 })
 @PjbDataOwnership(module = PjbModuleId.PROCESSO_LIFECYCLE, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
@@ -43,12 +41,6 @@ public class IcpCertificateCache {
 
     @Column(name = "serial_hex", nullable = false, length = 128)
     private String serialHex;
-
-    @Column(name = "cpf_titular", length = 11)
-    private String cpfTitular;
-
-    @Column(name = "cnpj_titular", length = 14)
-    private String cnpjTitular;
 
     @Column(name = "cert_type", nullable = false, length = 8)
     private String certType;

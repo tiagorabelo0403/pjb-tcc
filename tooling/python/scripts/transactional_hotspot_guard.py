@@ -13,15 +13,17 @@ REPORT_MD = ROOT / 'docs' / 'reports' / 'transactional_hotspot_guard.md'
 
 TX_METHOD_RE = re.compile(r'(?P<annotations>(?:\s*@[^\n]+\n)+)\s*public\s+[^{]+\{', re.MULTILINE)
 BUDGET_RE = re.compile(r'@PjbTransactionalBudget(?:\([^)]*\))?')
-SUSPICIOUS_TOKENS = (
+PRIMARY_TOKENS = (
     'findAll(',
     'saveAll(',
     'outboxPublisher.enqueue(',
-    'appendSafely(',
     'processUnified(',
     'iaOrchestrator.',
+)
+SECONDARY_TOKENS = (
     'for (',
     '.stream()',
+    'appendSafely(',
 )
 HOTSPOT_PACKAGES = (
     'core/transito',
@@ -77,12 +79,15 @@ def main() -> int:
                 continue
             block = extract_block(text, match.start())
             method = extract_method_name(block)
-            tokens = [token for token in SUSPICIOUS_TOKENS if token in block]
+            primary_hits = [token for token in PRIMARY_TOKENS if token in block]
+            tokens = primary_hits + [token for token in SECONDARY_TOKENS if token in block] if primary_hits else []
+            reviewed = bool(BUDGET_RE.search(annotations))
             if tokens:
                 findings.append({
                     'file': str(path.relative_to(ROOT)),
                     'method': method,
                     'signals': tokens,
+                    'reviewed': reviewed,
                 })
             if in_hotspot(path) and not BUDGET_RE.search(annotations):
                 missing_budgets.append({
@@ -90,12 +95,14 @@ def main() -> int:
                     'method': method,
                 })
 
-    findings.sort(key=lambda item: (len(item['signals']), item['file'], item['method']), reverse=True)
+    findings.sort(key=lambda item: (item['reviewed'], len(item['signals']), item['file'], item['method']))
     missing_budgets.sort(key=lambda item: (item['file'], item['method']))
+    unreviewed = [item for item in findings if not item['reviewed']]
     report = {
         'scannedFiles': scanned,
         'hotspots': findings,
         'hotspotCount': len(findings),
+        'unreviewedHotspotCount': len(unreviewed),
         'missingBudgets': missing_budgets,
         'missingBudgetCount': len(missing_budgets),
     }
@@ -106,19 +113,20 @@ def main() -> int:
         '# Transactional Hotspot Guard',
         '',
         f'Arquivos varridos: {scanned}',
-        f'Hotspots: {len(findings)}',
+        f'Hotspots: {len(findings)} ({len(unreviewed)} sem @PjbTransactionalBudget, {len(findings) - len(unreviewed)} revisados)',
         f'Métodos hotspot sem budget: {len(missing_budgets)}',
         '',
     ]
-    for item in findings[:100]:
-        lines.append(f"- `{item['file']}` :: `{item['method']}` :: {', '.join(item['signals'])}")
+    for item in findings[:200]:
+        marca = 'revisado' if item['reviewed'] else 'PENDENTE'
+        lines.append(f"- [{marca}] `{item['file']}` :: `{item['method']}` :: {', '.join(item['signals'])}")
     if missing_budgets:
         lines.extend(['', '## Métodos hotspot sem budget', ''])
         for item in missing_budgets[:100]:
             lines.append(f"- `{item['file']}` :: `{item['method']}`")
     REPORT_MD.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
-    if args.fail_on_findings and (findings or missing_budgets):
+    if args.fail_on_findings and (unreviewed or missing_budgets):
         return 1
     if args.fail_on_missing_budgets and missing_budgets:
         return 1

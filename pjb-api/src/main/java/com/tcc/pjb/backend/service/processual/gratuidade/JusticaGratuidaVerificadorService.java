@@ -1,8 +1,10 @@
 package com.tcc.pjb.backend.service.processual.gratuidade;
 
+import com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +30,12 @@ public class JusticaGratuidaVerificadorService {
     ) {}
 
     private static final BigDecimal TETO_PRESUNCAO_SM = new BigDecimal("5");
-    private static final BigDecimal SALARIO_MINIMO_2026 = new BigDecimal("1518");
+
+    private final SalarioMinimoNacionalService salarioMinimoNacionalService;
+
+    public JusticaGratuidaVerificadorService(SalarioMinimoNacionalService salarioMinimoNacionalService) {
+        this.salarioMinimoNacionalService = Objects.requireNonNull(salarioMinimoNacionalService);
+    }
 
     public GratuidadeSnapshot avaliar(GratuidadeInput input) {
         List<String> alertas = new ArrayList<>();
@@ -36,7 +43,7 @@ public class JusticaGratuidaVerificadorService {
         if (input.representadoPorDefensoria() || input.beneficioSocial()) {
             apta = true;
         } else if (input.declaracaoHipossuficiencia()) {
-            BigDecimal teto = SALARIO_MINIMO_2026.multiply(TETO_PRESUNCAO_SM);
+            BigDecimal teto = salarioMinimoNacionalService.valorVigente().multiply(TETO_PRESUNCAO_SM);
             if (input.rendaMensalDeclarada() != null
                     && input.rendaMensalDeclarada().compareTo(teto) <= 0) {
                 apta = true;

@@ -40,9 +40,10 @@ public class ProcessoCommandSurfaceFacadeService {
         Objects.requireNonNull(request, "request");
 
         Usuario advogado = currentUserService.getRequired();
-        List<Attachment> anexosSeguros = smartFileSplitter.processarArquivos(normalizeFiles(arquivos));
+        List<Attachment> anexosSeguros = smartFileSplitter.processarArquivos(
+                normalizeFiles(arquivos), request.getAnexosDeclarados());
         Processo processo = processoMapper.toEntity(request);
-        Processo salvo = ajuizarProcessoCommand.execute(processo, advogado, anexosSeguros, request.isJuizo100Digital());
+        Processo salvo = ajuizarProcessoCommand.execute(processo, advogado, request, anexosSeguros, request.isJuizo100Digital());
         return processoResponseAssemblerService.toResponse(salvo, request);
     }
 

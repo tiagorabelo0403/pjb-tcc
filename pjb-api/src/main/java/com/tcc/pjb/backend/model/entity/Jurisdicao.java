@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.model.entity;
 import com.tcc.pjb.backend.core.modularity.PjbModuleId;
 import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
 import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 
 import java.util.Collections;
 import java.math.BigDecimal;
@@ -30,7 +31,7 @@ import com.tcc.pjb.backend.model.entity.enums.jurisdicao.TipoJurisdicao;
                 @Index(name = "idx_jurisdicao_tipo", columnList = "tipo"),
                 @Index(name = "idx_jurisdicao_esfera", columnList = "esfera"),
                 @Index(name = "idx_jurisdicao_materia", columnList = "materia"),
-                @Index(name = "idx_jurisdicao_comarca", columnList = "comarca,estado"),
+                @Index(name = "idx_jurisdicao_comarca", columnList = "comarca_id"),
                 @Index(name = "idx_jurisdicao_competencia",
                         columnList = "competencia_material,competencia_territorial")
         },
@@ -107,13 +108,14 @@ public class Jurisdicao {
     @Column(length = 100)
     private String comarca;
 
-    @Size(max = 100)
-    @Column(name = "municipio_sede", length = 100)
-    private String municipioSede;
+    @Size(min = 2, max = 2)
+    @Pattern(regexp = "^[A-Z]{2}$")
+    @Column(length = 2)
+    private String estado;
 
-    @Size(max = 120)
-    @Column(length = 120)
-    private String foro;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
 
     @Size(max = 120)
     @Column(name = "secao_judiciaria", length = 120)
@@ -126,11 +128,6 @@ public class Jurisdicao {
     @Size(max = 120)
     @Column(length = 120)
     private String circunscricao;
-
-    @Size(min = 2, max = 2)
-    @Pattern(regexp = "^[A-Z]{2}$")
-    @Column(length = 2)
-    private String estado;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 15)
@@ -177,11 +174,11 @@ public class Jurisdicao {
 
     
     public String getCidade() {
-        return firstNonBlank(municipioSede, comarca);
+        return comarcaEntidade != null ? comarcaEntidade.getNome() : comarca;
     }
 
     public String getUf() {
-        return estado;
+        return comarcaEntidade != null ? comarcaEntidade.getUf() : estado;
     }
 
     public void setUf(String uf) {
@@ -189,11 +186,38 @@ public class Jurisdicao {
     }
 
     public String getMunicipioOuComarca() {
-        return firstNonBlank(municipioSede, comarca);
+        return getCidade();
+    }
+
+    public String getComarca() {
+        return comarca;
+    }
+
+    public void setComarca(String comarca) {
+        this.comarca = comarca;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
     public String getForo() {
-        return firstNonBlank(foro, nome);
+        if (comarcaEntidade != null && comarcaEntidade.getNomeForo() != null) {
+            return comarcaEntidade.getNomeForo();
+        }
+        return nome;
+    }
+
+    public Comarca getComarcaEntidade() {
+        return comarcaEntidade;
+    }
+
+    public void setComarcaEntidade(Comarca comarcaEntidade) {
+        this.comarcaEntidade = comarcaEntidade;
     }
 
     public String getSecaoOuSubsecao() {
@@ -256,11 +280,9 @@ public class Jurisdicao {
         this.sigla = normalizeUpperTrim(this.sigla);
         this.estado = normalizeUpperTrim(this.estado);
 
-        
+
         this.nome = normalizeSpaces(this.nome);
         this.comarca = normalizeSpaces(this.comarca);
-        this.municipioSede = normalizeSpaces(this.municipioSede);
-        this.foro = normalizeSpaces(this.foro);
         this.secaoJudiciaria = normalizeSpaces(this.secaoJudiciaria);
         this.subsecaoJudiciaria = normalizeSpaces(this.subsecaoJudiciaria);
         this.circunscricao = normalizeSpaces(this.circunscricao);
@@ -340,9 +362,8 @@ public class Jurisdicao {
 
     
     public String getComarcaUf() {
-        String c = normalizeSpaces(this.comarca);
-        String uf = normalizeUpperTrim(this.estado);
-
+        String c = getCidade();
+        String uf = getUf();
         if (c == null && uf == null) return null;
         if (c == null) return uf;
         if (uf == null) return c;
@@ -357,7 +378,7 @@ public class Jurisdicao {
                 .append(grau != null ? grau.name() : "").append('|')
                 .append(esfera != null ? esfera.name() : "").append('|')
                 .append(materia != null ? materia.name() : "").append('|')
-                .append(nullSafe(estado));
+                .append(nullSafe(getUf()));
         return sb.toString();
     }
 
@@ -432,9 +453,9 @@ public class Jurisdicao {
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("codigo", codigo);
         out.put("sigla", sigla);
-        out.put("uf", estado);
+        out.put("uf", getUf());
         out.put("cidade", getCidade());
-        out.put("comarca", comarca);
+        out.put("comarca", getCidade());
         out.put("foro", getForo());
         out.put("secaoJudiciaria", secaoJudiciaria);
         out.put("subsecaoJudiciaria", subsecaoJudiciaria);
@@ -693,26 +714,6 @@ public class Jurisdicao {
         this.competenciaTerritorial = competenciaTerritorial;
     }
 
-    public String getComarca() {
-        return comarca;
-    }
-
-    public void setComarca(String comarca) {
-        this.comarca = comarca;
-    }
-
-    public String getMunicipioSede() {
-        return municipioSede;
-    }
-
-    public void setMunicipioSede(String municipioSede) {
-        this.municipioSede = municipioSede;
-    }
-
-    public void setForo(String foro) {
-        this.foro = foro;
-    }
-
     public String getSecaoJudiciaria() {
         return secaoJudiciaria;
     }
@@ -735,14 +736,6 @@ public class Jurisdicao {
 
     public void setCircunscricao(String circunscricao) {
         this.circunscricao = circunscricao;
-    }
-
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
     }
 
     public RegiaoBrasil getRegiao() {

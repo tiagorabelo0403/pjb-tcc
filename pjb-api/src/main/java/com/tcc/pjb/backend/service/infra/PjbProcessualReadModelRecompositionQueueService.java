@@ -12,6 +12,7 @@ import java.util.Objects;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class PjbProcessualReadModelRecompositionQueueService {
@@ -61,6 +62,7 @@ public class PjbProcessualReadModelRecompositionQueueService {
         return toView(repository.save(job));
     }
 
+    @PjbTransactionalBudget(operation = "infra.read-model-recomposition-queue.claim-batch", maxMillis = 5000)
     @Transactional
     public List<ProcessualReadModelRecompositionJob> claimBatch() {
         if (!properties.getProcessualReadModels().isPersistenceEnabled()) {

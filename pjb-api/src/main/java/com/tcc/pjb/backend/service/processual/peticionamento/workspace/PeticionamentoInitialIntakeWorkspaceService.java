@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.service.processual.peticionamento.workspace;
 import com.tcc.pjb.backend.ai.juridica.v3.core.AjuizamentoIntent;
 import com.tcc.pjb.backend.ai.juridica.v3.core.AjuizamentoIntentEngine;
 import com.tcc.pjb.backend.core.procedural.ProceduralRoutingReport;
+import com.tcc.pjb.backend.model.dto.processual.EnderecosProcessuaisRequest;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.session.PeticionamentoSessaoRequest;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.session.PeticionamentoVisualIdentityRequest;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -88,7 +89,8 @@ public class PeticionamentoInitialIntakeWorkspaceService {
                 resolvedUfFato,
                 resolvedCidadeProtocolo,
                 resolvedUfProtocolo,
-                resolvedNatureza
+                resolvedNatureza,
+                EnderecosProcessuaisRequest.vazio()
         );
 
         ArrayList<String> automations = new ArrayList<>();

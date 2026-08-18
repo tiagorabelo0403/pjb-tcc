@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.model.dto.dashboard;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -199,7 +200,9 @@ public sealed interface PerfilDashboardPayload permits
             CalendarInstitutionalFocusResponse institutionalCalendarFocus,
             CalendarInstitutionalBridgeResponse institutionalCalendarBridge
     ) implements PerfilDashboardPayload {
-        public record NomeacaoResumo(Long nomeacaoId, String processoNumero, String assunto, String prazoLaudo, String status) {
+        public record NomeacaoResumo(Long nomeacaoId, String processoNumero, String assunto,
+                @Schema(description = "Prazo para entrega do laudo pericial", format = "date",
+                        example = "2026-08-31") String prazoLaudo, String status) {
         }
     }
 

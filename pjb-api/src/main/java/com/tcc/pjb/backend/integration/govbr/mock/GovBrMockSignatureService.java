@@ -4,9 +4,11 @@ import com.tcc.pjb.backend.core.util.DeterministicUuid;
 import com.tcc.pjb.backend.model.dto.GovBrFlowStartResponse;
 import java.util.Objects;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
+@Profile({"dev", "test", "demo"})
 @ConditionalOnProperty(prefix = "pjb.integrations.govbr", name = "mock-enabled", havingValue = "true", matchIfMissing = false)
 public class GovBrMockSignatureService {
 

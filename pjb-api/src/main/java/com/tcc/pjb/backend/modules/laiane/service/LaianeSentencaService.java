@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.modules.laiane.service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,6 +24,7 @@ import com.tcc.pjb.backend.ai.core.pipeline.MinimalQuestionPlanner;
 import com.tcc.pjb.backend.ai.provenance.EvidenceItem;
 import com.tcc.pjb.backend.ai.provenance.EvidenceItem.EvidenceType;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.core.security.crypto.quantum.QuantumDecisionSignerService;
 import com.tcc.pjb.backend.model.dto.intelligence.JudgeDecisionConsistencyResponse;
@@ -70,6 +72,7 @@ public class LaianeSentencaService {
     private final JudgeDecisionConsistencyService judgeDecisionConsistencyService;
     private final StructuredProcessSummaryService structuredProcessSummaryService;
     private final QualifiedThemeProactiveService qualifiedThemeProactiveService;
+    private final PjbTimeService timeService;
     private final EvidenceContradictionAnalyzer contradictionAnalyzer = new EvidenceContradictionAnalyzer();
 
     public LaianeSentencaService(ProcessoRepository processoRepository,
@@ -86,7 +89,8 @@ public class LaianeSentencaService {
                                  LaianeJudicialDecisionAdvisoryService judicialDecisionAdvisoryService,
                                  JudgeDecisionConsistencyService judgeDecisionConsistencyService,
                                  StructuredProcessSummaryService structuredProcessSummaryService,
-                                 QualifiedThemeProactiveService qualifiedThemeProactiveService) {
+                                 QualifiedThemeProactiveService qualifiedThemeProactiveService,
+                                 PjbTimeService timeService) {
         this.processoRepository = processoRepository;
         this.repository = repository;
         this.currentUserService = currentUserService;
@@ -102,6 +106,7 @@ public class LaianeSentencaService {
         this.judgeDecisionConsistencyService = judgeDecisionConsistencyService;
         this.structuredProcessSummaryService = structuredProcessSummaryService;
         this.qualifiedThemeProactiveService = qualifiedThemeProactiveService;
+        this.timeService = timeService;
     }
 
     @Transactional
@@ -237,7 +242,7 @@ public class LaianeSentencaService {
 
         var pqcEvidence = quantumDecisionSignerService.signAndAttachEvidenceOrThrowIfEnabled(draft).orElse(null);
         draft.setStatus(LaianeSentencaStatus.PUBLISHED);
-        draft.setPublishedAt(LocalDateTime.now());
+        draft.setPublishedAt(LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone()));
         LaianeSentencaDraft saved = repository.save(draft);
         evictLatestCache(saved.getProcesso() != null ? saved.getProcesso().getId() : null);
         return toResponse(saved, null, null, null, null, null, null, null, null, pqcEvidence);
@@ -444,7 +449,7 @@ public class LaianeSentencaService {
     }
 
     private String guessOrgao(Processo processo) {
-        String comarca = processo.getJurisdicao() != null ? processo.getJurisdicao().getComarca() : null;
+        String comarca = processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null;
         if (comarca != null && !comarca.isBlank()) {
             return "Vara da Comarca de " + comarca.trim();
         }
@@ -526,11 +531,11 @@ public class LaianeSentencaService {
                 .draftId(draft.getId())
                 .uuid(draft.getUuid() != null ? draft.getUuid().toString() : null)
                 .processoId(draft.getProcesso() != null ? draft.getProcesso().getId() : null)
-                .status(draft.getStatus() != null ? draft.getStatus().name() : null)
+                .status(draft.getStatus())
                 .inputHash(draft.getInputHash())
                 .draftMarkdown(draft.getDraftMarkdown())
-                .createdAt(draft.getCreatedAt())
-                .publishedAt(draft.getPublishedAt())
+                .createdAt(toOffset(draft.getCreatedAt()))
+                .publishedAt(toOffset(draft.getPublishedAt()))
                 .resumoExecutivo(resolvedResumoExecutivo)
                 .questoesASolver(resolvedQuestoes)
                 .contradicoes(resolvedContradicoes)
@@ -832,5 +837,7 @@ public class LaianeSentencaService {
                 .trim();
     }
 
-
+    private OffsetDateTime toOffset(LocalDateTime ldt) {
+        return ldt == null ? null : ldt.atZone(timeService.legalZone()).toOffsetDateTime();
+    }
 }

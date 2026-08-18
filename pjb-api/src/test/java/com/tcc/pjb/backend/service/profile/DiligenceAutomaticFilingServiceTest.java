@@ -40,6 +40,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.QualifiedSignatureMetadata;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.SovereignValidationResult;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -61,7 +66,9 @@ class DiligenceAutomaticFilingServiceTest {
         ProcessEventStore processEventStore = Mockito.mock(ProcessEventStore.class);
         DiligenceAutomaticFilingPdfService filingPdfService = Mockito.mock(DiligenceAutomaticFilingPdfService.class);
         QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService = Mockito.mock(QualifiedDocumentSignatureEnvelopeService.class);
-        when(qualifiedDocumentSignatureEnvelopeService.signFreeContent(any(), any(), any(), any(), any(), any(), Mockito.anyBoolean(), any())).thenReturn(new QualifiedDocumentSignatureEnvelopeService.SignedContent("JUNTADA_ASSINADA", "aa".repeat(32), java.util.Map.of("rubrica", "PJB-RUB-JUNT"), java.util.Map.of("status", "VALIDO")));
+        SovereignValidationResult sovereignResult = new SovereignValidationResult("VALIDO", null, null, false, false, false, false, false, null, null, null, null, null, null, null, List.of());
+        QualifiedSignatureMetadata qsm = new QualifiedSignatureMetadata("ENV-JUNT", null, null, null, true, "PJB-RUB-JUNT", LocalDate.of(2026, 3, 11), LocalTime.of(15, 0), "QUIXADÁ", "Oficial Operacional", "OFICIAL_JUSTICA", null, null, null, null, null, null, null, null, true, null, null, null, sovereignResult);
+        when(qualifiedDocumentSignatureEnvelopeService.signFreeContent(any(), any(), any(), any(), any(), any(), Mockito.anyBoolean(), any())).thenReturn(new SignedDocumentEnvelope("JUNTADA_TITULO", "JUNTADA_ASSINADA", "aa".repeat(32), true, qsm, sovereignResult));
         DiligenceAutomaticFilingService service = new DiligenceAutomaticFilingService(
                 currentUserService,
                 authorizationService,
@@ -143,8 +150,8 @@ class DiligenceAutomaticFilingServiceTest {
         assertThat(response.bundleSignatureHmacSha256()).hasSize(64);
         assertThat(response.documentosReferenciados()).isEqualTo(1);
         assertThat(response.evidenceIntegrityOk()).isTrue();
-        assertThat(response.assinaturaQualificada()).containsKey("rubrica");
-        assertThat(response.validacaoSoberana()).containsEntry("status", "VALIDO");
+        assertThat(response.assinaturaQualificada()).isNotNull();
+        assertThat(response.validacaoSoberana().status()).isEqualTo("VALIDO");
     }
 
     private static Usuario usuario() {

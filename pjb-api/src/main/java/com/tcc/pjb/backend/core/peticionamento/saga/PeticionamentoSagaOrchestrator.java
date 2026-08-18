@@ -22,6 +22,7 @@ import com.tcc.pjb.backend.service.advogado.LaianePeticaoInicialDraftService;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,14 +33,15 @@ public class PeticionamentoSagaOrchestrator {
     private final LaianePeticaoInicialDraftSessionRepository repository;
     private final PjbZeroErrorTriageService triageService;
 
+    @Inject
     public PeticionamentoSagaOrchestrator(LaianePeticaoInicialDraftService draftService,
                                           LaianePeticaoInicialDraftSessionRepository repository) {
         this(draftService, repository, new PjbZeroErrorTriageService());
     }
 
-    public PeticionamentoSagaOrchestrator(LaianePeticaoInicialDraftService draftService,
-                                          LaianePeticaoInicialDraftSessionRepository repository,
-                                          PjbZeroErrorTriageService triageService) {
+    PeticionamentoSagaOrchestrator(LaianePeticaoInicialDraftService draftService,
+                                   LaianePeticaoInicialDraftSessionRepository repository,
+                                   PjbZeroErrorTriageService triageService) {
         this.draftService = Objects.requireNonNull(draftService);
         this.repository = Objects.requireNonNull(repository);
         this.triageService = Objects.requireNonNull(triageService);

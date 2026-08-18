@@ -271,7 +271,7 @@ public class NationalPrazoEngine {
         }
         String token = tribunalCodigo.trim().toUpperCase();
         String chave = token + ":" + ano;
-        feriadosCache.computeIfAbsent(chave, k -> carregarFeriadosAno(token, ano)).add(feriado);
+        feriadosCache.computeIfAbsent(chave, k -> construirFeriadosAno(token, ano)).add(feriado);
         compactarCacheFeriados(chave);
     }
 
@@ -502,30 +502,32 @@ public class NationalPrazoEngine {
     private Set<LocalDate> carregarFeriadosAno(String tribunalCodigo, int ano) {
         String codigo = normalizarTribunal(tribunalCodigo);
         String chave = codigo + ":" + ano;
-        Set<LocalDate> datas = feriadosCache.computeIfAbsent(chave, k -> {
-            ContextoCalendario contexto = resolverContexto(codigo, null, null);
-            List<CalendarioForenseEntry> entries = calendarioForenseRepository.findApplicableBetween(
-                    contexto.uf(),
-                    contexto.comarca(),
-                    LocalDate.of(ano, 1, 1),
-                    LocalDate.of(ano, 12, 31)
-            );
-            Set<LocalDate> feriados = new LinkedHashSet<>();
-            for (CalendarioForenseEntry entry : entries) {
-                if (entry != null && entry.getDia() != null) {
-                    feriados.add(entry.getDia());
-                }
-            }
-            if (feriados.isEmpty()) {
-                feriados.addAll(feriadosNacionais(ano));
-            }
-            if (contexto.feriadosAdicionais() != null && !contexto.feriadosAdicionais().isEmpty()) {
-                feriados.addAll(contexto.feriadosAdicionais());
-            }
-            return feriados;
-        });
+        Set<LocalDate> datas = feriadosCache.computeIfAbsent(chave, k -> construirFeriadosAno(codigo, ano));
         compactarCacheFeriados(chave);
         return datas;
+    }
+
+    private Set<LocalDate> construirFeriadosAno(String tribunalCodigo, int ano) {
+        ContextoCalendario contexto = resolverContexto(tribunalCodigo, null, null);
+        List<CalendarioForenseEntry> entries = calendarioForenseRepository.findApplicableBetween(
+                contexto.uf(),
+                contexto.comarca(),
+                LocalDate.of(ano, 1, 1),
+                LocalDate.of(ano, 12, 31)
+        );
+        Set<LocalDate> feriados = ConcurrentHashMap.newKeySet();
+        for (CalendarioForenseEntry entry : entries) {
+            if (entry != null && entry.getDia() != null) {
+                feriados.add(entry.getDia());
+            }
+        }
+        if (feriados.isEmpty()) {
+            feriados.addAll(feriadosNacionais(ano));
+        }
+        if (contexto.feriadosAdicionais() != null && !contexto.feriadosAdicionais().isEmpty()) {
+            feriados.addAll(contexto.feriadosAdicionais());
+        }
+        return feriados;
     }
 
     private void compactarCacheFeriados(String protectedKey) {
@@ -624,8 +626,8 @@ public class NationalPrazoEngine {
         String codigo = normalizarTribunal(tribunalCodigo);
         ConfiguracaoPrazo configuracao = localizarConfiguracao(codigo, ramo, grau);
         Jurisdicao jurisdicao = localizarJurisdicao(codigo);
-        String uf = jurisdicao != null ? normalizarUf(jurisdicao.getEstado()) : null;
-        String comarca = jurisdicao != null ? normalizarTexto(jurisdicao.getComarca()) : null;
+        String uf = jurisdicao != null ? normalizarUf(jurisdicao.getUf()) : null;
+        String comarca = jurisdicao != null ? normalizarTexto(jurisdicao.getCidade()) : null;
         boolean contarSabado = configuracao != null && configuracao.contarSabado();
         boolean integralmenteCorrido = configuracao != null && configuracao.integralmenteCorrido();
         Set<LocalDate> feriadosAdicionais = configuracao != null && configuracao.feriadosAdicionais() != null

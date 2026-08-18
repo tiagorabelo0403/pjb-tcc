@@ -1,0 +1,37 @@
+<svg viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Painel do Desembargador — sessão de julgamento colegiada</title>
+  <desc id="desc">Mockup do painel do desembargador, com o placar de votação em tempo real da câmara/turma, via DesembargadorPlenarioController e RelatorPlenarioResponse.</desc>
+  <defs><filter id="s15" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.35"/></filter></defs>
+
+  <rect x="20" y="20" width="1240" height="600" rx="14" fill="#12172a" stroke="#2a3350" filter="url(#s15)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/><circle cx="66" cy="48" r="6" fill="#e0b84f"/><circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">👨‍⚖️ PJB — Sessão de Julgamento Colegiada</text>
+  <text x="1195" y="53" text-anchor="end" font-size="12.5" fill="#c9d3ea">Des. Paulo Ribeiro · Relator</text>
+
+  <g>
+    <rect x="50" y="96" width="1140" height="130" rx="14" fill="#171d34"/>
+    <text x="76" y="128" font-size="14" font-weight="700" fill="#ffffff">📋 Processo em julgamento — 0008300-12.2026.8.06.0001</text>
+    <text x="76" y="154" font-size="12" fill="#dfe4ee">Apelação cível — reforma de sentença de improcedência</text>
+    <text x="76" y="178" font-size="11" fill="#a9b3cc">Relator: Des. Paulo Ribeiro · Sessão: 3ª Câmara Cível, 30/07/2026</text>
+    <text x="76" y="198" font-size="11" fill="#a9b3cc">Voto do relator já registrado; revisor e vogal ainda votando.</text>
+  </g>
+
+  <g>
+    <rect x="50" y="246" width="1140" height="240" rx="14" fill="#161c30"/>
+    <text x="76" y="278" font-size="14" font-weight="700" fill="#ffffff">🗳️ Placar da câmara — em tempo real</text>
+
+    <rect x="76" y="296" width="1074" height="56" rx="10" fill="#16321f"/>
+    <text x="92" y="320" font-size="12.5" font-weight="600" fill="#ffffff">Des. Paulo Ribeiro (relator)</text>
+    <text x="92" y="340" font-size="11" fill="#bfe8cc">Voto: dá provimento ao recurso</text>
+
+    <rect x="76" y="360" width="1074" height="56" rx="10" fill="#3a3320"/>
+    <text x="92" y="384" font-size="12.5" font-weight="600" fill="#ffffff">Des. Camila Duarte (revisora)</text>
+    <text x="92" y="404" font-size="11" fill="#e0c98a">Voto: aguardando registro</text>
+
+    <text x="76" y="454" font-size="11" fill="#5d6785">O sistema acompanha o placar da turma/câmara em tempo real — não é preciso perguntar aos colegas como cada um votou.</text>
+  </g>
+
+  <text x="50" y="520" font-size="10.5" fill="#5d6785">Dados fictícios — campos reais de RelatorPlenarioResponse e RelatorPlenarioVoteDto (DesembargadorPlenarioController).</text>
+</svg>

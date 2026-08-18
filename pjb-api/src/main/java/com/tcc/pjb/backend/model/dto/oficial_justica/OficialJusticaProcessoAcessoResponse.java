@@ -3,6 +3,9 @@ package com.tcc.pjb.backend.model.dto.oficial_justica;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record OficialJusticaProcessoAcessoResponse(
         Instant generatedAt,
@@ -10,6 +13,9 @@ public record OficialJusticaProcessoAcessoResponse(
         String processoNumero,
         boolean acessoPermitido,
         String fundamentoAcesso,
+        @Schema(description = "Snapshot do processo judicial — estrutura varia por sistema de origem (PJe/eProc/eSAJ)", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> processo,
         List<VinculoRow> vinculos,
         List<PendenciaRelacionada> pendenciasRelacionadas,
@@ -43,3 +49,4 @@ public record OficialJusticaProcessoAcessoResponse(
     ) {
     }
 }
+

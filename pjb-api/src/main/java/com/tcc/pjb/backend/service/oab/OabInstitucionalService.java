@@ -17,6 +17,7 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.EventoInstitucionalRepository;
 import com.tcc.pjb.backend.model.repository.ProvidenciaInstitucionalRepository;
 import java.util.Locale;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class OabInstitucionalService {
@@ -67,6 +68,7 @@ public class OabInstitucionalService {
                 .stream().map(e -> mapEvento(e, safeProvidencias(e))).toList();
     }
 
+    @PjbTransactionalBudget(operation = "oab.institucional.listar-seccional", maxMillis = 3000)
     @Transactional
     public List<OabEventoResponse> listarSeccional(
             List<StatusEventoInstitucional> statusFilter,

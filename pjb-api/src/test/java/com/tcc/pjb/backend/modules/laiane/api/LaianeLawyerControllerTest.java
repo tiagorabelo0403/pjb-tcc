@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.tcc.pjb.backend.configs.EquipeSwitchInterceptor;
 import com.tcc.pjb.backend.configs.SecurityConfig;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.kernel.recursal.governance.RecursalFactsIngressProperties;
@@ -19,6 +20,7 @@ import com.tcc.pjb.backend.model.repository.MembroEquipeRepository;
 import com.tcc.pjb.backend.modules.advocacia.office.service.OfficePersonalScopeService;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.lawyer.LaianeLawyerAttachmentValidationRequest;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.lawyer.LaianeLawyerAttachmentValidationResponse;
+import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.modules.laiane.service.LaianeLawyerService;
 import com.tcc.pjb.backend.modules.laiane.service.LaianePeticaoAssistService;
 import com.tcc.pjb.backend.modules.support.WebMvcTestSecurityConfig;
@@ -38,7 +40,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(
         controllers = LaianeLawyerController.class,
-        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+                classes = {SecurityConfig.class, EquipeSwitchInterceptor.class}))
 @Import(WebMvcTestSecurityConfig.class)
 @TestPropertySource(properties = "spring.main.web-application-type=servlet")
 @WithMockUser(authorities = "ROLE_ADVOGADO")
@@ -85,6 +88,9 @@ class LaianeLawyerControllerTest {
 
     @MockitoBean
     private RecursalFactsIngressProperties recursalFactsIngressProperties;
+
+    @MockitoBean
+    private PjbTimeService timeService;
 
     @Test
     void validateAttachments_shouldReturn200AndCallService() throws Exception {

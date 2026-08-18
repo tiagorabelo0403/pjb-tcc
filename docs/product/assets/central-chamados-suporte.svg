@@ -1,0 +1,125 @@
+<svg viewBox="0 0 1280 900" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Central de Chamados — qualquer perfil abre um chamado, o suporte técnico atende, e a aprovação de viagem libera o geo-bloqueio automaticamente</title>
+  <desc id="desc">Mockup da tela de abertura de chamado (categoria, assunto, descrição, e campos condicionais de viagem quando a categoria é exceção de viagem da magistratura), mais o ciclo de vida real do chamado — ABERTO, EM_ATENDIMENTO, RESOLVIDO, FECHADO ou CANCELADO — e como a resolução aprovada de um chamado de viagem publica um evento que libera automaticamente o geo-bloqueio da magistratura naquela janela de datas. Baseado em SupportTicketController, SupportTicketService, AbrirChamadoRequest, SupportTicketCategoria, SupportTicketStatus e SupportTicketResolvedEvent.</desc>
+
+  <defs>
+    <filter id="sombraC" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+    <marker id="setaC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5d6785"/>
+    </marker>
+  </defs>
+
+  <rect x="20" y="20" width="1240" height="860" rx="14" fill="#12172a" stroke="#2a3350" stroke-width="1" filter="url(#sombraC)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/>
+  <circle cx="66" cy="48" r="6" fill="#e0b84f"/>
+  <circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">🎫 PJB — Central de Chamados</text>
+  <text x="1195" y="53" text-anchor="end" font-size="12.5" fill="#c9d3ea">Qualquer perfil autenticado pode abrir</text>
+
+  <text x="50" y="106" font-size="13" fill="#a9b3cc">Não é só um canal pra magistratura: cidadão, advogado, servidor — qualquer papel cadastrado abre chamado direto do próprio painel.</text>
+
+  <!-- form de abertura -->
+  <g>
+    <rect x="50" y="126" width="560" height="374" rx="14" fill="#171d34"/>
+    <text x="76" y="158" font-size="14" font-weight="700" fill="#ffffff">📩 Abrir novo chamado</text>
+
+    <text x="76" y="190" font-size="11" fill="#7d879e">Categoria</text>
+    <rect x="76" y="200" width="508" height="34" rx="8" fill="#0f1830" stroke="#7a2e3d"/>
+    <text x="92" y="222" font-size="12.5" fill="#ffffff">EXCECAO_VIAGEM_CARREIRA_JURIDICA</text>
+
+    <text x="76" y="254" font-size="11" fill="#7d879e">Assunto</text>
+    <rect x="76" y="264" width="508" height="34" rx="8" fill="#0f1830"/>
+    <text x="92" y="286" font-size="12" fill="#dfe4ee">Viagem a trabalho — comarca de MG, 18 a 25/08</text>
+
+    <text x="76" y="318" font-size="11" fill="#7d879e">Descrição</text>
+    <rect x="76" y="328" width="508" height="56" rx="8" fill="#0f1830"/>
+    <text x="92" y="350" font-size="11.5" fill="#dfe4ee">"Participação em banca de doutorado na UFMG,</text>
+    <text x="92" y="368" font-size="11.5" fill="#dfe4ee">preciso acessar o sistema de lá nesse período."</text>
+
+    <rect x="76" y="398" width="508" height="86" rx="10" fill="#3a1f28"/>
+    <text x="92" y="420" font-size="11" font-weight="700" fill="#f4a3a3">Campos exigidos só para EXCECAO_VIAGEM_CARREIRA_JURIDICA</text>
+    <text x="92" y="442" font-size="11" fill="#f0d5da">UF/país de destino: MG</text>
+    <text x="92" y="460" font-size="11" fill="#f0d5da">Início: 18/08/2026 · Fim: 25/08/2026</text>
+    <text x="92" y="476" font-size="10" fill="#c9a3ab">viagemUfOuPaisDestino · viagemDataInicio · viagemDataFim</text>
+  </g>
+
+  <!-- ciclo de vida -->
+  <g>
+    <rect x="630" y="126" width="560" height="374" rx="14" fill="#161c30"/>
+    <text x="656" y="158" font-size="14" font-weight="700" fill="#ffffff">🔄 Ciclo de vida real do chamado</text>
+
+    <rect x="656" y="180" width="140" height="60" rx="10" fill="#2c3e67"/>
+    <text x="726" y="206" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">ABERTO</text>
+    <text x="726" y="224" text-anchor="middle" font-size="9" fill="#c9d3ea">quem abriu</text>
+
+    <path d="M 796 210 L 838 210" stroke="#5d6785" stroke-width="2" marker-end="url(#setaC)"/>
+
+    <rect x="846" y="180" width="150" height="60" rx="10" fill="#2c3e67"/>
+    <text x="921" y="203" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">EM_ATENDIMENTO</text>
+    <text x="921" y="222" text-anchor="middle" font-size="9" fill="#c9d3ea">ROLE_SUPORTE_TECNICO assume</text>
+
+    <path d="M 921 240 L 921 278" stroke="#5d6785" stroke-width="2" marker-end="url(#setaC)"/>
+
+    <rect x="846" y="286" width="150" height="60" rx="10" fill="#2f5d62"/>
+    <text x="921" y="309" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">RESOLVIDO</text>
+    <text x="921" y="328" text-anchor="middle" font-size="9" fill="#cfe6e5">resposta + aprovado: true/false</text>
+
+    <path d="M 846 210 L 700 278" stroke="#5d6785" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#setaC)"/>
+    <rect x="656" y="286" width="150" height="60" rx="10" fill="#3a1f28"/>
+    <text x="731" y="309" text-anchor="middle" font-size="11" font-weight="700" fill="#f4a3a3">CANCELADO</text>
+    <text x="731" y="328" text-anchor="middle" font-size="9" fill="#f0d5da">só quem abriu, se ainda ABERTO</text>
+
+    <path d="M 921 346 L 921 384" stroke="#5d6785" stroke-width="2" marker-end="url(#setaC)"/>
+    <rect x="846" y="392" width="150" height="52" rx="10" fill="#555a63"/>
+    <text x="921" y="422" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">FECHADO</text>
+
+    <text x="656" y="470" font-size="10.5" fill="#8a8f98">Cada transição notifica quem abriu, com link direto</text>
+    <text x="656" y="486" font-size="10.5" fill="#8a8f98">de volta pro chamado (/suporte/chamados/{id}).</text>
+  </g>
+
+  <!-- ligacao com geo-bloqueio -->
+  <g>
+    <rect x="50" y="522" width="1140" height="150" rx="14" fill="#171d34"/>
+    <text x="76" y="554" font-size="14" font-weight="700" fill="#ffffff">🔗 O que acontece de verdade quando um chamado de viagem é aprovado</text>
+    <text x="76" y="582" font-size="12" fill="#dfe4ee">Ao resolver um chamado com <tspan font-weight="700" fill="#ffffff">categoria = EXCECAO_VIAGEM_CARREIRA_JURIDICA</tspan> e <tspan font-weight="700" fill="#ffffff">aprovado = true</tspan>, o sistema publica um</text>
+    <text x="76" y="602" font-size="12" fill="#dfe4ee"><tspan font-weight="700" fill="#ffffff">SupportTicketResolvedEvent</tspan> — não é o suporte técnico mexendo manualmente numa lista de exceções. Esse evento é o único</text>
+    <text x="76" y="622" font-size="12" fill="#dfe4ee">gatilho real que libera automaticamente a UF/país informado, e só durante a janela de datas aprovada.</text>
+
+    <rect x="76" y="638" width="220" height="18" rx="9" fill="#3a1f28"/>
+    <text x="186" y="651" text-anchor="middle" font-size="10" fill="#f4a3a3">SupportTicketResolvedEvent</text>
+    <path d="M 296 647 L 340 647" stroke="#5d6785" stroke-width="2" marker-end="url(#setaC)"/>
+    <rect x="348" y="638" width="260" height="18" rx="9" fill="#2c3e67"/>
+    <text x="478" y="651" text-anchor="middle" font-size="10" fill="#c9d3ea">SupportTicketTravelExceptionListener</text>
+    <path d="M 608 647 L 652 647" stroke="#5d6785" stroke-width="2" marker-end="url(#setaC)"/>
+    <rect x="660" y="638" width="260" height="18" rx="9" fill="#2f5d62"/>
+    <text x="790" y="651" text-anchor="middle" font-size="10" fill="#cfe6e5">Geo-bloqueio libera MG · 18–25/08</text>
+  </g>
+
+  <!-- categorias e papeis -->
+  <g font-size="11">
+    <text x="50" y="704" font-size="13" font-weight="700" fill="#ffffff">Categorias reais (SupportTicketCategoria)</text>
+    <rect x="50" y="716" width="150" height="30" rx="8" fill="#2c3e67"/>
+    <text x="125" y="736" text-anchor="middle" fill="#ffffff">TECNICO</text>
+    <rect x="210" y="716" width="150" height="30" rx="8" fill="#2c3e67"/>
+    <text x="285" y="736" text-anchor="middle" fill="#ffffff">ACESSO_LOGIN</text>
+    <rect x="370" y="716" width="170" height="30" rx="8" fill="#2c3e67"/>
+    <text x="455" y="736" text-anchor="middle" fill="#ffffff">DUVIDA_GERAL</text>
+    <rect x="550" y="716" width="330" height="30" rx="8" fill="#3a1f28"/>
+    <text x="715" y="736" text-anchor="middle" fill="#f4a3a3">EXCECAO_VIAGEM_CARREIRA_JURIDICA</text>
+    <rect x="890" y="716" width="130" height="30" rx="8" fill="#2c3e67"/>
+    <text x="955" y="736" text-anchor="middle" fill="#ffffff">OUTRO</text>
+  </g>
+
+  <g>
+    <rect x="50" y="770" width="1140" height="94" rx="14" fill="#161c30"/>
+    <text x="76" y="798" font-size="12.5" font-weight="700" fill="#ffffff">Quem faz o quê</text>
+    <text x="76" y="822" font-size="11.5" fill="#dfe4ee">Abrir chamado: qualquer usuário autenticado. Ver a fila e filtrar por status: ROLE_SUPORTE_TECNICO ou ROLE_ADMINISTRADOR.</text>
+    <text x="76" y="842" font-size="11.5" fill="#dfe4ee">Assumir e resolver: só ROLE_SUPORTE_TECNICO. Cancelar: só quem abriu, e só enquanto o chamado ainda está ABERTO.</text>
+  </g>
+
+  <text x="50" y="890" font-size="11" fill="#5d6785">Dados fictícios, só para ilustrar a interface — o ciclo de vida, as categorias e o evento de resolução refletem o código real de SupportTicketController/SupportTicketService.</text>
+</svg>

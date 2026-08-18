@@ -78,4 +78,12 @@ public class ChatMensagemResponse {
     private String decisaoJudicialAcordo;
     private String faseCanalNegocial;
     private boolean bloqueadaAlteracaoTermos;
+    private Long salaAcordoId;
+    private String statusSalaAcordo;
+    private String tipoSalaAcordo;
+    private String confidencialidadeSalaAcordo;
+    private boolean salaAcordoAtiva;
+    private Long mensagemSalaAcordoId;
+    private boolean mensagemEspelhadaSalaAcordo;
+    private String motivoSalaAcordo;
 }

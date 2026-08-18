@@ -1,5 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+# PRE-REQUISITO: criar o secret TLS antes de aplicar este overlay:
+#   kubectl create secret tls pjb-sovereign-gateway-tls \
+#     --cert=<certificado-icp-brasil.pem> --key=<chave-privada.pem> -n pjb
+# Ver gateway-tls-secret.example.yaml para referência do formato esperado.
 resources:
   - ../prod-sovereign-spiffe-trust-plane
   - gatewayclass.yaml

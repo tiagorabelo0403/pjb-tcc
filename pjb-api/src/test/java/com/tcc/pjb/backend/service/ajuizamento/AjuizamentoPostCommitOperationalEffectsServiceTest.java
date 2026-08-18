@@ -18,6 +18,10 @@ import com.tcc.pjb.backend.service.painel.PainelNacionalJusticaService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionStatus;
 
 class AjuizamentoPostCommitOperationalEffectsServiceTest {
 
@@ -28,6 +32,24 @@ class AjuizamentoPostCommitOperationalEffectsServiceTest {
     private final FederalismoJudicialEngine federalismoJudicialEngine = mock(FederalismoJudicialEngine.class);
     private final PainelNacionalJusticaService painelNacionalJusticaService = mock(PainelNacionalJusticaService.class);
     private final RadarPadroesService radarPadroesService = mock(RadarPadroesService.class);
+    private final PlatformTransactionManager transactionManager = new AbstractPlatformTransactionManager() {
+        @Override
+        protected Object doGetTransaction() {
+            return new Object();
+        }
+
+        @Override
+        protected void doBegin(Object transaction, TransactionDefinition definition) {
+        }
+
+        @Override
+        protected void doCommit(DefaultTransactionStatus status) {
+        }
+
+        @Override
+        protected void doRollback(DefaultTransactionStatus status) {
+        }
+    };
 
     private AjuizamentoPostCommitOperationalEffectsService service;
 
@@ -40,7 +62,8 @@ class AjuizamentoPostCommitOperationalEffectsServiceTest {
                 prontuarioNacionalService,
                 federalismoJudicialEngine,
                 painelNacionalJusticaService,
-                radarPadroesService
+                radarPadroesService,
+                transactionManager
         );
     }
 

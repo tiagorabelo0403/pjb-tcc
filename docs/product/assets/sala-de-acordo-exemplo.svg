@@ -1,0 +1,104 @@
+<svg viewBox="0 0 1280 760" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Bancada de acordo — negociação em texto e relatório BATNA</title>
+  <desc id="desc">Mockup de interface da sala de negociação de acordo: chat com moderação de conteúdo entre as partes, relatório BATNA com valor em discussão, custo estimado de cada lado, probabilidade de recurso e confiança da análise, e o ciclo de vida até a homologação.</desc>
+
+  <defs>
+    <filter id="sombra6" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect x="20" y="20" width="1240" height="720" rx="14" fill="#12172a" stroke="#2a3350" stroke-width="1" filter="url(#sombra6)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/>
+  <circle cx="66" cy="48" r="6" fill="#e0b84f"/>
+  <circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">🤝 PJB — Bancada de Acordo</text>
+  <text x="1195" y="53" text-anchor="end" font-size="12.5" fill="#c9d3ea">Status: COUNTERPROPOSAL_PENDING</text>
+
+  <!-- chat -->
+  <g>
+    <rect x="50" y="96" width="460" height="380" rx="14" fill="#171d34"/>
+    <text x="76" y="128" font-size="13" font-weight="700" fill="#ffffff">💬 Chat da negociação (moderado)</text>
+
+    <rect x="76" y="146" width="340" height="66" rx="12" fill="#2c3e67"/>
+    <text x="92" y="168" font-size="11" fill="#a9b3cc">Advogado do autor</text>
+    <text x="92" y="190" font-size="12.5" fill="#ffffff">Proponho R$ 18.000,00 à vista, em 10 dias.</text>
+
+    <rect x="140" y="222" width="340" height="66" rx="12" fill="#7a2e3d"/>
+    <text x="156" y="244" font-size="11" fill="#f0d5da">Advogado do réu</text>
+    <text x="156" y="266" font-size="12.5" fill="#ffffff">Contraproponho R$ 13.500,00 em 3 parcelas.</text>
+
+    <rect x="76" y="300" width="340" height="50" rx="10" fill="#211d10"/>
+    <text x="92" y="320" font-size="10.5" fill="#e0c98a">🚫 1 mensagem bloqueada pela moderação</text>
+    <text x="92" y="336" font-size="10" fill="#a9b3cc">conteúdo ofensivo — nunca chegou à outra parte</text>
+
+    <text x="76" y="400" font-size="10.5" fill="#5d6785">Cada mensagem fica vinculada ao histórico auditável do acordo.</text>
+  </g>
+
+  <!-- relatorio batna -->
+  <g>
+    <rect x="530" y="96" width="660" height="380" rx="14" fill="#161c30"/>
+    <text x="556" y="128" font-size="13" font-weight="700" fill="#ffffff">📊 Relatório BATNA</text>
+
+    <g font-size="11.5" fill="#dfe4ee">
+      <text x="556" y="158">Pedido principal</text>
+      <text x="556" y="178" font-size="15" font-weight="700" fill="#ffffff">R$ 22.000,00</text>
+
+      <text x="706" y="158">Em discussão agora</text>
+      <text x="706" y="178" font-size="15" font-weight="700" fill="#f4c542">R$ 15.750,00</text>
+
+      <text x="856" y="158">Custo do autor</text>
+      <text x="856" y="178" font-size="15" font-weight="700" fill="#ffffff">R$ 4.200,00</text>
+
+      <text x="1006" y="158">Custo do réu</text>
+      <text x="1006" y="178" font-size="15" font-weight="700" fill="#ffffff">R$ 6.800,00</text>
+    </g>
+
+    <line x1="556" y1="198" x2="1150" y2="198" stroke="#2a3350"/>
+
+    <text x="556" y="224" font-size="11.5" fill="#a9b3cc">Probabilidade de recurso</text>
+    <rect x="556" y="234" width="280" height="12" rx="6" fill="#2a3350"/>
+    <rect x="556" y="234" width="179" height="12" rx="6" fill="#f4c542"/>
+    <text x="846" y="245" font-size="11" fill="#ffffff">64%</text>
+
+    <text x="556" y="270" font-size="11.5" fill="#a9b3cc">Probabilidade de reforma no recurso</text>
+    <rect x="556" y="280" width="280" height="12" rx="6" fill="#2a3350"/>
+    <rect x="556" y="280" width="95" height="12" rx="6" fill="#7a2e3d"/>
+    <text x="846" y="291" font-size="11" fill="#ffffff">34%</text>
+
+    <text x="556" y="316" font-size="11.5" fill="#a9b3cc">Confiança geral da análise</text>
+    <rect x="556" y="326" width="280" height="12" rx="6" fill="#2a3350"/>
+    <rect x="556" y="326" width="230" height="12" rx="6" fill="#2f5d62"/>
+    <text x="846" y="337" font-size="11" fill="#ffffff">82%</text>
+
+    <text x="556" y="366" font-size="11" fill="#7d879e">Dias até decisão: ≈ 340 (sem recurso) · ≈ 890 (com recurso)</text>
+    <text x="556" y="386" font-size="10.5" fill="#5d6785">Cada relatório fica registrado com hash de contexto — auditável depois.</text>
+  </g>
+
+  <!-- ciclo de vida -->
+  <g font-size="12" fill="#dfe4ee">
+    <text x="50" y="508" font-size="13" font-weight="700" fill="#ffffff">Ciclo de vida do acordo</text>
+
+    <rect x="50" y="524" width="205" height="52" rx="10" fill="#2c3e67"/>
+    <text x="152" y="555" text-anchor="middle" fill="#ffffff">Termo gerado</text>
+
+    <text x="266" y="555" fill="#8a8f98">→</text>
+
+    <rect x="290" y="524" width="205" height="52" rx="10" fill="#2c3e67"/>
+    <text x="392" y="555" text-anchor="middle" fill="#ffffff">Partes assinam</text>
+
+    <text x="506" y="555" fill="#8a8f98">→</text>
+
+    <rect x="530" y="524" width="205" height="52" rx="10" fill="#2c3e67"/>
+    <text x="632" y="555" text-anchor="middle" fill="#ffffff">Enviado ao juízo</text>
+
+    <text x="746" y="555" fill="#8a8f98">→</text>
+
+    <rect x="770" y="524" width="270" height="52" rx="10" fill="#f4c542"/>
+    <text x="905" y="555" text-anchor="middle" fill="#161c30" font-weight="700">Homologado (ou rejeitado, com motivo)</text>
+  </g>
+
+  <text x="50" y="620" font-size="11.5" fill="#5d6785">Se a proposta foi rascunhada pela Laiane, o termo só é gerado depois de revisão humana — regra de código, não de política de uso.</text>
+</svg>

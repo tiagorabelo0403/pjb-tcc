@@ -234,6 +234,9 @@ public class ProceduralCanonicalResolver {
         if (normalized.contains("FEDERAL") || normalized.contains("PREVIDENCI")) {
             return RamoJusticaNacional.FEDERAL;
         }
+        if (normalized.contains("ESTADUAL") || normalized.startsWith("TJ") && !normalized.startsWith("TJM") || normalized.contains("TRIBUNAL DE JUSTICA")) {
+            return RamoJusticaNacional.ESTADUAL;
+        }
         if (normalized.contains("SUPERIOR") || normalized.contains("STJ") || normalized.contains("STF") || normalized.contains("TSE") || normalized.contains("STM") || normalized.contains("TST")) {
             return RamoJusticaNacional.SUPERIOR;
         }

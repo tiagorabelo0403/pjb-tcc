@@ -16,6 +16,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Slf4j
 @Service
@@ -96,6 +97,7 @@ public class SecurityChallengeService {
         return c;
     }
 
+    @PjbTransactionalBudget(operation = "security.device.consume-otp", maxMillis = 3000)
     @Transactional
     public void consumeOtp(Long challengeId, Usuario usuario, String code) {
         SecurityChallenge c = repo.findByIdSafe(challengeId)

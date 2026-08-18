@@ -1,0 +1,45 @@
+<svg viewBox="0 0 1280 600" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Painel do Cidadão — perfil com CPF mascarado e vínculo Gov.br</title>
+  <desc id="desc">Mockup do painel do cidadão, com os campos reais de CidadaoPerfilDto (nome, email, CPF mascarado, UF, avatar, status de vínculo Gov.br).</desc>
+  <defs><filter id="s13" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.35"/></filter></defs>
+
+  <rect x="20" y="20" width="1240" height="560" rx="14" fill="#12172a" stroke="#2a3350" filter="url(#s13)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/><circle cx="66" cy="48" r="6" fill="#e0b84f"/><circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">👤 PJB — Meu Perfil</text>
+
+  <g>
+    <rect x="50" y="96" width="360" height="200" rx="14" fill="#b3811a"/>
+    <circle cx="140" cy="170" r="40" fill="#0d1120"/>
+    <text x="140" y="182" text-anchor="middle" font-size="30" fill="#ffffff">👤</text>
+    <text x="200" y="160" font-size="14" font-weight="700" fill="#ffffff">Maria da Silva</text>
+    <text x="200" y="180" font-size="11" fill="#f8e6c4">maria.silva@exemplo.com</text>
+    <text x="200" y="200" font-size="11" fill="#f8e6c4">CPF: 000.***.***-00</text>
+    <text x="200" y="220" font-size="11" fill="#f8e6c4">UF: CE</text>
+    <text x="66" y="264" font-size="10.5" fill="#f8e6c4">CPF sempre mascarado no perfil —</text>
+    <text x="66" y="280" font-size="10.5" fill="#f8e6c4">nunca exibido em claro na tela.</text>
+  </g>
+
+  <g>
+    <rect x="430" y="96" width="760" height="200" rx="14" fill="#171d34"/>
+    <text x="456" y="128" font-size="14" font-weight="700" fill="#ffffff">🔗 Vínculo Gov.br</text>
+    <text x="456" y="156" font-size="12" fill="#7fd1a0">✓ Conta vinculada — nível prata</text>
+    <text x="456" y="180" font-size="11" fill="#a9b3cc">Ações que exigem nível ouro (ex.: assinar acordo) pedem</text>
+    <text x="456" y="198" font-size="11" fill="#a9b3cc">step-up automático no momento do ato, não no login.</text>
+
+    <rect x="456" y="218" width="300" height="46" rx="10" fill="#2c3e67"/>
+    <text x="606" y="246" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">🔑 Gerenciar vínculo Gov.br</text>
+  </g>
+
+  <g>
+    <rect x="50" y="316" width="1140" height="220" rx="14" fill="#161c30"/>
+    <text x="76" y="348" font-size="14" font-weight="700" fill="#ffffff">📂 Meus processos (jus postulandi)</text>
+
+    <rect x="76" y="366" width="1074" height="46" rx="8" fill="#171d34"/>
+    <text x="92" y="394" font-size="12" fill="#dfe4ee">0008200-45.2026.8.06.0001 — Juizado Especial Cível, sem advogado</text>
+
+    <text x="76" y="450" font-size="11" fill="#5d6785">Peticionar sozinho é permitido nos casos em que a lei dispensa advogado — sem cobrar procuração.</text>
+    <text x="76" y="470" font-size="10.5" fill="#5d6785">Dados fictícios — campos reais de CidadaoPerfilDto e GovBrOidcProperties.</text>
+  </g>
+</svg>

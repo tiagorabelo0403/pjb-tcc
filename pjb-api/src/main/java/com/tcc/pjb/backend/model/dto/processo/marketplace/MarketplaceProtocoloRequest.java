@@ -1,13 +1,19 @@
 package com.tcc.pjb.backend.model.dto.processo.marketplace;
 
+import com.tcc.pjb.backend.model.dto.Attachment;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.util.List;
 
 public record MarketplaceProtocoloRequest(
         @NotBlank String clientReference,
         @NotBlank String numeroExterno,
         String tipoJustica,
         String ramoDireito,
+        @NotBlank String uf,
+        String comarca,
         @NotBlank String classeProcessual,
         String assunto,
         @NotBlank String pedidoPrincipal,
@@ -16,6 +22,12 @@ public record MarketplaceProtocoloRequest(
         String parteAutoraCpf,
         String parteReuNome,
         String parteReuCpf,
-        BigDecimal valorCausa
+        BigDecimal valorCausa,
+        @Pattern(regexp = "^$|^[A-Za-z]{2}$") String ufAutor,
+        @Size(max = 160) String comarcaAutor,
+        @Pattern(regexp = "^$|^[A-Za-z]{2}$") String ufReu,
+        @Size(max = 160) String comarcaReu,
+        boolean enderecoReuDesconhecido,
+        List<Attachment> documentos
 ) {
 }

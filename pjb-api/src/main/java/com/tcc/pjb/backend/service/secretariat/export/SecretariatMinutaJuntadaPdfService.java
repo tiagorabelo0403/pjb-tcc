@@ -15,6 +15,9 @@ import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.platform.unified.eventsourcing.JudiciarioEventSourcingEngine;
 import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.QualifiedSignatureMetadata;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope.SovereignValidationResult;
 import com.tcc.pjb.backend.service.recursal.RecursalEffectiveSecrecyService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -40,8 +43,8 @@ public class SecretariatMinutaJuntadaPdfService {
   public record MinutaResult(byte[] pdfBytes,
                              NivelSigilo effectiveSecrecy,
                              long seqUsed,
-                             Map<String, Object> assinaturaQualificada,
-                             Map<String, Object> validacaoSoberana) {}
+                             QualifiedSignatureMetadata assinaturaQualificada,
+                             SovereignValidationResult validacaoSoberana) {}
 
   public record JuntadaItem(long seq, java.time.Instant createdAt, String eventType, String label, int docCount, UUID eventoId) {}
 
@@ -108,7 +111,7 @@ public class SecretariatMinutaJuntadaPdfService {
     }
 
     try {
-      QualifiedDocumentSignatureEnvelopeService.SignedContent assinatura = signMinuta(p, usuario, env, juntada, liberados, bloqueados);
+      SignedDocumentEnvelope assinatura = signMinuta(p, usuario, env, juntada, liberados, bloqueados);
       byte[] pdf = renderPdf(p, efetivo, env, juntada, liberados, bloqueados, assinatura);
       return new MinutaResult(pdf, efetivo, seqUsed, assinatura.assinaturaQualificada(), assinatura.validacaoSoberana());
     } catch (IOException e) {
@@ -294,7 +297,7 @@ public class SecretariatMinutaJuntadaPdfService {
     }
   }
 
-  private QualifiedDocumentSignatureEnvelopeService.SignedContent signMinuta(Processo processo,
+  private SignedDocumentEnvelope signMinuta(Processo processo,
                                                                              Usuario usuario,
                                                                              ProcessEventEnvelope env,
                                                                              JuntadaPayload juntada,
@@ -349,7 +352,7 @@ public class SecretariatMinutaJuntadaPdfService {
                                   JuntadaPayload juntada,
                                   List<DocRef> liberados,
                                   List<DocRef> bloqueados,
-                                  QualifiedDocumentSignatureEnvelopeService.SignedContent assinatura) throws IOException {
+                                  SignedDocumentEnvelope assinatura) throws IOException {
 
     try (PDDocument doc = new PDDocument()) {
       setMetadata(doc, p, efetivo, env, juntada, assinatura);
@@ -367,10 +370,10 @@ public class SecretariatMinutaJuntadaPdfService {
       DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
 
       Jurisdicao j = p.getJurisdicao();
-      String uf = j != null ? j.getEstado() : null;
+      String uf = j != null ? j.getUf() : null;
       String orgaoNome = j != null ? j.getNome() : null;
       String orgaoSigla = j != null ? j.getSigla() : null;
-      String comarca = j != null ? j.getComarca() : null;
+      String comarca = j != null ? j.getCidade() : null;
 
       cur.ensureSpace(leading * 8);
       cur.y = writeLine(cur.cs, fontBold, 13f, margin, cur.y, "PODER JUDICIÁRIO", leading);
@@ -449,12 +452,12 @@ public class SecretariatMinutaJuntadaPdfService {
         cur.y -= leading;
         cur.ensureSpace(leading * 10);
         cur.y = writeLine(cur.cs, fontBold, 12f, margin, cur.y, "Assinatura qualificada", leading);
-        cur.y = writeLine(cur.cs, font, fontSize, margin, cur.y, "Rubrica: " + safe(assinatura.assinaturaQualificada().get("rubrica")), leading);
-        cur.y = writeLine(cur.cs, font, fontSize, margin, cur.y, "Data: " + safe(assinatura.assinaturaQualificada().get("data")) + " | Hora: " + safe(assinatura.assinaturaQualificada().get("hora")), leading);
-        cur.y = writeLine(cur.cs, font, fontSize, margin, cur.y, "Local: " + safe(assinatura.assinaturaQualificada().get("local")), leading);
-        cur.y = writeLine(cur.cs, font, fontSize, margin, cur.y, "Envelope: " + safe(assinatura.assinaturaQualificada().get("envelopeId")), leading);
-        cur.y = writeLine(cur.cs, font, fontSize, margin, cur.y, "Hash assinado: " + safe(assinatura.validacaoSoberana().get("documentoAssinadoHash")), leading);
-        cur.y = writeLine(cur.cs, font, fontSize, margin, cur.y, "Validação soberana: " + safe(assinatura.validacaoSoberana().get("status")) + " | Fonte: " + safe(assinatura.validacaoSoberana().get("fonte")), leading);
+        cur.y = writeLine(cur.cs, font, fontSize, margin, cur.y, "Rubrica: " + safe(assinatura.assinaturaQualificada().rubricaEletronica()), leading);
+        cur.y = writeLine(cur.cs, font, fontSize, margin, cur.y, "Data: " + safe(assinatura.assinaturaQualificada().data()) + " | Hora: " + safe(assinatura.assinaturaQualificada().hora()), leading);
+        cur.y = writeLine(cur.cs, font, fontSize, margin, cur.y, "Local: " + safe(assinatura.assinaturaQualificada().local()), leading);
+        cur.y = writeLine(cur.cs, font, fontSize, margin, cur.y, "Envelope: " + safe(assinatura.assinaturaQualificada().envelopeId()), leading);
+        cur.y = writeLine(cur.cs, font, fontSize, margin, cur.y, "Hash assinado: " + safe(assinatura.validacaoSoberana().documentoAssinadoHash()), leading);
+        cur.y = writeLine(cur.cs, font, fontSize, margin, cur.y, "Validação soberana: " + safe(assinatura.validacaoSoberana().status()) + " | Fonte: " + safe(assinatura.validacaoSoberana().fonte()), leading);
       }
 
       cur.close();
@@ -470,7 +473,7 @@ public class SecretariatMinutaJuntadaPdfService {
                                   NivelSigilo efetivo,
                                   ProcessEventEnvelope env,
                                   JuntadaPayload juntada,
-                                  QualifiedDocumentSignatureEnvelopeService.SignedContent assinatura) {
+                                  SignedDocumentEnvelope assinatura) {
     PDDocumentInformation info = new PDDocumentInformation();
     String num = p != null ? p.getNumeroUnificado() : null;
     info.setTitle("Minuta de Juntada" + (num != null ? " - " + num : ""));
@@ -497,10 +500,10 @@ public class SecretariatMinutaJuntadaPdfService {
       info.setCustomMetadataValue("PJB-Sigilo-Efetivo", efetivo.name());
     }
     if (assinatura != null) {
-      info.setCustomMetadataValue("PJB-Envelope-Assinatura", safe(assinatura.assinaturaQualificada().get("envelopeId")));
-      info.setCustomMetadataValue("PJB-Rubrica", safe(assinatura.assinaturaQualificada().get("rubrica")));
-      info.setCustomMetadataValue("PJB-Documento-Assinado-Hash", safe(assinatura.validacaoSoberana().get("documentoAssinadoHash")));
-      info.setCustomMetadataValue("PJB-Validacao-Soberana", safe(assinatura.validacaoSoberana().get("status")));
+      info.setCustomMetadataValue("PJB-Envelope-Assinatura", safe(assinatura.assinaturaQualificada().envelopeId()));
+      info.setCustomMetadataValue("PJB-Rubrica", safe(assinatura.assinaturaQualificada().rubricaEletronica()));
+      info.setCustomMetadataValue("PJB-Documento-Assinado-Hash", safe(assinatura.validacaoSoberana().documentoAssinadoHash()));
+      info.setCustomMetadataValue("PJB-Validacao-Soberana", safe(assinatura.validacaoSoberana().status()));
     }
 
     doc.setDocumentInformation(info);

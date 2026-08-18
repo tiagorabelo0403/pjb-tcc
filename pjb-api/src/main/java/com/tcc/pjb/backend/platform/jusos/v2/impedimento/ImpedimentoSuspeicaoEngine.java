@@ -585,7 +585,7 @@ public class ImpedimentoSuspeicaoEngine {
         if (sobrenomeUsuario.isBlank()) {
             return;
         }
-        boolean mesmaComarca = sameNonBlank(usuario.getComarca(), processo.getJurisdicao() != null ? processo.getJurisdicao().getComarca() : null);
+        boolean mesmaComarca = sameNonBlank(usuario.getComarca(), processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null);
         if (mesmaComarca && sharesSurname(usuario.getNome(), processo.getParteAutoraNome())) {
             conflitos.add(new ConflitoPotencial(
                     TipoConflito.PARENTESCO_PARTE,
@@ -800,8 +800,8 @@ public class ImpedimentoSuspeicaoEngine {
         if (processo.getUsuario() != null) {
             agentes.add(processo.getUsuario());
         }
-        if (processo.getJurisdicao() != null && processo.getJurisdicao().getComarca() != null && !processo.getJurisdicao().getComarca().isBlank()) {
-            usuarioRepository.findByComarcaAndAtivoTrue(processo.getJurisdicao().getComarca())
+        if (processo.getJurisdicao() != null && processo.getJurisdicao().getCidade() != null && !processo.getJurisdicao().getCidade().isBlank()) {
+            usuarioRepository.findByComarcaAndAtivoTrue(processo.getJurisdicao().getCidade())
                     .stream()
                     .filter(Usuario::isAtivoESemanticoValido)
                     .filter(u -> u.isMagistrado() || u.isServidorJudiciario() || u.isPerito())

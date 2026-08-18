@@ -1,0 +1,107 @@
+<svg viewBox="0 0 1280 700" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Anatomia comum a todo painel profissional do PJB</title>
+  <desc id="desc">Diagrama mostrando os seis blocos de segurança e governança que todo painel de perfil institucional compartilha (radar de prazo, risco de sessão, sigilo ativo com expiração, plantão, onboarding e auditoria comportamental de anomalia), com os campos específicos de cada perfil somados por cima, com base real em PerfilDashboardPayload.</desc>
+
+  <defs>
+    <filter id="sombraA" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect x="20" y="20" width="1240" height="660" rx="14" fill="#12172a" stroke="#2a3350" stroke-width="1" filter="url(#sombraA)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/>
+  <circle cx="66" cy="48" r="6" fill="#e0b84f"/>
+  <circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">🧬 Anatomia comum a todo painel profissional</text>
+
+  <text x="50" y="106" font-size="13" fill="#a9b3cc">Mais de 15 perfis institucionais têm painel próprio — mas todos nascem da mesma base de 6 blocos (PerfilDashboardPayload):</text>
+
+  <!-- 6 blocos compartilhados -->
+  <g font-size="12">
+    <rect x="50" y="130" width="370" height="110" rx="12" fill="#171d34"/>
+    <text x="70" y="158" font-weight="700" fill="#ffffff">⏱️ Radar de prazo</text>
+    <text x="70" y="180" font-size="10.5" fill="#a9b3cc">Cada item com dias restantes e</text>
+    <text x="70" y="196" font-size="10.5" fill="#a9b3cc">categoria — nunca uma lista sem prazo.</text>
+    <text x="70" y="216" font-size="10" fill="#5d6785">PrazoRadarItem</text>
+
+    <rect x="450" y="130" width="370" height="110" rx="12" fill="#171d34"/>
+    <text x="470" y="158" font-weight="700" fill="#ffffff">🛡️ Risco de sessão</text>
+    <text x="470" y="180" font-size="10.5" fill="#a9b3cc">Score de risco da própria sessão —</text>
+    <text x="470" y="196" font-size="10.5" fill="#a9b3cc">rede suspeita gera alerta na hora.</text>
+    <text x="470" y="216" font-size="10" fill="#5d6785">SessionRiskResumo</text>
+
+    <rect x="850" y="130" width="340" height="110" rx="12" fill="#171d34"/>
+    <text x="870" y="158" font-weight="700" fill="#ffffff">🔒 Sigilo ativo</text>
+    <text x="870" y="180" font-size="10.5" fill="#a9b3cc">Quantos acessos sigilosos estão</text>
+    <text x="870" y="196" font-size="10.5" fill="#a9b3cc">abertos agora, e quando expiram.</text>
+    <text x="870" y="216" font-size="10" fill="#5d6785">SigiloAtivoResumo</text>
+
+    <rect x="50" y="254" width="370" height="110" rx="12" fill="#171d34"/>
+    <text x="70" y="282" font-weight="700" fill="#ffffff">📅 Plantão</text>
+    <text x="70" y="304" font-size="10.5" fill="#a9b3cc">Status, início e fim do plantão</text>
+    <text x="70" y="320" font-size="10.5" fill="#a9b3cc">atual, quando aplicável ao papel.</text>
+    <text x="70" y="340" font-size="10" fill="#5d6785">PlantaoResumo</text>
+
+    <rect x="450" y="254" width="370" height="110" rx="12" fill="#171d34"/>
+    <text x="470" y="282" font-weight="700" fill="#ffffff">✅ Onboarding</text>
+    <text x="470" y="304" font-size="10.5" fill="#a9b3cc">Pendências bloqueantes (impedem uso)</text>
+    <text x="470" y="320" font-size="10.5" fill="#a9b3cc">separadas das apenas informativas.</text>
+    <text x="470" y="340" font-size="10" fill="#5d6785">OnboardingResumo</text>
+
+    <rect x="850" y="254" width="340" height="110" rx="12" fill="#3a1f28"/>
+    <text x="870" y="282" font-weight="700" fill="#ffffff">🚨 Auditoria comportamental</text>
+    <text x="870" y="304" font-size="10.5" fill="#f0d5da">Detecta anomalia de volume de uso</text>
+    <text x="870" y="320" font-size="10.5" fill="#f0d5da">— muito acima do padrão do próprio ator.</text>
+    <text x="870" y="340" font-size="10" fill="#5d6785">BehavioralAuditResumo</text>
+  </g>
+
+  <!-- seta para especializacao -->
+  <text x="640" y="400" text-anchor="middle" font-size="24" fill="#8a8f98">⬇ soma-se ⬇</text>
+
+  <!-- campos especificos por perfil -->
+  <g font-size="11.5" fill="#dfe4ee">
+    <rect x="50" y="420" width="270" height="80" rx="10" fill="#2c3e67"/>
+    <text x="66" y="444" font-weight="700" fill="#ffffff">Assessor</text>
+    <text x="66" y="462" font-size="10">gabineteId, magistradoVinculado,</text>
+    <text x="66" y="478" font-size="10">minutasParaRevisar</text>
+
+    <rect x="335" y="420" width="270" height="80" rx="10" fill="#7a2e3d"/>
+    <text x="351" y="444" font-weight="700" fill="#ffffff">Ministério Público</text>
+    <text x="351" y="462" font-size="10">promotoriaId, ramo,</text>
+    <text x="351" y="478" font-size="10">manifestacoesPendentes</text>
+
+    <rect x="620" y="420" width="270" height="80" rx="10" fill="#7a2e3d"/>
+    <text x="636" y="444" font-weight="700" fill="#ffffff">Defensoria Pública</text>
+    <text x="636" y="462" font-size="10">defensoriaNucleo, federal,</text>
+    <text x="636" y="478" font-size="10">assistidosAtivos</text>
+
+    <rect x="905" y="420" width="285" height="80" rx="10" fill="#2f5d62"/>
+    <text x="921" y="444" font-weight="700" fill="#ffffff">Perito</text>
+    <text x="921" y="462" font-size="10">subtipoPericia, laudosPendentes,</text>
+    <text x="921" y="478" font-size="10">laudosAtrasados</text>
+
+    <rect x="50" y="512" width="270" height="80" rx="10" fill="#2f5d62"/>
+    <text x="66" y="536" font-weight="700" fill="#ffffff">Oficial de Justiça</text>
+    <text x="66" y="554" font-size="10">circunscricaoId, mandadosPendentes,</text>
+    <text x="66" y="570" font-size="10">mandadosCumpridos</text>
+
+    <rect x="335" y="512" width="270" height="80" rx="10" fill="#2f5d62"/>
+    <text x="351" y="536" font-weight="700" fill="#ffffff">Delegado</text>
+    <text x="351" y="554" font-size="10">delegaciaId, delegaciaNome,</text>
+    <text x="351" y="570" font-size="10">esfera</text>
+
+    <rect x="620" y="512" width="270" height="80" rx="10" fill="#555a63"/>
+    <text x="636" y="536" font-weight="700" fill="#ffffff">Cartório extrajudicial</text>
+    <text x="636" y="554" font-size="10">serventia, subperfil,</text>
+    <text x="636" y="570" font-size="10">certidoesPendentes</text>
+
+    <rect x="905" y="512" width="285" height="80" rx="10" fill="#555a63"/>
+    <text x="921" y="536" font-weight="700" fill="#ffffff">+ 6 outros perfis</text>
+    <text x="921" y="554" font-size="10">conciliador/mediador, leiloeiro,</text>
+    <text x="921" y="570" font-size="10">psicossocial, curador, e mais</text>
+  </g>
+
+  <text x="50" y="630" font-size="11" fill="#5d6785">Cada perfil vê só os campos que fazem sentido pra sua função — mas a mesma trilha de segurança e auditoria protege todos, sem exceção.</text>
+</svg>

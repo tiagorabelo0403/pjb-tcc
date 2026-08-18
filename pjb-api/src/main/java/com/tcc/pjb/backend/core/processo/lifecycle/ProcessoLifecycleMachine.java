@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import com.tcc.pjb.backend.core.processo.lifecycle.civel.CivilLifecyclePack;
 import com.tcc.pjb.backend.core.processo.lifecycle.civel.FalenciaRecuperacaoLifecyclePack;
@@ -31,6 +32,7 @@ public class ProcessoLifecycleMachine {
     private final RitoLifecyclePackRegistry ritoLifecyclePackRegistry;
     private final CaseContinuityOrchestratorService caseContinuityOrchestratorService;
 
+    @Inject
     public ProcessoLifecycleMachine(AtoProcessualCatalogService atoCatalogService,
                                     RitoLifecyclePackRegistry ritoLifecyclePackRegistry,
                                     CaseContinuityOrchestratorService caseContinuityOrchestratorService) {
@@ -39,7 +41,7 @@ public class ProcessoLifecycleMachine {
         this.caseContinuityOrchestratorService = caseContinuityOrchestratorService;
     }
 
-    public ProcessoLifecycleMachine(AtoProcessualCatalogService atoCatalogService) {
+    ProcessoLifecycleMachine(AtoProcessualCatalogService atoCatalogService) {
         this(atoCatalogService, defaultRegistry(), null);
     }
 
@@ -130,9 +132,10 @@ public class ProcessoLifecycleMachine {
                     || status == StatusProcesso.EM_ANDAMENTO
                     || status == StatusProcesso.JULGADO;
             case CERTIFICAR_TRANSITO -> status != StatusProcesso.ARQUIVADO;
-            case INICIAR_CUMPRIMENTO -> status == StatusProcesso.TRANSITO_EM_JULGADO
+            case INICIAR_CUMPRIMENTO -> (status == StatusProcesso.TRANSITO_EM_JULGADO
                     || status == StatusProcesso.JULGADO
-                    || status == StatusProcesso.SENTENCA_PROFERIDA;
+                    || status == StatusProcesso.SENTENCA_PROFERIDA)
+                    && (rito == null || !rito.isPenal());
             case ARQUIVAR -> status == StatusProcesso.TRANSITO_EM_JULGADO
                     || status == StatusProcesso.CUMPRIMENTO_SENTENCA
                     || status == StatusProcesso.JULGADO

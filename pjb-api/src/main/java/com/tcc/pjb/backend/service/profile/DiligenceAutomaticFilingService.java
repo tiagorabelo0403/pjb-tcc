@@ -43,6 +43,7 @@ import com.tcc.pjb.backend.model.repository.MovimentacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 
 @Service
 public class DiligenceAutomaticFilingService {
@@ -478,7 +479,7 @@ public class DiligenceAutomaticFilingService {
 
     private DiligenceAutomaticFilingResponse toResponse(Usuario actor,
                                                         DiligenciaOperadorJuntadaProcessual entity) {
-        QualifiedDocumentSignatureEnvelopeService.SignedContent signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
+        SignedDocumentEnvelope signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
                 null,
                 actor,
                 entity.getBundleReference() != null ? entity.getBundleReference() : "JUNTADA_AUTOMATICA",

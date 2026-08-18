@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import com.tcc.pjb.backend.core.id.PjbUuidV7Generator;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.modules.laiane.model.LaianeOficioStatus;
 import lombok.*;
@@ -56,6 +57,13 @@ public class LaianeOficio {
     @Column(name = "conteudo", columnDefinition = "TEXT")
     private String conteudo;
 
+    @Lob
+    @Column(name = "signed_envelope_json", columnDefinition = "TEXT")
+    private String signedEnvelopeJson;
+
+    @Column(name = "body_hash", length = 64)
+    private String bodyHash;
+
     @Column(name = "enviado_em")
     private LocalDateTime enviadoEm;
 
@@ -72,7 +80,7 @@ public class LaianeOficio {
 
     @PrePersist
     void prePersist() {
-        if (trackingCode == null) trackingCode = UUID.randomUUID();
+        if (trackingCode == null) trackingCode = PjbUuidV7Generator.generate();
         if (status == null) status = LaianeOficioStatus.CRIADO;
     }
 }

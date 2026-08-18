@@ -15,6 +15,7 @@ import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalTribunalDetalhado;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.recursalmesh.RecursalAggregateState;
 import com.tcc.pjb.backend.tribunal.calendario.CalendarioForenseTribunalService;
+import jakarta.inject.Inject;
 
 @Service
 public class RecursalMeshSlaService {
@@ -22,6 +23,7 @@ public class RecursalMeshSlaService {
     private final CalendarioForenseTribunalService calendarioService;
     private final RecursalSlaPolicyCatalog policyCatalog;
 
+    @Inject
     public RecursalMeshSlaService(CalendarioForenseTribunalService calendarioService) {
         this(calendarioService, new RecursalSlaPolicyCatalog());
     }

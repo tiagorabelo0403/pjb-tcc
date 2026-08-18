@@ -3,9 +3,18 @@ package com.tcc.pjb.backend.service.semantic;
 import java.util.Collections;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementacao padrao (in-memory) do {@link VectorIndex}. Ativa apenas quando nenhum outro
+ * bean {@link VectorIndex} estiver registrado — em particular, o {@code PgVectorPersistentIndex}
+ * substitui esta implementacao quando {@code pjb.ai.vector.mode=pgvector}, dando persistencia
+ * real e compartilhamento entre instancias. Sem essa flag, o comportamento historico (in-memory,
+ * LRU ate 20k entries) e preservado.
+ */
 @Component
+@ConditionalOnMissingBean(value = VectorIndex.class, ignored = InMemoryCosineVectorIndex.class)
 public class InMemoryCosineVectorIndex implements VectorIndex {
 
     private static final int MAX_ENTRIES = 20_000;

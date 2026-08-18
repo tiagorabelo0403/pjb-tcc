@@ -1,3 +1,7 @@
+logging:
+  level:
+    org.apache.kafka: ERROR
+
 spring:
   data:
     redis:
@@ -9,6 +13,12 @@ spring:
       spec: maximumSize=1000,expireAfterWrite=1m
   main:
     allow-bean-definition-overriding: true
+  kafka:
+    consumer:
+      properties:
+        session.timeout.ms: 10000
+        heartbeat.interval.ms: 3000
+        max.poll.interval.ms: 30000
 camunda:
   client:
     enabled: false
@@ -16,6 +26,9 @@ zeebe:
   client:
     enabled: false
 pjb:
+  kafka:
+    scale:
+      listener-concurrency: 1
   icp:
     enabled: false
   mni:
@@ -25,9 +38,24 @@ pjb:
       enabled: false
   dje:
     enabled: false
+    mock-enabled: true
+  bnmp:
+    mock-enabled: true
   integrations:
+    govbr:
+      mock-enabled: true
     pje:
       mock-enabled: true
+  demo:
+    seed-enabled: false
   jobs:
     pg-listen:
       enabled: false
+    ciencia-ficta:
+      enabled: false
+    conclusao-expirada:
+      enabled: false
+  runtime:
+    barrier:
+      scheduling:
+        enabled: false

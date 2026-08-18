@@ -1,0 +1,94 @@
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Calculadora judicial trabalhista — tela de entrada e memória de cálculo retornada</title>
+  <desc id="desc">Mockup de interface da calculadora judicial: o advogado informa dados de admissão, demissão, salário e horas extras; o sistema devolve cada verba rescisória calculada com o fundamento legal e o total, além de um PDF auditável.</desc>
+
+  <defs>
+    <filter id="sombra5" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect x="20" y="20" width="1240" height="680" rx="14" fill="#12172a" stroke="#2a3350" stroke-width="1" filter="url(#sombra5)"/>
+  <rect x="20" y="20" width="1240" height="56" rx="14" fill="#0d1120"/>
+  <rect x="20" y="60" width="1240" height="16" fill="#0d1120"/>
+  <circle cx="46" cy="48" r="6" fill="#e05252"/>
+  <circle cx="66" cy="48" r="6" fill="#e0b84f"/>
+  <circle cx="86" cy="48" r="6" fill="#4fae6b"/>
+  <text x="115" y="53" font-size="14" font-weight="700" fill="#ffffff">💰 PJB — Calculadora Judicial · Trabalhista</text>
+  <text x="1195" y="53" text-anchor="end" font-size="12.5" fill="#c9d3ea">Rescisão sem justa causa</text>
+
+  <!-- painel de entrada -->
+  <g>
+    <rect x="50" y="96" width="460" height="560" rx="14" fill="#171d34"/>
+    <text x="76" y="128" font-size="14" font-weight="700" fill="#ffffff">Dados informados pelo advogado</text>
+
+    <text x="76" y="162" font-size="11" fill="#7d879e">Reclamante × Reclamado</text>
+    <text x="76" y="182" font-size="13" fill="#ffffff">Maria da Silva × Comércio Exemplo Ltda.</text>
+
+    <text x="76" y="216" font-size="11" fill="#7d879e">Admissão → Demissão</text>
+    <text x="76" y="236" font-size="13" fill="#ffffff">03/2021 → 07/2026 (sem justa causa)</text>
+
+    <text x="76" y="270" font-size="11" fill="#7d879e">Salário base</text>
+    <text x="76" y="290" font-size="13" fill="#ffffff">R$ 2.800,00</text>
+
+    <text x="76" y="324" font-size="11" fill="#7d879e">Horas extras 50%</text>
+    <text x="76" y="344" font-size="13" fill="#ffffff">18 horas no último mês</text>
+
+    <text x="76" y="378" font-size="11" fill="#7d879e">Adicional noturno / insalubridade</text>
+    <text x="76" y="398" font-size="13" fill="#ffffff">Não se aplica neste caso</text>
+
+    <g>
+      <rect x="76" y="424" width="18" height="18" rx="4" fill="#2c3e67" stroke="#7fd1a0"/>
+      <text x="80" y="437" font-size="12" fill="#7fd1a0">✓</text>
+      <text x="102" y="437" font-size="11.5" fill="#dfe4ee">Reflexos automáticos em férias, 13º e FGTS</text>
+    </g>
+
+    <text x="76" y="480" font-size="10.5" fill="#5d6785">Cada campo remete a um fundamento legal —</text>
+    <text x="76" y="496" font-size="10.5" fill="#5d6785">ex.: hora extra segue CLT art. 59, §1º.</text>
+
+    <rect x="76" y="580" width="400" height="50" rx="10" fill="#2c3e67"/>
+    <text x="276" y="610" text-anchor="middle" font-size="13" font-weight="600" fill="#ffffff">▶ Calcular rescisão trabalhista</text>
+  </g>
+
+  <!-- painel de saida -->
+  <g>
+    <rect x="530" y="96" width="660" height="560" rx="14" fill="#161c30"/>
+    <text x="556" y="128" font-size="14" font-weight="700" fill="#ffffff">📄 Memória de cálculo — linha a linha</text>
+
+    <g font-size="12.5" fill="#dfe4ee">
+      <text x="556" y="164">Saldo de salário (23/30 dias)</text>
+      <text x="1150" y="164" text-anchor="end">R$ 2.146,67</text>
+      <text x="556" y="180" font-size="10" fill="#5d6785">CLT arts. 457 e 459</text>
+
+      <text x="556" y="212">13º salário proporcional (5/12)</text>
+      <text x="1150" y="212" text-anchor="end">R$ 1.166,67</text>
+      <text x="556" y="228" font-size="10" fill="#5d6785">Lei 4.090/1962</text>
+
+      <text x="556" y="260">Férias proporcionais + 1/3</text>
+      <text x="1150" y="260" text-anchor="end">R$ 1.244,44</text>
+      <text x="556" y="276" font-size="10" fill="#5d6785">CF art. 7º, XVII</text>
+
+      <text x="556" y="308">Aviso prévio proporcional</text>
+      <text x="1150" y="308" text-anchor="end">R$ 2.940,00</text>
+      <text x="556" y="324" font-size="10" fill="#5d6785">Lei 12.506/2011, art. 1º</text>
+
+      <text x="556" y="356">Horas extras 50% + DSR</text>
+      <text x="1150" y="356" text-anchor="end">R$ 412,38</text>
+      <text x="556" y="372" font-size="10" fill="#5d6785">CLT art. 59, §1º</text>
+
+      <text x="556" y="404">FGTS sobre o período (8%) + multa (40%)</text>
+      <text x="1150" y="404" text-anchor="end">R$ 2.116,80</text>
+      <text x="556" y="420" font-size="10" fill="#5d6785">Lei 8.036/1990, arts. 15 e 18</text>
+    </g>
+
+    <line x1="556" y1="440" x2="1150" y2="440" stroke="#2a3350"/>
+    <text x="556" y="472" font-size="17" font-weight="700" fill="#ffffff">Total estimado</text>
+    <text x="1150" y="472" text-anchor="end" font-size="17" font-weight="700" fill="#f4c542">R$ 10.026,96</text>
+
+    <rect x="556" y="496" width="594" height="52" rx="10" fill="#7a2e3d"/>
+    <text x="700" y="528" text-anchor="middle" font-size="13" font-weight="600" fill="#ffffff">📑 Baixar PDF auditável com esta memória de cálculo</text>
+
+    <text x="556" y="580" font-size="11" fill="#a9b3cc">Advogado, parte e juiz conferem a mesma conta, linha por linha — não é uma caixa-preta.</text>
+    <text x="556" y="602" font-size="10" fill="#5d6785">Dados fictícios, ilustrativos — campos reais de TrabalhistaCalculoAvancadoRequest e TrabalhistaCalculoAvancadoService.</text>
+  </g>
+</svg>

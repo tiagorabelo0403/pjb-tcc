@@ -13,6 +13,11 @@ AS $$
     END
 $$;
 
+ALTER TABLE tb_processo ADD COLUMN IF NOT EXISTS tribunal VARCHAR(120);
+ALTER TABLE tb_processo ADD COLUMN IF NOT EXISTS uf VARCHAR(2);
+ALTER TABLE tb_processo ADD COLUMN IF NOT EXISTS unidade_judiciaria_codigo VARCHAR(80);
+ALTER TABLE tb_processo ADD COLUMN IF NOT EXISTS data_atualizacao TIMESTAMP;
+
 CREATE OR REPLACE VIEW vw_pjb_processo_sigilo_secure AS
 SELECT
     p.id,

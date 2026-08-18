@@ -98,7 +98,7 @@ public class CaseFileResolverService {
     }
 
     private CaseProceeding assureRootProceeding(CaseFile caseFile, Processo processo, ProceduralContext ctx) {
-        CaseProceeding existing = proceedingRepository.findFirstByCaseFileIdAndLinkedProcessoId(caseFile.getId(), processo.getId()).orElse(null);
+        CaseProceeding existing = proceedingRepository.findFirstByCaseFileIdAndLinkedProcessoIdAndParentProceedingKeyIsNull(caseFile.getId(), processo.getId()).orElse(null);
         if (existing != null) return existing;
 
         String tribunal = ctx.tribunal();
@@ -142,14 +142,14 @@ public class CaseFileResolverService {
                 java.util.Map.entry("classeProcessual", java.util.Objects.toString(p.getClasseProcessual(), "")),
                 java.util.Map.entry("assunto", java.util.Objects.toString(p.getAssunto(), "")),
                 java.util.Map.entry("competencia", p.getTipoJustica() != null ? p.getTipoJustica().name() : ""),
-                java.util.Map.entry("uf", j != null ? java.util.Objects.toString(j.getEstado(), "") : ""),
-                java.util.Map.entry("comarca", j != null ? java.util.Objects.toString(j.getComarca(), "") : ""),
+                java.util.Map.entry("uf", j != null ? java.util.Objects.toString(j.getUf(), "") : ""),
+                java.util.Map.entry("comarca", j != null ? java.util.Objects.toString(j.getCidade(), "") : ""),
                 java.util.Map.entry("tribunalCodigo", j != null ? java.util.Objects.toString(j.getSigla(), "") : "")
         ));
         TipoJustica tj = resolveTipoJustica(p.getTipoJustica(), canonicalContext);
         String uf = canonicalContext.metadata().get("uf") instanceof String ufValue && !ufValue.isBlank()
                 ? ufValue
-                : (j != null ? java.util.Objects.toString(j.getEstado(), "") : "");
+                : (j != null ? java.util.Objects.toString(j.getUf(), "") : "");
         String tribunal = canonicalContext.tribunalCodigo() != null && !canonicalContext.tribunalCodigo().isBlank()
                 ? canonicalContext.tribunalCodigo()
                 : (j != null ? (j.getSigla() != null ? j.getSigla() : j.getNome()) : "");

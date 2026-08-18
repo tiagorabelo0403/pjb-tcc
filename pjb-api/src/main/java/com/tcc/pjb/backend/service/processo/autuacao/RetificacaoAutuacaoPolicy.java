@@ -3,10 +3,12 @@ package com.tcc.pjb.backend.service.processo.autuacao;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
+@Component
 public final class RetificacaoAutuacaoPolicy {
 
-    private RetificacaoAutuacaoPolicy() {}
+    public RetificacaoAutuacaoPolicy() {}
 
     public record RetificacaoInput(
             RitoProcessual ritoAtual,

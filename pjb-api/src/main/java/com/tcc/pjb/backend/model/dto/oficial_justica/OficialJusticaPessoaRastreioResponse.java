@@ -4,6 +4,9 @@ import com.tcc.pjb.backend.model.dto.intelligence.PessoaLocalizacaoResponse;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 
 public record OficialJusticaPessoaRastreioResponse(
         String mode,
@@ -14,9 +17,18 @@ public record OficialJusticaPessoaRastreioResponse(
         String mandadoId,
         Target target,
         ProcessoContext processo,
+        @Schema(description = "Sinais da Receita Federal para rastreio — estrutura definida pelo sistema externo", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> sinaisReceita,
+        @Schema(description = "Prontuario nacional do rastreado — dados provenientes de sistemas federais", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> prontuarioNacional,
         PessoaLocalizacaoResponse localizacao,
+        @Schema(description = "Heuristica operacional de localizacao — parametros variam por tipo de pessoa", implementation = Object.class)
+        @Size(max = 50)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         Map<String, Object> heuristicaOperacional,
         List<String> alerts
 ) {
@@ -49,3 +61,4 @@ public record OficialJusticaPessoaRastreioResponse(
     ) {
     }
 }
+

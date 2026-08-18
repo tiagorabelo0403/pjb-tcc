@@ -5,32 +5,40 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
+@IdClass(AuthzTrailId.class)
 @Table(name = "tb_authz_trail_read_model", indexes = {
         @Index(name = "idx_authz_trail_occurred", columnList = "occurred_at"),
         @Index(name = "idx_authz_trail_action_resource", columnList = "action, resource_type, occurred_at"),
         @Index(name = "idx_authz_trail_actor", columnList = "actor_id, occurred_at"),
         @Index(name = "idx_authz_trail_request", columnList = "request_id"),
         @Index(name = "idx_authz_trail_integration", columnList = "integration_code, occurred_at"),
-        @Index(name = "idx_authz_trail_institutional", columnList = "institutional_unit_code, institutional_box_code, institutional_capability_code, occurred_at"),
-        @Index(name = "idx_authz_trail_payload", columnList = "payload_hash", unique = true)
+        @Index(name = "idx_authz_trail_institutional", columnList = "institutional_unit_code, institutional_box_code, institutional_capability_code, occurred_at")
 })
 public class PjbAuthorizationTrailReadModelEntry {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "authz_trail_seq")
+    @SequenceGenerator(name = "authz_trail_seq", sequenceName = "seq_authz_trail_id", allocationSize = 1)
     private Long id;
+
+    @Id
+    @Column(name = "occurred_month", nullable = false)
+    private int occurredMonth;
 
     @Column(name = "occurred_at", nullable = false)
     private LocalDateTime occurredAt;
@@ -122,7 +130,7 @@ public class PjbAuthorizationTrailReadModelEntry {
     @Column(name = "expedicao_uuid", nullable = false, length = 120)
     private String expedicaoUuid;
 
-    @Column(name = "payload_hash", nullable = false, length = 128, unique = true)
+    @Column(name = "payload_hash", nullable = false, length = 128)
     private String payloadHash;
 
     @Column(name = "audit_description", nullable = false, columnDefinition = "TEXT")
@@ -210,5 +218,7 @@ public class PjbAuthorizationTrailReadModelEntry {
         if (occurredAt == null) {
             occurredAt = LocalDateTime.now(ZoneOffset.UTC);
         }
+        ZonedDateTime zdt = occurredAt.atZone(ZoneOffset.UTC);
+        occurredMonth = zdt.getYear() * 100 + zdt.getMonthValue();
     }
 }

@@ -1,0 +1,3 @@
+ALTER TABLE tb_rito_feedback
+    ALTER COLUMN confidence TYPE DOUBLE PRECISION
+    USING confidence::DOUBLE PRECISION;

@@ -1,0 +1,28 @@
+{
+  "version": "v1",
+  "schema": "LaianeMpOficioResponse",
+  "generated": "2026-05-29",
+  "fields": [
+    "trackingCode",
+    "tipo",
+    "status",
+    "protocolo",
+    "assunto",
+    "conteudo",
+    "documentoFormalAssinado",
+    "assinaturaQualificada",
+    "validacaoSoberana",
+    "enviadoEm",
+    "entregueEm",
+    "createdAt",
+    "updatedAt"
+  ],
+  "required_format": {
+    "trackingCode": "uuid"
+  },
+  "prohibited": [
+    "id",
+    "origemId",
+    "destinoId"
+  ]
+}

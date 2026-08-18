@@ -2,6 +2,9 @@ package com.tcc.pjb.backend.service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.access.AccessDeniedException;
@@ -16,6 +19,9 @@ import com.tcc.pjb.backend.core.kernel.advisory.NegotiationLanguageHeuristics;
 import com.tcc.pjb.backend.mapper.ChatMensagemMapper;
 import com.tcc.pjb.backend.model.dto.ChatMensagemRequest;
 import com.tcc.pjb.backend.model.dto.ChatMensagemResponse;
+import com.tcc.pjb.backend.model.dto.acordo.ChatAcordoAbrirSalaRequest;
+import com.tcc.pjb.backend.model.dto.acordo.ChatAcordoConvidarParticipanteRequest;
+import com.tcc.pjb.backend.model.dto.acordo.ChatAcordoSalaResponse;
 import com.tcc.pjb.backend.model.dto.intelligence.AgreementChatAttachmentRequest;
 import com.tcc.pjb.backend.model.entity.ChatMensagem;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -28,6 +34,15 @@ import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.PropostaAcordoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaInteligenteService;
+import com.tcc.pjb.backend.modules.acordo.api.AcordoProcessualChatContext;
+import com.tcc.pjb.backend.modules.acordo.api.AcordoProcessualChatMessageResult;
+import com.tcc.pjb.backend.modules.acordo.application.AcordoApplicationException;
+import com.tcc.pjb.backend.modules.acordo.application.AcordoOperationMetadata;
+import com.tcc.pjb.backend.modules.acordo.application.AcordoProcessualApplicationService;
+import com.tcc.pjb.backend.modules.acordo.application.AcordoProcessualChatBridgeService;
+import com.tcc.pjb.backend.modules.acordo.application.AcordoSessaoSnapshot;
+import com.tcc.pjb.backend.modules.acordo.domain.AcordoMensagemTipo;
+import com.tcc.pjb.backend.modules.acordo.domain.AcordoPapelParticipante;
 import com.tcc.pjb.backend.service.intelligence.AgreementChatGovernanceService;
 import com.tcc.pjb.backend.service.intelligence.AgreementChatLedgerService;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
@@ -55,6 +70,8 @@ public class ChatService {
     private final NegotiationGovernedChatService negotiationGovernedChatService;
     private final AgreementChatGovernanceService agreementChatGovernanceService;
     private final AgreementChatLedgerService agreementChatLedgerService;
+    private final AcordoProcessualApplicationService acordoApplicationService;
+    private final AcordoProcessualChatBridgeService acordoChatBridgeService;
 
     private static final Set<String> PALAVRAS_BLOQUEADAS = Set.of(
             "ofensa", "palavrão", "desrespeito", "xingar", "ameaçar", "idiota",
@@ -72,7 +89,9 @@ public class ChatService {
         List<ChatMensagem> mensagens = chatMensagemRepository.findByProcesso_IdOrderByDataEnvioAsc(processoId);
         List<ChatMensagemResponse> responses = chatMensagemMapper.entidadeParaResponseLista(mensagens);
         PropostaAcordo proposta = propostaAcordoRepository.findTopByProcesso_IdOrderByDataAtualizacaoDesc(processoId).orElse(null);
+        AcordoProcessualChatContext salaContext = acordoChatBridgeService.obterContexto(processoId);
         responses.forEach(response -> enrichSemanticMetadata(response, proposta));
+        responses.forEach(response -> enrichSalaAcordoMetadata(response, salaContext));
         agreementChatLedgerService.enrichHistory(processo, mensagens, responses, proposta);
         return responses;
     }
@@ -96,6 +115,7 @@ public class ChatService {
         validarConteudo(conteudo);
         PropostaAcordo propostaAtual = propostaAcordoRepository.findTopByProcesso_IdOrderByDataAtualizacaoDesc(processo.getId()).orElse(null);
         aplicarGovernancaNegocialSeNecessario(processo, propostaAtual, usuario, conteudo, dto);
+        AcordoProcessualChatMessageResult salaResult = registrarMensagemNaSalaAcordoSeAplicavel(processo, usuario, conteudo, dto, AcordoMensagemTipo.TEXTO);
 
         ChatMensagem mensagemUsuario = ChatMensagem.builder()
                 .processo(processo)
@@ -149,8 +169,83 @@ public class ChatService {
         PropostaAcordo propostaEnriquecida = propostaAcordoRepository.findTopByProcesso_IdOrderByDataAtualizacaoDesc(processo.getId()).orElse(null);
         ChatMensagemResponse response = chatMensagemMapper.entidadeParaResponse(salvaUsuario);
         enrichSemanticMetadata(response, propostaEnriquecida);
+        enrichSalaAcordoMetadata(response, salaResult);
         agreementChatLedgerService.enrichHistory(processo, List.of(salvaUsuario), List.of(response), propostaEnriquecida);
         return response;
+    }
+
+    @Transactional
+    public ChatAcordoSalaResponse abrirSalaAcordo(Long processoId, ChatAcordoAbrirSalaRequest request) {
+        if (processoId == null) {
+            throw new ErroDeValidacaoException(TipoErroValidacao.CAMPO_OBRIGATORIO, "processoId e obrigatorio");
+        }
+        Processo processo = processoRepository.findById(processoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo não encontrado: " + processoId));
+        Usuario usuario = currentUser.getRequired();
+        enforceRead(processo);
+        AcordoSessaoSnapshot sala = acordoApplicationService.abrirSala(new AcordoProcessualApplicationService.AbrirSalaCommand(
+                processoId,
+                usuario.getId(),
+                papelAcordo(usuario),
+                request != null ? request.expiraEm() : null,
+                request != null && request.motivoAbertura() != null && !request.motivoAbertura().isBlank()
+                        ? request.motivoAbertura()
+                        : "Abertura da sala pelo chat de acordo processual",
+                request != null && request.propostaFormalExistente(),
+                false,
+                true,
+                request != null && request.determinacaoJudicial(),
+                request != null && request.cejuscReferenciado(),
+                request != null && request.parteSemAdvogado(),
+                AcordoOperationMetadata.empty()
+        ));
+        return toSalaResponse(acordoChatBridgeService.obterContexto(sala.processoId()));
+    }
+
+    @Transactional
+    public ChatAcordoSalaResponse convidarParticipanteAcordo(Long sessaoId, ChatAcordoConvidarParticipanteRequest request) {
+        if (request == null || request.usuarioId() == null) {
+            throw new ErroDeValidacaoException(TipoErroValidacao.CAMPO_OBRIGATORIO, "usuarioId e obrigatorio");
+        }
+        Usuario usuario = currentUser.getRequired();
+        AcordoSessaoSnapshot sala = acordoApplicationService.obterSala(sessaoId);
+        Processo processo = processoRepository.findById(sala.processoId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo não encontrado: " + sala.processoId()));
+        enforceRead(processo);
+        acordoApplicationService.convidarParticipante(new AcordoProcessualApplicationService.ConvidarParticipanteCommand(
+                sessaoId,
+                usuario.getId(),
+                request.usuarioId(),
+                parsePapelAcordo(request.papel()),
+                AcordoOperationMetadata.empty()
+        ));
+        return toSalaResponse(acordoChatBridgeService.obterContexto(sala.processoId()));
+    }
+
+    @Transactional
+    public ChatAcordoSalaResponse aceitarParticipacaoAcordo(Long sessaoId) {
+        Usuario usuario = currentUser.getRequired();
+        AcordoSessaoSnapshot sala = acordoApplicationService.obterSala(sessaoId);
+        Processo processo = processoRepository.findById(sala.processoId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo não encontrado: " + sala.processoId()));
+        enforceRead(processo);
+        acordoApplicationService.aceitarParticipacao(new AcordoProcessualApplicationService.ParticipacaoCommand(
+                sessaoId,
+                usuario.getId(),
+                AcordoOperationMetadata.empty()
+        ));
+        return toSalaResponse(acordoChatBridgeService.obterContexto(sala.processoId()));
+    }
+
+    @Transactional(readOnly = true)
+    public ChatAcordoSalaResponse obterSalaAcordoDoProcesso(Long processoId) {
+        if (processoId == null) {
+            throw new ErroDeValidacaoException(TipoErroValidacao.CAMPO_OBRIGATORIO, "processoId e obrigatorio");
+        }
+        Processo processo = processoRepository.findById(processoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo não encontrado: " + processoId));
+        enforceRead(processo);
+        return toSalaResponse(acordoChatBridgeService.obterContexto(processoId));
     }
 
 
@@ -263,6 +358,144 @@ public class ChatService {
             }
         }
         return false;
+    }
+
+    private AcordoProcessualChatMessageResult registrarMensagemNaSalaAcordoSeAplicavel(Processo processo,
+                                                                                       Usuario usuario,
+                                                                                       String conteudo,
+                                                                                       ChatMensagemRequest dto,
+                                                                                       AcordoMensagemTipo tipo) {
+        boolean explicitAgreementChannel = tipo == AcordoMensagemTipo.DOCUMENTO || isExplicitAgreementChannel(dto);
+        boolean negotiationCandidate = isNegotiationCandidate(processo, conteudo, dto);
+        if (!explicitAgreementChannel && !negotiationCandidate) {
+            return AcordoProcessualChatMessageResult.ignorada("Mensagem fora do canal de acordo.");
+        }
+        try {
+            return acordoChatBridgeService.registrarMensagemDoChat(new AcordoProcessualChatBridgeService.AcordoProcessualChatMessageCommand(
+                    processo.getId(),
+                    usuario.getId(),
+                    tipo,
+                    conteudo,
+                    isMensagemConfidencial(dto, processo),
+                    explicitAgreementChannel,
+                    metadataFrom(dto)
+            ));
+        } catch (AcordoApplicationException ex) {
+            if (explicitAgreementChannel) {
+                throw new RegraNegocioException(ex.getMessage());
+            }
+            return AcordoProcessualChatMessageResult.ignorada(ex.getMessage());
+        }
+    }
+
+    private void enrichSalaAcordoMetadata(ChatMensagemResponse response, AcordoProcessualChatContext context) {
+        if (response == null || context == null) {
+            return;
+        }
+        response.setSalaAcordoId(context.sessaoId());
+        response.setStatusSalaAcordo(context.status());
+        response.setTipoSalaAcordo(context.tipoSala());
+        response.setConfidencialidadeSalaAcordo(context.confidencialidadeNivel());
+        response.setSalaAcordoAtiva(context.salaAtiva());
+    }
+
+    private void enrichSalaAcordoMetadata(ChatMensagemResponse response, AcordoProcessualChatMessageResult result) {
+        if (response == null || result == null) {
+            return;
+        }
+        response.setSalaAcordoId(result.sessaoId());
+        response.setStatusSalaAcordo(result.statusSala());
+        response.setConfidencialidadeSalaAcordo(result.confidencialidadeNivel());
+        response.setMensagemSalaAcordoId(result.mensagemSalaId());
+        response.setMensagemEspelhadaSalaAcordo(result.espelhadaNaSala());
+        response.setMotivoSalaAcordo(result.motivo());
+        response.setSalaAcordoAtiva(result.sessaoId() != null);
+    }
+
+    private ChatAcordoSalaResponse toSalaResponse(AcordoProcessualChatContext context) {
+        return new ChatAcordoSalaResponse(
+                context.processoId(),
+                context.sessaoId(),
+                context.status(),
+                context.tipoSala(),
+                context.confidencialidadeNivel(),
+                context.segredoJustica(),
+                context.salaAtiva(),
+                context.expiraEm(),
+                context.participantesAceitos()
+        );
+    }
+
+    private AcordoPapelParticipante papelAcordo(Usuario usuario) {
+        TipoUsuario tipo = usuario != null ? usuario.getTipoUsuario() : null;
+        if (tipo == null) {
+            return AcordoPapelParticipante.PARTE;
+        }
+        if (tipo.isMagistratura()) {
+            return AcordoPapelParticipante.MAGISTRADO;
+        }
+        if (tipo.isConciliacaoMediacao()) {
+            return tipo == TipoUsuario.MEDIADOR ? AcordoPapelParticipante.MEDIADOR : AcordoPapelParticipante.CONCILIADOR;
+        }
+        if (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isProcuradoria()) {
+            return AcordoPapelParticipante.ADVOGADO;
+        }
+        if (tipo.isServidorJudiciario() || tipo.isAssessor() || tipo.isAdministradorSistema()) {
+            return AcordoPapelParticipante.SERVIDOR_AUTORIZADO;
+        }
+        return AcordoPapelParticipante.PARTE;
+    }
+
+    private AcordoPapelParticipante parsePapelAcordo(String value) {
+        if (value == null || value.isBlank()) {
+            return AcordoPapelParticipante.PARTE;
+        }
+        try {
+            return AcordoPapelParticipante.valueOf(value.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            throw new ErroDeValidacaoException(TipoErroValidacao.FORMATO_INVALIDO, "papel de participante invalido");
+        }
+    }
+
+    private boolean isExplicitAgreementChannel(ChatMensagemRequest dto) {
+        if (dto == null) {
+            return false;
+        }
+        String canal = dto.getCanal() == null ? "" : dto.getCanal().toLowerCase(Locale.ROOT);
+        String tipo = dto.getTipoMensagem() == null ? "" : dto.getTipoMensagem().toLowerCase(Locale.ROOT);
+        return containsAny(canal, "acordo", "negocial", "conciliacao", "conciliação", "mediacao", "mediação")
+                || containsAny(tipo, "acordo", "negociacao", "negociação", "proposta", "contraproposta");
+    }
+
+    private boolean isMensagemConfidencial(ChatMensagemRequest dto, Processo processo) {
+        if (processo != null && processo.isSigiloso()) {
+            return true;
+        }
+        return dto != null && (dto.isSigiloso() || dto.getNivelSigilo() > 0 || dto.isCriptografado());
+    }
+
+    private AcordoOperationMetadata metadataFrom(ChatMensagemRequest dto) {
+        if (dto == null) {
+            return AcordoOperationMetadata.empty();
+        }
+        return new AcordoOperationMetadata(sha256OrNull(dto.getIpOrigem()), sha256OrNull(dto.getDeviceInfo()));
+    }
+
+    private String sha256OrNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashed = digest.digest(value.trim().getBytes(StandardCharsets.UTF_8));
+            StringBuilder builder = new StringBuilder(hashed.length * 2);
+            for (byte item : hashed) {
+                builder.append(String.format("%02x", item));
+            }
+            return builder.toString();
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("algoritmo SHA-256 indisponivel", ex);
+        }
     }
 
     private void aplicarGovernancaNegocialSeNecessario(Processo processo, PropostaAcordo proposta, Usuario usuario, String conteudo, ChatMensagemRequest dto) {
@@ -381,6 +614,7 @@ public class ChatService {
                 request != null ? request.hash() : null,
                 request != null ? request.bytes() : null
         );
+        AcordoProcessualChatMessageResult salaResult = registrarMensagemNaSalaAcordoSeAplicavel(processo, usuario, content, null, AcordoMensagemTipo.DOCUMENTO);
         ChatMensagem entity = chatMensagemRepository.save(ChatMensagem.builder()
                 .processo(processo)
                 .usuario(usuario)
@@ -389,6 +623,7 @@ public class ChatService {
                 .build());
         ChatMensagemResponse response = chatMensagemMapper.entidadeParaResponse(entity);
         enrichSemanticMetadata(response, proposta);
+        enrichSalaAcordoMetadata(response, salaResult);
         agreementChatLedgerService.enrichHistory(processo, List.of(entity), List.of(response), proposta);
         return response;
     }

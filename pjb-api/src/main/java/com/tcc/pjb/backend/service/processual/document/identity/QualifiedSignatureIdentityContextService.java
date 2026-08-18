@@ -538,7 +538,7 @@ public class QualifiedSignatureIdentityContextService {
             if (tipoUsuario.isProcuradoria()) {
                 return "PROCURADORIA";
             }
-            if (tipoUsuario.isDelegadoOuAgente()) {
+            if (tipoUsuario.isSegurancaPublica()) {
                 return "POLICIA_JUDICIARIA";
             }
             if (tipoUsuario.isAdvocacia()) {
@@ -547,12 +547,9 @@ public class QualifiedSignatureIdentityContextService {
             if (tipoUsuario.isServidorJudiciario()) {
                 return "UNIDADE_JUDICIAL";
             }
-        }
-        if (papelDetalhado.startsWith("OFICIAL_JUSTICA")) {
-            return "OFICIAL_JUSTICA";
-        }
-        if (papelBase.equals("UNIDADE_JUDICIAL")) {
-            return "UNIDADE_JUDICIAL";
+            if (tipoUsuario == TipoUsuario.OFICIAL_JUSTICA || tipoUsuario == TipoUsuario.OFICIAL_JUSTICA_AVALIADOR) {
+                return "OFICIAL_JUSTICA";
+            }
         }
         return "ASSINANTE_INSTITUCIONAL";
     }

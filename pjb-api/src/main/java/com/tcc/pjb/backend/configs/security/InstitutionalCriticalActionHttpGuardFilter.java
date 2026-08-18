@@ -15,14 +15,11 @@ import java.util.Locale;
 import java.util.Map;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 35)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class InstitutionalCriticalActionHttpGuardFilter extends OncePerRequestFilter {
 
@@ -88,14 +85,14 @@ public class InstitutionalCriticalActionHttpGuardFilter extends OncePerRequestFi
         if (!"POST".equals(method)) {
             return null;
         }
+        if (path.startsWith("/api/v1/recursal/processos/") && path.endsWith("/recurso")) {
+            return new GuardPolicy(InstitutionalSensitiveAct.PETICIONAR_EM_NOME_DO_ORGAO, "RECURSAL_UNIFICADO");
+        }
         if (path.startsWith("/api/v1/mp/manifestacao/")) {
             return new GuardPolicy(InstitutionalSensitiveAct.ASSINAR_MANIFESTACAO, "MP_MANIFESTACAO");
         }
         if (path.startsWith("/api/v1/mp/parecer/")) {
             return new GuardPolicy(InstitutionalSensitiveAct.ASSINAR_MANIFESTACAO, "MP_PARECER");
-        }
-        if (path.startsWith("/api/v1/mp/recurso/")) {
-            return new GuardPolicy(InstitutionalSensitiveAct.PETICIONAR_EM_NOME_DO_ORGAO, "MP_RECURSO");
         }
         if (path.startsWith("/api/v1/mp/requisicao/diligencia/")) {
             return new GuardPolicy(InstitutionalSensitiveAct.ASSINAR_MANIFESTACAO, "MP_REQUISICAO_DILIGENCIA");
@@ -115,17 +112,11 @@ public class InstitutionalCriticalActionHttpGuardFilter extends OncePerRequestFi
         if (path.endsWith("/redistribuicao") && path.startsWith("/api/v1/distribuicao/processual/processos/")) {
             return new GuardPolicy(InstitutionalSensitiveAct.REDISTRIBUICAO_SENSIVEL, "DISTRIBUICAO_REDISCRITICA");
         }
-        if (path.endsWith("/redistribuicao") && path.startsWith("/api/v1/secretaria/especializada/processos/")) {
+        if (path.endsWith("/redistribuicao") && path.startsWith("/api/v1/secretariat/especializada/processos/")) {
             return new GuardPolicy(InstitutionalSensitiveAct.REDISTRIBUICAO_SENSIVEL, "SECRETARIA_REDISCRITICA");
-        }
-        if (path.startsWith("/api/v1/procuradoria/operacional/processos/") && path.endsWith("/recurso")) {
-            return new GuardPolicy(InstitutionalSensitiveAct.PETICIONAR_EM_NOME_DO_ORGAO, "PROCURADORIA_RECURSO");
         }
         if (path.startsWith("/api/v1/procuradoria/operacional/processos/") && path.endsWith("/parecer")) {
             return new GuardPolicy(InstitutionalSensitiveAct.ASSINAR_MANIFESTACAO, "PROCURADORIA_PARECER");
-        }
-        if (path.startsWith("/api/v1/defensor/recurso/")) {
-            return new GuardPolicy(InstitutionalSensitiveAct.PETICIONAR_EM_NOME_DO_ORGAO, "DEFENSORIA_RECURSO");
         }
         if (path.startsWith("/api/v1/perito/operacional/processos/") && path.endsWith("/laudo")) {
             return new GuardPolicy(InstitutionalSensitiveAct.ASSINAR_MANIFESTACAO, "PERITO_LAUDO");

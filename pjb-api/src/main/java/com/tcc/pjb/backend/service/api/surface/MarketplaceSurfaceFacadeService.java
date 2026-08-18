@@ -55,6 +55,8 @@ public class MarketplaceSurfaceFacadeService {
                 request.numeroExterno(),
                 request.tipoJustica(),
                 request.ramoDireito(),
+                request.uf(),
+                request.comarca(),
                 request.classeProcessual(),
                 request.assunto(),
                 request.pedidoPrincipal(),
@@ -63,7 +65,13 @@ public class MarketplaceSurfaceFacadeService {
                 request.parteAutoraCpf(),
                 request.parteReuNome(),
                 request.parteReuCpf(),
-                request.valorCausa()
+                request.valorCausa(),
+                request.ufAutor(),
+                request.comarcaAutor(),
+                request.ufReu(),
+                request.comarcaReu(),
+                request.enderecoReuDesconhecido(),
+                request.documentos()
         ), clientId);
         return new MarketplaceProtocoloResponse(
                 result.processoId(),
@@ -72,7 +80,9 @@ public class MarketplaceSurfaceFacadeService {
                 result.status(),
                 result.tipoJustica(),
                 result.ramoDireito(),
-                result.recebidoEm()
+                result.recebidoEm(),
+                result.documentacaoCompleta(),
+                result.documentosFaltantes()
         );
     }
 

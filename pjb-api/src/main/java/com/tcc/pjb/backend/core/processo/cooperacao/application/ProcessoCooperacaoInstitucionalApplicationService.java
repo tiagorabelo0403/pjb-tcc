@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ProcessoCooperacaoInstitucionalApplicationService {
@@ -34,6 +35,7 @@ public class ProcessoCooperacaoInstitucionalApplicationService {
         this.outboxPublisher = Objects.requireNonNull(outboxPublisher);
     }
 
+    @PjbTransactionalBudget(operation = "processo.cooperacao-institucional.orquestrar", maxMillis = 3000)
     @Transactional
     public ProcessoCooperacaoInstitucionalAggregate orquestrar(Long processoId) {
         ProcessoRuntimeContext contexto = processoRuntimeResolver.resolver(processoId);

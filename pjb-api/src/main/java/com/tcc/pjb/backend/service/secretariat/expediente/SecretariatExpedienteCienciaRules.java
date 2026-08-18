@@ -1,10 +1,12 @@
 package com.tcc.pjb.backend.service.secretariat.expediente;
 
 import java.time.Instant;
+import org.springframework.stereotype.Component;
 
+@Component
 public final class SecretariatExpedienteCienciaRules {
 
-    private SecretariatExpedienteCienciaRules() {}
+    public SecretariatExpedienteCienciaRules() {}
 
     public record CienciaInput(
             boolean temRegistroIntimacao,

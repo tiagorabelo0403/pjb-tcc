@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.model.repository;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +26,10 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
 
     
     Optional<Processo> findByNumeroUnificado(String numeroUnificado);
+
+    boolean existsByNumeroProcesso(String numeroProcesso);
+
+    boolean existsByNumeroUnificado(String numeroUnificado);
 
     @EntityGraph(attributePaths = {"jurisdicao", "usuario"})
     @Query("""
@@ -61,10 +66,10 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
             LEFT JOIN p.jurisdicao j
             WHERE (:excludeId IS NULL OR p.id <> :excludeId)
               AND (:tribunal IS NULL OR :tribunal = ''
-                    OR UPPER(COALESCE(p.tribunal, '')) = UPPER(:tribunal)
-                    OR UPPER(COALESCE(j.codigo, '')) = UPPER(:tribunal)
-                    OR UPPER(COALESCE(j.sigla, '')) = UPPER(:tribunal))
-              AND (:classe IS NULL OR :classe = '' OR UPPER(COALESCE(p.classeProcessual, '')) = UPPER(:classe))
+                    OR UPPER(p.tribunal) = UPPER(:tribunal)
+                    OR UPPER(j.codigo) = UPPER(:tribunal)
+                    OR UPPER(j.sigla) = UPPER(:tribunal))
+              AND (:classe IS NULL OR :classe = '' OR UPPER(p.classeProcessual) = UPPER(:classe))
               AND (:assunto IS NULL OR :assunto = ''
                     OR LOWER(COALESCE(p.assunto, '')) LIKE LOWER(CONCAT('%', :assunto, '%'))
                     OR LOWER(:assunto) LIKE LOWER(CONCAT('%', COALESCE(p.assunto, ''), '%')))
@@ -93,7 +98,7 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
             WHERE p.ramoDireito IS NOT NULL
               AND p.statusProcesso NOT IN :statusIgnorados
               AND p.id > :lastProcessoId
-              AND UPPER(COALESCE(p.tribunal, '')) = UPPER(:tribunalCodigo)
+              AND UPPER(p.tribunal) = UPPER(:tribunalCodigo)
             ORDER BY p.id ASC
             """)
     Slice<Processo> findDataJudFeedBatch(@Param("lastProcessoId") Long lastProcessoId,
@@ -119,6 +124,34 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
     
     @Query("SELECT COUNT(p) FROM Processo p WHERE p.jurisdicao.id = :jurisdicaoId AND p.statusProcesso <> 'ARQUIVADO'")
     long countByJurisdicaoIdAndStatusAtivo(@Param("jurisdicaoId") Long jurisdicaoId);
+
+    long countByStatusProcesso(StatusProcesso status);
+
+    @Query("""
+            SELECT COUNT(p) FROM Processo p
+            WHERE p.statusProcesso = :recursalStatus
+               OR p.faseAtual IN :recursalPhases
+            """)
+    long countRecursais(@Param("recursalStatus") StatusProcesso recursalStatus,
+                        @Param("recursalPhases") Collection<FaseProcessual> recursalPhases);
+
+    @Query(value = """
+            SELECT COALESCE(p.ramo_direito, 'NAO_CLASSIFICADO') AS ramo,
+                   COUNT(*) AS total
+            FROM tb_processo p
+            GROUP BY COALESCE(p.ramo_direito, 'NAO_CLASSIFICADO')
+            ORDER BY ramo ASC
+            """, nativeQuery = true)
+    List<Object[]> countPorRamo();
+
+    @Query(value = """
+            SELECT COALESCE(p.status_processo, 'NAO_CLASSIFICADO') AS status,
+                   COUNT(*) AS total
+            FROM tb_processo p
+            GROUP BY COALESCE(p.status_processo, 'NAO_CLASSIFICADO')
+            ORDER BY status ASC
+            """, nativeQuery = true)
+    List<Object[]> countPorStatus();
 
     
 
@@ -153,10 +186,11 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
     @Query("""
             SELECT p FROM Processo p
               JOIN p.jurisdicao j
+              LEFT JOIN j.comarcaEntidade c
               LEFT JOIN p.usuario u
             WHERE (:cpf IS NULL OR :cpf = '' OR p.parteAutoraCpf = :cpf OR p.parteReuCpf = :cpf OR u.cpf = :cpf)
               AND (:numero IS NULL OR :numero = '' OR p.numeroUnificado = :numero OR p.numeroProcesso = :numero)
-              AND (:uf IS NULL OR :uf = '' OR j.estado = :uf)
+              AND (:uf IS NULL OR :uf = '' OR COALESCE(c.uf, j.estado) = :uf)
               AND (:status IS NULL OR p.statusProcesso = :status)
             ORDER BY p.dataUltimaMovimentacao DESC NULLS LAST, p.id DESC
             """)
@@ -168,9 +202,9 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
 
     
     @EntityGraph(attributePaths = {"jurisdicao"})
-    @Query("SELECT p FROM Processo p JOIN p.jurisdicao j " +
-            "WHERE (:uf IS NULL OR j.estado = :uf) " +
-            "AND (:comarca IS NULL OR j.comarca = :comarca) " +
+    @Query("SELECT p FROM Processo p JOIN p.jurisdicao j LEFT JOIN j.comarcaEntidade c " +
+            "WHERE (:uf IS NULL OR COALESCE(c.uf, j.estado) = :uf) " +
+            "AND (:comarca IS NULL OR COALESCE(c.nome, j.comarca) = :comarca) " +
             "AND p.statusProcesso <> 'ARQUIVADO'")
     Page<Processo> findForMagistradoDashboard(@Param("uf") String uf,
                                              @Param("comarca") String comarca,
@@ -298,6 +332,26 @@ Optional<Processo> findMagistraturaActsScopedById(@Param("id") Long id);
                 .or(() -> findById(id));
     }
 
+    interface JurisdicaoLoadProjection {
+        Long getJurisdicaoId();
+        Long getTotalAtivos();
+        Long getAtrasoEstrutural();
+    }
+
+    @Query(value = """
+            SELECT
+                p.jurisdicao_id AS jurisdicaoId,
+                SUM(CASE WHEN p.status_processo IS NOT NULL
+                              AND p.status_processo <> 'ARQUIVADO'
+                         THEN 1 ELSE 0 END) AS totalAtivos,
+                SUM(CASE WHEN p.data_ultima_movimentacao IS NOT NULL
+                              AND p.data_ultima_movimentacao < :staleThreshold
+                         THEN 1 ELSE 0 END) AS atrasoEstrutural
+            FROM tb_processo p
+            WHERE p.jurisdicao_id IS NOT NULL
+            GROUP BY p.jurisdicao_id
+            """, nativeQuery = true)
+    List<JurisdicaoLoadProjection> computeLoadByJurisdicao(@Param("staleThreshold") LocalDateTime staleThreshold);
 
     @Query("""
             SELECT p.id FROM Processo p
@@ -340,6 +394,8 @@ Optional<Processo> findMagistraturaActsScopedById(@Param("id") Long id);
             """)
     Page<Processo> findByAdvogadoCpf(@Param("cpf") String cpf, Pageable pageable);
 
+    Page<Processo> findByVaraAndStatusProcesso(String vara, StatusProcesso statusProcesso, Pageable pageable);
+
     @EntityGraph(attributePaths = {"jurisdicao"})
     @Query("""
             SELECT p FROM Processo p
@@ -351,29 +407,29 @@ Optional<Processo> findMagistraturaActsScopedById(@Param("id") Long id);
 
     @EntityGraph(attributePaths = {"jurisdicao"})
     @Query("""
-            SELECT p FROM Processo p JOIN p.jurisdicao j
-            WHERE (:comarca IS NULL OR j.comarca = :comarca)
-              AND (:uf IS NULL OR j.estado = :uf)
+            SELECT p FROM Processo p JOIN p.jurisdicao j LEFT JOIN j.comarcaEntidade c
+            WHERE (:comarca IS NULL OR COALESCE(c.nome, j.comarca) = :comarca)
+              AND (:uf IS NULL OR COALESCE(c.uf, j.estado) = :uf)
             ORDER BY p.dataUltimaMovimentacao DESC NULLS LAST, p.id DESC
             """)
     Page<Processo> findByComarcaAndUf(@Param("comarca") String comarca, @Param("uf") String uf, Pageable pageable);
 
     @Query("""
-            SELECT COUNT(p) FROM Processo p JOIN p.jurisdicao j
-            WHERE (:uf IS NULL OR j.estado = :uf)
+            SELECT COUNT(p) FROM Processo p JOIN p.jurisdicao j LEFT JOIN j.comarcaEntidade c
+            WHERE (:uf IS NULL OR COALESCE(c.uf, j.estado) = :uf)
             """)
     long countByUf(@Param("uf") String uf);
 
     @Query("""
-            SELECT COUNT(p) FROM Processo p JOIN p.jurisdicao j
-            WHERE (:uf IS NULL OR j.estado = :uf)
-              AND (:comarca IS NULL OR j.comarca = :comarca)
+            SELECT COUNT(p) FROM Processo p JOIN p.jurisdicao j LEFT JOIN j.comarcaEntidade c
+            WHERE (:uf IS NULL OR COALESCE(c.uf, j.estado) = :uf)
+              AND (:comarca IS NULL OR COALESCE(c.nome, j.comarca) = :comarca)
             """)
     long countByUfAndComarca(@Param("uf") String uf, @Param("comarca") String comarca);
 
     @Query("""
-            SELECT COUNT(p) FROM Processo p JOIN p.jurisdicao j
-            WHERE (:uf IS NULL OR j.estado = :uf)
+            SELECT COUNT(p) FROM Processo p JOIN p.jurisdicao j LEFT JOIN j.comarcaEntidade c
+            WHERE (:uf IS NULL OR COALESCE(c.uf, j.estado) = :uf)
               AND p.statusProcesso <> 'ARQUIVADO'
               AND p.faseAtual IS NOT NULL
             """)

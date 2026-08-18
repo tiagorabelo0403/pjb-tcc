@@ -4,7 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
@@ -130,7 +133,7 @@ class PjbAdaptiveDataPlaneServiceTest {
 
     @Test
     void shouldForcePrimaryDuringReadAfterWriteWindow() {
-        ReadAfterWriteConsistencyPolicy raw = new ReadAfterWriteConsistencyPolicy();
+        ReadAfterWriteConsistencyPolicy raw = new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5));
         org.springframework.web.context.request.RequestContextHolder.setRequestAttributes(new org.springframework.web.context.request.ServletRequestAttributes(new MockHttpServletRequest()));
         try {
             raw.markWrite();

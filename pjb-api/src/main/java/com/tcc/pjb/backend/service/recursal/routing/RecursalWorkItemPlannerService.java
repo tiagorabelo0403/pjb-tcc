@@ -631,8 +631,8 @@ public class RecursalWorkItemPlannerService {
 
     private static String resolveUf(Processo processo) {
         Jurisdicao jurisdicao = processo.getJurisdicao();
-        if (jurisdicao != null && jurisdicao.getEstado() != null && !jurisdicao.getEstado().isBlank()) {
-            return jurisdicao.getEstado().trim().toUpperCase(Locale.ROOT);
+        if (jurisdicao != null && jurisdicao.getUf() != null && !jurisdicao.getUf().isBlank()) {
+            return jurisdicao.getUf().trim().toUpperCase(Locale.ROOT);
         }
         return "";
     }

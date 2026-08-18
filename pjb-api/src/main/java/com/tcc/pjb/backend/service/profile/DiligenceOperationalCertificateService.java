@@ -22,6 +22,7 @@ import com.tcc.pjb.backend.model.entity.intelligence.DiligenciaOperadorCheckpoin
 import com.tcc.pjb.backend.model.repository.DiligenciaOperadorCertidaoRepository;
 import com.tcc.pjb.backend.model.repository.DiligenciaOperadorCheckpointEventoRepository;
 import com.tcc.pjb.backend.service.processual.document.envelope.QualifiedDocumentSignatureEnvelopeService;
+import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocumentEnvelope;
 
 @Service
 public class DiligenceOperationalCertificateService {
@@ -189,7 +190,7 @@ public class DiligenceOperationalCertificateService {
 
     private DiligenceCertificateResponse toResponse(Usuario actor,
                                                     DiligenciaOperadorCertidao entity) {
-        QualifiedDocumentSignatureEnvelopeService.SignedContent signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
+        SignedDocumentEnvelope signedContent = qualifiedDocumentSignatureEnvelopeService.signFreeContent(
                 null,
                 actor,
                 entity.getTitulo(),

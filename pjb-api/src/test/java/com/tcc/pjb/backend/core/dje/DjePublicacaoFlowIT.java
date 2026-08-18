@@ -31,7 +31,7 @@ class DjePublicacaoFlowIT extends PjbIntegrationTestBase {
 
     @Test
     void devePublicarConsolidarENotificar() {
-        org.mockito.Mockito.when(djeHttpClient.enviar(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+        org.mockito.Mockito.when(djeHttpClient.enviar(org.mockito.ArgumentMatchers.any(com.tcc.pjb.backend.core.dje.domain.DjeEnvioCommand.class)))
                 .thenReturn(new com.tcc.pjb.backend.core.dje.domain.DjeEnvioResult("ED123"));
         Processo processo = processoRepository.save(Processo.builder()
                 .numeroProcesso("DJE-1")
