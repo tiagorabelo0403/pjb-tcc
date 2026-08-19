@@ -16,9 +16,6 @@ import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.core.security.persona.PersonaKey;
 import com.tcc.pjb.backend.core.security.persona.UserPersona;
 import com.tcc.pjb.backend.core.security.persona.UserPersonaService;
-import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenPayload;
-import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenService;
-import com.tcc.pjb.backend.core.security.stepup.web.MinisterStepUpFilter;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.dto.magistratura.MagistraturaJudicialActCode;
 import com.tcc.pjb.backend.model.dto.magistratura.MagistraturaJudicialActCommandRequest;
@@ -134,9 +131,6 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
 
     @MockitoBean
     private MagistraturaJudicialProvidenceAutomationService providenceAutomationService;
-
-    @MockitoBean
-    private FaceReauthTokenService faceReauthTokenService;
 
     private Processo processo;
     private Usuario ministro;
@@ -434,9 +428,6 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
     @Test
     @WithMockUser(username = "ministro@test.local", roles = "MINISTRO")
     void deveExecutarDecisaoPlenariaEmTrilhaSuperior() throws Exception {
-        long nowSec = Instant.now().getEpochSecond();
-        when(faceReauthTokenService.verifyAndDecode(any()))
-                .thenReturn(new FaceReauthTokenPayload("jti-it-ministro", ministro.getId(), nowSec - 100L, nowSec + 7200L, "FACE_HIGH"));
         when(personaService.getRequiredPersona()).thenReturn(personaMinistro());
         when(ministroPlenarioService.registrarDecisaoPlenaria(eq(processo.getId()), eq("MAIORIA"), eq("Tema constitucional fixado."), eq("Fixada a tese.")))
                 .thenReturn(Map.of("status", "DECISAO_PLENARIA_REGISTRADA", "processoId", processo.getId(), "sessaoId", 1201L));
@@ -483,7 +474,6 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
         );
 
         mockMvc.perform(post("/api/v1/magistratura/processos/{processoId}/atos", processo.getId())
-                        .header(MinisterStepUpFilter.HEADER_FACE_TOKEN, "test-face-token-ministro")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(request)))
                 .andExpect(status().isCreated())
@@ -577,7 +567,9 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
         passkey.setCredentialId(credentialId);
         passkey.setPublicKey("pub-key-" + credentialId);
         passkey.setAlias("passkey-" + credentialId);
-        passkey.setAttestationTrusted(false);
+        passkey.setAuthenticatorAttachment("platform");
+        passkey.setAttestationFmt("tpm");
+        passkey.setAttestationTrusted(true);
         passkey.setEnrollSuspectNetwork(false);
         passkey.setRiskScoreEnroll(0);
         trustedDeviceRepository.save(passkey);

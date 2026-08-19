@@ -8,9 +8,12 @@ import com.tcc.pjb.backend.model.dto.processual.AncoraTerritorial;
 import com.tcc.pjb.backend.model.dto.processual.EnderecosProcessuaisRequest;
 import com.tcc.pjb.backend.model.entity.competencia.JurisdicaoTerritorial;
 import com.tcc.pjb.backend.model.entity.competencia.ModoCompetencia;
+import com.tcc.pjb.backend.model.entity.competencia.Tribunal;
+import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.processual.CriterioTerritorial;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.repository.JurisdicaoTerritorialRepository;
+import com.tcc.pjb.backend.model.repository.TribunalRepository;
 import java.time.LocalDate;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,18 +34,26 @@ class CompetenciaTerritorialResolverIT extends PjbIntegrationTestBase {
     private JurisdicaoTerritorialRepository repository;
 
     @Autowired
+    private TribunalRepository tribunalRepository;
+
+    @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    private Tribunal tribunalTeste;
 
     @BeforeEach
     void limparCatalogo() {
         jdbcTemplate.update("DELETE FROM tb_jurisdicao_territorial WHERE municipio_ibge IN (?, ?, ?)",
                 IBGE_TESTE_UNIDADE_UNICA, IBGE_TESTE_UNIDADES_CONCORRENTES, IBGE_TESTE_FORA_DO_CATALOGO);
+        tribunalTeste = tribunalRepository.findBySigla("TESTE")
+                .orElseGet(() -> tribunalRepository.save(new Tribunal("TESTE", "Tribunal de Teste",
+                        TipoJustica.TRABALHO, GrauJurisdicao.SEGUNDO_GRAU, "CE")));
     }
 
     @Test
     void ritoTrabalhistaComMunicipioNoCatalogoResolveParaUnidadeCorreta() {
         repository.save(new JurisdicaoTerritorial(IBGE_TESTE_UNIDADE_UNICA, "Municipio Teste Unidade Unica", "CE",
-                "TRABALHO", "ORIGINARIA", Set.of("TRT7-0023"), "TESTE", "TRT7, jurisdicao de unidades",
+                "TRABALHO", "ORIGINARIA", Set.of("TRT7-0023"), tribunalTeste, "TRT7, jurisdicao de unidades",
                 LocalDate.of(2010, 1, 1), null));
 
         EnderecosProcessuaisRequest enderecos = new EnderecosProcessuaisRequest(
@@ -69,7 +80,7 @@ class CompetenciaTerritorialResolverIT extends PjbIntegrationTestBase {
                 "TESTE-CONC-0013", "TESTE-CONC-0014", "TESTE-CONC-0015", "TESTE-CONC-0016",
                 "TESTE-CONC-0017", "TESTE-CONC-0018");
         repository.save(new JurisdicaoTerritorial(IBGE_TESTE_UNIDADES_CONCORRENTES, "Municipio Teste Concorrente",
-                "CE", "TRABALHO", "ORIGINARIA", unidadesConcorrentes, "TESTE",
+                "CE", "TRABALHO", "ORIGINARIA", unidadesConcorrentes, tribunalTeste,
                 "Fixture sintetica, prova de suporte a unidades concorrentes no schema", LocalDate.of(2010, 1, 1), null));
 
         EnderecosProcessuaisRequest enderecos = new EnderecosProcessuaisRequest(

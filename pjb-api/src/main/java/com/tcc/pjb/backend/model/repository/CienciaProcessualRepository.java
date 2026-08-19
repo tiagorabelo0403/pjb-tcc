@@ -49,4 +49,16 @@ public interface CienciaProcessualRepository extends JpaRepository<CienciaProces
             @Param("polo") String polo);
 
     long countByProcessoIdAndStatus(Long processoId, StatusCiencia status);
+
+    @Query("""
+            SELECT c FROM CienciaProcessual c
+            WHERE c.processo.vara = :vara
+              AND c.status = 'PENDENTE'
+              AND c.dataExpiracao <= :ateData
+            ORDER BY c.dataExpiracao ASC
+            """)
+    List<CienciaProcessual> findPendentesPorVaraAteData(
+            @Param("vara") String vara,
+            @Param("ateData") Instant ateData,
+            Pageable pageable);
 }

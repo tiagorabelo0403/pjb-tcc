@@ -145,6 +145,14 @@ public class LaianeLawyerController {
         service.revokeProcuracao(id);
     }
 
+    @PostMapping("/procuracoes/{id}/substabelecer")
+    public LaianeLawyerProcuracaoResponse substabelecer(Authentication authentication,
+                                                         @PathVariable Long id,
+                                                         @Valid @RequestBody LaianeSubstabelecimentoRequest req) {
+        enforce(authentication, "laiane_lawyer_procuracao_substabelecer");
+        return mapProcuracao(service.substabelecer(id, req.getAdvogadoDestinoId(), req.isComReservaDePoderes()));
+    }
+
     @PostMapping("/teses")
     public LaianeLawyerTeseResponse createTese(
             Authentication authentication,
@@ -330,6 +338,8 @@ public class LaianeLawyerController {
                 .representacaoPolicy(extractRepresentacaoPolicy(p.getPoderes()))
                 .createdAt(toOffset(p.getCreatedAt()))
                 .updatedAt(toOffset(p.getUpdatedAt()))
+                .substabelecidoDeId(p.getSubstabelecidoDe() == null ? null : p.getSubstabelecidoDe().getId())
+                .comReservaDePoderes(p.isComReservaDePoderes())
                 .build();
     }
 

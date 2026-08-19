@@ -1,7 +1,6 @@
 # Reports
 
 Esta pasta mantém somente artefatos canônicos e a versão mais recente das guards.
-Saídas históricas ponto-a-ponto foram movidas para `archive/` para reduzir poluição visual.
 
 ## Mantidos na raiz desta pasta
 
@@ -9,8 +8,6 @@ Saídas históricas ponto-a-ponto foram movidas para `archive/` para reduzir pol
 - freezes e matrizes ainda vigentes
 - artefatos de integração e cobertura ainda usados na base
 
-## Histórico
+## Snapshots point-in-time (`*_iterationNNN.*`, `iterationNNN_*.*`)
 
-- `archive/` — snapshots antigos por rodada
-
-Snapshots vazios e placeholders históricos não devem permanecer versionados.
+Não são versionados. São saída de rodadas pontuais de scripts/investigação sem valor de referência contínua — o `.gitignore` bloqueia esse padrão na raiz desta pasta (não existe mais `archive/`). Se um snapshot precisar ser preservado por ter valor de referência duradouro, renomeie-o para um nome descritivo sem sufixo de iteração e mantenha-o na raiz.

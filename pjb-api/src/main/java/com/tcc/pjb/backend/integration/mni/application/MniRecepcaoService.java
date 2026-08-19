@@ -24,6 +24,7 @@ import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.judicial.MniRecepcao;
 import com.tcc.pjb.backend.model.repository.MniRecepcaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.time.Instant;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -47,6 +48,7 @@ public class MniRecepcaoService {
     private final PoloCompositionPolicy poloCompositionPolicy;
     private final PoloProcessualApplicationService poloProcessualApplicationService;
     private final DocumentoNacionalValidator documentoNacionalValidator;
+    private final ComarcaResolutionService comarcaResolutionService;
 
     public MniRecepcaoService(ProcessoRepository processoRepository,
                               MniRecepcaoRepository recepcaoRepository,
@@ -55,7 +57,8 @@ public class MniRecepcaoService {
                               AuditLedgerService auditLedger,
                               PoloCompositionPolicy poloCompositionPolicy,
                               PoloProcessualApplicationService poloProcessualApplicationService,
-                              DocumentoNacionalValidator documentoNacionalValidator) {
+                              DocumentoNacionalValidator documentoNacionalValidator,
+                              ComarcaResolutionService comarcaResolutionService) {
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.recepcaoRepository = Objects.requireNonNull(recepcaoRepository);
         this.xmlToProcessoAdapter = Objects.requireNonNull(xmlToProcessoAdapter);
@@ -64,6 +67,7 @@ public class MniRecepcaoService {
         this.poloCompositionPolicy = Objects.requireNonNull(poloCompositionPolicy);
         this.poloProcessualApplicationService = Objects.requireNonNull(poloProcessualApplicationService);
         this.documentoNacionalValidator = Objects.requireNonNull(documentoNacionalValidator);
+        this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService);
     }
 
     @Transactional
@@ -84,6 +88,8 @@ public class MniRecepcaoService {
         }
         MniAdapterResult adapterResult = xmlToProcessoAdapter.fromXml(xml, tribunalOrigem, motivo);
         Processo processo = adapterResult.processo();
+        comarcaResolutionService.resolver(processo.getComarca(), processo.getUf())
+                .ifPresent(processo::setComarcaEntidade);
         Processo salvo = processoRepository.save(processo);
         materializarPolosIniciais(salvo, adapterResult.partes());
         MniRecepcao recepcao = MniRecepcao.builder()

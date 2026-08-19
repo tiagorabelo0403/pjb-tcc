@@ -19,6 +19,7 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.judicial.MniRecepcao;
 import com.tcc.pjb.backend.model.repository.MniRecepcaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,8 @@ class MniRecepcaoServiceQueryAndHealthTest {
         when(recepcaoRepository.findById(44L)).thenReturn(Optional.of(recepcao));
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
-                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator());
+                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator(),
+                comarcaResolutionServiceVazio());
 
         var consulta = service.consultar(new MniConsultaRecepcaoCommand(44L));
         var query = service.consultar(new MniRecepcaoQuery(44L));
@@ -74,7 +76,8 @@ class MniRecepcaoServiceQueryAndHealthTest {
         when(recepcaoRepository.findById(999L)).thenReturn(Optional.empty());
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
-                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator());
+                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator(),
+                comarcaResolutionServiceVazio());
 
         assertThatThrownBy(() -> service.envelope(999L))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -120,7 +123,8 @@ class MniRecepcaoServiceQueryAndHealthTest {
                 .build()));
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
-                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator());
+                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator(),
+                comarcaResolutionServiceVazio());
         var result = service.receberAutos(new MniRecepcaoCommand("TJCE", "COOPERACAO", "<xml/>"));
         var timeline = service.timeline(82L);
 
@@ -128,5 +132,12 @@ class MniRecepcaoServiceQueryAndHealthTest {
         assertThat(timeline).hasSize(2);
         assertThat(timeline.get(0).evento()).isEqualTo("RECEBIDO");
         assertThat(timeline.get(1).evento()).isEqualTo("PROCESSADO");
+    }
+
+    private static ComarcaResolutionService comarcaResolutionServiceVazio() {
+        ComarcaResolutionService service = mock(ComarcaResolutionService.class);
+        when(service.resolver(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(java.util.Optional.empty());
+        return service;
     }
 }

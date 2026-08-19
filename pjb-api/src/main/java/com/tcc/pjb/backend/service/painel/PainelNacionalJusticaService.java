@@ -599,8 +599,8 @@ public class PainelNacionalJusticaService {
         if (processoUf != null) {
             return processoUf;
         }
-        if (processo.getJurisdicao() != null && processo.getJurisdicao().getEstado() != null && !processo.getJurisdicao().getEstado().isBlank()) {
-            String jurisdicaoUf = normalizeUf(processo.getJurisdicao().getEstado());
+        if (processo.getJurisdicao() != null && processo.getJurisdicao().getUf() != null && !processo.getJurisdicao().getUf().isBlank()) {
+            String jurisdicaoUf = normalizeUf(processo.getJurisdicao().getUf());
             if (jurisdicaoUf != null) {
                 return jurisdicaoUf;
             }

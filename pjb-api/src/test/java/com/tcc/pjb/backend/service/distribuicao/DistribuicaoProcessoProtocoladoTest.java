@@ -102,7 +102,7 @@ class DistribuicaoProcessoProtocoladoTest extends PjbIntegrationTestBase {
 
         assertThat(distribuicao.getProcesso().getId()).isEqualTo(processo.getId());
         assertThat(unidade.getCodigo()).isNotBlank();
-        assertThat(unidade.getTribunalCodigo()).isNotBlank();
+        assertThat(unidade.getTribunal().getSigla()).isNotBlank();
         assertThat(distribuicao.getCriadoEm()).isNotNull();
         assertThat(distribuicao.getMotivacao()).contains("score=");
         assertThat(distribuicao.getStatus()).isEqualTo(StatusDistribuicaoCompetencia.APLICADA);

@@ -449,7 +449,7 @@ public class LaianeSentencaService {
     }
 
     private String guessOrgao(Processo processo) {
-        String comarca = processo.getJurisdicao() != null ? processo.getJurisdicao().getComarca() : null;
+        String comarca = processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null;
         if (comarca != null && !comarca.isBlank()) {
             return "Vara da Comarca de " + comarca.trim();
         }

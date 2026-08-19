@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.tcc.pjb.backend.model.dto.desembargador.DesembargadorPlenarioVotoRequest;
@@ -46,10 +45,9 @@ public class DesembargadorPlenarioController {
     @PostMapping("/sessoes/{sessaoId}/votos")
     public ResponseEntity<RelatorPlenarioVoteDto> registrarVoto(@PathVariable Long sessaoId,
                                                                 @Valid @RequestBody DesembargadorPlenarioVotoRequest request,
-                                                                @RequestHeader("X-StepUp-Token") String stepUpToken,
                                                                 Authentication authentication) {
         enforce(authentication, "desembargador_plenario_voto");
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarVoto(sessaoId, request, stepUpToken));
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarVoto(sessaoId, request));
     }
 
     private void enforce(Authentication authentication, String capability) {

@@ -23,6 +23,8 @@ import com.tcc.pjb.backend.service.processual.peticionamento.journey.Peticioname
 import com.tcc.pjb.backend.service.processual.peticionamento.studio.PeticionamentoStudioWorkspaceService;
 import jakarta.validation.Valid;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -166,16 +168,24 @@ public class PeticionamentoController {
         if (authentication == null || authentication.getAuthorities() == null) {
             return CapabilityRateLimitDomain.LAWYER;
         }
-        boolean institutional = authentication.getAuthorities().stream()
+        Set<String> authorities = authentication.getAuthorities().stream()
                 .map(authority -> authority == null ? null : authority.getAuthority())
                 .filter(Objects::nonNull)
                 .map(String::toUpperCase)
+                .collect(Collectors.toSet());
+        boolean institutional = authorities.stream()
                 .anyMatch(authority -> authority.contains("DEFENSOR")
                         || authority.contains("PROCURADOR")
                         || authority.contains("PROMOTOR")
                         || authority.contains("MINISTERIO_PUBLICO")
                         || authority.contains("PROCURADORIA")
                         || authority.contains("DEFENSORIA"));
-        return institutional ? CapabilityRateLimitDomain.INSTITUCIONAL : CapabilityRateLimitDomain.LAWYER;
+        if (institutional) {
+            return CapabilityRateLimitDomain.INSTITUCIONAL;
+        }
+        if (authorities.contains("ROLE_CIDADAO")) {
+            return CapabilityRateLimitDomain.CITIZEN;
+        }
+        return CapabilityRateLimitDomain.LAWYER;
     }
 }

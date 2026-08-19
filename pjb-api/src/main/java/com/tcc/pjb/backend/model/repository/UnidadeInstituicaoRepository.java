@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.model.repository;
 
 import com.tcc.pjb.backend.model.entity.Instituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
+import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +30,6 @@ public interface UnidadeInstituicaoRepository extends JpaRepository<UnidadeInsti
             FROM unidade_ancestral
             """, nativeQuery = true)
     List<Long> findAncestorIdsInclusive(@Param("unidadeId") Long unidadeId);
+
+    List<UnidadeInstituicao> findByTipoAndComarca(TipoUnidadeInstitucional tipo, String comarca);
 }

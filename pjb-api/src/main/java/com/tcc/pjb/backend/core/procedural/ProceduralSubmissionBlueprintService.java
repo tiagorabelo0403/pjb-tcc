@@ -71,7 +71,7 @@ public class ProceduralSubmissionBlueprintService {
                 payload.put("tribunalCodigo", processo.getJurisdicao().getCodigo());
                 payload.put("foro", processo.getJurisdicao().getNome());
                 payload.put("comarcaAutor", processo.getJurisdicao().getCidade());
-                payload.put("ufAutor", processo.getJurisdicao().getEstado());
+                payload.put("ufAutor", processo.getJurisdicao().getUf());
             }
         }
         return analyzeContext(payload, routing, processo != null ? processo.getId() : null);

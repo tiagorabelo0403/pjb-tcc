@@ -17,6 +17,7 @@ import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
+import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopologyMeshService;
 import com.tcc.pjb.backend.service.processual.peticionamento.workspace.InstitutionalMultimediaWorkspaceService;
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
@@ -55,6 +56,7 @@ public class ProcuradoriaOperacionalService {
     private final InstitutionalActorTopologyMeshService institutionalActorTopologyMeshService;
     private final InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService;
     private final InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService;
+    private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
 
     public ProcuradoriaOperacionalService(PerfilDashboardContextFactory contextFactory,
                                           PainelServiceCommons commons,
@@ -65,7 +67,8 @@ public class ProcuradoriaOperacionalService {
                                           SecretariatOperationalRoutingResolver secretariatOperationalRoutingResolver,
                                           InstitutionalActorTopologyMeshService institutionalActorTopologyMeshService,
                                           InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService,
-                                          InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService) {
+                                          InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService,
+                                          MovimentacaoProcessualRegistrar movimentacaoRegistrar) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
@@ -76,6 +79,7 @@ public class ProcuradoriaOperacionalService {
         this.institutionalActorTopologyMeshService = institutionalActorTopologyMeshService;
         this.institutionalMultimediaWorkspaceService = institutionalMultimediaWorkspaceService;
         this.institutionalMaterialActionGuardService = institutionalMaterialActionGuardService;
+        this.movimentacaoRegistrar = movimentacaoRegistrar;
     }
 
     public InstitutionalActorTopologyMeshService.InstitutionalActorTopologyMeshSnapshot malhaProcesso(Long processoId) {
@@ -156,6 +160,7 @@ public class ProcuradoriaOperacionalService {
                 .build();
         contestacaoItem = workItemRepository.save(contestacaoItem);
         commons.publishUserHistory(usuario, "PROCURADOR", "CONTESTACAO_APRESENTADA", "Contestação apresentada pela Procuradoria.", processo, processoId);
+        movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Contestação da Procuradoria apresentada.");
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "CONTESTACAO_PROTOCOLADA");
         out.put("processoId", processoId);
@@ -250,6 +255,7 @@ public class ProcuradoriaOperacionalService {
                 .dueAt(Instant.now().plus(4, ChronoUnit.HOURS))
                 .build();
         parecerItem = workItemRepository.save(parecerItem);
+        movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Parecer da Procuradoria emitido.");
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "PARECER_EMITIDO");
         out.put("processoId", processoId);

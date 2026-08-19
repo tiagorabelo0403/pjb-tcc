@@ -80,6 +80,7 @@ public enum TipoUsuario {
     SERVIDOR,
     SERVIDOR_FORUM,
     ADMINISTRADOR,
+    SUPORTE_TECNICO,
 
     PROFESSOR,
     JURISTA;
@@ -117,6 +118,10 @@ public enum TipoUsuario {
 
     public boolean isDefensoriaPublica() {
         return this == DEFENSOR_PUBLICO || this == DEFENSOR_PUBLICO_FEDERAL;
+    }
+
+    public boolean requiresHardwareAuthAssurance() {
+        return isMagistratura() || isMinisterioPublico() || isDefensoriaPublica();
     }
 
     public boolean isProcuradoria() {

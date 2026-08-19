@@ -65,7 +65,9 @@ class JuizGabineteDecisionalFluxoTest {
         passkey.setCredentialId("cred-juiz-gabinete-it");
         passkey.setPublicKey("pub-key-juiz-gabinete-it-placeholder");
         passkey.setAlias("dispositivo-it");
-        passkey.setAttestationTrusted(false);
+        passkey.setAuthenticatorAttachment("platform");
+        passkey.setAttestationFmt("tpm");
+        passkey.setAttestationTrusted(true);
         passkey.setEnrollSuspectNetwork(false);
         passkey.setRiskScoreEnroll(0);
         trustedDeviceRepository.save(passkey);

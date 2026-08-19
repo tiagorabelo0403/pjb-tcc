@@ -16,6 +16,8 @@ services:
       timeout: 5s
       retries: 15
     restart: unless-stopped
+    mem_limit: ${PJB_N8N_POSTGRES_MEM_LIMIT:-512m}
+    cpus: ${PJB_N8N_POSTGRES_CPUS:-1.0}
 
   n8n-main:
     profiles: ["n8n"]
@@ -62,6 +64,8 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_N8N_MAIN_MEM_LIMIT:-512m}
+    cpus: ${PJB_N8N_MAIN_CPUS:-1.0}
 
   n8n-webhook:
     profiles: ["n8n"]
@@ -102,6 +106,8 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_N8N_WEBHOOK_MEM_LIMIT:-256m}
+    cpus: ${PJB_N8N_WEBHOOK_CPUS:-0.5}
 
   n8n-worker:
     profiles: ["n8n"]
@@ -135,6 +141,8 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_N8N_WORKER_MEM_LIMIT:-512m}
+    cpus: ${PJB_N8N_WORKER_CPUS:-1.0}
 
 volumes:
   pjb_n8n_pg_data:

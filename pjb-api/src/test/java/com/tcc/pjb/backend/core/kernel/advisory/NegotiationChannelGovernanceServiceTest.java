@@ -85,7 +85,6 @@ class NegotiationChannelGovernanceServiceTest {
 
     private static Processo baseProcesso(Long id, String numero) {
         Jurisdicao jurisdicao = new Jurisdicao("TRIB-1", "TJCE", "Tribunal de Justiça do Ceará", TipoJurisdicao.ESTADUAL, NaturezaJurisdicao.CONTENCIOSA, GrauJurisdicao.PRIMEIRO_GRAU, EsferaJurisdicao.JUSTICA_ESTADUAL, MateriaJurisdicao.CIVIL);
-        jurisdicao.setComarca("Quixadá");
         Equipe equipe = new Equipe();
         equipe.setNome("Núcleo Estratégico Contencioso");
         return Processo.builder()

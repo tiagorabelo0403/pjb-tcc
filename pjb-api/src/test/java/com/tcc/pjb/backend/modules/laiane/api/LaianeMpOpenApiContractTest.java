@@ -19,6 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import com.tcc.pjb.backend.configs.EquipeSwitchInterceptor;
 import com.tcc.pjb.backend.configs.api.ApiExceptionHandler;
 import com.tcc.pjb.backend.configs.api.OpenApiConfig;
 import com.tcc.pjb.backend.configs.api.PdfWatermarkAdvice;
@@ -36,7 +37,8 @@ import org.springframework.context.annotation.Import;
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes = {
                         ApiExceptionHandler.class,
-                        PdfWatermarkAdvice.class
+                        PdfWatermarkAdvice.class,
+                        EquipeSwitchInterceptor.class
                 }
         ),
         properties = {

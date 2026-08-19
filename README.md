@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.430%20unit%20%2B%2095%20classes%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.702%20unit%20%2B%20306%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -151,6 +151,7 @@ No guia completo você encontra:
 - o passo a passo de como uma ação é ajuizada, da petição ao protocolo;
 - como funciona a triagem inteligente que analisa cada petição antes de virar processo (e por que ela **não** é a Laiane);
 - a **calculadora judicial** com exemplo real de entrada e saída — cada verba calculada, com a lei que a fundamenta;
+- as **ferramentas por processo do advogado** — honorários de sucumbência, regularidade OAB, conflito de agenda em audiência, substabelecimento de procuração, custas consolidadas e produtividade do escritório;
 - a **bancada de acordo** com o relatório BATNA completo — valor em discussão, custo de cada lado, probabilidade de recurso;
 - **Laiane**, a inteligência artificial jurídica do projeto — o que ela faz para cada papel, as travas que garantem que ela nunca decide sozinha, e a homenagem por trás do nome.
 
@@ -212,7 +213,7 @@ Abra o `.env` e preencha as variáveis obrigatórias:
 docker compose up -d
 ```
 
-Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V306) são aplicadas automaticamente na primeira conexão do backend.
+Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V322) são aplicadas automaticamente na primeira conexão do backend.
 
 ### 4. Verificar os profiles Spring
 
@@ -323,8 +324,8 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.430 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 95 classes contra PostgreSQL, Kafka e Redis reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes unitários (Surefire):** 4.702 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes de integração (Failsafe):** 306 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -340,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.430 unitários (Surefire) e depois as 95 classes de integração (Failsafe) contra containers reais de PostgreSQL 17, Kafka e Redis. O Testcontainers sobe e derruba os três containers automaticamente — não é preciso subir infraestrutura manualmente, nem para os ITs que passam pelo rate limiter (`CapabilityRateLimiter`, Redis-backed).
+Esse comando é o portão oficial do projeto. Ele roda os 4.702 unitários (Surefire) e depois os 306 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -359,6 +360,15 @@ python scripts/reap_orphan_test_jvms.py --kill  # encerra as órfãs e libera a 
 
 Multiplataforma (Windows/Linux/macOS), somente stdlib. Report-only por padrão (sai com código ≠ 0 se achar órfãs, útil como sinal em CI); `--kill` reapa. Não é amarrado ao build automaticamente — rode-o quando notar instabilidade, antes de uma rodada longa.
 
+Se o Docker (não a JVM) ficar lento ou `verify` travar tentando subir os containers do Testcontainers, a causa mais comum é **container zumbi**: um container preso em `unhealthy` por horas/dias (tipicamente por um `docker-compose up` parcial, com uma dependência que nunca subiu) segura CPU/memória da VM do Docker Desktop indefinidamente, sem servir a nada. Guard dedicado:
+
+```bash
+python scripts/docker_zombie_container_guard.py         # lista containers zumbis (report-only)
+python scripts/docker_zombie_container_guard.py --kill  # para e remove os zumbis
+```
+
+Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configurável via `--unhealthy-threshold-minutes`) ou com 5+ restarts (via `--restart-count-threshold`). Sai silenciosamente com código 0 se o daemon Docker estiver indisponível — não é um guard de "Docker precisa estar rodando".
+
 ### Rodar um teste específico com stack trace completo
 
 ```bash
@@ -369,46 +379,18 @@ Multiplataforma (Windows/Linux/macOS), somente stdlib. Report-only por padrão (
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.430** |
+| Total de testes unitários | Surefire | **4.702** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
-| Tempo unitários | Surefire | **~16 min** |
-| Total de classes de integração | Failsafe | **95** ¹ |
+| Tempo unitários | Surefire | **~17 min** |
+| Total de testes de integração | Failsafe | **306** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** |
 
-A suíte de integração passou por um processo de estabilização estrutural: falhas por variável de ambiente incorreta, contaminação de dados entre testes e IDs hardcoded sem seed foram eliminadas até restar zero. Duas dessas correções expuseram bugs reais de produção, não só de teste: `AuditLedgerService` gravava eventos de auditoria apenas em memória, sem persistir no repositório consultado pelos próprios endpoints de auditoria; e a resolução do processo raiz em `CaseContinuityOrchestratorService` usava um campo mutável durante o ciclo de vida do processo, gerando ambiguidade entre o processo raiz e seus desdobramentos (ex.: cumprimento de sentença) após arquivamento.
+A suíte de integração passou por uma etapa de estabilização estrutural: falhas por variável de ambiente incorreta, contaminação de dados entre testes e IDs hardcoded sem seed foram eliminadas por completo.
 
 O `verify` padrão (Failsafe) não alcança 13 métodos de teste distribuídos em 6 classes¹ que combinam a convenção `*Test.java` com `@Tag("integration")` — o Surefire exclui essas classes por tag e o Failsafe não as reconhece pelo padrão de nome de arquivo. Todas as 13 já foram confirmadas verdes individualmente via `-Dit.test=`, mas ficam fora da contagem de rotina do `verify`.
-
-Duas fatias fecharam nesta sessão. `D-drain-coordinator-fork-exit-sem-guarda-regressao` ganhou um guard Python dedicado (`scripts/drain_quiet_period_argline_guard.py`) que falha se o `<argLine>` de Surefire ou Failsafe perder o override `drain-quiet-period` ou ele virar zero — o fix já existia (linha acima), mas não tinha rede de segurança contra regressão; `PjbRuntimeDrainServiceTest` ganhou 4 testes documentando o fallback silencioso de `sanitizeDuration()` (`Duration.ZERO`/negativo caem no default de produção). E `D-controllers-recursais-legados-sem-teste-dedicado` fechou cobertura completa dos 4 controllers recursais legados (`AdvogadoCockpitController`, `DefensorPublicoPainelController`, `MinisterioPublicoPainelController`, `ProcuradoriaOperacionalController`) — pré-requisito documentado antes de qualquer remoção futura desses controllers: sucesso de todo endpoint, falha de validação (400) para todo DTO com constraint real, e uma classe IT nova por controller provando anônimo negado, role ilegítima negada (403) e cada role legítima do `@PreAuthorize` autorizada, contra Postgres real com Spring Security completo — 63 testes novos (39 unitários + 20 de integração), 0 falhas. As ITs novas expuseram dois achados reais sem impacto em produção, documentados em `DEBT_LOG.md`: três papéis (`OAB_PRESIDENTE_SECCIONAL`, `PROMOTOR_ELEITORAL`, `PROMOTOR_TRABALHISTA`) nunca chegam sozinhos em runtime porque `PjbGrantedAuthorityFactory` sempre concede um papel-base junto; e `DEFENSOR_DISTRITAL` é um literal morto no `@PreAuthorize` legado que não existe como valor de `TipoUsuario`.
-
-Uma terceira fatia fechou `D-recursal-superficie-por-papel` por completo: com o pré-requisito de teste já pronto, o endpoint `interporRecurso` (e o `@PostMapping` correspondente) foi removido dos 4 controllers legados — eles continuam existindo, com os demais endpoints intactos, só o recurso saiu de lá. As facades intermediárias correspondentes (`AdvogadoSurfaceFacadeService.interporRecurso`, `InstitutionalPainelSurfaceFacadeService.defensorInterporRecurso`/`.ministerioPublicoInterporRecurso`, `ProcuradoriaOperationalSurfaceFacadeService.interporRecurso`) foram removidas junto — a camada de serviço que `RecursalPeticionamentoPerfilRouter` chama diretamente ficou intacta. `AdvogadoRecursoRequest` e `RecursalLegacyDeprecationHeaders` foram deletados por não terem mais nenhum chamador. Antes de remover, uma política OPA real de um overlay de produção (`prod-sovereign-opa-ext-authz`) foi encontrada desatualizada desde a Fatia 1 — o `critical_paths` nunca cobria o endpoint unificado `/api/v1/recursal/`, só o legado `/api/v1/mp/recurso/` que estava prestes a ser removido; corrigido antes de prosseguir, registrado em `D-recursal-opa-critical-path-nao-atualizado`. A coleção Postman perdeu a pasta de endpoints legados e o contrato estático `docs/openapi/public-api.yaml` perdeu os 4 blocos de path correspondentes. Uma revisão pedida antes de commitar levou a duas varreduras adicionais de consumidores, cada uma achando mais: `RecursalWorkbenchSurfaceCatalog` e `InstitutionalWorkbenchProjectionService` montavam botões reais de "Interpor recurso" apontando pra URL que acabara de virar 404 — corrigido. Muito mais grave, e agora corrigido: `InstitutionalCriticalActionHttpGuardFilter`, o filtro Spring que aplica o gate documental institucional (`InstitutionalDocumentSecurityGateApplicationService`) a ~30 atos sensíveis reais (sentença, despacho, manifestação do MP, ofício, laudo, etc.), estava registrado com `@Order(HIGHEST_PRECEDENCE + 35)` **antes** da cadeia do Spring Security (order `-100`, lido do jar) e nunca era adicionado a ela — então rodava com o `SecurityContextHolder` vazio e `getRequired()` estourava `IllegalStateException`, dando **HTTP 500 em todo POST institucional protegido** desde que o filtro existe (controle de segurança dormente/quebrado, provado por IT com stack trace). A correção tem três camadas: o filtro passou a ser registrado via `http.addFilterAfter(..., AuthorizationFilter.class)` (roda depois da autenticação e autorização, com o usuário resolvido — mesma convenção dos filtros de step-up); a fábrica do gate ficou null-safe (`getOrNull` em vez de `getRequired`, nunca mais 500); e o path recursal unificado foi religado ao filtro, restaurando o gate que o recursal perdeu na Fatia 1. Provado por 5 testes unitários novos do serviço de gate, teste do filtro para o path recursal, e uma IT com JWT real contra Postgres (`InstitutionalRecursalGateIT`) mais a `RecursalPeticionamentoControllerIT` (8/8) revalidada com o filtro já ativo. Duas outras classes (`PainelActionSurfaceCompositionService`/`PainelExecutionSurfaceCompositionService`, consumidas pelos painéis reais de MP/Defensoria) tinham 4 entradas apontando pra URLs que nunca existiram de verdade — corrigidas também. Tudo documentado em detalhe no `DEBT_LOG.md` (`D-institutional-gate-filter-roda-antes-da-auth`).
-
-Os 4.310 testes unitários foram reconfirmados numa rodada completa (`mvnw test -pl pjb-api`) ao final desta sessão — 0 falhas, 0 erros, sem regressão (inclui os 5 testes novos do serviço de gate documental e o teste do path recursal no filtro). Os 252 testes de integração somam o total anterior (250) mais os 2 da `InstitutionalRecursalGateIT`, cada IT nova confirmada verde individualmente (`-Dit.test=`); uma rodada agregada completa do `verify` (~50 min) não foi reexecutada por restrição de tempo — o número é soma verificada por execução individual, não estimativa.
-
-Uma fatia posterior fechou a cobertura horizontal do `InstitutionalCriticalActionHttpGuardFilter`. A tabela `resolvePolicy` (30 rotas → `InstitutionalSensitiveAct` + `operationCode`) ganhou `InstitutionalCriticalActionHttpGuardFilterPolicyMappingTest` — 69 asserts parametrizados via `@MethodSource` que garantem, para cada uma das 30 policies: (a) `POST` na rota bate a `InstitutionalSensitiveAct` e o `operationCode` esperados, (b) `GET` na mesma rota não dispara o gate, (c) 7 rotas fora do escopo permanecem livres. Trava em compile-time o par (URL, ato sensível) — mudar uma linha sem atualizar o mapa quebra o teste no CI. Além disso, uma segunda IT ponta-a-ponta (`InstitutionalMagistraturaGateIT`) prova a ordem de filtro para uma família RADICALMENTE diferente da recursal — magistratura, controlador com `PathVariable` puro e `@PreAuthorize` de 11 roles, seed real de `Usuario` JUIZ_ESTADUAL + `TrustedDevice` para satisfazer o step-up de passkey (`MinisterStepUpFilter`), JWT via `jwt()`; a assertion apoia-se nos headers `X-PJB-Institutional-Gate-Operation=MAGISTRATURA_ATO_PROCESSUAL` e `X-PJB-Institutional-Gate-Allowed=true` — evidência direta de que o gate rodou depois da auth, independente do que aconteça downstream. `InstitutionalRecursalGateIT` foi reformada no mesmo padrão de asserção-por-header (removendo dependência latente de Redis local que a versão original de `status().isCreated()` mascarava: o `CapabilityRateLimiter` do controller recursal usa Redis e sem infra opcional retornava `RedisConnectionFailureException`, mas isso é ortogonal à garantia real do teste — ordem de filtro).
-
-A dívida `D-mni-litisconsorcio-primeira-pessoa` foi fechada: `MniXmlToProcessoAdapter.resolvePartes` capturava apenas a primeira `<pessoa>` de cada `<polo>` (via `firstDescendant`), descartando silenciosamente partes em litisconsórcio. O adapter agora itera TODAS as `<pessoa>` de cada polo via `allDescendants` e retorna `MniAdapterResult(Processo, List<MniParteParsed>)` — a primeira pessoa de cada polo ainda popula os campos planos do `Processo` (backward compat para serviços que leem `parteAutoraNome`/`parteReuNome`); `MniRecepcaoService.materializarPolosIniciais` materializa TODAS as pessoas como `PoloProcessual`, usando o `TipoParte` rito-aware do `PoloCompositionPolicy` para as primeiras e replicando o mesmo `TipoParte` para as demais do mesmo polo (em TRABALHISTA_ORDINARIO, todos os coautores recebem RECLAMANTE, todos os corréus recebem RECLAMADA). A materialização preserva a ordem do documento — todas as partes de um polo antes de passar ao próximo, já que o XML MNI agrupa `<pessoa>` por bloco `<polo>` — provado no serviço com `containsExactly(ATIVO, ATIVO, PASSIVO, PASSIVO)`.
-
-Na mesma investigação, três lacunas irmãs foram encontradas e fechadas na dívida `D-mni-terceiro-pj-interesse-publico`: terceiro interessado (`polo="TC"/"TJ"`) caía no default binário e virava réu; pessoa jurídica não tinha `razaoSocial` populado; parte institucional via `<interessePublico>` (Fazenda Pública, INSS, União — sem `<pessoa>`) era invisível ao adapter. `MniParteParsed` ganhou o campo `tipoPessoa`; `mapMniPoloCode` mapeia `TC`/`TJ` → `TERCEIRO` e `FL` → `MINISTERIO_PUBLICO` com `TERCEIRO` como default seguro; `PoloProcessual` ganhou a coluna `razao_social` (migration V297) populada quando `tipoPessoa` é `juridica` ou `interesse_publico`.
-
-Provado por 3 testes novos: no adapter, um de litisconsórcio (4 pessoas, 2 polos) e um dos 5 tipos de parte (física, jurídica, terceiro, interesse público, Ministério Público — `tipoPolo`/`nome`/`documento`/`tipoPessoa` de cada `MniParteParsed` validados); no serviço, litisconsórcio materializa 4 `incluir` com `TipoParte` rito-aware preservado. `PoloProcessualApplicationServiceTest` (15 testes, cobre o novo overload com `razaoSocial`) e `ApiMarketplaceServicePoloMaterializacaoTest` (4 testes, Testcontainers) reconfirmados verdes nesta sessão — zero cascata no caminho de aplicação de polo. `MotorComposicaoPolosAjuizamentoIT` (10 testes, `PoloCompositionPolicy` não tocado neste diff) não foi reexecutado nesta sessão; permanece validado da verificação anterior.
-
-Contagens novas: 4.379 + 3 = 4.382 unitários (2 no adapter, 1 no serviço); 253 integração (nenhuma IT nova nesta fatia). Todas verdes em execução individual (`-Dit.test=` para as ITs, `-Dtest=` para o unit).
-
-Na fatia seguinte, `D-marketplace-sem-completude-documental` fechou a Fase 2 sobre a base deixada pela Fase 1. Dois pontos: um retrofit do bug de jus postulandi que a Fase 1 tinha reintroduzido no canal marketplace (`MarketplaceProtocoloRequest` ganhou `perfilAtor` opcional; `ApiMarketplaceService.protocolar()` resolve o `InstrumentoRepresentacaoProcessual` via `MarketplaceRepresentacaoResolver`, novo, e dispensa `PROCURACAO` corretamente quando o regime é jus postulandi); e o endpoint novo `POST /api/marketplace/v1/processos/{id}/documentos` para complementação documental pós-protocolo, com storage real via `ObjectStoragePort` (a Fase 1 usava os documentos só transientemente para diagnóstico), checagem de posse (404), guarda de estado (409 fora de `PENDENTE_DOCUMENTACAO`), validação de conteúdo via `DocumentContentValidator` (extraído de `PastaDigitalService`, que passou a delegar para ele sem mudar de comportamento) e o evento `PROCESSO_DOCUMENTACAO_COMPLETADA`, reservado por nome desde a Fase 1. Para o endpoint novo ter o que completar, `protocolar()` também passou a persistir os documentos declarados como `DocumentoProcessual` reais (`MarketplaceDocumentoPersistenceService`, novo, compartilhado pelos dois pontos de entrada) — sem isso o recálculo de completude do endpoint nunca teria linha persistida para somar.
-
-A implementação expôs dois bugs de produção reais, nenhum introduzido por esta fatia: `persistirSeNovo` nasceu `@Transactional` e quebrava o try/catch deliberadamente tolerante de `protocolar()` via rollback-only compartilhado do Spring — corrigido removendo o `@Transactional` interno, já que os dois chamadores têm transação própria; e `tb_documento_processual.categoria` é `NOT NULL` desde a migration `V19`, mas `DocumentoSigiloClassifier.suggestedCategoria()` devolve `null` para documento comum — todo insert normal pelo marketplace teria estourado `DataIntegrityViolationException`, só descoberto porque a IT nova foi o primeiro teste do projeto a tocar Postgres de verdade num insert de `DocumentoProcessual` pelo canal marketplace. Corrigido com fallback para `DocumentoCategoria.PUBLICO`, mesma escolha do backfill da própria `V19`. Uma hipótese inicial de que `PastaDigitalService` tinha o mesmo bug foi corrigida por engano e depois revertida em revisão de código independente — a variável `categoria` ali já vem normalizada por `DocumentoCategoria.fromString(...)`, que nunca devolve `null`; o bug nunca existiu nesse arquivo.
-
-23 testes unitários novos (7 `PastaDigitalServiceTest`, 2 `CompletudeDocumentalPolicyServiceTest`, 4 `MarketplaceRepresentacaoResolverTest`, 2 `ApiMarketplaceServiceCompletudeDocumentalUnitTest`, 1 `MarketplaceGovernanceServiceDocumentacaoCompletadaTest`, 7 `MarketplaceDocumentoComplementarServiceTest`) e 1 IT nova (`MarketplaceDocumentoComplementarServiceIT`, Testcontainers Postgres real, prova round-trip de storage) sobre a base de 4.382 unit / 253 IT da fatia MNI — todos verdes. Suíte completa reconfirmada ao final: **4.421 testes unitários, 0 falhas, 0 erros** (`mvn test -pl pjb-api` completo, número observado, não estimado).
-
-Uma revisão de branch inteira (não por task isolada) sobre a Fase 2 do marketplace achou 5 findings adicionais. Quatro foram fechados junto (limite de payload real vs. documentado, cobertura unitária própria de `MarketplaceDocumentoPersistenceService`, scope OAuth `processos:documentos` provisionado por padrão em clientes novos). O quinto — checagem de posse do processo via `startsWith(clientId + ":")` — teve uma primeira correção (troca para split-no-primeiro-":") que uma segunda revisão provou **ainda quebrada**: como `clientId` pode legalmente conter ":" (`MarketplaceOAuth2Service.normalizeToken` preserva o caractere), um atacante com `clientId="acme"` continuava acessando dados de `"acme:sub"`, e o dono legítimo `"acme:sub"` passava a ser negado contra os próprios dados — pior que o bug original. Corrigido de vez com uma coluna dedicada (`Processo.connectorClientId`, migration `V309`), eliminando a ambiguidade por construção em vez de tentar reparsear a string composta; `V310` retroage o scope `processos:documentos` aos clientes já cadastrados. Dois testes novos provam o cenário de colisão diretamente: `clientId="acme"` contra um processo de `"acme:sub"` é negado, `clientId="acme:sub"` contra o próprio processo é aceito.
-
-A verificação final desta fatia rodou a suíte completa antes do merge — não só o escopo do marketplace — e expôs dois problemas de ambiente/infraestrutura de teste, nenhum dos dois causado por esta fatia. Primeiro: `PjbIntegrationTestBase` já provisionava PostgreSQL e Kafka via Testcontainers, mas não Redis — qualquer IT de controller com `CapabilityRateLimiter` (rate limiter Redis-backed) dependia de infraestrutura externa manual e falhava com `RedisConnectionFailureException`/500 sempre que ela não estava no ar (6 classes afetadas nesta verificação: `AdvogadoAuditoriaControllerIT`, `AdvogadoCockpitControllerIT`, `DefensorPublicoPainelControllerIT`, `MinisterioPublicoPainelControllerIT`, `ProcuradoriaOperacionalControllerIT`, `RecursalPeticionamentoControllerIT`). Corrigido adicionando um `GenericContainer` Redis ao lado de `POSTGRES`/`KAFKA`, mesmo padrão: estático, `start()` único por JVM forked, propriedades via `@DynamicPropertySource`, encerrado automaticamente pelo Ryuk ao fim da JVM — sem passo manual, sem container remanescente entre execuções. Segundo: `ProcessoCommandControllerIT` continuava vermelho mesmo com Redis no ar. Causa raiz real, confirmada por `git log` das duas pontas: o teste (`ProcessoCommandControllerIT.java`, parado em 13/07) só stubava o overload de 2 argumentos de `CompletudeDocumentalPolicyService.diagnosticar()`, mas `AjuizarProcessoCommand.execute()` (nenhum dos dois arquivos tocado por esta fatia) passou a chamar o overload de 3 argumentos em 24/07 — 11 dias depois. Mockito não faz fallback entre overloads; toda chamada real caía num stub inexistente, devolvia `null` e gerava `NullPointerException`/500 em 3 dos 5 testes da classe. Bug pré-existente no master desde 24/07, só descoberto porque esta foi a primeira verificação de suíte completa desde então; corrigido desambiguando o stub (`anyList()` no segundo argumento).
-
-Com as duas causas raiz corrigidas, a suíte completa foi reconfirmada do zero: **4.430 testes unitários** (Surefire, 0 falhas, 0 erros, 5 skipped, ~16 min) e **95 classes de integração** (Failsafe, 0 falhas, 0 erros — cobertas por uma combinação de execução agregada completa e reexecução individual das classes afetadas pelos dois achados acima, já que a suíte completa de IT nesse ambiente esbarra num limite de memória do host antes do fim e precisa ser fatiada).
 
 O histórico de decisões técnicas, dívidas conhecidas e critérios de fechamento de cada frente de trabalho está documentado em [`docs/quality/DEBT_LOG.md`](./docs/quality/DEBT_LOG.md) e nos [ADRs](./docs/adr/).
 
@@ -591,7 +573,7 @@ graph TD
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Banco | PostgreSQL 17 com Row Level Security por operação |
 | Banco de testes | H2 em memória + Testcontainers |
-| Migrations | Flyway — numeração até V306, com particionamento mensal em tabelas de evento |
+| Migrations | Flyway — numeração até V322, com particionamento mensal em tabelas de evento |
 | Persistência | JPA / Hibernate com `ddl-auto: validate` em produção |
 | Mensageria | Apache Kafka 3.8 — eventos judiciais e outbox |
 | Orquestração de workflow | Camunda 8 / Zeebe — BPMN aplicado ao fluxo de ajuizamento |
@@ -645,6 +627,8 @@ Cada carga cruzou o nome do município do PDF contra a lista oficial do IBGE por
 `vigencia_inicio` usa uma data presumida (promulgação da CF/88) por continuidade nas três regiões — decisão mantida mesmo quando o documento-fonte trazia data de instalação real por vara (caso do TRT3/MG, com varas de Belo Horizonte instaladas entre 1941 e 2013), porque o schema atual só suporta um `vigencia_inicio` por linha de município, não por vara individual (`D-vigencia-trt7-e-futuras-regioes-presumida-nao-documentada`, `docs/quality/DEBT_LOG.md`). Duas inconsistências recorrentes na fonte primária do TST ficaram registradas como dívida em vez de contornadas silenciosamente: código de vara duplicado entre unidades fisicamente distintas (3 pares no MG, 3 pares no RN, por causas diferentes em cada região — `D-trt3-codigo-unidade-duplicado-fonte`) e municípios sem nenhuma vara documentada (6 no MG por provável competência delegada ao juiz de direito da comarca, 38 no RN cobertos por um Posto Avançado sem código formal atribuído — `D-trt3-municipios-sem-vara-competencia-delegada`, `D-trt21-posto-avancado-sem-codigo`).
 
 Cada uma das três cargas é travada por teste de regressão permanente contra o documento-fonte — a distribuição de varas por município é reparseada de forma independente do script que gerou a migration antes de virar `assert`, para que uma alteração futura na migration ou uma migration de outra região que corrompa dado por acidente de nome de tabela seja detectada, não silenciosamente aceita.
+
+**Tribunal e Comarca como entidade real.** `Tribunal` e `Comarca` são entidades JPA próprias (`model/entity/competencia/`), não mais texto solto — `UnidadeJudiciariaCompetencia`, `JurisdicaoTerritorial`, `Jurisdicao`, `Usuario`, `Processo` e `WorkItem` referenciam `Comarca` por FK. Como o catálogo de `Comarca` hoje só cobre os municípios das três regiões trabalhistas carregadas acima (CE/MG/RN), cada uma dessas seis entidades mantém `uf`/`comarca` como coluna String real ao lado da FK — nunca dado descartado por falta de cobertura de catálogo, a FK resolve quando o município está catalogado e o texto continua sendo a fonte de verdade nos demais. `AssessorGabineteGuardRailService.territoryMatches()` compara por identidade real (`Comarca.getId()`) quando as duas pontas resolvem a FK, e cai na comparação textual normalizada nos demais casos — elimina, para os municípios já catalogados, a classe de bug em que grafia divergente entre o cadastro do assessor e o do processo produzia falso positivo ou falso negativo de correspondência territorial. Um teste de arquitetura (`OrganizacaoJudiciariaArchitectureTest`) trava qualquer entidade nova que declare `uf`/`comarca` como String sem a FK `Comarca` correspondente na mesma classe; entidades pré-existentes em outros domínios que ainda não seguem esse padrão estão listadas em `docs/quality/DEBT_LOG.md` (`D-territorio-string-solta-entidades-legadas`).
 </details>
 
 <details>
@@ -929,13 +913,15 @@ Os 8 tópicos Kafka são declarados explicitamente via beans `NewTopic` em `PjbK
 
 Dados pessoais sensíveis — CPF e CNPJ — foram removidos de todas as camadas onde não precisam estar: resposta de API de metadados ICP-Brasil, cache de certificados, eventos de assinatura e entradas do audit ledger de cadeia ICP. Onde o identificador é necessário para correlação, é armazenado como referência hasheada, nunca em claro.
 
+Todo `docker-compose*.yml` (base, HA, read-replica, n8n) tem `mem_limit`/`cpus` explícito por serviço, configurável via env (`PJB_<SERVICO>_MEM_LIMIT`/`_CPUS`, default sensato por serviço). Sem teto de memória, `pjb-runtime.sh` calcula `-XX:MaxRAMPercentage` sobre a RAM total visível ao container em vez de sobre um limite real — um container preso em retry (dependência que nunca subiu, por exemplo) reivindica até 72% da VM inteira do Docker Desktop sozinho, sem nenhum outro processo conseguir memória. `backend`/`backend-b` também trocaram `restart: unless-stopped` por `on-failure:5`: dependência externa persistentemente quebrada não deve produzir reinício infinito e silencioso. `scripts/docker_zombie_container_guard.py` detecta esse padrão especificamente (unhealthy prolongado ou contagem alta de restarts) para qualquer container que escape dessas duas redes de segurança.
+
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
 ## Banco de dados
 
-269 migrations Flyway (numeração não contígua até V306 — 38 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
+285 migrations Flyway (numeração não contígua até V322 — 38 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
 
 Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
 
@@ -945,6 +931,25 @@ CREATE POLICY processo_sigilo ON processo
     USING (sigilo = false OR current_setting('app.papel') IN ('JUIZ', 'PROMOTOR'));
 ```
 
+### Role de conexão da aplicação (`pjb_app`)
+
+O `POSTGRES_USER` inicial do container Postgres (`pjb` por padrão) é criado pelo `initdb` da imagem oficial como **superusuário** — e superusuário ignora RLS, mesmo com `FORCE ROW LEVEL SECURITY`. Uma política RLS ativa (como a de `secretaria_institucional_item`, V316) não protege nada de verdade se a aplicação conecta como esse usuário.
+
+Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container (`docker-entrypoint-initdb.d`), uma segunda role — `pjb_app` — com `NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE`, com os `GRANT`s necessários para o Flyway rodar todas as migrations (incluindo `CREATE EXTENSION` de extensões trusted). É essa role, não `pjb`, que o `backend` usa para conectar em `docker-compose.yml`, via as novas variáveis de ambiente:
+
+| Variável | Papel |
+|----------|-------|
+| `PJB_DB_USER` / `PJB_DB_PASS` | Superusuário inicial do Postgres (`pjb`/`pjb`) — só inicializa o container, RLS não vale para ele |
+| `PJB_DB_APP_USER` / `PJB_DB_APP_PASS` | Role restrita (`pjb_app`/`pjb_app_pass` por padrão) — é com ela que `SPRING_DATASOURCE_USERNAME`/`PASSWORD` do `backend` conectam de fato; é essa conexão que faz a RLS valer |
+
+**Pendências conhecidas, documentadas explicitamente (não implementadas nesta rodada):**
+
+- **Volume já existente**: scripts de `docker-entrypoint-initdb.d` só rodam com `PGDATA` vazio. Um volume de dev anterior a este hardening (ex.: `pjb_pjb_pg_data` já populado) nunca cria `pjb_app` sozinho — o cabeçalho de `infra/docker/postgres/init/01-app-role.sh` traz o SQL equivalente para rodar manualmente via `docker exec ... psql` num volume desses. Isso sozinho não basta se migrations `<= V313` já rodaram nesse volume como o superusuário antigo (`pjb`): `ALTER TABLE ... ALTER COLUMN ... TYPE` (caso de `V317`) exige posse da tabela, não só `GRANT` — o mesmo cabeçalho do script traz o `ALTER TABLE ... OWNER TO pjb_app` (em bloco `DO` iterando `pg_tables`) que transfere a posse das tabelas existentes; **não** resolva concedendo `pjb_app` membro de `pjb` (`GRANT pjb_app TO pjb`), isso reabre o bypass de RLS que a role restrita existe pra fechar.
+- **Volume que já aplicou a `V317` antiga**: quem rodou o stack entre a introdução original de `V317__fix_unidade_institucional_uf_type.sql` e esta correção de conteúdo vai ter o checksum antigo gravado em `flyway_schema_history` — o Flyway recusa reaplicar migrations já aplicadas com checksum divergente (`validateOnMigrate=true`). Um volume novo não sofre isso (é como a reverificação de boot desta rodada testou). Num volume que já tinha a `V317` antiga, rode `flyway repair` (recalcula o checksum gravado para o conteúdo atual do arquivo) antes do próximo boot, ou descarte o volume em ambiente de dev.
+- **`docker-compose.read-replica.yml` e o caminho de leitura roteada de `docker-compose.ha.yml`**: `PJB_DB_READ_USER`/`PASS` continuam apontando para o superusuário `pjb`, não para `pjb_app`. Isso significa que **a proteção de RLS nasce desligada no caminho de leitura roteada** — não é só uma migração pendente, é uma lacuna de proteção real e conhecida. Consultas que podem ser roteadas para a réplica/HA (ex.: `SecretariaInstitucionalFilaService.consultarFila`, `@Transactional(readOnly = true)`) seguem protegidas hoje só pelas camadas 1 e 2 (checagem de aplicação + Hibernate `@Filter`), não pela camada 3 (RLS). Ver `.superpowers/sdd/2026-08-08-secretarias-institucionais/db-role-hardening-report.md` para o histórico completo da investigação.
+- **`docker-compose.ha.yml`**: os nós `backend`/`backend-b` dessa topologia usam `pjb`/`pjb` explicitamente (não `pjb_app`) porque o `pgbouncer` da topologia (`infra/docker/pgbouncer/entrypoint.sh`) só conhece `pjb` no `userlist.txt` e sempre abre a conexão real com o Postgres do lado servidor como `pjb`, fixo — a RLS ficaria inerte atrás do pgbouncer mesmo corrigindo a autenticação cliente→pgbouncer. Estado explícito, não silenciosamente quebrado; migrar essa topologia para `pjb_app` de ponta a ponta é trabalho futuro.
+- **Produção real (k8s)**: `infra/k8s/base/secret.yaml`/`configmap.yaml` continuam nas credenciais antigas — a mesma lógica de role restrita precisa ser replicada lá separadamente.
+
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
@@ -953,8 +958,8 @@ CREATE POLICY processo_sigilo ON processo
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.310 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **252 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes unitários (Surefire) | **4.642 · 0 falhas · 0 erros** |
+| Testes de integração (Failsafe) | **300 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 7 scripts ativos em CI |
@@ -1005,6 +1010,7 @@ python scripts/runtime_concurrency_guard.py
 | `runtime_concurrency_guard` | Zero executor criado fora da governança `PjbVirtualThreadSpine` |
 | `transactional_hotspot_guard` | Zero achado de I/O pesado sem revisão dentro de `@Transactional` — hotspot revisado exige `@PjbTransactionalBudget` |
 | `config_taxonomy_guard` | Propriedades de configuração dentro da taxonomia definida |
+| `hibernate_filter_definition_guard` | Todo `@Filter(name=X)` tem `@FilterDef(name=X)` correspondente; `condition` SQL com parênteses balanceados; `@ConditionalOnBean`/`@ConditionalOnMissingBean` não referencia `EntityManager`/`*Repository` numa classe `@Component` comum (avaliação prematura no component-scan — bean nunca é criado, sem erro nenhum) |
 | `anti_mock_prod_guard` | Bloqueia se mocks de integração crítica estiverem ativos em produção: Gov.br, ICP-Brasil, Kafka, Elasticsearch, IA |
 | `openapi_weakness_detector` | Detecta `Map<String,Object>` sem schema tipado, campos sem `format: date-time` e rotas sem contrato OpenAPI registrado |
 
@@ -1167,7 +1173,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 4.310 testes e 269 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 5.008 testes (4.702 unitários + 306 de integração) e 287 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

@@ -35,4 +35,5 @@ public class WorkspaceMeResponse {
     
     private Long inboxCount;
     private List<WorkItemDto> inboxPreview;
+    private Long openTicketsCount;
 }

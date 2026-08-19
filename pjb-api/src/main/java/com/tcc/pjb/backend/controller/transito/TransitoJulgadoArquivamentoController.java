@@ -19,10 +19,12 @@ import com.tcc.pjb.backend.model.dto.profile.operational.TransitoSatisfacaoTermi
 import com.tcc.pjb.backend.model.dto.profile.operational.TransitoVinculoArquivamentoTerminalRequest;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
+import com.tcc.pjb.backend.model.dto.transito.ArquivamentoPainelResponse;
 import com.tcc.pjb.backend.model.dto.transito.ExecutionPanelResponse;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.versioning.ApiVersion;
+import com.tcc.pjb.backend.service.transito.ArquivamentoPainelService;
 import com.tcc.pjb.backend.service.transito.surface.TransitoJulgadoSurfaceFacadeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -45,13 +48,16 @@ public class TransitoJulgadoArquivamentoController {
     private final TransitoJulgadoSurfaceFacadeService facadeService;
     private final ExecutionPanelAssemblerService executionPanelAssemblerService;
     private final CapabilityRateLimiter rateLimiter;
+    private final ArquivamentoPainelService arquivamentoPainelService;
 
     public TransitoJulgadoArquivamentoController(TransitoJulgadoSurfaceFacadeService facadeService,
                                                  ExecutionPanelAssemblerService executionPanelAssemblerService,
-                                                 CapabilityRateLimiter rateLimiter) {
+                                                 CapabilityRateLimiter rateLimiter,
+                                                 ArquivamentoPainelService arquivamentoPainelService) {
         this.facadeService = facadeService;
         this.executionPanelAssemblerService = executionPanelAssemblerService;
         this.rateLimiter = rateLimiter;
+        this.arquivamentoPainelService = arquivamentoPainelService;
     }
 
     @PostMapping("/processos/{processoId}/certidao")
@@ -205,6 +211,14 @@ public class TransitoJulgadoArquivamentoController {
                                                              Authentication authentication) {
         enforce(authentication, "transito_julgado_desarquivamento");
         return ResponseEntity.status(HttpStatus.CREATED).body(facadeService.desarquivar(processoId, request.motivo()));
+    }
+
+    @GetMapping("/vara/candidatos-arquivamento")
+    @PreAuthorize("hasAnyRole('SERVIDOR','SERVIDOR_FORUM','JUIZ','MAGISTRADO')")
+    public ResponseEntity<ArquivamentoPainelResponse> candidatosArquivamento(@RequestParam String vara,
+                                                                              Authentication authentication) {
+        enforce(authentication, "transito_julgado_candidatos_arquivamento");
+        return ResponseEntity.ok(arquivamentoPainelService.candidatosPorVara(vara));
     }
 
     @GetMapping("/processos/{processoId}/efeitos")

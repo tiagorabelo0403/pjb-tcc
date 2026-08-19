@@ -32,6 +32,7 @@ spring:
         reWriteBatchedInserts: ${PJB_DB_REWRITE_BATCHED_INSERTS:true}
         binaryTransfer: ${PJB_DB_BINARY_TRANSFER:true}
         tcpKeepAlive: ${PJB_DB_TCP_KEEP_ALIVE:true}
+        prepareThreshold: ${PJB_DB_PREPARE_THRESHOLD:5}
   jpa:
     hibernate:
       ddl-auto: validate

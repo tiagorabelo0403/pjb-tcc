@@ -2,7 +2,6 @@ package com.tcc.pjb.backend.service.processual.honorarios;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,7 +15,7 @@ public class HonorariosSucumbenciaCalculatorService {
     private static final BigDecimal TETO_FAZENDA_ALTO = new BigDecimal("100000000");
 
     public record HonorariosInput(
-            UUID processoId,
+            Long processoId,
             BigDecimal valorCondenacao,
             boolean fazendaPublicaVencida,
             boolean causaSimples,
@@ -25,7 +24,7 @@ public class HonorariosSucumbenciaCalculatorService {
     ) {}
 
     public record HonorariosCalculados(
-            UUID processoId,
+            Long processoId,
             BigDecimal percentualAplicado,
             BigDecimal valorHonorarios,
             String fundamentacao

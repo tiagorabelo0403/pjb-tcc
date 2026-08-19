@@ -66,7 +66,7 @@ public class FederalismoRedistribuicaoService {
                         jurisdicao.getSigla(),
                         jurisdicao.getNome(),
                         jurisdicao.getUf(),
-                        jurisdicao.getComarca(),
+                        jurisdicao.getCidade(),
                         jurisdicao.getMateria() != null ? jurisdicao.getMateria().name() : null,
                         load.totalAtivos(),
                         load.atrasoEstrutural(),
@@ -115,7 +115,7 @@ public class FederalismoRedistribuicaoService {
                 .map(destino -> {
                     JurisdicaoLoad load = loadByJurisdicaoId.getOrDefault(destino.getId(), JurisdicaoLoad.EMPTY);
                     double indice = load.totalAtivos() == 0 ? 0.0d : (double) load.atrasoEstrutural() / (double) load.totalAtivos();
-                    return new CandidataRedistribuicao(destino.getId(), destino.getSigla(), destino.getNome(), destino.getComarca(), load.totalAtivos(), indice);
+                    return new CandidataRedistribuicao(destino.getId(), destino.getSigla(), destino.getNome(), destino.getCidade(), load.totalAtivos(), indice);
                 })
                 .sorted(Comparator.comparingDouble(CandidataRedistribuicao::indiceSobrecarga))
                 .limit(5)

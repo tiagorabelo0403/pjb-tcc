@@ -23,6 +23,7 @@ import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import com.tcc.pjb.backend.service.AjuizamentoService;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
 
@@ -40,6 +41,7 @@ public class ApiMarketplaceService {
     private final MarketplaceDocumentoPersistenceService documentoPersistenceService;
     private final DocumentoProcessualRepository documentoRepository;
     private final ProcessoRepository processoRepository;
+    private final ComarcaResolutionService comarcaResolutionService;
 
     public ApiMarketplaceService(AjuizamentoService ajuizamentoService,
                                  MarketplaceGovernanceService governanceService,
@@ -47,7 +49,8 @@ public class ApiMarketplaceService {
                                  MarketplaceRepresentacaoResolver representacaoResolver,
                                  MarketplaceDocumentoPersistenceService documentoPersistenceService,
                                  DocumentoProcessualRepository documentoRepository,
-                                 ProcessoRepository processoRepository) {
+                                 ProcessoRepository processoRepository,
+                                 ComarcaResolutionService comarcaResolutionService) {
         this.ajuizamentoService = Objects.requireNonNull(ajuizamentoService);
         this.governanceService = Objects.requireNonNull(governanceService);
         this.completudeDocumentalPolicyService = Objects.requireNonNull(completudeDocumentalPolicyService);
@@ -55,6 +58,7 @@ public class ApiMarketplaceService {
         this.documentoPersistenceService = Objects.requireNonNull(documentoPersistenceService);
         this.documentoRepository = Objects.requireNonNull(documentoRepository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
+        this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService);
     }
 
     @Transactional
@@ -75,6 +79,12 @@ public class ApiMarketplaceService {
             processo.setUfReu(request.ufReu());
             processo.setComarcaReu(request.comarcaReu());
         }
+        comarcaResolutionService.resolver(processo.getComarca(), processo.getUf())
+                .ifPresent(processo::setComarcaEntidade);
+        comarcaResolutionService.resolver(processo.getComarcaAutor(), processo.getUfAutor())
+                .ifPresent(processo::setComarcaAutorEntidade);
+        comarcaResolutionService.resolver(processo.getComarcaReu(), processo.getUfReu())
+                .ifPresent(processo::setComarcaReuEntidade);
         processo.setClasseProcessual(request.classeProcessual());
         processo.setAssunto(request.assunto());
         processo.setPedidoPrincipal(request.pedidoPrincipal());

@@ -95,6 +95,45 @@ class RecursalValidacaoMinimaServiceTest {
     }
 
     @Test
+    void cidadaoTrabalhistaNaoPodeInterporAgravoRecursoRevistaPorJusPostulandi() {
+        Processo processo = salvarProcesso(RitoProcessual.TRABALHISTA_ORDINARIO, RamoDireito.TRABALHISTA);
+        Usuario cidadao = salvarCidadao();
+
+        assertThatThrownBy(() -> service.validar(processo, cidadao, LegalAppealType.AGRAVO_RECURSO_REVISTA, null, false, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("legitimidade");
+    }
+
+    @Test
+    void advogadoContinuaLegitimoParaAgravoRecursoRevistaNoTrabalhista() {
+        Processo processo = salvarProcesso(RitoProcessual.TRABALHISTA_ORDINARIO, RamoDireito.TRABALHISTA);
+        Usuario advogado = salvarAdvogado();
+
+        assertThatCode(() -> service.validar(processo, advogado, LegalAppealType.AGRAVO_RECURSO_REVISTA, null, false, null))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void cidadaoTrabalhistaNaoConsegueInterporRecursoRevistaPorFaltaDeMapeamentoProcessual() {
+        Processo processo = salvarProcesso(RitoProcessual.TRABALHISTA_ORDINARIO, RamoDireito.TRABALHISTA);
+        Usuario cidadao = salvarCidadao();
+
+        assertThatThrownBy(() -> service.validar(processo, cidadao, LegalAppealType.RECURSO_REVISTA, null, false, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("correspondencia");
+    }
+
+    @Test
+    void advogadoTambemNaoConsegueInterporRecursoRevistaPorFaltaDeMapeamentoProcessual() {
+        Processo processo = salvarProcesso(RitoProcessual.TRABALHISTA_ORDINARIO, RamoDireito.TRABALHISTA);
+        Usuario advogado = salvarAdvogado();
+
+        assertThatThrownBy(() -> service.validar(processo, advogado, LegalAppealType.RECURSO_REVISTA, null, false, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("correspondencia");
+    }
+
+    @Test
     void cidadaoNoJuizadoEspecialFederalPodeOporEmbargosDeDeclaracaoPorJusPostulandi() {
         Processo processo = salvarProcesso(RitoProcessual.JUIZADO_ESPECIAL_FEDERAL, RamoDireito.PREVIDENCIARIO);
         Usuario cidadao = salvarCidadao();
@@ -111,6 +150,26 @@ class RecursalValidacaoMinimaServiceTest {
         assertThatThrownBy(() -> service.validar(processo, cidadao, LegalAppealType.RECURSO_INOMINADO, null, false, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("legitimidade");
+    }
+
+    @Test
+    void cidadaoJefNaoConsegueInterporPedidoUniformizacaoPorFaltaDeMapeamentoProcessual() {
+        Processo processo = salvarProcesso(RitoProcessual.JUIZADO_ESPECIAL_FEDERAL, RamoDireito.PREVIDENCIARIO);
+        Usuario cidadao = salvarCidadao();
+
+        assertThatThrownBy(() -> service.validar(processo, cidadao, LegalAppealType.PEDIDO_UNIFORMIZACAO, null, false, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("correspondencia");
+    }
+
+    @Test
+    void advogadoTambemNaoConsegueInterporPedidoUniformizacaoPorFaltaDeMapeamentoProcessual() {
+        Processo processo = salvarProcesso(RitoProcessual.JUIZADO_ESPECIAL_FEDERAL, RamoDireito.PREVIDENCIARIO);
+        Usuario advogado = salvarAdvogado();
+
+        assertThatThrownBy(() -> service.validar(processo, advogado, LegalAppealType.PEDIDO_UNIFORMIZACAO, null, false, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("correspondencia");
     }
 
     @Test

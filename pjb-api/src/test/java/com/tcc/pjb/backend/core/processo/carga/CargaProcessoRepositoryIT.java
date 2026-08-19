@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.tcc.pjb.backend.PjbTransactionalRepositoryItBase;
 import com.tcc.pjb.backend.model.entity.processo.CargaProcesso;
 import com.tcc.pjb.backend.model.repository.CargaProcessoRepository;
+import com.tcc.pjb.backend.model.repository.TribunalRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +27,7 @@ class CargaProcessoRepositoryIT extends PjbTransactionalRepositoryItBase {
     @Autowired private CargaProcessoRepository repository;
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private TransactionTemplate transactionTemplate;
+    @Autowired private TribunalRepository tribunalRepository;
 
     private Long processoId;
     private Long responsavelId;
@@ -34,15 +36,17 @@ class CargaProcessoRepositoryIT extends PjbTransactionalRepositoryItBase {
     @BeforeEach
     void setUp() {
         String s = UUID.randomUUID().toString().substring(0, 8);
+        Long tribunalId = tribunalRepository.findBySigla("TJCE").orElseThrow(
+                () -> new IllegalStateException("TJCE nao encontrado - verificar seed de tb_tribunal")).getId();
         responsavelId = jdbcTemplate.queryForObject(
                 "INSERT INTO tb_usuario (nome, email, perfil, senha, cpf, ativo, tipo_usuario) " +
                 "VALUES (?, ?, 'SERVIDOR', 'hash', ?, true, 'SERVIDOR') RETURNING id",
                 Long.class, "Srv " + s, "srv.cg." + s + "@pjb.test",
                 String.format("%011d", Long.parseUnsignedLong(s, 16)));
         unidadeId = jdbcTemplate.queryForObject(
-                "INSERT INTO tb_unidade_judiciaria_competencia (codigo, tribunal_codigo, tipo_vara) " +
-                "VALUES (?, 'TJCE', 'CRIMINAL_GERAL') RETURNING id",
-                Long.class, "VARA-CG-" + s);
+                "INSERT INTO tb_unidade_judiciaria_competencia (codigo, tribunal_id, tipo_vara) " +
+                "VALUES (?, ?, 'CRIMINAL_GERAL') RETURNING id",
+                Long.class, "VARA-CG-" + s, tribunalId);
         processoId = jdbcTemplate.queryForObject(
                 "INSERT INTO tb_processo (numero_processo, status_processo) " +
                 "VALUES (?, 'DISTRIBUIDO') RETURNING id",

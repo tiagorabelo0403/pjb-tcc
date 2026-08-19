@@ -78,7 +78,7 @@ public class SecretariatOperationalHearingResourceService {
         event.setBody("Reserva de recurso da secretaria " + routing.secretariatCode() + " para o processo " + processo.getId() + " @ " + pauta.inicio());
         event.setAt(pauta.inicio());
         event.setColor("secondary");
-        event.setDetailsUrl("/api/v1/secretaria/especializada/processos/" + processo.getId() + "/audiencias/recursos");
+        event.setDetailsUrl("/api/v1/secretariat/especializada/processos/" + processo.getId() + "/audiencias/recursos");
         if (event.getCreatedAt() == null) {
             event.setCreatedAt(now);
         }

@@ -51,8 +51,8 @@
 
     <text x="456" y="264" font-size="11" fill="#7d879e">Áreas do direito permitidas</text>
     <text x="456" y="284" font-size="13" fill="#ffffff">☑ Cível  ☑ Trabalhista</text>
-    <text x="456" y="302" font-size="10.5" fill="#f4a3a3">🔒 Penal, Execução Penal, Militar e</text>
-    <text x="456" y="318" font-size="10.5" fill="#f4a3a3">Infância/Juventude — sempre bloqueadas por padrão</text>
+    <text x="456" y="302" font-size="10.5" fill="#f4a3a3">🔒 Penal, Processual Penal, Execução Penal,</text>
+    <text x="456" y="318" font-size="10.5" fill="#f4a3a3">Militar e Infância/Juventude — bloqueadas por padrão</text>
 
     <text x="456" y="350" font-size="11" fill="#7d879e">Casos pessoais do convidado</text>
     <text x="456" y="370" font-size="13" fill="#ffffff">☑ Bloqueados neste escopo</text>

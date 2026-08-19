@@ -11,8 +11,8 @@ class DecisionSecurityWiringGuardTest {
     void security_config_keeps_decision_filters_wired_in_sequence() throws Exception {
         Path source = Path.of("src/main/java/com/tcc/pjb/backend/configs/SecurityConfig.java");
         String java = Files.readString(source);
-        assertTrue(java.contains("http.addFilterAfter(decisionStepUpFilter, MinisterStepUpFilter.class);"),
-                "DecisionStepUpFilter deve permanecer encadeado após o step-up ministerial.");
+        assertTrue(java.contains("http.addFilterAfter(decisionStepUpFilter, DelegationTokenAugmentationFilter.class);"),
+                "DecisionStepUpFilter deve permanecer encadeado após o augmentation de delegação.");
         assertTrue(java.contains("http.addFilterAfter(decisionClientBindingFilter, DecisionStepUpFilter.class);"),
                 "DecisionClientBindingFilter deve permanecer após o filtro de credencial decisória.");
     }

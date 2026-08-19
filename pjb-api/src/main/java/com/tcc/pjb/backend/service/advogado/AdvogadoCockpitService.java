@@ -1,21 +1,41 @@
 package com.tcc.pjb.backend.service.advogado;
 
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
+import com.tcc.pjb.backend.integration.oab.OabValidationResult;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCustaItemResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoHonorariosResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOabRegularidadeResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoPainelFinanceiroResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoProdutividadeEscritorioResponse;
+import com.tcc.pjb.backend.model.dto.jurisprudencia.JurisprudenceContextualSearchResponse;
+import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
+import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeGovernedProcessOperationService;
+import com.tcc.pjb.backend.modules.custas.application.CustasApplicationService;
+import com.tcc.pjb.backend.modules.custas.domain.CustaConsultaResult;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
+import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
+import com.tcc.pjb.backend.service.jurisprudencia.search.JurisprudenceContextualSearchService;
+import com.tcc.pjb.backend.service.processual.honorarios.HonorariosSucumbenciaCalculatorService;
+import com.tcc.pjb.backend.service.processual.legitimidade.OabValidationService;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,19 +49,31 @@ public class AdvogadoCockpitService {
     private final WorkItemRepository workItemRepository;
     private final PjbAuthorizationService authorizationService;
     private final OfficeGovernedProcessOperationService officeGovernedProcessOperationService;
+    private final HonorariosSucumbenciaCalculatorService honorariosSucumbenciaCalculatorService;
+    private final CustasApplicationService custasApplicationService;
+    private final OabValidationService oabValidationService;
+    private final JurisprudenceContextualSearchService jurisprudenceContextualSearchService;
 
     public AdvogadoCockpitService(PerfilDashboardContextFactory contextFactory,
                                   PainelServiceCommons commons,
                                   ProcessoRepository processoRepository,
                                   WorkItemRepository workItemRepository,
                                   PjbAuthorizationService authorizationService,
-                                  OfficeGovernedProcessOperationService officeGovernedProcessOperationService) {
+                                  OfficeGovernedProcessOperationService officeGovernedProcessOperationService,
+                                  HonorariosSucumbenciaCalculatorService honorariosSucumbenciaCalculatorService,
+                                  CustasApplicationService custasApplicationService,
+                                  OabValidationService oabValidationService,
+                                  JurisprudenceContextualSearchService jurisprudenceContextualSearchService) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
         this.workItemRepository = workItemRepository;
         this.authorizationService = authorizationService;
         this.officeGovernedProcessOperationService = officeGovernedProcessOperationService;
+        this.honorariosSucumbenciaCalculatorService = honorariosSucumbenciaCalculatorService;
+        this.custasApplicationService = custasApplicationService;
+        this.oabValidationService = oabValidationService;
+        this.jurisprudenceContextualSearchService = jurisprudenceContextualSearchService;
     }
 
     public CockpitSnapshot bootstrapCockpit() {
@@ -102,6 +134,31 @@ public class AdvogadoCockpitService {
         return officeGovernedProcessOperationService.protocolizarPeticao(processoId, tipoPeticao, conteudo, fundamentacao);
     }
 
+    public Map<String, Object> prorrogarPrazoEmLote(List<Long> processoIds, String justificativa) {
+        List<Long> processados = new java.util.ArrayList<>();
+        List<Map<String, Object>> falhas = new java.util.ArrayList<>();
+        for (Long processoId : processoIds.stream().distinct().limit(50).toList()) {
+            try {
+                officeGovernedProcessOperationService.protocolizarPeticao(
+                        processoId, "PRORROGACAO_PRAZO", "Pedido de prorrogação de prazo processual.", justificativa);
+                processados.add(processoId);
+            } catch (RuntimeException ex) {
+                LinkedHashMap<String, Object> falha = new LinkedHashMap<>();
+                falha.put("processoId", processoId);
+                falha.put("motivo", ex.getMessage());
+                falhas.add(falha);
+            }
+        }
+        LinkedHashMap<String, Object> out = new LinkedHashMap<>();
+        out.put("status", "PRORROGACOES_PROCESSADAS");
+        out.put("tipo", "PRORROGACAO_PRAZO_LOTE");
+        out.put("total", processoIds.size());
+        out.put("processados", processados.size());
+        out.put("ids", processados);
+        out.put("falhas", falhas);
+        return out;
+    }
+
     @Transactional
     public Map<String, Object> darCienciaIntimacaoEmLote(List<Long> workItemIds) {
         PerfilDashboardContext ctx = contextFactory.build();
@@ -138,6 +195,123 @@ public class AdvogadoCockpitService {
                 pedidoEfeitoSuspensivo,
                 preparoDispensado,
                 observacoes);
+    }
+
+    public AdvogadoHonorariosResponse calcularHonorarios(Long processoId, AdvogadoHonorariosCalculoRequest request) {
+        Processo processo = processoRepository.findById(processoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+        authorizationService.requireReadProcesso(processo);
+        HonorariosSucumbenciaCalculatorService.HonorariosInput input = new HonorariosSucumbenciaCalculatorService.HonorariosInput(
+                processoId,
+                request.valorCondenacao(),
+                request.fazendaPublicaVencida(),
+                request.causaSimples(),
+                request.trabalhoComplexo(),
+                request.percentualFixadoMagistrado());
+        HonorariosSucumbenciaCalculatorService.HonorariosCalculados calculado = honorariosSucumbenciaCalculatorService.calcular(input);
+        return new AdvogadoHonorariosResponse(
+                processoId,
+                processo.getNumeroProcesso(),
+                calculado.percentualAplicado(),
+                calculado.valorHonorarios(),
+                calculado.fundamentacao());
+    }
+
+    public List<AdvogadoCustaItemResponse> listarCustas(Long processoId) {
+        Processo processo = processoRepository.findById(processoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+        authorizationService.requireReadProcesso(processo);
+        return custasApplicationService.listarPorProcesso(processoId).stream()
+                .map(this::toCustaItem)
+                .toList();
+    }
+
+    private AdvogadoCustaItemResponse toCustaItem(CustaConsultaResult custa) {
+        return new AdvogadoCustaItemResponse(
+                custa.id(),
+                custa.tipo(),
+                custa.valor(),
+                custa.status(),
+                custa.vencimento(),
+                custa.pagoEm(),
+                custa.valorPago());
+    }
+
+    public AdvogadoOabRegularidadeResponse consultarRegularidadeOab() {
+        PerfilDashboardContext ctx = contextFactory.build();
+        Usuario usuario = ctx.usuario();
+        authorizationService.requireRole(usuario, "ROLE_ADVOGADO", "ROLE_OAB_PRESIDENTE_SECCIONAL");
+        OabValidationResult resultado = oabValidationService.consultarRegularidade(usuario);
+        return new AdvogadoOabRegularidadeResponse(
+                resultado.status().name(),
+                resultado.reasonCode(),
+                resultado.source(),
+                resultado.checkedAt());
+    }
+
+    private static final Set<StatusProcesso> STATUS_ENCERRADOS = EnumSet.of(
+            StatusProcesso.ARQUIVADO, StatusProcesso.TRANSITO_EM_JULGADO, StatusProcesso.JULGADO);
+
+    public AdvogadoProdutividadeEscritorioResponse consultarProdutividadeEscritorio() {
+        PerfilDashboardContext ctx = contextFactory.build();
+        Usuario usuario = ctx.usuario();
+        authorizationService.requireRole(usuario, "ROLE_ADVOGADO", "ROLE_OAB_PRESIDENTE_SECCIONAL");
+        List<Processo> carteira = processoRepository.findByAdvogadoCpf(usuario.getCpf(), PageRequest.of(0, 1000)).getContent();
+
+        Map<String, Long> porStatus = new LinkedHashMap<>();
+        Map<String, Long> porRito = new LinkedHashMap<>();
+        long encerrados = 0;
+        long somaDuracaoDias = 0;
+        long amostrasDuracao = 0;
+        for (Processo processo : carteira) {
+            String statusNome = processo.getStatusProcesso() == null ? "SEM_STATUS" : processo.getStatusProcesso().name();
+            porStatus.merge(statusNome, 1L, Long::sum);
+            String ritoNome = processo.getRito() == null ? "SEM_RITO" : processo.getRito().name();
+            porRito.merge(ritoNome, 1L, Long::sum);
+            if (processo.getStatusProcesso() != null && STATUS_ENCERRADOS.contains(processo.getStatusProcesso())) {
+                encerrados++;
+                LocalDateTime inicio = processo.getDataDistribuicao() != null ? processo.getDataDistribuicao() : processo.getDataCriacao();
+                LocalDateTime fim = processo.getDataUltimaMovimentacao();
+                if (inicio != null && fim != null && !fim.isBefore(inicio)) {
+                    somaDuracaoDias += ChronoUnit.DAYS.between(inicio, fim);
+                    amostrasDuracao++;
+                }
+            }
+        }
+        Double duracaoMedia = amostrasDuracao == 0 ? null : (double) somaDuracaoDias / amostrasDuracao;
+        return new AdvogadoProdutividadeEscritorioResponse(
+                carteira.size(),
+                carteira.size() - encerrados,
+                encerrados,
+                Map.copyOf(porStatus),
+                Map.copyOf(porRito),
+                duracaoMedia);
+    }
+
+    public AdvogadoPainelFinanceiroResponse consultarPainelFinanceiro(Long processoId) {
+        List<AdvogadoCustaItemResponse> custas = listarCustas(processoId);
+        int pendentes = 0;
+        int pagas = 0;
+        BigDecimal totalPendente = BigDecimal.ZERO;
+        BigDecimal totalPago = BigDecimal.ZERO;
+        for (AdvogadoCustaItemResponse custa : custas) {
+            BigDecimal valor = custa.valor() == null ? BigDecimal.ZERO : custa.valor();
+            if ("PENDENTE".equals(custa.status())) {
+                pendentes++;
+                totalPendente = totalPendente.add(valor);
+            } else if ("PAGO".equals(custa.status())) {
+                pagas++;
+                totalPago = totalPago.add(valor);
+            }
+        }
+        return new AdvogadoPainelFinanceiroResponse(processoId, custas, custas.size(), pendentes, pagas, totalPendente, totalPago);
+    }
+
+    public JurisprudenceContextualSearchResponse buscarJurisprudenciaDoProcesso(Long processoId, String query, int topK) {
+        Processo processo = processoRepository.findById(processoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+        authorizationService.requireReadProcesso(processo);
+        return jurisprudenceContextualSearchService.search(query, processo.getRamoDireito(), processo.getRito(), topK);
     }
 
     public List<Map<String, Object>> analiticoPorCliente(String clienteCpfCnpj) {

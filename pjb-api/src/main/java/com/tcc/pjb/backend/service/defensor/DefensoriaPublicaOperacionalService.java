@@ -22,6 +22,7 @@ import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
+import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopologyMeshService;
 import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
@@ -46,6 +47,7 @@ private final PainelSignalReflectionService signalReflectionService;
 private final PainelNativeCollectionCompositionService collectionCompositionService;
 private final PainelActionSurfaceCompositionService actionSurfaceCompositionService;
 private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
+private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
 public DefensoriaPublicaOperacionalService(PerfilDashboardContextFactory contextFactory,
 PainelServiceCommons commons,
 ProcessoRepository processoRepository,
@@ -57,7 +59,8 @@ PainelSharedExperienceService sharedExperienceService,
 PainelSignalReflectionService signalReflectionService,
 PainelNativeCollectionCompositionService collectionCompositionService,
 PainelActionSurfaceCompositionService actionSurfaceCompositionService,
-                                       PainelExecutionSurfaceCompositionService executionSurfaceCompositionService) {
+                                       PainelExecutionSurfaceCompositionService executionSurfaceCompositionService,
+                                       MovimentacaoProcessualRegistrar movimentacaoRegistrar) {
 this.contextFactory = contextFactory;
 this.commons = commons;
 this.processoRepository = processoRepository;
@@ -70,6 +73,7 @@ this.signalReflectionService = signalReflectionService;
 this.collectionCompositionService = collectionCompositionService;
 this.actionSurfaceCompositionService = actionSurfaceCompositionService;
 this.executionSurfaceCompositionService = executionSurfaceCompositionService;
+this.movimentacaoRegistrar = movimentacaoRegistrar;
 }
 public DefensoriaSnapshot bootstrapPainel() {
 PerfilDashboardContext ctx = contextFactory.build();
@@ -171,6 +175,7 @@ WorkItem defesaItem = WorkItem.builder()
 workItemRepository.save(defesaItem);
 commons.publishUserHistory(usuario, "DEFENSOR", "DEFESA_APRESENTADA",
 "Defesa apresentada pela Defensoria Pública.", processo, processoId);
+movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Defesa da Defensoria Pública apresentada.");
 LinkedHashMap<String, Object> out = new LinkedHashMap<>();
 out.put("status", "DEFESA_PROTOCOLADA");
 out.put("processoId", processoId);
@@ -210,6 +215,7 @@ WorkItem hcItem = WorkItem.builder()
 workItemRepository.save(hcItem);
 commons.publishUserHistory(usuario, "DEFENSOR", "HC_IMPETRADO",
 "Habeas Corpus impetrado pela Defensoria.", processo, processoId);
+movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Habeas Corpus impetrado pela Defensoria Pública.");
 LinkedHashMap<String, Object> response = new LinkedHashMap<>();
 response.put("status", "HC_IMPETRADO");
 response.put("paciente", paciente == null || paciente.isBlank() ? "PACIENTE_NAO_INFORMADO" : paciente.trim());
@@ -228,6 +234,31 @@ PerfilDashboardContext ctx = contextFactory.build();
 Usuario usuario = ctx.usuario();
 authorizationService.requireRole(usuario, "ROLE_DEFENSOR_PUBLICO",
 "ROLE_DEFENSOR_PUBLICO_FEDERAL");
+return criarSolicitacaoAjg(processo, usuario, renda, justificativa,
+"Assistência judiciária gratuita solicitada pela Defensoria Pública.");
+}
+
+@Transactional
+public Map<String, Object> solicitarAssistenciaJudiciariaGratuitaComoParte(Long processoId,
+String renda,
+String justificativa) {
+Processo processo = processoRepository.findById(processoId)
+.orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+PerfilDashboardContext ctx = contextFactory.build();
+Usuario usuario = ctx.usuario();
+if (usuario.getTipoUsuario() != com.tcc.pjb.backend.model.entity.enums.TipoUsuario.CIDADAO) {
+throw new com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException("Apenas o próprio cidadão parte do processo pode solicitar AJG diretamente.");
+}
+String cpf = usuario.getCpf();
+if (cpf == null || cpf.isBlank() || !com.tcc.pjb.backend.core.security.ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)) {
+throw new com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException("Cidadão não é parte do processo.");
+}
+return criarSolicitacaoAjg(processo, usuario, renda, justificativa,
+"Assistência judiciária gratuita solicitada pela própria parte (jus postulandi).");
+}
+
+private Map<String, Object> criarSolicitacaoAjg(Processo processo, Usuario usuario, String renda, String justificativa, String descricaoMovimentacao) {
+Long processoId = processo.getId();
 WorkItem ajgItem = WorkItem.builder()
 .processo(processo)
 .faseOrigem(processo.getFaseAtual())
@@ -245,7 +276,8 @@ WorkItem ajgItem = WorkItem.builder()
 .baseLegal("Art. 98 CPC — Gratuidade da Justiça")
 .dueAt(Instant.now().plus(48, ChronoUnit.HOURS))
 .build();
-workItemRepository.save(ajgItem);
+ajgItem = workItemRepository.save(ajgItem);
+movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), descricaoMovimentacao);
 LinkedHashMap<String, Object> response = new LinkedHashMap<>();
 response.put("status", "AJG_SOLICITADA");
 response.put("processoId", processoId);

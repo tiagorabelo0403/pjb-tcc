@@ -5,6 +5,8 @@
 ## Sumário
 
 - [Quem entra no PJB, e como cada um entra](#quem-entra-no-pjb-e-como-cada-um-entra)
+- [Segurança reforçada de quem decide processo](#segurança-reforçada-de-quem-decide-processo)
+- [Central de Chamados — quando alguém trava, tem pra onde ir](#central-de-chamados--quando-alguém-trava-tem-pra-onde-ir)
 - [A base que todo painel profissional compartilha](#a-base-que-todo-painel-profissional-compartilha)
 - [Passo 1 — Quem pode ajuizar uma ação, e como](#passo-1--quem-pode-ajuizar-uma-ação-e-como)
 - [Passo 2 — A triagem organiza e separa cada processo no lugar certo](#passo-2--a-triagem-organiza-e-separa-cada-processo-no-lugar-certo)
@@ -33,13 +35,47 @@ Antes de qualquer processo existir, tem gente entrando no sistema — e cada per
 
 O sistema reconhece mais de 50 papéis diferentes, mas eles se agrupam em 10 categorias que realmente importam pra entender o fluxo: cidadão, advocacia, magistratura (juiz, desembargador, ministro), assessoria, Ministério Público, Defensoria Pública, Procuradoria, auxiliar da justiça (perito, oficial de justiça, e mais uma dezena de funções de apoio), segurança pública e administrador.
 
-Dois detalhes de segurança que valem a pena entender de cara: o **login por certificado ICP-Brasil** (usado por advogado e magistratura) não é escolher um certificado num menu — o servidor manda um desafio criptográfico, o certificado assina, e só depois de validar a cadeia de confiança inteira é que o acesso libera. E o **magistrado passa por reconhecimento facial** especificamente quando vai praticar um ato de peso — sentenciar, homologar acordo. No dia a dia comum, o login institucional normal já resolve.
+Dois detalhes de segurança que valem a pena entender de cara: o **login por certificado ICP-Brasil** (usado por advogado e magistratura) não é escolher um certificado num menu — o servidor manda um desafio criptográfico, o certificado assina, e só depois de validar a cadeia de confiança inteira é que o acesso libera. E a **magistratura tem uma camada a mais**: certificado A3 obrigatório (o de token/smartcard, não o de arquivo) e uma passkey vinculada ao TPM do próprio notebook — a mesma digital ou reconhecimento facial que já destrava o Windows Hello ou o Touch ID, sem precisar instalar nada novo. Juiz que sair da UF onde está lotado, aparecer atrás de VPN, ou ficar 10 minutos sem mexer no sistema também é barrado ou trancado automaticamente — com uma válvula de escape para viagem legítima, aprovada por chamado de suporte com antecedência.
 
 **O delegado de polícia**, em mais detalhe: ele não precisa tocar pessoalmente em cada passo de uma investigação — pode **delegar uma diligência específica** de um inquérito pra unidade de apuração responsável, com descrição, fundamento operacional e prioridade, sempre vinculada àquele inquérito e processo específico. E o painel dele reflete exatamente isso:
 
 ![Painel do delegado](assets/painel-delegado.svg)
 
 Um policial, por sua vez, só enxerga e atua no que pertence à própria unidade — nunca no inquérito de outra circunscrição, mesmo que quisesse procurar.
+
+[⬆ Voltar ao topo deste guia](#sumário)
+
+---
+
+## Segurança reforçada de quem decide processo
+
+Juiz, desembargador e ministro passam por quatro camadas antes de qualquer ato — não é redundância, é proporcional ao peso de assinar uma sentença ou um acórdão.
+
+![Segurança reforçada da magistratura — quatro camadas de proteção](assets/seguranca-magistrado.svg)
+
+A ordem importa: login institucional identifica quem está tentando entrar; certificado ICP-Brasil **A3** (token físico, não arquivo) prova a identidade formal; a **passkey vinculada ao TPM do próprio notebook** — a mesma digital ou reconhecimento facial que já destrava o Windows Hello ou o Touch ID — entrega biometria real sem instalar nada; e o **geo-bloqueio** nega na hora qualquer tentativa de fora do Brasil, fora da UF onde o magistrado está lotado, ou atrás de VPN/datacenter. Durante a sessão inteira, mais duas coisas continuam de olho: 10 minutos sem mexer no sistema tranca a tela (destravar é só um novo toque na passkey, não o fluxo inteiro de novo), e uma viagem legítima não deixa o juiz trancado fora do próprio trabalho — basta abrir com antecedência um **chamado de suporte** pedindo a janela de datas e o destino.
+
+Essas mesmas quatro camadas não ficam restritas ao juiz. Promotor de Justiça e Defensor Público têm a garantia constitucional de independência funcional análoga à magistratura (CF art. 127 e 134) — por isso certificado A3, passkey vinculada ao TPM, trava por inatividade e geo-bloqueio valem exatamente da mesma forma pra quem exerce o Ministério Público e a Defensoria Pública. Procuradoria fica de fora dessa camada extra por decisão deliberada: nem toda carreira essencial à Justiça carrega a mesma garantia constitucional de independência que magistratura, MP e Defensoria têm.
+
+Esse canal de suporte, aliás, não é exclusivo da magistratura — **qualquer perfil cadastrado** (cidadão, advogado, servidor, todos) pode abrir um chamado técnico direto do próprio painel, sem precisar sair do sistema pra achar um contato de TI. Eu mostro como esse canal funciona de verdade, por dentro, na próxima seção.
+
+Um ponto que eu faço questão de deixar claro: nenhuma dessas camadas vira um mapa de "onde o juiz está agora". Não existe painel de localização pra colega, secretaria ou administrador ver — o sistema só decide, no instante do login, se libera ou bloqueia, e guarda o motivo de forma sigilosa, só pra investigação de incidente real. É controle antifraude, não vigilância.
+
+[⬆ Voltar ao topo deste guia](#sumário)
+
+---
+
+## Central de Chamados — quando alguém trava, tem pra onde ir
+
+Eu não quis deixar esse canal só como uma frase solta lá atrás, porque ele resolve um problema de verdade e tem lógica própria por trás — não é um formulário de contato genérico jogado num canto do sistema.
+
+![Central de chamados: abertura, ciclo de vida e ligação com o geo-bloqueio](assets/central-chamados-suporte.svg)
+
+Qualquer pessoa autenticada — cidadão, advogado, servidor, magistrado, qualquer papel — abre um chamado escolhendo uma categoria (técnico, acesso/login, dúvida geral, exceção de viagem da magistratura, ou outro), um assunto e uma descrição. Quando a categoria é a exceção de viagem, aparecem três campos a mais, só ali: UF ou país de destino, data de início e data de fim.
+
+O ciclo de vida é simples de acompanhar: o chamado nasce **aberto**, o suporte técnico **assume**, e depois **resolve** — com uma resposta e um sinalizador de aprovação. Só quem abriu pode cancelar, e só enquanto o chamado ainda está aberto; depois de assumido, cancelar deixa de ser opção. Cada mudança de status notifica quem abriu, com um link direto de volta pro próprio chamado.
+
+O ponto que eu acho mais interessante de mostrar é o que acontece de verdade quando um chamado de viagem é aprovado: o sistema publica um evento de resolução, e é esse evento — não uma pessoa mexendo manualmente numa lista de exceções — que libera o geo-bloqueio da magistratura pra aquela UF ou país, só durante a janela de datas que foi aprovada. Fora dessa janela, a regra volta ao normal sozinha.
 
 [⬆ Voltar ao topo deste guia](#sumário)
 
@@ -111,7 +147,7 @@ A partir daqui, o processo está "vivo" e cada perfil profissional que participa
 
 ![Dashboard do escritório do advogado](assets/painel-advogado.svg)
 
-Prazo crítico, petição pendente, audiência chegando, intimação não lida, recurso vencendo — tudo isso é KPI de verdade calculado pelo sistema, não uma lista que o advogado tem que montar de cabeça. E se o escritório tem mais de um advogado, o dono não precisa ficar emprestando o próprio certificado digital pra ninguém: ele manda um **convite de afiliação com escopo definido** — define o papel de quem entra, quais áreas do direito a pessoa pode tocar (Penal, Execução Penal, Militar e Infância/Juventude ficam sempre bloqueadas por padrão, exigindo liberação explícita à parte), se os casos pessoais do convidado ficam de fora, e a confiança mínima exigida pra ação automática.
+Prazo crítico, petição pendente, audiência chegando, intimação não lida, recurso vencendo — tudo isso é KPI de verdade calculado pelo sistema, não uma lista que o advogado tem que montar de cabeça. E se o escritório tem mais de um advogado, o dono não precisa ficar emprestando o próprio certificado digital pra ninguém: ele manda um **convite de afiliação com escopo definido** — define o papel de quem entra, quais áreas do direito a pessoa pode tocar (Penal, Processual Penal, Execução Penal, Militar e Infância/Juventude ficam sempre bloqueadas por padrão, exigindo liberação explícita à parte), se os casos pessoais do convidado ficam de fora, e a confiança mínima exigida pra ação automática.
 
 ![Como o escritório delega acesso sem repassar o certificado](assets/escritorio-delegacao-exemplo.svg)
 
@@ -122,6 +158,16 @@ O convidado aceita e passa a atuar dentro daquele escopo — mas sempre com a pr
 ![Exemplo de uso da calculadora judicial](assets/calculadora-judicial-exemplo.svg)
 
 No exemplo trabalhista, o advogado informa data de admissão, data de desligamento, salário, se houve adicional noturno ou de periculosidade — e a calculadora devolve cada verba separada (saldo de salário, 13º proporcional, férias mais o terço, aviso prévio, FGTS e a multa de 40%), **cada uma com a lei por trás dela**, não só um número solto. No final sai um PDF com essa mesma trilha de cálculo, pra que a parte contrária, o advogado dela e o juiz consigam conferir a conta sem precisar confiar de olho fechado.
+
+Abrindo um processo específico, o advogado encontra um conjunto de ferramentas que resolvem coisas que antes exigiam sair do sistema ou fazer conta de cabeça:
+
+![Ferramentas do processo no cockpit do advogado](assets/painel-advogado-ferramentas-processuais.svg)
+
+O **cálculo de honorários de sucumbência** aplica o CPC art. 85 direto — percentual mínimo ou máximo conforme a complexidade do trabalho, faixa própria quando a Fazenda Pública é vencida, ou o percentual que o próprio magistrado já fixou, sem o advogado ter que decorar qual regra vale pra cada situação. A **regularidade da OAB** vira uma consulta simples, não só um bloqueio que aparece na hora de protocolar — o advogado confere a própria situação antes de precisar dela. Marcar uma audiência agora **detecta conflito de horário** de verdade: o sistema olha toda a agenda daquela vara no dia antes de aceitar o novo horário, então dois processos não competem pelo mesmo juiz ao mesmo tempo sem ninguém perceber. E a **busca de jurisprudência** deixou de exigir que o advogado soubesse de cabeça o ramo e o rito do processo pra pesquisar — o sistema já resolve isso a partir do processo aberto na tela.
+
+Quando o advogado precisa repassar poderes pra outro colega — saindo de férias, mudando de comarca, ou simplesmente dividindo a carga — o **substabelecimento** virou uma ação de verdade dentro do sistema, com ou sem reserva de poderes: sem reserva, quem repassa perde a própria procuração daquele processo; com reserva, os dois continuam habilitados. As **custas do processo** aparecem consolidadas — pendente, paga, por tipo — junto com um **painel financeiro** que soma os totais, sem o advogado ter que abrir cada guia isolada pra saber quanto ainda falta pagar. E quando o problema é agenda apertada em vários processos ao mesmo tempo, dá pra **pedir prorrogação de prazo em lote** — o sistema protocola a petição em cada processo da lista, isolando o que falhar sem travar o resto do lote.
+
+Por fim, o **relatório de produtividade do escritório** mostra a carteira inteira por status e por rito, com a duração média dos processos já encerrados — sem inventar uma taxa de êxito que o sistema não tem como calcular de verdade, já que resultado de mérito não é um dado estruturado em nenhum tribunal do Brasil hoje.
 
 **O juiz**, quando o processo chega pra ele, vê uma pauta ordenada por urgência de verdade — não por ordem de chegada:
 
@@ -150,6 +196,12 @@ O **defensor público** normalmente carrega um volume de casos muito maior do qu
 ![Painel do Procurador](assets/painel-procurador.svg)
 
 Já o **procurador**, que representa a Fazenda Pública (município, estado ou União), lida com outro problema: consistência de tese entre milhares de execuções fiscais parecidas — por isso o painel dele mostra a malha de processos do mesmo devedor, pra nunca dar tratamento divergente ao mesmo caso em processos diferentes.
+
+Os três compartilham mais uma coisa que eu acho importante mostrar: uma **fila institucional própria**, separada do fórum genérico onde qualquer usuário cai.
+
+![Fila institucional diferenciada — Ministério Público, Defensoria e Procuradoria](assets/fila-institucional-mp-defensoria.svg)
+
+Um processo chega na fila certa de dois jeitos — automaticamente, quando o MP entra como parte (custos legis, ação civil pública), ou explicitamente, quando o juiz determina vista num despacho — e sempre já com o contexto da unidade certa (a promotoria, o núcleo da Defensoria, a procuradoria), não um item genérico esperando alguém adivinhar de onde é. O ato de **"Tomar Ciência"** é quem liga o relógio do prazo, e só quem tem posse real sobre aquela unidade pode praticá-lo. Se ninguém tomar ciência manualmente, o sistema não deixa o prazo refém do esquecimento: em 10 dias, marca a **intimação tácita** sozinho. E o prazo em si respeita uma prerrogativa legal real — Promotoria e Defensoria contam com **prazo em dobro**, calculado em cima do calendário forense de verdade (feriado, recesso, suspensão), não um contador genérico.
 
 **Cidadão**, quando é ele mesmo peticionando (jus postulandi) ou só acompanhando o próprio processo:
 

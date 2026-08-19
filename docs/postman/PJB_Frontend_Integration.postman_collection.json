@@ -35378,7 +35378,7 @@
       "name": "secretaria",
       "item": [
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}",
           "request": {
             "method": "GET",
             "header": [
@@ -35392,7 +35392,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35420,7 +35420,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/atos",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/atos",
           "request": {
             "method": "GET",
             "header": [
@@ -35434,7 +35434,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/atos",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/atos",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35463,7 +35463,7 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/secretaria/especializada/processos/{processoId}/audiencias/avaliar",
+          "name": "POST /api/v1/secretariat/especializada/processos/{processoId}/audiencias/avaliar",
           "request": {
             "method": "POST",
             "header": [
@@ -35477,7 +35477,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/audiencias/avaliar",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/audiencias/avaliar",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35507,7 +35507,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/audiencias/presenca",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/audiencias/presenca",
           "request": {
             "method": "GET",
             "header": [
@@ -35521,7 +35521,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/audiencias/presenca",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/audiencias/presenca",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35551,7 +35551,7 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/secretaria/especializada/processos/{processoId}/audiencias/presenca",
+          "name": "POST /api/v1/secretariat/especializada/processos/{processoId}/audiencias/presenca",
           "request": {
             "method": "POST",
             "header": [
@@ -35565,7 +35565,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/audiencias/presenca",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/audiencias/presenca",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35595,7 +35595,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/audiencias/recursos",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/audiencias/recursos",
           "request": {
             "method": "GET",
             "header": [
@@ -35609,7 +35609,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/audiencias/recursos",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/audiencias/recursos",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35639,7 +35639,7 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/secretaria/especializada/processos/{processoId}/audiencias/recursos",
+          "name": "POST /api/v1/secretariat/especializada/processos/{processoId}/audiencias/recursos",
           "request": {
             "method": "POST",
             "header": [
@@ -35653,7 +35653,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/audiencias/recursos",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/audiencias/recursos",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35683,7 +35683,7 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/secretaria/especializada/processos/{processoId}/audiencias/registrar",
+          "name": "POST /api/v1/secretariat/especializada/processos/{processoId}/audiencias/registrar",
           "request": {
             "method": "POST",
             "header": [
@@ -35697,7 +35697,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/audiencias/registrar",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/audiencias/registrar",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35727,7 +35727,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/checklist",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/checklist",
           "request": {
             "method": "GET",
             "header": [
@@ -35741,7 +35741,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/checklist",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/checklist",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35770,7 +35770,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/distribuicao-interna",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/distribuicao-interna",
           "request": {
             "method": "GET",
             "header": [
@@ -35784,7 +35784,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/distribuicao-interna",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/distribuicao-interna",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35813,7 +35813,7 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/secretaria/especializada/processos/{processoId}/distribuicao-interna",
+          "name": "POST /api/v1/secretariat/especializada/processos/{processoId}/distribuicao-interna",
           "request": {
             "method": "POST",
             "header": [
@@ -35827,7 +35827,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/distribuicao-interna",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/distribuicao-interna",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35856,7 +35856,7 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/secretaria/especializada/processos/{processoId}/enfileirar",
+          "name": "POST /api/v1/secretariat/especializada/processos/{processoId}/enfileirar",
           "request": {
             "method": "POST",
             "header": [
@@ -35870,7 +35870,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/enfileirar",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/enfileirar",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35899,7 +35899,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/estabilidade",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/estabilidade",
           "request": {
             "method": "GET",
             "header": [
@@ -35913,7 +35913,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/estabilidade",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/estabilidade",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35942,7 +35942,7 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/secretaria/especializada/processos/{processoId}/estabilidade/estabilizar",
+          "name": "POST /api/v1/secretariat/especializada/processos/{processoId}/estabilidade/estabilizar",
           "request": {
             "method": "POST",
             "header": [
@@ -35956,7 +35956,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/estabilidade/estabilizar",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/estabilidade/estabilizar",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -35986,7 +35986,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/expedicao/lotes",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/expedicao/lotes",
           "request": {
             "method": "GET",
             "header": [
@@ -36000,7 +36000,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/expedicao/lotes",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/expedicao/lotes",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36030,7 +36030,7 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/secretaria/especializada/processos/{processoId}/expedicao/lotes",
+          "name": "POST /api/v1/secretariat/especializada/processos/{processoId}/expedicao/lotes",
           "request": {
             "method": "POST",
             "header": [
@@ -36044,7 +36044,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/expedicao/lotes",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/expedicao/lotes",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36074,7 +36074,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/gargalos",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/gargalos",
           "request": {
             "method": "GET",
             "header": [
@@ -36088,7 +36088,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/gargalos",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/gargalos",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36117,7 +36117,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/handoff",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/handoff",
           "request": {
             "method": "GET",
             "header": [
@@ -36131,7 +36131,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/handoff",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/handoff",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36160,7 +36160,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/malha",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/malha",
           "request": {
             "method": "GET",
             "header": [
@@ -36174,7 +36174,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/malha",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/malha",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36203,7 +36203,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/matriz",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/matriz",
           "request": {
             "method": "GET",
             "header": [
@@ -36217,7 +36217,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/matriz",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/matriz",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36246,7 +36246,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/radar",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/radar",
           "request": {
             "method": "GET",
             "header": [
@@ -36260,7 +36260,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/radar",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/radar",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36289,7 +36289,7 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/secretaria/especializada/processos/{processoId}/receber",
+          "name": "POST /api/v1/secretariat/especializada/processos/{processoId}/receber",
           "request": {
             "method": "POST",
             "header": [
@@ -36303,7 +36303,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/receber",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/receber",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36332,7 +36332,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/redistribuicao",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/redistribuicao",
           "request": {
             "method": "GET",
             "header": [
@@ -36346,7 +36346,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/redistribuicao",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/redistribuicao",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36375,7 +36375,7 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/secretaria/especializada/processos/{processoId}/redistribuicao",
+          "name": "POST /api/v1/secretariat/especializada/processos/{processoId}/redistribuicao",
           "request": {
             "method": "POST",
             "header": [
@@ -36389,7 +36389,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/redistribuicao",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/redistribuicao",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36418,7 +36418,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/sla",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/sla",
           "request": {
             "method": "GET",
             "header": [
@@ -36432,7 +36432,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/sla",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/sla",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36461,7 +36461,7 @@
           "response": []
         },
         {
-          "name": "POST /api/v1/secretaria/especializada/processos/{processoId}/sla/escalar",
+          "name": "POST /api/v1/secretariat/especializada/processos/{processoId}/sla/escalar",
           "request": {
             "method": "POST",
             "header": [
@@ -36475,7 +36475,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/sla/escalar",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/sla/escalar",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36505,7 +36505,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/processos/{processoId}/topologia",
+          "name": "GET /api/v1/secretariat/especializada/processos/{processoId}/topologia",
           "request": {
             "method": "GET",
             "header": [
@@ -36519,7 +36519,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/processos/{processoId}/topologia",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/processos/{processoId}/topologia",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -36548,7 +36548,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/secretaria/especializada/ramo",
+          "name": "GET /api/v1/secretariat/especializada/ramo",
           "request": {
             "method": "GET",
             "header": [
@@ -36562,7 +36562,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/secretaria/especializada/ramo",
+              "raw": "{{baseUrl}}/api/v1/secretariat/especializada/ramo",
               "host": [
                 "{{baseUrl}}"
               ],

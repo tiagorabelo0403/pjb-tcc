@@ -4,6 +4,7 @@ import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
@@ -261,6 +262,11 @@ public class AssessorGabineteGuardRailService {
     }
 
     private boolean territoryMatches(Usuario assessor, Processo processo, WorkItem item) {
+        Comarca actorEntidade = assessor.getComarcaEntidade();
+        Comarca processoEntidade = comarcaResolvidaDoLadoDoProcesso(processo, item);
+        if (actorEntidade != null && processoEntidade != null) {
+            return Objects.equals(actorEntidade.getId(), processoEntidade.getId());
+        }
         String actorUf = normalize(firstNonBlank(assessor.getUf()));
         String actorComarca = normalize(firstNonBlank(assessor.getComarca()));
         String processoUf = normalize(firstNonBlank(item.getUf(), processo.getUf()));
@@ -268,6 +274,16 @@ public class AssessorGabineteGuardRailService {
         boolean ufOk = actorUf.isEmpty() || processoUf.isEmpty() || Objects.equals(actorUf, processoUf);
         boolean comarcaOk = actorComarca.isEmpty() || processoComarca.isEmpty() || Objects.equals(actorComarca, processoComarca);
         return ufOk && comarcaOk;
+    }
+
+    private Comarca comarcaResolvidaDoLadoDoProcesso(Processo processo, WorkItem item) {
+        if (item.getComarcaEntidade() != null) {
+            return item.getComarcaEntidade();
+        }
+        if (item.getComarca() != null && !item.getComarca().isBlank()) {
+            return null;
+        }
+        return processo.getComarcaEntidade();
     }
 
     private boolean isActive(WorkItem item) {

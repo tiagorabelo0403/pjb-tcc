@@ -11,6 +11,7 @@ import com.tcc.pjb.backend.model.dto.catalog.IdeaDto;
 import com.tcc.pjb.backend.model.dto.workitem.WorkItemDto;
 import com.tcc.pjb.backend.model.dto.workspace.WorkspaceMeResponse;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.modules.suporte.service.SupportTicketService;
 import com.tcc.pjb.backend.service.catalog.IdeaCatalogService;
 import com.tcc.pjb.backend.service.workitem.WorkItemService;
 
@@ -21,15 +22,18 @@ public class WorkspaceService {
     private final UserPersonaService personaService;
     private final IdeaCatalogService ideaCatalogService;
     private final WorkItemService workItemService;
+    private final SupportTicketService supportTicketService;
 
     public WorkspaceService(CurrentUserService currentUserService,
                             UserPersonaService personaService,
                             IdeaCatalogService ideaCatalogService,
-                            WorkItemService workItemService) {
+                            WorkItemService workItemService,
+                            SupportTicketService supportTicketService) {
         this.currentUserService = currentUserService;
         this.personaService = personaService;
         this.ideaCatalogService = ideaCatalogService;
         this.workItemService = workItemService;
+        this.supportTicketService = supportTicketService;
     }
 
     public WorkspaceMeResponse me() {
@@ -108,7 +112,11 @@ public class WorkspaceService {
             default -> List.of("Inbox", "Processos", "Prazos", "Documentos");
         };
 
+        List<String> quickComSuporte = java.util.stream.Stream.concat(
+                quick.stream(), java.util.stream.Stream.of("Abrir chamado de suporte")).toList();
+
         Page<WorkItemDto> inbox = workItemService.inbox(0, 5);
+        long openTickets = supportTicketService.countAbertosPorUsuario(u.getId());
 
         return WorkspaceMeResponse.builder()
                 .userId(u.getId())
@@ -121,9 +129,10 @@ public class WorkspaceService {
                 .uf(u.getUf())
                 .comarca(u.getComarca())
                 .ideas(ideas)
-                .quickActions(quick)
+                .quickActions(quickComSuporte)
                 .inboxCount(inbox.getTotalElements())
                 .inboxPreview(inbox.getContent())
+                .openTicketsCount(openTickets)
                 .build();
     }
 }

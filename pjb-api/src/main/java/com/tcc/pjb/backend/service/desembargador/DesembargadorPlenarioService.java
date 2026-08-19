@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.configs.security.PasskeyRequiredException;
+import com.tcc.pjb.backend.configs.security.PasskeyRequirementEnforcer;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
-import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenPayload;
-import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenService;
 import com.tcc.pjb.backend.model.dto.desembargador.DesembargadorPlenarioVotoRequest;
 import com.tcc.pjb.backend.model.dto.desembargador.RelatorPlenarioDivergenciaDto;
 import com.tcc.pjb.backend.model.dto.desembargador.RelatorPlenarioResponse;
@@ -32,16 +32,16 @@ public class DesembargadorPlenarioService {
     private final JulgamentoColegiadoService julgamentoColegiadoService;
     private final LaianeSentencaService laianeSentencaService;
     private final CurrentUserService currentUserService;
-    private final FaceReauthTokenService faceReauthTokenService;
+    private final PasskeyRequirementEnforcer passkeyRequirementEnforcer;
 
     public DesembargadorPlenarioService(JulgamentoColegiadoService julgamentoColegiadoService,
                                         LaianeSentencaService laianeSentencaService,
                                         CurrentUserService currentUserService,
-                                        FaceReauthTokenService faceReauthTokenService) {
+                                        PasskeyRequirementEnforcer passkeyRequirementEnforcer) {
         this.julgamentoColegiadoService = Objects.requireNonNull(julgamentoColegiadoService);
         this.laianeSentencaService = Objects.requireNonNull(laianeSentencaService);
         this.currentUserService = Objects.requireNonNull(currentUserService);
-        this.faceReauthTokenService = Objects.requireNonNull(faceReauthTokenService);
+        this.passkeyRequirementEnforcer = Objects.requireNonNull(passkeyRequirementEnforcer);
     }
 
     @Transactional(readOnly = true)
@@ -76,9 +76,9 @@ public class DesembargadorPlenarioService {
     }
 
     @Transactional
-    public RelatorPlenarioVoteDto registrarVoto(Long sessaoId, DesembargadorPlenarioVotoRequest request, String stepUpToken) {
+    public RelatorPlenarioVoteDto registrarVoto(Long sessaoId, DesembargadorPlenarioVotoRequest request) {
         Usuario usuario = requireDesembargador();
-        validarStepUp(stepUpToken, usuario);
+        validarStepUp(usuario);
         VotoColegiado voto = julgamentoColegiadoService.registrarVoto(
                 sessaoId,
                 request.ordem(),
@@ -211,10 +211,11 @@ public class DesembargadorPlenarioService {
         );
     }
 
-    private void validarStepUp(String token, Usuario usuario) {
-        FaceReauthTokenPayload payload = faceReauthTokenService.verifyAndDecode(token);
-        if (payload.userId() == null || !payload.userId().equals(usuario.getId())) {
-            throw new IllegalArgumentException("Step-up biometrico invalido para o usuario autenticado.");
+    private void validarStepUp(Usuario usuario) {
+        try {
+            passkeyRequirementEnforcer.exigirParaMagistratura(usuario.getId(), usuario.getTipoUsuario());
+        } catch (PasskeyRequiredException e) {
+            throw new IllegalArgumentException("Step-up de passkey obrigatorio para votar em plenario.", e);
         }
     }
 

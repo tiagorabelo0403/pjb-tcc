@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.security.device.SecurityChallengeService;
 import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
 import com.tcc.pjb.backend.core.validation.oab.OabStrictValidator;
 import com.tcc.pjb.backend.mapper.UsuarioMapper;
@@ -17,6 +18,7 @@ import com.tcc.pjb.backend.model.dto.UsuarioResponse;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.identity.IdentidadeJuridicaNacional;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.identity.IdentidadeJuridicaNacionalService;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -35,14 +37,16 @@ class UsuarioServiceAuditoriaTest {
     @Mock private DocumentoNacionalValidator documentoNacionalValidator;
     @Mock private IdentidadeJuridicaNacionalService identidadeJuridicaNacionalService;
     @Mock private AuditLedgerService auditLedgerService;
+    @Mock private SecurityChallengeService securityChallengeService;
+    @Mock private ComarcaResolutionService comarcaResolutionService;
 
     private UsuarioService service;
 
     @BeforeEach
     void setUp() {
-        // Falha em compilar até AuditLedgerService ser adicionado ao construtor de UsuarioService
         service = new UsuarioService(usuarioRepository, usuarioMapper, oabStrictValidator,
-                documentoNacionalValidator, identidadeJuridicaNacionalService, auditLedgerService);
+                documentoNacionalValidator, identidadeJuridicaNacionalService, auditLedgerService,
+                securityChallengeService, comarcaResolutionService);
     }
 
     @Test

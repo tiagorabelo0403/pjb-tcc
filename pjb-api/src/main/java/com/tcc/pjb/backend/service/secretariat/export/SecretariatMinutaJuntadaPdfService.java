@@ -370,10 +370,10 @@ public class SecretariatMinutaJuntadaPdfService {
       DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
 
       Jurisdicao j = p.getJurisdicao();
-      String uf = j != null ? j.getEstado() : null;
+      String uf = j != null ? j.getUf() : null;
       String orgaoNome = j != null ? j.getNome() : null;
       String orgaoSigla = j != null ? j.getSigla() : null;
-      String comarca = j != null ? j.getComarca() : null;
+      String comarca = j != null ? j.getCidade() : null;
 
       cur.ensureSpace(leading * 8);
       cur.y = writeLine(cur.cs, fontBold, 13f, margin, cur.y, "PODER JUDICIÁRIO", leading);

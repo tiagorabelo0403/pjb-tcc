@@ -384,7 +384,7 @@ class PjbFluxoJudicialCompletoE2ETest extends PjbIntegrationTestBase {
         assertThat(distribuicao.isDistribuicaoAutomatica()).isTrue();
         assertThat(distribuido.getTipoJustica()).isEqualTo(TipoJustica.ESTADUAL);
         assertThat(unidade.getTipoJustica()).isEqualTo(TipoJustica.ESTADUAL);
-        assertThat(unidade.getTribunalCodigo()).isEqualTo("TJCE");
+        assertThat(unidade.getTribunal().getSigla()).isEqualTo("TJCE");
         assertThat(distribuido.getDataDistribuicao()).isNotNull();
         assertThat(distribuido.getUnidadeJudiciariaCodigo()).isNotBlank();
         assertThat(distribuido.getVara()).isNotBlank();

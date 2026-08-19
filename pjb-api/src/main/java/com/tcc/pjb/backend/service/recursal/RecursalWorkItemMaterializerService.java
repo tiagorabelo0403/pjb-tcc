@@ -52,8 +52,8 @@ public class RecursalWorkItemMaterializerService {
         if (specs == null || specs.isEmpty()) return;
 
         Jurisdicao j = processo.getJurisdicao();
-        String uf = j != null ? safeTrim(j.getEstado()) : null;
-        String comarca = j != null ? safeTrim(j.getComarca()) : null;
+        String uf = j != null ? safeTrim(j.getUf()) : null;
+        String comarca = j != null ? safeTrim(j.getCidade()) : null;
 
         for (WorkItemSpec s : specs) {
             if (s == null) continue;

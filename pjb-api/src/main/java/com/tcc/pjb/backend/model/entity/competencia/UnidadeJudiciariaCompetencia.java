@@ -24,6 +24,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -40,8 +41,8 @@ import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
                 @UniqueConstraint(name = "uk_unidade_judiciaria_competencia_codigo", columnNames = "codigo")
         },
         indexes = {
-                @Index(name = "idx_unidade_competencia_tribunal", columnList = "tribunal_codigo"),
-                @Index(name = "idx_unidade_competencia_territorio", columnList = "uf, comarca"),
+                @Index(name = "idx_unidade_competencia_tribunal", columnList = "tribunal_id"),
+                @Index(name = "idx_unidade_competencia_territorio", columnList = "uf, comarca_id"),
                 @Index(name = "idx_unidade_competencia_status", columnList = "aceita_distribuicao, status_operacional"),
                 @Index(name = "idx_unidade_competencia_justica", columnList = "tipo_justica, ramo_direito, tipo_vara")
         }
@@ -55,8 +56,13 @@ public class UnidadeJudiciariaCompetencia {
     @Column(name = "codigo", nullable = false, length = 80)
     private String codigo;
 
-    @Column(name = "tribunal_codigo", nullable = false, length = 20)
-    private String tribunalCodigo;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tribunal_id", nullable = false)
+    private Tribunal tribunal;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
 
     @Column(name = "comarca", length = 120)
     private String comarca;
@@ -161,15 +167,16 @@ public class UnidadeJudiciariaCompetencia {
     }
 
     public UnidadeJudiciariaCompetencia(String codigo,
-                                        String tribunalCodigo,
-                                        String comarca,
+                                        Tribunal tribunal,
+                                        Comarca comarcaEntidade,
                                         String uf,
                                         TipoJustica tipoJustica,
                                         RamoDireito ramoDireito,
                                         TipoVaraDistribuicao tipoVara) {
         this.codigo = Objects.requireNonNull(codigo);
-        this.tribunalCodigo = Objects.requireNonNull(tribunalCodigo);
-        this.comarca = comarca;
+        this.tribunal = Objects.requireNonNull(tribunal);
+        this.comarcaEntidade = comarcaEntidade;
+        this.comarca = comarcaEntidade != null ? comarcaEntidade.getNome() : null;
         this.uf = uf;
         this.tipoJustica = tipoJustica;
         this.ramoDireito = ramoDireito;
@@ -189,7 +196,6 @@ public class UnidadeJudiciariaCompetencia {
             this.versao = 0L;
         }
         this.codigo = normalizeUpper(this.codigo);
-        this.tribunalCodigo = normalizeUpper(this.tribunalCodigo);
         this.uf = normalizeUpper(this.uf);
         this.comarca = normalizeText(this.comarca);
         this.enderecoFisico = normalizeText(this.enderecoFisico);
@@ -342,12 +348,24 @@ public class UnidadeJudiciariaCompetencia {
         return codigo;
     }
 
-    public String getTribunalCodigo() {
-        return tribunalCodigo;
+    public Tribunal getTribunal() {
+        return tribunal;
+    }
+
+    public Comarca getComarcaEntidade() {
+        return comarcaEntidade;
+    }
+
+    public void setComarcaEntidade(Comarca comarcaEntidade) {
+        this.comarcaEntidade = comarcaEntidade;
     }
 
     public String getComarca() {
         return comarca;
+    }
+
+    public void setComarca(String comarca) {
+        this.comarca = comarca;
     }
 
     public String getUf() {

@@ -12,6 +12,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -35,6 +37,19 @@ public class AuditLedgerService {
 
     private static final int PAYLOAD_HASH_MAX_LENGTH = 64;
 
+    /**
+     * REQUIRES_NEW em todo ponto de entrada publico (aqui e nos 4 overloads de {@code
+     * appendSafely} abaixo — nao apenas neste metodo, porque appendSafely chama append via
+     * self-invocation, que nao passa pelo proxy do Spring e ignoraria uma anotacao so aqui):
+     * a escrita do log de auditoria precisa ser isolada da transacao do chamador. Sem isso, um
+     * chamador com {@code @Transactional(readOnly = true)} (ex.: EquipeSwitchInterceptor ->
+     * OfficeWorkspaceModeService.current() -> buildView()) tem o INSERT rejeitado pelo Postgres
+     * ("cannot execute INSERT in a read-only transaction"); persistSafely engole a excecao, mas a
+     * transacao ambiente ja fica marcada rollback-only e a chamada inteira falha com
+     * UnexpectedRollbackException no commit — mesmo em codigo que nunca tocou auditoria
+     * diretamente. Bug real, achado com Postgres real nesta investigacao.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public AuditLedgerEntry append(String eventCode,
                                    String resourceType,
                                    String resourceId,
@@ -77,18 +92,22 @@ public class AuditLedgerService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public AuditLedgerEntry appendSafely(String eventCode, String resourceType, String resourceId, String payloadHash) {
         return append(eventCode, resourceType, resourceId, payloadHash, "");
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public AuditLedgerEntry appendSafely(String eventCode, String description) {
         return append(eventCode, "AUDIT", "N/A", null, description);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public AuditLedgerEntry appendSafely(String eventCode, String resourceType, String resourceId) {
         return append(eventCode, resourceType, resourceId, null, "");
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public AuditLedgerEntry appendSafely(String eventCode, String resourceType, String resourceId, String payloadHash, String description) {
         return append(eventCode, resourceType, resourceId, payloadHash, description);
     }
