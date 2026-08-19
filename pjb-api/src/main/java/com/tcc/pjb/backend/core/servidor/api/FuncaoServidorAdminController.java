@@ -8,6 +8,8 @@ import com.tcc.pjb.backend.core.servidor.api.dto.UnidadeCandidataResponse;
 import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorApplicationService;
 import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorDesignacaoService;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
+import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Objects;
@@ -51,7 +53,11 @@ public class FuncaoServidorAdminController {
     @PostMapping("/{funcaoId}/encerrar")
     public void encerrar(@PathVariable Long funcaoId, @Valid @RequestBody EncerrarDesignacaoRequest request) {
         Long operadorId = currentUserService.getRequired().getId();
-        funcaoServidorApplicationService.encerrar(funcaoId, request.dataFim(), operadorId);
+        try {
+            funcaoServidorApplicationService.encerrar(funcaoId, request.dataFim(), operadorId);
+        } catch (EntityNotFoundException e) {
+            throw new RecursoNaoEncontradoException("FuncaoServidorJudiciario", funcaoId);
+        }
     }
 
     @GetMapping("/unidades-candidatas")

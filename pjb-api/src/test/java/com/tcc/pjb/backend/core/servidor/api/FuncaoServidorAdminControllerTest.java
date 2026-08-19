@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.core.servidor.api;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,6 +20,7 @@ import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia
 import com.tcc.pjb.backend.model.entity.enums.FuncaoServidorJudiciario;
 import com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorJudiciarioEntity;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
+import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -73,6 +75,21 @@ class FuncaoServidorAdminControllerTest {
                 .andExpect(status().isOk());
 
         verify(funcaoServidorApplicationService).encerrar(77L, fim, 1L);
+    }
+
+    @Test
+    void encerrarConvertePraRecursoNaoEncontradoQuandoFuncaoNaoExiste() throws Exception {
+        Usuario admin = new Usuario();
+        admin.setId(1L);
+        when(currentUserService.getRequired()).thenReturn(admin);
+        LocalDate fim = LocalDate.now();
+        doThrow(new EntityNotFoundException("Função não encontrada: 999"))
+                .when(funcaoServidorApplicationService).encerrar(999L, fim, 1L);
+
+        mockMvc.perform(post("/api/v1/admin/servidores/designacoes/{funcaoId}/encerrar", 999L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"dataFim\":\"" + fim + "\"}"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
