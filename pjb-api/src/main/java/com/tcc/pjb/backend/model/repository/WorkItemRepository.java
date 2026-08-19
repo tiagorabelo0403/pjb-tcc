@@ -533,4 +533,12 @@ public interface WorkItemRepository extends JpaRepository<WorkItem, Long> {
                                                         @Param("to") Instant to,
                                                         Pageable pageable);
 
+    @EntityGraph(attributePaths = {"processo"})
+    @Query("""
+            select w from WorkItem w
+            where w.templateCode like concat('HONORARIO:%:', :usuarioId)
+            order by w.createdAt desc, w.id desc
+            """)
+    List<WorkItem> findHonorariosPericiaisPorSolicitante(@Param("usuarioId") Long usuarioId);
+
 }

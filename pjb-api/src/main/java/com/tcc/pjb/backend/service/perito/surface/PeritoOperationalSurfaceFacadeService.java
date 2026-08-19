@@ -4,6 +4,7 @@ import com.tcc.pjb.backend.model.dto.profile.operational.PeritoHonorariosRequest
 import com.tcc.pjb.backend.model.dto.profile.operational.PeritoLaudoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.PeritoQuesitosRequest;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
+import com.tcc.pjb.backend.model.dto.surface.common.SurfaceCollectionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
 import com.tcc.pjb.backend.service.perito.PeritoOperacionalEnhancedService;
 import com.tcc.pjb.backend.service.surface.common.SurfaceProjectionSupport;
@@ -42,5 +43,9 @@ public class PeritoOperationalSurfaceFacadeService {
     public SurfaceActionResponse solicitarHonorarios(Long processoId, PeritoHonorariosRequest request) {
         return projectionSupport.action("perito-operacional", "solicitar-honorarios", processoId,
                 service.solicitarHonorarios(processoId, request.valor(), request.justificativa()));
+    }
+
+    public SurfaceCollectionResponse listarHonorarios() {
+        return projectionSupport.collection("perito-operacional-honorarios", service.listarHonorarios());
     }
 }

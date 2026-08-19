@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.core.processo.lifecycle.ProcessoLifecycleAction;
 import com.tcc.pjb.backend.core.processo.lifecycle.ProcessoLifecycleMachine;
+import com.tcc.pjb.backend.model.dto.profile.operational.PeritoHonorarioResumoDto;
 import com.tcc.pjb.backend.model.dto.profile.operational.PeritoLaudoRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -227,6 +228,22 @@ WorkItem honorario = WorkItem.builder()
 workItemRepository.save(honorario);
 return Map.of("status", "HONORARIOS_SOLICITADOS", "valor", valor,
 "processoId", processoId, "workItemId", honorario.getId());
+}
+@Transactional(readOnly = true)
+public List<PeritoHonorarioResumoDto> listarHonorarios() {
+PerfilDashboardContext ctx = contextFactory.build();
+Usuario usuario = ctx.usuario();
+return workItemRepository.findHonorariosPericiaisPorSolicitante(usuario.getId()).stream()
+.map(item -> new PeritoHonorarioResumoDto(
+item.getId(),
+item.getProcesso() != null ? item.getProcesso().getId() : null,
+item.getProcesso() != null ? item.getProcesso().getNumeroProcesso() : null,
+item.getTitulo(),
+item.getDescricao(),
+item.getStatus() != null ? item.getStatus().name() : null,
+item.getDueAt(),
+item.getCreatedAt()))
+.toList();
 }
 private String resolveEspecialidade(Usuario usuario) {
 

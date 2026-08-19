@@ -4,6 +4,7 @@ import com.tcc.pjb.backend.model.dto.profile.operational.PeritoHonorariosRequest
 import com.tcc.pjb.backend.model.dto.profile.operational.PeritoLaudoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.PeritoQuesitosRequest;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
+import com.tcc.pjb.backend.model.dto.surface.common.SurfaceCollectionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
@@ -80,6 +81,13 @@ public class PeritoOperacionalEnhancedController {
                                                                      Authentication authentication) {
         enforce(authentication, "perito_operacional_honorarios");
         return ResponseEntity.status(HttpStatus.CREATED).body(facadeService.solicitarHonorarios(processoId, request));
+    }
+
+    @GetMapping("/honorarios")
+    @PreAuthorize(ROLES)
+    public ResponseEntity<SurfaceCollectionResponse> listarHonorarios(Authentication authentication) {
+        enforce(authentication, "perito_operacional_honorarios_listar");
+        return ResponseEntity.ok(facadeService.listarHonorarios());
     }
 
     private void enforce(Authentication authentication, String capability) {

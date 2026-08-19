@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.processual.protocolo;
 
 import com.tcc.pjb.backend.core.util.Hashes;
+import com.tcc.pjb.backend.model.dto.processual.protocolo.ProtocoloReciboResponse;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.document.DocumentoPagina;
@@ -13,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Comparator;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,6 +68,29 @@ public class ProtocoloReciboService {
                 .criadoEm(LocalDateTime.ofInstant(agora, ZoneOffset.UTC))
                 .build());
         return salvo;
+    }
+
+    @Transactional
+    public ProtocoloReciboResponse obterOuEmitirRecibo(Processo processo, Usuario usuario) {
+        Objects.requireNonNull(processo);
+        DocumentoProcessual documento = documentoProcessualRepository.findByProcessoId(processo.getId()).stream()
+                .filter(doc -> "PJB_PROTOCOLO".equals(doc.getOrigemSistema()))
+                .max(Comparator.comparing(DocumentoProcessual::getCriadoEm))
+                .orElseGet(() -> emitirReciboPeticaoInicial(processo, usuario, null));
+        return toResponse(processo, documento);
+    }
+
+    private ProtocoloReciboResponse toResponse(Processo processo, DocumentoProcessual documento) {
+        String conteudo = documento.getPdf() == null ? null : new String(documento.getPdf(), StandardCharsets.UTF_8);
+        return new ProtocoloReciboResponse(
+                documento.getId() == null ? null : documento.getId().toString(),
+                processo.getId(),
+                firstNonBlank(processo.getNumeroUnificado(), processo.getNumeroProcesso()),
+                documento.getProtocoloExterno(),
+                documento.getSha256(),
+                documento.getCriadoEm() == null ? null : documento.getCriadoEm().toInstant(ZoneOffset.UTC),
+                conteudo
+        );
     }
 
     private String conteudoRecibo(Processo processo, Usuario usuario, String hashConteudo, String referencia, Instant agora) {
