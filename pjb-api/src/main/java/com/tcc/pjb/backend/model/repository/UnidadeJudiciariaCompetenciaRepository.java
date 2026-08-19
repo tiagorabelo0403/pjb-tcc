@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.competencia.Tribunal;
 import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia;
@@ -30,6 +31,10 @@ public interface UnidadeJudiciariaCompetenciaRepository extends JpaRepository<Un
     java.util.List<UnidadeJudiciariaCompetencia> findAllByTribunal(Tribunal tribunal);
 
     java.util.List<UnidadeJudiciariaCompetencia> findAllByTribunalAndComarcaEntidade(Tribunal tribunal, Comarca comarcaEntidade);
+
+    List<UnidadeJudiciariaCompetencia> findByUnidadeInstituicao(UnidadeInstituicao unidadeInstituicao);
+
+    List<UnidadeJudiciariaCompetencia> findAllByUfIgnoreCaseAndComarcaIgnoreCase(String uf, String comarca);
 
     @Modifying(flushAutomatically = false, clearAutomatically = false)
     @Query(value = """

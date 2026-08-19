@@ -31,6 +31,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
+import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 
 @PjbDataOwnership(module = PjbModuleId.COMPETENCIA_ROTEAMENTO, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
@@ -63,6 +64,10 @@ public class UnidadeJudiciariaCompetencia {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comarca_id")
     private Comarca comarcaEntidade;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unidade_instituicao_id")
+    private UnidadeInstituicao unidadeInstituicao;
 
     @Column(name = "comarca", length = 120)
     private String comarca;
@@ -358,6 +363,14 @@ public class UnidadeJudiciariaCompetencia {
 
     public void setComarcaEntidade(Comarca comarcaEntidade) {
         this.comarcaEntidade = comarcaEntidade;
+    }
+
+    public UnidadeInstituicao getUnidadeInstituicao() {
+        return unidadeInstituicao;
+    }
+
+    public void setUnidadeInstituicao(UnidadeInstituicao unidadeInstituicao) {
+        this.unidadeInstituicao = unidadeInstituicao;
     }
 
     public String getComarca() {
