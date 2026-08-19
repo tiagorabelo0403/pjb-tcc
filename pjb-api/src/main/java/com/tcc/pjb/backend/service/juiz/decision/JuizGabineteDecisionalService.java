@@ -352,7 +352,8 @@ public class JuizGabineteDecisionalService {
                 "fundamentacao", defaultText(fundamentacao, "Fundamentação judicial lançada no gabinete."),
                 "determinacao", defaultText(conteudo, "Determinação judicial materializada no fluxo do gabinete.")
         ));
-        MovimentacaoProcessual movimentacao = registrarMovimentacaoDespacho(processo, usuario, faseOrigem, documentoAssinado);
+        MovimentacaoProcessual movimentacao = registrarMovimentacaoAto(processo, usuario, faseOrigem,
+                "Despacho judicial proferido e documento assinado: " + documentoAssinado.documentoId());
         DespachoComunicacaoPosAtoResult comunicacaoPosDespacho = registrarComunicacaoPosDespacho(
                 processo,
                 usuario,
@@ -391,16 +392,16 @@ public class JuizGabineteDecisionalService {
         }
     }
 
-    private MovimentacaoProcessual registrarMovimentacaoDespacho(Processo processo,
-                                                                 Usuario usuario,
-                                                                 FaseProcessual faseOrigem,
-                                                                 OfficialDocumentTemplateRenderResponse documentoAssinado) {
+    private MovimentacaoProcessual registrarMovimentacaoAto(Processo processo,
+                                                            Usuario usuario,
+                                                            FaseProcessual faseOrigem,
+                                                            String descricao) {
         Instant agora = Instant.now();
         MovimentacaoProcessual movimentacao = movimentacaoProcessualRepository.save(MovimentacaoProcessual.builder()
                 .processo(processo)
                 .faseDe(faseOrigem)
                 .fasePara(processo.getFaseAtual())
-                .descricao("Despacho judicial proferido e documento assinado: " + documentoAssinado.documentoId())
+                .descricao(descricao)
                 .ator(usuario)
                 .dataMovimentacao(agora)
                 .build());
@@ -426,6 +427,7 @@ public class JuizGabineteDecisionalService {
         JuizGabineteRoutingProfile gabineteRouting = juizGabineteRoutingResolver.resolve(processo);
         SecretariatOperationalRoutingProfile secretariatRouting = gabineteRouting.secretariatRouting();
         String dedupKey = deterministicKey("SENTENCA", processoId, usuario.getId());
+        FaseProcessual faseOrigem = processo.getFaseAtual();
         WorkItem sentencaItem = WorkItem.builder()
                 .processo(processo)
                 .faseOrigem(processo.getFaseAtual())
@@ -454,11 +456,14 @@ public class JuizGabineteDecisionalService {
                 "fundamentacao", defaultText(fundamentacao, "Fundamentação judicial lançada no gabinete."),
                 "dispositivo", defaultText(dispositivo, "Dispositivo judicial materializado no gabinete.")
         ));
+        MovimentacaoProcessual movimentacao = registrarMovimentacaoAto(processo, usuario, faseOrigem,
+                "Sentença judicial proferida e documento assinado: " + documentoAssinado.documentoId());
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "SENTENCA_PROFERIDA");
         out.put("tipo", tipoSentenca);
         out.put("processoId", processoId);
         out.put("workItemId", sentencaItem.getId());
+        out.put("movimentacaoId", movimentacao.getId());
         out.put("dedupKey", dedupKey);
         out.put("encaminhadoPara", firstNonBlank(secretariatRouting.executionInboxKey(), "SECRETARIA_PUBLICACAO_SENTENCA"));
         out.put("guardRail", guard.metrics());
@@ -488,6 +493,7 @@ public class JuizGabineteDecisionalService {
         JuizGabineteRoutingProfile gabineteRouting = juizGabineteRoutingResolver.resolve(processo);
         SecretariatOperationalRoutingProfile secretariatRouting = gabineteRouting.secretariatRouting();
         String dedupKey = deterministicKey("DECISAO_INTERLOCUTORIA", processoId, usuario.getId());
+        FaseProcessual faseOrigem = processo.getFaseAtual();
         WorkItem decisaoItem = WorkItem.builder()
                 .processo(processo)
                 .faseOrigem(processo.getFaseAtual())
@@ -515,11 +521,14 @@ public class JuizGabineteDecisionalService {
                 "fundamentacao", defaultText(fundamentacao, "Fundamentação interlocutória lançada no gabinete."),
                 "dispositivo", defaultText(dispositivo, "Dispositivo interlocutório materializado no gabinete.")
         ));
+        MovimentacaoProcessual movimentacao = registrarMovimentacaoAto(processo, usuario, faseOrigem,
+                "Decisão interlocutória proferida e documento assinado: " + documentoAssinado.documentoId());
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "DECISAO_INTERLOCUTORIA_PROFERIDA");
         out.put("tipo", tipoDecisao);
         out.put("processoId", processoId);
         out.put("workItemId", decisaoItem.getId());
+        out.put("movimentacaoId", movimentacao.getId());
         out.put("dedupKey", dedupKey);
         out.put("encaminhadoPara", firstNonBlank(secretariatRouting.executionInboxKey(), "SECRETARIA_PUBLICACAO_DECISAO"));
         out.put("guardRail", guard.metrics());

@@ -53,7 +53,7 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
     """)
     Page<Jurisdicao> pesquisar(@Param("termo") String termo, Pageable pageable);
 
-    @Query("SELECT j FROM Jurisdicao j WHERE j.estado = :uf AND j.ativo = true")
+    @Query("SELECT j FROM Jurisdicao j LEFT JOIN j.comarcaEntidade c WHERE COALESCE(c.uf, j.estado) = :uf AND j.ativo = true")
     List<Jurisdicao> findByUf(@Param("uf") String uf);
 
     
@@ -89,11 +89,12 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
     @Query("""
         SELECT j.id as id, j.nome as nome, j.sigla as sigla, j.materia as materia
         FROM Jurisdicao j
+        LEFT JOIN j.comarcaEntidade c
         WHERE j.ativo = true
           AND j.esfera = :esfera
           AND j.grau = :grau
-          AND UPPER(j.estado) = UPPER(:uf)
-          AND LOWER(j.comarca) = LOWER(:comarca)
+          AND UPPER(COALESCE(c.uf, j.estado)) = UPPER(:uf)
+          AND LOWER(COALESCE(c.nome, j.comarca)) = LOWER(:comarca)
         ORDER BY j.nome ASC
     """)
     List<JurisdicaoContextProjection> listarContextoPorPrimeiroGrau(
@@ -106,10 +107,11 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
     @Query("""
         SELECT j.id as id, j.nome as nome, j.sigla as sigla, j.materia as materia
         FROM Jurisdicao j
+        LEFT JOIN j.comarcaEntidade c
         WHERE j.ativo = true
           AND j.esfera = :esfera
           AND j.grau = :grau
-          AND UPPER(j.estado) = UPPER(:uf)
+          AND UPPER(COALESCE(c.uf, j.estado)) = UPPER(:uf)
         ORDER BY j.nome ASC
     """)
     List<JurisdicaoContextProjection> listarContextoPorSegundoGrau(
@@ -134,11 +136,12 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
     @Query("""
         SELECT j.id as id, j.nome as nome, j.sigla as sigla
         FROM Jurisdicao j
+        LEFT JOIN j.comarcaEntidade c
         WHERE j.ativo = true
           AND j.esfera = :esfera
           AND j.grau = :grau
-          AND UPPER(j.estado) = UPPER(:uf)
-          AND LOWER(j.comarca) = LOWER(:comarca)
+          AND UPPER(COALESCE(c.uf, j.estado)) = UPPER(:uf)
+          AND LOWER(COALESCE(c.nome, j.comarca)) = LOWER(:comarca)
         ORDER BY j.nome ASC
     """)
     List<JurisdicaoResumoProjection> listarResumosPorContexto(
@@ -151,10 +154,11 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
     @Query("""
         SELECT j.id as id, j.nome as nome, j.sigla as sigla
         FROM Jurisdicao j
+        LEFT JOIN j.comarcaEntidade c
         WHERE j.ativo = true
           AND j.esfera = :esfera
           AND j.grau = :grau
-          AND UPPER(j.estado) = UPPER(:uf)
+          AND UPPER(COALESCE(c.uf, j.estado)) = UPPER(:uf)
         ORDER BY j.nome ASC
     """)
     List<JurisdicaoResumoProjection> listarResumosPorUfEsferaGrau(
@@ -183,11 +187,12 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
     @Query("""
         SELECT j.id as id, j.nome as nome, j.sigla as sigla, j.materia as materia
         FROM Jurisdicao j
+        LEFT JOIN j.comarcaEntidade c
         WHERE j.ativo = true
           AND j.esfera = :esfera
           AND j.grau = :grau
-          AND UPPER(j.estado) = UPPER(:uf)
-          AND LOWER(j.comarca) = LOWER(:comarca)
+          AND UPPER(COALESCE(c.uf, j.estado)) = UPPER(:uf)
+          AND LOWER(COALESCE(c.nome, j.comarca)) = LOWER(:comarca)
         ORDER BY j.nome ASC
     """)
     List<JurisdicaoContextProjection> listarContextoPorEsferaGrauUfComarca(
@@ -200,10 +205,11 @@ public interface JurisdicaoRepository extends JpaRepository<Jurisdicao, Long>, J
     @Query("""
         SELECT j.id as id, j.nome as nome, j.sigla as sigla, j.materia as materia
         FROM Jurisdicao j
+        LEFT JOIN j.comarcaEntidade c
         WHERE j.ativo = true
           AND j.esfera = :esfera
           AND j.grau = :grau
-          AND UPPER(j.estado) = UPPER(:uf)
+          AND UPPER(COALESCE(c.uf, j.estado)) = UPPER(:uf)
         ORDER BY j.nome ASC
     """)
     List<JurisdicaoContextProjection> listarContextoPorEsferaGrauUf(

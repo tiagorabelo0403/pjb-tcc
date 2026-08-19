@@ -222,6 +222,58 @@ public class LaianeLawyerService {
     }
 
     @Transactional
+    public LaianeProcuracao substabelecer(Long procuracaoOrigemId, Long advogadoDestinoId, boolean comReservaDePoderes) {
+        var adv = guard.requireAdvogado();
+        var origem = procuracaoRepository.findById(procuracaoOrigemId)
+                .orElseThrow(() -> new NoSuchElementException("Procuração não encontrada"));
+        if (!origem.getAdvogado().getId().equals(adv.getId())) {
+            throw new SecurityException("Não autorizado");
+        }
+        if (origem.getStatus() != LaianeProcuracaoStatus.ATIVA) {
+            throw new com.tcc.pjb.backend.service.exception.ErroDeValidacaoException(com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao.REGRA_NEGOCIO, "substabelecimento")
+                    .addMetadado("motivo", "Só é possível substabelecer uma procuração ativa")
+                    .addMetadado("procuracaoId", procuracaoOrigemId)
+                    .addMetadado("statusAtual", origem.getStatus());
+        }
+        if (advogadoDestinoId == null || advogadoDestinoId.equals(adv.getId())) {
+            throw new com.tcc.pjb.backend.service.exception.ErroDeValidacaoException(com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao.REGRA_NEGOCIO, "substabelecimento")
+                    .addMetadado("motivo", "Advogado destinatário deve ser diferente do substabelecente");
+        }
+        var destino = usuarioRepository.findById(advogadoDestinoId)
+                .orElseThrow(() -> new NoSuchElementException("Advogado destinatário não encontrado"));
+        if (destino.getTipoUsuario() == null || !destino.getTipoUsuario().isAdvocacia()) {
+            throw new com.tcc.pjb.backend.service.exception.ErroDeValidacaoException(com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao.REGRA_NEGOCIO, "substabelecimento")
+                    .addMetadado("motivo", "Destinatário do substabelecimento deve ser advogado")
+                    .addMetadado("advogadoDestinoId", advogadoDestinoId);
+        }
+
+        var novaProcuracao = LaianeProcuracao.builder()
+                .advogado(destino)
+                .clienteId(origem.getClienteId())
+                .processoId(origem.getProcessoId())
+                .status(LaianeProcuracaoStatus.ATIVA)
+                .inicioVigencia(LocalDate.now())
+                .fimVigencia(origem.getFimVigencia())
+                .poderes(origem.getPoderes())
+                .substabelecidoDe(origem)
+                .comReservaDePoderes(comReservaDePoderes)
+                .build();
+        novaProcuracao = procuracaoRepository.save(novaProcuracao);
+
+        if (!comReservaDePoderes) {
+            origem.setStatus(LaianeProcuracaoStatus.REVOGADA);
+            if (origem.getFimVigencia() == null) {
+                origem.setFimVigencia(LocalDate.now());
+            }
+            procuracaoRepository.save(origem);
+        }
+
+        auditoria.registrarEventoImutavel("ADV_PROCURACAO_SUBSTABELECIDA", "LAIANE_PROCURACAO", novaProcuracao.getId(),
+                "origemId=" + procuracaoOrigemId + ";destinoId=" + advogadoDestinoId + ";comReserva=" + comReservaDePoderes);
+        return novaProcuracao;
+    }
+
+    @Transactional
     public LaianeTese createTese(String area, String tese, String fundamentacao, String tagsCsv) {
         var adv = guard.requireAdvogado();
         String tagsJson = null;

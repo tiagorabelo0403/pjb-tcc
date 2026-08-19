@@ -34,6 +34,8 @@ public interface JurisdicaoMapper {
 
     
     
+    @Mapping(target = "comarca", source = "cidade")
+    @Mapping(target = "estado", source = "uf")
     JurisdicaoResponse toResponse(Jurisdicao entidade);
 
     

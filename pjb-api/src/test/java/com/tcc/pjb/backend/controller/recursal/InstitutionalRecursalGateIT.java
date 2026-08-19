@@ -14,7 +14,9 @@ import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.dto.profile.operational.InstitutionalRecursoRequest;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
+import com.tcc.pjb.backend.model.entity.security.TrustedDevice;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.model.repository.security.TrustedDeviceRepository;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalPeticionamentoPerfilRouter;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -50,6 +52,9 @@ class InstitutionalRecursalGateIT extends PjbFlowItBase {
     UsuarioRepository usuarioRepository;
 
     @Autowired
+    TrustedDeviceRepository trustedDeviceRepository;
+
+    @Autowired
     ObjectMapper objectMapper;
 
     @MockBean
@@ -78,6 +83,17 @@ class InstitutionalRecursalGateIT extends PjbFlowItBase {
         u.setPerfil(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO.name());
         u = usuarioRepository.save(u);
         long usuarioId = u.getId();
+        TrustedDevice passkey = new TrustedDevice();
+        passkey.setUsuario(u);
+        passkey.setCredentialId("recursal-gate-probe-passkey");
+        passkey.setPublicKey("pub-key-recursal-gate-probe");
+        passkey.setAlias("recursal-gate-probe-passkey");
+        passkey.setAuthenticatorAttachment("platform");
+        passkey.setAttestationFmt("tpm");
+        passkey.setAttestationTrusted(true);
+        passkey.setEnrollSuspectNetwork(false);
+        passkey.setRiskScoreEnroll(0);
+        trustedDeviceRepository.save(passkey);
         stubRouter();
 
         MockHttpServletResponse response = mockMvc.perform(post("/api/v1/recursal/processos/{id}/recurso", 7L)

@@ -754,8 +754,8 @@ public class NotificacaoInteligentePJB {
         if (actorId != null && actorId > 0L) {
             ids.add(actorId);
         }
-        if (incluirFallbackOperacional && processo.getJurisdicao() != null && processo.getJurisdicao().getComarca() != null) {
-            List<Usuario> operadores = context.operadoresPorComarca().computeIfAbsent(processo.getJurisdicao().getComarca(), usuarioRepository::findByComarcaAndAtivoTrue);
+        if (incluirFallbackOperacional && processo.getJurisdicao() != null && processo.getJurisdicao().getCidade() != null) {
+            List<Usuario> operadores = context.operadoresPorComarca().computeIfAbsent(processo.getJurisdicao().getCidade(), usuarioRepository::findByComarcaAndAtivoTrue);
             for (Usuario usuario : operadores) {
                 if (usuario == null || usuario.getId() == null) {
                     continue;

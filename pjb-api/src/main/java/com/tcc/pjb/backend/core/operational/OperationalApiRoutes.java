@@ -24,6 +24,9 @@ public final class OperationalApiRoutes {
     public static final String SECRETARIAT_BASE = API_V1 + "/secretariat";
     public static final String OFICIAL_JUSTICA_BASE = API_V1 + "/oficial-justica";
     public static final String JUDGE_GABINETE_DECISOES_BASE = API_V1 + "/juiz/gabinete-decisoes";
+    public static final String JUDGE_CUSTODIA_BASE = API_V1 + "/juiz/custodia";
+    public static final String JUDGE_SISTEMAS_EXTERNOS_BASE = API_V1 + "/juiz/sistemas-externos";
+    public static final String JUDGE_PRODUTIVIDADE_BASE = API_V1 + "/juiz/produtividade";
     public static final String DESEMBARGADOR_COLEGIADO_BASE = API_V1 + "/desembargador/colegiado";
     public static final String DESEMBARGADOR_PLENARIO_BASE = API_V1 + "/desembargador/plenario";
     public static final String MINISTRO_PLENARIO_BASE = API_V1 + "/ministro/plenario";
@@ -35,6 +38,7 @@ public final class OperationalApiRoutes {
     public static final String PATH_SECRETARIAT_QUEUE_EXCEPTIONS = "/queue/exceptions";
     public static final String PATH_SECRETARIAT_QUEUE_COVERAGE = "/queue/coverage";
     public static final String PATH_SECRETARIAT_QUEUE_FORMAL_CATALOG = "/queue/formal-catalog";
+    public static final String PATH_SECRETARIAT_QUEUE_PRODUTIVIDADE = "/queue/produtividade";
     public static final String PATH_SECRETARIAT_QUEUE_VENUE_CONFIRMATION = "/queue/items/{workItemId}/venue-confirmation";
     public static final String PATH_SECRETARIAT_QUEUE_PARTICIPANT_NOTIFICATION = "/queue/items/{workItemId}/participant-notification";
     public static final String PATH_SECRETARIAT_QUEUE_PARTICIPANT_NOTIFICATION_CHALLENGE = "/queue/items/{workItemId}/participant-notification/challenge";
@@ -79,11 +83,14 @@ public final class OperationalApiRoutes {
     public static final String PATH_SECRETARIAT_JULGAMENTO_ACORDAO = "/{julgamentoId}/acordao";
 
     public static final String SECRETARIAT_OPERATIONAL_BASE = SECRETARIAT_BASE + "/operacional";
+    public static final String SECRETARIAT_ESPECIALIZADA_BASE = SECRETARIAT_BASE + "/especializada";
     public static final String PATH_SECRETARIAT_OPERATIONAL_SNAPSHOT = "/snapshot";
     public static final String PATH_SECRETARIAT_OPERATIONAL_PROCESS_JUNTADA = "/processos/{processoId}/juntada";
     public static final String PATH_SECRETARIAT_OPERATIONAL_PROCESS_INTIMACAO = "/processos/{processoId}/intimacao";
+    public static final String PATH_SECRETARIAT_OPERATIONAL_PROCESS_MANDADO_CITACAO = "/processos/{processoId}/mandado-citacao";
     public static final String PATH_SECRETARIAT_OPERATIONAL_PROCESS_CONCLUSAO = "/processos/{processoId}/conclusao";
     public static final String PATH_SECRETARIAT_OPERATIONAL_QUEUE_SANEAMENTO = "/fila/saneamento";
+    public static final String PATH_SECRETARIAT_OPERATIONAL_SERVIDOR_REATRIBUICAO = "/servidores/{servidorId}/reatribuir-carga";
     public static final String PATH_SECRETARIAT_OPERATIONAL_OFFICIAL_CLOSURES = "/oficial-cumprimentos";
     public static final String PATH_SECRETARIAT_OPERATIONAL_OFFICIAL_CLOSURE_RECLASSIFY = "/oficial-cumprimentos/{deskWorkItemId}/reclassificar";
     public static final String PATH_SECRETARIAT_OPERATIONAL_OFFICIAL_CLOSURE_NEXT_PROVIDENCE = "/oficial-cumprimentos/{deskWorkItemId}/proxima-providencia";
@@ -406,6 +413,10 @@ public final class OperationalApiRoutes {
 
     public static String secretariatOperationalConclusao(Long processoId) {
         return resolvePathVariable(SECRETARIAT_OPERATIONAL_BASE + PATH_SECRETARIAT_OPERATIONAL_PROCESS_CONCLUSAO, "processoId", processoId);
+    }
+
+    public static String secretariatOperationalMandadoCitacao(Long processoId) {
+        return resolvePathVariable(SECRETARIAT_OPERATIONAL_BASE + PATH_SECRETARIAT_OPERATIONAL_PROCESS_MANDADO_CITACAO, "processoId", processoId);
     }
 
     public static String secretariatOperationalQueueSaneamento() {

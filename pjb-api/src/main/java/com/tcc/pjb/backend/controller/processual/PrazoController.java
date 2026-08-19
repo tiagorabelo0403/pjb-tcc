@@ -1,15 +1,24 @@
 package com.tcc.pjb.backend.controller.processual;
 
 import com.tcc.pjb.backend.core.api.PjbApiResponseEnvelope;
+import com.tcc.pjb.backend.model.dto.prazo.PrazoCartorioPainelResponse;
+import com.tcc.pjb.backend.model.dto.prazo.PrazoCertidaoDecursoLoteResponse;
+import com.tcc.pjb.backend.model.dto.prazo.PrazoCertidaoTempestividadeResponse;
+import com.tcc.pjb.backend.platform.jusos.v2.prazo.NationalPrazoEngine;
+import com.tcc.pjb.backend.service.prazo.PrazoCartorioPainelService;
 import com.tcc.pjb.backend.service.prazo.PrazoDecursoCertidaoService;
 import com.tcc.pjb.backend.service.prazo.PrazoProcessualEngine;
 import com.tcc.pjb.backend.service.prazo.PrazoVencimentoAlertService;
+import java.time.LocalDate;
 import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -19,13 +28,16 @@ public class PrazoController {
     private final PrazoProcessualEngine engine;
     private final PrazoVencimentoAlertService alertService;
     private final PrazoDecursoCertidaoService certidaoService;
+    private final PrazoCartorioPainelService cartorioPainelService;
 
     public PrazoController(PrazoProcessualEngine engine,
             PrazoVencimentoAlertService alertService,
-            PrazoDecursoCertidaoService certidaoService) {
+            PrazoDecursoCertidaoService certidaoService,
+            PrazoCartorioPainelService cartorioPainelService) {
         this.engine = engine;
         this.alertService = alertService;
         this.certidaoService = certidaoService;
+        this.cartorioPainelService = cartorioPainelService;
     }
 
     @PostMapping("/calcular")
@@ -48,6 +60,33 @@ public class PrazoController {
             alertas(@RequestBody List<PrazoProcessualEngine.PrazoSnapshot> prazos) {
         return ResponseEntity.ok(PjbApiResponseEnvelope.ok(
                 alertService.gerarAlertas(prazos)));
+    }
+
+    @GetMapping("/secretaria")
+    @PreAuthorize("hasAnyRole('SERVIDOR_JUDICIARIO','SUPERVISOR','DIRETOR_SECRETARIA')")
+    public ResponseEntity<PjbApiResponseEnvelope<PrazoCartorioPainelResponse>>
+            painelSecretaria(@RequestParam String vara,
+                              @RequestParam(defaultValue = "15") int diasJanela) {
+        return ResponseEntity.ok(PjbApiResponseEnvelope.ok(
+                cartorioPainelService.painelPorVara(vara, diasJanela)));
+    }
+
+    @PostMapping("/secretaria/certidao-decurso-lote")
+    @PreAuthorize("hasAnyRole('SERVIDOR_JUDICIARIO','SUPERVISOR','DIRETOR_SECRETARIA','CHEFE_SECRETARIA')")
+    public ResponseEntity<PjbApiResponseEnvelope<PrazoCertidaoDecursoLoteResponse>>
+            certificarDecursoEmLote(@RequestParam String vara) {
+        return ResponseEntity.ok(PjbApiResponseEnvelope.ok(
+                cartorioPainelService.certificarDecursoEmLote(vara)));
+    }
+
+    @PostMapping("/secretaria/certidao-tempestividade")
+    @PreAuthorize("hasAnyRole('SERVIDOR_JUDICIARIO','SUPERVISOR','DIRETOR_SECRETARIA','CHEFE_SECRETARIA')")
+    public ResponseEntity<PjbApiResponseEnvelope<PrazoCertidaoTempestividadeResponse>>
+            certificarTempestividade(@RequestParam Long processoId,
+                                      @RequestParam NationalPrazoEngine.TipoPrazo tipoPrazo,
+                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataPratica) {
+        return ResponseEntity.ok(PjbApiResponseEnvelope.ok(
+                cartorioPainelService.certificarTempestividade(processoId, tipoPrazo, dataPratica)));
     }
 
     @PostMapping("/certidao-decurso")

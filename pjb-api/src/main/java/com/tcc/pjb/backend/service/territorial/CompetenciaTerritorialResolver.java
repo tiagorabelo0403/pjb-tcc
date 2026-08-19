@@ -40,7 +40,7 @@ public class CompetenciaTerritorialResolver {
                         criterio,
                         ModoCompetencia.valueOf(j.getModoCompetencia()),
                         List.copyOf(j.getUnidadesElegiveis()),
-                        j.getTribunalCodigo(),
+                        j.getTribunal().getSigla(),
                         criterio.fundamentoLegal(),
                         j.getFonteNormativa(),
                         j.getVigenciaInicio()))

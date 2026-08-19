@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.service.procuradoria.surface.ProcuradoriaOperationalSurfaceFacadeService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,9 @@ class ProcuradoriaOperacionalControllerIT extends PjbFlowItBase {
 
     @MockBean
     private ProcuradoriaOperationalSurfaceFacadeService facadeService;
+
+    @MockBean
+    private CapabilityRateLimiter capabilityRateLimiter;
 
     @Test
     void anonimo_recebeNegacaoAntesDeTocarFacade() throws Exception {

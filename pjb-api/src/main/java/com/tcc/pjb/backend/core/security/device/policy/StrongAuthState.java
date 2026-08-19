@@ -1,11 +1,7 @@
 package com.tcc.pjb.backend.core.security.device.policy;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import jakarta.servlet.http.HttpServletRequest;
-import com.tcc.pjb.backend.core.observability.RequestContext;
-import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenPayload;
 
 public record StrongAuthState(
         String method,
@@ -38,12 +34,6 @@ public record StrongAuthState(
             if (issuedAt != null || (method != null && !method.isBlank())) {
                 return new StrongAuthState(normalize(method), issuedAt, sessionId, deviceId, scopeAction, scopeRequestHash, oneShot);
             }
-        }
-
-        FaceReauthTokenPayload face = RequestContext.getFaceCredential().orElse(null);
-        if (face != null) {
-            LocalDateTime issuedAt = LocalDateTime.ofInstant(Instant.ofEpochSecond(face.iat()), ZoneOffset.UTC);
-            return new StrongAuthState("FACE", issuedAt, null, null, null, null, false);
         }
 
         return new StrongAuthState(null, null, null, null, null, null, false);

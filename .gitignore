@@ -4,6 +4,9 @@ target/
 build/
 **/build/
 
+# GeoIP database (licenciada individualmente via MaxMind, nunca commitar)
+infra/geoip/*.mmdb
+
 # Python
 __pycache__/
 **/__pycache__/
@@ -134,6 +137,21 @@ docs/reports/docker_compose_guard.json
 docs/reports/docker_compose_guard.md
 docs/reports/test_isolation_guard.json
 docs/reports/test_isolation_guard.md
+docs/reports/modular_monolith_guard_report.json
+docs/reports/modular_monolith_guard_report.md
+docs/reports/runtime_concurrency_guard.json
+docs/reports/runtime_concurrency_hotspots_remaining.md
+docs/reports/salario_minimo_hardcoded_guard.json
+docs/reports/salario_minimo_hardcoded_guard.md
+docs/reports/spring_ambiguous_constructor_guard.json
+docs/reports/spring_ambiguous_constructor_guard.md
+
+# Snapshots historicos ponto-a-ponto de rodadas de script — nao tem valor de referencia continua
+docs/reports/*_iteration[0-9]*.json
+docs/reports/*_iteration[0-9]*.md
+docs/reports/*_iteration[0-9]*.txt
+docs/reports/iteration[0-9]*_*.json
+docs/reports/iteration[0-9]*_*.md
 
 # Build artifacts do compilador Java
 pjb-api/javac.*.args

@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.dto.dashboard.PerfilDashboardPayload;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.service.mp.MinisterioPublicoPainelService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +27,9 @@ class MinisterioPublicoPainelControllerIT extends PjbFlowItBase {
 
     @MockBean
     private MinisterioPublicoPainelService service;
+
+    @MockBean
+    private CapabilityRateLimiter capabilityRateLimiter;
 
     private static PerfilDashboardPayload.MinisterioPublicoPayload minimalPayload() {
         return new PerfilDashboardPayload.MinisterioPublicoPayload(

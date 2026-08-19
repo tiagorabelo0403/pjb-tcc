@@ -1,7 +1,7 @@
 package com.tcc.pjb.backend.core.financeiro.trabalhista;
 
-import com.tcc.pjb.backend.core.financeiro.custas.GruCodigoBarrasGenerator;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.GruResult;
+import com.tcc.pjb.backend.modules.custas.api.GruCodigoBarrasGenerator;
+import com.tcc.pjb.backend.modules.custas.domain.GruResult;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

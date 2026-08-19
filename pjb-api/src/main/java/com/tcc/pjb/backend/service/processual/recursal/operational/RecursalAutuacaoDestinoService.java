@@ -492,7 +492,7 @@ public class RecursalAutuacaoDestinoService {
 
     private static String jurisdicaoComarca(Processo processo) {
         Jurisdicao jurisdicao = processo.getJurisdicao();
-        return jurisdicao == null ? null : normalizeNullable(jurisdicao.getComarca());
+        return jurisdicao == null ? null : normalizeNullable(jurisdicao.getCidade());
     }
 
     private static String safeMessage(Throwable throwable) {

@@ -19,6 +19,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @PjbDataOwnership(module = PjbModuleId.COMPETENCIA_ROTEAMENTO, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
@@ -26,7 +27,8 @@ import jakarta.persistence.Table;
 @Table(
         name = "tb_jurisdicao_territorial",
         indexes = {
-                @Index(name = "idx_jurisdicao_lookup", columnList = "municipio_ibge, tipo_justica, vigencia_inicio DESC")
+                @Index(name = "idx_jurisdicao_lookup", columnList = "municipio_ibge, tipo_justica, vigencia_inicio DESC"),
+                @Index(name = "idx_jurisdicao_territorial_comarca", columnList = "comarca_id")
         }
 )
 public class JurisdicaoTerritorial {
@@ -55,8 +57,13 @@ public class JurisdicaoTerritorial {
     @Column(name = "unidade_codigo", nullable = false, length = 80)
     private Set<String> unidadesElegiveis = new LinkedHashSet<>();
 
-    @Column(name = "tribunal_codigo", length = 20, nullable = false)
-    private String tribunalCodigo;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tribunal_id", nullable = false)
+    private Tribunal tribunal;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
 
     @Column(name = "fonte_normativa", length = 240, nullable = false)
     private String fonteNormativa;
@@ -71,7 +78,7 @@ public class JurisdicaoTerritorial {
     }
 
     public JurisdicaoTerritorial(String municipioIbge, String municipioNome, String uf, String tipoJustica,
-            String modoCompetencia, Set<String> unidadesElegiveis, String tribunalCodigo, String fonteNormativa,
+            String modoCompetencia, Set<String> unidadesElegiveis, Tribunal tribunal, String fonteNormativa,
             LocalDate vigenciaInicio, LocalDate vigenciaFim) {
         this.municipioIbge = Objects.requireNonNull(municipioIbge, "municipioIbge");
         this.municipioNome = Objects.requireNonNull(municipioNome, "municipioNome");
@@ -83,7 +90,7 @@ public class JurisdicaoTerritorial {
             throw new IllegalArgumentException("unidadesElegiveis não pode ser vazio");
         }
         this.unidadesElegiveis = new LinkedHashSet<>(unidadesElegiveis);
-        this.tribunalCodigo = Objects.requireNonNull(tribunalCodigo, "tribunalCodigo");
+        this.tribunal = Objects.requireNonNull(tribunal, "tribunal");
         this.fonteNormativa = Objects.requireNonNull(fonteNormativa, "fonteNormativa");
         this.vigenciaInicio = Objects.requireNonNull(vigenciaInicio, "vigenciaInicio");
         this.vigenciaFim = vigenciaFim;
@@ -117,8 +124,16 @@ public class JurisdicaoTerritorial {
         return Collections.unmodifiableSet(unidadesElegiveis);
     }
 
-    public String getTribunalCodigo() {
-        return tribunalCodigo;
+    public Tribunal getTribunal() {
+        return tribunal;
+    }
+
+    public Comarca getComarcaEntidade() {
+        return comarcaEntidade;
+    }
+
+    public void setComarcaEntidade(Comarca comarcaEntidade) {
+        this.comarcaEntidade = comarcaEntidade;
     }
 
     public String getFonteNormativa() {

@@ -315,11 +315,11 @@ public class SecretariatDocumentBulkProcessor {
         .dueAt(Instant.now().plus(Duration.ofDays(1)));
 
     if (j != null) {
-      if (j.getEstado() != null) {
-        b.uf(j.getEstado());
+      if (j.getUf() != null) {
+        b.uf(j.getUf());
       }
-      if (j.getComarca() != null) {
-        b.comarca(j.getComarca());
+      if (j.getCidade() != null) {
+        b.comarca(j.getCidade());
       }
     }
     return b.build();

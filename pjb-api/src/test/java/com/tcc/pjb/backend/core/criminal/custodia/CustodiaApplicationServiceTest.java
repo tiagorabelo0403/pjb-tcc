@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.criminal.custodia.domain.AudienciaCustodiaResult;
 import com.tcc.pjb.backend.core.criminal.custodia.domain.CustodiaConsultaTimelineResult;
+import com.tcc.pjb.backend.core.criminal.custodia.domain.CustodiaPendenteView;
 import com.tcc.pjb.backend.core.criminal.custodia.domain.CustodiaTimelineEntry;
 import java.time.Instant;
 import java.util.List;
@@ -46,5 +47,19 @@ class CustodiaApplicationServiceTest {
 
         assertThat(result.entries()).hasSize(2);
         verify(auditLedgerService).appendSafely(eq("CUSTODIA_TIMELINE_QUERY"), eq("CUSTODIA"), eq("7"), isNull(), eq("entries=2"));
+    }
+
+    @Test
+    void pendentes_delegaParaOServicoDeDominio() {
+        AudienciaCustodiaService audienciaCustodiaService = mock(AudienciaCustodiaService.class);
+        AuditLedgerService auditLedgerService = mock(AuditLedgerService.class);
+        when(audienciaCustodiaService.pendentes()).thenReturn(List.of(
+                new CustodiaPendenteView(1L, 10L, "Fulano", Instant.parse("2026-04-11T08:00:00Z"), Instant.parse("2026-04-12T08:00:00Z"), true)));
+        CustodiaApplicationService applicationService = new CustodiaApplicationService(audienciaCustodiaService, auditLedgerService);
+
+        var result = applicationService.pendentes();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().vencida()).isTrue();
     }
 }

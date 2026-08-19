@@ -37,7 +37,7 @@ public class NationalProceduralProcessoEntityPayloadAssembler {
             payload.put("parteReuNome", processo.getParteReuNome());
             payload.put("parteAutoraCpf", processo.getParteAutoraCpf());
             payload.put("parteReuCpf", processo.getParteReuCpf());
-            payload.put("ufAutor", NationalProceduralRoutingSupport.firstNonBlank(processo.getUf(), processo.getJurisdicao() != null ? processo.getJurisdicao().getEstado() : null));
+            payload.put("ufAutor", NationalProceduralRoutingSupport.firstNonBlank(processo.getUf(), processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null));
             payload.put("comarcaAutor", NationalProceduralRoutingSupport.firstNonBlank(processo.getComarca(), processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null));
             payload.put("varaPretendida", NationalProceduralRoutingSupport.firstNonBlank(processo.getVara(), processo.getUnidadeJudiciariaCodigo()));
             payload.put("tribunalCodigo", NationalProceduralRoutingSupport.firstNonBlank(processo.getTribunalCodigoRoteado(), processo.getTribunal(), processo.getJurisdicao() != null ? processo.getJurisdicao().getCodigo() : null));
@@ -46,7 +46,7 @@ public class NationalProceduralProcessoEntityPayloadAssembler {
             }
             if (processo.getJurisdicao() != null) {
                 payload.put("tribunalCodigo", NationalProceduralRoutingSupport.firstNonBlank(NationalProceduralRoutingSupport.text(payload.get("tribunalCodigo")), processo.getJurisdicao().getCodigo()));
-                payload.put("ufAutor", NationalProceduralRoutingSupport.firstNonBlank(NationalProceduralRoutingSupport.text(payload.get("ufAutor")), processo.getJurisdicao().getEstado()));
+                payload.put("ufAutor", NationalProceduralRoutingSupport.firstNonBlank(NationalProceduralRoutingSupport.text(payload.get("ufAutor")), processo.getJurisdicao().getUf()));
                 payload.put("comarcaAutor", NationalProceduralRoutingSupport.firstNonBlank(NationalProceduralRoutingSupport.text(payload.get("comarcaAutor")), processo.getJurisdicao().getCidade()));
                 payload.put("foro", processo.getJurisdicao().getNome());
                 payload.put("__jurisdicaoEntity", processo.getJurisdicao());

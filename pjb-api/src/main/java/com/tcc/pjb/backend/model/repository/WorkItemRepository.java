@@ -428,6 +428,20 @@ public interface WorkItemRepository extends JpaRepository<WorkItem, Long> {
     """)
     long countCompletedByAssignedUserAfter(@Param("userId") Long userId, @Param("from") Instant from);
 
+    @EntityGraph(attributePaths = {"assignedUser"})
+    @Query("""
+        select w from WorkItem w
+        where w.inboxKey = :inboxKey
+          and w.status = 'CONCLUIDO'
+          and w.updatedAt is not null
+          and w.updatedAt >= :from
+          and w.assignedUser is not null
+        order by w.updatedAt desc
+    """)
+    List<WorkItem> findConcluidosPorInboxAposData(@Param("inboxKey") String inboxKey,
+                                                  @Param("from") Instant from,
+                                                  Pageable pageable);
+
     @Query("""
         select w.assignedUser.id,
                w.assignedUser.nome,

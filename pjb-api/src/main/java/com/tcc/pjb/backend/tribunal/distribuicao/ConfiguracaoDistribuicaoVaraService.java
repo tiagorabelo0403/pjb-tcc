@@ -13,7 +13,8 @@ import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaReposito
 import com.tcc.pjb.backend.service.ajuizamento.federal.FederalismoJudicialEngine;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import com.tcc.pjb.backend.tribunal.regras.TribunalRuleEngine;
-import jakarta.annotation.PostConstruct;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -421,11 +422,7 @@ public class ConfiguracaoDistribuicaoVaraService {
         this.objectMapper = Objects.requireNonNull(objectMapper);
     }
 
-    @PostConstruct
-    public void inicializar() {
-        recarregarDoRepositorio();
-    }
-
+    @EventListener(ApplicationReadyEvent.class)
     @PjbTransactionalBudget(operation = "tribunal.distribuicao-vara.recarregar-repositorio", maxMillis = 8000)
     @Transactional(readOnly = true)
     public int recarregarDoRepositorio() {
@@ -559,7 +556,7 @@ public class ConfiguracaoDistribuicaoVaraService {
                 .max(BigDecimal.ZERO);
         unidade.atualizarCarga(novosAtivos, congestionamento);
 
-        TribunalRuleEngine.ContextoResolucao contexto = TribunalRuleEngine.ContextoResolucao.agora(unidade.getTribunalCodigo(), unidade.getComarca(), unidade.getCodigo(), unidade.getRamoDireito(), null);
+        TribunalRuleEngine.ContextoResolucao contexto = TribunalRuleEngine.ContextoResolucao.agora(tribunalSigla(unidade), comarcaNome(unidade), unidade.getCodigo(), unidade.getRamoDireito(), null);
         BigDecimal limiar = tribunalRuleEngine.resolverLimiarCongestionamento(contexto, new BigDecimal("0.85"));
         boolean bloquear = congestionamento.compareTo(limiar) >= 0;
 
@@ -742,8 +739,8 @@ public class ConfiguracaoDistribuicaoVaraService {
 
     private PerfilVara toPerfil(UnidadeJudiciariaCompetencia unidade, RestricaoOperacional restricao) {
         TribunalRuleEngine.ContextoResolucao contexto = TribunalRuleEngine.ContextoResolucao.agora(
-                unidade.getTribunalCodigo(),
-                unidade.getComarca(),
+                tribunalSigla(unidade),
+                comarcaNome(unidade),
                 unidade.getCodigo(),
                 unidade.getRamoDireito(),
                 null
@@ -756,9 +753,9 @@ public class ConfiguracaoDistribuicaoVaraService {
                 normalizeUpper(unidade.getCodigo()),
                 unidade.getCodigo(),
                 unidade.getTipoVara(),
-                unidade.getTribunalCodigo(),
-                unidade.getComarca(),
-                unidade.getUf(),
+                tribunalSigla(unidade),
+                comarcaNome(unidade),
+                comarcaUf(unidade),
                 unidade.getTipoJustica(),
                 unidade.getRamoDireito(),
                 restricao == null ? unidade.isAceitaDistribuicao() : restricao.aceitaNovasDistribuicoes(),
@@ -993,6 +990,18 @@ public class ConfiguracaoDistribuicaoVaraService {
 
     private static String vagaToNull(String value) {
         return blankToNull(value);
+    }
+
+    private static String tribunalSigla(UnidadeJudiciariaCompetencia unidade) {
+        return unidade.getTribunal() != null ? unidade.getTribunal().getSigla() : null;
+    }
+
+    private static String comarcaNome(UnidadeJudiciariaCompetencia unidade) {
+        return unidade.getComarcaEntidade() != null ? unidade.getComarcaEntidade().getNome() : unidade.getComarca();
+    }
+
+    private static String comarcaUf(UnidadeJudiciariaCompetencia unidade) {
+        return unidade.getUf();
     }
 
     private static double round4(double value) {

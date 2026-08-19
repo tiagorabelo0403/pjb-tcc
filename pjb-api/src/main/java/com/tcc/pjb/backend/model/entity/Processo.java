@@ -6,6 +6,7 @@ import com.tcc.pjb.backend.core.procedural.ProceduralRoutingReport;
 import com.tcc.pjb.backend.core.procedural.ProceduralSubmissionBlueprintReport;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.integration.judicial.JudicialSystem;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.ModuloProcesso;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
@@ -64,7 +65,7 @@ import com.tcc.pjb.backend.model.entity.enums.jurisdicao.MateriaJurisdicao;
                 "or ( :includePersonalParam = true and equipe_id is null and usuario_id = :usuarioIdParam )) " +
                 "and ( :allRamosParam = true or ramo_direito is null or ramo_direito in (:allowedRamosParam) ) " +
                 "and ( :allowSensitiveParam = true or nivel_sigilo is null or nivel_sigilo = 'PUBLICO' ) " +
-                "and ( :blockPersonalCasesParam = false or (((parte_autora_cpf is null or parte_autora_cpf <> :userCpfParam) and (parte_reu_cpf is null or parte_reu_cpf <> :userCpfParam)) and (usuario_id is null or usuario_id <> :usuarioIdParam)))"
+                "and ( :blockPersonalCasesParam = false or (((parte_autora_cpf is null or parte_autora_cpf <> :userCpfParam) and (parte_reu_cpf is null or parte_reu_cpf <> :userCpfParam)) and (usuario_id is null or usuario_id <> :usuarioIdParam))))"
 )
 @PjbDataOwnership(module = PjbModuleId.PROCESSO_LIFECYCLE, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
 @Table(name = "tb_processo")
@@ -292,6 +293,18 @@ public class Processo {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "equipe_id")
     private Equipe equipe;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_autor_id")
+    private Comarca comarcaAutorEntidade;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_reu_id")
+    private Comarca comarcaReuEntidade;
 
     @Transient
     private Long catalogVersionId;

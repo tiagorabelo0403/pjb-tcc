@@ -23,6 +23,7 @@ import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.repository.MniRecepcaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -55,7 +56,8 @@ class MniRecepcaoServicePoloMaterializacaoTest {
         when(recepcaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
-                new PoloCompositionPolicy(), poloProcessualApplicationService, new DocumentoNacionalValidator());
+                new PoloCompositionPolicy(), poloProcessualApplicationService, new DocumentoNacionalValidator(),
+                comarcaResolutionServiceVazio());
 
         service.receberAutos(new MniRecepcaoCommand("TJCE", "CARTA_PRECATORIA", "<mni/>"));
 
@@ -100,7 +102,8 @@ class MniRecepcaoServicePoloMaterializacaoTest {
         when(recepcaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
-                new PoloCompositionPolicy(), poloProcessualApplicationService, new DocumentoNacionalValidator());
+                new PoloCompositionPolicy(), poloProcessualApplicationService, new DocumentoNacionalValidator(),
+                comarcaResolutionServiceVazio());
 
         service.receberAutos(new MniRecepcaoCommand("TJCE", "CARTA_PRECATORIA", "<mni/>"));
 
@@ -117,5 +120,12 @@ class MniRecepcaoServicePoloMaterializacaoTest {
                 TipoParte.RECLAMANTE, TipoParte.RECLAMANTE, TipoParte.RECLAMADA, TipoParte.RECLAMADA);
         assertThat(tipoPoloCaptor.getAllValues()).containsExactly(
                 TipoPolo.ATIVO, TipoPolo.ATIVO, TipoPolo.PASSIVO, TipoPolo.PASSIVO);
+    }
+
+    private static ComarcaResolutionService comarcaResolutionServiceVazio() {
+        ComarcaResolutionService service = mock(ComarcaResolutionService.class);
+        when(service.resolver(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(java.util.Optional.empty());
+        return service;
     }
 }

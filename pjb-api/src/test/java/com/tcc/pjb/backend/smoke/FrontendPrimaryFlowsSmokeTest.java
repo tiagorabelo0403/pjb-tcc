@@ -15,14 +15,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.tcc.pjb.backend.controller.TimelineController;
-import com.tcc.pjb.backend.controller.admin.AdminCustasController;
+import com.tcc.pjb.backend.modules.custas.web.AdminCustasController;
 import com.tcc.pjb.backend.controller.admin.AdminDjeController;
 import com.tcc.pjb.backend.controller.admin.AdminFrontendReadinessController;
 import com.tcc.pjb.backend.controller.auth.PasskeyAuthController;
 import com.tcc.pjb.backend.controller.processual.peticionamento.PeticionamentoController;
 import com.tcc.pjb.backend.controller.publico.ConsultasPublicasController;
 import com.tcc.pjb.backend.core.dje.DjeApplicationService;
-import com.tcc.pjb.backend.core.financeiro.custas.CustasApplicationService;
+import com.tcc.pjb.backend.modules.custas.application.CustasApplicationService;
 import com.tcc.pjb.backend.core.frontend.readiness.application.PjbBackendReadyForFrontendApplicationService;
 import com.tcc.pjb.backend.model.dto.consultapublica.ConsultaPublicaSearchConfigDto;
 import com.tcc.pjb.backend.model.dto.consultapublica.ConsultaPublicaSearchResponse;
@@ -58,7 +58,7 @@ import java.time.LocalDate;
 import java.math.BigDecimal;
 import com.tcc.pjb.backend.core.frontend.readiness.domain.PjbBackendReadyForFrontendSummary;
 import com.tcc.pjb.backend.core.dje.domain.DjePublicationMetricsView;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.CustaConsultaResult;
+import com.tcc.pjb.backend.modules.custas.domain.CustaConsultaResult;
 
 class FrontendPrimaryFlowsSmokeTest {
 

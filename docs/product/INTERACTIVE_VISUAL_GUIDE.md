@@ -5,6 +5,8 @@
 ## Table of Contents
 
 - [Who Enters PJB, and How](#who-enters-pjb-and-how)
+- [Enhanced Security for Whoever Decides a Case](#enhanced-security-for-whoever-decides-a-case)
+- [Support Ticket Center — When Someone Gets Stuck, There's Somewhere to Go](#support-ticket-center--when-someone-gets-stuck-theres-somewhere-to-go)
 - [The Base Every Professional Panel Shares](#the-base-every-professional-panel-shares)
 - [Step 1 — Who Can File a Lawsuit, and How](#step-1--who-can-file-a-lawsuit-and-how)
 - [Step 2 — Intake Sorts Every Case Into Its Rightful Place](#step-2--intake-sorts-every-case-into-its-rightful-place)
@@ -33,13 +35,47 @@ Before any case exists, someone has to enter the system — and every profile wa
 
 The system recognizes more than 50 distinct roles, but they group into 10 categories that actually matter for understanding the flow: citizen, attorneys, the judiciary (trial judge, appellate judge, justice), chambers staff, the Public Prosecutor's Office, the Public Defender's Office, the Government Attorney's Office, court auxiliaries (expert witness, bailiff, and a dozen more support functions), law enforcement, and the administrator.
 
-Two security details worth understanding up front: **ICP-Brasil certificate login** (used by attorneys and the judiciary) isn't picking a certificate from a menu — the server issues a cryptographic challenge, the certificate signs it, and only after the entire trust chain validates does access unlock. And the **judge goes through facial recognition** specifically when performing a higher-stakes act — rendering judgment, approving a settlement. For everyday actions, the standard institutional login is enough.
+Two security details worth understanding up front: **ICP-Brasil certificate login** (used by attorneys and the judiciary) isn't picking a certificate from a menu — the server issues a cryptographic challenge, the certificate signs it, and only after the entire trust chain validates does access unlock. And the **judiciary goes through an extra layer**: a mandatory A3 certificate (token/smartcard, not a file) and a passkey bound to the notebook's own TPM — the same fingerprint or face unlock that already powers Windows Hello or Touch ID, nothing new to install. A judge who steps outside their assigned state, shows up behind a VPN, or leaves the system untouched for 10 minutes also gets blocked or locked out automatically — with an escape valve for a legitimate trip, approved in advance through a support ticket.
 
 **The police chief**, in more detail: they don't need to personally carry out every step of an investigation — they can **delegate a specific investigative task** from an inquiry to the responsible investigative unit, with a description, an operational justification, and a priority, always tied to that specific inquiry and case. Their panel reflects exactly that:
 
 ![Police chief's panel](assets/painel-delegado.svg)
 
 A police officer, in turn, only sees and acts on what belongs to their own precinct — never another precinct's inquiry, even if they wanted to look for it.
+
+[⬆ Back to top of this guide](#table-of-contents)
+
+---
+
+## Enhanced Security for Whoever Decides a Case
+
+Trial judges, appellate judges, and justices go through four layers before any act — it isn't redundancy, it's proportional to the weight of signing a judgment or an appellate ruling.
+
+![Enhanced security for the judiciary — four layers of protection](assets/seguranca-magistrado.svg)
+
+The order matters: institutional login identifies who is trying to get in; the ICP-Brasil **A3** certificate (a physical token, not a file) proves formal identity; the **passkey bound to the notebook's own TPM** — the same fingerprint or face unlock that already powers Windows Hello or Touch ID — delivers real biometrics with nothing new to install; and **geo-blocking** instantly denies any attempt from outside Brazil, outside the judge's assigned state, or from behind a VPN/datacenter. Two more things keep watching through the entire session: 10 minutes without touching the system locks the screen (unlocking is just a fresh tap on the same passkey, not the whole flow again), and a legitimate trip never leaves the judge locked out of their own work — just open a **support ticket** ahead of time requesting the date window and destination.
+
+These same four layers aren't limited to judges. Prosecutors and public defenders carry a constitutional guarantee of functional independence analogous to the judiciary's (Brazilian Constitution art. 127 and 134) — so the A3 certificate, TPM-bound passkey, inactivity lock, and geo-blocking apply exactly the same way to whoever serves in the Public Prosecutor's Office and the Public Defender's Office. The Government Attorney's Office is deliberately left out of this extra layer: not every career essential to the justice system carries the same constitutional independence guarantee that the judiciary, the Public Prosecutor's Office, and the Public Defender's Office have.
+
+This support channel, by the way, isn't exclusive to the judiciary — **any registered profile** (citizen, attorney, staff, everyone) can open a technical ticket right from their own panel, without having to leave the system to find an IT contact. I show how this channel actually works, under the hood, in the next section.
+
+One point I want to make explicit: none of these layers turns into a map of "where the judge is right now." There's no location panel for a colleague, a clerk's office, or an administrator to see — the system only decides, at the instant of login, whether to allow or block, and stores the reason confidentially, only for real incident investigation. It's antifraud control, not surveillance.
+
+[⬆ Back to top of this guide](#table-of-contents)
+
+---
+
+## Support Ticket Center — When Someone Gets Stuck, There's Somewhere to Go
+
+I didn't want to leave this channel as just a passing mention above, because it solves a real problem and has its own logic behind it — it isn't a generic contact form tucked into a corner of the system.
+
+![Support ticket center: opening, lifecycle, and the link to geo-blocking](assets/central-chamados-suporte.svg)
+
+Any authenticated person — citizen, attorney, staff, judge, any role — opens a ticket by picking a category (technical, access/login, general question, judiciary travel exception, or other), a subject, and a description. When the category is the travel exception, three extra fields show up, only there: destination state or country, start date, and end date.
+
+The lifecycle is simple to follow: a ticket is born **open**, support staff **claim** it, and then **resolve** it — with a response and an approval flag. Only whoever opened it can cancel, and only while it's still open; once claimed, canceling stops being an option. Every status change notifies whoever opened the ticket, with a direct link back to that same ticket.
+
+The part I find most interesting to show is what actually happens when a travel ticket gets approved: the system publishes a resolution event, and it's that event — not a person manually editing a list of exceptions — that releases the judiciary's geo-blocking for that state or country, only during the approved date window. Outside that window, the rule reverts to normal on its own.
 
 [⬆ Back to top of this guide](#table-of-contents)
 
@@ -150,6 +186,12 @@ The **public defender** typically carries a much larger caseload than a private 
 ![Government Attorney's panel](assets/painel-procurador.svg)
 
 The **government attorney**, representing the public treasury (a municipality, a state, or the federal union), faces a different problem: keeping legal theory consistent across thousands of similar tax-enforcement cases — which is why their panel shows the same debtor's linked case mesh, so the same case never gets divergent treatment across different filings.
+
+All three share one more thing I think is worth showing: an **institutional queue of their own**, separate from the generic court queue any user falls into.
+
+![Differentiated institutional queue — Public Prosecutor's Office, Public Defender's Office, and Government Attorney's Office](assets/fila-institucional-mp-defensoria.svg)
+
+A case reaches the right queue in one of two ways — automatically, when the Public Prosecutor's Office is a party to the case (as a mandatory reviewing party, or in a public civil action), or explicitly, when the judge orders that a party be given notice in a ruling — and it always arrives with the right unit context already attached (the specific prosecutor's office, the specific Public Defender's Office branch, the specific government attorney's office), not a generic item waiting for someone to guess where it belongs. The **"Acknowledge"** act is what starts the deadline clock, and only someone with real standing over that unit can perform it. If nobody acknowledges it manually, the system doesn't leave the deadline hostage to forgetfulness: after 10 days, it marks **tacit notice** on its own. And the deadline itself respects a real legal privilege — the Public Prosecutor's Office and the Public Defender's Office get a **doubled deadline**, computed against the real court calendar (holidays, recess, deadline suspensions), not a generic counter.
 
 **Citizen**, when petitioning alone (*jus postulandi*) or simply following their own case:
 

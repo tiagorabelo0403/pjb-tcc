@@ -239,7 +239,7 @@ public class RecursalMeshBundleService {
         LocalDate dataIntimacao = peticionamentoSupport.inferDataIntimacao(processo);
         LocalDate dataProtocolo = LocalDate.now(ZoneOffset.UTC);
         String tribunalCodigo = peticionamentoSupport.inferTribunalCodigo(processo, planRequest.context().tribunalOrigem(), planRequest.context().tribunalDetalhadoOrigem());
-        String comarca = peticionamentoSupport.firstNonBlank(processo.getComarca(), processo.getJurisdicao() == null ? null : processo.getJurisdicao().getComarca());
+        String comarca = peticionamentoSupport.firstNonBlank(processo.getComarca(), processo.getJurisdicao() == null ? null : processo.getJurisdicao().getCidade());
         return new RecursalAdmissibilityRequest(
                 planRequest.context(),
                 planRequest.species(),

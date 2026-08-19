@@ -73,7 +73,9 @@ class InstitutionalMagistraturaGateIT extends PjbIntegrationTestBase {
         passkey.setCredentialId("gate-probe-passkey");
         passkey.setPublicKey("pub-key-gate-probe");
         passkey.setAlias("passkey-gate-probe");
-        passkey.setAttestationTrusted(false);
+        passkey.setAuthenticatorAttachment("platform");
+        passkey.setAttestationFmt("tpm");
+        passkey.setAttestationTrusted(true);
         passkey.setEnrollSuspectNetwork(false);
         passkey.setRiskScoreEnroll(0);
         trustedDeviceRepository.save(passkey);

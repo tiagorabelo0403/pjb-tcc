@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
-import com.tcc.pjb.backend.core.financeiro.custas.GruCodigoBarrasGenerator;
+import com.tcc.pjb.backend.modules.custas.api.GruCodigoBarrasGenerator;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.repository.DepositoRecursalRepository;
@@ -20,7 +20,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
-import com.tcc.pjb.backend.core.financeiro.custas.domain.GruResult;
+import com.tcc.pjb.backend.modules.custas.domain.GruResult;
 
 class WorkflowTrabalhistaServiceTest {
 

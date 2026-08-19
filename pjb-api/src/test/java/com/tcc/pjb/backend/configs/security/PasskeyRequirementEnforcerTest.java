@@ -31,9 +31,24 @@ class PasskeyRequirementEnforcerTest {
     }
 
     @Test
-    void magistradoComPasskeyRegistrada_permite() {
-        TrustedDevice device = new TrustedDevice();
-        device.setCredentialId("cred-abc");
+    void magistradoComPasskeyFracaCrossPlatformOuSemAttestationConfiavel_lancaPasskeyRequiredException() {
+        TrustedDevice device = dispositivo("cross-platform", false, "packed");
+        when(trustedDeviceRepository.findActiveByUser(1L)).thenReturn(List.of(device));
+        assertThatThrownBy(() -> enforcer().exigirParaMagistratura(1L, TipoUsuario.MAGISTRADO))
+                .isInstanceOf(PasskeyRequiredException.class);
+    }
+
+    @Test
+    void magistradoComPasskeyPlatformTpmConfiavel_permite() {
+        TrustedDevice device = dispositivo("platform", true, "tpm");
+        when(trustedDeviceRepository.findActiveByUser(1L)).thenReturn(List.of(device));
+        assertThatCode(() -> enforcer().exigirParaMagistratura(1L, TipoUsuario.MAGISTRADO))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void magistradoComPasskeyPlatformAppleConfiavel_permite() {
+        TrustedDevice device = dispositivo("platform", true, "apple");
         when(trustedDeviceRepository.findActiveByUser(1L)).thenReturn(List.of(device));
         assertThatCode(() -> enforcer().exigirParaMagistratura(1L, TipoUsuario.MAGISTRADO))
                 .doesNotThrowAnyException();
@@ -61,6 +76,36 @@ class PasskeyRequirementEnforcerTest {
     }
 
     @Test
+    void promotorSemPasskey_lancaPasskeyRequiredException() {
+        when(trustedDeviceRepository.findActiveByUser(7L)).thenReturn(List.of());
+        assertThatThrownBy(() -> enforcer().exigirParaMagistratura(7L, TipoUsuario.MEMBRO_MINISTERIO_PUBLICO))
+                .isInstanceOf(PasskeyRequiredException.class);
+    }
+
+    @Test
+    void promotorComPasskeyPlatformTpmConfiavel_permite() {
+        TrustedDevice device = dispositivo("platform", true, "tpm");
+        when(trustedDeviceRepository.findActiveByUser(7L)).thenReturn(List.of(device));
+        assertThatCode(() -> enforcer().exigirParaMagistratura(7L, TipoUsuario.MEMBRO_MINISTERIO_PUBLICO))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void defensorSemPasskey_lancaPasskeyRequiredException() {
+        when(trustedDeviceRepository.findActiveByUser(8L)).thenReturn(List.of());
+        assertThatThrownBy(() -> enforcer().exigirParaMagistratura(8L, TipoUsuario.DEFENSOR_PUBLICO))
+                .isInstanceOf(PasskeyRequiredException.class);
+    }
+
+    @Test
+    void defensorComPasskeyPlatformTpmConfiavel_permite() {
+        TrustedDevice device = dispositivo("platform", true, "tpm");
+        when(trustedDeviceRepository.findActiveByUser(8L)).thenReturn(List.of(device));
+        assertThatCode(() -> enforcer().exigirParaMagistratura(8L, TipoUsuario.DEFENSOR_PUBLICO))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
     void cidadaoSemPasskey_naoEVerificado() {
         assertThatCode(() -> enforcer().exigirParaMagistratura(5L, TipoUsuario.CIDADAO))
                 .doesNotThrowAnyException();
@@ -70,5 +115,14 @@ class PasskeyRequirementEnforcerTest {
     void tipoNulo_naoEVerificado() {
         assertThatCode(() -> enforcer().exigirParaMagistratura(6L, null))
                 .doesNotThrowAnyException();
+    }
+
+    private TrustedDevice dispositivo(String attachment, boolean attestationTrusted, String fmt) {
+        TrustedDevice d = new TrustedDevice();
+        d.setCredentialId("cred-1");
+        d.setAuthenticatorAttachment(attachment);
+        d.setAttestationTrusted(attestationTrusted);
+        d.setAttestationFmt(fmt);
+        return d;
     }
 }

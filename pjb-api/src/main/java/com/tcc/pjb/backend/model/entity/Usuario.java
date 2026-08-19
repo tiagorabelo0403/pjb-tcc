@@ -4,16 +4,21 @@ import com.tcc.pjb.backend.core.modularity.PjbModuleId;
 import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
 import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
 
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.enums.EnteFederativo;
 import com.tcc.pjb.backend.model.entity.enums.PapelEquipe;
+import com.tcc.pjb.backend.model.entity.enums.SituacaoConta;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +59,10 @@ public class Usuario {
     private String comarca;
     private Boolean ativo;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "ente_federativo")
     private EnteFederativo enteFederativo;
@@ -66,6 +75,10 @@ public class Usuario {
 
     @Column(name = "especialidades_raw", length = 2000)
     private String especialidadesRaw;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "situacao_conta", nullable = false, length = 30)
+    private SituacaoConta situacaoConta = SituacaoConta.ATIVA;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -158,12 +171,18 @@ public class Usuario {
     public String getComarca() { return comarca; }
     public void setComarca(String comarca) { this.comarca = comarca; }
 
+    public Comarca getComarcaEntidade() { return comarcaEntidade; }
+    public void setComarcaEntidade(Comarca comarcaEntidade) { this.comarcaEntidade = comarcaEntidade; }
+
     public Boolean getAtivo() { return ativo; }
     public boolean isAtivo() { return Boolean.TRUE.equals(ativo); }
     public void setAtivo(Boolean ativo) { this.ativo = ativo; }
 
     public String getRegistroProfissional() { return registroProfissional; }
     public void setRegistroProfissional(String registroProfissional) { this.registroProfissional = registroProfissional; }
+
+    public SituacaoConta getSituacaoConta() { return situacaoConta; }
+    public void setSituacaoConta(SituacaoConta situacaoConta) { this.situacaoConta = situacaoConta; }
 
     public List<String> getEspecialidades() {
         if (especialidadesRaw == null || especialidadesRaw.isBlank()) {
@@ -294,10 +313,12 @@ public class Usuario {
         public UsuarioBuilder senha(String senha) { target.senha = senha; return this; }
         public UsuarioBuilder uf(String uf) { target.uf = uf; return this; }
         public UsuarioBuilder comarca(String comarca) { target.comarca = comarca; return this; }
+        public UsuarioBuilder comarcaEntidade(Comarca comarcaEntidade) { target.comarcaEntidade = comarcaEntidade; return this; }
         public UsuarioBuilder ativo(Boolean ativo) { target.ativo = ativo; return this; }
         public UsuarioBuilder enteFederativo(EnteFederativo enteFederativo) { target.enteFederativo = enteFederativo; return this; }
         public UsuarioBuilder identidadeJuridicaId(UUID identidadeJuridicaId) { target.identidadeJuridicaId = identidadeJuridicaId; return this; }
         public UsuarioBuilder registroProfissional(String registroProfissional) { target.registroProfissional = registroProfissional; return this; }
+        public UsuarioBuilder situacaoConta(SituacaoConta situacaoConta) { target.situacaoConta = situacaoConta; return this; }
         public UsuarioBuilder especialidadesRaw(String especialidadesRaw) { target.especialidadesRaw = especialidadesRaw; return this; }
         public UsuarioBuilder especialidades(java.util.Collection<String> especialidades) { target.setEspecialidades(especialidades == null ? java.util.List.of() : new java.util.ArrayList<>(especialidades)); return this; }
         public Usuario build() { return target; }

@@ -43,8 +43,8 @@ public class PrazoInteligenteService {
         }
 
         Jurisdicao j = processo.getJurisdicao();
-        String uf = j != null ? j.getEstado() : null;
-        String comarca = j != null ? j.getComarca() : null;
+        String uf = j != null ? j.getUf() : null;
+        String comarca = j != null ? j.getCidade() : null;
 
         LocalDateTime fim = engine.calcularTermino(inicio, dias, regime, uf, comarca);
 

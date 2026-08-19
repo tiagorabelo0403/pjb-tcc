@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.core.financeiro.trabalhista;
 
 import com.tcc.pjb.backend.configs.datasource.ReadAfterWriteConsistencyPolicy;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
-import com.tcc.pjb.backend.core.financeiro.custas.GruCodigoBarrasGenerator;
+import com.tcc.pjb.backend.modules.custas.api.GruCodigoBarrasGenerator;
 import com.tcc.pjb.backend.core.financeiro.trabalhista.domain.AcordoHomologadoResult;
 import com.tcc.pjb.backend.core.financeiro.trabalhista.domain.DepositoRecursalConsultaCommand;
 import com.tcc.pjb.backend.core.financeiro.trabalhista.domain.DepositoRecursalConsultaResult;

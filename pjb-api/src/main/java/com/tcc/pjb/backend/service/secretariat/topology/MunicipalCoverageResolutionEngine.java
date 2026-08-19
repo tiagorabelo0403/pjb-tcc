@@ -38,7 +38,6 @@ public class MunicipalCoverageResolutionEngine {
                 processo.getUf()
         );
         String seatMunicipality = firstNonBlank(
-                jurisdicao != null ? jurisdicao.getMunicipioSede() : null,
                 jurisdicao != null ? jurisdicao.getMunicipioOuComarca() : null,
                 deskKey.comarca(),
                 processo.getComarca(),
@@ -139,11 +138,8 @@ public class MunicipalCoverageResolutionEngine {
         if (jurisdicao == null) {
             return score;
         }
-        if (matches(targetTerritory, jurisdicao.getComarca())) {
+        if (matches(targetTerritory, jurisdicao.getCidade())) {
             score += 50;
-        }
-        if (matches(targetTerritory, jurisdicao.getMunicipioSede())) {
-            score += 40;
         }
         if (matches(targetTerritory, jurisdicao.getForo())) {
             score += 35;

@@ -13,8 +13,10 @@ import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
 import com.tcc.pjb.backend.service.AjuizamentoService;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,8 +36,11 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
     void setUp() {
         ajuizamentoService = mock(AjuizamentoService.class);
         governanceService = mock(MarketplaceGovernanceService.class);
+        ComarcaResolutionService comarcaResolutionService = mock(ComarcaResolutionService.class);
+        when(comarcaResolutionService.resolver(any(), any())).thenReturn(Optional.empty());
         when(ajuizamentoService.ajuizar(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        service = new ApiMarketplaceService(ajuizamentoService, governanceService, new CompletudeDocumentalPolicyService());
+        service = new ApiMarketplaceService(ajuizamentoService, governanceService, new CompletudeDocumentalPolicyService(),
+                comarcaResolutionService);
     }
 
     @Test

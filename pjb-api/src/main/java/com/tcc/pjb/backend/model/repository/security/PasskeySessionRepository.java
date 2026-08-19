@@ -20,4 +20,8 @@ public interface PasskeySessionRepository extends JpaRepository<PasskeySession, 
     @Modifying
     @Query("update PasskeySession s set s.revogadoEm = :now where s.usuario.id = :userId and s.revogadoEm is null")
     int revokeAllByUser(@Param("userId") Long userId, @Param("now") LocalDateTime now);
+
+    @Modifying
+    @Query("update PasskeySession s set s.lastSeenAt = :now where s.id = :id")
+    int touch(@Param("id") Long id, @Param("now") LocalDateTime now);
 }

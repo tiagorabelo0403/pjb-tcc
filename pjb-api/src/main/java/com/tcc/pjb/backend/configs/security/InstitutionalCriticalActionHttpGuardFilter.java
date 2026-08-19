@@ -112,7 +112,7 @@ public class InstitutionalCriticalActionHttpGuardFilter extends OncePerRequestFi
         if (path.endsWith("/redistribuicao") && path.startsWith("/api/v1/distribuicao/processual/processos/")) {
             return new GuardPolicy(InstitutionalSensitiveAct.REDISTRIBUICAO_SENSIVEL, "DISTRIBUICAO_REDISCRITICA");
         }
-        if (path.endsWith("/redistribuicao") && path.startsWith("/api/v1/secretaria/especializada/processos/")) {
+        if (path.endsWith("/redistribuicao") && path.startsWith("/api/v1/secretariat/especializada/processos/")) {
             return new GuardPolicy(InstitutionalSensitiveAct.REDISTRIBUICAO_SENSIVEL, "SECRETARIA_REDISCRITICA");
         }
         if (path.startsWith("/api/v1/procuradoria/operacional/processos/") && path.endsWith("/parecer")) {

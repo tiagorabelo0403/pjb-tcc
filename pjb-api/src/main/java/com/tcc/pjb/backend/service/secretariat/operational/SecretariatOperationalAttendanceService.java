@@ -106,7 +106,7 @@ public class SecretariatOperationalAttendanceService {
                 "updatedAt=" + now));
         event.setAt(window.inicio());
         event.setColor(colorForStatus(status));
-        event.setDetailsUrl("/api/v1/secretaria/especializada/processos/" + processo.getId() + "/audiencias/presenca");
+        event.setDetailsUrl("/api/v1/secretariat/especializada/processos/" + processo.getId() + "/audiencias/presenca");
         if (event.getCreatedAt() == null) {
             event.setCreatedAt(now);
         }

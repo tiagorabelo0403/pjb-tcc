@@ -11,6 +11,7 @@ Evidencias:
 - Existem cerca de 395 controllers e 329 repositories.
 - O pacote `com.tcc.pjb.backend.modules` existe, mas nem todos os modulos seguem a mesma fronteira.
 - O modulo `acordo` ja nasceu com `domain`, `application`, `api` e `infrastructure`.
+- O modulo `custas` foi migrado (2026-08-06) da estrutura legada (`core/financeiro/custas`, `model/entity/financeiro`, `controller/admin`) para a estrutura completa de 5 camadas, incluindo portas (`CustaJudicialStorePort`, `ProcessoCustaPort`) e adapters em `infrastructure`, seguindo o mesmo padrao hexagonal ja usado por `acordo`.
 - Varios fluxos ainda usam `model`, `repository`, `service` e `controller` compartilhados.
 
 Nao e correto chamar o PJB de monolito modular real ainda, porque as fronteiras entre dominios ainda nao sao uniformes nem protegidas o suficiente por testes e scripts.
