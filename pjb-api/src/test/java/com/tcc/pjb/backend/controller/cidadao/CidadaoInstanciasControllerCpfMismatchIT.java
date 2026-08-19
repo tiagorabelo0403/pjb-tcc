@@ -5,6 +5,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
@@ -24,6 +25,22 @@ import org.springframework.test.web.servlet.MockMvc;
  * Testcontainers, que {@link com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService
  * #requireReadProcessoAsCidadaoParte} rejeita um CIDADAO cujo CPF nao bate com nenhuma parte
  * do processo, e libera quando o CPF bate com a parte autora.
+ *
+ * <p>{@link com.tcc.pjb.backend.service.julgamento.CidadaoInstanciasService#instancias} chama
+ * {@code authz.requireReadProcessoAsCidadaoParte(p)} como primeira linha, antes de qualquer
+ * outra logica — o que isola o teste ao branch de divergencia de CPF sem depender de mocks
+ * adicionais.
+ *
+ * <p><b>nivelSigilo da fixture:</b> {@code requireReadProcessoAsCidadaoParte} chama primeiro
+ * {@code requireReadProcesso} (o gate ABAC geral de leitura) antes do match de CPF. Um
+ * {@link Processo} construido sem {@code nivelSigilo} explicito resolve para
+ * {@code NivelSigilo.PUBLICO} (default em {@code AbacV1Policy.canReadProcesso} e em
+ * {@code PjbAuthorizationSigiloResolver.computeProcessoSigiloEfetivo}), e PUBLICO nao exige
+ * credencial — portanto qualquer usuario ativo passa por esse gate, e o 403 desta prova vem
+ * especificamente do branch de CPF divergente, nao do ABAC de sigilo.
+ *
+ * <p>O teste de negacao tambem prova que a decisao gera uma entrada real no ledger de
+ * auditoria ({@code AUTHZ_CIDADAO_PARTE_DENY}) em vez de uma negacao silenciosa.
  */
 @AutoConfigureMockMvc
 class CidadaoInstanciasControllerCpfMismatchIT extends PjbIntegrationTestBase {
@@ -37,8 +54,11 @@ class CidadaoInstanciasControllerCpfMismatchIT extends PjbIntegrationTestBase {
     @Autowired
     ProcessoRepository processoRepository;
 
+    @Autowired
+    AuditLedgerService auditLedgerService;
+
     @Test
-    void cidadaoComCpfDivergenteDaParteRecebe403() throws Exception {
+    void cidadaoComCpfDivergenteDaParteRecebe403EGeraEntradaNoLedger() throws Exception {
         Processo processo = processoRepository.save(Processo.builder()
                 .numeroProcesso("CID-MISMATCH-1")
                 .numeroUnificado("CID-MISMATCH-U-1")
@@ -70,6 +90,14 @@ class CidadaoInstanciasControllerCpfMismatchIT extends PjbIntegrationTestBase {
         assertThat(response.getStatus())
                 .as("CPF do cidadao autenticado nao bate com nenhuma parte do processo")
                 .isEqualTo(403);
+
+        String resourceIdEsperado = processo.getNumeroUnificado();
+        boolean denyRegistrado = auditLedgerService.entries().stream()
+                .anyMatch(entry -> "AUTHZ_CIDADAO_PARTE_DENY".equals(entry.getAction())
+                        && resourceIdEsperado.equals(entry.getResourceId()));
+        assertThat(denyRegistrado)
+                .as("Decisao de negacao por CPF divergente deve gerar entrada AUTHZ_CIDADAO_PARTE_DENY no ledger, nao so a excecao HTTP")
+                .isTrue();
     }
 
     @Test

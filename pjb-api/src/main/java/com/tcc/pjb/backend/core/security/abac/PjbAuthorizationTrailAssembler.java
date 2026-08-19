@@ -104,6 +104,25 @@ final class PjbAuthorizationTrailAssembler {
         );
     }
 
+    PjbAuthorizationEvaluation assembleCidadaoParte(Processo processo,
+                                                    PjbAuthorizationDecisionContext context,
+                                                    AuthzDecision decision) {
+        return new PjbAuthorizationEvaluation(
+                decision,
+                assemble(
+                        "CIDADAO_PARTE",
+                        "PROCESSO",
+                        resolveProcessId(processo),
+                        context,
+                        null,
+                        decision,
+                        NivelSigilo.PUBLICO,
+                        PjbAuthorizationStepUpAssessment.notRequired("NONE", "cidadao_parte"),
+                        PjbAuthorizationGovernanceAssessment.notRequired("NONE", "cidadao_parte", "processo")
+                )
+        );
+    }
+
     PjbAuthorizationEvaluation assembleInstitutionalCapability(String expedicaoUuid,
                                                                String unidadeCodigo,
                                                                String caixaCodigo,

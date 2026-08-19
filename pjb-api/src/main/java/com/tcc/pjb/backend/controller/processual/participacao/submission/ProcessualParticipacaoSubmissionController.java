@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.controller.processual.participacao.submission;
 
 import com.tcc.pjb.backend.controller.processual.participacao.support.ProcessualParticipacaoControllerRateLimitSupport;
 import com.tcc.pjb.backend.core.operational.OperationalApiRoutes;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomainResolver;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.service.processual.participacao.ProcessualParticipacaoAtivaFacadeService;
 import com.tcc.pjb.backend.service.processual.participacao.submission.SubmissionRequest;
@@ -31,11 +32,14 @@ public class ProcessualParticipacaoSubmissionController {
 
     private final ProcessualParticipacaoAtivaFacadeService facadeService;
     private final CapabilityRateLimiter rateLimiter;
+    private final CapabilityRateLimitDomainResolver domainResolver;
 
     public ProcessualParticipacaoSubmissionController(ProcessualParticipacaoAtivaFacadeService facadeService,
-                                                      CapabilityRateLimiter rateLimiter) {
+                                                      CapabilityRateLimiter rateLimiter,
+                                                      CapabilityRateLimitDomainResolver domainResolver) {
         this.facadeService = Objects.requireNonNull(facadeService, "facadeService");
         this.rateLimiter = Objects.requireNonNull(rateLimiter, "rateLimiter");
+        this.domainResolver = Objects.requireNonNull(domainResolver, "domainResolver");
     }
 
     @PostMapping(OperationalApiRoutes.PATH_PROCESSUAL_PARTICIPACAO_PROTOCOLAR)
@@ -44,6 +48,7 @@ public class ProcessualParticipacaoSubmissionController {
                                                          @Valid @RequestBody SubmissionRequest request) {
         ProcessualParticipacaoControllerRateLimitSupport.enforce(
                 rateLimiter,
+                domainResolver,
                 authentication,
                 "processual_participacao_protocolar");
         return ResponseEntity.ok(facadeService.protocolar(processoId, request));
@@ -56,6 +61,7 @@ public class ProcessualParticipacaoSubmissionController {
                                                                        @Min(1) @Max(50) int limit) {
         ProcessualParticipacaoControllerRateLimitSupport.enforce(
                 rateLimiter,
+                domainResolver,
                 authentication,
                 "processual_participacao_listar_submissoes");
         return ResponseEntity.ok(facadeService.listarMinhasSubmissoes(processoId, limit));
