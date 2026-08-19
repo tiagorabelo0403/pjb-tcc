@@ -11,4 +11,6 @@ public interface LotacaoInstituicaoRepository extends JpaRepository<LotacaoInsti
 
     @Query("SELECT l FROM LotacaoInstituicao l JOIN FETCH l.unidade WHERE l.usuario = :usuario AND l.fim IS NULL")
     List<LotacaoInstituicao> findAtivasByUsuario(@Param("usuario") Usuario usuario);
+
+    java.util.Optional<LotacaoInstituicao> findFirstByUsuarioAndUnidadeOrderByInicioDesc(Usuario usuario, com.tcc.pjb.backend.model.entity.UnidadeInstituicao unidade);
 }

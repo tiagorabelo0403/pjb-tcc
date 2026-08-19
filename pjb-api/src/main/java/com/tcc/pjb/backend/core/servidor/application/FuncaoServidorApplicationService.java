@@ -63,12 +63,6 @@ public class FuncaoServidorApplicationService {
                 .orElse(false);
     }
 
-    public boolean temPermissaoEmQualquerUnidade(Long usuarioId, String acao) {
-        return funcaoRepository.findAll().stream()
-                .filter(f -> f.getUsuarioId().equals(usuarioId) && f.isAtivo())
-                .anyMatch(f -> verificarPermissao(f.getFuncao(), acao));
-    }
-
     private boolean verificarPermissao(FuncaoServidorJudiciario funcao, String acao) {
         return switch (acao.toLowerCase()) {
             case "proferir" -> funcao.podeProferir();

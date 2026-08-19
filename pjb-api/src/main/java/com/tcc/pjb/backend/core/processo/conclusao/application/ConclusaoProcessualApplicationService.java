@@ -1,10 +1,13 @@
 package com.tcc.pjb.backend.core.processo.conclusao.application;
 
 import com.tcc.pjb.backend.core.processo.estado.application.ProcessoEstadoApplicationService;
-import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorApplicationService;
+import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
+import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.processo.ConclusaoProcessual;
 import com.tcc.pjb.backend.model.repository.ConclusaoProcessualRepository;
+import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityNotFoundException;
 import java.lang.SecurityException;
@@ -25,25 +28,28 @@ public class ConclusaoProcessualApplicationService {
     private static final int DIAS_UTEIS_LIMITE = 10;
 
     private final ConclusaoProcessualRepository conclusaoRepository;
-    private final FuncaoServidorApplicationService funcaoServidorService;
+    private final ProcessoRepository processoRepository;
+    private final PjbAuthorizationService authorizationService;
     private final ProcessoEstadoApplicationService estadoService;
 
     @Inject
     public ConclusaoProcessualApplicationService(
             ConclusaoProcessualRepository conclusaoRepository,
-            FuncaoServidorApplicationService funcaoServidorService,
+            ProcessoRepository processoRepository,
+            PjbAuthorizationService authorizationService,
             ProcessoEstadoApplicationService estadoService) {
         this.conclusaoRepository = conclusaoRepository;
-        this.funcaoServidorService = funcaoServidorService;
+        this.processoRepository = processoRepository;
+        this.authorizationService = authorizationService;
         this.estadoService = estadoService;
     }
 
     @Transactional
     public ConclusaoProcessual concluir(Long processoId, Long magistradoId, Long servidorId,
                                          String tipoConclusao, String motivo) {
-        if (!funcaoServidorService.temPermissaoEmQualquerUnidade(servidorId, "concluir")) {
-            throw new SecurityException("Servidor não possui função com permissão de conclusão.");
-        }
+        Processo processo = processoRepository.findById(processoId)
+                .orElseThrow(() -> new EntityNotFoundException("Processo não encontrado: " + processoId));
+        authorizationService.requireFuncaoServidorCapability(processo, AcaoProcessualServidor.CONCLUIR);
         Instant dataLimite = calcularDataLimite(DIAS_UTEIS_LIMITE);
         ConclusaoProcessual conclusao = new ConclusaoProcessual(
                 processoId, magistradoId, servidorId, tipoConclusao, motivo, dataLimite);

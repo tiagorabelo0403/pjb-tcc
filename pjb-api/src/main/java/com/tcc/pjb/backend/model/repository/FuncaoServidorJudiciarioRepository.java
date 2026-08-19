@@ -15,4 +15,7 @@ public interface FuncaoServidorJudiciarioRepository
 
     Optional<FuncaoServidorJudiciarioEntity> findByUsuarioIdAndUnidadeIdAndFuncaoAndAtivo(
             Long usuarioId, Long unidadeId, FuncaoServidorJudiciario funcao, boolean ativo);
+
+    List<FuncaoServidorJudiciarioEntity> findByUsuarioIdAndUnidadeIdAndAtivo(
+            Long usuarioId, Long unidadeId, boolean ativo);
 }

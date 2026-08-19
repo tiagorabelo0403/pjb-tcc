@@ -1630,3 +1630,109 @@ mesmo rodar em toda rota `/api/v1/**`), a asserção antiga é que estava desatu
 `AdvogadoCockpitControllerIT`, `ProcessoCommandControllerIT`, `AuditLedgerServicePayloadHashNuloIT`
 — todos verdes.
 Não revisitar — os quatro pontos são estruturais, não workarounds.
+
+## D-funcao-servidor-proferir-nao-implementado
+
+**Status:** aberta
+
+**Contexto:** a fatia que conecta `FuncaoServidorJudiciario` ao motor ABAC real
+(`PjbAuthorizationService.requireFuncaoServidorCapability(Processo, AcaoProcessualServidor)`)
+fechou os 4 gates que já tinham um fluxo real chamando o motor: `CONCLUIR` (conclusão processual),
+`INTIMAR` (intimação de audiência), `ARQUIVAR` e `DISTRIBUIR`. O enum `AcaoProcessualServidor`
+também declara `PROFERIR`, e `FuncaoServidorJudiciario.podeProferir()` já existe e é testado
+isoladamente (ex.: `DIRETOR_SECRETARIA.podeProferir()` retorna `true`), mas **nenhum endpoint ou
+fluxo real do sistema chama `requireFuncaoServidorCapability(processo, AcaoProcessualServidor.PROFERIR)`**
+— o caso de uso que essa capacidade representa (despacho de mero expediente praticado por
+servidor, sem decisão de mérito, nos termos do art. 93, XIV da CF/88 e do art. 203, §4º do CPC) não
+tem nenhuma feature construída no PJB ainda.
+
+Diferente dos outros 4 valores do enum, `PROFERIR` hoje só existe no modelo (enum +
+`possuiCapacidade()` no `switch` de `PjbAuthorizationFuncaoServidorFacade` + booleano na entidade
+`FuncaoServidorJudiciario`) — não há controller, service ou comando que o invoque. Isso é
+esperado e está fora do escopo desta fatia, que conecta capacidades **já existentes** à
+autorização real; construir o fluxo de despacho de mero expediente por servidor é uma feature nova,
+não uma conexão de fiação já pronta.
+
+**Risco:** nenhum imediato — `PROFERIR` sem chamador não é uma porta aberta (o gate nega por
+padrão na ausência de chamada, não existe bypass). O risco é de expectativa: alguém lendo o enum
+ou a entidade pode presumir que a capacidade já está em uso.
+
+**Cobertura de teste:** nenhuma direta para o caminho `PROFERIR` fim-a-fim (não existe fim-a-fim
+para testar). `possuiCapacidade()` (privado em `PjbAuthorizationFuncaoServidorFacade`, chaveado por
+`AcaoProcessualServidor`) é coberto isoladamente por `PjbAuthorizationFuncaoServidorFacadeTest` —
+`FuncaoServidorApplicationServiceTest` **não** o toca, apesar do que a versão anterior desta
+entrada afirmava. `podeProferir()` (o booleano do enum `FuncaoServidorJudiciario` em si, não o
+`switch` do facade) é, esse sim, coberto diretamente por `FuncaoServidorApplicationServiceTest`
+(`diretorSecretariaPoderProferirTrue`/`tecnicoJudiciarioPoderProferirFalse`, linhas 87-93), que
+também cobre `verificarPermissao(String)` do próprio `FuncaoServidorApplicationService` — ver
+`D-duas-tabelas-verdade-capacidade-servidor` abaixo para a duplicação entre esse método e
+`possuiCapacidade()`.
+
+## D-duas-tabelas-verdade-capacidade-servidor
+
+**Status:** aberta
+
+**Contexto:** a regra de negócio "quais ações um `FuncaoServidorJudiciario` pode praticar" — os 5
+booleanos do enum (`podeProferir`, `podeConcluir`, `podeIntimar`, `podeDistribuir`, `podeArquivar`)
+— está codificada em dois lugares paralelos:
+
+1. `PjbAuthorizationFuncaoServidorFacade.possuiCapacidade(FuncaoServidorJudiciario, AcaoProcessualServidor)`
+   (privado, chaveado pelo enum `AcaoProcessualServidor`) — é o caminho real, chamado por
+   `PjbAuthorizationService.requireFuncaoServidorCapability(...)` em produção.
+2. `FuncaoServidorApplicationService.verificarPermissao(FuncaoServidorJudiciario, String)` (privado,
+   chaveado por `String` solto) — chamado apenas por `podeExecutar(...)`, que por sua vez não tem
+   nenhum chamador real em produção, só uso em `FuncaoServidorApplicationServiceTest`. Foi mantido
+   deliberadamente como API pública do service (base potencial para um endpoint administrativo
+   futuro de consulta de permissão), não é código morto para remover sem decisão de produto.
+
+**Risco:** os dois `switch` fazem o mesmo mapeamento função→ação hoje, mas nada os mantém
+sincronizados. Se a regra de capacidade mudar (novo cargo no enum, nova ação em
+`AcaoProcessualServidor`), quem alterar `possuiCapacidade()` pode esquecer de atualizar
+`verificarPermissao()` (ou vice-versa) — a segunda tabela-verdade ficaria desatualizada em
+silêncio, já que não é exercitada por nenhum fluxo real hoje.
+
+**Cobertura de teste:** cada `switch` é coberto isoladamente por sua própria suíte
+(`PjbAuthorizationFuncaoServidorFacadeTest` para o primeiro, `FuncaoServidorApplicationServiceTest`
+para o segundo) — não existe teste que prove que os dois concordam entre si.
+
+**Não revisitar sem decisão de produto:** consolidar os dois em uma única fonte de verdade (ex.:
+`FuncaoServidorApplicationService` delegando ao facade, ou ambos delegando a um método único no
+enum) é uma limpeza estrutural legítima, mas está fora do escopo de correção pontual — depende de
+decidir se `verificarPermissao`/`podeExecutar` seguem como API pública do service ou são removidos.
+
+## D-ponte-unidade-instituicao-sem-backfill
+
+**Status:** aberta
+
+**Contexto:** a fatia de designação institucional (`docs/superpowers/plans/2026-08-14-designacao-institucional-servidor.md`)
+adicionou `unidade_instituicao_id` (nullable) em `tb_unidade_judiciaria_competencia`, mas nenhuma
+`UnidadeJudiciariaCompetencia` existente teve a coluna preenchida — foi decisão explícita de escopo
+(problema de dados, não desta fatia). Enquanto a ponte não for preenchida linha a linha, toda
+designação feita numa unidade existente materializa `FuncaoServidorJudiciarioEntity` normalmente (os
+gates ABAC funcionam) mas não materializa `LotacaoInstituicao` — a lacuna é aceita por design, não é
+bug, mas significa que `ContextoInstitucionalResolver`/`LotacaoVisibilityPolicy` seguem sem dado real
+pra essas unidades até alguém rodar o backfill.
+
+**Risco:** nenhum gate quebra; a visibilidade institucional baseada em `LotacaoInstituicao` fica
+incompleta silenciosamente até o backfill acontecer.
+
+**Não revisitar sem decisão de produto:** decidir se o backfill é automático (matching por
+nome/comarca, com risco de erro) ou manual (mais lento, mais seguro) é escopo de outra fatia.
+
+## D-encerrar-designacao-nao-sincroniza-lotacao
+
+**Status:** aberta
+
+**Contexto:** `FuncaoServidorAdminController.encerrar` delega direto pra
+`FuncaoServidorApplicationService.encerrar(...)` (existente, sem mudança), que encerra só a
+`FuncaoServidorJudiciarioEntity`. `FuncaoServidorDesignacaoService.designarComLotacao` materializa
+`LotacaoInstituicao` na designação, mas não existe caminho simétrico que a encerre — se um servidor
+tiver a função encerrada, `LotacaoInstituicao.fim` permanece `null` (lotação continua "ativa" pra
+`ContextoInstitucionalResolver`/`LotacaoVisibilityPolicy` mesmo sem função real na unidade).
+
+**Risco:** visibilidade institucional pode conceder acesso baseado numa lotação que já deveria ter
+terminado.
+
+**Não revisitar sem decisão de produto:** exige decidir se `encerrar()` deve sempre encerrar a
+`LotacaoInstituicao` correspondente (pode ser incorreto se o servidor tiver outra função ativa na
+mesma unidade) ou se precisa de uma consulta adicional antes de decidir.
