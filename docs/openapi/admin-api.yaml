@@ -7,6 +7,18 @@ servers:
   -
     url: "http://localhost:8080"
 paths:
+  /api/admin/judicial/command-center:
+    get:
+      summary: "AdminJudicialConnectorCommandCenterController::GET /api/admin/judicial/command-center"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
   /api/admin/judicial/command-center/tribunal/{tribunalCodigo}:
     get:
       summary: "AdminJudicialConnectorCommandCenterController::GET /api/admin/judicial/command-center/tribunal/{tribunalCodigo}"
@@ -19,9 +31,33 @@ paths:
         -
           bearerAuth:
 
+  /api/admin/judicial/connectors/governance:
+    get:
+      summary: "AdminJudicialConnectorGovernanceController::GET /api/admin/judicial/connectors/governance"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
   /api/admin/judicial/connectors/governance/tribunal/{tribunalCodigo}:
     get:
       summary: "AdminJudicialConnectorGovernanceController::GET /api/admin/judicial/connectors/governance/tribunal/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/control-plane:
+    get:
+      summary: "AdminJudicialConnectorControlPlaneController::GET /api/admin/judicial/control-plane"
       tags:
         - "com.tcc.pjb.backend.controller.admin"
       responses:
@@ -295,9 +331,33 @@ paths:
         -
           bearerAuth:
 
+  /api/admin/judicial/cryptography:
+    get:
+      summary: "AdminJudicialConnectorCryptographyController::GET /api/admin/judicial/cryptography"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
   /api/admin/judicial/cryptography/tribunal/{tribunalCodigo}:
     get:
       summary: "AdminJudicialConnectorCryptographyController::GET /api/admin/judicial/cryptography/tribunal/{tribunalCodigo}"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/data-plane:
+    get:
+      summary: "AdminJudicialConnectorDataPlaneController::GET /api/admin/judicial/data-plane"
       tags:
         - "com.tcc.pjb.backend.controller.admin"
       responses:
@@ -319,6 +379,18 @@ paths:
         -
           bearerAuth:
 
+  /api/admin/judicial/observability:
+    get:
+      summary: "AdminJudicialConnectorObservabilityController::GET /api/admin/judicial/observability"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
   /api/admin/judicial/observability/tribunal/{tribunalCodigo}:
     get:
       summary: "AdminJudicialConnectorObservabilityController::GET /api/admin/judicial/observability/tribunal/{tribunalCodigo}"
@@ -331,6 +403,24 @@ paths:
         -
           bearerAuth:
 
+  /api/admin/judicial/ops:
+    post:
+      summary: "AdminJudicialConnectorOpsController::POST /api/admin/judicial/ops"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JudicialConnectorAdminOperationRequest"
+      security:
+        -
+          bearerAuth:
+
   /api/admin/judicial/ops/history:
     get:
       summary: "AdminJudicialConnectorOpsController::GET /api/admin/judicial/ops/history"
@@ -339,6 +429,35 @@ paths:
       responses:
         200:
           description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/judicial/policies:
+    get:
+      summary: "AdminJudicialConnectorPolicyController::GET /api/admin/judicial/policies"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+    post:
+      summary: "AdminJudicialConnectorPolicyController::POST /api/admin/judicial/policies"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JudicialConnectorPolicyCommand"
       security:
         -
           bearerAuth:
@@ -465,6 +584,35 @@ paths:
       responses:
         200:
           description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/admin/ritos/rules/proposals:
+    get:
+      summary: "AdminRitoRuleProposalController::GET /api/admin/ritos/rules/proposals"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+    post:
+      summary: "AdminRitoRuleProposalController::POST /api/admin/ritos/rules/proposals"
+      tags:
+        - "com.tcc.pjb.backend.controller.admin"
+      responses:
+        200:
+          description: "OK"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RitoRuleProposalCreateRequest"
       security:
         -
           bearerAuth:
@@ -691,114 +839,6 @@ paths:
   /api/v1/admin/backfills/advocacia/clientes/canonicalize-sensitive/status:
     get:
       summary: "AdminBackfillController::GET /api/v1/admin/backfills/advocacia/clientes/canonicalize-sensitive/status"
-      tags:
-        - "admin"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/admin/custas/gerar:
-    post:
-      summary: "AdminCustasController::POST /api/v1/admin/custas/gerar"
-      tags:
-        - "admin"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/admin/custas/{custaId}:
-    get:
-      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}"
-      tags:
-        - "admin"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/admin/custas/{custaId}/health:
-    get:
-      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/health"
-      tags:
-        - "admin"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/admin/custas/{custaId}/linha-digitavel:
-    get:
-      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/linha-digitavel"
-      tags:
-        - "admin"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/admin/custas/{custaId}/pagamento:
-    get:
-      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/pagamento"
-      tags:
-        - "admin"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/admin/custas/{custaId}/pix/health:
-    get:
-      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/pix/health"
-      tags:
-        - "admin"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/admin/custas/{custaId}/status:
-    get:
-      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/status"
-      tags:
-        - "admin"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/admin/custas/{custaId}/timeline:
-    get:
-      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/timeline"
-      tags:
-        - "admin"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
-  /api/v1/admin/custas/{custaId}/vencimento:
-    get:
-      summary: "AdminCustasController::GET /api/v1/admin/custas/{custaId}/vencimento"
       tags:
         - "admin"
       responses:
@@ -2292,6 +2332,66 @@ paths:
   /api/v1/admin/frontend-readiness/errors:
     get:
       summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/errors"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/integration-pack/artifacts:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/integration-pack/artifacts"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/integration-pack/profile:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/integration-pack/profile"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/integration-pack/seeds:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/integration-pack/seeds"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/integration-pack/smoke:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/integration-pack/smoke"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/frontend-readiness/integration-pack/summary:
+    get:
+      summary: "AdminFrontendReadinessController::GET /api/v1/admin/frontend-readiness/integration-pack/summary"
       tags:
         - "admin"
       responses:
@@ -4440,6 +4540,246 @@ paths:
         -
           bearerAuth:
 
+  /api/v1/admin/observability-national/dashboard:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/dashboard"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/plataforma-sustentacao:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/plataforma-sustentacao"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/runbook-status:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/runbook-status"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/sla-report:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/sla-report"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-centro-comando:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-centro-comando"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-cutover-matrix:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-cutover-matrix"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-cutover-matrix/tribunal/{tribunalCodigo}:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-cutover-matrix/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-malha-julgadora:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-malha-julgadora"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-malha-julgadora/tribunal/{tribunalCodigo}:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-malha-julgadora/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-nucleo-duro:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-nucleo-duro"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-nucleo-duro/tribunal/{tribunalCodigo}:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-nucleo-duro/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-pos-coletiva:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-pos-coletiva"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-pos-coletiva/tribunal/{tribunalCodigo}:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-pos-coletiva/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-precedentes-qualificados:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-precedentes-qualificados"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-precedentes-qualificados/tribunal/{tribunalCodigo}:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-precedentes-qualificados/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-readiness:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-readiness"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-tutela-coletiva:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-tutela-coletiva"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-tutela-coletiva/tribunal/{tribunalCodigo}:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-tutela-coletiva/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-war-room:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-war-room"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/observability-national/substituicao-war-room/tribunal/{tribunalCodigo}:
+    get:
+      summary: "NationalObservabilityController::GET /api/v1/admin/observability-national/substituicao-war-room/tribunal/{tribunalCodigo}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
   /api/v1/admin/observability/slo/operations/{operation}:
     get:
       summary: "AdminSloObservabilityController::GET /api/v1/admin/observability/slo/operations/{operation}"
@@ -5669,6 +6009,54 @@ paths:
         -
           bearerAuth:
 
+  /api/v1/admin/scale-architecture/judicial-procedural-coverage:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-procedural-coverage"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/judicial-procedural-coverage/{rito}:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-procedural-coverage/{rito}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/judicial-procedural-playbooks:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-procedural-playbooks"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/judicial-procedural-playbooks/{rito}:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-procedural-playbooks/{rito}"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
   /api/v1/admin/scale-architecture/judicial-runtime-policies:
     get:
       summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-runtime-policies"
@@ -5696,6 +6084,30 @@ paths:
   /api/v1/admin/scale-architecture/judicial-secretariat-models:
     get:
       summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-secretariat-models"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/judicial-tribunal-variations:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-tribunal-variations"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/scale-architecture/judicial-tribunal-variations/{tribunalCodigo}/{rito}:
+    get:
+      summary: "ScaleArchitectureController::GET /api/v1/admin/scale-architecture/judicial-tribunal-variations/{tribunalCodigo}/{rito}"
       tags:
         - "admin"
       responses:
@@ -5803,6 +6215,18 @@ paths:
   /api/v1/admin/security/apis/posture:
     get:
       summary: "AdminApiSecurityGovernanceController::GET /api/v1/admin/security/apis/posture"
+      tags:
+        - "admin"
+      responses:
+        200:
+          description: "OK"
+      security:
+        -
+          bearerAuth:
+
+  /api/v1/admin/security/authz-trails:
+    get:
+      summary: "AdminAuthorizationTrailController::GET /api/v1/admin/security/authz-trails"
       tags:
         - "admin"
       responses:

@@ -70,6 +70,17 @@ public class PublicProcessoPessoaController {
                 .body(service.buscarProcessosPublicosPorCpf(cpf, page, size));
     }
 
+    @GetMapping("/oab/{oabNumero}/processos")
+    public ResponseEntity<PublicProcessoResumoSearchResponse> processosPorOab(@PathVariable @NotBlank String oabNumero,
+                                                                                @RequestParam("uf") @NotBlank String uf,
+                                                                                @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                                @RequestParam(value = "size", defaultValue = "20") int size) {
+        rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_PESSOA_OAB", ApiVersion.latest());
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(Duration.ofSeconds(12)).cachePrivate().mustRevalidate())
+                .body(service.buscarProcessosPublicosPorOab(oabNumero, uf, page, size));
+    }
+
     @GetMapping("/processos/{numero}/resumo")
     public ResponseEntity<PublicProcessoResumoCardDto> resumo(@PathVariable @NotBlank String numero) {
         rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_RESUMO", ApiVersion.latest());

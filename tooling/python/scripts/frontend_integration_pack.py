@@ -11,9 +11,126 @@ DOCS_POSTMAN = ROOT / 'docs/postman'
 DOCS_REPORTS = ROOT / 'docs/reports'
 
 PACKAGE_RE = re.compile(r'package\s+([\w.]+)\s*;')
-REQUEST_RE = re.compile(r'@RequestMapping\((?:value\s*=\s*)?"([^"]*)"')
-HTTP_RE = re.compile(r'@(GetMapping|PostMapping|PutMapping|DeleteMapping|PatchMapping)\((?:value\s*=\s*)?"([^"]*)"')
+CLASS_MAPPING_RE = re.compile(r'@RequestMapping\b')
+METHOD_MAPPING_RE = re.compile(r'@(GetMapping|PostMapping|PutMapping|DeleteMapping|PatchMapping)\b')
 METHOD_SIG_RE = re.compile(r'public\s+(.+?)\s+(\w+)\s*\(([^)]*)\)', re.DOTALL)
+CLASS_DECL_RE = re.compile(r'\bclass\s+(\w+)')
+CONST_DECL_RE = re.compile(r'public\s+static\s+final\s+String\s+(\w+)\s*=\s*([^;]+);', re.DOTALL)
+
+
+def extract_annotation_args(source: str, name_end: int) -> tuple[str | None, int]:
+    """Given the index right after an annotation name (e.g. '@GetMapping'), returns
+    (raw args between the parens, index right after the closing paren) or (None, name_end)
+    if the annotation has no parenthesized arguments at all."""
+    i = name_end
+    while i < len(source) and source[i] in ' \t\n\r':
+        i += 1
+    if i >= len(source) or source[i] != '(':
+        return None, name_end
+    depth = 0
+    j = i
+    while j < len(source):
+        if source[j] == '(':
+            depth += 1
+        elif source[j] == ')':
+            depth -= 1
+            if depth == 0:
+                return source[i + 1:j], j + 1
+        j += 1
+    return None, name_end
+
+
+def extract_mapping_value_expr(args: str | None) -> str | None:
+    """From the raw content of a @RequestMapping/@GetMapping(...) call, pulls out the
+    expression assigned to 'value'/'path', or the bare first positional argument."""
+    if args is None:
+        return None
+    for segment in args.split(','):
+        segment = segment.strip()
+        if not segment:
+            continue
+        m = re.match(r'(?:value|path)\s*=\s*(.+)', segment, re.DOTALL)
+        if m:
+            return m.group(1).strip()
+        if '=' not in segment:
+            return segment
+    return None
+
+
+def build_constant_table() -> dict[tuple[str, str], str]:
+    """Scans every Java source file for `public static final String NAME = EXPR;`
+    fields so that route paths declared as constants (e.g. OperationalApiRoutes.FORUM_BASE)
+    can be resolved to their literal value instead of being silently dropped/truncated."""
+    raw: dict[tuple[str, str], list] = {}
+    for file in SRC_MAIN.rglob('*.java'):
+        source = file.read_text(encoding='utf-8', errors='ignore')
+        class_match = CLASS_DECL_RE.search(source)
+        if not class_match:
+            continue
+        class_name = class_match.group(1)
+        for m in CONST_DECL_RE.finditer(source):
+            const_name = m.group(1)
+            tokens = []
+            for part in m.group(2).split('+'):
+                part = part.strip()
+                if part.startswith('"') and part.endswith('"'):
+                    tokens.append(part[1:-1])
+                elif re.fullmatch(r'[\w.]+', part):
+                    if '.' in part:
+                        ref_cls, ref_name = part.rsplit('.', 1)
+                    else:
+                        ref_cls, ref_name = class_name, part
+                    tokens.append(('ref', ref_cls, ref_name))
+                else:
+                    tokens.append(None)
+            raw[(class_name, const_name)] = tokens
+
+    resolved: dict[tuple[str, str], str] = {}
+
+    def resolve(key, seen):
+        if key in resolved:
+            return resolved[key]
+        if key in seen or key not in raw:
+            return None
+        seen = seen | {key}
+        out = []
+        for token in raw[key]:
+            if token is None:
+                return None
+            if isinstance(token, str):
+                out.append(token)
+            else:
+                _, ref_cls, ref_name = token
+                value = resolve((ref_cls, ref_name), seen)
+                if value is None:
+                    return None
+                out.append(value)
+        value = ''.join(out)
+        resolved[key] = value
+        return value
+
+    for key in list(raw):
+        resolve(key, frozenset())
+    return resolved
+
+
+def resolve_mapping_expr(expr: str | None, constants: dict[tuple[str, str], str]) -> str:
+    if not expr:
+        return ''
+    expr = expr.strip()
+    if expr.startswith('{'):
+        expr = expr.strip('{}').split(',')[0].strip()
+    parts = []
+    for part in expr.split('+'):
+        part = part.strip()
+        if part.startswith('"') and part.endswith('"'):
+            parts.append(part[1:-1])
+        elif '.' in part:
+            ref_cls, ref_name = part.rsplit('.', 1)
+            parts.append(constants.get((ref_cls, ref_name), ''))
+        else:
+            parts.append('')
+    return ''.join(parts)
 
 ERROR_CODES = [
     {"httpStatus": 400, "code": "VALIDATION_ERROR", "category": "validation", "retryable": False, "handler": "ApiExceptionHandler", "message": "Dados inválidos."},
@@ -85,13 +202,18 @@ def extract_request_type(parameters: str) -> str | None:
 
 
 def discover_routes():
+    constants = build_constant_table()
     routes = []
     for file in CONTROLLER_ROOT.rglob('*.java'):
         source = file.read_text(encoding='utf-8', errors='ignore')
-        base = normalize_path(REQUEST_RE.search(source).group(1) if REQUEST_RE.search(source) else '/')
+        class_match = CLASS_MAPPING_RE.search(source)
+        base = '/'
+        if class_match:
+            args, _ = extract_annotation_args(source, class_match.end())
+            base = normalize_path(resolve_mapping_expr(extract_mapping_value_expr(args), constants))
         package = PACKAGE_RE.search(source).group(1) if PACKAGE_RE.search(source) else ''
         controller = file.stem
-        for match in HTTP_RE.finditer(source):
+        for match in METHOD_MAPPING_RE.finditer(source):
             method = {
                 'GetMapping': 'GET',
                 'PostMapping': 'POST',
@@ -99,16 +221,17 @@ def discover_routes():
                 'DeleteMapping': 'DELETE',
                 'PatchMapping': 'PATCH',
             }[match.group(1)]
-            sub = normalize_path(match.group(2))
+            args, args_end = extract_annotation_args(source, match.end())
+            sub = normalize_path(resolve_mapping_expr(extract_mapping_value_expr(args), constants))
             path = normalize_path(base + ('/' if base != '/' and sub != '/' else '') + ('' if sub == '/' else sub.lstrip('/')))
-            public_index = source.find('public ', match.end())
+            public_index = source.find('public ', args_end)
             brace_index = source.find('{', public_index) if public_index >= 0 else -1
             declaration = source[public_index:brace_index] if public_index >= 0 and brace_index >= 0 else ''
             sig = METHOD_SIG_RE.search(declaration.replace('\n', ' ').replace('\r', ' '))
             return_type = simplify_type(sig.group(1)) if sig else 'ResponseEntity<?>'
             parameters = sig.group(3) if sig else ''
             request_type = extract_request_type(parameters)
-            source_segment = source[match.start(): brace_index if brace_index > match.start() else match.end()]
+            source_segment = source[match.start(): brace_index if brace_index > match.start() else args_end]
             auth_mode = resolve_auth(path, source_segment)
             routes.append({
                 'method': method,

@@ -242,6 +242,49 @@ public class ProcessoPesquisaIdentidadePublicaService {
     }
 
     @Transactional(readOnly = true)
+    public PublicProcessoResumoSearchResponse buscarProcessosPublicosPorOab(String oabNumero,
+                                                                             String oabUf,
+                                                                             int page,
+                                                                             int size) {
+        String normalizedNumero = normalizeOabNumero(oabNumero);
+        String normalizedUf = normalizeOabUf(oabUf);
+        if (normalizedNumero == null) {
+            throw new IllegalArgumentException("número da OAB obrigatório");
+        }
+        if (normalizedUf == null) {
+            throw new IllegalArgumentException("UF da OAB obrigatória");
+        }
+        int safePage = Math.max(0, page);
+        int safeSize = Math.min(Math.max(1, size), 100);
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("oabNumero", normalizedNumero);
+        params.put("oabUf", normalizedUf);
+        params.put("offset", safePage * safeSize);
+        params.put("limit", safeSize);
+        String from = """
+                from tb_processo p
+                where p.nivel_sigilo = 'PUBLICO'
+                  and exists (
+                      select 1 from tb_polo_processual pp
+                      where pp.processo_id = p.id
+                        and pp.ativo = true
+                        and pp.oab_numero = :oabNumero
+                        and pp.oab_uf = :oabUf
+                  )
+                """;
+        long total = Optional.ofNullable(jdbc.queryForObject("select count(*) " + from, params, Long.class)).orElse(0L);
+        String sql = """
+                select p.id, p.numero_unificado, p.numero_processo, p.tribunal, p.uf, p.comarca, p.vara,
+                       p.tipo_justica, p.ramo_direito, p.classe_processual, p.assunto, p.data_distribuicao,
+                       p.data_ultima_movimentacao, p.nivel_sigilo
+                """ + from + " order by p.data_ultima_movimentacao desc nulls last, p.id desc limit :limit offset :offset";
+        List<PublicProcessoResumoCardDto> processos = jdbc.query(sql, params, processSummaryMapper());
+        List<PublicProcessoResumoCardDto> hydrated = processos.stream().map(this::enrichMovementsAndSummary).toList();
+        String queryLabel = "OAB " + normalizedNumero + "/" + normalizedUf;
+        return new PublicProcessoResumoSearchResponse(queryLabel, null, safePage, safeSize, total, "OAB_DIRECT", queryLabel, hydrated);
+    }
+
+    @Transactional(readOnly = true)
     public PublicProcessoResumoCardDto resumirProcessoPublico(String numero) {
         Processo processo = processoRepository.findByNumeroUnificado(numero)
                 .or(() -> processoRepository.findByNumeroProcesso(numero))
@@ -641,6 +684,22 @@ public class ProcessoPesquisaIdentidadePublicaService {
         }
         String digits = raw.replaceAll("\\D", "");
         return digits.length() == 11 ? digits : null;
+    }
+
+    private static String normalizeOabNumero(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String digits = raw.replaceAll("\\D", "");
+        return digits.isBlank() ? null : digits;
+    }
+
+    private static String normalizeOabUf(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String value = raw.trim().toUpperCase(Locale.ROOT);
+        return value.length() == 2 ? value : null;
     }
 
     private static String maskCpf(String cpf) {
