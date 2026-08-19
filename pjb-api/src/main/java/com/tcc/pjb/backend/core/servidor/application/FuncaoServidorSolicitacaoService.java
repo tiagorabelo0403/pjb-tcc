@@ -8,6 +8,7 @@ import com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorSolicitacao;
 import com.tcc.pjb.backend.model.repository.FuncaoServidorJudiciarioRepository;
 import com.tcc.pjb.backend.model.repository.FuncaoServidorSolicitacaoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.service.exception.RecursoJaExistenteException;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import java.time.LocalDate;
 import java.util.List;
@@ -55,7 +56,11 @@ public class FuncaoServidorSolicitacaoService {
     public FuncaoServidorSolicitacao aprovar(Long solicitacaoId, Long decisorId) {
         FuncaoServidorSolicitacao solicitacao = buscar(solicitacaoId);
         exigirPodeDecidir(decisorId, solicitacao.getUnidadeId());
-        solicitacao.aprovar(decisorId);
+        try {
+            solicitacao.aprovar(decisorId);
+        } catch (IllegalStateException e) {
+            throw new RecursoJaExistenteException(e.getMessage());
+        }
         FuncaoServidorSolicitacao salva = solicitacaoRepository.save(solicitacao);
         designacaoService.designarComLotacao(salva.getSolicitanteId(), salva.getUnidadeId(), salva.getFuncao(),
                 LocalDate.now(), decisorId, null);
@@ -68,7 +73,11 @@ public class FuncaoServidorSolicitacaoService {
     public FuncaoServidorSolicitacao rejeitar(Long solicitacaoId, Long decisorId, String motivo) {
         FuncaoServidorSolicitacao solicitacao = buscar(solicitacaoId);
         exigirPodeDecidir(decisorId, solicitacao.getUnidadeId());
-        solicitacao.rejeitar(decisorId, motivo);
+        try {
+            solicitacao.rejeitar(decisorId, motivo);
+        } catch (IllegalStateException e) {
+            throw new RecursoJaExistenteException(e.getMessage());
+        }
         FuncaoServidorSolicitacao salva = solicitacaoRepository.save(solicitacao);
         auditLedgerService.appendSafely("FUNCAO_SERVIDOR_SOLICITACAO_REJEITADA", "FUNCAO_SERVIDOR_SOLICITACAO",
                 String.valueOf(salva.getId()));

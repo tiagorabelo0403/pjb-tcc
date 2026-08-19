@@ -17,6 +17,7 @@ import com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorSolicitacao;
 import com.tcc.pjb.backend.model.repository.FuncaoServidorJudiciarioRepository;
 import com.tcc.pjb.backend.model.repository.FuncaoServidorSolicitacaoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.service.exception.RecursoJaExistenteException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -129,7 +130,7 @@ class FuncaoServidorSolicitacaoServiceTest {
     }
 
     @Test
-    void aprovarSolicitacaoJaDecididaPropagaIllegalStateException() {
+    void aprovarSolicitacaoJaDecididaConvertePraRecursoJaExistenteException() {
         var solicitacao = new FuncaoServidorSolicitacao(10L, 5L, FuncaoServidorJudiciario.ESCRIVAO_JUDICIAL, null);
         solicitacao.aprovar(1L);
         setId(solicitacao, 1L);
@@ -137,7 +138,19 @@ class FuncaoServidorSolicitacaoServiceTest {
         Usuario admin = usuarioComTipo(99L, TipoUsuario.ADMINISTRADOR);
         when(usuarioRepository.findById(99L)).thenReturn(Optional.of(admin));
 
-        assertThatThrownBy(() -> service.aprovar(1L, 99L)).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> service.aprovar(1L, 99L)).isInstanceOf(RecursoJaExistenteException.class);
+    }
+
+    @Test
+    void rejeitarSolicitacaoJaDecididaConvertePraRecursoJaExistenteException() {
+        var solicitacao = new FuncaoServidorSolicitacao(10L, 5L, FuncaoServidorJudiciario.ESCRIVAO_JUDICIAL, null);
+        solicitacao.aprovar(1L);
+        setId(solicitacao, 1L);
+        when(solicitacaoRepository.findById(1L)).thenReturn(Optional.of(solicitacao));
+        Usuario admin = usuarioComTipo(99L, TipoUsuario.ADMINISTRADOR);
+        when(usuarioRepository.findById(99L)).thenReturn(Optional.of(admin));
+
+        assertThatThrownBy(() -> service.rejeitar(1L, 99L, "motivo")).isInstanceOf(RecursoJaExistenteException.class);
     }
 
     private Usuario usuarioComTipo(Long id, TipoUsuario tipo) {
