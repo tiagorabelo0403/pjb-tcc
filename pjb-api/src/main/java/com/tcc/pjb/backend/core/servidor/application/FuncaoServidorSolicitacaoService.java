@@ -40,6 +40,11 @@ public class FuncaoServidorSolicitacaoService {
     @Transactional
     public FuncaoServidorSolicitacao solicitar(Long solicitanteId, Long unidadeId,
                                                 FuncaoServidorJudiciario funcao, String motivo) {
+        Usuario solicitante = usuarioRepository.findById(solicitanteId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuario", solicitanteId));
+        if (!solicitante.getTipoUsuario().isServidorJudiciario()) {
+            throw new SecurityException("Apenas servidores judiciários podem solicitar designação institucional.");
+        }
         FuncaoServidorSolicitacao solicitacao = new FuncaoServidorSolicitacao(solicitanteId, unidadeId, funcao, motivo);
         FuncaoServidorSolicitacao salva = solicitacaoRepository.save(solicitacao);
         auditLedgerService.appendSafely("FUNCAO_SERVIDOR_SOLICITACAO_CRIADA", "FUNCAO_SERVIDOR_SOLICITACAO",
@@ -55,7 +60,7 @@ public class FuncaoServidorSolicitacaoService {
     @Transactional
     public FuncaoServidorSolicitacao aprovar(Long solicitacaoId, Long decisorId) {
         FuncaoServidorSolicitacao solicitacao = buscar(solicitacaoId);
-        exigirPodeDecidir(decisorId, solicitacao.getUnidadeId());
+        exigirPodeDecidir(decisorId, solicitacao.getUnidadeId(), solicitacao.getSolicitanteId());
         try {
             solicitacao.aprovar(decisorId);
         } catch (IllegalStateException e) {
@@ -72,7 +77,7 @@ public class FuncaoServidorSolicitacaoService {
     @Transactional
     public FuncaoServidorSolicitacao rejeitar(Long solicitacaoId, Long decisorId, String motivo) {
         FuncaoServidorSolicitacao solicitacao = buscar(solicitacaoId);
-        exigirPodeDecidir(decisorId, solicitacao.getUnidadeId());
+        exigirPodeDecidir(decisorId, solicitacao.getUnidadeId(), solicitacao.getSolicitanteId());
         try {
             solicitacao.rejeitar(decisorId, motivo);
         } catch (IllegalStateException e) {
@@ -89,7 +94,10 @@ public class FuncaoServidorSolicitacaoService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("FuncaoServidorSolicitacao", solicitacaoId));
     }
 
-    private void exigirPodeDecidir(Long decisorId, Long unidadeId) {
+    private void exigirPodeDecidir(Long decisorId, Long unidadeId, Long solicitanteId) {
+        if (Objects.equals(decisorId, solicitanteId)) {
+            throw new SecurityException("Não é permitido decidir a própria solicitação.");
+        }
         Usuario decisor = usuarioRepository.findById(decisorId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuario", decisorId));
         if (decisor.getTipoUsuario() == TipoUsuario.ADMINISTRADOR) {

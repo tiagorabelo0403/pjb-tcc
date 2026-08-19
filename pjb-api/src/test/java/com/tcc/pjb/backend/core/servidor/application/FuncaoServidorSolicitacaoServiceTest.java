@@ -18,6 +18,7 @@ import com.tcc.pjb.backend.model.repository.FuncaoServidorJudiciarioRepository;
 import com.tcc.pjb.backend.model.repository.FuncaoServidorSolicitacaoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.exception.RecursoJaExistenteException;
+import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -47,11 +48,29 @@ class FuncaoServidorSolicitacaoServiceTest {
 
     @Test
     void solicitarCriaEmPendenteEAuditaCriacao() {
+        when(usuarioRepository.findById(10L)).thenReturn(Optional.of(usuarioComTipo(10L, TipoUsuario.SERVIDOR_FORUM)));
+
         var criada = service.solicitar(10L, 5L, FuncaoServidorJudiciario.ESCRIVAO_JUDICIAL, "Motivo");
 
         assertThat(criada.getStatus()).isEqualTo(StatusFuncaoServidorSolicitacao.PENDENTE);
         assertThat(criada.getSolicitanteId()).isEqualTo(10L);
         verify(auditLedgerService).appendSafely("FUNCAO_SERVIDOR_SOLICITACAO_CRIADA", "FUNCAO_SERVIDOR_SOLICITACAO", "null");
+    }
+
+    @Test
+    void solicitarPorUsuarioNaoServidorLancaSecurityException() {
+        when(usuarioRepository.findById(20L)).thenReturn(Optional.of(usuarioComTipo(20L, TipoUsuario.CIDADAO)));
+
+        assertThatThrownBy(() -> service.solicitar(20L, 5L, FuncaoServidorJudiciario.ESCRIVAO_JUDICIAL, "Motivo"))
+                .isInstanceOf(SecurityException.class);
+    }
+
+    @Test
+    void solicitarPorUsuarioInexistenteLancaRecursoNaoEncontrado() {
+        when(usuarioRepository.findById(30L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.solicitar(30L, 5L, FuncaoServidorJudiciario.ESCRIVAO_JUDICIAL, "Motivo"))
+                .isInstanceOf(RecursoNaoEncontradoException.class);
     }
 
     @Test
@@ -113,6 +132,33 @@ class FuncaoServidorSolicitacaoServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.aprovar(1L, 50L)).isInstanceOf(SecurityException.class);
+    }
+
+    @Test
+    void aprovarPorAdministradorQuePropriaSolicitouNegadoMesmoSendoAdministrador() {
+        var solicitacao = new FuncaoServidorSolicitacao(99L, 5L, FuncaoServidorJudiciario.ESCRIVAO_JUDICIAL, null);
+        setId(solicitacao, 1L);
+        when(solicitacaoRepository.findById(1L)).thenReturn(Optional.of(solicitacao));
+
+        assertThatThrownBy(() -> service.aprovar(1L, 99L)).isInstanceOf(SecurityException.class);
+    }
+
+    @Test
+    void aprovarPorDiretorDaMesmaUnidadeQuePropriaSolicitouNegado() {
+        var solicitacao = new FuncaoServidorSolicitacao(77L, 5L, FuncaoServidorJudiciario.ESCRIVAO_JUDICIAL, null);
+        setId(solicitacao, 1L);
+        when(solicitacaoRepository.findById(1L)).thenReturn(Optional.of(solicitacao));
+
+        assertThatThrownBy(() -> service.aprovar(1L, 77L)).isInstanceOf(SecurityException.class);
+    }
+
+    @Test
+    void rejeitarPorQuemDecidiuAPropriaSolicitacaoNegado() {
+        var solicitacao = new FuncaoServidorSolicitacao(50L, 5L, FuncaoServidorJudiciario.ESCRIVAO_JUDICIAL, null);
+        setId(solicitacao, 1L);
+        when(solicitacaoRepository.findById(1L)).thenReturn(Optional.of(solicitacao));
+
+        assertThatThrownBy(() -> service.rejeitar(1L, 50L, "motivo")).isInstanceOf(SecurityException.class);
     }
 
     @Test
