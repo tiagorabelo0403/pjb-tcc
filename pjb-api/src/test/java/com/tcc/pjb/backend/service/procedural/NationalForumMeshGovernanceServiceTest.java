@@ -6,9 +6,12 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.integration.cnj.CnjTpuSyncService;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.competencia.TipoVaraDistribuicao;
+import com.tcc.pjb.backend.model.entity.competencia.Tribunal;
 import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
+import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
 import java.time.Instant;
 import java.util.List;
@@ -23,10 +26,12 @@ class NationalForumMeshGovernanceServiceTest {
     void reconcilesClassesAndAssuntosForUnitWithoutCatalog() {
         UnidadeJudiciariaCompetenciaRepository repository = Mockito.mock(UnidadeJudiciariaCompetenciaRepository.class);
         CnjTpuSyncService cnjTpuSyncService = Mockito.mock(CnjTpuSyncService.class);
+        Tribunal tribunal = new Tribunal("TJCE", "Tribunal de Justica do Ceara", TipoJustica.ESTADUAL, GrauJurisdicao.SEGUNDO_GRAU, "CE");
+        Comarca comarca = new Comarca("Fortaleza", "CE", "2304400", null, tribunal);
         UnidadeJudiciariaCompetencia unit = new UnidadeJudiciariaCompetencia(
                 "TJCE-CIVEL-CE-CAP",
-                "TJCE",
-                "Fortaleza",
+                tribunal,
+                comarca,
                 "CE",
                 TipoJustica.ESTADUAL,
                 RamoDireito.CIVIL,

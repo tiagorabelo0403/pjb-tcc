@@ -12,8 +12,11 @@ import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.dto.intelligence.recursal.RecursalFactIngestResponse;
 import com.tcc.pjb.backend.model.dto.intelligence.recursal.RecursalGraphResponse;
 import com.tcc.pjb.backend.model.dto.processual.routing.NationalProcessRoutingResponse;
+import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.Jurisdicao;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
+import com.tcc.pjb.backend.model.entity.competencia.Tribunal;
 import com.tcc.pjb.backend.model.entity.document.DocumentoPagina;
 import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
@@ -210,10 +213,9 @@ class RecursalAutuacaoDestinoServiceTest {
     private Processo processoBase() {
         Jurisdicao jurisdicao = new Jurisdicao();
         jurisdicao.setSigla("TJCE");
-        jurisdicao.setEstado("CE");
-        jurisdicao.setComarca("Fortaleza");
-        jurisdicao.setMunicipioSede("Fortaleza");
-        jurisdicao.setForo("Fórum Clóvis Beviláqua");
+        Tribunal tribunal = new Tribunal("TJCE", "Tribunal de Justiça do Ceará", TipoJustica.ESTADUAL,
+                com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao.SEGUNDO_GRAU, "CE");
+        jurisdicao.setComarcaEntidade(new Comarca("Fortaleza", "CE", "2304400", "Fórum Clóvis Beviláqua", tribunal));
         return Processo.builder()
                 .id(10L)
                 .numeroUnificado("1000001-12.2026.8.06.0001")

@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.tcc.pjb.backend.configs.EquipeSwitchInterceptor;
 import com.tcc.pjb.backend.configs.SecurityConfig;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.kernel.recursal.governance.RecursalFactsIngressProperties;
@@ -39,7 +40,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(
         controllers = LaianeLawyerController.class,
-        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class))
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+                classes = {SecurityConfig.class, EquipeSwitchInterceptor.class}))
 @Import(WebMvcTestSecurityConfig.class)
 @TestPropertySource(properties = "spring.main.web-application-type=servlet")
 @WithMockUser(authorities = "ROLE_ADVOGADO")

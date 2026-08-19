@@ -94,6 +94,12 @@ public class SecretariatOperationalSurfaceFacadeService {
                 operacionalService.expedicaoIntimacao(processoId, destinatario, conteudo, prazo, oficialId, reativarOficial, origemOperacional, fundamentoOperacional, observacaoOperacional, manterRetornoForumAberto));
     }
 
+    public SurfaceActionResponse expedirMandadoCitacao(Long processoId, Long oficialId, String enderecoCitacao, String observacaoOperacional) {
+        visibilityService.requireProcessAccess(processoId);
+        return projectionSupport.action("secretaria.operacional", "expedirMandadoCitacao", processoId,
+                operacionalService.expedirMandadoCitacao(processoId, oficialId, enderecoCitacao, observacaoOperacional));
+    }
+
     public SurfaceActionResponse conclusaoParaDespacho(Long processoId, String motivoConclusao) {
         visibilityService.requireProcessAccess(processoId);
         return projectionSupport.action("secretaria.operacional", "conclusaoParaDespacho", processoId,
@@ -351,6 +357,11 @@ public class SecretariatOperationalSurfaceFacadeService {
         visibilityService.requireProcessAccess(processoId);
         return projectionSupport.action("secretaria.redistribuicao", "executar", processoId,
                 orchestrationService.redistribuir(processoId, stage));
+    }
+
+    public SurfaceActionResponse reatribuirCargaPorAfastamento(Long servidorAfastadoId) {
+        return projectionSupport.action("secretaria.redistribuicao", "reatribuir-carga-afastamento", null,
+                orchestrationService.reatribuirCargaPorAfastamento(servidorAfastadoId));
     }
 
     public SurfaceSnapshotResponse avaliarGargalos(Long processoId) {

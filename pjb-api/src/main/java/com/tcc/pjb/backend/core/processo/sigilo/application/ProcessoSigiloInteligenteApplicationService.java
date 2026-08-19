@@ -161,7 +161,7 @@ public class ProcessoSigiloInteligenteApplicationService {
         String tribunal = unificado.competencia().tribunalCodigo();
         String unidade = unificado.competencia().unidadeJudiciariaSugerida();
         String uf = jurisdicao != null ? firstNonBlank(jurisdicao.getUf(), unificado.identity().uf()) : unificado.identity().uf();
-        String comarca = jurisdicao != null ? firstNonBlank(jurisdicao.getComarca(), unificado.identity().comarca()) : unificado.identity().comarca();
+        String comarca = jurisdicao != null ? firstNonBlank(jurisdicao.getCidade(), unificado.identity().comarca()) : unificado.identity().comarca();
         String foro = jurisdicao != null ? firstNonBlank(jurisdicao.getForo(), comarca) : comarca;
         boolean admiteAudienceDelegado = operacaoPolicialSigilosa || isPenalSensitive(processo);
         boolean admiteSegredoEstado = segredoEstadoPresumido || isFederalOuSuperior(processo) || containsSensitiveNationalKeywords(processo);

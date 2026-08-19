@@ -18,6 +18,7 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.judicial.MniRecepcao;
 import com.tcc.pjb.backend.model.repository.MniRecepcaoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -57,7 +58,8 @@ class MniRecepcaoServiceViewsTest {
         when(recepcaoRepository.findById(77L)).thenAnswer(invocation -> Optional.ofNullable(savedRecepcao.get()));
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
-                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator());
+                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator(),
+                comarcaResolutionServiceVazio());
 
         var result = service.receberAutos(new MniRecepcaoCommand("TJCE", "DECLINIO_COMPETENCIA", "<mni/>"));
         var query = service.consultar(new MniRecepcaoQuery(77L));
@@ -96,7 +98,8 @@ class MniRecepcaoServiceViewsTest {
         when(recepcaoRepository.findById(90L)).thenReturn(Optional.of(existing));
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
-                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator());
+                new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator(),
+                comarcaResolutionServiceVazio());
 
         var result = service.receberAutos(new MniRecepcaoCommand("TJCE", "CARTA_PRECATORIA", "<same/>"));
         var audit = service.audit(90L);
@@ -105,5 +108,12 @@ class MniRecepcaoServiceViewsTest {
         assertThat(audit.status()).isEqualTo("PROCESSED");
         verify(processoRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
         verify(rawPolicy, org.mockito.Mockito.never()).markWrite();
+    }
+
+    private static ComarcaResolutionService comarcaResolutionServiceVazio() {
+        ComarcaResolutionService service = mock(ComarcaResolutionService.class);
+        when(service.resolver(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(java.util.Optional.empty());
+        return service;
     }
 }

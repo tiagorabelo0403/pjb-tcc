@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.controller.secretariat.operational;
 
 
+import com.tcc.pjb.backend.core.operational.OperationalApiRoutes;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceActionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
 import com.tcc.pjb.backend.service.secretariat.surface.SecretariatOperationalSurfaceFacadeService;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/secretaria/especializada")
+@RequestMapping(OperationalApiRoutes.SECRETARIAT_ESPECIALIZADA_BASE)
 public class SecretariaEspecializadaController {
 
     private final SecretariatOperationalSurfaceFacadeService facadeService;

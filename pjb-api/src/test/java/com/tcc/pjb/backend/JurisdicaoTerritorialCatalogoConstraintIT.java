@@ -3,6 +3,10 @@ package com.tcc.pjb.backend;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.tcc.pjb.backend.domain.enums.TipoJustica;
+import com.tcc.pjb.backend.model.entity.competencia.Tribunal;
+import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
+import com.tcc.pjb.backend.model.repository.TribunalRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +17,9 @@ class JurisdicaoTerritorialCatalogoConstraintIT extends PjbIntegrationTestBase {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private TribunalRepository tribunalRepository;
 
     @BeforeEach
     void limparCatalogo() {
@@ -77,16 +84,20 @@ class JurisdicaoTerritorialCatalogoConstraintIT extends PjbIntegrationTestBase {
     private void inserir(String municipioIbge, String municipioNome, String uf, String tipoJustica,
             String modoCompetencia, String unidadeCodigo, String tribunalCodigo, String fonteNormativa,
             String vigenciaInicio, String vigenciaFim) {
+        Long tribunalId = tribunalRepository.findBySigla(tribunalCodigo)
+                .orElseGet(() -> tribunalRepository.save(new Tribunal(tribunalCodigo, "Tribunal de Teste",
+                        TipoJustica.TRABALHO, GrauJurisdicao.SEGUNDO_GRAU, "CE")))
+                .getId();
         Long jurisdicaoId = jdbcTemplate.queryForObject("""
                 INSERT INTO tb_jurisdicao_territorial
                     (municipio_ibge, municipio_nome, uf, tipo_justica, modo_competencia,
-                     tribunal_codigo, fonte_normativa, vigencia_inicio, vigencia_fim)
+                     tribunal_id, fonte_normativa, vigencia_inicio, vigencia_fim)
                 VALUES (?, ?, ?, ?, ?, ?, ?, CAST(? AS DATE), CAST(? AS DATE))
                 RETURNING id
                 """,
                 Long.class,
                 municipioIbge, municipioNome, uf, tipoJustica, modoCompetencia,
-                tribunalCodigo, fonteNormativa, vigenciaInicio, vigenciaFim);
+                tribunalId, fonteNormativa, vigenciaInicio, vigenciaFim);
 
         jdbcTemplate.update("""
                 INSERT INTO tb_jurisdicao_territorial_unidade (jurisdicao_territorial_id, unidade_codigo)

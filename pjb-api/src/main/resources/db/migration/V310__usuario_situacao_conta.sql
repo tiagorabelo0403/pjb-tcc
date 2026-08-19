@@ -1,0 +1,1 @@
+ALTER TABLE tb_usuario ADD COLUMN situacao_conta VARCHAR(30) NOT NULL DEFAULT 'ATIVA';

@@ -654,8 +654,8 @@ public class CalendarioForenseTribunalService {
         Optional<Jurisdicao> jurisdicao = jurisdicaoRepository.findByCodigo(base.tribunalCodigo())
                 .or(() -> jurisdicaoRepository.findBySiglaIgnoreCase(base.tribunalCodigo()));
         if (jurisdicao.isPresent()) {
-            String uf = normalizeUf(jurisdicao.get().getEstado());
-            String comarca = normalizeText(jurisdicao.get().getComarca());
+            String uf = normalizeUf(jurisdicao.get().getUf());
+            String comarca = normalizeText(jurisdicao.get().getCidade());
             return new ContextoCalendario(base.tribunalCodigo(), uf, comarca, base.ramo(), base.grau(), referencia);
         }
         return new ContextoCalendario(base.tribunalCodigo(), null, null, base.ramo(), base.grau(), referencia);

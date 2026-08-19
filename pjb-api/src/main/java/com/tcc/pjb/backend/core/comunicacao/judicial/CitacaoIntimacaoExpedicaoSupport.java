@@ -144,7 +144,7 @@ final class CitacaoIntimacaoExpedicaoSupport {
             case ADVOGADO_OAB -> new CitacaoIntimacaoEngine.PerfilDestinatario.AdvogadoOab(
                     expedicao.getDestinatarioDocumento(),
                     "NAO_INFORMADO",
-                    processo.getJurisdicao() != null ? processo.getJurisdicao().getEstado() : "NA",
+                    processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : "NA",
                     expedicao.getDestinatarioEmail(),
                     expedicao.getModalidade() == ModalidadeExpedicaoJudicial.DIGITAL_DOMICILIO_ELETRONICO_MNI,
                     "PJB"
@@ -168,7 +168,7 @@ final class CitacaoIntimacaoExpedicaoSupport {
             case JUIZO_DEPRECADO -> new CitacaoIntimacaoEngine.PerfilDestinatario.JuizoDeprecado(
                     processo.getTribunalCodigoRoteado(),
                     processo.getComarca() != null ? processo.getComarca() : "COMARCA_NAO_INFORMADA",
-                    processo.getJurisdicao() != null ? processo.getJurisdicao().getEstado() : "NA",
+                    processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : "NA",
                     expedicao.getDestinatarioEmail()
             );
         };

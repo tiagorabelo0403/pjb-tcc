@@ -1074,7 +1074,7 @@ final class NationalCommunicationFlowFacade {
 
     private String inferComarca(Processo processo) {
         if (processo != null && processo.getJurisdicao() != null) {
-            return processo.getJurisdicao().getComarca();
+            return processo.getJurisdicao().getCidade();
         }
         return null;
     }

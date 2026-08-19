@@ -13,6 +13,7 @@ public enum PjbModuleId {
     IDENTIDADE_SEGURANCA("identidade-seguranca", "Identidade e Segurança", List.of(
             "com.tcc.pjb.backend.core.identity",
             "com.tcc.pjb.backend.core.identidade",
+            "com.tcc.pjb.backend.core.security.geofence",
             "com.tcc.pjb.backend.configs.security",
             "com.tcc.pjb.backend.controller.auth",
             "com.tcc.pjb.backend.controller.security",
@@ -56,7 +57,8 @@ public enum PjbModuleId {
             "com.tcc.pjb.backend.controller.notification",
             "com.tcc.pjb.backend.controller.secretariat",
             "com.tcc.pjb.backend.modules.atendimento",
-            "com.tcc.pjb.backend.modules.balcao"
+            "com.tcc.pjb.backend.modules.balcao",
+            "com.tcc.pjb.backend.modules.suporte"
     )),
     PRAZOS_AGENDA("prazos-agenda", "Prazos e Agenda", List.of(
             "com.tcc.pjb.backend.controller.calendar",

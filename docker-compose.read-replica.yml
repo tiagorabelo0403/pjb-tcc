@@ -54,6 +54,8 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_POSTGRES_REPLICA_MEM_LIMIT:-1g}
+    cpus: ${PJB_POSTGRES_REPLICA_CPUS:-2.0}
 
   backend:
     environment:

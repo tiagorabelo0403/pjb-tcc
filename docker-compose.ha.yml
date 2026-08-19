@@ -24,6 +24,8 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_PGBOUNCER_MEM_LIMIT:-128m}
+    cpus: ${PJB_PGBOUNCER_CPUS:-0.5}
 
   pgbouncer-ro:
     profiles: ["ha"]
@@ -50,6 +52,8 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_PGBOUNCER_MEM_LIMIT:-128m}
+    cpus: ${PJB_PGBOUNCER_CPUS:-0.5}
 
   db-edge:
     profiles: ["ha"]
@@ -67,18 +71,43 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_DB_EDGE_MEM_LIMIT:-128m}
+    cpus: ${PJB_DB_EDGE_CPUS:-0.5}
 
   backend:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db-edge:6432/${PJB_DB_NAME:-pjb}
-      PJB_DB_READ_URL: jdbc:postgresql://db-edge:6433/${PJB_DB_NAME:-pjb}
+      # pgbouncer desta topologia (ver infra/docker/pgbouncer/entrypoint.sh) so conhece o
+      # usuario pjb no userlist.txt (PJB_PGBOUNCER_DB_USER acima usa PJB_DB_USER, nao
+      # PJB_DB_APP_USER) e sempre abre a conexao real com o Postgres do lado servidor como
+      # pjb (fixo). Herdar PJB_DB_APP_USER/PASS do compose base faria backend-a apresentar
+      # pjb_app ao pgbouncer, que rejeitaria a autenticacao — nó nunca sobe. Fixado
+      # explicitamente em pjb/pjb (estado anterior ao hardening de RLS) ate o pgbouncer
+      # aprender a autenticar/repassar pjb_app; ver db-role-hardening-report.md.
+      SPRING_DATASOURCE_USERNAME: ${PJB_DB_USER:-pjb}
+      SPRING_DATASOURCE_PASSWORD: ${PJB_DB_PASS:-pjb}
+      PJB_DB_USER: ${PJB_DB_USER:-pjb}
+      PJB_DB_PASS: ${PJB_DB_PASS:-pjb}
       PJB_DB_LOAD_BALANCER_MODE: DB_EDGE_TCP
+      PJB_DB_READ_URL: jdbc:postgresql://db-edge:6433/${PJB_DB_NAME:-pjb}
+      PJB_DB_READ_USER: ${PJB_DB_USER:-pjb}
+      PJB_DB_READ_PASS: ${PJB_DB_PASS:-pjb}
       PJB_DB_READ_ROUTING_ENABLED: "true"
       PJB_DB_READ_ROUTING_STRICT: "true"
       PJB_DB_WRITE_FAILOVER_ENABLED: ${PJB_DB_WRITE_FAILOVER_ENABLED:-false}
       PJB_DB_WRITE_FAILOVER_STRICT: ${PJB_DB_WRITE_FAILOVER_STRICT:-false}
       PJB_API_DB_PRESSURE_SHIELD_ENABLED: "true"
       PJB_LIVE_CLUSTER_NODE_ID: backend-a
+      # pgbouncer-rw/ro desta topologia rodam pool_mode=transaction na imagem 1.18.0 (sem suporte a
+      # max_prepared_statements, que só existe a partir do PgBouncer 1.21). Em pool_mode=transaction o
+      # pgbouncer pode entregar uma conexao fisica diferente a cada transacao, entao um prepared
+      # statement nomeado que o driver pgjdbc cria do lado servidor apos a 5a execucao da mesma query
+      # (prepareThreshold=5, default do driver) deixa de existir na proxima conexao fisica — o boot
+      # quebra com "prepared statement ... does not exist" no Flyway. Correcao oficial documentada
+      # tanto pelo pgjdbc quanto pelo FAQ do proprio PgBouncer para essa combinacao: desabilitar
+      # prepared statements do lado servidor via prepareThreshold=0. Nao mexe no pool_mode (mantem o
+      # throughput que a topologia HA foi desenhada pra ter) nem exige trocar a imagem do pgbouncer.
+      PJB_DB_PREPARE_THRESHOLD: "0"
     depends_on:
       db-edge:
         condition: service_healthy
@@ -108,7 +137,13 @@ services:
       PJB_MASTER_KEY_BASE64: ${PJB_MASTER_KEY_BASE64:-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
       PJB_DB_LOAD_BALANCER_MODE: DB_EDGE_TCP
       PJB_LIVE_CLUSTER_NODE_ID: backend-b
-      JAVA_OPTS: ${PJB_JAVA_OPTS:-Dfile.encoding=UTF-8 -XX:+UseG1GC -XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=40 -Djava.security.egd=file:/dev/urandom}
+      # backend (nó 1) herda PJB_LIVE_CLUSTER_ENABLED:-false do docker-compose.yml base; backend-b só
+      # existe aqui, sem esse default, e caía no default proprio do application-docker.yml (true),
+      # habilitando RedisLiveClusterStateStore sem StringRedisTemplate elegível -> UnsatisfiedDependencyException.
+      PJB_LIVE_CLUSTER_ENABLED: ${PJB_LIVE_CLUSTER_ENABLED:-false}
+      # Mesma armadilha pool_mode=transaction + prepared statements do backend-a — ver comentario lá.
+      PJB_DB_PREPARE_THRESHOLD: "0"
+      JAVA_OPTS: ${PJB_JAVA_OPTS:--Dfile.encoding=UTF-8 -XX:+UseG1GC -XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=40 -Djava.security.egd=file:/dev/urandom}
     depends_on:
       db-edge:
         condition: service_healthy
@@ -124,7 +159,9 @@ services:
       timeout: 5s
       retries: 10
       start_period: 45s
-    restart: unless-stopped
+    restart: on-failure:5
+    mem_limit: ${PJB_BACKEND_MEM_LIMIT:-2g}
+    cpus: ${PJB_BACKEND_CPUS:-2.0}
 
   api-edge:
     profiles: ["app"]
@@ -144,3 +181,5 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    mem_limit: ${PJB_API_EDGE_MEM_LIMIT:-128m}
+    cpus: ${PJB_API_EDGE_CPUS:-0.5}

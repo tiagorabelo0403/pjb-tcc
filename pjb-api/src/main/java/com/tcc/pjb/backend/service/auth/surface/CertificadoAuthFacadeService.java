@@ -154,6 +154,11 @@ public class CertificadoAuthFacadeService {
             return respostaNegada("IDENTIDADE_" + naoResolvida.motivo().name());
         }
         IdentidadeResolvida resolvida = (IdentidadeResolvida) identidade;
+        if (resolvida.usuario().getTipoUsuario() != null
+                && resolvida.usuario().getTipoUsuario().requiresHardwareAuthAssurance()
+                && !isCertificadoHardwareBacked(validacao.profile().certType())) {
+            return respostaNegada("CERTIFICADO_TIPO_INSUFICIENTE");
+        }
         ContextoResolucao contexto = contextoResolver.resolver(resolvida.usuario());
         if (contexto instanceof ContextoResolvido resolvido) {
             PasskeySessionService.IssuedPasskeySession sessao = passkeySessionService.issue(
@@ -189,6 +194,10 @@ public class CertificadoAuthFacadeService {
     private CertificadoAuthDtos.NegadoResponse respostaNegada(String motivo) {
         auditService.registrar(ETAPA_RESPOSTA, false, motivo);
         return new CertificadoAuthDtos.NegadoResponse(CertificadoAuthDtos.Status.NEGADO, motivo);
+    }
+
+    private static boolean isCertificadoHardwareBacked(String certType) {
+        return "A3".equalsIgnoreCase(certType) || "A4".equalsIgnoreCase(certType);
     }
 
     private X509Certificate parseCertificado(String certificado) {

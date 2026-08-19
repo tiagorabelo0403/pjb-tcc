@@ -69,8 +69,8 @@ public class PrazoService {
                 dataInicio,
                 diasCorridos,
                 PrazoRegime.UTEIS,
-                processo.getJurisdicao() != null ? processo.getJurisdicao().getEstado() : null,
-                processo.getJurisdicao() != null ? processo.getJurisdicao().getComarca() : null
+                processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null,
+                processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null
         );
 
         EventoProcessual evento = new EventoProcessual();

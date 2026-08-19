@@ -222,11 +222,11 @@ public class RitoWorkflowService {
         extras.put("ramoDireito", firstNonBlank(canonical.ramoDireito(), processo.getRamoDireito() != null ? processo.getRamoDireito().name() : null));
         extras.put("classeTpu", firstNonBlank(canonical.classeTpuCodigo(), processo.getClasseProcessual()));
         if (processo.getJurisdicao() != null) {
-            if (processo.getJurisdicao().getEstado() != null) {
-                extras.put("uf", processo.getJurisdicao().getEstado());
+            if (processo.getJurisdicao().getUf() != null) {
+                extras.put("uf", processo.getJurisdicao().getUf());
             }
-            if (processo.getJurisdicao().getComarca() != null) {
-                extras.put("comarca", processo.getJurisdicao().getComarca());
+            if (processo.getJurisdicao().getCidade() != null) {
+                extras.put("comarca", processo.getJurisdicao().getCidade());
             }
         }
         return java.util.Map.copyOf(extras);
@@ -270,8 +270,9 @@ public class RitoWorkflowService {
                 .prioridade(normalizePriority(template.getPriority() != null ? template.getPriority() : 3))
                 .blocking(Boolean.TRUE.equals(template.getBlocking()))
                 .dueAt(dueAt)
-                .uf(processo.getJurisdicao() != null ? processo.getJurisdicao().getEstado() : null)
-                .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getComarca() : null)
+                .uf(processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null)
+                .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null)
+                .comarcaEntidade(processo.getJurisdicao() != null ? processo.getJurisdicao().getComarcaEntidade() : null)
                 .baseLegal(template.getLegalBases() == null || template.getLegalBases().isEmpty() ? null : String.join("\n", template.getLegalBases()))
                 .build();
         workItemRepository.save(workItem);
@@ -295,8 +296,9 @@ public class RitoWorkflowService {
                 .prioridade(normalizePriority(spec.required() ? 2 : 3))
                 .blocking(spec.blocking())
                 .dueAt(spec.deadline())
-                .uf(processo.getJurisdicao() != null ? processo.getJurisdicao().getEstado() : null)
-                .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getComarca() : null)
+                .uf(processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null)
+                .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null)
+                .comarcaEntidade(processo.getJurisdicao() != null ? processo.getJurisdicao().getComarcaEntidade() : null)
                 .baseLegal(spec.legalBases() == null || spec.legalBases().isEmpty() ? null : String.join("\n", spec.legalBases()))
                 .build();
         workItemRepository.save(workItem);
@@ -358,7 +360,7 @@ public class RitoWorkflowService {
         payload.put("tipoJustica", processo.getTipoJustica() != null ? processo.getTipoJustica().name() : null);
         payload.put("materia", processo.getAssunto());
         if (processo.getJurisdicao() != null) {
-            payload.put("uf", processo.getJurisdicao().getEstado());
+            payload.put("uf", processo.getJurisdicao().getUf());
         }
         return proceduralCanonicalResolver.resolve(payload);
     }

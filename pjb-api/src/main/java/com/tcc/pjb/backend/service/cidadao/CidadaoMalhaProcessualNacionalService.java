@@ -269,8 +269,8 @@ public class CidadaoMalhaProcessualNacionalService {
             projection.setNumeroExibicao(firstNonBlank(nupn, processoLocal != null ? processoLocal.getNumeroUnificado() : null, processoLocal != null ? processoLocal.getNumeroProcesso() : null));
             projection.setTribunalCodigo(normalizeTribunalCodigo(vinculo.getTribunalCodigo(), processoLocal));
             projection.setSistemaOrigem(firstNonBlank(vinculo.getSistemaOrigem(), processoLocal != null ? processoLocal.getConnectorSystem() : null));
-            projection.setUf(firstNonBlank(processoLocal != null ? processoLocal.getUf() : null, processoLocal != null && processoLocal.getJurisdicao() != null ? processoLocal.getJurisdicao().getEstado() : null));
-            projection.setComarca(firstNonBlank(processoLocal != null ? processoLocal.getComarca() : null, processoLocal != null && processoLocal.getJurisdicao() != null ? processoLocal.getJurisdicao().getComarca() : null));
+            projection.setUf(firstNonBlank(processoLocal != null ? processoLocal.getUf() : null, processoLocal != null && processoLocal.getJurisdicao() != null ? processoLocal.getJurisdicao().getUf() : null));
+            projection.setComarca(firstNonBlank(processoLocal != null ? processoLocal.getComarca() : null, processoLocal != null && processoLocal.getJurisdicao() != null ? processoLocal.getJurisdicao().getCidade() : null));
             projection.setUnidadeJudicial(firstNonBlank(processoLocal != null ? processoLocal.getVara() : null, processoLocal != null ? processoLocal.getUnidadeJudiciariaCodigo() : null));
             projection.setPapelProcessual(vinculo.getPapelProcessual());
             projection.setGrauConfianca(vinculo.getGrauConfianca());

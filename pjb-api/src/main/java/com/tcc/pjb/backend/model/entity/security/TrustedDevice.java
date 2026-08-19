@@ -74,6 +74,13 @@ public class TrustedDevice {
     @Column(name = "attestation_trusted", nullable = false)
     private boolean attestationTrusted;
 
+    @Size(max = 20)
+    @Column(name = "authenticator_attachment", length = 20)
+    private String authenticatorAttachment;
+
+    @Column(name = "user_verified", nullable = false)
+    private boolean userVerified;
+
     @Column(name = "sign_count", nullable = false)
     private long signCount = 0L;
 
@@ -140,6 +147,12 @@ public class TrustedDevice {
     public boolean isAttestationTrusted() { return attestationTrusted; }
     public Boolean getAttestationTrusted() { return attestationTrusted; }
     public void setAttestationTrusted(boolean attestationTrusted) { this.attestationTrusted = attestationTrusted; }
+
+    public String getAuthenticatorAttachment() { return authenticatorAttachment; }
+    public void setAuthenticatorAttachment(String authenticatorAttachment) { this.authenticatorAttachment = authenticatorAttachment; }
+
+    public boolean isUserVerified() { return userVerified; }
+    public void setUserVerified(boolean userVerified) { this.userVerified = userVerified; }
 
     public long getSignCount() { return signCount; }
     public void setSignCount(long signCount) { this.signCount = signCount; }

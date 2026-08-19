@@ -31,6 +31,7 @@ import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatQueueCompletio
 import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatQueueItemDto;
 import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatQueueOperationalActionResponse;
 import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatQueuePanelSnapshotDto;
+import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatProdutividadePainelResponse;
 import com.tcc.pjb.backend.model.dto.secretariat.governance.SecretariatGovernanceSnapshotDto;
 import com.tcc.pjb.backend.model.dto.secretariat.governance.SecretariatExceptionDeskSnapshotDto;
 import com.tcc.pjb.backend.model.dto.secretariat.governance.SecretariatCoverageSnapshotDto;
@@ -40,6 +41,7 @@ import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatQueueProcessRe
 import com.tcc.pjb.backend.model.dto.secretariat.queue.SecretariatQueueVenueConfirmationRequest;
 import com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityService;
 import com.tcc.pjb.backend.service.secretariat.operational.SecretariatQueueOperationalActionService;
+import com.tcc.pjb.backend.service.secretariat.query.queue.SecretariatProdutividadeService;
 import com.tcc.pjb.backend.service.secretariat.query.queue.SecretariatQueueAgendaFilter;
 import com.tcc.pjb.backend.service.secretariat.query.queue.SecretariatQueueQueryService;
 import com.tcc.pjb.backend.service.security.operational.OperationalFunctionCredentialService;
@@ -53,15 +55,18 @@ public class SecretariatQueueController {
   private final SecretariatInstitutionalVisibilityService visibilityService;
   private final SecretariatQueueOperationalActionService actionService;
   private final OperationalFunctionCredentialService credentialService;
+  private final SecretariatProdutividadeService produtividadeService;
 
   public SecretariatQueueController(SecretariatQueueQueryService service,
                                     SecretariatInstitutionalVisibilityService visibilityService,
                                     SecretariatQueueOperationalActionService actionService,
-                                    OperationalFunctionCredentialService credentialService) {
+                                    OperationalFunctionCredentialService credentialService,
+                                    SecretariatProdutividadeService produtividadeService) {
     this.service = Objects.requireNonNull(service);
     this.visibilityService = Objects.requireNonNull(visibilityService);
     this.actionService = Objects.requireNonNull(actionService);
     this.credentialService = Objects.requireNonNull(credentialService);
+    this.produtividadeService = Objects.requireNonNull(produtividadeService);
   }
 
   @GetMapping(OperationalApiRoutes.PATH_SECRETARIAT_QUEUE)
@@ -135,6 +140,14 @@ public class SecretariatQueueController {
         new SecretariatQueueAgendaFilter(tribunal, foro, vara, orgao, secretaria, rito, cellCode, responsavel, categoria)));
   }
 
+
+  @GetMapping(OperationalApiRoutes.PATH_SECRETARIAT_QUEUE_PRODUTIVIDADE)
+  public ResponseEntity<SecretariatProdutividadePainelResponse> produtividade(
+      @RequestParam("inboxKey") String inboxKey,
+      @RequestParam(value = "diasJanela", defaultValue = "30") int diasJanela
+  ) {
+    return ResponseEntity.ok(produtividadeService.painelPorInbox(inboxKey, diasJanela));
+  }
 
   @GetMapping(OperationalApiRoutes.PATH_SECRETARIAT_QUEUE_GOVERNANCE)
   public ResponseEntity<SecretariatGovernanceSnapshotDto> governance(

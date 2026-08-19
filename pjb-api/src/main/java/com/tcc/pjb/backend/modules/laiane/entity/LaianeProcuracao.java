@@ -64,6 +64,14 @@ public class LaianeProcuracao {
     @Column(name = "decisao_motivo", columnDefinition = "TEXT")
     private String decisaoMotivo;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "substabelecido_de_id")
+    private LaianeProcuracao substabelecidoDe;
+
+    @Column(name = "com_reserva_de_poderes", nullable = false)
+    @Builder.Default
+    private boolean comReservaDePoderes = false;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

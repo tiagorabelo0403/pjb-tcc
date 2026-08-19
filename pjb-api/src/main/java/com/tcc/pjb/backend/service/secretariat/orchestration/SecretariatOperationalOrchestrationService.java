@@ -18,6 +18,7 @@ import com.tcc.pjb.backend.service.secretariat.operational.SecretariatOperationa
 import com.tcc.pjb.backend.service.secretariat.operational.SecretariatOperationalAssignmentService;
 import com.tcc.pjb.backend.service.secretariat.operational.SecretariatOperationalAttendanceService;
 import com.tcc.pjb.backend.service.secretariat.operational.SecretariatOperationalBottleneckRadarService;
+import com.tcc.pjb.backend.service.secretariat.operational.SecretariatOperationalBulkReassignmentService;
 import com.tcc.pjb.backend.service.secretariat.operational.SecretariatOperationalChecklistEngine;
 import com.tcc.pjb.backend.service.secretariat.operational.SecretariatOperationalExpeditionBatchService;
 import com.tcc.pjb.backend.service.secretariat.operational.SecretariatOperationalHearingResourceService;
@@ -64,6 +65,7 @@ public class SecretariatOperationalOrchestrationService {
     private final SecretariatOperationalRedistributionService redistributionService;
     private final SecretariatOperationalBottleneckRadarService bottleneckRadarService;
     private final SecretariatOperationalStabilityService stabilityService;
+    private final SecretariatOperationalBulkReassignmentService bulkReassignmentService;
 
     public SecretariatOperationalOrchestrationService(CurrentUserService currentUserService,
                                                       ProcessoRepository processoRepository,
@@ -82,7 +84,8 @@ public class SecretariatOperationalOrchestrationService {
                                                       SecretariatOperationalExpeditionBatchService expeditionBatchService,
                                                       SecretariatOperationalRedistributionService redistributionService,
                                                       SecretariatOperationalBottleneckRadarService bottleneckRadarService,
-                                                      SecretariatOperationalStabilityService stabilityService) {
+                                                      SecretariatOperationalStabilityService stabilityService,
+                                                      SecretariatOperationalBulkReassignmentService bulkReassignmentService) {
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
@@ -101,6 +104,7 @@ public class SecretariatOperationalOrchestrationService {
         this.redistributionService = Objects.requireNonNull(redistributionService);
         this.bottleneckRadarService = Objects.requireNonNull(bottleneckRadarService);
         this.stabilityService = Objects.requireNonNull(stabilityService);
+        this.bulkReassignmentService = Objects.requireNonNull(bulkReassignmentService);
     }
 
     @Transactional(readOnly = true)
@@ -414,6 +418,12 @@ public class SecretariatOperationalOrchestrationService {
                 redistributionService.redistribuir(processo, actor, profile, stage));
     }
 
+    @Transactional
+    public SecretariatOperationalBulkReassignmentService.BulkReassignmentSnapshot reatribuirCargaPorAfastamento(Long servidorAfastadoId) {
+        Usuario actor = requireInstitutionalActor();
+        return bulkReassignmentService.reatribuirCargaPorAfastamento(servidorAfastadoId, actor);
+    }
+
     @Transactional(readOnly = true)
     public BottleneckSnapshot avaliarGargalos(Long processoId) {
         requireInstitutionalActor();
@@ -496,7 +506,7 @@ public class SecretariatOperationalOrchestrationService {
                 effectiveDuration,
                 firstNonBlank(tipo, "AUDIENCIA_DE_SECRETARIA"),
                 effectiveLocal,
-                "/api/v1/secretaria/especializada/processos/" + processo.getId() + "/audiencias"
+                "/api/v1/secretariat/especializada/processos/" + processo.getId() + "/audiencias"
         );
     }
 

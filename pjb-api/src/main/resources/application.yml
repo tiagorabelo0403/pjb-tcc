@@ -61,6 +61,13 @@ spring:
         reWriteBatchedInserts: ${PJB_DB_REWRITE_BATCHED_INSERTS:true}
         binaryTransfer: ${PJB_DB_BINARY_TRANSFER:true}
         tcpKeepAlive: ${PJB_DB_TCP_KEEP_ALIVE:true}
+        # Default 5 = comportamento nativo do driver pgjdbc (server-side prepared statement após a
+        # 5a execução da mesma query na mesma conexão lógica). Topologias atrás de PgBouncer em
+        # pool_mode=transaction (ex.: docker-compose.ha.yml) sobrepõem para 0 via PJB_DB_PREPARE_THRESHOLD
+        # porque, nesse modo, o pgbouncer pode trocar a conexão física a cada transação — um prepared
+        # statement nomeado criado numa transação deixa de existir na física seguinte, e o driver recebe
+        # "prepared statement ... does not exist". Ver README (secretarias institucionais / HA-pgbouncer).
+        prepareThreshold: ${PJB_DB_PREPARE_THRESHOLD:5}
   jpa:
     hibernate:
       ddl-auto: none
@@ -123,6 +130,11 @@ server:
     processor-cache: ${PJB_SERVER_PROCESSOR_CACHE:200}
 
 pjb:
+
+  security:
+    geofence:
+      database-path: ${PJB_SECURITY_GEOFENCE_DATABASE_PATH:}
+      enforce-real-em-prod: ${PJB_SECURITY_GEOFENCE_ENFORCE_REAL_EM_PROD:true}
 
   institutional:
     official-source:
@@ -240,6 +252,10 @@ pjb:
       maxChannelsPerRefreshCycle: ${PJB_SECRETARIAT_SSE_MAX_CHANNELS_PER_REFRESH:512}
       idleChannelTtl: ${PJB_SECRETARIAT_SSE_IDLE_CHANNEL_TTL:5m}
       createChannelOnPublish: ${PJB_SECRETARIAT_SSE_CREATE_ON_PUBLISH:false}
+
+  secretaria-institucional:
+    intimacao-tacita:
+      interval: 86400000
 
   ui:
     history:
@@ -440,6 +456,7 @@ pjb:
           reWriteBatchedInserts: ${PJB_DB_READ_REWRITE_BATCHED_INSERTS:true}
           binaryTransfer: ${PJB_DB_READ_BINARY_TRANSFER:true}
           tcpKeepAlive: ${PJB_DB_READ_TCP_KEEP_ALIVE:true}
+          prepareThreshold: ${PJB_DB_READ_PREPARE_THRESHOLD:${PJB_DB_PREPARE_THRESHOLD:5}}
       regional-replicas:
         norte:
           url: ${PJB_DB_READ_NORTE_URL:}

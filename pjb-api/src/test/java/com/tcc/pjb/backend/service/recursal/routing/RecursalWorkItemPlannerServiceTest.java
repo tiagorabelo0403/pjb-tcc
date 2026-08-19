@@ -141,8 +141,6 @@ class RecursalWorkItemPlannerServiceTest {
     private Processo processoJuizado() {
         Jurisdicao jurisdicao = new Jurisdicao();
         jurisdicao.setSigla("TJSP");
-        jurisdicao.setEstado("SP");
-        jurisdicao.setComarca("Sao Paulo");
         return Processo.builder()
                 .id(10L)
                 .numeroUnificado("1000001-12.2026.8.26.0001")
@@ -157,8 +155,6 @@ class RecursalWorkItemPlannerServiceTest {
     private Processo processoComum() {
         Jurisdicao jurisdicao = new Jurisdicao();
         jurisdicao.setSigla("TJCE");
-        jurisdicao.setEstado("CE");
-        jurisdicao.setComarca("Fortaleza");
         return Processo.builder()
                 .id(10L)
                 .numeroUnificado("1000001-12.2026.8.06.0001")

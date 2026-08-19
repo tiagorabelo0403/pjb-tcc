@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.dto.profile.operational.InstitutionalRecursoRequest;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalPeticionamentoPerfilRouter;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,9 @@ class RecursalPeticionamentoControllerIT extends PjbFlowItBase {
 
     @MockBean
     private RecursalPeticionamentoPerfilRouter router;
+
+    @MockBean
+    private CapabilityRateLimiter capabilityRateLimiter;
 
     private String requestBody;
 

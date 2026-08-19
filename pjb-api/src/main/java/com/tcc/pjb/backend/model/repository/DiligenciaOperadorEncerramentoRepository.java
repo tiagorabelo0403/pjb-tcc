@@ -29,6 +29,10 @@ public interface DiligenciaOperadorEncerramentoRepository extends JpaRepository<
                                                         TelemetriaOperacionalCanal canal,
                                                         java.time.Instant createdAfter);
 
+    List<DiligenciaOperadorEncerramento> findByOperatorUserIdAndCanalAndCreatedAtAfterOrderByCreatedAtDesc(Long operatorUserId,
+                                                                                                            TelemetriaOperacionalCanal canal,
+                                                                                                            java.time.Instant createdAfter);
+
     List<DiligenciaOperadorEncerramento> findByOperatorUserIdAndCanalAndWorkItemIdInOrderByCreatedAtDesc(Long operatorUserId,
                                                                                                           TelemetriaOperacionalCanal canal,
                                                                                                           List<Long> workItemIds);

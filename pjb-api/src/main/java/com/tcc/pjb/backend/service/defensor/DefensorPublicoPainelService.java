@@ -26,6 +26,7 @@ import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
 import com.tcc.pjb.backend.service.processual.peticionamento.workspace.InstitutionalMultimediaWorkspaceService;
+import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalPeticionamentoFacadeService;
 import com.tcc.pjb.backend.service.ui.branding.InstitutionalPanelBrandingService;
 
@@ -44,6 +45,7 @@ public class DefensorPublicoPainelService {
     private final PainelActionSurfaceCompositionService actionSurfaceCompositionService;
     private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
     private final InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService;
+    private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
 
     public DefensorPublicoPainelService(PerfilDashboardContextFactory contextFactory,
                                         PainelServiceCommons commons,
@@ -56,7 +58,8 @@ public class DefensorPublicoPainelService {
                                         PainelNativeCollectionCompositionService collectionCompositionService,
                                         PainelActionSurfaceCompositionService actionSurfaceCompositionService,
                                         PainelExecutionSurfaceCompositionService executionSurfaceCompositionService,
-                                        InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService) {
+                                        InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService,
+                                        MovimentacaoProcessualRegistrar movimentacaoRegistrar) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
@@ -69,6 +72,7 @@ public class DefensorPublicoPainelService {
         this.actionSurfaceCompositionService = actionSurfaceCompositionService;
         this.executionSurfaceCompositionService = executionSurfaceCompositionService;
         this.institutionalMaterialActionGuardService = institutionalMaterialActionGuardService;
+        this.movimentacaoRegistrar = movimentacaoRegistrar;
     }
 
     public PerfilDashboardPayload.DefensorPublicoPayload bootstrapPainel() {
@@ -146,6 +150,7 @@ public class DefensorPublicoPainelService {
         institutionalMaterialActionGuardService.requireAllowedForProcessAction(processo, InstitutionalMaterialActionGuardService.MaterialAction.DEFENSORIA_PETICAO);
         Usuario usuario = contextFactory.build().usuario();
         commons.publishUserHistory(usuario, "DEFENSOR", "PETICAO_REGISTRADA", "Petição registrada na defensoria.", processo, processoId);
+        movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Petição da Defensoria Pública registrada.");
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "PETICAO_REGISTRADA");
         out.put("processoId", processoId);
@@ -201,6 +206,7 @@ public class DefensorPublicoPainelService {
         institutionalMaterialActionGuardService.requireAllowedForProcessAction(processo, InstitutionalMaterialActionGuardService.MaterialAction.DEFENSORIA_GRATUIDADE);
         Usuario usuario = contextFactory.build().usuario();
         commons.publishUserHistory(usuario, "DEFENSOR", "GRATUIDADE_REQUERIDA", "Requerimento de gratuidade protocolado.", processo, processoId);
+        movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Requerimento de gratuidade da Defensoria Pública registrado.");
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "REQUERIDO");
         out.put("processoId", processoId);

@@ -50,8 +50,6 @@ import com.tcc.pjb.backend.core.observability.systemhealth.PjbOperationalCrisisS
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.magistratura.delegation.DelegationTokenService;
 import com.tcc.pjb.backend.core.security.magistratura.web.DelegationTokenAugmentationFilter;
-import com.tcc.pjb.backend.core.security.stepup.FaceReauthTokenService;
-import com.tcc.pjb.backend.core.security.stepup.web.MinisterStepUpFilter;
 import com.tcc.pjb.backend.core.security.stepup.web.DecisionStepUpFilter;
 import com.tcc.pjb.backend.core.security.stepup.web.DecisionClientBindingFilter;
 import com.tcc.pjb.backend.core.security.device.web.DevicePolicyFilter;
@@ -64,6 +62,10 @@ import com.tcc.pjb.backend.core.security.device.reqhash.RequestBodyHashFilter;
 import com.tcc.pjb.backend.core.security.device.reqhash.BodyHashService;
 import com.tcc.pjb.backend.platform.security.idempotency.PjbIdempotencyFilter;
 import com.tcc.pjb.backend.core.security.webauthn.web.PasskeyAuthenticationFilter;
+import com.tcc.pjb.backend.core.security.webauthn.web.MagistraturaIdleLockFilter;
+import com.tcc.pjb.backend.core.security.webauthn.PasskeySessionActivityService;
+import com.tcc.pjb.backend.core.security.geofence.web.MagistraturaGeofenceFilter;
+import com.tcc.pjb.backend.core.security.geofence.MagistraturaGeofencePolicyService;
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import com.tcc.pjb.backend.configs.security.perimeter.ClientIpResolver;
@@ -98,11 +100,12 @@ public class SecurityConfig {
                                            ObjectProvider<ApiSecurityHardeningFilter> apiSecurityHardeningFilterProvider,
                                            ObjectProvider<ApiRouteGovernanceFilter> apiRouteGovernanceFilterProvider,
                                            ObjectProvider<PasskeyAuthenticationFilter> passkeyFilterProvider,
+                                           ObjectProvider<MagistraturaIdleLockFilter> magistraturaIdleLockFilterProvider,
+                                           ObjectProvider<MagistraturaGeofenceFilter> magistraturaGeofenceFilterProvider,
                                            ObjectProvider<RequestBodyHashFilter> bodyHashFilterProvider,
                                            ObjectProvider<ApiRequestOriginGovernanceFilter> originGovernanceFilterProvider,
                                            ObjectProvider<PjbIdempotencyFilter> pjbIdempotencyFilterProvider,
                                            ObjectProvider<DelegationTokenAugmentationFilter> delegationFilterProvider,
-                                           ObjectProvider<MinisterStepUpFilter> ministerStepUpFilterProvider,
                                            ObjectProvider<DecisionStepUpFilter> decisionStepUpFilterProvider,
                                            ObjectProvider<DecisionClientBindingFilter> decisionClientBindingFilterProvider,
                                            ObjectProvider<AccountFreezeFilter> accountFreezeFilterProvider,
@@ -248,6 +251,20 @@ public class SecurityConfig {
             http.addFilterBefore(passkey, BasicAuthenticationFilter.class);
         }
 
+        MagistraturaIdleLockFilter magistraturaIdleLockFilter = magistraturaIdleLockFilterProvider.getIfAvailable();
+        if (magistraturaIdleLockFilter != null && passkey != null) {
+            http.addFilterAfter(magistraturaIdleLockFilter, PasskeyAuthenticationFilter.class);
+        }
+
+        MagistraturaGeofenceFilter magistraturaGeofenceFilter = magistraturaGeofenceFilterProvider.getIfAvailable();
+        if (magistraturaGeofenceFilter != null && passkey != null) {
+            if (magistraturaIdleLockFilter != null) {
+                http.addFilterAfter(magistraturaGeofenceFilter, MagistraturaIdleLockFilter.class);
+            } else {
+                http.addFilterAfter(magistraturaGeofenceFilter, PasskeyAuthenticationFilter.class);
+            }
+        }
+
         RequestBodyHashFilter bodyHashFilter = bodyHashFilterProvider.getIfAvailable();
         if (bodyHashFilter != null) {
             http.addFilterAfter(bodyHashFilter, BasicAuthenticationFilter.class);
@@ -277,19 +294,9 @@ public class SecurityConfig {
         if (delegationFilter != null) {
             http.addFilterAfter(delegationFilter, BasicAuthenticationFilter.class);
         }
-        MinisterStepUpFilter ministerStepUpFilter = ministerStepUpFilterProvider.getIfAvailable();
-        if (ministerStepUpFilter != null) {
-            if (delegationFilter != null) {
-                http.addFilterAfter(ministerStepUpFilter, DelegationTokenAugmentationFilter.class);
-            } else {
-                http.addFilterAfter(ministerStepUpFilter, BasicAuthenticationFilter.class);
-            }
-        }
         DecisionStepUpFilter decisionStepUpFilter = decisionStepUpFilterProvider.getIfAvailable();
         if (decisionStepUpFilter != null) {
-            if (ministerStepUpFilter != null) {
-                http.addFilterAfter(decisionStepUpFilter, MinisterStepUpFilter.class);
-            } else if (delegationFilter != null) {
+            if (delegationFilter != null) {
                 http.addFilterAfter(decisionStepUpFilter, DelegationTokenAugmentationFilter.class);
             } else {
                 http.addFilterAfter(decisionStepUpFilter, BasicAuthenticationFilter.class);
@@ -299,8 +306,6 @@ public class SecurityConfig {
         if (decisionClientBindingFilter != null) {
             if (decisionStepUpFilter != null) {
                 http.addFilterAfter(decisionClientBindingFilter, DecisionStepUpFilter.class);
-            } else if (ministerStepUpFilter != null) {
-                http.addFilterAfter(decisionClientBindingFilter, MinisterStepUpFilter.class);
             } else if (delegationFilter != null) {
                 http.addFilterAfter(decisionClientBindingFilter, DelegationTokenAugmentationFilter.class);
             } else {
@@ -360,7 +365,8 @@ public class SecurityConfig {
                             "/api/v1/auth/passkey/options",
                             "/api/v1/auth/passkey/finish",
                             "/api/v1/auth/certificado/desafio",
-                            "/api/v1/auth/certificado/resposta").permitAll();
+                            "/api/v1/auth/certificado/resposta",
+                            "/api/v1/magistratura/ativacao/confirmar").permitAll();
                     authz.requestMatchers("/actuator/info", "/actuator/metrics/**", "/actuator/prometheus")
                             .hasAnyAuthority("ROLE_ADMIN", "ROLE_ADMINISTRADOR");
                     authz.requestMatchers("/api/admin/**", "/api/v1/admin/**")
@@ -441,6 +447,21 @@ public class SecurityConfig {
     public PasskeyAuthenticationFilter passkeyAuthenticationFilter(PasskeySessionRepository sessionRepo,
                                                                    UserDetailsService userDetailsService) {
         return new PasskeyAuthenticationFilter(sessionRepo, userDetailsService);
+    }
+
+    @Bean
+    public MagistraturaIdleLockFilter magistraturaIdleLockFilter(PasskeySessionRepository sessionRepo,
+                                                                   PasskeySessionActivityService activityService,
+                                                                   CurrentUserService currentUserService) {
+        return new MagistraturaIdleLockFilter(sessionRepo, activityService, currentUserService);
+    }
+
+    @Bean
+    public MagistraturaGeofenceFilter magistraturaGeofenceFilter(MagistraturaGeofencePolicyService policyService,
+                                                                   CurrentUserService currentUserService,
+                                                                   ClientIpResolver clientIpResolver,
+                                                                   AuditLedgerService auditLedgerService) {
+        return new MagistraturaGeofenceFilter(policyService, currentUserService, clientIpResolver, auditLedgerService);
     }
 
     @Bean

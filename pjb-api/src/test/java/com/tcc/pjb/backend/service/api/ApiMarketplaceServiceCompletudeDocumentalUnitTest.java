@@ -17,10 +17,12 @@ import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import com.tcc.pjb.backend.service.AjuizamentoService;
 import com.tcc.pjb.backend.service.api.MarketplaceRepresentacaoResolver;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
 import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,11 +55,13 @@ class ApiMarketplaceServiceCompletudeDocumentalUnitTest {
         documentoPersistenceService = mock(MarketplaceDocumentoPersistenceService.class);
         documentoRepository = mock(DocumentoProcessualRepository.class);
         processoRepository = mock(ProcessoRepository.class);
+        ComarcaResolutionService comarcaResolutionService = mock(ComarcaResolutionService.class);
+        when(comarcaResolutionService.resolver(any(), any())).thenReturn(Optional.empty());
         when(ajuizamentoService.ajuizar(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(processoRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         service = new ApiMarketplaceService(ajuizamentoService, governanceService, new CompletudeDocumentalPolicyService(),
                 new MarketplaceRepresentacaoResolver(new RepresentacaoProcessualPolicyService()), documentoPersistenceService,
-                documentoRepository, processoRepository);
+                documentoRepository, processoRepository, comarcaResolutionService);
     }
 
     private void stubDocumentosPersistidos(TipoDocumento... tipos) {

@@ -48,7 +48,7 @@ class InstitutionalCriticalActionHttpGuardFilterPolicyMappingTest {
                 Arguments.of("/api/v1/psicossocial/processos/42/parecer", InstitutionalSensitiveAct.ASSINAR_MANIFESTACAO, "PSICOSSOCIAL_PARECER"),
                 Arguments.of("/api/v1/psicossocial/processos/42/relatorio", InstitutionalSensitiveAct.ASSINAR_MANIFESTACAO, "PSICOSSOCIAL_RELATORIO"),
                 Arguments.of("/api/v1/distribuicao/processual/processos/99/redistribuicao", InstitutionalSensitiveAct.REDISTRIBUICAO_SENSIVEL, "DISTRIBUICAO_REDISCRITICA"),
-                Arguments.of("/api/v1/secretaria/especializada/processos/99/redistribuicao", InstitutionalSensitiveAct.REDISTRIBUICAO_SENSIVEL, "SECRETARIA_REDISCRITICA"),
+                Arguments.of("/api/v1/secretariat/especializada/processos/99/redistribuicao", InstitutionalSensitiveAct.REDISTRIBUICAO_SENSIVEL, "SECRETARIA_REDISCRITICA"),
                 Arguments.of("/api/v1/procuradoria/operacional/processos/15/parecer", InstitutionalSensitiveAct.ASSINAR_MANIFESTACAO, "PROCURADORIA_PARECER"),
                 Arguments.of("/api/v1/perito/operacional/processos/33/laudo", InstitutionalSensitiveAct.ASSINAR_MANIFESTACAO, "PERITO_LAUDO"),
                 Arguments.of("/api/v1/perito/laudos/laudo-uuid/entrega", InstitutionalSensitiveAct.ASSINAR_MANIFESTACAO, "PERITO_ENTREGA_LAUDO"),

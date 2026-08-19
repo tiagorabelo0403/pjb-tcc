@@ -19,6 +19,8 @@ import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopo
 import com.tcc.pjb.backend.service.processual.peticionamento.workspace.InstitutionalMultimediaWorkspaceService;
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
 import com.tcc.pjb.backend.service.ui.branding.InstitutionalPanelBrandingService;
+import com.tcc.pjb.backend.service.criminal.InqueritoPolicialDigitalService;
+import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalPeticionamentoFacadeService;
 import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
 import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
@@ -51,6 +53,8 @@ public class MinisterioPublicoPainelService {
     private final PainelActionSurfaceCompositionService actionSurfaceCompositionService;
     private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
     private final InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService;
+    private final InqueritoPolicialDigitalService inqueritoPolicialDigitalService;
+    private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
 
     public MinisterioPublicoPainelService(PerfilDashboardContextFactory contextFactory,
                                           PainelServiceCommons commons,
@@ -66,7 +70,9 @@ public class MinisterioPublicoPainelService {
                                           PainelNativeCollectionCompositionService collectionCompositionService,
                                           PainelActionSurfaceCompositionService actionSurfaceCompositionService,
                                           PainelExecutionSurfaceCompositionService executionSurfaceCompositionService,
-                                          InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService) {
+                                          InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService,
+                                          InqueritoPolicialDigitalService inqueritoPolicialDigitalService,
+                                          MovimentacaoProcessualRegistrar movimentacaoRegistrar) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
@@ -82,6 +88,8 @@ public class MinisterioPublicoPainelService {
         this.actionSurfaceCompositionService = actionSurfaceCompositionService;
         this.executionSurfaceCompositionService = executionSurfaceCompositionService;
         this.institutionalMaterialActionGuardService = institutionalMaterialActionGuardService;
+        this.inqueritoPolicialDigitalService = inqueritoPolicialDigitalService;
+        this.movimentacaoRegistrar = movimentacaoRegistrar;
     }
 
     public PerfilDashboardPayload.MinisterioPublicoPayload bootstrapPainel() {
@@ -177,6 +185,7 @@ public class MinisterioPublicoPainelService {
         institutionalMaterialActionGuardService.requireAllowedForProcessAction(processo, InstitutionalMaterialActionGuardService.MaterialAction.MINISTERIO_PUBLICO_MANIFESTACAO);
         Usuario usuario = contextFactory.build().usuario();
         commons.publishUserHistory(usuario, "MP", "MANIFESTACAO_REGISTRADA", "Manifestação registrada no painel do MP.", processo, processoId);
+        movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Manifestação do Ministério Público registrada.");
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "REGISTRADA");
         out.put("processoId", processoId);
@@ -220,6 +229,7 @@ public class MinisterioPublicoPainelService {
                 .build();
         item = workItemRepository.save(item);
         commons.publishUserHistory(usuario, "MP", "PARECER_REGISTRADO", "Parecer registrado no painel do MP.", processo, processoId);
+        movimentacaoRegistrar.registrar(processo, usuario, processo.getFaseAtual(), "Parecer do Ministério Público registrado.");
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("status", "PARECER_REGISTRADO");
         out.put("processoId", processoId);
@@ -240,7 +250,43 @@ public class MinisterioPublicoPainelService {
     }
 
     public List<Map<String, Object>> listarInqueritosEmAcompanhamento() {
-        return commons.inboxHibrido(contextFactory.build().usuario(), 20).stream().filter(this::isInquerito).map(commons::mapWorkItem).toList();
+        List<Map<String, Object>> inqueritosDigitais = inqueritoPolicialDigitalService.listarMeus(null).stream()
+                .map(this::mapInqueritoDigital)
+                .toList();
+        java.util.Set<Long> processosComInqueritoDigital = inqueritosDigitais.stream()
+                .map(item -> (Long) item.get("processoId"))
+                .filter(java.util.Objects::nonNull)
+                .collect(java.util.stream.Collectors.toSet());
+        List<Map<String, Object>> itensPainel = commons.inboxHibrido(contextFactory.build().usuario(), 20).stream()
+                .filter(this::isInquerito)
+                .filter(item -> item.getProcesso() == null || !processosComInqueritoDigital.contains(item.getProcesso().getId()))
+                .map(commons::mapWorkItem)
+                .map(this::marcarOrigemPainel)
+                .toList();
+        List<Map<String, Object>> combinados = new java.util.ArrayList<>(inqueritosDigitais);
+        combinados.addAll(itensPainel);
+        return List.copyOf(combinados);
+    }
+
+    private Map<String, Object> mapInqueritoDigital(InqueritoPolicialDigitalService.InqueritoView inquerito) {
+        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+        map.put("id", inquerito.id());
+        map.put("titulo", inquerito.numeroProcedimento() + " — " + inquerito.tipo());
+        map.put("descricao", inquerito.resumoFatos());
+        map.put("processoId", inquerito.processoVinculadoId());
+        map.put("processoNumero", inquerito.processoVinculadoNumero());
+        map.put("dueAt", inquerito.prazoConclusao());
+        map.put("prioridade", null);
+        map.put("status", inquerito.status());
+        map.put("queueCode", null);
+        map.put("origem", "INQUERITO_DIGITAL");
+        return map;
+    }
+
+    private Map<String, Object> marcarOrigemPainel(Map<String, Object> item) {
+        LinkedHashMap<String, Object> marcado = new LinkedHashMap<>(item);
+        marcado.put("origem", "PAINEL_OPERACIONAL");
+        return marcado;
     }
 
     @Transactional

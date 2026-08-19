@@ -1,6 +1,8 @@
 package com.tcc.pjb.backend.controller.advogado;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,9 +17,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoClienteAnaliticoItemResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCockpitSnapshotResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoCustaItemResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoHonorariosResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOabRegularidadeResponse;
+import com.tcc.pjb.backend.model.dto.jurisprudencia.JurisprudenceContextualSearchResponse;
 import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoOperacaoResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoPainelFinanceiroResponse;
+import com.tcc.pjb.backend.model.dto.advogado.surface.AdvogadoProdutividadeEscritorioResponse;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoCienciaLoteRequest;
+import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoHonorariosCalculoRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoPeticaoRequest;
+import com.tcc.pjb.backend.model.dto.profile.operational.AdvogadoProrrogacaoPrazoLoteRequest;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.versioning.ApiVersion;
@@ -59,6 +69,57 @@ public class AdvogadoCockpitController {
                                                                      Authentication authentication) {
         enforce(authentication, "advogado_cockpit_ciencia_lote");
         return ResponseEntity.ok(facadeService.darCienciaEmLote(request.workItemIds()));
+    }
+
+    @PostMapping("/processos/prorrogacao-prazo-lote")
+    public ResponseEntity<AdvogadoOperacaoResponse> prorrogarPrazoEmLote(@Valid @RequestBody AdvogadoProrrogacaoPrazoLoteRequest request,
+                                                                          Authentication authentication) {
+        enforce(authentication, "advogado_cockpit_prorrogacao_prazo_lote");
+        return ResponseEntity.ok(facadeService.prorrogarPrazoEmLote(request.processoIds(), request.justificativa()));
+    }
+
+    @PostMapping("/processos/{processoId}/honorarios/calcular")
+    public ResponseEntity<AdvogadoHonorariosResponse> calcularHonorarios(@PathVariable Long processoId,
+                                                                          @Valid @RequestBody AdvogadoHonorariosCalculoRequest request,
+                                                                          Authentication authentication) {
+        enforce(authentication, "advogado_cockpit_honorarios");
+        return ResponseEntity.ok(facadeService.calcularHonorarios(processoId, request));
+    }
+
+    @GetMapping("/processos/{processoId}/custas")
+    public ResponseEntity<List<AdvogadoCustaItemResponse>> listarCustas(@PathVariable Long processoId,
+                                                                         Authentication authentication) {
+        enforce(authentication, "advogado_cockpit_custas");
+        return ResponseEntity.ok(facadeService.listarCustas(processoId));
+    }
+
+    @GetMapping("/oab/regularidade")
+    public ResponseEntity<AdvogadoOabRegularidadeResponse> consultarRegularidadeOab(Authentication authentication) {
+        enforce(authentication, "advogado_cockpit_oab_regularidade");
+        return ResponseEntity.ok(facadeService.consultarRegularidadeOab());
+    }
+
+    @GetMapping("/processos/{processoId}/jurisprudencia")
+    public ResponseEntity<JurisprudenceContextualSearchResponse> buscarJurisprudenciaDoProcesso(
+            @PathVariable Long processoId,
+            @RequestParam(required = false, defaultValue = "") String q,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(25) int topK,
+            Authentication authentication) {
+        enforce(authentication, "advogado_cockpit_jurisprudencia");
+        return ResponseEntity.ok(facadeService.buscarJurisprudenciaDoProcesso(processoId, q, topK));
+    }
+
+    @GetMapping("/processos/{processoId}/financeiro")
+    public ResponseEntity<AdvogadoPainelFinanceiroResponse> consultarPainelFinanceiro(@PathVariable Long processoId,
+                                                                                       Authentication authentication) {
+        enforce(authentication, "advogado_cockpit_financeiro");
+        return ResponseEntity.ok(facadeService.consultarPainelFinanceiro(processoId));
+    }
+
+    @GetMapping("/produtividade")
+    public ResponseEntity<AdvogadoProdutividadeEscritorioResponse> consultarProdutividadeEscritorio(Authentication authentication) {
+        enforce(authentication, "advogado_cockpit_produtividade");
+        return ResponseEntity.ok(facadeService.consultarProdutividadeEscritorio());
     }
 
     @GetMapping("/clientes/analitico")
