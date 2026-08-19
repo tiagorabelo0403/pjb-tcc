@@ -12,6 +12,7 @@ import com.tcc.pjb.backend.model.entity.comunicacao.CienciaProcessual;
 import com.tcc.pjb.backend.model.repository.CienciaProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.platform.jusos.v2.prazo.NationalPrazoEngine;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -85,6 +86,7 @@ public class PrazoCartorioPainelService {
     }
 
     @Transactional
+    @PjbTransactionalBudget(operation = "prazo.cartorio.certificar-decurso-em-lote", maxMillis = 5000)
     public PrazoCertidaoDecursoLoteResponse certificarDecursoEmLote(String vara) {
         Objects.requireNonNull(vara, "vara");
         Instant agora = Instant.now();
