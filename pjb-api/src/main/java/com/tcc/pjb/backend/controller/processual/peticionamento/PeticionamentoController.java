@@ -12,8 +12,8 @@ import com.tcc.pjb.backend.model.dto.processual.peticionamento.studio.Peticionam
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.studio.PeticionamentoStudioQuickDraftResponse;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.studio.PeticionamentoStudioWorkspaceResponse;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.journey.PeticionamentoSimpleProtocolWizardResponse;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomainResolver;
 import com.tcc.pjb.backend.platform.versioning.ApiVersion;
 import com.tcc.pjb.backend.service.advogado.LaianePeticaoInicialDraftRequestMapper;
 import com.tcc.pjb.backend.service.advogado.LaianePeticaoInicialDraftService;
@@ -23,8 +23,6 @@ import com.tcc.pjb.backend.service.processual.peticionamento.journey.Peticioname
 import com.tcc.pjb.backend.service.processual.peticionamento.studio.PeticionamentoStudioWorkspaceService;
 import jakarta.validation.Valid;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -46,19 +44,22 @@ public class PeticionamentoController {
     private final PeticionamentoSimpleProtocolWizardService simpleProtocolWizardService;
     private final PeticionamentoJourneyIntelligenceService journeyIntelligenceService;
     private final CapabilityRateLimiter rateLimiter;
+    private final CapabilityRateLimitDomainResolver domainResolver;
 
     public PeticionamentoController(PeticionamentoSessaoFacadeService facadeService,
                                     LaianePeticaoInicialDraftService draftService,
                                     PeticionamentoStudioWorkspaceService studioWorkspaceService,
                                     PeticionamentoSimpleProtocolWizardService simpleProtocolWizardService,
                                     PeticionamentoJourneyIntelligenceService journeyIntelligenceService,
-                                    CapabilityRateLimiter rateLimiter) {
+                                    CapabilityRateLimiter rateLimiter,
+                                    CapabilityRateLimitDomainResolver domainResolver) {
         this.facadeService = Objects.requireNonNull(facadeService, "facadeService");
         this.draftService = Objects.requireNonNull(draftService, "draftService");
         this.studioWorkspaceService = Objects.requireNonNull(studioWorkspaceService, "studioWorkspaceService");
         this.simpleProtocolWizardService = Objects.requireNonNull(simpleProtocolWizardService, "simpleProtocolWizardService");
         this.journeyIntelligenceService = Objects.requireNonNull(journeyIntelligenceService, "journeyIntelligenceService");
         this.rateLimiter = Objects.requireNonNull(rateLimiter, "rateLimiter");
+        this.domainResolver = Objects.requireNonNull(domainResolver, "domainResolver");
     }
 
     @PostMapping("/inicial/sessao")
@@ -161,31 +162,6 @@ public class PeticionamentoController {
     }
 
     private void enforce(Authentication authentication, String capability) {
-        rateLimiter.enforce(resolveDomain(authentication), authentication, capability, ApiVersion.V1);
-    }
-
-    private CapabilityRateLimitDomain resolveDomain(Authentication authentication) {
-        if (authentication == null || authentication.getAuthorities() == null) {
-            return CapabilityRateLimitDomain.LAWYER;
-        }
-        Set<String> authorities = authentication.getAuthorities().stream()
-                .map(authority -> authority == null ? null : authority.getAuthority())
-                .filter(Objects::nonNull)
-                .map(String::toUpperCase)
-                .collect(Collectors.toSet());
-        boolean institutional = authorities.stream()
-                .anyMatch(authority -> authority.contains("DEFENSOR")
-                        || authority.contains("PROCURADOR")
-                        || authority.contains("PROMOTOR")
-                        || authority.contains("MINISTERIO_PUBLICO")
-                        || authority.contains("PROCURADORIA")
-                        || authority.contains("DEFENSORIA"));
-        if (institutional) {
-            return CapabilityRateLimitDomain.INSTITUCIONAL;
-        }
-        if (authorities.contains("ROLE_CIDADAO")) {
-            return CapabilityRateLimitDomain.CITIZEN;
-        }
-        return CapabilityRateLimitDomain.LAWYER;
+        rateLimiter.enforce(domainResolver.resolve(authentication), authentication, capability, ApiVersion.V1);
     }
 }

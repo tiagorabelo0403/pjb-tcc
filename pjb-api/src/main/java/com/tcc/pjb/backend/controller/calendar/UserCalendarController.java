@@ -32,7 +32,7 @@ import com.tcc.pjb.backend.model.dto.calendar.CalendarProcessEventMirrorResponse
 import com.tcc.pjb.backend.model.dto.calendar.CalendarWorkspaceResponse;
 import com.tcc.pjb.backend.model.dto.calendar.UserCalendarPreferenceRequest;
 import com.tcc.pjb.backend.model.dto.calendar.UserCalendarPreferenceResponse;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomainResolver;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.versioning.ApiVersion;
 import com.tcc.pjb.backend.service.calendar.CalendarInstitutionalBridgeService;
@@ -51,6 +51,7 @@ public class UserCalendarController {
 
   private final UserCalendarService service;
   private final CapabilityRateLimiter rateLimiter;
+  private final CapabilityRateLimitDomainResolver domainResolver;
   private final UserCalendarWorkspaceService workspaceService;
   private final UserCalendarPanelService panelService;
   private final UserCalendarProcessMirrorService processMirrorService;
@@ -60,6 +61,7 @@ public class UserCalendarController {
 
   public UserCalendarController(UserCalendarService service,
                                 CapabilityRateLimiter rateLimiter,
+                                CapabilityRateLimitDomainResolver domainResolver,
                                 UserCalendarWorkspaceService workspaceService,
                                 UserCalendarPanelService panelService,
                                 UserCalendarProcessMirrorService processMirrorService,
@@ -68,6 +70,7 @@ public class UserCalendarController {
                                 CalendarInstitutionalBridgeService institutionalBridgeService) {
     this.service = service;
     this.rateLimiter = rateLimiter;
+    this.domainResolver = domainResolver;
     this.workspaceService = workspaceService;
     this.panelService = panelService;
     this.processMirrorService = processMirrorService;
@@ -83,7 +86,7 @@ public class UserCalendarController {
       @RequestParam("from") LocalDate from,
       @RequestParam("to") LocalDate to,
       @RequestParam(value = "processoId", required = false) Long processoId) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_events", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_events", ApiVersion.V1);
     return ResponseEntity.ok()
         .cacheControl(CacheControl.maxAge(java.time.Duration.ofSeconds(20)).cachePrivate())
         .body(processoId == null ? service.list(from, to) : service.listForProcesso(from, to, processoId));
@@ -97,7 +100,7 @@ public class UserCalendarController {
       @RequestParam("to") LocalDate to,
       @RequestParam(value = "processoId", required = false) Long processoId,
       @RequestParam(value = "lane", required = false) String lane) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_workspace", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_workspace", ApiVersion.V1);
     CalendarWorkspaceResponse response = workspaceService.workspace(from, to, processoId);
     if (lane != null && !lane.isBlank()) {
       String normalizedLane = lane.trim().toUpperCase(Locale.ROOT);
@@ -122,7 +125,7 @@ public class UserCalendarController {
       @RequestParam("from") LocalDate from,
       @RequestParam("to") LocalDate to,
       @RequestParam(value = "processoId", required = false) Long processoId) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_panel", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_panel", ApiVersion.V1);
     return ResponseEntity.ok()
         .cacheControl(CacheControl.maxAge(java.time.Duration.ofSeconds(20)).cachePrivate())
         .body(panelService.panel(from, to, processoId));
@@ -135,7 +138,7 @@ public class UserCalendarController {
       @PathVariable("processoId") Long processoId,
       @RequestParam("from") LocalDate from,
       @RequestParam("to") LocalDate to) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_process_event_mirror", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_process_event_mirror", ApiVersion.V1);
     return ResponseEntity.ok()
         .cacheControl(CacheControl.maxAge(java.time.Duration.ofSeconds(20)).cachePrivate())
         .body(processMirrorService.mirror(processoId, from, to));
@@ -149,7 +152,7 @@ public class UserCalendarController {
       @RequestParam("from") LocalDate from,
       @RequestParam("to") LocalDate to,
       @RequestParam(value = "processoId", required = false) Long processoId) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_institutional_bridge", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_institutional_bridge", ApiVersion.V1);
     return ResponseEntity.ok()
         .cacheControl(CacheControl.maxAge(java.time.Duration.ofSeconds(20)).cachePrivate())
         .body(institutionalBridgeService.bridge(from, to, processoId));
@@ -163,7 +166,7 @@ public class UserCalendarController {
       @RequestParam("from") LocalDate from,
       @RequestParam("to") LocalDate to,
       @RequestParam(value = "processoId", required = false) Long processoId) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_institutional_focus", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_institutional_focus", ApiVersion.V1);
     CalendarInstitutionalBridgeResponse bridge = institutionalBridgeService.bridge(from, to, processoId);
     return ResponseEntity.ok()
         .cacheControl(CacheControl.maxAge(java.time.Duration.ofSeconds(20)).cachePrivate())
@@ -177,7 +180,7 @@ public class UserCalendarController {
       @RequestParam("from") LocalDate from,
       @RequestParam("to") LocalDate to,
       @RequestParam(value = "processoId", required = false) Long processoId) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_notification_preview", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_notification_preview", ApiVersion.V1);
     return ResponseEntity.ok()
         .cacheControl(CacheControl.maxAge(java.time.Duration.ofSeconds(15)).cachePrivate())
         .body(notificationPreviewService.preview(from, to, processoId));
@@ -186,7 +189,7 @@ public class UserCalendarController {
   @GetMapping("/preferences")
   @PreAuthorize(CALENDAR_ROLES)
   public ResponseEntity<UserCalendarPreferenceResponse> preferences(Authentication authentication) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_preferences_get", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_preferences_get", ApiVersion.V1);
     return ResponseEntity.ok(preferenceService.current());
   }
 
@@ -195,7 +198,7 @@ public class UserCalendarController {
   public ResponseEntity<UserCalendarPreferenceResponse> preferences(
       Authentication authentication,
       @RequestBody UserCalendarPreferenceRequest request) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_preferences_put", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_preferences_put", ApiVersion.V1);
     return ResponseEntity.ok(preferenceService.save(request));
   }
 
@@ -205,7 +208,7 @@ public class UserCalendarController {
       Authentication authentication,
       @RequestParam("year") int year,
       @RequestParam("month") int month) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_month", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_month", ApiVersion.V1);
     YearMonth ym = YearMonth.of(year, month);
     return ResponseEntity.ok()
         .cacheControl(CacheControl.maxAge(java.time.Duration.ofSeconds(30)).cachePrivate())
@@ -215,7 +218,7 @@ public class UserCalendarController {
   @PostMapping("/markers")
   @PreAuthorize(CALENDAR_ROLES)
   public ResponseEntity<Void> mark(Authentication authentication, @RequestBody CalendarMarkerRequest req) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_mark", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_mark", ApiVersion.V1);
     service.mark(req);
     return ResponseEntity.ok().build();
   }
@@ -226,7 +229,7 @@ public class UserCalendarController {
       Authentication authentication,
       @PathVariable("eventType") String eventType,
       @PathVariable("eventId") Long eventId) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_unmark", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_unmark", ApiVersion.V1);
     service.unmark(eventType, eventId);
     return ResponseEntity.ok().build();
   }
@@ -236,7 +239,7 @@ public class UserCalendarController {
   public ResponseEntity<CalendarCustomEventDto> createCustom(
       Authentication authentication,
       @RequestBody CalendarCustomEventRequest req) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_custom_create", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_custom_create", ApiVersion.V1);
     return ResponseEntity.ok(service.createCustomEvent(req));
   }
 
@@ -246,7 +249,7 @@ public class UserCalendarController {
       Authentication authentication,
       @PathVariable("id") Long id,
       @RequestBody CalendarCustomEventRequest req) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_custom_update", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_custom_update", ApiVersion.V1);
     return ResponseEntity.ok(service.updateCustomEvent(id, req));
   }
 
@@ -255,7 +258,7 @@ public class UserCalendarController {
   public ResponseEntity<Void> deleteCustom(
       Authentication authentication,
       @PathVariable("id") Long id) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_custom_delete", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_custom_delete", ApiVersion.V1);
     service.deleteCustomEvent(id);
     return ResponseEntity.ok().build();
   }
@@ -267,24 +270,10 @@ public class UserCalendarController {
       @RequestParam("from") LocalDate from,
       @RequestParam("to") LocalDate to,
       @RequestParam(value = "processoId", required = false) Long processoId) {
-    rateLimiter.enforce(resolveDomain(authentication), authentication, "calendar_ics", ApiVersion.V1);
+    rateLimiter.enforce(domainResolver.resolve(authentication), authentication, "calendar_ics", ApiVersion.V1);
     return ResponseEntity.ok()
         .contentType(MediaType.parseMediaType("text/calendar"))
         .body(service.ics(from, to, processoId));
   }
 
-  private CapabilityRateLimitDomain resolveDomain(Authentication authentication) {
-    if (authentication == null || authentication.getAuthorities() == null) {
-      return CapabilityRateLimitDomain.CITIZEN;
-    }
-    boolean lawyer = authentication.getAuthorities().stream().anyMatch(item -> "ROLE_ADVOGADO".equalsIgnoreCase(item.getAuthority()) || "ROLE_ADVOCACIA".equalsIgnoreCase(item.getAuthority()));
-    if (lawyer) {
-      return CapabilityRateLimitDomain.LAWYER;
-    }
-    boolean citizen = authentication.getAuthorities().stream().anyMatch(item -> "ROLE_CIDADAO".equalsIgnoreCase(item.getAuthority()) || "ROLE_USER".equalsIgnoreCase(item.getAuthority()));
-    if (citizen) {
-      return CapabilityRateLimitDomain.CITIZEN;
-    }
-    return CapabilityRateLimitDomain.INSTITUCIONAL;
-  }
 }

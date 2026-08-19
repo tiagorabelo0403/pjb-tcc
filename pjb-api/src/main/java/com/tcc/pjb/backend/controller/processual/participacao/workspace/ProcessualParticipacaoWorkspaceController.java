@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.controller.processual.participacao.workspace;
 
 import com.tcc.pjb.backend.controller.processual.participacao.support.ProcessualParticipacaoControllerRateLimitSupport;
 import com.tcc.pjb.backend.core.operational.OperationalApiRoutes;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomainResolver;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.service.processual.participacao.ProcessualParticipacaoAtivaFacadeService;
 import com.tcc.pjb.backend.service.processual.participacao.workspace.WorkspaceView;
@@ -22,11 +23,14 @@ public class ProcessualParticipacaoWorkspaceController {
 
     private final ProcessualParticipacaoAtivaFacadeService facadeService;
     private final CapabilityRateLimiter rateLimiter;
+    private final CapabilityRateLimitDomainResolver domainResolver;
 
     public ProcessualParticipacaoWorkspaceController(ProcessualParticipacaoAtivaFacadeService facadeService,
-                                                     CapabilityRateLimiter rateLimiter) {
+                                                     CapabilityRateLimiter rateLimiter,
+                                                     CapabilityRateLimitDomainResolver domainResolver) {
         this.facadeService = Objects.requireNonNull(facadeService, "facadeService");
         this.rateLimiter = Objects.requireNonNull(rateLimiter, "rateLimiter");
+        this.domainResolver = Objects.requireNonNull(domainResolver, "domainResolver");
     }
 
     @GetMapping(OperationalApiRoutes.PATH_PROCESSUAL_PARTICIPACAO_WORKSPACE)
@@ -34,6 +38,7 @@ public class ProcessualParticipacaoWorkspaceController {
                                                    @PathVariable("processoId") @Positive Long processoId) {
         ProcessualParticipacaoControllerRateLimitSupport.enforce(
                 rateLimiter,
+                domainResolver,
                 authentication,
                 "processual_participacao_workspace");
         return ResponseEntity.ok(facadeService.workspace(processoId));

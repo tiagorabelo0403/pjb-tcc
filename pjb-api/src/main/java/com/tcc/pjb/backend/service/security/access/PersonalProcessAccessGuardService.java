@@ -17,9 +17,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
-import com.tcc.pjb.backend.core.security.ProcessoPartyCpfLinkPolicy;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
+import com.tcc.pjb.backend.core.security.access.PartyMatchResult;
+import com.tcc.pjb.backend.core.security.access.PartyRole;
+import com.tcc.pjb.backend.core.security.access.ProcessoPartyCpfMatcher;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.security.UserSecurityProfile;
@@ -32,11 +35,17 @@ public class PersonalProcessAccessGuardService {
 
     private final CurrentUserService currentUserService;
     private final UserSecurityProfileRepository securityProfileRepository;
+    private final ProcessoPartyCpfMatcher partyCpfMatcher;
+    private final AuditLedgerService auditLedgerService;
 
     public PersonalProcessAccessGuardService(CurrentUserService currentUserService,
-                                             UserSecurityProfileRepository securityProfileRepository) {
+                                             UserSecurityProfileRepository securityProfileRepository,
+                                             ProcessoPartyCpfMatcher partyCpfMatcher,
+                                             AuditLedgerService auditLedgerService) {
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.securityProfileRepository = Objects.requireNonNull(securityProfileRepository);
+        this.partyCpfMatcher = Objects.requireNonNull(partyCpfMatcher);
+        this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
     }
 
     public PersonalProcessAccessEnvelope requireOwnProcessAccess(String capability) {
@@ -150,12 +159,19 @@ public class PersonalProcessAccessGuardService {
     public void requireCurrentUserAsParty(com.tcc.pjb.backend.model.entity.Processo processo) {
         Usuario usuario = currentUserService.getRequired();
         String cpf = usuario.getCpf();
+        String resourceId = processo == null || processo.getId() == null ? "UNKNOWN" : String.valueOf(processo.getId());
         if (cpf == null || cpf.isBlank() || processo == null) {
+            auditLedgerService.appendSafely("PERSONAL_ACCESS_DENY", "PROCESSO", resourceId);
             throw new AccessDeniedPjbException("Acesso pessoal ao processo bloqueado: usuário sem CPF civil válido ou processo ausente.");
         }
-        if (!ProcessoPartyCpfLinkPolicy.vinculado(cpf, processo)) {
+        PartyMatchResult match = partyCpfMatcher.match(cpf, processo);
+        if (match instanceof PartyMatchResult.NotMatched) {
+            auditLedgerService.appendSafely("PERSONAL_ACCESS_DENY", "PROCESSO", resourceId);
             throw new AccessDeniedPjbException("Acesso pessoal ao processo bloqueado: a identidade civil autenticada não está vinculada ao processo informado.");
         }
+        PartyRole role = ((PartyMatchResult.Matched) match).role();
+        auditLedgerService.appendSafely("PERSONAL_ACCESS_ALLOW", "PROCESSO", resourceId, null,
+                "papel=" + role.name().toLowerCase(Locale.ROOT));
     }
 
     private boolean supportsPersonalGovContext(Usuario usuario) {

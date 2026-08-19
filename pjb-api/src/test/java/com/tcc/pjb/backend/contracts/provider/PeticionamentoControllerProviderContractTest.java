@@ -15,6 +15,7 @@ import com.tcc.pjb.backend.model.dto.processual.peticionamento.session.Peticiona
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.session.PeticionamentoSessaoResponse;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDecision;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomainResolver;
 import com.tcc.pjb.backend.service.advogado.LaianePeticaoInicialDraftService;
 import com.tcc.pjb.backend.service.processual.peticionamento.journey.PeticionamentoJourneyIntelligenceService;
 import com.tcc.pjb.backend.service.processual.peticionamento.PeticionamentoSessaoFacadeService;
@@ -37,18 +38,20 @@ class PeticionamentoControllerProviderContractTest {
     private final PeticionamentoSimpleProtocolWizardService simpleProtocolWizardService = mock(PeticionamentoSimpleProtocolWizardService.class);
     private final PeticionamentoJourneyIntelligenceService journeyIntelligenceService = mock(PeticionamentoJourneyIntelligenceService.class);
     private final CapabilityRateLimiter rateLimiter = mock(CapabilityRateLimiter.class);
+    private final CapabilityRateLimitDomainResolver domainResolver = mock(CapabilityRateLimitDomainResolver.class);
     private final PeticionamentoController controller = new PeticionamentoController(
             facadeService,
             draftService,
             studioWorkspaceService,
             simpleProtocolWizardService,
             journeyIntelligenceService,
-            rateLimiter
+            rateLimiter,
+            domainResolver
     );
 
     @BeforeEach
     void setUp(PactVerificationContext context) {
-        reset(facadeService, draftService, studioWorkspaceService, simpleProtocolWizardService, journeyIntelligenceService, rateLimiter);
+        reset(facadeService, draftService, studioWorkspaceService, simpleProtocolWizardService, journeyIntelligenceService, rateLimiter, domainResolver);
         PactProviderSpring6Support.configure(context, controller);
     }
 
