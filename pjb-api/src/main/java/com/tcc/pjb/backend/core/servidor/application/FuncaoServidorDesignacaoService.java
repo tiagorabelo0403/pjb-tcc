@@ -12,11 +12,15 @@ import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import java.time.LocalDate;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class FuncaoServidorDesignacaoService {
+
+    private static final Logger log = LoggerFactory.getLogger(FuncaoServidorDesignacaoService.class);
 
     private final FuncaoServidorApplicationService funcaoServidorApplicationService;
     private final UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository;
@@ -40,7 +44,12 @@ public class FuncaoServidorDesignacaoService {
                                                               String portaria) {
         FuncaoServidorJudiciarioEntity entidade = funcaoServidorApplicationService.designar(
                 usuarioId, unidadeId, funcao, dataInicio, designadoPorId, portaria);
-        materializarLotacaoSePonteExistir(usuarioId, unidadeId, funcao, dataInicio);
+        try {
+            materializarLotacaoSePonteExistir(usuarioId, unidadeId, funcao, dataInicio);
+        } catch (RuntimeException e) {
+            log.warn("Falha ao materializar LotacaoInstituicao para usuarioId={}, unidadeId={}, funcao={}: {}",
+                    usuarioId, unidadeId, funcao, e.getMessage(), e);
+        }
         return entidade;
     }
 

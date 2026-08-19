@@ -96,12 +96,30 @@ class FuncaoServidorDesignacaoServiceTest {
                 .thenReturn(new FuncaoServidorJudiciarioEntity(10L, 5L, FuncaoServidorJudiciario.OFICIAL_MAIOR,
                         LocalDate.now(), 1L, "Portaria 3"));
 
-        service.designarComLotacao(10L, 5L, FuncaoServidorJudiciario.OFICIAL_MAIOR, LocalDate.now(), 1L, "Portaria 3");
+        LocalDate dataInicio = LocalDate.now();
+        service.designarComLotacao(10L, 5L, FuncaoServidorJudiciario.OFICIAL_MAIOR, dataInicio, 1L, "Portaria 3");
 
         var captor = org.mockito.ArgumentCaptor.forClass(LotacaoInstituicao.class);
         verify(lotacaoInstituicaoRepository).save(captor.capture());
         assertThat(captor.getValue()).isSameAs(existente);
         assertThat(captor.getValue().getFim()).isNull();
+        assertThat(captor.getValue().getInicio()).isEqualTo(dataInicio);
+        assertThat(captor.getValue().getPapelNaUnidade()).isEqualTo(FuncaoServidorJudiciario.OFICIAL_MAIOR.label());
+    }
+
+    @Test
+    void designaComPonteFalhaAoMaterializarNaoImpedeRetornoDaEntidade() {
+        when(unidadeJudiciariaCompetenciaRepository.findById(5L)).thenReturn(Optional.empty());
+        var entidade = new FuncaoServidorJudiciarioEntity(10L, 5L, FuncaoServidorJudiciario.CHEFE_CARTORIO,
+                LocalDate.now(), 1L, "Portaria 4");
+        when(funcaoServidorApplicationService.designar(10L, 5L, FuncaoServidorJudiciario.CHEFE_CARTORIO,
+                LocalDate.now(), 1L, "Portaria 4")).thenReturn(entidade);
+
+        var resultado = service.designarComLotacao(10L, 5L, FuncaoServidorJudiciario.CHEFE_CARTORIO,
+                LocalDate.now(), 1L, "Portaria 4");
+
+        assertThat(resultado).isSameAs(entidade);
+        verify(lotacaoInstituicaoRepository, never()).save(any());
     }
 
     private UnidadeJudiciariaCompetencia unidadeSemPonte(Long id) {
