@@ -199,6 +199,11 @@ public class ApiExceptionHandler {
         return build(HttpStatus.CONFLICT, "conflict", safeMessage(ex), request, null);
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ProblemDetail> handleIllegalState(IllegalStateException ex, HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, "conflict", safeMessage(ex), request, null);
+    }
+
     @ExceptionHandler(ErroDeTetoException.class)
     public ResponseEntity<ProblemDetail> handleErroDeTeto(ErroDeTetoException ex, HttpServletRequest request) {
         Map<String, Object> extra = new HashMap<>();
