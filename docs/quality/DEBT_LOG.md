@@ -1699,3 +1699,40 @@ para o segundo) — não existe teste que prove que os dois concordam entre si.
 `FuncaoServidorApplicationService` delegando ao facade, ou ambos delegando a um método único no
 enum) é uma limpeza estrutural legítima, mas está fora do escopo de correção pontual — depende de
 decidir se `verificarPermissao`/`podeExecutar` seguem como API pública do service ou são removidos.
+
+## D-ponte-unidade-instituicao-sem-backfill
+
+**Status:** aberta
+
+**Contexto:** a fatia de designação institucional (`docs/superpowers/plans/2026-08-14-designacao-institucional-servidor.md`)
+adicionou `unidade_instituicao_id` (nullable) em `tb_unidade_judiciaria_competencia`, mas nenhuma
+`UnidadeJudiciariaCompetencia` existente teve a coluna preenchida — foi decisão explícita de escopo
+(problema de dados, não desta fatia). Enquanto a ponte não for preenchida linha a linha, toda
+designação feita numa unidade existente materializa `FuncaoServidorJudiciarioEntity` normalmente (os
+gates ABAC funcionam) mas não materializa `LotacaoInstituicao` — a lacuna é aceita por design, não é
+bug, mas significa que `ContextoInstitucionalResolver`/`LotacaoVisibilityPolicy` seguem sem dado real
+pra essas unidades até alguém rodar o backfill.
+
+**Risco:** nenhum gate quebra; a visibilidade institucional baseada em `LotacaoInstituicao` fica
+incompleta silenciosamente até o backfill acontecer.
+
+**Não revisitar sem decisão de produto:** decidir se o backfill é automático (matching por
+nome/comarca, com risco de erro) ou manual (mais lento, mais seguro) é escopo de outra fatia.
+
+## D-encerrar-designacao-nao-sincroniza-lotacao
+
+**Status:** aberta
+
+**Contexto:** `FuncaoServidorAdminController.encerrar` delega direto pra
+`FuncaoServidorApplicationService.encerrar(...)` (existente, sem mudança), que encerra só a
+`FuncaoServidorJudiciarioEntity`. `FuncaoServidorDesignacaoService.designarComLotacao` materializa
+`LotacaoInstituicao` na designação, mas não existe caminho simétrico que a encerre — se um servidor
+tiver a função encerrada, `LotacaoInstituicao.fim` permanece `null` (lotação continua "ativa" pra
+`ContextoInstitucionalResolver`/`LotacaoVisibilityPolicy` mesmo sem função real na unidade).
+
+**Risco:** visibilidade institucional pode conceder acesso baseado numa lotação que já deveria ter
+terminado.
+
+**Não revisitar sem decisão de produto:** exige decidir se `encerrar()` deve sempre encerrar a
+`LotacaoInstituicao` correspondente (pode ser incorreto se o servidor tiver outra função ativa na
+mesma unidade) ou se precisa de uma consulta adicional antes de decidir.
