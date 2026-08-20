@@ -128,4 +128,39 @@ class RateLimiterServiceTest {
     assertThat(d1.allowed()).isTrue();
     assertThat(d2.allowed()).isFalse();
   }
+
+  @Test
+  void authCredentialEndpointsCompartilhamOrcamentoRestritoEntreSiSemAfetarOutrasRotas() {
+    SecurityPerimeterProperties props = new SecurityPerimeterProperties();
+    props.getRatelimit().setEnabled(true);
+    props.getRatelimit().setMaxRequests(600);
+    props.getRatelimit().setWindow(Duration.ofSeconds(60));
+
+    SecurityPerimeterProperties.Ratelimit.Rule authRule = new SecurityPerimeterProperties.Ratelimit.Rule();
+    authRule.setName("auth-credential-endpoints");
+    authRule.getPaths().add("/api/v1/auth/passkey/**");
+    authRule.getPaths().add("/api/v1/auth/certificado/**");
+    authRule.setMaxRequests(2L);
+    authRule.setWindow(Duration.ofSeconds(60));
+    props.getRatelimit().getRules().add(authRule);
+
+    RateLimiterStore store = new InMemoryRateLimiterStore();
+    SecurityBlocklistService block = Mockito.mock(SecurityBlocklistService.class);
+    RateLimiterService svc = new RateLimiterService(props, store, block);
+
+    RateLimitDecision primeiraTentativaPasskey =
+        svc.evaluate(new RateLimitContext("6.6.6.6", "POST", "/api/v1/auth/passkey/finish", null));
+    RateLimitDecision segundaTentativaCertificado =
+        svc.evaluate(new RateLimitContext("6.6.6.6", "POST", "/api/v1/auth/certificado/resposta", null));
+    RateLimitDecision terceiraTentativaAuthEstourouOrcamentoCompartilhado =
+        svc.evaluate(new RateLimitContext("6.6.6.6", "POST", "/api/v1/auth/passkey/finish", null));
+
+    RateLimitDecision requisicaoEmOutraRotaAindaDentroDoOrcamentoGlobal =
+        svc.evaluate(new RateLimitContext("6.6.6.6", "GET", "/api/v1/processos/123", null));
+
+    assertThat(primeiraTentativaPasskey.allowed()).isTrue();
+    assertThat(segundaTentativaCertificado.allowed()).isTrue();
+    assertThat(terceiraTentativaAuthEstourouOrcamentoCompartilhado.allowed()).isFalse();
+    assertThat(requisicaoEmOutraRotaAindaDentroDoOrcamentoGlobal.allowed()).isTrue();
+  }
 }

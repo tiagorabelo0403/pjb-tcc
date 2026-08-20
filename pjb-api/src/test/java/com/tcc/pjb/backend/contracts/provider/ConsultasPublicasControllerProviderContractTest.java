@@ -11,6 +11,7 @@ import au.com.dius.pact.provider.spring.spring6.PactVerificationSpring6Provider;
 import au.com.dius.pact.provider.junitsupport.Provider;
 import au.com.dius.pact.provider.junitsupport.State;
 import au.com.dius.pact.provider.junitsupport.loader.PactFolder;
+import com.tcc.pjb.backend.configs.security.perimeter.ClientIpResolver;
 import com.tcc.pjb.backend.controller.publico.ConsultasPublicasController;
 import com.tcc.pjb.backend.model.dto.consultapublica.ConsultaPublicaFilterOptionDto;
 import com.tcc.pjb.backend.model.dto.consultapublica.ConsultaPublicaHitDTO;
@@ -46,16 +47,19 @@ class ConsultasPublicasControllerProviderContractTest {
     private final ConsultaPublicaSearchService consultaPublicaSearchService = mock(ConsultaPublicaSearchService.class);
     private final ConsultaPublicaWorkspaceService consultaPublicaWorkspaceService = mock(ConsultaPublicaWorkspaceService.class);
     private final CapabilityRateLimiter rateLimiter = mock(CapabilityRateLimiter.class);
+    private final ClientIpResolver clientIpResolver = mock(ClientIpResolver.class);
     private final ConsultasPublicasController controller = new ConsultasPublicasController(
             consultaPublicaSearchService,
             consultaPublicaWorkspaceService,
-            rateLimiter
+            rateLimiter,
+            clientIpResolver
     );
 
     @BeforeEach
     void setUp(PactVerificationContext context) {
-        reset(consultaPublicaSearchService, consultaPublicaWorkspaceService, rateLimiter);
-        when(rateLimiter.enforce(any(), any(), any(), any())).thenReturn(new CapabilityRateLimitDecision(true, 100L, 99L, 0L, 60, 1));
+        reset(consultaPublicaSearchService, consultaPublicaWorkspaceService, rateLimiter, clientIpResolver);
+        when(clientIpResolver.resolve(any())).thenReturn("203.0.113.10");
+        when(rateLimiter.enforce(any(), any(), any(), any(), any())).thenReturn(new CapabilityRateLimitDecision(true, 100L, 99L, 0L, 60, 1));
         PactProviderSpring6Support.configure(context, controller);
     }
 

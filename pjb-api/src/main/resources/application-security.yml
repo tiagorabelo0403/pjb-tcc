@@ -57,6 +57,15 @@ pjb:
             window: ${PJB_SECURITY_RATELIMIT_ADMIN_REPORTS_WINDOW:60s}
             maxRequests: ${PJB_SECURITY_RATELIMIT_ADMIN_REPORTS_MAX_REQUESTS:60}
             keyStrategy: ip_user
+          - name: auth-credential-endpoints
+            paths: ["/api/v1/auth/passkey/**", "/api/v1/auth/stepup/**", "/api/v1/auth/certificado/**", "/api/v1/auth/govbr/**"]
+            methods: ["GET", "POST"]
+            window: ${PJB_SECURITY_RATELIMIT_AUTH_WINDOW:60s}
+            maxRequests: ${PJB_SECURITY_RATELIMIT_AUTH_MAX_REQUESTS:20}
+            violation-window: ${PJB_SECURITY_RATELIMIT_AUTH_VIOLATION_WINDOW:10m}
+            ban-after-violations: ${PJB_SECURITY_RATELIMIT_AUTH_BAN_AFTER_VIOLATIONS:3}
+            ban-ttl: ${PJB_SECURITY_RATELIMIT_AUTH_BAN_TTL:2h}
+            keyStrategy: ip
       origin-governance:
         enabled: ${PJB_SECURITY_PERIMETER_ORIGIN_GOVERNANCE_ENABLED:false}
         allow-referer-fallback: ${PJB_SECURITY_PERIMETER_ORIGIN_ALLOW_REFERER_FALLBACK:true}

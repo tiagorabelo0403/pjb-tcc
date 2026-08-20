@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.controller.publico;
 
+import com.tcc.pjb.backend.configs.security.perimeter.ClientIpResolver;
 import com.tcc.pjb.backend.model.dto.publico.AdvogadoPublicoProcessoIntegralResponse;
 import com.tcc.pjb.backend.model.dto.publico.PublicPessoaProcessualSearchResponse;
 import com.tcc.pjb.backend.model.dto.publico.PublicProcessoResumoCardDto;
@@ -30,11 +31,14 @@ public class PublicProcessoPessoaController {
 
     private final ProcessoPesquisaIdentidadePublicaService service;
     private final CapabilityRateLimiter rateLimiter;
+    private final ClientIpResolver clientIpResolver;
 
     public PublicProcessoPessoaController(ProcessoPesquisaIdentidadePublicaService service,
-                                          CapabilityRateLimiter rateLimiter) {
+                                          CapabilityRateLimiter rateLimiter,
+                                          ClientIpResolver clientIpResolver) {
         this.service = service;
         this.rateLimiter = rateLimiter;
+        this.clientIpResolver = clientIpResolver;
     }
 
     @GetMapping("/candidatos")
@@ -43,8 +47,9 @@ public class PublicProcessoPessoaController {
                                                                            @RequestParam(value = "comarca", required = false) String comarca,
                                                                            @RequestParam(value = "forum", required = false) String forum,
                                                                            @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                           @RequestParam(value = "size", defaultValue = "20") int size) {
-        rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_PESSOA_CANDIDATOS", ApiVersion.latest());
+                                                                           @RequestParam(value = "size", defaultValue = "20") int size,
+                                                                           HttpServletRequest request) {
+        rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_PESSOA_CANDIDATOS", ApiVersion.latest(), clientIpResolver.resolve(request));
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(Duration.ofSeconds(20)).cachePrivate().mustRevalidate())
                 .body(service.buscarPessoasPorNome(nome, uf, comarca, forum, page, size));
@@ -53,8 +58,9 @@ public class PublicProcessoPessoaController {
     @GetMapping("/candidatos/{identityKey}/processos")
     public ResponseEntity<PublicProcessoResumoSearchResponse> processosPorCandidato(@PathVariable String identityKey,
                                                                                      @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                                     @RequestParam(value = "size", defaultValue = "20") int size) {
-        rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_PESSOA_PROCESSOS", ApiVersion.latest());
+                                                                                     @RequestParam(value = "size", defaultValue = "20") int size,
+                                                                                     HttpServletRequest request) {
+        rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_PESSOA_PROCESSOS", ApiVersion.latest(), clientIpResolver.resolve(request));
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(Duration.ofSeconds(20)).cachePrivate().mustRevalidate())
                 .body(service.buscarProcessosPorIdentidade(identityKey, page, size));
@@ -63,8 +69,9 @@ public class PublicProcessoPessoaController {
     @GetMapping("/cpf/{cpf}/processos")
     public ResponseEntity<PublicProcessoResumoSearchResponse> processosPorCpf(@PathVariable String cpf,
                                                                               @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                              @RequestParam(value = "size", defaultValue = "20") int size) {
-        rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_PESSOA_CPF", ApiVersion.latest());
+                                                                              @RequestParam(value = "size", defaultValue = "20") int size,
+                                                                              HttpServletRequest request) {
+        rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_PESSOA_CPF", ApiVersion.latest(), clientIpResolver.resolve(request));
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(Duration.ofSeconds(12)).cachePrivate().mustRevalidate())
                 .body(service.buscarProcessosPublicosPorCpf(cpf, page, size));
@@ -74,16 +81,17 @@ public class PublicProcessoPessoaController {
     public ResponseEntity<PublicProcessoResumoSearchResponse> processosPorOab(@PathVariable @NotBlank String oabNumero,
                                                                                 @RequestParam("uf") @NotBlank String uf,
                                                                                 @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                                @RequestParam(value = "size", defaultValue = "20") int size) {
-        rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_PESSOA_OAB", ApiVersion.latest());
+                                                                                @RequestParam(value = "size", defaultValue = "20") int size,
+                                                                                HttpServletRequest request) {
+        rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_PESSOA_OAB", ApiVersion.latest(), clientIpResolver.resolve(request));
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(Duration.ofSeconds(12)).cachePrivate().mustRevalidate())
                 .body(service.buscarProcessosPublicosPorOab(oabNumero, uf, page, size));
     }
 
     @GetMapping("/processos/{numero}/resumo")
-    public ResponseEntity<PublicProcessoResumoCardDto> resumo(@PathVariable @NotBlank String numero) {
-        rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_RESUMO", ApiVersion.latest());
+    public ResponseEntity<PublicProcessoResumoCardDto> resumo(@PathVariable @NotBlank String numero, HttpServletRequest request) {
+        rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_RESUMO", ApiVersion.latest(), clientIpResolver.resolve(request));
         return ResponseEntity.ok(service.resumirProcessoPublico(numero));
     }
 

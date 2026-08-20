@@ -48,8 +48,9 @@ class SecurityConfigurationProfilesBindingTest {
         assertFalse(originGovernance.isEnabled());
         assertFalse(perimeter.getCorsAllowedOrigins().contains("*"));
         assertEquals("memory", perimeter.getRatelimit().getStore());
-        assertEquals(2, perimeter.getRatelimit().getRules().size());
+        assertEquals(3, perimeter.getRatelimit().getRules().size());
         assertTrue(perimeter.getRatelimit().getRules().stream().anyMatch(rule -> "admin-api".equals(rule.getName())));
+        assertTrue(perimeter.getRatelimit().getRules().stream().anyMatch(rule -> "auth-credential-endpoints".equals(rule.getName())));
         assertEquals("redis", capabilityRateLimit.getStore());
         assertEquals(60, capabilityRateLimit.getWindowSeconds());
         assertEquals(60, capabilityRateLimit.getDefaultLimitTokens());

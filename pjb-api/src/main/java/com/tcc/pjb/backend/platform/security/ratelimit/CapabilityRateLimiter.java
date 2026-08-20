@@ -29,6 +29,14 @@ public class CapabilityRateLimiter {
                                                 Authentication authentication,
                                                 String capabilityRaw,
                                                 ApiVersion version) {
+        return evaluate(domain, authentication, capabilityRaw, version, null);
+    }
+
+    public CapabilityRateLimitDecision evaluate(CapabilityRateLimitDomain domain,
+                                                Authentication authentication,
+                                                String capabilityRaw,
+                                                ApiVersion version,
+                                                String anonymousSubjectFallback) {
         Objects.requireNonNull(domain, "domain");
 
         if (!props.isEnabled()) {
@@ -40,7 +48,7 @@ public class CapabilityRateLimiter {
 
         ApiVersion v = (version != null) ? version : ApiVersion.latest();
 
-        String subject = subject(authentication);
+        String subject = subject(authentication, anonymousSubjectFallback);
         String key = RateLimitKeys.buildKey(props.getKeyPrefix(), domain, capability, v.canonical(), subject);
 
         int window = resolver.resolveWindowSeconds();
@@ -68,7 +76,15 @@ public class CapabilityRateLimiter {
                                                Authentication authentication,
                                                String capabilityRaw,
                                                ApiVersion version) {
-        CapabilityRateLimitDecision d = evaluate(domain, authentication, capabilityRaw, version);
+        return enforce(domain, authentication, capabilityRaw, version, null);
+    }
+
+    public CapabilityRateLimitDecision enforce(CapabilityRateLimitDomain domain,
+                                               Authentication authentication,
+                                               String capabilityRaw,
+                                               ApiVersion version,
+                                               String anonymousSubjectFallback) {
+        CapabilityRateLimitDecision d = evaluate(domain, authentication, capabilityRaw, version, anonymousSubjectFallback);
         if (!d.allowed()) {
             ApiVersion v = (version != null) ? version : ApiVersion.latest();
             throw new CapabilityRateLimitExceededException(domain, CapabilityStrings.canonical(capabilityRaw), v, d);
@@ -76,11 +92,16 @@ public class CapabilityRateLimiter {
         return d;
     }
 
-    private static String subject(Authentication authentication) {
-        if (authentication == null) return "anonymous";
-        if (!authentication.isAuthenticated()) return "anonymous";
-        String n = authentication.getName();
-        if (n == null || n.isBlank()) return "anonymous";
-        return n.trim();
+    private static String subject(Authentication authentication, String anonymousSubjectFallback) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            String n = authentication.getName();
+            if (n != null && !n.isBlank()) {
+                return n.trim();
+            }
+        }
+        if (anonymousSubjectFallback != null && !anonymousSubjectFallback.isBlank()) {
+            return "anon:" + anonymousSubjectFallback.trim();
+        }
+        return "anonymous";
     }
 }

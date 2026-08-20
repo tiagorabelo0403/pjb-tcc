@@ -93,7 +93,10 @@ class FrontendPrimaryFlowsSmokeTest {
         ConsultaPublicaSearchService searchService = mock(ConsultaPublicaSearchService.class);
         ConsultaPublicaWorkspaceService workspaceService = mock(ConsultaPublicaWorkspaceService.class);
         CapabilityRateLimiter rateLimiter = mock(CapabilityRateLimiter.class);
-        when(rateLimiter.enforce(any(), any(), anyString(), any())).thenReturn(new CapabilityRateLimitDecision(true, 100L, 99L, 0L, 60, 1));
+        when(rateLimiter.enforce(any(), any(), anyString(), any(), any())).thenReturn(new CapabilityRateLimitDecision(true, 100L, 99L, 0L, 60, 1));
+        com.tcc.pjb.backend.configs.security.perimeter.ClientIpResolver clientIpResolver =
+                mock(com.tcc.pjb.backend.configs.security.perimeter.ClientIpResolver.class);
+        when(clientIpResolver.resolve(any())).thenReturn("203.0.113.11");
         when(workspaceService.workspace()).thenReturn(new ConsultaPublicaWorkspaceResponse(
                 "etag-workspace",
                 LocalDateTime.of(2026, 4, 16, 15, 0),
@@ -121,7 +124,7 @@ class FrontendPrimaryFlowsSmokeTest {
         when(searchService.searchPublic(anyString(), any(), any(), anyInt(), anyInt()))
                 .thenReturn(ConsultaPublicaSearchResponse.builder().query("123").page(0).size(20).total(1).hits(List.of()).build());
 
-        MockMvc mvc = standalone(new ConsultasPublicasController(searchService, workspaceService, rateLimiter));
+        MockMvc mvc = standalone(new ConsultasPublicasController(searchService, workspaceService, rateLimiter, clientIpResolver));
 
         mvc.perform(get("/api/v1/public/consultas-publicas/workspace"))
                 .andExpect(status().isOk())
