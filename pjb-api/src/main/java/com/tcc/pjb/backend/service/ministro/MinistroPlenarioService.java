@@ -60,6 +60,7 @@ this.institutionalActorRoutingService = institutionalActorRoutingService;
 this.recursalQualifiedDocumentMaterializerService = recursalQualifiedDocumentMaterializerService;
 }
 public InstitutionalActorTopologyMeshService.InstitutionalActorTopologyMeshSnapshot malhaProcesso(Long processoId) {
+authorizationService.requireVinculoInstitucionalComProcesso(processoId);
 return institutionalActorTopologyMeshService.snapshot(processoId);
 }
 public PlenarioSnapshot bootstrapPlenario() {

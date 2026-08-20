@@ -70,7 +70,8 @@ class MinisterioPublicoPainelServiceInqueritosTest {
                 mock(PainelExecutionSurfaceCompositionService.class),
                 mock(InstitutionalMaterialActionGuardService.class),
                 inqueritoPolicialDigitalService,
-                mock(com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar.class));
+                mock(com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar.class),
+                mock(com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService.class));
     }
 
     private Usuario promotor() {

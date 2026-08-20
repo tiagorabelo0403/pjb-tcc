@@ -21,8 +21,11 @@ import com.tcc.pjb.backend.model.entity.enums.CapacidadeCaixaInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.FuncaoServidorJudiciarioRepository;
+import com.tcc.pjb.backend.model.repository.PoloProcessualRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
+import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.platform.security.rbac.RbacGrantedRoleResolver;
+import com.tcc.pjb.backend.service.oficial_justica.OficialJusticaProcessoVinculoService;
 import com.tcc.pjb.backend.service.processo.ProcessoObservabilidadeAcessoService;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +43,7 @@ public class PjbAuthorizationService {
     private final PjbAuthorizationInstitutionalCapabilityFacade institutionalCapabilityFacade;
     private final PjbAuthorizationSensitiveIntegrationFacade sensitiveIntegrationFacade;
     private final PjbAuthorizationFuncaoServidorFacade funcaoServidorFacade;
+    private final PjbAuthorizationInstitutionalMalhaAccessFacade institutionalMalhaAccessFacade;
     private final UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository;
     private final RbacGrantedRoleResolver rbacGrantedRoleResolver;
 
@@ -58,7 +62,10 @@ public class PjbAuthorizationService {
                                    ProfessionalDocumentScopePolicyService professionalDocumentScopePolicyService,
                                    FuncaoServidorJudiciarioRepository funcaoServidorJudiciarioRepository,
                                    UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository,
-                                   ProcessoPartyCpfMatcher partyCpfMatcher) {
+                                   ProcessoPartyCpfMatcher partyCpfMatcher,
+                                   PoloProcessualRepository poloProcessualRepository,
+                                   WorkItemRepository workItemRepository,
+                                   OficialJusticaProcessoVinculoService oficialJusticaProcessoVinculoService) {
         this.currentUserService = currentUserService;
         this.contextResolver = new PjbAuthorizationDecisionContextResolver(currentUserService, govBrAssuranceExtractor);
         this.trailAssembler = new PjbAuthorizationTrailAssembler();
@@ -96,6 +103,12 @@ public class PjbAuthorizationService {
                 contextResolver,
                 funcaoServidorJudiciarioRepository,
                 trailAssembler
+        );
+        this.institutionalMalhaAccessFacade = new PjbAuthorizationInstitutionalMalhaAccessFacade(
+                policyRegistry,
+                poloProcessualRepository,
+                workItemRepository,
+                oficialJusticaProcessoVinculoService
         );
         this.rbacGrantedRoleResolver = rbacGrantedRoleResolver;
     }
@@ -142,6 +155,13 @@ public class PjbAuthorizationService {
         auditFacade.registerDecision(evaluation);
         if (!evaluation.allowed()) {
             throw accessDenied("Acesso negado à ação processual do servidor", evaluation);
+        }
+    }
+
+    public void requireVinculoInstitucionalComProcesso(Long processoId) {
+        AuthzDecision decisao = institutionalMalhaAccessFacade.evaluate(currentUserService.getOrNull(), processoId);
+        if (!decisao.allowed()) {
+            throw new AccessDeniedPjbException("Acesso negado à malha do processo: " + decisao.reason());
         }
     }
 

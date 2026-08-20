@@ -238,6 +238,7 @@ public class DelegadoPainelService {
     }
 
     public InstitutionalActorTopologyMeshService.InstitutionalActorTopologyMeshSnapshot malhaProcesso(Long processoId) {
+        authorizationService.requireVinculoInstitucionalComProcesso(processoId);
         return institutionalActorTopologyMeshService.snapshot(processoId);
     }
 

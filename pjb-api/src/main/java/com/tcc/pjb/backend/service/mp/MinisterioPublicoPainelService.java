@@ -8,6 +8,7 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
+import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
@@ -55,6 +56,7 @@ public class MinisterioPublicoPainelService {
     private final InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService;
     private final InqueritoPolicialDigitalService inqueritoPolicialDigitalService;
     private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
+    private final PjbAuthorizationService authorizationService;
 
     public MinisterioPublicoPainelService(PerfilDashboardContextFactory contextFactory,
                                           PainelServiceCommons commons,
@@ -72,7 +74,8 @@ public class MinisterioPublicoPainelService {
                                           PainelExecutionSurfaceCompositionService executionSurfaceCompositionService,
                                           InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService,
                                           InqueritoPolicialDigitalService inqueritoPolicialDigitalService,
-                                          MovimentacaoProcessualRegistrar movimentacaoRegistrar) {
+                                          MovimentacaoProcessualRegistrar movimentacaoRegistrar,
+                                          PjbAuthorizationService authorizationService) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
@@ -90,6 +93,7 @@ public class MinisterioPublicoPainelService {
         this.institutionalMaterialActionGuardService = institutionalMaterialActionGuardService;
         this.inqueritoPolicialDigitalService = inqueritoPolicialDigitalService;
         this.movimentacaoRegistrar = movimentacaoRegistrar;
+        this.authorizationService = authorizationService;
     }
 
     public PerfilDashboardPayload.MinisterioPublicoPayload bootstrapPainel() {
@@ -151,6 +155,7 @@ public class MinisterioPublicoPainelService {
     }
 
     public InstitutionalActorTopologyMeshService.InstitutionalActorTopologyMeshSnapshot malhaProcesso(Long processoId) {
+        authorizationService.requireVinculoInstitucionalComProcesso(processoId);
         return institutionalActorTopologyMeshService.snapshot(processoId);
     }
 

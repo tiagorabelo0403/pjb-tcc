@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
+import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
@@ -38,6 +39,7 @@ public class SecretariaEspecializadaRoutingService {
     private final SecretariatOperationalOrchestrationService operationalOrchestrationService;
     private final JudicialTopologySegregationMeshService judicialTopologySegregationMeshService;
     private final SecretariatInstitutionalVisibilityService visibilityService;
+    private final PjbAuthorizationService authorizationService;
 
     public SecretariaEspecializadaRoutingService(SecretariatRulePackFactory rulePackFactory,
                                                  ProcessoRepository processoRepository,
@@ -46,7 +48,8 @@ public class SecretariaEspecializadaRoutingService {
                                                  SecretariatOperationalRoutingResolver operationalRoutingResolver,
                                                  SecretariatOperationalOrchestrationService operationalOrchestrationService,
                                                  JudicialTopologySegregationMeshService judicialTopologySegregationMeshService,
-                                                 SecretariatInstitutionalVisibilityService visibilityService) {
+                                                 SecretariatInstitutionalVisibilityService visibilityService,
+                                                 PjbAuthorizationService authorizationService) {
         this.rulePackFactory = Objects.requireNonNull(rulePackFactory);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
@@ -55,6 +58,7 @@ public class SecretariaEspecializadaRoutingService {
         this.operationalOrchestrationService = Objects.requireNonNull(operationalOrchestrationService);
         this.judicialTopologySegregationMeshService = Objects.requireNonNull(judicialTopologySegregationMeshService);
         this.visibilityService = Objects.requireNonNull(visibilityService);
+        this.authorizationService = Objects.requireNonNull(authorizationService);
     }
 
     @Transactional(readOnly = true)
@@ -81,8 +85,11 @@ public class SecretariaEspecializadaRoutingService {
 
     @Transactional(readOnly = true)
     public JudicialTopologySegregationMeshService.JudicialTopologySegregationMeshSnapshot malhaProcesso(Long processoId) {
-        requireInstitutionalActor();
+        Usuario actor = requireInstitutionalActor();
         visibilityService.requireProcessAccess(processoId);
+        if (actor.getTipoUsuario() != null && actor.getTipoUsuario().isMagistratura()) {
+            authorizationService.requireVinculoInstitucionalComProcesso(processoId);
+        }
         return judicialTopologySegregationMeshService.snapshot(processoId);
     }
 
