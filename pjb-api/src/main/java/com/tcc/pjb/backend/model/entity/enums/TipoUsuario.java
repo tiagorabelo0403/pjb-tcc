@@ -124,6 +124,10 @@ public enum TipoUsuario {
         return isMagistratura() || isMinisterioPublico() || isDefensoriaPublica();
     }
 
+    public boolean requiresGeofenceEnforcement() {
+        return isMagistratura() || isMinisterioPublico() || isDefensoriaPublica() || isProcuradoria();
+    }
+
     public boolean isProcuradoria() {
         return switch (this) {
             case PROCURADOR,

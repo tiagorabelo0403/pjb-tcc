@@ -37,7 +37,7 @@ public class MagistraturaGeofenceFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                      FilterChain filterChain) throws ServletException, IOException {
         Usuario u = currentUserService.getOrNull();
-        if (u == null || u.getTipoUsuario() == null || !u.getTipoUsuario().requiresHardwareAuthAssurance()) {
+        if (u == null || u.getTipoUsuario() == null || !u.getTipoUsuario().requiresGeofenceEnforcement()) {
             filterChain.doFilter(request, response);
             return;
         }

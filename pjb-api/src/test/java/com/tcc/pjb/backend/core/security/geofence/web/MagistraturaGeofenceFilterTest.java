@@ -83,6 +83,25 @@ class MagistraturaGeofenceFilterTest {
     }
 
     @Test
+    void procuradorForaDoBrasilEBloqueado() throws Exception {
+        Usuario procurador = usuario(TipoUsuario.PROCURADOR);
+        when(currentUserService.getOrNull()).thenReturn(procurador);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(clientIpResolver.resolve(request)).thenReturn("203.0.113.7");
+        when(policyService.avaliar(procurador, "203.0.113.7"))
+                .thenReturn(new Avaliacao(Decisao.BLOQUEADO_PAIS, "Acesso fora do Brasil não autorizado"));
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        StringWriter sw = new StringWriter();
+        when(response.getWriter()).thenReturn(new PrintWriter(sw));
+        FilterChain chain = mock(FilterChain.class);
+
+        filter.doFilter(request, response, chain);
+
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        verify(chain, never()).doFilter(request, response);
+    }
+
+    @Test
     void promotorDentroDaUfDeLotacaoEPermitido() throws Exception {
         Usuario promotor = usuario(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO);
         when(currentUserService.getOrNull()).thenReturn(promotor);
