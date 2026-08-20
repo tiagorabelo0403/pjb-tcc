@@ -2,9 +2,10 @@ package com.tcc.pjb.backend.model.dto.atoordinatorio;
 
 import com.tcc.pjb.backend.model.entity.enums.TipoAtoOrdinatorio;
 import java.util.Map;
+import java.util.UUID;
 
 public record AtoOrdinatorioResponse(
-        Long documentoId,
+        UUID documentoId,
         Long movimentacaoId,
         TipoAtoOrdinatorio tipo,
         String hash,
