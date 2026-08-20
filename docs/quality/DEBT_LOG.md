@@ -886,9 +886,35 @@ real, sem IT cobrindo-os), então ativar o gate corretamente é estritamente mel
 agora roda pela mesma correção de ordem, mas a prova end-to-end por família fica registrada como
 extensão natural de cobertura futura, não como bug aberto.
 
+**Atualização:** as 11 famílias restantes (MP, extrajudicial, psicossocial, distribuição,
+secretaria especializada, procuradoria, perito, oficial de justiça, delegado, juiz —
+gabinete de decisões, e trânsito em julgado) ganharam prova E2E dedicada, mesmo padrão de
+`InstitutionalRecursalGateIT`/`InstitutionalMagistraturaGateIT`: `InstitutionalMpGateIT`,
+`InstitutionalExtrajudicialGateIT`, `InstitutionalPsicossocialGateIT`,
+`InstitutionalDistribuicaoGateIT`, `InstitutionalSecretariaGateIT`,
+`InstitutionalProcuradoriaGateIT`, `InstitutionalPeritoGateIT`,
+`InstitutionalOficialJusticaGateIT`, `InstitutionalDelegadoGateIT`,
+`InstitutionalJuizGabineteGateIT`, `InstitutionalTransitoJulgadoGateIT`. Todas as ~30
+`operationCode` do filtro agora têm pelo menos uma família com prova end-to-end de que o filtro
+roda depois da autenticação e classifica a operação certa — mas todas as 13 (2 pré-existentes +
+11 novas) exercitam só o caminho `enforced=false, allowed=true` (sem nomeação, fallback legado).
+Nenhuma prova o caminho `enforced=true` (nomeação institucional resolvida e autorizada), que é a
+garantia mais forte contra a regressão original. Cobertura de classificação de path está fechada;
+cobertura da propriedade de enforcement real fica registrada abaixo como extensão futura.
+
 **Quando revisitar:** ao adicionar novas famílias de ato sensível ao filtro, cobrir com IT via JWT
 real (padrão de `InstitutionalRecursalGateIT`). Ao seedar nomeação institucional em teste, usar
 `InstitutionalNominationStateRepository.save(...)` para exercitar o caminho de bloqueio real do gate.
+
+**Investigado em 2026-08-20, não é trivial:** provar `enforced=true` de verdade exige semear um
+`InstitutionalNomination` (`InstitutionalNominationStateRepository.save(...)`) que resolva como
+autorizado em `InstitutionalSensitiveActAuthorizationApplicationService.autorizar()` — o que por
+sua vez exige uma `InstitutionalAffiliation` real (resolvida por `affiliationId`, não apenas
+referenciada) e resultados não-bloqueantes de mais 3 serviços encadeados:
+`InstitutionalTrustAssessmentApplicationService`, `InstitutionalSessionRiskApplicationService` e
+`InstitutionalStrongSignaturePolicyApplicationService`. Nenhum teste no projeto hoje semeia essa
+cadeia inteira contra um contexto Spring real — todo uso existente mocka esses serviços. Fatia
+futura, não extensão pontual de um teste existente.
 
 ## D-recursal-superficie-por-papel
 
