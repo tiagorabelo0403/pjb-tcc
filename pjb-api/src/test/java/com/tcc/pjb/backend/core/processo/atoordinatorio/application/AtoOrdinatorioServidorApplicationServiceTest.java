@@ -3,7 +3,6 @@ package com.tcc.pjb.backend.core.processo.atoordinatorio.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -131,7 +130,7 @@ class AtoOrdinatorioServidorApplicationServiceTest {
         when(envelope.validacaoSoberana()).thenReturn(validacao);
         when(qualifiedDocumentSignatureEnvelopeService.signGovernedContent(
                 eq(processo), eq(servidor), anyString(), anyString(), eq("UNIDADE_JUDICIAL"),
-                eq("ATO_ORDINATORIO_QUALIFICADA_SOBERANA"), anyBoolean(), anyList()))
+                eq("ATO_ORDINATORIO_QUALIFICADA_SOBERANA"), eq(false), anyList()))
                 .thenReturn(envelope);
         when(documentoProcessualRepository.save(any(DocumentoProcessual.class)))
                 .thenAnswer(inv -> {
@@ -147,7 +146,8 @@ class AtoOrdinatorioServidorApplicationServiceTest {
         AtoOrdinatorioResponse response = service.proferir(7L, TipoAtoOrdinatorio.VISTA_PARTE_CONTRARIA, "manifeste-se em 5 dias");
 
         verify(authorizationService).requireFuncaoServidorCapability(processo, AcaoProcessualServidor.PROFERIR);
-        verify(documentTrustChainService).selar(eq(7L), eq(documentoId), anyString(), anyString(), anyBoolean(), anyBoolean(), anyString());
+        verify(documentTrustChainService).selar(eq(7L), eq(documentoId), eq("ATO_ORDINATORIO_SERVIDOR"),
+                anyString(), eq(false), eq(true), eq("ATO_ORDINATORIO_QUALIFICADA_SOBERANA"));
         assertThat(response.documentoId()).isEqualTo(documentoId);
         assertThat(response.movimentacaoId()).isEqualTo(321L);
         assertThat(response.tipo()).isEqualTo(TipoAtoOrdinatorio.VISTA_PARTE_CONTRARIA);
