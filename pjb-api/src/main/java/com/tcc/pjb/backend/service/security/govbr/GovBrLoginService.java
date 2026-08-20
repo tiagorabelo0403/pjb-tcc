@@ -62,7 +62,7 @@ public class GovBrLoginService {
 
     String url = GovBrOidcUrls.authorizeUrl(
         props,
-        props.redirectUriLogin(),
+        props.effectiveLoginRedirectUri(),
         props.effectiveCitizenLinkScope(),
         stateId.toString(),
         pkce.codeChallenge(),
@@ -98,7 +98,7 @@ public class GovBrLoginService {
       return errorRedirect("state_expired");
     }
 
-    GovBrTokenResponse token = client.exchangeCode(code.trim(), st.getCodeVerifier(), props.redirectUriLogin());
+    GovBrTokenResponse token = client.exchangeCode(code.trim(), st.getCodeVerifier(), props.effectiveLoginRedirectUri());
     if (token == null || token.accessToken() == null || token.accessToken().isBlank()) {
       return errorRedirect("token");
     }

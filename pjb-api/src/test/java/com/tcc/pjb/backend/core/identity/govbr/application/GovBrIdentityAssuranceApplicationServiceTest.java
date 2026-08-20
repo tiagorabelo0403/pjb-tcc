@@ -27,7 +27,7 @@ class GovBrIdentityAssuranceApplicationServiceTest {
         UserSecurityProfileRepository profileRepository = mock(UserSecurityProfileRepository.class);
         TrustedDeviceRepository trustedDeviceRepository = mock(TrustedDeviceRepository.class);
         GovBrAccountEntryGovernanceApplicationService governanceService = mock(GovBrAccountEntryGovernanceApplicationService.class);
-        GovBrOidcProperties props = new GovBrOidcProperties(true, false, "a", "t", "u", null, "cid", null, "https://app.jus.br/callback", "https://app.jus.br/stepup", null, "j", "iss", null, null, Duration.ofSeconds(2), Duration.ofSeconds(2), Duration.ofMinutes(5));
+        GovBrOidcProperties props = new GovBrOidcProperties(true, false, "a", "t", "u", null, "cid", null, "https://app.jus.br/callback", "https://app.jus.br/stepup", null, null, "j", "iss", null, null, null, null, Duration.ofSeconds(2), Duration.ofSeconds(2), Duration.ofMinutes(5));
         GovBrIdentityAssuranceApplicationService service = new GovBrIdentityAssuranceApplicationService(props, currentUserService, profileRepository, trustedDeviceRepository, governanceService);
 
         Usuario usuario = new Usuario();

@@ -67,6 +67,14 @@ public record GovBrOidcProperties(
     return redirectUri;
   }
 
+  public String effectiveLoginRedirectUri() {
+    String u = redirectUriLogin;
+    if (u != null && !u.isBlank()) {
+      return u.trim();
+    }
+    return redirectUri;
+  }
+
   
 
 

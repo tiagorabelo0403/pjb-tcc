@@ -20,9 +20,9 @@ class GovBrOidcClientGuardTest {
                 false, mockEnabled,
                 null, null, null, null,
                 "client-id", null,
-                "https://localhost/callback", null,
+                "https://localhost/callback", null, null,
                 null, null, null,
-                null, null,
+                null, null, null, null,
                 Duration.ofSeconds(4), Duration.ofSeconds(6), Duration.ofMinutes(5)
         );
     }
