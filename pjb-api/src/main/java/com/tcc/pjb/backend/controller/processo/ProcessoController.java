@@ -6,7 +6,7 @@ import com.tcc.pjb.backend.model.dto.ProcessoResponse;
 import com.tcc.pjb.backend.service.ProcessoService;
 
 @RestController
-@RequestMapping("/api/processos")
+@RequestMapping({"/api/processos", "/api/v1/processos"})
 @PreAuthorize("isAuthenticated()")
 public class ProcessoController {
 

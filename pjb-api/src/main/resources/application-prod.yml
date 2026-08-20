@@ -84,7 +84,7 @@ spring:
     redis:
       host: ${PJB_REDIS_HOST:}
       port: ${PJB_REDIS_PORT:6379}
-      password: ${PJB_REDIS_PASSWORD:}
+      password: ${PJB_REDIS_PASSWORD}
       timeout: ${PJB_REDIS_TIMEOUT:2s}
       lettuce:
         pool:
