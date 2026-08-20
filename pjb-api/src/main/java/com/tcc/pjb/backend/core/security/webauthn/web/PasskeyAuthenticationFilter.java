@@ -56,7 +56,7 @@ public class PasskeyAuthenticationFilter extends OncePerRequestFilter {
 
         String hash = PasskeySessionService.sha256Hex(token);
         PasskeySession s = sessionRepo.findActiveByTokenHash(hash).orElse(null);
-        if (s == null || s.isRevogado() || s.isExpired()) {
+        if (s == null || s.isRevogado() || s.isExpired() || s.isTermosPendentes()) {
             filterChain.doFilter(request, response);
             return;
         }

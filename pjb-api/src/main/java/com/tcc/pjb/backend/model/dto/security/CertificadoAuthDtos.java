@@ -98,7 +98,8 @@ public final class CertificadoAuthDtos {
             Status status,
             String token,
             LocalDateTime expiresAt,
-            ContextoResponse contexto
+            ContextoResponse contexto,
+            boolean termosPendentes
     ) implements Resposta {
         public AutenticadoResponse {
             Objects.requireNonNull(status);

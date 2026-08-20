@@ -170,7 +170,8 @@ public class CertificadoAuthFacadeService {
                     CertificadoAuthDtos.Status.AUTENTICADO,
                     sessao.token(),
                     sessao.expiresAt(),
-                    contexto(resolvido.contexto().unidade(), resolvido.contexto().papelNaUnidade()));
+                    contexto(resolvido.contexto().unidade(), resolvido.contexto().papelNaUnidade()),
+                    sessao.termosPendentes());
         }
         if (contexto instanceof PendenteSelecao pendenteSelecao) {
             auditService.registrar(ETAPA_RESPOSTA, true, "PENDENTE_SELECAO");

@@ -26,7 +26,7 @@ public class MagistradoAtivacaoController {
             @NotBlank String codigo
     ) {}
 
-    public record AtivacaoConfirmadaResponse(String token, LocalDateTime expiresAt) {}
+    public record AtivacaoConfirmadaResponse(String token, LocalDateTime expiresAt, boolean termosPendentes) {}
 
     private final MagistradoAtivacaoService service;
 
@@ -39,6 +39,6 @@ public class MagistradoAtivacaoController {
                                                                   HttpServletRequest servletRequest) {
         PasskeySessionService.IssuedPasskeySession sessao = service.confirmarAtivacao(
                 request.usuarioId(), request.challengeId(), request.codigo(), servletRequest.getRemoteAddr());
-        return ResponseEntity.ok(new AtivacaoConfirmadaResponse(sessao.token(), sessao.expiresAt()));
+        return ResponseEntity.ok(new AtivacaoConfirmadaResponse(sessao.token(), sessao.expiresAt(), sessao.termosPendentes()));
     }
 }

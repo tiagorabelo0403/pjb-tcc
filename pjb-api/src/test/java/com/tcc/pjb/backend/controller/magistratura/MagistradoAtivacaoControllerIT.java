@@ -27,7 +27,7 @@ class MagistradoAtivacaoControllerIT {
 
     @Test
     void confirmarDelegaParaOServicoEDevolveOTokenDaSessao() throws Exception {
-        var issued = new PasskeySessionService.IssuedPasskeySession("token-xyz", LocalDateTime.now().plusMinutes(30), 99L);
+        var issued = new PasskeySessionService.IssuedPasskeySession("token-xyz", LocalDateTime.now().plusMinutes(30), 99L, false);
         when(service.confirmarAtivacao(eq(1L), eq(10L), eq("123456"), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(issued);
 

@@ -37,7 +37,7 @@ public class WebAuthnSurfaceFacadeService {
     public WebAuthnAuthenticationResponse finishPasskey(PasskeyFinishRequest request, HttpServletRequest servletRequest) {
         String ip = ipResolver.resolve(servletRequest);
         var result = webAuthnService.finishPasskeyLogin(request.getSessionId(), request.getCredentialJson(), ip);
-        return new WebAuthnAuthenticationResponse(result.token(), result.expiresAt(), result.deviceId());
+        return new WebAuthnAuthenticationResponse(result.token(), result.expiresAt(), result.deviceId(), result.termosPendentes());
     }
 
     public WebAuthnChallengeResponse startStepUp(StepUpStartRequest request) {
@@ -50,6 +50,6 @@ public class WebAuthnSurfaceFacadeService {
         Usuario usuario = currentUserService.getRequired();
         String ip = ipResolver.resolve(servletRequest);
         var result = webAuthnService.finishStepUp(usuario, request.getSessionId(), request.getCredentialJson(), ip);
-        return new WebAuthnAuthenticationResponse(result.token(), result.expiresAt(), result.deviceId());
+        return new WebAuthnAuthenticationResponse(result.token(), result.expiresAt(), result.deviceId(), result.termosPendentes());
     }
 }

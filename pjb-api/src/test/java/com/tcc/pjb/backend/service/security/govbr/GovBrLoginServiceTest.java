@@ -385,7 +385,7 @@ class GovBrLoginServiceTest {
         usuario.setId(99L);
         when(usuarioRepository.findById(99L)).thenReturn(Optional.of(usuario));
         PasskeySessionService.IssuedPasskeySession issued =
-                new PasskeySessionService.IssuedPasskeySession("bearer-real-token", LocalDateTime.now().plusHours(8), 123L);
+                new PasskeySessionService.IssuedPasskeySession("bearer-real-token", LocalDateTime.now().plusHours(8), 123L, false);
         when(passkeySessionService.issue(usuario, null, "203.0.113.5")).thenReturn(issued);
 
         GovBrLoginSessionResponse response = service.retrieveSession(stateId.toString(), "203.0.113.5");

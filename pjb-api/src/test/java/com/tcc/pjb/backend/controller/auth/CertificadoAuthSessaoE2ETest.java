@@ -24,7 +24,10 @@ import com.tcc.pjb.backend.core.security.identity.ContextoInstitucionalResolver;
 import com.tcc.pjb.backend.core.security.identity.DesafioCertificadoNonceStore;
 import com.tcc.pjb.backend.core.security.identity.VerificadorAssinaturaCertificado;
 import com.tcc.pjb.backend.core.security.webauthn.PasskeySessionService;
+import com.tcc.pjb.backend.core.security.webauthn.TermosAceiteService;
 import com.tcc.pjb.backend.core.security.webauthn.WebAuthnProperties;
+import com.tcc.pjb.backend.model.entity.security.TermosAceite;
+import com.tcc.pjb.backend.model.repository.security.TermosAceiteRepository;
 import com.tcc.pjb.backend.core.security.webauthn.web.PasskeyAuthenticationFilter;
 import com.tcc.pjb.backend.model.dto.security.CertificadoAuthDtos;
 import com.tcc.pjb.backend.model.entity.Instituicao;
@@ -151,9 +154,12 @@ class CertificadoAuthSessaoE2ETest {
                     x509Support.fingerprintSha256(certificado),
                     com.tcc.pjb.backend.core.icp.domain.IcpBrasilValidationResult.fail("certificado invalido"));
         });
+        TermosAceiteRepository termosAceiteRepository = mock(TermosAceiteRepository.class);
+        when(termosAceiteRepository.findByUsuarioIdAndVersao(any(), any())).thenReturn(java.util.Optional.of(mock(TermosAceite.class)));
         PasskeySessionService passkeySessionService = new PasskeySessionService(
                 passkeySessionRepository,
-                new WebAuthnProperties());
+                new WebAuthnProperties(),
+                new TermosAceiteService(termosAceiteRepository, passkeySessionRepository, "v1"));
         CertificadoAuthFacadeService facadeService = new CertificadoAuthFacadeService(
                 chainValidator,
                 nonceStore,

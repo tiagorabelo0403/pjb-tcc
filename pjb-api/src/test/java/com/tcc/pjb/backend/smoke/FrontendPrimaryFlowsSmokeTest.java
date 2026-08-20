@@ -69,7 +69,7 @@ class FrontendPrimaryFlowsSmokeTest {
     void deveExecutarFluxoPrimarioDeLoginPasskeyNaSurfaceHttp() throws Exception {
         WebAuthnSurfaceFacadeService facade = mock(WebAuthnSurfaceFacadeService.class);
         when(facade.startPasskey(any())).thenReturn(new WebAuthnChallengeResponse(11L, "{\"challenge\":\"abc\"}"));
-        when(facade.finishPasskey(any(), any())).thenReturn(new WebAuthnAuthenticationResponse("token-1", LocalDateTime.of(2026, 4, 16, 15, 0), 7L));
+        when(facade.finishPasskey(any(), any())).thenReturn(new WebAuthnAuthenticationResponse("token-1", LocalDateTime.of(2026, 4, 16, 15, 0), 7L, false));
 
         MockMvc mvc = standalone(new PasskeyAuthController(facade));
 

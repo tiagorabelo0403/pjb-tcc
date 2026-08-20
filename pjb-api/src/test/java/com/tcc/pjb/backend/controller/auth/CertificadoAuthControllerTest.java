@@ -118,7 +118,7 @@ class CertificadoAuthControllerTest {
         when(clientIpResolver.resolve(any()))
                 .thenReturn("127.0.0.1");
         when(passkeySessionService.issue(any(Usuario.class), isNull(), any(String.class)))
-                .thenReturn(new PasskeySessionService.IssuedPasskeySession("cert-token-1", EXPIRES_AT, 41L));
+                .thenReturn(new PasskeySessionService.IssuedPasskeySession("cert-token-1", EXPIRES_AT, 41L, false));
         CertificadoAuthFacadeService facadeService = new CertificadoAuthFacadeService(
                 chainValidator,
                 nonceStore,

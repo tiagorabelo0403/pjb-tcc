@@ -63,7 +63,13 @@ public class PasskeySession {
     @Column(name = "revogado_em")
     private LocalDateTime revogadoEm;
 
+    @Column(name = "termos_pendentes", nullable = false)
+    private boolean termosPendentes = false;
+
     public boolean isRevogado() { return revogadoEm != null; }
+
+    public boolean isTermosPendentes() { return termosPendentes; }
+    public void setTermosPendentes(boolean termosPendentes) { this.termosPendentes = termosPendentes; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

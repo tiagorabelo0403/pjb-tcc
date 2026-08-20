@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public record WebAuthnAuthenticationResponse(
         String token,
         LocalDateTime expiresAt,
-        Long deviceId
+        Long deviceId,
+        boolean termosPendentes
 ) {
 }

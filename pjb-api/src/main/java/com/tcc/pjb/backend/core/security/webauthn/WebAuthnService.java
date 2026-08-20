@@ -238,7 +238,7 @@ public class WebAuthnService {
             p.setLastStrongAuthAt(LocalDateTime.now());
             profileRepo.save(p);
 
-            return new PasskeyLoginResult(issued.token(), issued.expiresAt(), deviceId);
+            return new PasskeyLoginResult(issued.token(), issued.expiresAt(), deviceId, issued.termosPendentes());
         } finally {
             sessionRepo.deleteById(sessionId);
         }
@@ -315,7 +315,7 @@ public class WebAuthnService {
             p.setLastStrongAuthAt(LocalDateTime.now());
             profileRepo.save(p);
 
-            return new PasskeyLoginResult(issued.token(), issued.expiresAt(), deviceId);
+            return new PasskeyLoginResult(issued.token(), issued.expiresAt(), deviceId, issued.termosPendentes());
         } finally {
             sessionRepo.deleteById(sessionId);
         }
@@ -568,7 +568,7 @@ public class WebAuthnService {
 
     public record EnrollFinishResult(Long deviceId, Long pendingChallengeId) {}
 
-    public record PasskeyLoginResult(String token, LocalDateTime expiresAt, Long deviceId) {}
+    public record PasskeyLoginResult(String token, LocalDateTime expiresAt, Long deviceId, boolean termosPendentes) {}
 
     public record AttestationInfo(String fmt, String aaguid, String authenticatorAttachment) {}
 

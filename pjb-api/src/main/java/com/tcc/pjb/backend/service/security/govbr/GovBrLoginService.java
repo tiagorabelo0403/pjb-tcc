@@ -175,7 +175,7 @@ public class GovBrLoginService {
     stateRepo.save(st);
 
     var issued = passkeySessionService.issue(usuario, null, ip);
-    return new GovBrLoginSessionResponse(issued.token(), issued.expiresAt());
+    return new GovBrLoginSessionResponse(issued.token(), issued.expiresAt(), issued.termosPendentes());
   }
 
   private String successRedirect(UUID stateId) {

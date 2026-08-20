@@ -16,22 +16,25 @@ public class PasskeySessionService {
 
     private final PasskeySessionRepository repo;
     private final WebAuthnProperties props;
+    private final TermosAceiteService termosAceiteService;
     private final SecureRandom random = new SecureRandom();
 
-    public PasskeySessionService(PasskeySessionRepository repo, WebAuthnProperties props) {
+    public PasskeySessionService(PasskeySessionRepository repo, WebAuthnProperties props, TermosAceiteService termosAceiteService) {
         this.repo = Objects.requireNonNull(repo);
         this.props = Objects.requireNonNull(props);
+        this.termosAceiteService = Objects.requireNonNull(termosAceiteService);
     }
 
     @Transactional
     public IssuedPasskeySession issue(Usuario usuario, Long deviceId, String ip) {
-        return issueScoped(usuario, deviceId, ip, null, null, false, ttlMinutesForLogin());
+        boolean termosPendentes = termosAceiteService.precisaAceitar(usuario);
+        return issueScoped(usuario, deviceId, ip, null, null, false, ttlMinutesForLogin(), termosPendentes);
     }
 
     @Transactional
     public IssuedPasskeySession issueStepUp(Usuario usuario, Long deviceId, String ip, String scopeAction, String scopeRequestHash, boolean oneShot) {
         int ttl = Math.max(1, props.getPasskeyStepUpTtlMinutes());
-        return issueScoped(usuario, deviceId, ip, scopeAction, scopeRequestHash, oneShot, ttl);
+        return issueScoped(usuario, deviceId, ip, scopeAction, scopeRequestHash, oneShot, ttl, false);
     }
 
     private IssuedPasskeySession issueScoped(Usuario usuario,
@@ -40,7 +43,8 @@ public class PasskeySessionService {
                                             String scopeAction,
                                             String scopeRequestHash,
                                             boolean scopeOneShot,
-                                            int ttlMinutes) {
+                                            int ttlMinutes,
+                                            boolean termosPendentes) {
         Objects.requireNonNull(usuario, "usuario");
 
         String token = generateToken();
@@ -54,10 +58,11 @@ public class PasskeySessionService {
         s.setScopeAction(safeScope(scopeAction));
         s.setScopeRequestHash(safeHash(scopeRequestHash));
         s.setScopeOneShot(scopeOneShot);
+        s.setTermosPendentes(termosPendentes);
         s.setExpiresAt(LocalDateTime.now().plusMinutes(Math.max(1, ttlMinutes)));
         repo.save(s);
 
-        return new IssuedPasskeySession(token, s.getExpiresAt(), s.getId());
+        return new IssuedPasskeySession(token, s.getExpiresAt(), s.getId(), termosPendentes);
     }
 
     private int ttlMinutesForLogin() {
@@ -104,5 +109,5 @@ public class PasskeySessionService {
         return s;
     }
 
-    public record IssuedPasskeySession(String token, LocalDateTime expiresAt, Long sessionId) {}
+    public record IssuedPasskeySession(String token, LocalDateTime expiresAt, Long sessionId, boolean termosPendentes) {}
 }
