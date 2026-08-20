@@ -46,7 +46,7 @@ class InstitutionalJuizGabineteGateIT extends PjbIntegrationTestBase {
         Usuario juiz = new Usuario();
         juiz.setNome("Juiz Gabinete Gate Probe");
         juiz.setEmail("juiz.gabinete.gate@pjb.local");
-        juiz.setCpf("10101010101");
+        juiz.setCpf("70707070707");
         juiz.setAtivo(true);
         juiz.setTipoUsuario(TipoUsuario.JUIZ_ESTADUAL);
         juiz.setPerfil(TipoUsuario.JUIZ_ESTADUAL.name());

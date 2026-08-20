@@ -51,7 +51,7 @@ class InstitutionalMpGateIT extends PjbIntegrationTestBase {
         Usuario promotor = new Usuario();
         promotor.setNome("Promotor Gate Probe");
         promotor.setEmail("mp.gate@pjb.local");
-        promotor.setCpf("11122233344");
+        promotor.setCpf("60606060606");
         promotor.setAtivo(true);
         promotor.setTipoUsuario(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO);
         promotor.setPerfil(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO.name());

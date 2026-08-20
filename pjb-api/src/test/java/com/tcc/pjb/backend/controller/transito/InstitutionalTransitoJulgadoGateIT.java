@@ -44,7 +44,7 @@ class InstitutionalTransitoJulgadoGateIT extends PjbIntegrationTestBase {
         Usuario juiz = new Usuario();
         juiz.setNome("Juiz Transito Gate Probe");
         juiz.setEmail("transito.gate@pjb.local");
-        juiz.setCpf("20202020202");
+        juiz.setCpf("80808080808");
         juiz.setAtivo(true);
         juiz.setTipoUsuario(TipoUsuario.JUIZ_ESTADUAL);
         juiz.setPerfil(TipoUsuario.JUIZ_ESTADUAL.name());
