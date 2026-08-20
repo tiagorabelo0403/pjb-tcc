@@ -1753,3 +1753,39 @@ terminado.
 **Não revisitar sem decisão de produto:** exige decidir se `encerrar()` deve sempre encerrar a
 `LotacaoInstituicao` correspondente (pode ser incorreto se o servidor tiver outra função ativa na
 mesma unidade) ou se precisa de uma consulta adicional antes de decidir.
+
+## D-secretariat-visibility-scope-nunca-populado
+
+**Status:** aberta
+
+**Contexto:** `SecretariatInstitutionalVisibilityService.resolveActorScope` deriva o recorte
+territorial/institucional do ator (tribunal, instância, ramo, unidade) por parsing de regex sobre
+`Usuario.perfil`, `Usuario.registroProfissional` e `Usuario.especialidades`, e compara UF/comarca
+direto pelas colunas `Usuario.uf`/`Usuario.comarca`. Nenhum desses cinco campos é preenchido em
+qualquer fluxo de cadastro ou atualização de conta hoje — busca completa por `.setUf(`, `.setComarca(`,
+`.setPerfil(` e `.setRegistroProfissional(` sobre `Usuario` em todo o `pjb-api/src/main` não encontrou
+nenhuma chamada. Na prática, para a maioria das contas reais de servidor/magistrado, `resolveActorScope`
+resolve com o mínimo de sinal disponível (ou nenhum), e as comparações de eixo em `requireRoutingAccess`
+(UF, comarca, tribunal, instância, ramo) ficam com efetividade parcial — cada eixo só compara quando os
+dois lados têm valor, e o lado do ator normalmente não tem.
+
+`SecretariaEspecializadaRoutingService.malhaProcesso` ganhou uma camada adicional de defesa
+(`PjbAuthorizationInstitutionalMalhaAccessFacade.requireVinculoInstitucionalComProcesso`, vínculo real
+por `WorkItem`) para o caso de magistratura, que já segue o mesmo padrão usado nos painéis de
+Desembargador/Ministro/Delegado. Servidor (`SERVIDOR`/`SERVIDOR_FORUM`) foi deliberadamente deixado fora
+dessa camada extra: a maior parte do uso legítimo desse endpoint é justamente a triagem de processos
+ainda não atribuídos a um `WorkItem` do servidor, e negar por padrão quando o vínculo não existe ainda
+bloquearia esse fluxo real. Endurecer os eixos UF/comarca dentro de `requireRoutingAccess` também não é
+seguro sem essa investigação adicional: como esses campos nunca são preenchidos hoje, qualquer regra que
+passe a negar quando `Usuario.uf`/`comarca` estiverem nulos bloquearia acesso de praticamente toda conta
+de servidor/magistrado em produção.
+
+**Risco:** para atores do tipo `SERVIDOR`/`SERVIDOR_FORUM`, a verificação territorial de
+`requireRoutingAccess` está funcionalmente próxima de um no-op — a maior parte das comparações de eixo
+não tem dado do lado do ator para comparar.
+
+**Não revisitar sem decisão de produto:** exige decidir onde e quando a afiliação institucional real do
+servidor (tribunal, unidade, ramo, instância) passa a ser capturada no cadastro/lotação — hoje não existe
+nenhum fluxo que grave isso. Só depois de existir esse fluxo faz sentido decidir se `requireRoutingAccess`
+deve negar por padrão quando o escopo do ator não resolve, ou se deve continuar comparando só o que
+existe.

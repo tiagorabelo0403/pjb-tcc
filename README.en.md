@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-4%2C847%20unit%20%2B%20306%20IT%20%7C%200%20failures-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-4%2C819%20unit%20%2B%20306%20IT%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -323,7 +323,7 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 4,847 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 4,819 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 306 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 ### Run Unit Tests Only (fast)
@@ -332,7 +332,7 @@ The project has two test levels with very different characteristics:
 ./mvnw test -pl pjb-api
 ```
 
-Expected time: **~15 min** on local hardware. Does not require Docker.
+Expected time: **~14 min** on local hardware. Does not require Docker.
 
 ### Run the Full Suite Including Integration Tests (official gate)
 
@@ -340,7 +340,7 @@ Expected time: **~15 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api
 ```
 
-This is the official project gate. It runs the 4,847 unit tests (Surefire) and then the 306 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 4,819 unit tests (Surefire) and then the 306 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 Expected time: **~50 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
 
@@ -369,10 +369,10 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **4,847** |
+| Total unit tests | Surefire | **4,819** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
-| Unit test execution time | Surefire | **~17 min** |
+| Unit test execution time | Surefire | **~14 min** |
 | Total integration tests | Failsafe | **306** ¹ |
 | Polo-composition-engine tests | Failsafe | **+10 green** (role by procedural type: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | IT failures | Failsafe | **0** (0E + 0F) |
@@ -842,6 +842,7 @@ The security model is driven by identity, role, assignment, organization, unit, 
 | **Materialized AuthzTrail** | Every authorization decision produces an immutable record in `tb_authz_trail`, deduplicated by semantic key — compact hash of actor, resource, and effect. Identical entries collapse; the ledger is queryable by access pattern, not just time window |
 | **ICP-Brasil Sanitization** | CPF and CNPJ removed from API responses, certificate cache, signature events, and ICP chain audit ledger. Where the identifier is needed for correlation, it is stored as a hashed reference — never in clear text |
 | **BOLA Guard (WorkItemScopeGuard)** | Prevents any actor from accessing a work item from a different unit or assignment. Applied as a P0 control — ArchUnit guarantees at build time that no code path can bypass the guard |
+| **Institutional link on process mesh** | `PjbAuthorizationInstitutionalMalhaAccessFacade` requires a real link to the process before exposing its institutional topology — active party role (Public Prosecutor's Office, Public Defender's Office, Attorney General's Office), a linked writ (bailiff), or an assigned `WorkItem` (judiciary, police chief). Without a proven link, access is denied by default; system administrators have an explicit bypass |
 | **Rate Limiting** | Critical routes protected against abuse with per-period request limits. RFC 7807 standardized response. `createOficio` and communication endpoints have their own budget, separate from general traffic |
 | **Security Event Logger** | Every relevant security event — authentication, denied authorization, step-up, attempted bypass — produces a structured log entry separate from the application log, independently auditable and free of operational noise |
 | **Auditable Circuit Breaker** | Open/closed state of each circuit breaker is recorded with timestamp, cause, and failure count — the degradation history of an integration is traceable, not just the current state |
@@ -925,7 +926,7 @@ CREATE POLICY processo_sigilo ON processo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **4,847 · 0 failures · 0 errors** |
+| Unit tests (Surefire) | **4,819 · 0 failures · 0 errors** |
 | Integration tests (Failsafe) | **306 · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
@@ -1135,7 +1136,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 5,153 tests (4,847 unit + 306 integration), and 294 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 5,125 tests (4,819 unit + 306 integration), and 294 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

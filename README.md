@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.847%20unit%20%2B%20306%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.819%20unit%20%2B%20306%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -324,7 +324,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.847 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 4.819 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 306 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
@@ -333,7 +333,7 @@ O projeto tem dois níveis de teste com características bem diferentes:
 ./mvnw test -pl pjb-api
 ```
 
-Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
+Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 
 ### Rodar a suíte completa com integração (portão oficial)
 
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.847 unitários (Surefire) e depois os 306 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.819 unitários (Surefire) e depois os 306 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,10 +379,10 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.847** |
+| Total de testes unitários | Surefire | **4.819** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
-| Tempo unitários | Surefire | **~17 min** |
+| Tempo unitários | Surefire | **~14 min** |
 | Total de testes de integração | Failsafe | **306** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Falhas IT | Failsafe | **0** (0E + 0F) |
@@ -852,6 +852,7 @@ O modelo de segurança é orientado por identidade, papel, lotação, órgão, u
 | **AuthzTrail materializado** | Toda decisão de autorização produz registro imutável em `tb_authz_trail`, deduplicado por chave semântica — hash compacto de ator, recurso e efeito. Entradas idênticas colapsam; o ledger é consultável por padrão de acesso, não apenas por janela de tempo |
 | **Sanitização ICP-Brasil** | CPF e CNPJ removidos de respostas de API, cache de certificados, eventos de assinatura e entradas do audit ledger ICP. Onde a correlação é necessária, o identificador é hasheado — jamais em claro |
 | **BOLA guard (WorkItemScopeGuard)** | Impede que qualquer ator acesse item de trabalho de unidade ou lotação diferente da sua. Aplicado como controle P0 — ArchUnit garante em tempo de build que não existe caminho de código capaz de bypassar o guard |
+| **Vínculo institucional na malha do processo** | `PjbAuthorizationInstitutionalMalhaAccessFacade` exige vínculo real com o processo antes de expor sua topologia institucional — polo ativo (Ministério Público, Defensoria, Procuradoria), mandado vinculado (Oficial de Justiça) ou `WorkItem` atribuído (magistratura, delegado). Sem vínculo comprovado, o acesso é negado por padrão; administrador do sistema tem bypass explícito |
 | **Rate limiting** | Rotas críticas protegidas contra abuso com limite de requisições por período. Resposta padronizada RFC 7807. `createOficio` e endpoints de comunicação têm orçamento próprio, separado do tráfego geral |
 | **Security event logger** | Todo evento de segurança relevante — autenticação, autorização negada, step-up, bypass tentado — produz entrada em log estruturado separado do log de aplicação, auditável de forma independente e sem mistura com ruído operacional |
 | **Circuit breaker auditável** | Estado de abertura/fechamento de cada circuit breaker é registrado com timestamp, causa e contagem de falhas — a história de degradação de uma integração é rastreável, não apenas o estado atual |
@@ -958,7 +959,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.847 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.819 · 0 falhas · 0 erros** |
 | Testes de integração (Failsafe) | **306 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1173,7 +1174,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 5.153 testes (4.847 unitários + 306 de integração) e 294 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 5.125 testes (4.819 unitários + 306 de integração) e 294 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
