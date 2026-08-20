@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/marketplace/v1")
-@PreAuthorize("isAuthenticated()")
+@PreAuthorize("permitAll()")
 public class ApiMarketplaceController {
 
     private final MarketplaceSurfaceFacadeService facadeService;
@@ -42,11 +42,8 @@ public class ApiMarketplaceController {
     public ResponseEntity<MarketplaceProtocoloResponse> protocolar(@Valid @RequestBody MarketplaceProtocoloRequest request,
                                                                    Authentication authentication,
                                                                    HttpServletRequest servletRequest) {
-        rateLimiter.enforce(CapabilityRateLimitDomain.INSTITUCIONAL, authentication, "marketplace_protocolar_processo", ApiVersion.V1);
-        String clientId = authentication != null && authentication.getName() != null ? authentication.getName() : null;
-        if (clientId == null || clientId.isBlank()) {
-            clientId = marketplaceOAuth2Service.authorizeHttpRequest(servletRequest, "processos:protocolar").clientId();
-        }
+        String clientId = marketplaceOAuth2Service.authorizeHttpRequest(servletRequest, "processos:protocolar").clientId();
+        rateLimiter.enforce(CapabilityRateLimitDomain.INSTITUCIONAL, authentication, "marketplace_protocolar_processo", ApiVersion.V1, clientId);
         return ResponseEntity.status(HttpStatus.CREATED).body(facadeService.protocolar(request, clientId));
     }
 
@@ -56,11 +53,8 @@ public class ApiMarketplaceController {
             @Valid @RequestBody MarketplaceComplementoDocumentalRequest request,
             Authentication authentication,
             HttpServletRequest servletRequest) {
-        rateLimiter.enforce(CapabilityRateLimitDomain.INSTITUCIONAL, authentication, "marketplace_complementar_documentos", ApiVersion.V1);
-        String clientId = authentication != null && authentication.getName() != null ? authentication.getName() : null;
-        if (clientId == null || clientId.isBlank()) {
-            clientId = marketplaceOAuth2Service.authorizeHttpRequest(servletRequest, "processos:documentos").clientId();
-        }
+        String clientId = marketplaceOAuth2Service.authorizeHttpRequest(servletRequest, "processos:documentos").clientId();
+        rateLimiter.enforce(CapabilityRateLimitDomain.INSTITUCIONAL, authentication, "marketplace_complementar_documentos", ApiVersion.V1, clientId);
         return ResponseEntity.ok(facadeService.complementarDocumentos(id, request, clientId));
     }
 }
