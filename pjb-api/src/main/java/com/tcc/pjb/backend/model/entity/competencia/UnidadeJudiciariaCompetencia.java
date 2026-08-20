@@ -33,6 +33,7 @@ import jakarta.persistence.Version;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
+import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 
 @PjbDataOwnership(module = PjbModuleId.COMPETENCIA_ROTEAMENTO, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
 @Entity
@@ -86,6 +87,14 @@ public class UnidadeJudiciariaCompetencia {
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_vara", nullable = false, length = 40)
     private TipoVaraDistribuicao tipoVara;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "grau", nullable = false, length = 20)
+    private GrauJurisdicao grau;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_turma_recursal", length = 20)
+    private TipoTurmaRecursal tipoTurmaRecursal;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "tb_unidade_judiciaria_especialidade", joinColumns = @JoinColumn(name = "unidade_id"))
@@ -252,6 +261,9 @@ public class UnidadeJudiciariaCompetencia {
         if (this.tipoVara == null) {
             this.tipoVara = TipoVaraDistribuicao.VARA_UNICA;
         }
+        if (this.grau == null) {
+            this.grau = GrauJurisdicao.PRIMEIRO_GRAU;
+        }
         Instant now = Instant.now();
         if (this.criadoEm == null) {
             this.criadoEm = now;
@@ -395,6 +407,30 @@ public class UnidadeJudiciariaCompetencia {
 
     public TipoVaraDistribuicao getTipoVara() {
         return tipoVara;
+    }
+
+    public GrauJurisdicao getGrau() {
+        return grau;
+    }
+
+    public void setGrau(GrauJurisdicao grau) {
+        if (grau != GrauJurisdicao.SEGUNDO_GRAU && this.tipoTurmaRecursal != null) {
+            throw new IllegalStateException("não é possível alterar o grau para " + grau
+                    + " enquanto a unidade estiver marcada como turma recursal (" + this.tipoTurmaRecursal + ")");
+        }
+        this.grau = grau;
+    }
+
+    public TipoTurmaRecursal getTipoTurmaRecursal() {
+        return tipoTurmaRecursal;
+    }
+
+    public void setTipoTurmaRecursal(TipoTurmaRecursal tipoTurmaRecursal) {
+        if (tipoTurmaRecursal != null && this.grau != GrauJurisdicao.SEGUNDO_GRAU) {
+            throw new IllegalStateException("tipoTurmaRecursal só pode ser definido quando grau é SEGUNDO_GRAU (atual: "
+                    + this.grau + ")");
+        }
+        this.tipoTurmaRecursal = tipoTurmaRecursal;
     }
 
     public Set<String> getEspecialidades() {

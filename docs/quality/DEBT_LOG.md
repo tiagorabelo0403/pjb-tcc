@@ -1789,3 +1789,36 @@ servidor (tribunal, unidade, ramo, instância) passa a ser capturada no cadastro
 nenhum fluxo que grave isso. Só depois de existir esse fluxo faz sentido decidir se `requireRoutingAccess`
 deve negar por padrão quando o escopo do ator não resolve, ou se deve continuar comparando só o que
 existe.
+
+## D-fracionary-organ-routing-catalogo-inexistente
+
+**Status:** aberta
+
+**Contexto:** `UnidadeJudiciariaCompetencia` ganhou os campos `grau` (`GrauJurisdicao`) e
+`tipoTurmaRecursal` (`TipoTurmaRecursal`, novo enum), permitindo catalogar uma turma recursal real
+(2º grau dos Juizados Especiais) com a mesma matéria já usada para varas de 1º grau (`tipoVara`).
+Investigação (via fork dedicado) confirmou que isso NÃO fecha, sozinho, a separação por matéria no
+roteamento recursal: `FracionaryOrganRoutingResolver.resolveSecondInstanceProfile`
+(`core/processual/routing/FracionaryOrganRoutingResolver.java:265-266`), junto com
+`TribunalInternalOrganCatalog.resolve()` (`core/processual/routing/TribunalInternalOrganCatalog.java:32-226`)
+e `CollegiateOrganCatalog.resolve()` (`core/processual/routing/CollegiateOrganCatalog.java:13-64`), já
+diferenciam civil de criminal — mas só no nível do **rótulo textual** (`"CAMARA_TJ_CRIMINAL"` vs
+`"CAMARA_TJ_CIVEL"` etc., montado por concatenação de String). Nenhuma das três classes tem `@Entity`,
+repository ou qualquer persistência — são funções puras que sintetizam texto descritivo
+(`orgaoJulgadorSugerido`, `internalOrganLabel`, os campos `fracionary.internalOrgan.*` consumidos por
+`RecursalAutuacaoDestinoService.buildFracionaryProjection`). Nenhuma delas referencia
+`UnidadeJudiciariaCompetencia` — confirmado por leitura completa dos três arquivos, zero import/campo/chamada.
+
+**Risco:** não existe risco de um recurso cível ser **atribuído** a uma câmara/turma criminal, porque
+não existe atribuição real nenhuma hoje — o "destino" mostrado ao usuário é metadado descritivo/de
+exibição, não uma decisão de distribuição persistida e auditável como já existe para 1º grau via
+`MapaCompetenciaDinamicoEngine` + `UnidadeJudiciariaCompetencia`. O risco real é a lacuna inversa: o
+catálogo novo de turma recursal (`grau`/`tipoTurmaRecursal`) não tem nenhum consumidor ainda — motor de
+roteamento recursal e catálogo de câmaras/turmas seguem desconectados.
+
+**Não revisitar sem decisão de produto:** fechar isso de verdade exige decidir se `FracionaryOrganRoutingResolver`/
+`TribunalInternalOrganCatalog`/`CollegiateOrganCatalog` devem ser reescritos para consultar
+`UnidadeJudiciariaCompetencia` (exigindo seed real de câmaras/turmas por tribunal, hoje inexistente) ou se
+o papel desses três continua sendo só rotulagem informativa, com uma camada de distribuição recursal
+real construída à parte, análoga ao `MapaCompetenciaDinamicoEngine`. Qualquer uma das duas rotas é maior
+que uma correção pontual.
