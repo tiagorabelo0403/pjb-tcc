@@ -13,6 +13,7 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.identity.GovBrLoginState;
 import com.tcc.pjb.backend.model.repository.GovBrLoginStateRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Objects;
@@ -46,6 +47,7 @@ public class GovBrLoginService {
   }
 
   @Transactional
+  @PjbTransactionalBudget(operation = "govbr.login.start.persist", maxMillis = 1500, critical = true)
   public GovBrLoginStartResponse start() {
     if (!props.enabled()) {
       throw new IllegalStateException("govbr_disabled");
@@ -73,6 +75,7 @@ public class GovBrLoginService {
   }
 
   @Transactional
+  @PjbTransactionalBudget(operation = "govbr.login.callback.persist", maxMillis = 4000, critical = true)
   public String handleCallback(String code, String state) throws IOException, InterruptedException {
     if (!props.enabled()) {
       throw new IllegalStateException("govbr_disabled");
@@ -142,6 +145,7 @@ public class GovBrLoginService {
   }
 
   @Transactional
+  @PjbTransactionalBudget(operation = "govbr.login.session.persist", maxMillis = 1500, critical = true)
   public GovBrLoginSessionResponse retrieveSession(String state, String ip) {
     UUID stateId;
     try {
