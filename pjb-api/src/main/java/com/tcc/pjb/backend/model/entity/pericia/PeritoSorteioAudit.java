@@ -21,6 +21,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -64,6 +65,10 @@ public class PeritoSorteioAudit {
 
     @Column(name = "comarca", length = 120)
     private String comarca;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
 
     @Column(name = "data_referencia", nullable = false, length = 20)
     private String dataReferencia;

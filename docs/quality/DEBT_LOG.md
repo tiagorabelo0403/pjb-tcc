@@ -11,41 +11,65 @@ o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
 **Status:** aberta
 
-**Contexto:** a fatia "Organização Judiciária" (Tasks 1-6, `Tribunal`/`Comarca` como entidade real)
+**Contexto:** o trabalho de "Organização Judiciária" (Tasks 1-6, `Tribunal`/`Comarca` como entidade real)
 migrou território (uf/comarca) de String solta para FK `Comarca` em 5 entidades: `UnidadeJudiciariaCompetencia`,
 `Jurisdicao`, `Usuario`, `Processo`, `WorkItem` — mantendo `uf`/`comarca` como fallback String real ao lado
 da FK, porque o catálogo `tb_comarca` (Task 1) só cobre 3 dos 27 estados (CE/MG/RN). O teste de arquitetura
 novo (`OrganizacaoJudiciariaArchitectureTest`, Task 6) trava qualquer entidade NOVA que reintroduza `uf`/`comarca`
 String sem a FK `Comarca` correspondente na mesma classe — mas, ao rodar essa regra contra o projeto inteiro
-pela primeira vez, apareceram 23 entidades pré-existentes, fora do escopo desta fatia, que já declaravam
-`uf`/`comarca` String sem nenhuma FK `Comarca`. Uma delas (`JurisdicaoTerritorial`) saiu da allowlist ainda
-nesta fatia — ver nota abaixo —, restando **22 entidades pré-existentes**:
+pela primeira vez, apareceram 23 entidades pré-existentes, fora do escopo original, que já declaravam
+`uf`/`comarca` String sem nenhuma FK `Comarca`. Quatro saíram da allowlist depois — `JurisdicaoTerritorial`
+logo em seguida, `OrgaoJudiciario`/`PeritoSorteioAudit`/`PeritoDisponibilidade` mais tarde —
+ver notas abaixo —, restando **19 entidades pré-existentes**:
 
 `CalendarioForenseEntry`, `AtlasAcessoMunicipio`, `NoFederacaoJudicial`, `EscrituraExtrajudicialRegistro`,
 `InqueritoPolicialDigital`, `EventoInstitucional`, `Estados`, `CidadaoProcessoNacionalProjection`, `Municipios`,
 `ProcessoZonaEleitoral`, `UnidadeInstituicao`, `CalendarioEleitoral`, `OperationalFunctionCredential`,
 `GovServiceRegistry`, `InstitutionalCompetenceRuleSnapshot`, `InstitutionalCatalogUnitSnapshot`,
-`InstitutionalCatalogGovernanceSnapshot`, `ProfessionalInstitutionalAccessGrant`, `PeritoSorteioAudit`,
-`PeritoDisponibilidade`, `PainelTribunalMetrica`, `OrgaoJudiciario`.
+`InstitutionalCatalogGovernanceSnapshot`, `ProfessionalInstitutionalAccessGrant`, `PainelTribunalMetrica`.
 
-Essas 22 classes foram registradas numa allowlist nomeada (`ENTIDADES_LEGADAS_TERRITORIO_STRING_SEM_FK_COMARCA`)
+Essas 19 classes foram registradas numa allowlist nomeada (`ENTIDADES_LEGADAS_TERRITORIO_STRING_SEM_FK_COMARCA`)
 dentro do próprio teste de arquitetura — a regra continua ativa e bloqueia qualquer entidade nova fora dessa
-lista, mas não força a migração retroativa das 22 nesta fatia (fora de escopo: cada uma pertence a um domínio
-diferente — eleitoral, criminal, atlas, perícia, extrajudicial, gov, federalismo, snapshots institucionais —
-e migrar todas exigiria repetir o ciclo completo desta fatia 22 vezes).
+lista, mas não força a migração retroativa das 19 de uma vez (cada uma pertence a um domínio
+diferente — eleitoral, criminal, atlas, extrajudicial, gov, federalismo, snapshots institucionais —
+e migrar todas exigiria repetir a mesma investigação e migração individualmente 19 vezes).
 
-`JurisdicaoTerritorial` saiu da allowlist na rodada de correção da revisão final: é a tabela de onde `tb_comarca`
+`JurisdicaoTerritorial` saiu da allowlist na correção da revisão final: é a tabela de onde `tb_comarca`
 é semeada (`V319` lê `municipio_ibge`/`municipio_nome`/`uf`), então a FK `Comarca` resolve por código IBGE com
 match exato, sem a ambiguidade de nome que motivou o adiamento das demais.
 
-**Risco:** as mesmas classes de bug que motivaram esta fatia (grafia divergente entre UF/comarca cadastrados
-em textos diferentes) continuam presentes nessas 22 entidades — nenhuma delas ganhou o benefício da comparação
-por identidade real via FK.
+`OrgaoJudiciario` saiu da allowlist com migração própria (`V329__orgao_judiciario_fk_comarca.sql`): ganhou
+`comarcaEntidade` (`@ManyToOne Comarca`, nullable, ao lado dos campos `comarca`/`estado` String que continuam
+como fallback), `OrgaoJudiciarioService.aplicarComarcaDoCatalogo` resolve via `ComarcaResolutionService.resolver`
+(mesmo padrão nome+UF acento-insensível já usado por `UsuarioService`) em `criar`/`atualizar`, e o backfill da
+migration aplica o mesmo match aos registros já existentes. Cobertura:
+`OrgaoJudiciarioServiceComarcaTest` (3, resolve/aplica, comarca em branco não resolve, resolver sem candidata
+não lança) e `OrganizacaoJudiciariaArchitectureTest` (a regra em si, confirmando que a classe não precisa mais
+da allowlist). Cadeia completa de migrations (V1→V329) validada do zero contra Postgres 17 descartável via
+Flyway CLI antes do fechamento.
 
-**Quando revisitar:** ao planejar a próxima fatia de território — priorizar por volume de uso real
-(`Estados`/`Municipios`/`OrgaoJudiciario` parecem candidatos de alto impacto por serem catálogos amplamente
-referenciados). Cada migração fecha reduzindo a allowlist em `OrganizacaoJudiciariaArchitectureTest`,
-nunca alargando.
+`PeritoSorteioAudit`/`PeritoDisponibilidade` saíram da allowlist juntas numa migração própria
+(`V330__perito_disponibilidade_sorteio_fk_comarca.sql`), mesmo padrão de `comarcaEntidade` nullable ao lado do
+`comarca` String. Diferença em relação às outras: nenhuma das duas tem campo UF próprio (só `comarca`), então
+a resolução usa `ComarcaResolutionService.resolver(comarca, null)` — o resolver já trata UF ausente com
+match por nome sozinho, só resolvendo quando há exatamente 1 candidata inequívoca em `tb_comarca` (caso
+contrário fica `null`, nunca escolhe errado). O backfill da migration replica essa mesma regra de
+desambiguação em SQL puro (`WHERE ... AND (SELECT count(*) ... ) = 1`). Cobertura:
+`PeritoDisponibilidadeServiceTest` ganhou 2 testes novos (resolve e aplica `comarcaEntidade` ao registrar
+disponibilidade; comarca não informada não resolve nem lança) somados aos 5 já existentes (7/7 verde).
+
+**Estados/Municipios não são candidatos válidos, apesar do que uma versão anterior desta nota sugeria:**
+investigação confirmou que `Estados` (PK = `uf`) e `Municipios` (PK = `ibgeCode`) são elas mesmas as tabelas de
+catálogo geográfico — não têm um campo "uf/comarca solta" que precise ser comparado contra `tb_comarca` por
+identidade, são a própria fonte primária. Não são migráveis pelo mesmo padrão das demais; retirado como
+sugestão de próximo alvo.
+
+**Risco:** as mesmas classes de bug que motivaram este trabalho (grafia divergente entre UF/comarca cadastrados
+em textos diferentes) continuam presentes nas 19 entidades restantes — nenhuma delas ganhou o benefício da
+comparação por identidade real via FK.
+
+**Quando revisitar:** ao planejar o próximo trabalho de território — priorizar por volume de uso real. Cada
+migração fecha reduzindo a allowlist em `OrganizacaoJudiciariaArchitectureTest`, nunca alargando.
 
 ## D-workitem-fk-comarca-propagacao-parcial
 
@@ -1528,17 +1552,19 @@ Não revisitar a parte de prepared statements — a causa está eliminada estrut
 
 ## D-ha-backend-b-elasticsearch-index-race
 
-**Status:** aberta
+**Status:** FECHADA
 
-**Contexto:** achada na mesma rodada de verificação, ao estabilizar `backend-b` o suficiente (depois de corrigir `PJB_LIVE_CLUSTER_ENABLED` ausente, ver abaixo) pra ele avançar além do bug anterior. Com `backend` e `backend-b` subindo ao mesmo tempo contra o mesmo Elasticsearch, `SimpleElasticsearchRepository` (Spring Data Elasticsearch, bean `processoQueryRepository`) chama `createIndexAndMappingIfNeeded()` no construtor sem tratar `resource_already_exists_exception` — quando os dois nós tentam criar o índice `pjb-processos` na mesma janela de boot, o segundo a chegar recebe a exceção do Elasticsearch (`[es/indices.create] failed: [resource_already_exists_exception] index [pjb-processos] already exists`) e falha a inicialização do Spring context inteiro. Race de boot concorrente, não determinístico (depende de qual nó chega primeiro).
+**Contexto:** achada ao estabilizar `backend-b` o suficiente (depois de corrigir `PJB_LIVE_CLUSTER_ENABLED` ausente, ver abaixo) pra ele avançar além do bug anterior. Com `backend` e `backend-b` subindo ao mesmo tempo contra o mesmo Elasticsearch, `SimpleElasticsearchRepository` (Spring Data Elasticsearch, bean `processoQueryRepository`) chama `createIndexAndMappingIfNeeded()` no construtor sem tratar `resource_already_exists_exception` — quando os dois nós tentam criar o índice `pjb-processos` na mesma janela de boot, o segundo a chegar recebe a exceção do Elasticsearch (`[es/indices.create] failed: [resource_already_exists_exception] index [pjb-processos] already exists`) e falha a inicialização do Spring context inteiro. Race de boot concorrente, não determinístico (depende de qual nó chega primeiro).
 
-**Risco:** médio — só se manifesta quando 2+ instâncias sobem ao mesmo tempo contra um Elasticsearch vazio (primeiro boot de um ambiente novo); uma vez o índice criado por qualquer nó, boots subsequentes não recriam.
+**Correção:** `@Document(createIndex = false)` em `ProcessoQueryModel` e `RecursalMeshQueryModel` (mesmo padrão de índice, nunca exercitado na verificação HA original, mas com a mesma causa raiz) desliga a autocriação do Spring Data no construtor do repositório. `PjbSearchIndexInitializer` (novo, `query/config/`, `ApplicationRunner` sob `pjb.search.enabled=true`) assume a criação: checa existência antes de criar, e trata `resource_already_exists_exception` na mensagem da exceção (ou na causa) como sucesso idempotente — outro nó já ter criado o índice entre a checagem e a criação deixa de derrubar o boot.
 
-**Cobertura de teste:** nenhuma — descoberto rodando a topologia HA real com 2 nós de aplicação simultâneos, cenário que nenhum teste automatizado exercita hoje.
+**Risco original:** médio — só se manifestava quando 2+ instâncias subiam ao mesmo tempo contra um Elasticsearch vazio (primeiro boot de um ambiente novo); uma vez o índice criado por qualquer nó, boots subsequentes não recriavam.
 
-**Quando revisitar:** se a topologia HA precisar bootar de forma confiável com Elasticsearch vazio (ex.: ambiente novo, CI que sobe a stack do zero) — tratar `resource_already_exists_exception` como sucesso idempotente, ou centralizar a criação do índice fora do path de inicialização do repository (migration/init job dedicado).
+**Cobertura de teste:** `PjbSearchIndexInitializerTest` (4, Mockito puro — índice já existe não recria, índice ausente cria, colisão de `resource_already_exists_exception` tratada como sucesso, erro genuíno não relacionado à colisão continua propagando).
 
-**Achado corrigido na mesma rodada (não é dívida, já fechado):** `backend-b` também falhava antes disso com `UnsatisfiedDependencyException` em `PjbLivePressureService`/`RedisLiveClusterStateStore` por falta de bean `LiveClusterStateStore` — `backend` (nó 1) herda `PJB_LIVE_CLUSTER_ENABLED: ${PJB_LIVE_CLUSTER_ENABLED:-false}` do `docker-compose.yml` base, mas `backend-b` só existe em `docker-compose.ha.yml` e não tinha essa env var, caindo no default `true` do `application-docker.yml` e tentando montar `RedisLiveClusterStateStore` sem `StringRedisTemplate` elegível. Corrigido adicionando a mesma env var (mesmo default) ao bloco `environment` de `backend-b`.
+**Quando revisitar:** não precisa — a correção está estrutural (checagem de existência antes da criação, tratamento explícito da colisão), não workaround pontual. Não foi reproduzida a topologia HA de 2 nós real (`docker-compose.ha.yml`) — os 4 testes cobrem os ramos de decisão isoladamente, que é o que o bug exigia corrigir.
+
+**Achado corrigido junto (não é dívida, já fechado antes desta correção):** `backend-b` também falhava antes disso com `UnsatisfiedDependencyException` em `PjbLivePressureService`/`RedisLiveClusterStateStore` por falta de bean `LiveClusterStateStore` — `backend` (nó 1) herda `PJB_LIVE_CLUSTER_ENABLED: ${PJB_LIVE_CLUSTER_ENABLED:-false}` do `docker-compose.yml` base, mas `backend-b` só existe em `docker-compose.ha.yml` e não tinha essa env var, caindo no default `true` do `application-docker.yml` e tentando montar `RedisLiveClusterStateStore` sem `StringRedisTemplate` elegível. Corrigido adicionando a mesma env var (mesmo default) ao bloco `environment` de `backend-b`.
 
 ## D-ha-backend-b-java-opts-sem-hifen
 

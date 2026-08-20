@@ -19,6 +19,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -48,6 +49,10 @@ public class PeritoDisponibilidade {
 
     @Column(name = "comarca", length = 120)
     private String comarca;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
 
     @Column(name = "data_inicio", nullable = false)
     private LocalDate dataInicio;

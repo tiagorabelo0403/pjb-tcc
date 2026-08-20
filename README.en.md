@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-4%2C642%20unit%20%2B%20300%20IT%20%7C%200%20failures-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-4%2C847%20unit%20%2B%20306%20IT%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -212,7 +212,7 @@ Open `.env` and fill in the required variables:
 docker compose up -d
 ```
 
-This starts PostgreSQL 17, Apache Kafka 3.8, Redis 7.4, and Elasticsearch 8.15. Flyway migrations (numbered up to V322) are applied automatically on the first backend connection.
+This starts PostgreSQL 17, Apache Kafka 3.8, Redis 7.4, and Elasticsearch 8.15. Flyway migrations (numbered up to V331) are applied automatically on the first backend connection.
 
 ### 4. Check Spring Profiles
 
@@ -323,8 +323,8 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 4,642 tests with Mockito and in-memory H2. Fast, no Docker required.
-- **Integration tests (Failsafe):** 300 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
+- **Unit tests (Surefire):** 4,847 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Integration tests (Failsafe):** 306 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 ### Run Unit Tests Only (fast)
 
@@ -340,7 +340,7 @@ Expected time: **~15 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api
 ```
 
-This is the official project gate. It runs the 4,642 unit tests (Surefire) and then the 300 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 4,847 unit tests (Surefire) and then the 306 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 Expected time: **~50 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
 
@@ -369,11 +369,11 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **4,642** |
+| Total unit tests | Surefire | **4,847** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~17 min** |
-| Total integration tests | Failsafe | **300** ¹ |
+| Total integration tests | Failsafe | **306** ¹ |
 | Polo-composition-engine tests | Failsafe | **+10 green** (role by procedural type: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | IT failures | Failsafe | **0** (0E + 0F) |
 | Full verify execution time | Surefire + Failsafe | **~50 min** |
@@ -563,7 +563,7 @@ graph TD
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Database | PostgreSQL 17 with Row Level Security per operation |
 | Test Database | In-memory H2 + Testcontainers |
-| Migrations | Flyway — numbered up to V322, with monthly partitioning on event tables |
+| Migrations | Flyway — numbered up to V331, with monthly partitioning on event tables |
 | Persistence | JPA / Hibernate with `ddl-auto: validate` in production |
 | Messaging | Apache Kafka 3.8 — judicial events and outbox |
 | Workflow orchestration | Camunda 8 / Zeebe — BPMN applied to the filing workflow |
@@ -618,7 +618,7 @@ Each load matched the municipality name from the PDF against the official IBGE l
 
 Each of the three loads is locked by a permanent regression test against the source document — the municipality-to-court distribution is re-parsed independently of the script that generated the migration before it becomes an `assert`, so that a future migration change, or a migration from another region that accidentally corrupts data via a table-name mistake, gets caught rather than silently accepted.
 
-**Court and district as real entities.** `Tribunal` and `Comarca` are proper JPA entities (`model/entity/competencia/`), no longer loose text — `UnidadeJudiciariaCompetencia`, `JurisdicaoTerritorial`, `Jurisdicao`, `Usuario`, `Processo`, and `WorkItem` reference `Comarca` by foreign key. Since the `Comarca` catalog currently only covers the municipalities from the three Labor Justice regions loaded above (CE/MG/RN), each of these six entities keeps `uf`/`comarca` as a real String column alongside the FK — no data is ever discarded for lack of catalog coverage: the FK resolves when the municipality is catalogued, and the text remains the source of truth everywhere else. `AssessorGabineteGuardRailService.territoryMatches()` compares by real identity (`Comarca.getId()`) when both sides resolve the FK, and falls back to normalized text comparison otherwise — eliminating, for already-catalogued municipalities, the bug class where a spelling divergence between an assessor's registration and a case's registration could produce a false positive or false negative territorial match. An architecture test (`OrganizacaoJudiciariaArchitectureTest`) locks in the pattern for any new entity that declares `uf`/`comarca` as a String without the matching `Comarca` FK in the same class; pre-existing entities in other domains that don't yet follow this pattern are listed in `docs/quality/DEBT_LOG.md` (`D-territorio-string-solta-entidades-legadas`).
+**Court and district as real entities.** `Tribunal` and `Comarca` are proper JPA entities (`model/entity/competencia/`), no longer loose text — `UnidadeJudiciariaCompetencia`, `JurisdicaoTerritorial`, `Jurisdicao`, `Usuario`, `Processo`, `WorkItem`, `OrgaoJudiciario`, `PeritoSorteioAudit`, and `PeritoDisponibilidade` reference `Comarca` by foreign key. Since the `Comarca` catalog currently only covers the municipalities from the three Labor Justice regions loaded above (CE/MG/RN), each of these nine entities keeps `uf`/`comarca` as a real String column alongside the FK — no data is ever discarded for lack of catalog coverage: the FK resolves when the municipality is catalogued, and the text remains the source of truth everywhere else. `AssessorGabineteGuardRailService.territoryMatches()` compares by real identity (`Comarca.getId()`) when both sides resolve the FK, and falls back to normalized text comparison otherwise — eliminating, for already-catalogued municipalities, the bug class where a spelling divergence between an assessor's registration and a case's registration could produce a false positive or false negative territorial match. An architecture test (`OrganizacaoJudiciariaArchitectureTest`) locks in the pattern for any new entity that declares `uf`/`comarca` as a String without the matching `Comarca` FK in the same class; pre-existing entities in other domains that don't yet follow this pattern are listed in `docs/quality/DEBT_LOG.md` (`D-territorio-string-solta-entidades-legadas`).
 </details>
 
 <details>
@@ -907,7 +907,7 @@ Sensitive personal data — CPF and CNPJ — have been removed from every layer 
 
 ## Database
 
-285 Flyway migrations (non-contiguous numbering up to V322 — 38 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
+294 Flyway migrations (non-contiguous numbering up to V331 — 38 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
 
 Row Level Security active per operation for confidential data. Materialized tables with asynchronous refresh for analytics (ADR-0053). Outbox pattern for post-commit effects with no risk of event loss on transaction failure. The outbox table is partitioned monthly — entire partition purge via `DROP TABLE`, no row scanning.
 
@@ -925,8 +925,8 @@ CREATE POLICY processo_sigilo ON processo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **4,642 · 0 failures · 0 errors** |
-| Integration tests (Failsafe) | **300 · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
+| Unit tests (Surefire) | **4,847 · 0 failures · 0 errors** |
+| Integration tests (Failsafe) | **306 · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
 | Python Guards | 7 scripts active in CI |
@@ -1135,7 +1135,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 4,942 tests (4,642 unit + 300 integration), and 285 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 5,153 tests (4,847 unit + 306 integration), and 294 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

@@ -14,6 +14,7 @@ import org.hibernate.annotations.SQLRestriction;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 
 @Getter
 @Setter
@@ -61,6 +62,10 @@ public class OrgaoJudiciario {
     @Column(length = 2)
     @Size(min = 2, max = 2)
     private String estado;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
 
     @Column(name = "adapter_bean_name", length = 100)
     private String adapterBeanName;

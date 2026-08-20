@@ -10,6 +10,7 @@ import com.tcc.pjb.backend.model.dto.OrgaoJudiciarioRequest;
 import com.tcc.pjb.backend.model.dto.OrgaoJudiciarioResponse;
 import com.tcc.pjb.backend.model.entity.OrgaoJudiciario;
 import com.tcc.pjb.backend.model.repository.OrgaoJudiciarioRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.exception.RecursoJaExistenteException;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class OrgaoJudiciarioService {
 
     private final OrgaoJudiciarioRepository orgaoJudiciarioRepository;
     private final OrgaoJudiciarioMapper orgaoJudiciarioMapper;
+    private final ComarcaResolutionService comarcaResolutionService;
 
     @Transactional
     @CacheEvict(cacheNames = {"orgaos_judiciarios", "orgao_judiciario_id"}, allEntries = true)
@@ -31,10 +33,20 @@ public class OrgaoJudiciarioService {
         }
 
         OrgaoJudiciario entidade = orgaoJudiciarioMapper.requestParaEntidade(dto);
+        aplicarComarcaDoCatalogo(entidade);
 
         OrgaoJudiciario entidadeSalva = orgaoJudiciarioRepository.save(entidade);
 
         return orgaoJudiciarioMapper.entidadeParaResponse(entidadeSalva);
+    }
+
+    private void aplicarComarcaDoCatalogo(OrgaoJudiciario entidade) {
+        if (entidade.getComarca() == null || entidade.getComarca().isBlank()) {
+            entidade.setComarcaEntidade(null);
+            return;
+        }
+        entidade.setComarcaEntidade(comarcaResolutionService.resolver(entidade.getComarca(), entidade.getEstado())
+                .orElse(null));
     }
 
     @PjbTransactionalBudget(operation = "orgao-judiciario.listar-todos", maxMillis = 3000)
@@ -60,6 +72,7 @@ public class OrgaoJudiciarioService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Órgão Judiciário não encontrado com o ID: " + id));
 
         orgaoJudiciarioMapper.atualizarEntidadeDoRequest(dto, entidadeExistente);
+        aplicarComarcaDoCatalogo(entidadeExistente);
 
         OrgaoJudiciario entidadeSalva = orgaoJudiciarioRepository.save(entidadeExistente);
         return orgaoJudiciarioMapper.entidadeParaResponse(entidadeSalva);

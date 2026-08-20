@@ -21,7 +21,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document(indexName = RecursalMeshQueryModel.INDEX_NAME)
+@Document(indexName = RecursalMeshQueryModel.INDEX_NAME, createIndex = false)
 @Setting(settingPath = "/elasticsearch/settings-pjb-recursal-mesh.json")
 @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public class RecursalMeshQueryModel {

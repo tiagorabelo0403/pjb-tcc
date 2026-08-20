@@ -21,6 +21,7 @@ import com.tcc.pjb.backend.model.dto.pericia.PeritoSorteioRequest;
 import com.tcc.pjb.backend.model.dto.pericia.PeritoSorteioResponse;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.pericia.PeritoDisponibilidade;
 import com.tcc.pjb.backend.model.entity.pericia.PeritoNomeacaoStatus;
@@ -29,6 +30,7 @@ import com.tcc.pjb.backend.model.repository.PeritoDisponibilidadeRepository;
 import com.tcc.pjb.backend.model.repository.PeritoNomeacaoRepository;
 import com.tcc.pjb.backend.model.repository.PeritoSorteioAuditRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 
 @Service
 public class PeritoDisponibilidadeService {
@@ -39,19 +41,22 @@ public class PeritoDisponibilidadeService {
     private final ProcessoRepository processoRepository;
     private final CurrentUserService currentUserService;
     private final ObjectMapper objectMapper;
+    private final ComarcaResolutionService comarcaResolutionService;
 
     public PeritoDisponibilidadeService(PeritoDisponibilidadeRepository disponibilidadeRepository,
                                         PeritoNomeacaoRepository nomeacaoRepository,
                                         PeritoSorteioAuditRepository sorteioAuditRepository,
                                         ProcessoRepository processoRepository,
                                         CurrentUserService currentUserService,
-                                        ObjectMapper objectMapper) {
+                                        ObjectMapper objectMapper,
+                                        ComarcaResolutionService comarcaResolutionService) {
         this.disponibilidadeRepository = Objects.requireNonNull(disponibilidadeRepository);
         this.nomeacaoRepository = Objects.requireNonNull(nomeacaoRepository);
         this.sorteioAuditRepository = Objects.requireNonNull(sorteioAuditRepository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.objectMapper = Objects.requireNonNull(objectMapper);
+        this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService);
     }
 
     @Transactional
@@ -63,10 +68,12 @@ public class PeritoDisponibilidadeService {
         if (request.dataFim().isBefore(request.dataInicio())) {
             throw new IllegalArgumentException("dataFim não pode ser anterior à dataInicio");
         }
+        String comarca = normalizeNullable(request.comarca(), usuario.getComarca());
         PeritoDisponibilidade entity = PeritoDisponibilidade.builder()
                 .perito(usuario)
                 .especialidadeCodigo(normalize(request.especialidadeCodigo()))
-                .comarca(normalizeNullable(request.comarca(), usuario.getComarca()))
+                .comarca(comarca)
+                .comarcaEntidade(resolverComarca(comarca))
                 .dataInicio(request.dataInicio())
                 .dataFim(request.dataFim())
                 .horaInicio(request.horaInicio())
@@ -173,6 +180,7 @@ public class PeritoDisponibilidadeService {
         audit.setPerito(vencedor.disponibilidade().getPerito());
         audit.setEspecialidadeCodigo(vencedor.response().especialidadeCodigo());
         audit.setComarca(vencedor.response().comarca());
+        audit.setComarcaEntidade(resolverComarca(vencedor.response().comarca()));
         audit.setDataReferencia(String.valueOf(request.data() != null ? request.data() : LocalDate.now()));
         audit.setScore(vencedor.response().score());
         audit.setNomeacoesAtivas(vencedor.response().nomeacoesAtivas());
@@ -265,6 +273,13 @@ public class PeritoDisponibilidadeService {
         Long peritoId() {
             return response.peritoId();
         }
+    }
+
+    private Comarca resolverComarca(String comarca) {
+        if (comarca == null || comarca.isBlank()) {
+            return null;
+        }
+        return comarcaResolutionService.resolver(comarca, null).orElse(null);
     }
 
     private String normalize(String value) {

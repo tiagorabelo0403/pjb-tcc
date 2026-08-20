@@ -17,7 +17,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document(indexName = "pjb-processos")
+@Document(indexName = "pjb-processos", createIndex = false)
 @Setting(settingPath = "/elasticsearch/settings-pjb-processos.json")
 @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public class ProcessoQueryModel {

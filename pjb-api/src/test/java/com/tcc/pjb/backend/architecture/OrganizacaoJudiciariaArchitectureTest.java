@@ -38,10 +38,7 @@ class OrganizacaoJudiciariaArchitectureTest {
             "com.tcc.pjb.backend.model.entity.institucional.InstitutionalCatalogUnitSnapshot",
             "com.tcc.pjb.backend.model.entity.institucional.InstitutionalCatalogGovernanceSnapshot",
             "com.tcc.pjb.backend.model.entity.professional.ProfessionalInstitutionalAccessGrant",
-            "com.tcc.pjb.backend.model.entity.pericia.PeritoSorteioAudit",
-            "com.tcc.pjb.backend.model.entity.pericia.PeritoDisponibilidade",
-            "com.tcc.pjb.backend.model.entity.painel.PainelTribunalMetrica",
-            "com.tcc.pjb.backend.model.entity.OrgaoJudiciario");
+            "com.tcc.pjb.backend.model.entity.painel.PainelTribunalMetrica");
 
     @ArchTest
     static final ArchRule entidades_com_campo_territorio_string_precisam_de_fk_comarca =

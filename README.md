@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.795%20unit%20%2B%20306%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.847%20unit%20%2B%20306%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -213,7 +213,7 @@ Abra o `.env` e preencha as variáveis obrigatórias:
 docker compose up -d
 ```
 
-Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V329) são aplicadas automaticamente na primeira conexão do backend.
+Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V331) são aplicadas automaticamente na primeira conexão do backend.
 
 ### 4. Verificar os profiles Spring
 
@@ -324,7 +324,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.795 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 4.847 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 306 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
@@ -341,7 +341,7 @@ Tempo esperado: **~15 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.795 unitários (Surefire) e depois os 306 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.847 unitários (Surefire) e depois os 306 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,7 +379,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.795** |
+| Total de testes unitários | Surefire | **4.847** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~17 min** |
@@ -573,7 +573,7 @@ graph TD
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Banco | PostgreSQL 17 com Row Level Security por operação |
 | Banco de testes | H2 em memória + Testcontainers |
-| Migrations | Flyway — numeração até V329, com particionamento mensal em tabelas de evento |
+| Migrations | Flyway — numeração até V331, com particionamento mensal em tabelas de evento |
 | Persistência | JPA / Hibernate com `ddl-auto: validate` em produção |
 | Mensageria | Apache Kafka 3.8 — eventos judiciais e outbox |
 | Orquestração de workflow | Camunda 8 / Zeebe — BPMN aplicado ao fluxo de ajuizamento |
@@ -603,8 +603,6 @@ O backend está organizado em 15 módulos funcionais. Clique em qualquer um para
 Gerencia papel, lotação, localização, competência e visibilidade de cada ator no processo. A matriz de visibilidade produz uma explicação auditável para cada decisão de acesso — quem pode ver o quê, por qual motivo, com registro imutável.
 
 Inclui gestão de afiliações, credenciais institucionais, atestação de fonte oficial e delegações formais entre unidades.
-
-**Designação institucional de servidor** tem dois caminhos para a mesma função de destino (`FuncaoServidorJudiciario`, por unidade e período): designação direta por administrador, com portaria como fundamento do ato (`FuncaoServidorDesignacaoService.designarComLotacao`), e solicitação do próprio servidor com aprovação de uma autoridade competente para a unidade (`FuncaoServidorSolicitacaoService`) — rejeição exige motivo. Os dois caminhos convergem no mesmo serviço de designação, e cada designação materializa a lotação na instituição correta (`LotacaoInstituicaoMaterializationService`) quando existe ponte unidade↔instituição cadastrada; a materialização roda isolada do registro da designação em si, então uma falha nela é logada, não propaga rollback sobre uma designação já válida.
 </details>
 
 <details>
@@ -630,7 +628,7 @@ Cada carga cruzou o nome do município do PDF contra a lista oficial do IBGE por
 
 Cada uma das três cargas é travada por teste de regressão permanente contra o documento-fonte — a distribuição de varas por município é reparseada de forma independente do script que gerou a migration antes de virar `assert`, para que uma alteração futura na migration ou uma migration de outra região que corrompa dado por acidente de nome de tabela seja detectada, não silenciosamente aceita.
 
-**Tribunal e Comarca como entidade real.** `Tribunal` e `Comarca` são entidades JPA próprias (`model/entity/competencia/`), não mais texto solto — `UnidadeJudiciariaCompetencia`, `JurisdicaoTerritorial`, `Jurisdicao`, `Usuario`, `Processo` e `WorkItem` referenciam `Comarca` por FK. Como o catálogo de `Comarca` hoje só cobre os municípios das três regiões trabalhistas carregadas acima (CE/MG/RN), cada uma dessas seis entidades mantém `uf`/`comarca` como coluna String real ao lado da FK — nunca dado descartado por falta de cobertura de catálogo, a FK resolve quando o município está catalogado e o texto continua sendo a fonte de verdade nos demais. `AssessorGabineteGuardRailService.territoryMatches()` compara por identidade real (`Comarca.getId()`) quando as duas pontas resolvem a FK, e cai na comparação textual normalizada nos demais casos — elimina, para os municípios já catalogados, a classe de bug em que grafia divergente entre o cadastro do assessor e o do processo produzia falso positivo ou falso negativo de correspondência territorial. Um teste de arquitetura (`OrganizacaoJudiciariaArchitectureTest`) trava qualquer entidade nova que declare `uf`/`comarca` como String sem a FK `Comarca` correspondente na mesma classe; entidades pré-existentes em outros domínios que ainda não seguem esse padrão estão listadas em `docs/quality/DEBT_LOG.md` (`D-territorio-string-solta-entidades-legadas`).
+**Tribunal e Comarca como entidade real.** `Tribunal` e `Comarca` são entidades JPA próprias (`model/entity/competencia/`), não mais texto solto — `UnidadeJudiciariaCompetencia`, `JurisdicaoTerritorial`, `Jurisdicao`, `Usuario`, `Processo`, `WorkItem`, `OrgaoJudiciario`, `PeritoSorteioAudit` e `PeritoDisponibilidade` referenciam `Comarca` por FK. Como o catálogo de `Comarca` hoje só cobre os municípios das três regiões trabalhistas carregadas acima (CE/MG/RN), cada uma dessas nove entidades mantém `uf`/`comarca` como coluna String real ao lado da FK — nunca dado descartado por falta de cobertura de catálogo, a FK resolve quando o município está catalogado e o texto continua sendo a fonte de verdade nos demais. `AssessorGabineteGuardRailService.territoryMatches()` compara por identidade real (`Comarca.getId()`) quando as duas pontas resolvem a FK, e cai na comparação textual normalizada nos demais casos — elimina, para os municípios já catalogados, a classe de bug em que grafia divergente entre o cadastro do assessor e o do processo produzia falso positivo ou falso negativo de correspondência territorial. Um teste de arquitetura (`OrganizacaoJudiciariaArchitectureTest`) trava qualquer entidade nova que declare `uf`/`comarca` como String sem a FK `Comarca` correspondente na mesma classe; entidades pré-existentes em outros domínios que ainda não seguem esse padrão estão listadas em `docs/quality/DEBT_LOG.md` (`D-territorio-string-solta-entidades-legadas`).
 </details>
 
 <details>
@@ -651,9 +649,7 @@ Filas inteligentes com priorização semântica, agrupadores por similaridade, l
 <summary><strong>5 — Aceleradores por área do direito</strong></summary>
 <br>
 
-Fluxos especializados para cível, criminal, trabalhista, eleitoral, família, execução, Juizados Especiais (cível, federal e da Fazenda Pública), precatório, falimentar, improbidade administrativa e controle concentrado de constitucionalidade. Cada área tem checklist computável, diagnóstico de risco e sugestão de próximo ato.
-
-`ImprobidadeAdministrativaChecklistService` cobre as três modalidades do ato de improbidade pós-Lei 14.230/21 — enriquecimento ilícito (art. 9°), dano ao erário (art. 10) e violação de princípios (art. 11) —, cada uma com seu próprio rol de sanções por dispositivo do art. 12. Conduta culposa não configura mais improbidade em nenhuma modalidade: só dolo específico configura, e ato anterior à reforma tem a exigência de dolo retroagindo para beneficiar o réu (STF RE 1.294.133, Tema 1.199). Legitimidade ativa é exclusiva do Ministério Público (art. 17, confirmado pelo STF na ADI 7236), prescrição de 8 anos da prática do ato (art. 23) e ressarcimento ao erário imprescritível (CF art. 37, §5°, Tema 897). Como os demais aceleradores, é checklist informativo — nunca decide, só organiza o que a lei exige verificar antes do próximo ato.
+Fluxos especializados para cível, criminal, trabalhista, eleitoral, família, execução, Juizados Especiais (cível, federal e da Fazenda Pública), precatório, falimentar e controle concentrado de constitucionalidade. Cada área tem checklist computável, diagnóstico de risco e sugestão de próximo ato.
 </details>
 
 <details>
@@ -847,7 +843,6 @@ O modelo de segurança é orientado por identidade, papel, lotação, órgão, u
 | **ABAC** (Attribute-Based Access Control) | Toda decisão sensível — com trilha de quem autorizou, quando e por quê |
 | **RLS** (Row Level Security no PostgreSQL) | Leitura de processos sigilosos — o banco recusa o dado antes do ORM |
 | **Step-up Gov.br** | Atos que exigem nível de autenticação elevado (prata/ouro) |
-| **Login direto Gov.br** | Autenticação primária do cidadão via OpenID Connect com PKCE — code verifier/challenge, verificação de nonce e do ID token, sessão emitida por CPF resolvido. Mesmo state descartável (uso único, expiração, limpeza automática por job dedicado) do fluxo de step-up, mas como entrada de login, não elevação de sessão existente |
 | **ICP-Brasil** | Assinatura digital qualificada de documentos e atos jurisdicionais |
 | **Passkey / WebAuthn** | Autenticação sem senha para servidores e advogados |
 | **Login por certificado ICP-Brasil** | Fluxo desafio-resposta completo: nonce criptográfico emitido pelo servidor, assinatura pelo certificado do usuário, verificação da cadeia ICP-Brasil, extração de identidade do subject DN e resolução de contexto institucional por lotação. A sessão de certificado é emitida como tipo distinto da sessão de senha — sem mistura de níveis de garantia |
@@ -926,7 +921,7 @@ Todo `docker-compose*.yml` (base, HA, read-replica, n8n) tem `mem_limit`/`cpus` 
 
 ## Banco de dados
 
-292 migrations Flyway (numeração não contígua até V329 — 38 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
+294 migrations Flyway (numeração não contígua até V331 — 38 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
 
 Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
 
@@ -963,7 +958,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.795 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.847 · 0 falhas · 0 erros** |
 | Testes de integração (Failsafe) | **306 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1178,7 +1173,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 5.101 testes (4.795 unitários + 306 de integração) e 292 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 5.153 testes (4.847 unitários + 306 de integração) e 294 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
