@@ -15,6 +15,7 @@ class PjbPermitAllExposureDisciplineTest {
             "src/main/java/com/tcc/pjb/backend/controller/IdeaCatalogController.java",
             "src/main/java/com/tcc/pjb/backend/controller/OrgaoJudiciarioController.java",
             "src/main/java/com/tcc/pjb/backend/controller/auth/CertificadoAuthController.java",
+            "src/main/java/com/tcc/pjb/backend/controller/auth/GovBrLoginController.java",
             "src/main/java/com/tcc/pjb/backend/controller/auth/PasskeyAuthController.java",
             "src/main/java/com/tcc/pjb/backend/controller/auth/PasskeyStepUpController.java",
             "src/main/java/com/tcc/pjb/backend/controller/consulta/ConsultasRapidasController.java",
@@ -39,6 +40,7 @@ class PjbPermitAllExposureDisciplineTest {
 
     private static final Set<String> APPROVED_PUBLIC_WRITE_FILES = Set.of(
             "src/main/java/com/tcc/pjb/backend/controller/auth/CertificadoAuthController.java",
+            "src/main/java/com/tcc/pjb/backend/controller/auth/GovBrLoginController.java",
             "src/main/java/com/tcc/pjb/backend/controller/auth/PasskeyAuthController.java",
             "src/main/java/com/tcc/pjb/backend/controller/auth/PasskeyStepUpController.java",
             "src/main/java/com/tcc/pjb/backend/controller/integration/N8nIntegrationController.java",

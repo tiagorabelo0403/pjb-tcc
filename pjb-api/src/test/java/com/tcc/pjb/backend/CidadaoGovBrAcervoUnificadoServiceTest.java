@@ -34,8 +34,8 @@ class CidadaoGovBrAcervoUnificadoServiceTest {
         CidadaoMalhaProcessualNacionalService malhaService = mock(CidadaoMalhaProcessualNacionalService.class);
         GovBrOidcProperties props = new GovBrOidcProperties(true, false,
                 "https://sso.gov.br/auth", "https://sso.gov.br/token", "https://sso.gov.br/userinfo", null,
-                "cid", "secret", "https://pjb.jus.br/cb", null, null,
-                "https://sso.gov.br/jwks", "https://sso.gov.br", null, null,
+                "cid", "secret", "https://pjb.jus.br/cb", null, null, null,
+                "https://sso.gov.br/jwks", "https://sso.gov.br", null, null, null, null,
                 Duration.ofSeconds(3), Duration.ofSeconds(4), Duration.ofMinutes(5));
 
         Usuario usuario = new Usuario();
