@@ -1,7 +1,6 @@
 package com.tcc.pjb.backend.controller.processual;
 
 import com.tcc.pjb.backend.core.processo.atoordinatorio.application.AtoOrdinatorioServidorApplicationService;
-import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.dto.api.ApiCommandResponse;
 import com.tcc.pjb.backend.model.dto.atoordinatorio.AtoOrdinatorioRequest;
 import com.tcc.pjb.backend.model.dto.atoordinatorio.AtoOrdinatorioResponse;
@@ -26,21 +25,17 @@ public class AtoOrdinatorioServidorController {
     private static final String SERVIDOR_ROLES = "hasAnyRole('SERVIDOR','SERVIDOR_FORUM')";
 
     private final AtoOrdinatorioServidorApplicationService applicationService;
-    private final CurrentUserService currentUserService;
     private final ApiResponseFactory apiResponseFactory;
 
     public AtoOrdinatorioServidorController(AtoOrdinatorioServidorApplicationService applicationService,
-                                            CurrentUserService currentUserService,
                                             ApiResponseFactory apiResponseFactory) {
         this.applicationService = Objects.requireNonNull(applicationService);
-        this.currentUserService = Objects.requireNonNull(currentUserService);
         this.apiResponseFactory = Objects.requireNonNull(apiResponseFactory);
     }
 
     @PostMapping
     @PreAuthorize(SERVIDOR_ROLES)
     public ResponseEntity<ApiCommandResponse<?>> proferir(@Valid @RequestBody AtoOrdinatorioRequest request) {
-        currentUserService.getRequired();
         AtoOrdinatorioResponse response = applicationService.proferir(
                 request.processoId(), request.tipo(), request.complemento());
         return ResponseEntity.status(HttpStatus.CREATED)

@@ -1,6 +1,5 @@
 package com.tcc.pjb.backend.controller.processual;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -11,10 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.core.processo.atoordinatorio.application.AtoOrdinatorioServidorApplicationService;
-import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.dto.atoordinatorio.AtoOrdinatorioRequest;
 import com.tcc.pjb.backend.model.dto.atoordinatorio.AtoOrdinatorioResponse;
-import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoAtoOrdinatorio;
 import com.tcc.pjb.backend.service.api.ApiResponseFactory;
 import java.util.Map;
@@ -27,25 +24,20 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class AtoOrdinatorioServidorControllerTest {
 
     private AtoOrdinatorioServidorApplicationService applicationService;
-    private CurrentUserService currentUserService;
     private MockMvc mockMvc;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
         applicationService = mock(AtoOrdinatorioServidorApplicationService.class);
-        currentUserService = mock(CurrentUserService.class);
         ApiResponseFactory apiResponseFactory = new ApiResponseFactory();
         AtoOrdinatorioServidorController controller = new AtoOrdinatorioServidorController(
-                applicationService, currentUserService, apiResponseFactory);
+                applicationService, apiResponseFactory);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
     @Test
     void proferirComRequestValidaRetorna201() throws Exception {
-        Usuario servidor = new Usuario();
-        servidor.setId(99L);
-        when(currentUserService.getRequired()).thenReturn(servidor);
         when(applicationService.proferir(eq(7L), eq(TipoAtoOrdinatorio.JUNTADA_PETICAO_DOCUMENTO), any()))
                 .thenReturn(new AtoOrdinatorioResponse(UUID.randomUUID(), 321L, TipoAtoOrdinatorio.JUNTADA_PETICAO_DOCUMENTO,
                         "hash-abc", Map.of(), Map.of()));
