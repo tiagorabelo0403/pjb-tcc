@@ -9,11 +9,13 @@ import com.tcc.pjb.backend.PjbIntegrationTestBase;
 import com.tcc.pjb.backend.model.dto.atoordinatorio.AtoOrdinatorioRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.FuncaoServidorJudiciario;
 import com.tcc.pjb.backend.model.entity.enums.TipoAtoOrdinatorio;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorJudiciarioEntity;
+import com.tcc.pjb.backend.model.entity.workflow.MovimentacaoProcessual;
 import com.tcc.pjb.backend.model.repository.FuncaoServidorJudiciarioRepository;
 import com.tcc.pjb.backend.model.repository.MovimentacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
@@ -21,6 +23,7 @@ import com.tcc.pjb.backend.model.repository.TribunalRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,9 +123,16 @@ class AtoOrdinatorioServidorFlowIT extends PjbIntegrationTestBase {
                 .getResponse();
 
         assertThat(response.getStatus()).isEqualTo(201);
-        assertThat(documentoProcessualRepository.count()).isGreaterThan(0);
-        assertThat(movimentacaoProcessualRepository.findAll())
-                .anySatisfy(m -> assertThat(m.getFaseDe()).isEqualTo(m.getFasePara()));
+
+        List<DocumentoProcessual> documentos = documentoProcessualRepository.findByProcessoId(processo.getId());
+        assertThat(documentos).hasSize(1);
+
+        List<MovimentacaoProcessual> movimentacoes =
+                movimentacaoProcessualRepository.findTop200ByProcesso_IdOrderByDataMovimentacaoDesc(processo.getId());
+        assertThat(movimentacoes).hasSize(1);
+        MovimentacaoProcessual movimentacao = movimentacoes.get(0);
+        assertThat(movimentacao.getFaseDe()).isEqualTo(FaseProcessual.INSTRUCAO);
+        assertThat(movimentacao.getFasePara()).isEqualTo(FaseProcessual.INSTRUCAO);
     }
 
     @Test
@@ -165,6 +175,6 @@ class AtoOrdinatorioServidorFlowIT extends PjbIntegrationTestBase {
                 .getResponse();
 
         assertThat(response.getStatus()).isNotEqualTo(201);
-        assertThat(documentoProcessualRepository.count()).isEqualTo(0);
+        assertThat(documentoProcessualRepository.countByProcesso_Id(processo.getId())).isZero();
     }
 }

@@ -22,6 +22,8 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.document.DocumentoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
+import com.tcc.pjb.backend.model.entity.enums.DocumentoCategoria;
+import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.model.entity.enums.TipoAtoOrdinatorio;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.workflow.MovimentacaoProcessual;
@@ -41,6 +43,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class AtoOrdinatorioServidorApplicationServiceTest {
 
@@ -154,5 +157,57 @@ class AtoOrdinatorioServidorApplicationServiceTest {
         assertThat(response.hash()).isEqualTo("hash-abc-123");
         assertThat(response.assinaturaQualificada()).containsEntry("envelopeId", "PJB-ENV-X");
         assertThat(response.validacaoSoberana()).containsEntry("status", "VALIDO");
+
+        ArgumentCaptor<DocumentoProcessual> documentoCaptor = ArgumentCaptor.forClass(DocumentoProcessual.class);
+        verify(documentoProcessualRepository).save(documentoCaptor.capture());
+        DocumentoProcessual documentoPersistido = documentoCaptor.getValue();
+        assertThat(documentoPersistido.getOrigemSistema()).isEqualTo("PJB_ATO_ORDINATORIO_SERVIDOR");
+        assertThat(documentoPersistido.getSha256()).isEqualTo(envelope.contentHash());
+        assertThat(documentoPersistido.getContentType()).isEqualTo("text/plain; charset=UTF-8");
+        assertThat(documentoPersistido.getStorageBackend()).isEqualTo("INLINE_DB");
+        assertThat(documentoPersistido.getCategoria()).isEqualTo(DocumentoCategoria.PUBLICO);
+    }
+
+    @Test
+    void servidorComCapacidadeEProcessoSigilosoPersisteDocumentoComoCategoriaPessoal() {
+        processo.setNivelSigilo(NivelSigilo.SEGREDO_JUSTICA);
+
+        UUID documentoId = UUID.randomUUID();
+
+        SovereignValidationResult validacao = new SovereignValidationResult(
+                "VALIDO", "PJB_QUALIFIED_SIGNATURE_SPINE", "ATO_ORDINATORIO_QUALIFICADA_SOBERANA",
+                true, true, true, true, false,
+                "SERVIDOR", "ESTADUAL", "PRIMEIRO_GRAU", "COMARCA/UF",
+                "session", "replay", "docHash", List.of());
+        QualifiedSignatureMetadata assinatura = new QualifiedSignatureMetadata(
+                "PJB-ENV-X", "hashAssinatura", "hashBase", "docHash", true, "PJB-RUB-X",
+                LocalDate.now(), LocalTime.now(), "COMARCA/UF", "Servidor Teste", "UNIDADE_JUDICIAL",
+                "UNIDADE_JUDICIAL", "JUDICIARIO", "ESTADUAL", "ESTADUAL", "PRIMEIRO_GRAU",
+                "ORGAO", "LOTACAO", "REGISTRO", false, "COERENCIA", "session", "replay", validacao);
+        SignedDocumentEnvelope envelope = mock(SignedDocumentEnvelope.class);
+        when(envelope.renderedContent()).thenReturn("conteudo assinado completo");
+        when(envelope.contentHash()).thenReturn("hash-sigiloso-456");
+        when(envelope.assinaturaQualificada()).thenReturn(assinatura);
+        when(envelope.validacaoSoberana()).thenReturn(validacao);
+        when(qualifiedDocumentSignatureEnvelopeService.signGovernedContent(
+                eq(processo), eq(servidor), anyString(), anyString(), eq("UNIDADE_JUDICIAL"),
+                eq("ATO_ORDINATORIO_QUALIFICADA_SOBERANA"), eq(false), anyList()))
+                .thenReturn(envelope);
+        when(documentoProcessualRepository.save(any(DocumentoProcessual.class)))
+                .thenAnswer(inv -> {
+                    DocumentoProcessual d = inv.getArgument(0);
+                    d.setId(documentoId);
+                    return d;
+                });
+        MovimentacaoProcessual movimentacao = new MovimentacaoProcessual();
+        movimentacao.setId(654L);
+        when(movimentacaoProcessualRegistrar.registrar(eq(processo), eq(servidor), eq(FaseProcessual.INSTRUCAO), anyString()))
+                .thenReturn(movimentacao);
+
+        service.proferir(7L, TipoAtoOrdinatorio.VISTA_PARTE_CONTRARIA, "manifeste-se em 5 dias");
+
+        ArgumentCaptor<DocumentoProcessual> documentoCaptor = ArgumentCaptor.forClass(DocumentoProcessual.class);
+        verify(documentoProcessualRepository).save(documentoCaptor.capture());
+        assertThat(documentoCaptor.getValue().getCategoria()).isEqualTo(DocumentoCategoria.PESSOAL);
     }
 }
