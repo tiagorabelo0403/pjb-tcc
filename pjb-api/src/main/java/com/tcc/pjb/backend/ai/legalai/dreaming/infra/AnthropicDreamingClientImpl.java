@@ -34,7 +34,7 @@ public class AnthropicDreamingClientImpl implements AnthropicDreamingClient {
                 .defaultHeader("anthropic-version", "2023-06-01")
                 .defaultHeader("anthropic-beta",
                         properties.managedAgentsVersion() + ", " + properties.dreamingVersion())
-                .defaultStatusHandler(HttpStatusCode::isError, new AnthropicHttpErrorSupport(objectMapper).errorHandler())
+                .defaultStatusHandler(HttpStatusCode::isError, new AnthropicApiErrorHandler(objectMapper).errorHandler())
                 .build();
     }
 

@@ -32,7 +32,7 @@ public class AnthropicMemoryStoreClientImpl implements AnthropicMemoryStoreClien
                 .defaultHeader("x-api-key", properties.apiKey())
                 .defaultHeader("anthropic-version", "2023-06-01")
                 .defaultHeader("anthropic-beta", properties.managedAgentsVersion())
-                .defaultStatusHandler(HttpStatusCode::isError, new AnthropicHttpErrorSupport(objectMapper).errorHandler())
+                .defaultStatusHandler(HttpStatusCode::isError, new AnthropicApiErrorHandler(objectMapper).errorHandler())
                 .build();
     }
 

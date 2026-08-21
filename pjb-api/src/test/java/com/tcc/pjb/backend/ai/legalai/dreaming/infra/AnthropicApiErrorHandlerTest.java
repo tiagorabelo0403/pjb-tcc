@@ -17,9 +17,9 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestClient;
 
-class AnthropicHttpErrorSupportTest {
+class AnthropicApiErrorHandlerTest {
 
-    private final AnthropicHttpErrorSupport support = new AnthropicHttpErrorSupport(new ObjectMapper());
+    private final AnthropicApiErrorHandler support = new AnthropicApiErrorHandler(new ObjectMapper());
     private final RestClient.ResponseSpec.ErrorHandler handler = support.errorHandler();
 
     private HttpRequest request() {

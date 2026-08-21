@@ -12,15 +12,15 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestClient;
 
-final class AnthropicHttpErrorSupport {
+final class AnthropicApiErrorHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(AnthropicHttpErrorSupport.class);
+    private static final Logger log = LoggerFactory.getLogger(AnthropicApiErrorHandler.class);
 
     private static final Set<Integer> RETRYABLE_STATUS = Set.of(429, 500, 502, 503, 504, 529);
 
     private final ObjectMapper objectMapper;
 
-    AnthropicHttpErrorSupport(ObjectMapper objectMapper) {
+    AnthropicApiErrorHandler(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
