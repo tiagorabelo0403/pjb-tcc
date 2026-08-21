@@ -76,7 +76,8 @@ public class PasskeyAuthenticationFilter extends OncePerRequestFilter {
             request.setAttribute("PJB_DEVICE_ID", s.getDeviceId());
             request.setAttribute("PJB_STRONG_AUTH_DEVICE_ID", s.getDeviceId());
         }
-        request.setAttribute("PJB_STRONG_AUTH_METHOD", "PASSKEY");
+        request.setAttribute("PJB_STRONG_AUTH_METHOD",
+                s.getOrigemAutenticacao() != null ? s.getOrigemAutenticacao().name() : "PASSKEY");
         request.setAttribute("PJB_STRONG_AUTH_SESSION_ID", s.getId());
 
         if (s.getScopeAction() != null) request.setAttribute("PJB_STRONG_AUTH_SCOPE_ACTION", s.getScopeAction());

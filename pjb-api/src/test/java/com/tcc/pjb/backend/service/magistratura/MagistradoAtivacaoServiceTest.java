@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.tcc.pjb.backend.core.security.device.SecurityChallengeService;
 import com.tcc.pjb.backend.core.security.webauthn.PasskeySessionService;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.OrigemAutenticacaoSessao;
 import com.tcc.pjb.backend.model.entity.enums.SituacaoConta;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
@@ -35,7 +36,7 @@ class MagistradoAtivacaoServiceTest {
         when(usuarioRepository.save(usuario)).thenReturn(usuario);
         doNothing().when(securityChallengeService).consumeOtp(eq(10L), eq(usuario), eq("123456"));
         var issued = new PasskeySessionService.IssuedPasskeySession("token-xyz", LocalDateTime.now().plusMinutes(30), 99L, false);
-        when(passkeySessionService.issue(usuario, null, "127.0.0.1")).thenReturn(issued);
+        when(passkeySessionService.issue(usuario, null, "127.0.0.1", OrigemAutenticacaoSessao.PASSKEY)).thenReturn(issued);
 
         var resultado = service.confirmarAtivacao(1L, 10L, "123456", "127.0.0.1");
 

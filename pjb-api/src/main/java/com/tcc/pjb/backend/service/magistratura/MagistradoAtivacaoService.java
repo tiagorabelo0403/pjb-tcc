@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.service.magistratura;
 import com.tcc.pjb.backend.core.security.device.SecurityChallengeService;
 import com.tcc.pjb.backend.core.security.webauthn.PasskeySessionService;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.OrigemAutenticacaoSessao;
 import com.tcc.pjb.backend.model.entity.enums.SituacaoConta;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
@@ -40,6 +41,6 @@ public class MagistradoAtivacaoService {
         usuario.setSituacaoConta(SituacaoConta.ATIVA);
         Usuario salvo = usuarioRepository.save(usuario);
 
-        return passkeySessionService.issue(salvo, null, ip);
+        return passkeySessionService.issue(salvo, null, ip, OrigemAutenticacaoSessao.PASSKEY);
     }
 }

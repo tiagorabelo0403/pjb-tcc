@@ -29,7 +29,10 @@ import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.model.repository.BoletimOcorrenciaDigitalRepository;
+import com.tcc.pjb.backend.service.processual.document.template.OfficialDocumentTemplateService;
 import com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityService;
+import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -59,21 +62,89 @@ class InqueritoPolicialDigitalServiceInstitucionalTest {
             repository
     );
 
+    private final OfficialDocumentTemplateService officialDocumentTemplateService = mock(OfficialDocumentTemplateService.class);
+
     private final InqueritoPolicialDigitalService service = new InqueritoPolicialDigitalService(
             repository,
             processoRepository,
             workItemRepository,
             delegaciaScopeService,
             scopeGuard,
-            currentUserService
+            currentUserService,
+            officialDocumentTemplateService
     );
+
+    private static HttpServletRequest certRequest() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getAttribute("PJB_STRONG_AUTH_METHOD")).thenReturn("CERTIFICADO_ICP");
+        return request;
+    }
+
+    @Test
+    void registrarSemLoginPorCertificado_bloqueiaEInformaOQueFalta() {
+        when(currentUserService.getRequired()).thenReturn(usuario(1L, TipoUsuario.DELEGADO_POLICIA));
+        HttpServletRequest semCertificado = mock(HttpServletRequest.class);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> service.registrar(cadastro(10L), semCertificado));
+
+        assertTrue(ex.getMessage().contains("certificado digital"));
+        verify(repository, never()).save(any());
+    }
 
     @Test
     void registrarSemUnidadeApuracaoId_naoPersiste() {
         when(currentUserService.getRequired()).thenReturn(usuario(1L, TipoUsuario.DELEGADO_POLICIA));
 
-        assertThrows(IllegalArgumentException.class, () -> service.registrar(cadastro(null)));
+        assertThrows(IllegalArgumentException.class, () -> service.registrar(cadastro(null), certRequest()));
 
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void registrarSemNumeroDeProcedimento_bloqueiaEInformaOQueFalta() {
+        when(currentUserService.getRequired()).thenReturn(usuario(1L, TipoUsuario.DELEGADO_POLICIA));
+        InqueritoPolicialDigitalService.InqueritoCadastroRequest semNumero =
+                new InqueritoPolicialDigitalService.InqueritoCadastroRequest(
+                        null, "INQUERITO_POLICIAL", "Roubo majorado", "Resumo mínimo dos fatos",
+                        null, null, null, null, null, 10L, null, null, null,
+                        LocalDate.now().plusDays(30), null);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.registrar(semNumero, certRequest()));
+
+        assertTrue(ex.getMessage().contains("número do procedimento"));
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void registrarSemPrazoDeConclusao_bloqueiaEInformaOQueFalta() {
+        when(currentUserService.getRequired()).thenReturn(usuario(1L, TipoUsuario.DELEGADO_POLICIA));
+        InqueritoPolicialDigitalService.InqueritoCadastroRequest semPrazo =
+                new InqueritoPolicialDigitalService.InqueritoCadastroRequest(
+                        "2026.001.INQ.000001", "INQUERITO_POLICIAL", "Roubo majorado", "Resumo mínimo dos fatos",
+                        null, null, null, null, null, 10L, null, null, null, null, null);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.registrar(semPrazo, certRequest()));
+
+        assertTrue(ex.getMessage().contains("prazo de conclusão"));
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void registrarSemNumeroESemPrazo_listaAmbosNaMensagem() {
+        when(currentUserService.getRequired()).thenReturn(usuario(1L, TipoUsuario.DELEGADO_POLICIA));
+        InqueritoPolicialDigitalService.InqueritoCadastroRequest semNada =
+                new InqueritoPolicialDigitalService.InqueritoCadastroRequest(
+                        "  ", "INQUERITO_POLICIAL", "Roubo majorado", "Resumo mínimo dos fatos",
+                        null, null, null, null, null, 10L, null, null, null, null, null);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.registrar(semNada, certRequest()));
+
+        assertTrue(ex.getMessage().contains("número do procedimento"));
+        assertTrue(ex.getMessage().contains("prazo de conclusão"));
         verify(repository, never()).save(any());
     }
 
@@ -84,7 +155,7 @@ class InqueritoPolicialDigitalServiceInstitucionalTest {
         when(currentUserService.getRequired()).thenReturn(delegado);
         when(unidadeRepository.findById(10L)).thenReturn(Optional.of(forum));
 
-        assertThrows(IllegalArgumentException.class, () -> service.registrar(cadastro(10L)));
+        assertThrows(IllegalArgumentException.class, () -> service.registrar(cadastro(10L), certRequest()));
 
         verify(repository, never()).save(any());
     }
@@ -97,7 +168,7 @@ class InqueritoPolicialDigitalServiceInstitucionalTest {
         when(unidadeRepository.findById(10L)).thenReturn(Optional.of(delegacia));
         when(lotacaoRepository.findAtivasByUsuario(delegado)).thenReturn(List.of());
 
-        assertThrows(IllegalStateException.class, () -> service.registrar(cadastro(10L)));
+        assertThrows(IllegalStateException.class, () -> service.registrar(cadastro(10L), certRequest()));
 
         verify(repository, never()).save(any());
     }
@@ -110,7 +181,7 @@ class InqueritoPolicialDigitalServiceInstitucionalTest {
         when(currentUserService.getRequired()).thenReturn(delegado);
         when(unidadeRepository.findById(10L)).thenReturn(Optional.of(delegacia));
 
-        assertThrows(IllegalArgumentException.class, () -> service.registrar(cadastro(10L)));
+        assertThrows(IllegalArgumentException.class, () -> service.registrar(cadastro(10L), certRequest()));
 
         verify(repository, never()).save(any());
     }
@@ -128,7 +199,7 @@ class InqueritoPolicialDigitalServiceInstitucionalTest {
             return item;
         });
 
-        InqueritoPolicialDigitalService.InqueritoView view = service.registrar(cadastro(10L));
+        InqueritoPolicialDigitalService.InqueritoView view = service.registrar(cadastro(10L), certRequest());
 
         ArgumentCaptor<InqueritoPolicialDigital> captor = ArgumentCaptor.forClass(InqueritoPolicialDigital.class);
         verify(repository).save(captor.capture());
@@ -201,7 +272,7 @@ class InqueritoPolicialDigitalServiceInstitucionalTest {
 
     private InqueritoPolicialDigitalService.InqueritoCadastroRequest cadastro(Long unidadeApuracaoId) {
         return new InqueritoPolicialDigitalService.InqueritoCadastroRequest(
-                null,
+                "2026.001.INQ.000001",
                 "INQUERITO_POLICIAL",
                 "Roubo majorado",
                 "Resumo mínimo dos fatos",
@@ -214,7 +285,7 @@ class InqueritoPolicialDigitalServiceInstitucionalTest {
                 null,
                 null,
                 null,
-                null,
+                LocalDate.now().plusDays(30),
                 null
         );
     }

@@ -27,6 +27,7 @@ import com.tcc.pjb.backend.configs.security.perimeter.ClientIpResolver;
 import com.tcc.pjb.backend.model.dto.security.CertificadoAuthDtos;
 import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
+import com.tcc.pjb.backend.model.entity.enums.OrigemAutenticacaoSessao;
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
@@ -164,7 +165,8 @@ public class CertificadoAuthFacadeService {
             PasskeySessionService.IssuedPasskeySession sessao = passkeySessionService.issue(
                     resolvida.usuario(),
                     null,
-                    clientIpResolver.resolve(servletRequest));
+                    clientIpResolver.resolve(servletRequest),
+                    OrigemAutenticacaoSessao.CERTIFICADO_ICP);
             auditService.registrar(ETAPA_RESPOSTA, true, "AUTENTICADO");
             return new CertificadoAuthDtos.AutenticadoResponse(
                     CertificadoAuthDtos.Status.AUTENTICADO,

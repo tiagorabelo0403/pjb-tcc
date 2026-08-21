@@ -10,6 +10,7 @@ import com.tcc.pjb.backend.integration.govbr.oidc.GovBrUserInfoResponse;
 import com.tcc.pjb.backend.model.dto.govbr.GovBrLoginSessionResponse;
 import com.tcc.pjb.backend.model.dto.govbr.GovBrLoginStartResponse;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.OrigemAutenticacaoSessao;
 import com.tcc.pjb.backend.model.entity.identity.GovBrLoginState;
 import com.tcc.pjb.backend.model.repository.GovBrLoginStateRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
@@ -174,7 +175,7 @@ public class GovBrLoginService {
     st.markSessionRetrieved(now);
     stateRepo.save(st);
 
-    var issued = passkeySessionService.issue(usuario, null, ip);
+    var issued = passkeySessionService.issue(usuario, null, ip, OrigemAutenticacaoSessao.GOVBR);
     return new GovBrLoginSessionResponse(issued.token(), issued.expiresAt(), issued.termosPendentes());
   }
 

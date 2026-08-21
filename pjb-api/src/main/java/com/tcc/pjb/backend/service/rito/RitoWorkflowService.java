@@ -61,6 +61,7 @@ public class RitoWorkflowService {
     private final PjbTimeService timeService;
     private final ActorAssignmentEngine actorAssignmentEngine;
     private final ProceduralCanonicalResolver proceduralCanonicalResolver;
+    private final RitoUrgenciaPriorityPolicy ritoUrgenciaPriorityPolicy;
 
     public RitoWorkflowService(ProcessoRepository processoRepository,
                                WorkItemRepository workItemRepository,
@@ -71,7 +72,8 @@ public class RitoWorkflowService {
                                ProcessEventStore processEventStore,
                                PjbTimeService timeService,
                                ActorAssignmentEngine actorAssignmentEngine,
-                               ProceduralCanonicalResolver proceduralCanonicalResolver) {
+                               ProceduralCanonicalResolver proceduralCanonicalResolver,
+                               RitoUrgenciaPriorityPolicy ritoUrgenciaPriorityPolicy) {
         this.processoRepository = processoRepository;
         this.workItemRepository = workItemRepository;
         this.movimentacaoRepository = movimentacaoRepository;
@@ -82,6 +84,7 @@ public class RitoWorkflowService {
         this.timeService = timeService;
         this.actorAssignmentEngine = actorAssignmentEngine;
         this.proceduralCanonicalResolver = proceduralCanonicalResolver;
+        this.ritoUrgenciaPriorityPolicy = ritoUrgenciaPriorityPolicy;
     }
 
     @Transactional
@@ -285,6 +288,10 @@ public class RitoWorkflowService {
         if (exists(processo.getId(), spec.code())) {
             return;
         }
+        RitoProcessual rito = processo.getRito();
+        int prioridadeBase = normalizePriority(spec.required() ? 2 : 3);
+        int prioridade = ritoUrgenciaPriorityPolicy.prioridade(rito, prioridadeBase);
+        String baseLegalAdicional = ritoUrgenciaPriorityPolicy.baseLegalAdicional(rito);
         WorkItem workItem = WorkItem.builder()
                 .processo(processo)
                 .faseOrigem(spec.fase())
@@ -293,15 +300,23 @@ public class RitoWorkflowService {
                 .titulo(safe(spec.title()))
                 .descricao(safe(spec.description()))
                 .assignedRole(spec.actorRole())
-                .prioridade(normalizePriority(spec.required() ? 2 : 3))
+                .prioridade(prioridade)
                 .blocking(spec.blocking())
                 .dueAt(spec.deadline())
                 .uf(processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null)
                 .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null)
                 .comarcaEntidade(processo.getJurisdicao() != null ? processo.getJurisdicao().getComarcaEntidade() : null)
-                .baseLegal(spec.legalBases() == null || spec.legalBases().isEmpty() ? null : String.join("\n", spec.legalBases()))
+                .baseLegal(mergeBaseLegal(spec.legalBases(), baseLegalAdicional))
                 .build();
         workItemRepository.save(workItem);
+    }
+
+    private String mergeBaseLegal(List<String> legalBases, String adicional) {
+        List<String> merged = new java.util.ArrayList<>(legalBases == null ? List.of() : legalBases);
+        if (adicional != null && !merged.contains(adicional)) {
+            merged.add(adicional);
+        }
+        return merged.isEmpty() ? null : String.join("\n", merged);
     }
 
     private boolean exists(Long processoId, String templateCode) {

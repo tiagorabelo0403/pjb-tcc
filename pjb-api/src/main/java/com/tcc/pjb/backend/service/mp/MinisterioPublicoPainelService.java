@@ -28,6 +28,7 @@ import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionS
 import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
+import com.tcc.pjb.backend.service.rito.RitoUrgenciaPriorityPolicy;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
@@ -103,7 +104,7 @@ public class MinisterioPublicoPainelService {
         int manifestacoes = (int) inbox.stream().filter(this::isManifestacao).count();
         int recursos = (int) inbox.stream().filter(this::isRecurso).count();
         int prazos48h = (int) inbox.stream().filter(item -> item.getDueAt() != null && item.getDueAt().isBefore(Instant.now().plus(48, ChronoUnit.HOURS))).count();
-        List<String> prioridadeAlta = inbox.stream().filter(item -> item.getPrioridade() != null && item.getPrioridade() <= 1).limit(8).map(commons::resumo).toList();
+        List<String> prioridadeAlta = inbox.stream().filter(item -> item.getPrioridade() != null && item.getPrioridade() <= RitoUrgenciaPriorityPolicy.PRIORIDADE_ALTA).limit(8).map(commons::resumo).toList();
         List<String> inqueritos = inbox.stream().filter(this::isInquerito).limit(8).map(commons::resumo).toList();
         String etag = commons.etag("MP", usuario.getId(), manifestacoes, recursos, prazos48h, prioridadeAlta, inqueritos, ctx.behavioralAudit());
         Map<String, Object> panelBranding = institutionalPanelBrandingService.resolve("MINISTERIO_PUBLICO", "PAINEL_MINISTERIO_PUBLICO", usuario.getTipoUsuario());

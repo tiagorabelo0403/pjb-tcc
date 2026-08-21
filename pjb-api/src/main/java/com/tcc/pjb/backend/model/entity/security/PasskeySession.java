@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.model.entity.security;
 import com.tcc.pjb.backend.core.modularity.PjbModuleId;
 import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
 import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
+import com.tcc.pjb.backend.model.entity.enums.OrigemAutenticacaoSessao;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -65,6 +66,13 @@ public class PasskeySession {
 
     @Column(name = "termos_pendentes", nullable = false)
     private boolean termosPendentes = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "origem_autenticacao", length = 30)
+    private OrigemAutenticacaoSessao origemAutenticacao;
+
+    public OrigemAutenticacaoSessao getOrigemAutenticacao() { return origemAutenticacao; }
+    public void setOrigemAutenticacao(OrigemAutenticacaoSessao origemAutenticacao) { this.origemAutenticacao = origemAutenticacao; }
 
     public boolean isRevogado() { return revogadoEm != null; }
 

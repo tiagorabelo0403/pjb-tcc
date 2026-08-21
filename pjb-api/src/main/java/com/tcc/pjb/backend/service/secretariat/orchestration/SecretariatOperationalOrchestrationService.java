@@ -27,6 +27,7 @@ import com.tcc.pjb.backend.service.secretariat.operational.SecretariatOperationa
 import com.tcc.pjb.backend.service.secretariat.projection.SecretariatQueueProjectionService;
 import com.tcc.pjb.backend.service.secretariat.routing.SecretariatOperationalRoutingProfile;
 import com.tcc.pjb.backend.service.secretariat.routing.SecretariatOperationalRoutingResolver;
+import com.tcc.pjb.backend.service.rito.RitoUrgenciaPriorityPolicy;
 import com.tcc.pjb.backend.service.secretariat.rules.SecretariatRulePack;
 import com.tcc.pjb.backend.service.secretariat.rules.SecretariatRulePackFactory;
 import com.tcc.pjb.backend.service.secretariat.stability.SecretariatOperationalStabilityService;
@@ -66,6 +67,7 @@ public class SecretariatOperationalOrchestrationService {
     private final SecretariatOperationalBottleneckRadarService bottleneckRadarService;
     private final SecretariatOperationalStabilityService stabilityService;
     private final SecretariatOperationalBulkReassignmentService bulkReassignmentService;
+    private final RitoUrgenciaPriorityPolicy ritoUrgenciaPriorityPolicy;
 
     public SecretariatOperationalOrchestrationService(CurrentUserService currentUserService,
                                                       ProcessoRepository processoRepository,
@@ -85,7 +87,8 @@ public class SecretariatOperationalOrchestrationService {
                                                       SecretariatOperationalRedistributionService redistributionService,
                                                       SecretariatOperationalBottleneckRadarService bottleneckRadarService,
                                                       SecretariatOperationalStabilityService stabilityService,
-                                                      SecretariatOperationalBulkReassignmentService bulkReassignmentService) {
+                                                      SecretariatOperationalBulkReassignmentService bulkReassignmentService,
+                                                      RitoUrgenciaPriorityPolicy ritoUrgenciaPriorityPolicy) {
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
@@ -105,6 +108,7 @@ public class SecretariatOperationalOrchestrationService {
         this.bottleneckRadarService = Objects.requireNonNull(bottleneckRadarService);
         this.stabilityService = Objects.requireNonNull(stabilityService);
         this.bulkReassignmentService = Objects.requireNonNull(bulkReassignmentService);
+        this.ritoUrgenciaPriorityPolicy = Objects.requireNonNull(ritoUrgenciaPriorityPolicy);
     }
 
     @Transactional(readOnly = true)
@@ -660,6 +664,7 @@ public class SecretariatOperationalOrchestrationService {
         if (processo.getRamoDireito() != null && processo.getRamoDireito().exigeAtuacaoMP()) {
             tags.add("ATUACAO_MP");
         }
+        tags.addAll(ritoUrgenciaPriorityPolicy.tagsSecretariat(processo.getRito()));
         return List.copyOf(tags);
     }
 

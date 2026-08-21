@@ -183,7 +183,7 @@ class CertificadoAuthSessaoE2ETest {
     }
 
     @Test
-    void certificadoEmiteTokenAceitoPeloFiltroPasskeyEMetodoReportadoComoPasskeyDividaOnda151() throws Exception {
+    void certificadoEmiteTokenAceitoPeloFiltroPasskeyEMetodoReportadoComoCertificadoIcp() throws Exception {
         CertMaterial titular = material("12345678901", "211");
         Usuario usuario = salvarUsuario("cert-e2e-1@pjb.test", titular.profile().cpfTitular(), TipoUsuario.DELEGADO_POLICIA);
         salvarLotacao(usuario, "Delegacia Centro", "DELEGADO");
@@ -205,7 +205,7 @@ class CertificadoAuthSessaoE2ETest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.authenticated").value(true))
-                .andExpect(jsonPath("$.method").value("PASSKEY"));
+                .andExpect(jsonPath("$.method").value("CERTIFICADO_ICP"));
     }
 
     @Test

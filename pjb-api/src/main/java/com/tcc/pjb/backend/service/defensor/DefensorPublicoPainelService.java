@@ -28,6 +28,7 @@ import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionG
 import com.tcc.pjb.backend.service.processual.peticionamento.workspace.InstitutionalMultimediaWorkspaceService;
 import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalPeticionamentoFacadeService;
+import com.tcc.pjb.backend.service.rito.RitoUrgenciaPriorityPolicy;
 import com.tcc.pjb.backend.service.ui.branding.InstitutionalPanelBrandingService;
 
 @Service
@@ -84,7 +85,7 @@ public class DefensorPublicoPainelService {
         int peticoes = (int) inbox.stream().filter(item -> commons.titleContains(item, "PETICAO", "INICIAL", "DEFESA")).count();
         int recursos = (int) inbox.stream().filter(item -> commons.titleContains(item, "RECURSO", "APELACAO", "AGRAVO")).count();
         int prazos48h = (int) inbox.stream().filter(item -> item.getDueAt() != null && item.getDueAt().isBefore(Instant.now().plus(48, ChronoUnit.HOURS))).count();
-        List<String> prioridade = inbox.stream().filter(item -> item.getPrioridade() != null && item.getPrioridade() <= 1).limit(8).map(commons::resumo).toList();
+        List<String> prioridade = inbox.stream().filter(item -> item.getPrioridade() != null && item.getPrioridade() <= RitoUrgenciaPriorityPolicy.PRIORIDADE_ALTA).limit(8).map(commons::resumo).toList();
         String etag = commons.etag("DEFENSOR", usuario.getId(), assistidos, audienciasHoje.size(), peticoes, recursos, prazos48h, prioridade, ctx.behavioralAudit());
         Map<String, Object> panelBranding = institutionalPanelBrandingService.resolve("DEFENSORIA", "PAINEL_DEFENSORIA", usuario.getTipoUsuario());
         Map<String, Object> sharedExperience = sharedExperienceService.snapshot("DEFENSOR_PUBLICO");

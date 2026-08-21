@@ -6,6 +6,7 @@ import com.tcc.pjb.backend.model.dto.surface.common.SurfaceCollectionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
 import com.tcc.pjb.backend.service.criminal.InqueritoPolicialDigitalService;
 import com.tcc.pjb.backend.service.surface.common.SurfaceProjectionSupport;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +30,7 @@ public class InqueritoPolicialDigitalSurfaceFacadeService {
         return surfaceProjectionSupport.collection("criminal.inquerito.processo", inqueritoPolicialDigitalService.listarPorProcesso(processoId));
     }
 
-    public SurfaceSnapshotResponse registrar(InqueritoCadastroRequest request) {
+    public SurfaceSnapshotResponse registrar(InqueritoCadastroRequest request, HttpServletRequest servletRequest) {
         return surfaceProjectionSupport.snapshot(
                 "criminal.inquerito.registrar",
                 inqueritoPolicialDigitalService.registrar(
@@ -49,7 +50,8 @@ public class InqueritoPolicialDigitalSurfaceFacadeService {
                                 request.nivelSigilo(),
                                 request.prazoConclusao(),
                                 request.processoVinculadoId()
-                        )
+                        ),
+                        servletRequest
                 )
         );
     }
