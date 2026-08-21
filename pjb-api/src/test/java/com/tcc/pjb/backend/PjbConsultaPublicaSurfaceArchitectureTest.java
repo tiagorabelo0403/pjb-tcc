@@ -7,6 +7,7 @@ import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 import com.tcc.pjb.backend.service.consultapublica.ConsultaPublicaSearchService;
 import com.tcc.pjb.backend.service.consultapublica.ConsultaPublicaWorkspaceService;
 import com.tcc.pjb.backend.service.publico.PublicProcessoConsultaService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -34,10 +35,10 @@ class PjbConsultaPublicaSurfaceArchitectureTest {
     @Test
     void controllerPublicoDeConsultaDeveExporWorkspaceSearchDetailEPageResolve() throws NoSuchMethodException {
         List<Method> methods = List.of(
-                ConsultasPublicasController.class.getDeclaredMethod("workspace"),
-                ConsultasPublicasController.class.getDeclaredMethod("search", String.class, String.class, String.class, int.class, int.class),
-                ConsultasPublicasController.class.getDeclaredMethod("detail", String.class),
-                ConsultasPublicasController.class.getDeclaredMethod("resolvePage", String.class)
+                ConsultasPublicasController.class.getDeclaredMethod("workspace", HttpServletRequest.class),
+                ConsultasPublicasController.class.getDeclaredMethod("search", String.class, String.class, String.class, int.class, int.class, HttpServletRequest.class),
+                ConsultasPublicasController.class.getDeclaredMethod("detail", String.class, HttpServletRequest.class),
+                ConsultasPublicasController.class.getDeclaredMethod("resolvePage", String.class, HttpServletRequest.class)
         );
 
         for (Method method : methods) {
