@@ -17,6 +17,18 @@ resilience4j:
       renajud-restricao:
         max-attempts: ${PJB_R4J_RENAJUD_MAX_ATTEMPTS:3}
         wait-duration: ${PJB_R4J_RENAJUD_WAIT:5s}
+      anthropic-dreaming:
+        max-attempts: ${PJB_R4J_ANTHROPIC_DREAMING_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_ANTHROPIC_DREAMING_WAIT:2s}
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - com.tcc.pjb.backend.ai.legalai.dreaming.infra.AnthropicRetryableApiException
+      anthropic-memory:
+        max-attempts: ${PJB_R4J_ANTHROPIC_MEMORY_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_ANTHROPIC_MEMORY_WAIT:2s}
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - com.tcc.pjb.backend.ai.legalai.dreaming.infra.AnthropicRetryableApiException
   circuitbreaker:
     instances:
       mni-remessa:

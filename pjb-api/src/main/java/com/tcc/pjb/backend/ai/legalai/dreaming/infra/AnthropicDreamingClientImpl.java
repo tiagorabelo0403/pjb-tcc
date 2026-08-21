@@ -2,10 +2,13 @@ package com.tcc.pjb.backend.ai.legalai.dreaming.infra;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.ai.legalai.config.AnthropicProperties;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -23,7 +26,7 @@ public class AnthropicDreamingClientImpl implements AnthropicDreamingClient {
     private final RestClient restClient;
     private final AnthropicProperties properties;
 
-    public AnthropicDreamingClientImpl(RestClient.Builder restClientBuilder, AnthropicProperties properties) {
+    public AnthropicDreamingClientImpl(RestClient.Builder restClientBuilder, AnthropicProperties properties, ObjectMapper objectMapper) {
         this.properties = properties;
         this.restClient = restClientBuilder
                 .baseUrl(properties.baseUrl())
@@ -31,11 +34,13 @@ public class AnthropicDreamingClientImpl implements AnthropicDreamingClient {
                 .defaultHeader("anthropic-version", "2023-06-01")
                 .defaultHeader("anthropic-beta",
                         properties.managedAgentsVersion() + ", " + properties.dreamingVersion())
+                .defaultStatusHandler(HttpStatusCode::isError, new AnthropicHttpErrorSupport(objectMapper).errorHandler())
                 .build();
     }
 
     @Override
     @CircuitBreaker(name = "anthropic-dreaming", fallbackMethod = "criarDreamFallback")
+    @Retry(name = "anthropic-dreaming")
     public AnthropicDreamRef criarDream(
             String inputStoreId,
             List<String> sessionIds,
@@ -74,6 +79,7 @@ public class AnthropicDreamingClientImpl implements AnthropicDreamingClient {
 
     @Override
     @CircuitBreaker(name = "anthropic-dreaming", fallbackMethod = "consultarDreamFallback")
+    @Retry(name = "anthropic-dreaming")
     public Optional<AnthropicDreamStatusRef> consultarDream(String anthropicDreamId) {
         AnthropicDreamApiResponse response = restClient.get()
                 .uri("/v1/dreams/{id}", anthropicDreamId)
@@ -101,6 +107,7 @@ public class AnthropicDreamingClientImpl implements AnthropicDreamingClient {
 
     @Override
     @CircuitBreaker(name = "anthropic-dreaming")
+    @Retry(name = "anthropic-dreaming")
     public void cancelarDream(String anthropicDreamId) {
         restClient.post()
                 .uri("/v1/dreams/{id}/cancel", anthropicDreamId)

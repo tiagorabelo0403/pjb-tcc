@@ -2,11 +2,14 @@ package com.tcc.pjb.backend.ai.legalai.dreaming.infra;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.ai.legalai.config.AnthropicProperties;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryAccessPolicy;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -22,18 +25,20 @@ public class AnthropicMemoryStoreClientImpl implements AnthropicMemoryStoreClien
     private final RestClient restClient;
     private final AnthropicProperties properties;
 
-    public AnthropicMemoryStoreClientImpl(RestClient.Builder restClientBuilder, AnthropicProperties properties) {
+    public AnthropicMemoryStoreClientImpl(RestClient.Builder restClientBuilder, AnthropicProperties properties, ObjectMapper objectMapper) {
         this.properties = properties;
         this.restClient = restClientBuilder
                 .baseUrl(properties.baseUrl())
                 .defaultHeader("x-api-key", properties.apiKey())
                 .defaultHeader("anthropic-version", "2023-06-01")
                 .defaultHeader("anthropic-beta", properties.managedAgentsVersion())
+                .defaultStatusHandler(HttpStatusCode::isError, new AnthropicHttpErrorSupport(objectMapper).errorHandler())
                 .build();
     }
 
     @Override
     @CircuitBreaker(name = "anthropic-memory", fallbackMethod = "criarStoreFallback")
+    @Retry(name = "anthropic-memory")
     public AnthropicStoreRef criarStore(String nome, String descricao, MemoryAccessPolicy.AccessType access) {
         Map<String, Object> body = Map.of(
                 "name", nome,
@@ -75,6 +80,7 @@ public class AnthropicMemoryStoreClientImpl implements AnthropicMemoryStoreClien
 
     @Override
     @CircuitBreaker(name = "anthropic-memory")
+    @Retry(name = "anthropic-memory")
     public void arquivarStore(String anthropicStoreId) {
         restClient.post()
                 .uri("/v1/memory_stores/{id}/archive", anthropicStoreId)
@@ -84,6 +90,7 @@ public class AnthropicMemoryStoreClientImpl implements AnthropicMemoryStoreClien
 
     @Override
     @CircuitBreaker(name = "anthropic-memory", fallbackMethod = "criarMemoryFallback")
+    @Retry(name = "anthropic-memory")
     public AnthropicMemoryEntryRef criarMemory(String anthropicStoreId, String chave, String conteudo) {
         Map<String, Object> body = Map.of("key", chave, "content", conteudo);
         AnthropicMemoryApiResponse response = restClient.post()
@@ -102,6 +109,7 @@ public class AnthropicMemoryStoreClientImpl implements AnthropicMemoryStoreClien
 
     @Override
     @CircuitBreaker(name = "anthropic-memory")
+    @Retry(name = "anthropic-memory")
     public AnthropicMemoryEntryRef atualizarMemory(String anthropicStoreId, String memoryId, String conteudo) {
         Map<String, Object> body = Map.of("content", conteudo);
         AnthropicMemoryApiResponse response = restClient.put()
@@ -115,6 +123,7 @@ public class AnthropicMemoryStoreClientImpl implements AnthropicMemoryStoreClien
 
     @Override
     @CircuitBreaker(name = "anthropic-memory")
+    @Retry(name = "anthropic-memory")
     public void deletarMemory(String anthropicStoreId, String memoryId) {
         restClient.delete()
                 .uri("/v1/memory_stores/{storeId}/memories/{memId}", anthropicStoreId, memoryId)
