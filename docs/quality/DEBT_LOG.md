@@ -1676,7 +1676,7 @@ Não revisitar — os quatro pontos são estruturais, não workarounds.
 
 ## D-funcao-servidor-proferir-nao-implementado
 
-**Status:** aberta
+**Status:** FECHADA
 
 **Contexto:** a fatia que conecta `FuncaoServidorJudiciario` ao motor ABAC real
 (`PjbAuthorizationService.requireFuncaoServidorCapability(Processo, AcaoProcessualServidor)`)
@@ -1710,6 +1710,18 @@ entrada afirmava. `podeProferir()` (o booleano do enum `FuncaoServidorJudiciario
 também cobre `verificarPermissao(String)` do próprio `FuncaoServidorApplicationService` — ver
 `D-duas-tabelas-verdade-capacidade-servidor` abaixo para a duplicação entre esse método e
 `possuiCapacidade()`.
+
+**Fechamento:** `AtoOrdinatorioServidorApplicationService.proferir` conecta `PROFERIR` a um fluxo real —
+`POST /api/v1/processo/ato-ordinatorio`. Catálogo `TipoAtoOrdinatorio` (6 valores, CPC art. 203, §4º)
+cobre juntada, vista (parte contrária e ambas), aguarde de prazo, remessa a órgão auxiliar e expedição em
+cumprimento de decisão já proferida — deliberadamente sem `WorkItem`/`ProcessoLifecycleMachine`/
+`DecisionSafetyService`, porque ato ordinatório não é decisão. Documento assinado via
+`QualifiedDocumentSignatureEnvelopeService.signGovernedContent` (papel `UNIDADE_JUDICIAL`), persistido
+como `DocumentoProcessual`, selado via `DocumentTrustChainService`, e uma `MovimentacaoProcessual` (mesma
+fase de/para) registra o ato na timeline do processo. Testado por
+`AtoOrdinatorioServidorApplicationServiceTest` (unit), `AtoOrdinatorioServidorControllerTest` (unit,
+`@PreAuthorize` + validação) e `AtoOrdinatorioServidorFlowIT` (E2E: `DIRETOR_SECRETARIA` consegue,
+`TECNICO_JUDICIARIO` sem `podeProferir()` é barrado pelo gate real).
 
 ## D-duas-tabelas-verdade-capacidade-servidor
 

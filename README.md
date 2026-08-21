@@ -603,6 +603,8 @@ O backend está organizado em 15 módulos funcionais. Clique em qualquer um para
 Gerencia papel, lotação, localização, competência e visibilidade de cada ator no processo. A matriz de visibilidade produz uma explicação auditável para cada decisão de acesso — quem pode ver o quê, por qual motivo, com registro imutável.
 
 Inclui gestão de afiliações, credenciais institucionais, atestação de fonte oficial e delegações formais entre unidades.
+
+Atos ordinatórios (CPC art. 203, §4º) — juntada, vista à(s) parte(s), aguarde de prazo, remessa a órgão auxiliar e expedição em cumprimento de decisão já proferida — são praticados pelo próprio servidor via `POST /api/v1/processo/ato-ordinatorio`, sem passar pelo aparato decisório do juiz: nenhum `WorkItem`, nenhuma transição de fase, nenhum gate de segurança de decisão, porque por definição legal o ato ordinatório não decide nada. O documento é assinado com papel `UNIDADE_JUDICIAL` (não `MAGISTRATURA`), selado na cadeia de confiança e registrado como movimentação na mesma fase de origem e destino. A autorização exige `podeProferir()` na função do servidor autenticado, verificado pelo mesmo motor ABAC que já protege conclusão, intimação, distribuição e arquivamento.
 </details>
 
 <details>
