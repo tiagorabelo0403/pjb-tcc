@@ -29,6 +29,42 @@ resilience4j:
         exponential-backoff-multiplier: 2
         retry-exceptions:
           - com.tcc.pjb.backend.ai.legalai.dreaming.infra.AnthropicRetryableApiException
+      mni:
+        max-attempts: ${PJB_R4J_MNI_CONNECTOR_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_MNI_CONNECTOR_WAIT:2s}
+        exponential-backoff-multiplier: 2
+      pjemni:
+        max-attempts: ${PJB_R4J_PJEMNI_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_PJEMNI_WAIT:2s}
+        exponential-backoff-multiplier: 2
+      pdpj:
+        max-attempts: ${PJB_R4J_PDPJ_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_PDPJ_WAIT:2s}
+        exponential-backoff-multiplier: 2
+      esaj:
+        max-attempts: ${PJB_R4J_ESAJ_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_ESAJ_WAIT:3s}
+        exponential-backoff-multiplier: 2
+      eproc:
+        max-attempts: ${PJB_R4J_EPROC_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_EPROC_WAIT:3s}
+        exponential-backoff-multiplier: 2
+      projudi:
+        max-attempts: ${PJB_R4J_PROJUDI_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_PROJUDI_WAIT:3s}
+        exponential-backoff-multiplier: 2
+      creta:
+        max-attempts: ${PJB_R4J_CRETA_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_CRETA_WAIT:3s}
+        exponential-backoff-multiplier: 2
+      mp:
+        max-attempts: ${PJB_R4J_MP_CONNECTOR_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_MP_CONNECTOR_WAIT:3s}
+        exponential-backoff-multiplier: 2
+      judicial-connector-lifecycle:
+        max-attempts: ${PJB_R4J_JUDICIAL_LIFECYCLE_MAX_ATTEMPTS:3}
+        wait-duration: ${PJB_R4J_JUDICIAL_LIFECYCLE_WAIT:2s}
+        exponential-backoff-multiplier: 2
   circuitbreaker:
     instances:
       mni-remessa:
@@ -89,6 +125,51 @@ resilience4j:
         permitted-number-of-calls-in-half-open-state: 2
         record-exceptions:
           - java.lang.Exception
+      mni:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_MNI_CONNECTOR_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 3
+      pjemni:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_PJEMNI_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 3
+      pdpj:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_PDPJ_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 3
+      esaj:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_ESAJ_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 2
+      eproc:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_EPROC_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 2
+      projudi:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_PROJUDI_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 2
+      creta:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_CRETA_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 2
+      mp:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_MP_CONNECTOR_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 2
+      judicial-connector-lifecycle:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: ${PJB_CB_JUDICIAL_LIFECYCLE_WAIT:60s}
+        permitted-number-of-calls-in-half-open-state: 3
   bulkhead:
     instances:
       mni-remessa:
@@ -109,3 +190,6 @@ resilience4j:
       bnmp-registro:
         max-concurrent-calls: ${PJB_BH_BNMP_MAX:5}
         max-wait-duration: 1s
+      judicial-connector-lifecycle:
+        max-concurrent-calls: ${PJB_BH_JUDICIAL_LIFECYCLE_MAX:15}
+        max-wait-duration: 2s
