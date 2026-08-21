@@ -1,0 +1,19 @@
+spring:
+  config:
+    activate:
+      on-profile: demo
+
+pjb:
+  demo:
+    seed-enabled: ${PJB_DEMO_SEED_ENABLED:true}
+  integrations:
+    govbr:
+      enabled: true
+      mock-enabled: true
+      authorize-url: ${PJB_GOVBR_AUTHORIZE_URL:http://localhost:8080/oauth2/authorize}
+      token-url: ${PJB_GOVBR_TOKEN_URL:http://localhost:8080/oauth2/token}
+      userinfo-url: ${PJB_GOVBR_USERINFO_URL:http://localhost:8080/userinfo}
+      jwks-url: ${PJB_GOVBR_JWKS_URL:http://localhost:8080/oauth2/jwks}
+      issuer: ${PJB_GOVBR_ISSUER:http://localhost:8080}
+      client-id: ${PJB_GOVBR_CLIENT_ID:pjb-demo-govbr}
+      client-secret: ${PJB_GOVBR_CLIENT_SECRET:pjb-demo-govbr-secret}

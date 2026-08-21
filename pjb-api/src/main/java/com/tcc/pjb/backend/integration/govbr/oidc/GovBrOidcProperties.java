@@ -94,14 +94,14 @@ public record GovBrOidcProperties(
       requireNonBlank(issuer, "issuer");
     }
 
-    validateHttpsOrLoopback(authorizeUrl, "authorize-url", false);
-    validateHttpsOrLoopback(tokenUrl, "token-url", false);
-    validateHttpsOrLoopback(userinfoUrl, "userinfo-url", false);
+    validateHttpsOrLoopback(authorizeUrl, "authorize-url", mockEnabled);
+    validateHttpsOrLoopback(tokenUrl, "token-url", mockEnabled);
+    validateHttpsOrLoopback(userinfoUrl, "userinfo-url", mockEnabled);
     if (pictureUrl != null && !pictureUrl.isBlank()) {
-      validateHttpsOrLoopback(pictureUrl, "picture-url", false);
+      validateHttpsOrLoopback(pictureUrl, "picture-url", mockEnabled);
     }
     if (jwksUrl != null && !jwksUrl.isBlank()) {
-      validateHttpsOrLoopback(jwksUrl, "jwks-url", false);
+      validateHttpsOrLoopback(jwksUrl, "jwks-url", mockEnabled);
     }
     validateHttpsOrLoopback(redirectUri, "redirect-uri", true);
     if (redirectUriStepUp != null && !redirectUriStepUp.isBlank()) {

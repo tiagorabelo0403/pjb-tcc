@@ -7,6 +7,7 @@ import com.tcc.pjb.backend.core.guard.MockGuardViolation;
 import com.tcc.pjb.backend.core.guard.MockGuardViolationException;
 import com.tcc.pjb.backend.core.dje.domain.DjePartesNotificacaoResult;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -34,6 +35,18 @@ public class DjeConfiguration {
         return (tribunalCodigo, conteudo, tipoAto) -> new com.tcc.pjb.backend.core.dje.domain.DjeEnvioResult("MOCK");
     }
 
+    // Fora de ambiente real: evita que o contexto inteiro deixe de subir só porque o DJE
+    // não foi configurado (dormente por padrão, como as demais integrações judiciais).
+    // Em prod/staging o fail-fast documentado em MockGuardStartupDjeIntegrationTest continua valendo.
+    @Bean
+    @ConditionalOnMissingBean(DjeHttpClient.class)
+    @ConditionalOnExpression("!${pjb.mock-guard.real-environment:false}")
+    public DjeHttpClient djeHttpClientNaoConfigurado() {
+        return (tribunalCodigo, conteudo, tipoAto) -> {
+            throw new IllegalStateException("dje_integracao_nao_configurada");
+        };
+    }
+
     @Bean
     @ConditionalOnMissingBean(DjePartesNotificacaoPort.class)
     @ConditionalOnProperty(prefix = "pjb.dje", name = "mock-enabled", havingValue = "true", matchIfMissing = false)
@@ -47,5 +60,14 @@ public class DjeConfiguration {
             throw new MockGuardViolationException(violation);
         }
         return publicacao -> DjePartesNotificacaoResult.success(publicacao.getId(), "mock");
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(DjePartesNotificacaoPort.class)
+    @ConditionalOnExpression("!${pjb.mock-guard.real-environment:false}")
+    public DjePartesNotificacaoPort djePartesNotificacaoPortNaoConfigurado() {
+        return publicacao -> {
+            throw new IllegalStateException("dje_integracao_nao_configurada");
+        };
     }
 }
