@@ -43,9 +43,13 @@ import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
  * {@link com.tcc.pjb.backend.integration.govbr.oidc.GovBrOidcClient} continua sendo o
  * mesmo cliente usado contra o gov.br real — nenhuma linha dele muda para este modo existir.
  */
+// mock-enabled=true sozinho é o default de application-test.yml para toda a suíte (cobre
+// GovBrMockSignatureService, sem SecurityFilterChain próprio). Exigir enabled=true também evita
+// que este SecurityFilterChain adicional se registre em slices de teste que não o esperam —
+// só application-demo.yml liga os dois juntos.
 @Configuration
 @Profile({"dev", "test", "demo"})
-@ConditionalOnProperty(prefix = "pjb.integrations.govbr", name = "mock-enabled", havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(prefix = "pjb.integrations.govbr", name = {"enabled", "mock-enabled"}, havingValue = "true", matchIfMissing = false)
 public class GovBrDemoIdentityProviderConfig {
 
   @Bean
