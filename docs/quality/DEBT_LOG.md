@@ -1898,3 +1898,26 @@ resolve só por `usuarioId`; um defensor não herda automaticamente o brasão da
 **Quando revisitar:** Fase 2 — resolver o preset por `escopo=INSTITUCIONAL` + `escopo_ref` (UF/órgão),
 com precedência (perfil individual sobrepõe ou complementa o institucional, decisão de produto a definir),
 e um fluxo de curadoria institucional (quem cadastra o brasão/cores do órgão). Sem mudança de schema.
+
+## D-peticao-formato-docx-e-json-fonte
+
+**Status:** aberta (formatação rica governada entregue; export .docx e JSON-como-fonte dependem de decisão de dependência).
+
+**Contexto:** `RichTextFormatCatalog` + `RichTextDocumentSanitizer` entregam a formatação rica governada
+da peça (negrito/itálico/sublinhado/títulos/listas/tabela/alinhamento/fonte/tamanho/cor) validada
+contra allowlist sobre o documento JSON do TipTap/ProseMirror, usando só Jackson — sem biblioteca nova.
+Duas peças ficam de fora **por exigirem decisão de dependência de build** (infra que afeta o sistema
+inteiro, então aprovação separada, não correção silenciosa):
+
+1. **Export `.docx`**: gerar a peça como documento Word real exige **Apache POI** (ou docx4j/`docen`),
+   dependências novas no `pom.xml`. Hoje a minuta é HTML/JSON; não há geração de `.docx`.
+2. **JSON como fonte de verdade**: hoje a minuta persiste como HTML (`minuta_inicial`) e o autosave
+   também. O modelo seguro do TipTap é o JSON validado; migrar o armazenamento de HTML para o JSON
+   sanitizado (mantendo o HTML como projeção derivada) fecharia o ciclo de segurança de ponta a ponta,
+   mas é mudança de contrato de dados do rascunho — merece fatia própria com plano e aprovação.
+
+**Risco:** nenhum risco de segurança na entrega atual — o sanitizer já bloqueia XSS no documento JSON
+validado. É ausência de export e de unificação de fonte de dados, não bug.
+
+**Quando revisitar:** quando o usuário aprovar a adição do Apache POI (export .docx) e/ou a migração
+do armazenamento da minuta para JSON validado. Ambos são fatias próprias com aprovação de infra.

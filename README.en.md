@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-4%2C953%20unit%20%2B%20306%20IT%20%7C%200%20failures-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-4%2C967%20unit%20%2B%20306%20IT%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -323,7 +323,7 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 4,953 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 4,967 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 306 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 ### Run Unit Tests Only (fast)
@@ -340,7 +340,7 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api
 ```
 
-This is the official project gate. It runs the 4,953 unit tests (Surefire) and then the 306 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 4,967 unit tests (Surefire) and then the 306 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 Expected time: **~50 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
 
@@ -369,7 +369,7 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **4,953** |
+| Total unit tests | Surefire | **4,967** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~14 min** |
@@ -685,6 +685,8 @@ Each document has origin, operational state, integrity hash, and a verifiable ch
 - The hardcoded `COMUM_ORDINARIO` procedural type this channel carried was fixed alongside it, with `ProceduralCatalogSupport.tryResolveRito()` reading the payload. Full detail: `docs/quality/DEBT_LOG.md` (`D-marketplace-sem-completude-documental`).
 
 **Per-actor persisted visual identity and resilient drafts:** the petition editor (a topic-by-topic blueprint that changes with the procedural type, with inline multimedia blocks and a visual-identity policy) already existed; what is new is the reusable letterhead profile — `PeticaoIdentidadeVisual` stores, per filing actor, a logo (in object storage, never a DB blob — same pattern as `tb_usuario_avatar`), display/institution name, free header and footer, and a color palette, applied automatically to every petition instead of being re-sent each session; `escopo`/`escopo_ref` columns already anticipate extending this to institutional identity (public defense by state, prosecution, attorney's offices, the judiciary, and expert witnesses) without touching the schema. Drafts gained resilient autosave: `PUT .../rascunhos/{id}/autosave` updates the draft in place (the last saved content survives a power or connection loss) and every real content change writes an immutable snapshot into `tb_peticao_draft_versao`, with hash-based dedup, retention of the last 30 versions, listing, and restore — all owner-isolated, with no one seeing another's draft.
+
+**Governed rich-text formatting and anti-XSS sanitization:** the sealed `RichTextFormatCatalog` pins what the editor may offer — bold, italic, underline, strikethrough, headings, lists, tables, alignment, plus a curated set of fonts, sizes, and colors — modeled on the TipTap/ProseMirror JSON document (the MIT open-source editor adopted as the reference). Before saving/publishing, `RichTextDocumentSanitizer` validates the document against that catalog using Jackson alone (no new library): nodes, marks, and attributes outside the allowlist are removed, disallowed fonts/sizes/alignments are dropped, and link/image URLs with a dangerous scheme (`javascript:`, `data:`, `file:`) are blocked — the petition is seen by everyone in the case, so this is security, not cosmetics. The catalog is exposed in the editor blueprint (`richTextFormat`) and at `/api/v1/peticionamento/editor/formato`, so the toolbar offers exactly what is accepted. `.docx` export (Apache POI) and migrating the draft body from HTML to the validated JSON as the source of truth are recorded as next steps that depend on a dependency decision (`D-peticao-formato-docx-e-json-fonte`).
 </details>
 
 <details>
@@ -957,7 +959,7 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **4,953 · 0 failures · 0 errors** |
+| Unit tests (Surefire) | **4,967 · 0 failures · 0 errors** |
 | Integration tests (Failsafe) | **306 · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
@@ -1167,7 +1169,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 5,259 tests (4,953 unit + 306 integration), and 300 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 5,273 tests (4,967 unit + 306 integration), and 300 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

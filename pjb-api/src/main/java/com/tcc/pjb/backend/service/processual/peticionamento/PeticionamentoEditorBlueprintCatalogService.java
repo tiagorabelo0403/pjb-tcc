@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class PeticionamentoEditorBlueprintCatalogService {
 
+    private final com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextFormatCatalog richTextFormatCatalog =
+            new com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextFormatCatalog();
+
     public ResolvedEditorBlueprint resolve(ResolveRequest request) {
         ResolveRequest safe = request == null ? new ResolveRequest(null, null, null, null, null, null, null, null, false, false, false, Map.of()) : request;
         String ramo = normalize(safe.ramoDireito());
@@ -51,6 +54,8 @@ public class PeticionamentoEditorBlueprintCatalogService {
         editor.put("supportsAutoRouting", true);
         editor.put("supportsProtocolSeed", true);
         editor.put("supportsStructuredSections", true);
+        editor.put("supportsRichTextFormatting", true);
+        editor.put("richTextFormat", richTextFormatCatalog.toBlueprintMap());
         editor.put("supportsProcedureCatalog", true);
         editor.put("supportsJurisdictionIntakeMatrix", true);
         editor.put("supportsFactsFirstIntake", true);
