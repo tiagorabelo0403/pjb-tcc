@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-4%2C819%20unit%20%2B%20306%20IT%20%7C%200%20failures-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-4%2C929%20unit%20%2B%20306%20IT%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -323,7 +323,7 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 4,819 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 4,929 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 306 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 ### Run Unit Tests Only (fast)
@@ -340,7 +340,7 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api
 ```
 
-This is the official project gate. It runs the 4,819 unit tests (Surefire) and then the 306 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 4,929 unit tests (Surefire) and then the 306 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 Expected time: **~50 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
 
@@ -369,7 +369,7 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **4,819** |
+| Total unit tests | Surefire | **4,929** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~14 min** |
@@ -619,6 +619,8 @@ Each load matched the municipality name from the PDF against the official IBGE l
 Each of the three loads is locked by a permanent regression test against the source document — the municipality-to-court distribution is re-parsed independently of the script that generated the migration before it becomes an `assert`, so that a future migration change, or a migration from another region that accidentally corrupts data via a table-name mistake, gets caught rather than silently accepted.
 
 **Court and district as real entities.** `Tribunal` and `Comarca` are proper JPA entities (`model/entity/competencia/`), no longer loose text — `UnidadeJudiciariaCompetencia`, `JurisdicaoTerritorial`, `Jurisdicao`, `Usuario`, `Processo`, `WorkItem`, `OrgaoJudiciario`, `PeritoSorteioAudit`, and `PeritoDisponibilidade` reference `Comarca` by foreign key. Since the `Comarca` catalog currently only covers the municipalities from the three Labor Justice regions loaded above (CE/MG/RN), each of these nine entities keeps `uf`/`comarca` as a real String column alongside the FK — no data is ever discarded for lack of catalog coverage: the FK resolves when the municipality is catalogued, and the text remains the source of truth everywhere else. `AssessorGabineteGuardRailService.territoryMatches()` compares by real identity (`Comarca.getId()`) when both sides resolve the FK, and falls back to normalized text comparison otherwise — eliminating, for already-catalogued municipalities, the bug class where a spelling divergence between an assessor's registration and a case's registration could produce a false positive or false negative territorial match. An architecture test (`OrganizacaoJudiciariaArchitectureTest`) locks in the pattern for any new entity that declares `uf`/`comarca` as a String without the matching `Comarca` FK in the same class; pre-existing entities in other domains that don't yet follow this pattern are listed in `docs/quality/DEBT_LOG.md` (`D-territorio-string-solta-entidades-legadas`).
+
+**Procedural-type urgency engine.** `RitoUrgenciaPriorityPolicy` classifies every procedural type into one of three tiers on real legal grounds, never an arbitrary call: habeas corpus and Maria da Penha cases sit at maximum urgency (Constitution art. 5, LXVIII; Law 11.340/06 arts. 18 and 22), emergency relief and juvenile-offense proceedings under the ECA sit at high urgency (CPC art. 300; ECA art. 108), everything else at standard priority. The tier translates into `WorkItem` priority — the policy only escalates, never de-escalates a priority already set higher by another source — and into the same tags consumed by the clerk's-office queue (`SecretariatQueuePriorityPolicy`) and by the Public Prosecutor's Office and Public Defender's Office panels: one single engine feeds all four consumers, with no urgency signal computed differently per channel.
 </details>
 
 <details>
@@ -696,7 +698,9 @@ Governed correction with a legal diff — every change goes through policy revie
 
 Ingests cases from PJe, e-SAJ, eProc, Projudi, Creta, MNI, and PDPJ. Each external system has its own normalizer that standardizes the NPU, the CNJ procedural class, and the procedural type before persisting. Import conflicts are recorded with an auditable diff.
 
-The MNI adapter (`intercomunicacao-2.2.2`, using the `polo`/`parte`/`pessoa` attributes from the CNJ's official schema) materializes the plaintiff and defendant of the imported case, including the full party record, through the same procedural-type composition engine used for direct filing — a case imported via MNI is no longer left without identified parties.
+The MNI adapter (`intercomunicacao-2.2.2`, using the `polo`/`parte`/`pessoa` attributes from the CNJ's official schema) materializes the plaintiff and defendant of the imported case, including the full party record, through the same procedural-type composition engine used for direct filing — a case imported via MNI is no longer left without identified parties. The same adapter also extracts `movimento` (movement history, with the real date from the XML — never "now" at import time) and `documento` (binary content decoded from base64, re-ingested through the same validated confidentiality/storage/SHA-256-hash pipeline already used by the marketplace channel, never raw bytes written straight to the database). A document whose type cannot be resolved by keyword matching against the internal vocabulary (`TipoDocumento`, ~105 values with no generic fallback) is still kept with its content intact in a manual-classification queue — never classified blindly.
+
+**Batch migration.** `MniMigrationBatchItem` (staging queue) and `MniBatchMigrationJobHandler` reuse the same `BackfillRun` framework already used for the client-canonicalization backfill: a resumable cursor, per-item transaction isolation (one malformed XML from a single case never brings down the rest of the batch or forces a full reprocess), and admin endpoints to enqueue/kick off/check status/list failures. The orchestrator does not remove the need for a real credential from the source court — `MniHttpClient` only supports sending (`enviarAutos`), with no active query against a remote MNI endpoint; pulling cases from a live PJe instance in production still depends on a query client that does not exist yet and on a credential issued by the source court, which is an operational dependency, not a code gap.
 </details>
 
 <details>
@@ -751,6 +755,8 @@ The police precinct is modeled as a first-line institutional unit, with its own 
 Incident reports produce traceable investigations. Each report carries a classification, the parties involved, a document chain of custody, and an automatic link to the criminal case once formal charges are filed. The investigation follows the case from the police phase all the way through the judicial phase without any break in traceability.
 
 Police-side scope is resolved by assignment, not by role. What a given officer sees and can act on is determined by the precinct they are assigned to. `DelegadoPainel` materializes exactly that restricted view, with no data exposure from any other unit. `WorkItemScopeGuard` enforces this restriction as a P0 control: any access to a work item outside the officer's assignment scope is blocked at the central guard, and ArchUnit verifies at build time that no code path can bypass it.
+
+**Investigation intake with an automatic draft order.** When an investigation is forwarded to the judiciary, the system generates a draft reception order with the real procedure number and legal grounds (CPP art. 28, Law 13.964/2019) interpolated into the text — never a placeholder — leaving an explicit reserved space for the judge to complement or rewrite before signing; the draft is never published on its own. Registering the investigation blocks with an explicit message listing what's missing whenever the officer forgets the number, date, or signature, and requires the same ICP-Brasil digital-certificate challenge-response already used for certificate login — with no distinction between on-duty and regional precincts, or between civil and federal police.
 </details>
 
 [⬆ Back to top](#quick-navigation)
@@ -902,13 +908,17 @@ All 8 Kafka topics are declared explicitly via `NewTopic` beans in `PjbKafkaTopi
 
 Sensitive personal data — CPF and CNPJ — have been removed from every layer where they are not needed: ICP-Brasil API metadata responses, certificate cache, signature events, and ICP chain audit ledger entries. Where the identifier is needed for correlation, it is stored as a hashed reference, never in clear text.
 
+Every `docker-compose*.yml` (base, HA, read-replica, n8n) has an explicit `mem_limit`/`cpus` per service, configurable via env (`PJB_<SERVICE>_MEM_LIMIT`/`_CPUS`, with a sane per-service default). Without a memory ceiling, `pjb-runtime.sh` calculates `-XX:MaxRAMPercentage` off the total RAM visible to the container instead of a real limit — a container stuck in retry (a dependency that never came up, for instance) can claim up to 72% of the entire Docker Desktop VM by itself, starving every other process of memory. `backend`/`backend-b` also switched from `restart: unless-stopped` to `on-failure:5`: a persistently broken external dependency should not produce an infinite, silent restart loop. `scripts/docker_zombie_container_guard.py` specifically detects this pattern (prolonged unhealthy state or a high restart count) for any container that slips past those two safety nets.
+
+PostgreSQL's default `autovacuum_analyze_scale_factor` (10% of the table) is fine for a small table, but leaves the query planner working off stale statistics for far too long on a multi-million-row table after a bulk load — measured in a real environment: 266ms with stale statistics versus 0.18ms on the same query right after `ANALYZE`, the planner picking the wrong index because it estimated `rows=1` where actual cardinality was 60 thousand. `tb_processo`, `tb_movimentacao_processual`, and `tb_documento_processual` have had `autovacuum_analyze_scale_factor=0.02`/`autovacuum_analyze_threshold=200` since V337 — autovacuum triggers `ANALYZE` at 2% of change on these specific tables, not 10%, with no manual intervention required after a batch load.
+
 [⬆ Back to top](#quick-navigation)
 
 ---
 
 ## Database
 
-294 Flyway migrations (non-contiguous numbering up to V331 — 38 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
+300 Flyway migrations (non-contiguous numbering from V0 to V338 — 39 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
 
 Row Level Security active per operation for confidential data. Materialized tables with asynchronous refresh for analytics (ADR-0053). Outbox pattern for post-commit effects with no risk of event loss on transaction failure. The outbox table is partitioned monthly — entire partition purge via `DROP TABLE`, no row scanning.
 
@@ -918,6 +928,25 @@ CREATE POLICY processo_sigilo ON processo
     USING (sigilo = false OR current_setting('app.papel') IN ('JUIZ', 'PROMOTOR'));
 ```
 
+### Application connection role (`pjb_app`)
+
+The Postgres container's initial `POSTGRES_USER` (`pjb` by default) is created by the official image's `initdb` as a **superuser** — and a superuser ignores RLS, even with `FORCE ROW LEVEL SECURITY`. An active RLS policy (such as the one on `secretaria_institucional_item`, V316) protects nothing for real if the application connects as that user.
+
+That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boot (`docker-entrypoint-initdb.d`), a second role — `pjb_app` — with `NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE`, with the `GRANT`s Flyway needs to run every migration (including `CREATE EXTENSION` for trusted extensions). It's this role, not `pjb`, that `backend` uses to connect in `docker-compose.yml`, via the new environment variables:
+
+| Variable | Role |
+|----------|------|
+| `PJB_DB_USER` / `PJB_DB_PASS` | Postgres' initial superuser (`pjb`/`pjb`) — only initializes the container, RLS does not apply to it |
+| `PJB_DB_APP_USER` / `PJB_DB_APP_PASS` | Restricted role (`pjb_app`/`pjb_app_pass` by default) — this is what `backend`'s `SPRING_DATASOURCE_USERNAME`/`PASSWORD` actually connect with; this connection is what makes RLS matter |
+
+**Known pending items, explicitly documented (not implemented in this round):**
+
+- **Pre-existing volume**: `docker-entrypoint-initdb.d` scripts only run against an empty `PGDATA`. A dev volume that predates this hardening (e.g., an already-populated `pjb_pjb_pg_data`) never creates `pjb_app` on its own — the header of `infra/docker/postgres/init/01-app-role.sh` carries the equivalent SQL to run manually via `docker exec ... psql` against such a volume. That alone isn't enough if migrations `<= V313` already ran on that volume as the old superuser (`pjb`): `ALTER TABLE ... ALTER COLUMN ... TYPE` (the `V317` case) requires table ownership, not just a `GRANT` — the same script header carries the `ALTER TABLE ... OWNER TO pjb_app` statement (in a `DO` block iterating `pg_tables`) that transfers ownership of existing tables; **do not** resolve this by granting `pjb_app` membership in `pjb` (`GRANT pjb_app TO pjb`) — that reopens the RLS bypass the restricted role exists to close.
+- **Volume that already applied the old `V317`**: anyone who ran the stack between the original introduction of `V317__fix_unidade_institucional_uf_type.sql` and this content fix will have the old checksum recorded in `flyway_schema_history` — Flyway refuses to reapply already-applied migrations with a divergent checksum (`validateOnMigrate=true`). A fresh volume doesn't hit this (which is how this round's boot re-verification tested it). On a volume that already had the old `V317`, run `flyway repair` (recomputes the recorded checksum against the file's current content) before the next boot, or discard the volume in a dev environment.
+- **`docker-compose.read-replica.yml` and the routed-read path of `docker-compose.ha.yml`**: `PJB_DB_READ_USER`/`PASS` still point at the superuser `pjb`, not at `pjb_app`. That means **RLS protection is born disabled on the routed-read path** — not just a pending migration, a real and known protection gap. Queries that can be routed to the replica/HA node (e.g., `SecretariaInstitucionalFilaService.consultarFila`, `@Transactional(readOnly = true)`) remain protected today only by layers 1 and 2 (application check + Hibernate `@Filter`), not by layer 3 (RLS). See `.superpowers/sdd/2026-08-08-secretarias-institucionais/db-role-hardening-report.md` for the full investigation history.
+- **`docker-compose.ha.yml`**: the `backend`/`backend-b` nodes in this topology use `pjb`/`pjb` explicitly (not `pjb_app`) because the topology's `pgbouncer` (`infra/docker/pgbouncer/entrypoint.sh`) only knows `pjb` in `userlist.txt` and always opens the real server-side Postgres connection as `pjb`, fixed — RLS would stay inert behind pgbouncer even after fixing client→pgbouncer authentication. An explicit, known state, not a silent break; migrating this topology to `pjb_app` end-to-end is future work.
+- **Real production (k8s)**: `infra/k8s/base/secret.yaml`/`configmap.yaml` still carry the old credentials — the same restricted-role logic needs to be replicated there separately.
+
 [⬆ Back to top](#quick-navigation)
 
 ---
@@ -926,7 +955,7 @@ CREATE POLICY processo_sigilo ON processo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **4,819 · 0 failures · 0 errors** |
+| Unit tests (Surefire) | **4,929 · 0 failures · 0 errors** |
 | Integration tests (Failsafe) | **306 · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
@@ -1136,7 +1165,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 5,125 tests (4,819 unit + 306 integration), and 294 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 5,235 tests (4,929 unit + 306 integration), and 300 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

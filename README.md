@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.819%20unit%20%2B%20306%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.929%20unit%20%2B%20306%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -324,7 +324,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.819 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 4.929 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 306 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
@@ -341,7 +341,7 @@ Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.819 unitários (Surefire) e depois os 306 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.929 unitários (Surefire) e depois os 306 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,7 +379,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.819** |
+| Total de testes unitários | Surefire | **4.929** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~14 min** |
@@ -629,6 +629,8 @@ Cada carga cruzou o nome do município do PDF contra a lista oficial do IBGE por
 Cada uma das três cargas é travada por teste de regressão permanente contra o documento-fonte — a distribuição de varas por município é reparseada de forma independente do script que gerou a migration antes de virar `assert`, para que uma alteração futura na migration ou uma migration de outra região que corrompa dado por acidente de nome de tabela seja detectada, não silenciosamente aceita.
 
 **Tribunal e Comarca como entidade real.** `Tribunal` e `Comarca` são entidades JPA próprias (`model/entity/competencia/`), não mais texto solto — `UnidadeJudiciariaCompetencia`, `JurisdicaoTerritorial`, `Jurisdicao`, `Usuario`, `Processo`, `WorkItem`, `OrgaoJudiciario`, `PeritoSorteioAudit` e `PeritoDisponibilidade` referenciam `Comarca` por FK. Como o catálogo de `Comarca` hoje só cobre os municípios das três regiões trabalhistas carregadas acima (CE/MG/RN), cada uma dessas nove entidades mantém `uf`/`comarca` como coluna String real ao lado da FK — nunca dado descartado por falta de cobertura de catálogo, a FK resolve quando o município está catalogado e o texto continua sendo a fonte de verdade nos demais. `AssessorGabineteGuardRailService.territoryMatches()` compara por identidade real (`Comarca.getId()`) quando as duas pontas resolvem a FK, e cai na comparação textual normalizada nos demais casos — elimina, para os municípios já catalogados, a classe de bug em que grafia divergente entre o cadastro do assessor e o do processo produzia falso positivo ou falso negativo de correspondência territorial. Um teste de arquitetura (`OrganizacaoJudiciariaArchitectureTest`) trava qualquer entidade nova que declare `uf`/`comarca` como String sem a FK `Comarca` correspondente na mesma classe; entidades pré-existentes em outros domínios que ainda não seguem esse padrão estão listadas em `docs/quality/DEBT_LOG.md` (`D-territorio-string-solta-entidades-legadas`).
+
+**Motor de urgência por rito.** `RitoUrgenciaPriorityPolicy` classifica cada rito em três níveis com fundamento legal real, não arbitrário: habeas corpus e Lei Maria da Penha em urgência máxima (CF art. 5º, LXVIII; Lei 11.340/06 arts. 18 e 22), tutela de urgência e ato infracional do ECA em urgência alta (CPC art. 300; ECA art. 108), os demais ritos em prioridade padrão. O nível se traduz em prioridade de `WorkItem` — a política só escalona, nunca de-escalona uma prioridade já mais urgente atribuída por outra origem — e nas mesmas tags consumidas pela fila de secretaria (`SecretariatQueuePriorityPolicy`) e pelos painéis do Ministério Público e da Defensoria Pública: um único motor alimenta os quatro pontos de consumo, sem sinal de urgência calculado de forma divergente em cada canal.
 </details>
 
 <details>
@@ -706,7 +708,9 @@ Retificação governada com diff jurídico — cada alteração passa por polít
 
 Ingesta processos de PJe, e-SAJ, eProc, Projudi, Creta, MNI e PDPJ. Cada sistema externo tem normalizador específico que padroniza NPU, classe processual CNJ e rito antes de persistir. Conflitos de importação são registrados com diff auditável.
 
-O adapter MNI (`intercomunicacao-2.2.2`, atributos `polo`/`parte`/`pessoa` do schema oficial do CNJ) materializa autor e réu do processo importado, incluindo o polo processual pelo mesmo motor de composição por rito usado no ajuizamento direto — processo importado via MNI não fica mais sem partes identificadas.
+O adapter MNI (`intercomunicacao-2.2.2`, atributos `polo`/`parte`/`pessoa` do schema oficial do CNJ) materializa autor e réu do processo importado, incluindo o polo processual pelo mesmo motor de composição por rito usado no ajuizamento direto — processo importado via MNI não fica mais sem partes identificadas. O mesmo adapter também extrai `movimento` (histórico de movimentação, com a data real do XML — nunca "agora" no momento da importação) e `documento` (conteúdo binário decodificado de base64, reingerido pela mesma pipeline validada de sigilo/storage/hash SHA-256 já usada no canal marketplace, não gravação de bytes crus). Documento cujo tipo não é reconhecido por casamento de palavra-chave contra o vocabulário interno (`TipoDocumento`, ~105 valores sem fallback genérico) é retido com conteúdo íntegro numa fila de classificação manual — nunca classificado às cegas.
+
+**Migração em lote.** `MniMigrationBatchItem` (fila de staging) e `MniBatchMigrationJobHandler` reaproveitam o mesmo framework `BackfillRun` já usado no backfill de canonicalização de clientes: cursor resumível, isolamento de transação por item (um XML malformado de um caso não derruba os demais nem exige reprocessar o lote inteiro) e endpoints administrativos de enfileirar/kickoff/status/falhas. O orquestrador não elimina a necessidade de credencial real do tribunal de origem — `MniHttpClient` só oferece envio (`enviarAutos`), sem consulta ativa a um MNI remoto; buscar processos de um PJe real em produção ainda depende de um client de consulta que não existe hoje e de credencial emitida pelo tribunal de origem, o que é uma dependência operacional, não uma lacuna de código.
 </details>
 
 <details>
@@ -761,6 +765,8 @@ A delegacia é modelada como unidade institucional de primeira linha, com lotaç
 Boletins de ocorrência produzem inquéritos rastreáveis. Cada BO tem tipificação, envolvidos, cadeia de custódia de documentos e vínculo automático ao processo penal quando há autuação. O inquérito acompanha o processo desde a fase policial até a fase judicial, sem quebra de rastreabilidade.
 
 O escopo policial é resolvido por lotação, não por papel. O que um delegado enxerga e movimenta é determinado pela delegacia onde está lotado. O DelegadoPainel materializa exatamente essa visão restrita — sem exposição de dados de outra unidade. O `WorkItemScopeGuard` aplica essa restrição como P0: qualquer acesso a item de trabalho fora do escopo de lotação é bloqueado no guard central, e o ArchUnit garante em tempo de build que não existe caminho de código que consiga contorná-lo.
+
+**Recebimento de inquérito com minuta automática.** Ao encaminhar um inquérito ao Judiciário, o sistema gera uma minuta de despacho de recebimento com número de procedimento e fundamentação real (CPP art. 28, Lei 13.964/2019) interpolados no texto — nunca um placeholder — deixando espaço reservado explícito para o magistrado complementar ou reescrever antes de assinar; a minuta nunca é publicada sozinha. O registro do inquérito bloqueia com mensagem explícita listando o que falta quando o delegado esquece número, data ou assinatura, e exige o mesmo desafio-resposta por certificado digital ICP-Brasil usado no login por certificado — sem distinção entre delegacia de plantão e regional, nem entre polícia civil e federal.
 </details>
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
@@ -916,13 +922,15 @@ Dados pessoais sensíveis — CPF e CNPJ — foram removidos de todas as camadas
 
 Todo `docker-compose*.yml` (base, HA, read-replica, n8n) tem `mem_limit`/`cpus` explícito por serviço, configurável via env (`PJB_<SERVICO>_MEM_LIMIT`/`_CPUS`, default sensato por serviço). Sem teto de memória, `pjb-runtime.sh` calcula `-XX:MaxRAMPercentage` sobre a RAM total visível ao container em vez de sobre um limite real — um container preso em retry (dependência que nunca subiu, por exemplo) reivindica até 72% da VM inteira do Docker Desktop sozinho, sem nenhum outro processo conseguir memória. `backend`/`backend-b` também trocaram `restart: unless-stopped` por `on-failure:5`: dependência externa persistentemente quebrada não deve produzir reinício infinito e silencioso. `scripts/docker_zombie_container_guard.py` detecta esse padrão especificamente (unhealthy prolongado ou contagem alta de restarts) para qualquer container que escape dessas duas redes de segurança.
 
+O limiar padrão de `autovacuum_analyze_scale_factor` do PostgreSQL (10% da tabela) é adequado para tabela pequena, mas deixa o planejador de consultas usando estatística obsoleta por tempo demais em tabela de milhões de linhas após carga em massa — medido em ambiente real: 266ms com estatística desatualizada contra 0.18ms na mesma consulta logo após `ANALYZE`, o planejador escolhendo índice errado por estimar `rows=1` onde a cardinalidade real era 60 mil. `tb_processo`, `tb_movimentacao_processual` e `tb_documento_processual` têm `autovacuum_analyze_scale_factor=0.02`/`autovacuum_analyze_threshold=200` desde a V337 — o autovacuum dispara `ANALYZE` a cada 2% de mudança nessas tabelas específicas, não 10%, sem exigir intervenção manual após carga em lote.
+
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
 ## Banco de dados
 
-294 migrations Flyway (numeração não contígua até V331 — 38 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
+300 migrations Flyway (numeração não contígua de V0 a V338 — 39 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
 
 Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
 
@@ -959,7 +967,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.819 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.929 · 0 falhas · 0 erros** |
 | Testes de integração (Failsafe) | **306 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1174,7 +1182,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 5.125 testes (4.819 unitários + 306 de integração) e 294 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 5.235 testes (4.929 unitários + 306 de integração) e 300 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

@@ -13,7 +13,6 @@ data:
     default allow := false
 
     critical_paths := {
-      "/api/v1/mp/recurso/",
       "/api/v1/recursal/",
       "/api/v1/distribuicao/processual/processos/"
     }

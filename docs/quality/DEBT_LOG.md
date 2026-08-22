@@ -830,6 +830,11 @@ proteção de critical-path neste overlay — regressão de segurança real, nã
 **Quando revisitar:** ao concluir a remoção do path `/api/v1/mp/recurso/` no código (Etapa 3), remover
 também a entrada `/api/v1/mp/recurso/` deste `critical_paths` — path morto, nunca mais alcançável.
 
+**Fechamento da nota de revisita:** com a Etapa 3 de `D-recursal-superficie-por-papel` concluída e o
+path confirmado ausente de todo o código-fonte (`grep` sem ocorrências), a entrada `/api/v1/mp/recurso/`
+foi removida de `critical_paths`. `python infra/k8s_schema_validate.py` confirmado OK nos 4 overlays
+após a remoção.
+
 ## D-institutional-gate-filter-roda-antes-da-auth
 
 **Status:** FECHADA — bug sistêmico de ordem de filtro corrigido e provado por IT com JWT real.
