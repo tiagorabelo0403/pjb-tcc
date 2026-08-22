@@ -233,16 +233,25 @@ aproximado.
 
 ## D-advisory-modos-nao-implementados
 
-**Status:** aberta (não bloqueia nada — documentação corrigida para refletir o comportamento real)
+**Status:** FECHADA — os 3 modos implementados, decisão de produto tomada.
 
-**Contexto:** `LaianeJudicialDecisionAdvisoryService` sempre bloqueia publicação e exige revisão humana
-(`publicationLocked`/`reviewRequired` sempre `true`, por política de segurança deliberada — não é bug) e
-sempre opera em modo único (`advisoryMode = "ADVISORY_DRAFT_ONLY"`). Os 3 modos originalmente
-documentados (`SUGESTIVO`/`RESTRITIVO`/`BLOQUEADOR`) nunca foram implementados.
+**Contexto original:** `LaianeJudicialDecisionAdvisoryService` sempre bloqueava publicação e exigia
+revisão humana (`publicationLocked`/`reviewRequired` sempre `true`) e sempre operava em modo único
+(`advisoryMode = "ADVISORY_DRAFT_ONLY"`). Os 3 modos originalmente documentados
+(`SUGESTIVO`/`RESTRITIVO`/`BLOQUEADOR`) nunca tinham sido implementados.
 
-**Quando revisitar:** se o produto decidir que a Laiane deve diferenciar níveis de consultoria (ex.:
-permitir publicação sem revisão em casos de baixíssimo risco) — isso exigiria definir critério jurídico
-de classificação por template, trabalho substantivo, não uma correção pontual.
+**Fechamento:** os 3 modos (`LaianeAdvisoryMode`) são derivados do sinal de confiança que o próprio
+motor de template já calculava por caso e descartava — pendência de fato não resolvida
+(`pendingFacts`) e padrão de caso reconhecido ou não. `SUGESTIVO` = padrão reconhecido sem pendência
+(minuta de dispositivo completa); `RESTRITIVO` = padrão reconhecido com pendência (minuta de
+dispositivo retida, só checklist/fundamentos); `BLOQUEADOR` = nenhum padrão reconhecido (caso
+`ASSISTENCIA_DECISORIA_GENERICA`, já sem minuta antes desta mudança). **Decisão de produto tomada
+explicitamente:** ao contrário do que esta nota especulava ("permitir publicação sem revisão em casos
+de baixíssimo risco"), `reviewRequired`/`publicationLocked` permanecem `true` nos 3 modos, sempre —
+a diferenciação é só sobre a PROFUNDIDADE da assistência (dá minuta de dispositivo ou não), nunca
+sobre o portão de revisão humana. Cobertura: `LaianeJudicialDecisionAdvisoryServiceTest` (6 testes:
+SUGESTIVO com minuta, RESTRITIVO sem minuta em 2 templates distintos, BLOQUEADOR no caso genérico,
+e prova explícita de que reviewRequired/publicationLocked são true nos 3 modos).
 
 ## D-rito-retificacao-registro-nome-ambiguo
 
@@ -803,6 +812,16 @@ fundamento explícito, ou registrar o bloqueio atual como enforcement deliberado
 citada. Se `PEDIDO_UNIFORMIZACAO` ganhar mapeamento em `toRecursoProcessualTipo()` no futuro,
 adicionar teste explícito confirmando que jus postulandi JEF continua barrado nele (mesmo padrão que
 `RECURSO_INOMINADO` já tem).
+
+**Tentativa de pesquisa registrada (não fechou a pergunta):** buscou-se o texto literal dos arts. 10,
+14 e 15 da Lei 10.259/2001 e do Regimento Interno da TNU (Resolução CJF nº 586/2019) para responder
+definitivamente. Toda tentativa de acesso direto a fonte primária (`planalto.gov.br`, PDFs de
+`trf3.jus.br`/`trf1.jus.br`, `cjf.jus.br`) falhou por erro de conexão do ambiente ou por PDF não
+extraível como texto — não foi possível citar o artigo exato. Uma busca indireta encontrou um
+resultado (não verificado contra o RITNU original) afirmando que capacidade postulatória é exigida
+para atuar perante Turmas Recursais e a TRU, o que é consistente com o bloqueio atual — mas por vir
+de resumo de busca, não de leitura direta do regimento, não é fundamento citável o suficiente para
+mudar o status desta dívida de "parcialmente atendida" para fechada. Permanece em aberto.
 
 ## D-recursal-opa-critical-path-nao-atualizado
 

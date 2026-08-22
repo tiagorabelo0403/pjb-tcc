@@ -562,6 +562,14 @@ public class LaianeSentencaService {
             } catch (IllegalArgumentException ignored) {
             }
         }
+        Object advisoryModeRaw = map.get("advisoryMode");
+        com.tcc.pjb.backend.modules.laiane.dto.roles.judge.LaianeAdvisoryMode advisoryMode = null;
+        if (advisoryModeRaw != null) {
+            try {
+                advisoryMode = com.tcc.pjb.backend.modules.laiane.dto.roles.judge.LaianeAdvisoryMode.valueOf(String.valueOf(advisoryModeRaw).trim());
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
         Map<String, String> fillable = new LinkedHashMap<>();
         Object fillableRaw = map.get("fillableVariables");
         if (fillableRaw instanceof Map<?, ?> fillableMap) {
@@ -582,7 +590,7 @@ public class LaianeSentencaService {
         }
         return new LaianeJudicialDecisionAdvisoryResponse(
                 templateCode,
-                asString(map.get("advisoryMode")),
+                advisoryMode,
                 asBoolean(map.get("reviewRequired")),
                 asBoolean(map.get("publicationLocked")),
                 asString(map.get("rationaleSummary")),
