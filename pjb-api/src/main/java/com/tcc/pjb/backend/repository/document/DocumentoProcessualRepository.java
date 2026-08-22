@@ -93,4 +93,6 @@ public interface DocumentoProcessualRepository extends JpaRepository<DocumentoPr
 
     @Query("select case when count(d) > 0 then true else false end from DocumentoProcessual d where d.processo.id = :processoId and d.sha256 = :sha256")
     boolean existsByProcessoIdAndSha256(@Param("processoId") Long processoId, @Param("sha256") String sha256);
+
+    List<DocumentoProcessual> findByEstadoOperacionalOrderByCriadoEmAsc(String estadoOperacional);
 }

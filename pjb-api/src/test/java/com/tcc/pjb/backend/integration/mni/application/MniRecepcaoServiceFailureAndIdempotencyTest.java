@@ -17,6 +17,7 @@ import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoCommand;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.judicial.MniRecepcao;
 import com.tcc.pjb.backend.model.repository.MniRecepcaoRepository;
+import com.tcc.pjb.backend.model.repository.MovimentacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.time.Instant;
@@ -51,7 +52,9 @@ class MniRecepcaoServiceFailureAndIdempotencyTest {
                 new PoloCompositionPolicy(),
                 mock(PoloProcessualApplicationService.class),
                 new DocumentoNacionalValidator(),
-                comarcaResolutionServiceVazio());
+                comarcaResolutionServiceVazio(),
+                mock(MovimentacaoProcessualRepository.class),
+                mock(MniDocumentoIngestaoService.class));
 
         var result = service.receberAutos(new MniRecepcaoCommand("TJSP", "CARTA", "<mni/>"));
 
@@ -76,7 +79,9 @@ class MniRecepcaoServiceFailureAndIdempotencyTest {
                 new PoloCompositionPolicy(),
                 mock(PoloProcessualApplicationService.class),
                 new DocumentoNacionalValidator(),
-                comarcaResolutionServiceVazio());
+                comarcaResolutionServiceVazio(),
+                mock(MovimentacaoProcessualRepository.class),
+                mock(MniDocumentoIngestaoService.class));
 
         assertThatThrownBy(() -> service.receberAutos(new MniRecepcaoCommand("TJSP", "CARTA", "<broken>")))
                 .isInstanceOf(IllegalStateException.class)

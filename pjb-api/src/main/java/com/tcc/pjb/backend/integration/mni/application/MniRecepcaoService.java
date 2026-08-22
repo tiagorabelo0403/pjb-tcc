@@ -9,6 +9,7 @@ import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.core.validation.document.DocumentoNacionalValidator;
 import com.tcc.pjb.backend.core.validation.document.DocumentoValidado;
 import com.tcc.pjb.backend.integration.mni.adapter.MniAdapterResult;
+import com.tcc.pjb.backend.integration.mni.adapter.MniMovimentoParsed;
 import com.tcc.pjb.backend.integration.mni.adapter.MniParteParsed;
 import com.tcc.pjb.backend.integration.mni.adapter.MniXmlToProcessoAdapter;
 import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoAtoSummary;
@@ -22,11 +23,14 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.TipoParte;
 import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.judicial.MniRecepcao;
+import com.tcc.pjb.backend.model.entity.workflow.MovimentacaoProcessual;
 import com.tcc.pjb.backend.model.repository.MniRecepcaoRepository;
+import com.tcc.pjb.backend.model.repository.MovimentacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.time.Instant;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -49,6 +53,8 @@ public class MniRecepcaoService {
     private final PoloProcessualApplicationService poloProcessualApplicationService;
     private final DocumentoNacionalValidator documentoNacionalValidator;
     private final ComarcaResolutionService comarcaResolutionService;
+    private final MovimentacaoProcessualRepository movimentacaoRepository;
+    private final MniDocumentoIngestaoService documentoIngestaoService;
 
     public MniRecepcaoService(ProcessoRepository processoRepository,
                               MniRecepcaoRepository recepcaoRepository,
@@ -58,7 +64,9 @@ public class MniRecepcaoService {
                               PoloCompositionPolicy poloCompositionPolicy,
                               PoloProcessualApplicationService poloProcessualApplicationService,
                               DocumentoNacionalValidator documentoNacionalValidator,
-                              ComarcaResolutionService comarcaResolutionService) {
+                              ComarcaResolutionService comarcaResolutionService,
+                              MovimentacaoProcessualRepository movimentacaoRepository,
+                              MniDocumentoIngestaoService documentoIngestaoService) {
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.recepcaoRepository = Objects.requireNonNull(recepcaoRepository);
         this.xmlToProcessoAdapter = Objects.requireNonNull(xmlToProcessoAdapter);
@@ -68,6 +76,8 @@ public class MniRecepcaoService {
         this.poloProcessualApplicationService = Objects.requireNonNull(poloProcessualApplicationService);
         this.documentoNacionalValidator = Objects.requireNonNull(documentoNacionalValidator);
         this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService);
+        this.movimentacaoRepository = Objects.requireNonNull(movimentacaoRepository);
+        this.documentoIngestaoService = Objects.requireNonNull(documentoIngestaoService);
     }
 
     @Transactional
@@ -92,6 +102,8 @@ public class MniRecepcaoService {
                 .ifPresent(processo::setComarcaEntidade);
         Processo salvo = processoRepository.save(processo);
         materializarPolosIniciais(salvo, adapterResult.partes());
+        materializarMovimentosImportados(salvo, adapterResult.movimentos());
+        documentoIngestaoService.ingestar(salvo, adapterResult.documentos());
         MniRecepcao recepcao = MniRecepcao.builder()
                 .tribunalOrigem(tribunalOrigem)
                 .numeroUnificado(salvo.getNumeroUnificado())
@@ -152,6 +164,34 @@ public class MniRecepcaoService {
                     null, null,
                     p.uf(), null, null,
                     razaoSocial);
+        }
+    }
+
+    /**
+     * Movimentação importada não representa transição de fase interna do PJB (não sabemos, a partir
+     * do XML externo, qual FaseProcessual o processo tinha em cada movimento) nem ator interno (o
+     * movimento não foi praticado por um usuário do PJB) — por isso não reaproveita
+     * MovimentacaoProcessualRegistrar, que sempre grava fasePara=fase atual e data=agora. Aqui
+     * faseDe/fasePara/ator ficam null e a data é a data histórica real, lida do XML.
+     */
+    private void materializarMovimentosImportados(Processo processo, List<MniMovimentoParsed> movimentos) {
+        if (processo == null || processo.getId() == null || movimentos.isEmpty()) {
+            return;
+        }
+        Instant maisRecente = null;
+        for (MniMovimentoParsed movimento : movimentos) {
+            movimentacaoRepository.save(MovimentacaoProcessual.builder()
+                    .processo(processo)
+                    .descricao(movimento.descricao())
+                    .dataMovimentacao(movimento.dataHora())
+                    .build());
+            if (maisRecente == null || movimento.dataHora().isAfter(maisRecente)) {
+                maisRecente = movimento.dataHora();
+            }
+        }
+        if (maisRecente != null) {
+            processo.setDataUltimaMovimentacao(maisRecente);
+            processoRepository.save(processo);
         }
     }
 

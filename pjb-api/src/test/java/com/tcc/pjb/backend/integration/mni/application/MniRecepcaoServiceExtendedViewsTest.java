@@ -15,6 +15,7 @@ import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoCommand;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.judicial.MniRecepcao;
 import com.tcc.pjb.backend.model.repository.MniRecepcaoRepository;
+import com.tcc.pjb.backend.model.repository.MovimentacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.time.Instant;
@@ -32,7 +33,7 @@ class MniRecepcaoServiceExtendedViewsTest {
         AuditLedgerService auditLedger = mock(AuditLedgerService.class);
 
         Processo processo = Processo.builder().id(55L).numeroUnificado("0001-22.2026.8.06.0001").build();
-        when(adapter.fromXml("<mni/>", "TJCE", "CARTA_PRECATORIA")).thenReturn(new MniAdapterResult(processo, java.util.List.of()));
+        when(adapter.fromXml("<mni/>", "TJCE", "CARTA_PRECATORIA")).thenReturn(new MniAdapterResult(processo, java.util.List.of(), java.util.List.of(), java.util.List.of()));
         when(processoRepository.save(processo)).thenReturn(processo);
         when(recepcaoRepository.findByMniPayloadHash(org.mockito.ArgumentMatchers.anyString())).thenReturn(Optional.empty());
         when(recepcaoRepository.save(org.mockito.ArgumentMatchers.any(MniRecepcao.class))).thenAnswer(invocation -> {
@@ -52,7 +53,7 @@ class MniRecepcaoServiceExtendedViewsTest {
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
                 new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator(),
-                comarcaResolutionServiceVazio());
+                comarcaResolutionServiceVazio(), mock(MovimentacaoProcessualRepository.class), mock(MniDocumentoIngestaoService.class));
         var result = service.receberAutos(new MniRecepcaoCommand("TJCE", "CARTA_PRECATORIA", "<mni/>"));
         when(recepcaoRepository.findById(101L)).thenReturn(Optional.of(MniRecepcao.builder()
                 .id(101L)

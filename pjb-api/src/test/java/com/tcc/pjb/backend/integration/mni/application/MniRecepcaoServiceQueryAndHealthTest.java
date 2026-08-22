@@ -18,6 +18,7 @@ import com.tcc.pjb.backend.integration.mni.domain.MniRecepcaoQuery;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.judicial.MniRecepcao;
 import com.tcc.pjb.backend.model.repository.MniRecepcaoRepository;
+import com.tcc.pjb.backend.model.repository.MovimentacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.time.Instant;
@@ -49,7 +50,7 @@ class MniRecepcaoServiceQueryAndHealthTest {
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
                 new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator(),
-                comarcaResolutionServiceVazio());
+                comarcaResolutionServiceVazio(), mock(MovimentacaoProcessualRepository.class), mock(MniDocumentoIngestaoService.class));
 
         var consulta = service.consultar(new MniConsultaRecepcaoCommand(44L));
         var query = service.consultar(new MniRecepcaoQuery(44L));
@@ -77,7 +78,7 @@ class MniRecepcaoServiceQueryAndHealthTest {
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
                 new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator(),
-                comarcaResolutionServiceVazio());
+                comarcaResolutionServiceVazio(), mock(MovimentacaoProcessualRepository.class), mock(MniDocumentoIngestaoService.class));
 
         assertThatThrownBy(() -> service.envelope(999L))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -93,7 +94,7 @@ class MniRecepcaoServiceQueryAndHealthTest {
         AuditLedgerService auditLedger = mock(AuditLedgerService.class);
 
         Processo processo = Processo.builder().id(81L).numeroUnificado("0001-11.2026.8.06.0001").build();
-        when(adapter.fromXml("<xml/>", "TJCE", "COOPERACAO")).thenReturn(new MniAdapterResult(processo, java.util.List.of()));
+        when(adapter.fromXml("<xml/>", "TJCE", "COOPERACAO")).thenReturn(new MniAdapterResult(processo, java.util.List.of(), java.util.List.of(), java.util.List.of()));
         when(processoRepository.save(processo)).thenReturn(processo);
         when(recepcaoRepository.findByMniPayloadHash(org.mockito.ArgumentMatchers.anyString())).thenReturn(Optional.empty());
         when(recepcaoRepository.save(org.mockito.ArgumentMatchers.any(MniRecepcao.class))).thenAnswer(invocation -> {
@@ -124,7 +125,7 @@ class MniRecepcaoServiceQueryAndHealthTest {
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
                 new PoloCompositionPolicy(), mock(PoloProcessualApplicationService.class), new DocumentoNacionalValidator(),
-                comarcaResolutionServiceVazio());
+                comarcaResolutionServiceVazio(), mock(MovimentacaoProcessualRepository.class), mock(MniDocumentoIngestaoService.class));
         var result = service.receberAutos(new MniRecepcaoCommand("TJCE", "COOPERACAO", "<xml/>"));
         var timeline = service.timeline(82L);
 
