@@ -95,6 +95,20 @@ public class RichTextFormatCatalog {
         return ESQUEMAS_URL.contains(u.substring(0, idx));
     }
 
+    /** Versão tipada do catálogo para o contrato de bootstrap do editor (client tipado do frontend). */
+    public com.tcc.pjb.backend.model.dto.processual.peticionamento.editor.RichTextFormatoDto toDto() {
+        return new com.tcc.pjb.backend.model.dto.processual.peticionamento.editor.RichTextFormatoDto(
+                "TIPTAP_PROSEMIRROR_JSON",
+                "BACKEND_SANITIZE_JSON",
+                List.of("bold", "italic", "underline", "strike", "code", "link", "textStyle", "highlight"),
+                List.of("paragraph", "heading", "blockquote", "bulletList", "orderedList", "codeBlock", "horizontalRule", "table", "image"),
+                List.of(1, 2, 3, 4, 5, 6),
+                List.copyOf(TEXT_ALIGN),
+                List.copyOf(FONTES),
+                List.copyOf(TAMANHOS_PT),
+                List.copyOf(ESQUEMAS_URL));
+    }
+
     /** Exposição para o blueprint do editor: o toolbar sabe exatamente o que pode oferecer. */
     public Map<String, Object> toBlueprintMap() {
         LinkedHashMap<String, Object> map = new LinkedHashMap<>();

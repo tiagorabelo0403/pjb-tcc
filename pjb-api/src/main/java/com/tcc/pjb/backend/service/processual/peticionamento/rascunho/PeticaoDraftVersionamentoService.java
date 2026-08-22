@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PeticaoDraftVersionamentoService {
 
-    private static final int MAX_VERSOES_RETIDAS = 30;
+    public static final int MAX_VERSOES_RETIDAS = 30;
 
     private final LaianePeticaoInicialDraftSessionRepository draftRepository;
     private final PeticaoDraftVersaoRepository versaoRepository;
