@@ -56,6 +56,7 @@ public class PeticaoEditorBootstrapService {
                         "/api/v1/peticionamento/identidade-visual/logo",
                         "/api/v1/peticionamento/identidade-visual/institucional/{escopoRef}/logo",
                         "/api/v1/peticionamento/editor/formato/validar",
-                        "/api/v1/peticionamento/editor/formato/catalogo"));
+                        "/api/v1/peticionamento/editor/formato/catalogo",
+                        "/api/v1/peticionamento/editor/exportar/docx"));
     }
 }

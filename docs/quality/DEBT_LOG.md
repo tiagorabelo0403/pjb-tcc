@@ -1930,23 +1930,26 @@ e um fluxo de curadoria institucional (quem cadastra o brasão/cores do órgão)
 
 ## D-peticao-formato-docx-e-json-fonte
 
-**Status:** aberta (formatação rica governada entregue; export .docx e JSON-como-fonte dependem de decisão de dependência).
+**Status:** parcialmente FECHADA — export .docx entregue **sem dependência**; resta só JSON-como-fonte.
 
 **Contexto:** `RichTextFormatCatalog` + `RichTextDocumentSanitizer` entregam a formatação rica governada
 da peça (negrito/itálico/sublinhado/títulos/listas/tabela/alinhamento/fonte/tamanho/cor) validada
 contra allowlist sobre o documento JSON do TipTap/ProseMirror, usando só Jackson — sem biblioteca nova.
-Duas peças ficam de fora **por exigirem decisão de dependência de build** (infra que afeta o sistema
-inteiro, então aprovação separada, não correção silenciosa):
 
-1. **Export `.docx`**: gerar a peça como documento Word real exige **Apache POI** (ou docx4j/`docen`),
-   dependências novas no `pom.xml`. Hoje a minuta é HTML/JSON; não há geração de `.docx`.
-2. **JSON como fonte de verdade**: hoje a minuta persiste como HTML (`minuta_inicial`) e o autosave
-   também. O modelo seguro do TipTap é o JSON validado; migrar o armazenamento de HTML para o JSON
-   sanitizado (mantendo o HTML como projeção derivada) fecharia o ciclo de segurança de ponta a ponta,
-   mas é mudança de contrato de dados do rascunho — merece fatia própria com plano e aprovação.
+1. **Export `.docx`** — FECHADO **sem adicionar dependência**: em vez de puxar Apache POI (~5MB +
+   transitivas), `DocxExportService` monta o WordprocessingML e empacota o pacote OOXML com a própria
+   JDK (`java.util.zip`), sempre a partir do documento já sanitizado. Endpoint
+   `POST /api/v1/peticionamento/editor/exportar/docx`. Cobre marcas, títulos, listas, citação, tabela,
+   alinhamento e o timbre do ator no topo. Imagem inline vira marcador textual (embutir binário exigiria
+   partes de mídia OOXML — decisão consciente de escopo desta geração leve, não dívida cega). Decisão de
+   infra evitada por completo: nenhuma mudança no `pom.xml`.
+2. **JSON como fonte de verdade** (único item aberto): hoje a minuta persiste como HTML (`minuta_inicial`)
+   e o autosave também. O modelo seguro do TipTap é o JSON validado; migrar o armazenamento de HTML para
+   o JSON sanitizado (mantendo o HTML como projeção derivada) fecharia o ciclo de ponta a ponta, mas é
+   mudança de contrato de dados do rascunho — merece fatia própria com plano e aprovação.
 
-**Risco:** nenhum risco de segurança na entrega atual — o sanitizer já bloqueia XSS no documento JSON
-validado. É ausência de export e de unificação de fonte de dados, não bug.
+**Risco:** nenhum risco de segurança — o sanitizer bloqueia XSS no JSON validado, e o export reusa o
+documento sanitizado. O item aberto é unificação de fonte de dados, não bug.
 
 **Quando revisitar:** quando o usuário aprovar a adição do Apache POI (export .docx) e/ou a migração
 do armazenamento da minuta para JSON validado. Ambos são fatias próprias com aprovação de infra.

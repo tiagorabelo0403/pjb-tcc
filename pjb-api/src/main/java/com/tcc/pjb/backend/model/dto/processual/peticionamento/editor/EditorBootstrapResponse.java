@@ -31,7 +31,8 @@ public record EditorBootstrapResponse(
             String logoIndividualUrl,
             String logoInstitucionalUrlTemplate,
             String validarFormatoUrl,
-            String catalogoFormatoUrl
+            String catalogoFormatoUrl,
+            String exportarDocxUrl
     ) {
     }
 }
