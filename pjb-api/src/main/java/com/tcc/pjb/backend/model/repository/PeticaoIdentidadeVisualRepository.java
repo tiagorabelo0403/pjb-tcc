@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PeticaoIdentidadeVisualRepository extends JpaRepository<PeticaoIdentidadeVisual, Long> {
 
     Optional<PeticaoIdentidadeVisual> findByUsuarioId(Long usuarioId);
+
+    Optional<PeticaoIdentidadeVisual> findByEscopoAndEscopoRef(String escopo, String escopoRef);
 }

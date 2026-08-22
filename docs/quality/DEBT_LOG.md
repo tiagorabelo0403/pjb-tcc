@@ -1882,7 +1882,36 @@ que uma correção pontual.
 
 ## D-identidade-visual-escopo-institucional-pendente
 
-**Status:** aberta (Fase 1 entregue para escopo individual; escopo institucional é a Fase 2).
+**Status:** FECHADA — sem fatias futuras pendentes. As antigas ressalvas ou foram implementadas ou
+viraram decisão de produção deliberada (abaixo).
+
+**Fase 2 (entregue):** `IdentidadeInstitucionalResolver` resolve órgão + nomenclatura por `TipoUsuario`
++ UF (+ município para PGM) (magistratura → PODER JUDICIÁRIO/tribunal; MP → MPE/MPF/MPT/MPEleitoral;
+defensoria → DPE/DPU; procuradorias → PGM/PGE/AGU), tratando **perito e advogado como
+profissional-individual** (sem brasão institucional, com o registro do conselho certo — OAB/CRM/CREA/CRC).
+`PeticaoIdentidadeVisual` aceita perfil INSTITUCIONAL sem `usuario_id` (V341, único por `escopoRef`);
+curadoria em `/api/v1/peticionamento/identidade-visual/institucional/{escopoRef}`. Brasão/cores oficiais
+**não são fabricados** — default neutro `DEFAULT_PJB_SUBSTITUIVEL` até o órgão curar. `resolvePresetParaAtor`
+sobrepõe o perfil individual só como texto (nome/gabinete), preservando o timbre do órgão.
+
+**Segurança reforçada (por construção, não gambiarra):**
+- `escopoRef` da URL é blindado (`requireEscopoRefValido`): regex `^[A-Z0-9-]{1,80}$` + família conhecida
+  (PJ-/MP-/DP-/PROC-) antes de virar chave de object storage — fecha travessia de caminho (`../`) e chaves
+  arbitrárias. Aplicado em obter/salvar/uploadLogo/lerLogo institucional.
+- Curadoria gateada em **duas camadas independentes**: `@PreAuthorize("hasAuthority('ROLE_ADMIN')")` na
+  borda HTTP + `requireAdminInstitucional()` no serviço. Nenhuma depende da outra.
+
+**Decisões de produção (não são lacunas):**
+- **Município da PGM**: implementado — desce ao município real via `Usuario.getComarca()`; sem município
+  conhecido, cai para a UF sem inventar cidade.
+- **Órgão exato não-derivável do cargo** (qual tribunal superior de um ministro, região do TRF): entra
+  pela mesma curadoria oficial já disponível — deduzir seria fabricar identidade institucional, o que é
+  proibido. Não é fatia futura; é a via correta de entrada do dado (igual ao brasão).
+- **Curadoria restrita a administrador** é a postura de produção correta: permitir qualquer membro do
+  órgão reescrever o brasão seria regressão de segurança. Delegação federada, se um dia desejada, exige
+  modelo de autoridade por-órgão que o sistema não tem — e sua ausência é decisão, não dívida.
+
+**Contexto original preservado abaixo (Fase 1):**
 
 **Contexto:** `PeticaoIdentidadeVisual` (`tb_peticao_identidade_visual`) persiste o perfil de papel
 timbrado por ator peticionante — logo em object storage, nome/instituição, cabeçalho/rodapé, paleta —

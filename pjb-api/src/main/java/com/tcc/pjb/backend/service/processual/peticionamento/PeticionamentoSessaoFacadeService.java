@@ -734,8 +734,8 @@ public class PeticionamentoSessaoFacadeService {
         PeticionamentoJurisprudenciaWorkspaceService.WorkspaceProjection jurisprudencia = jurisprudenciaWorkspaceService.resolve(request, intake);
         put(workspace, "jurisprudenciaSugerida", jurisprudencia.toMap());
         Usuario identidadeOwner = currentUserService.getOrNull();
-        if (identidadeOwner != null && identidadeOwner.getId() != null) {
-            peticaoIdentidadeVisualService.resolvePreset(identidadeOwner.getId())
+        if (identidadeOwner != null) {
+            peticaoIdentidadeVisualService.resolvePresetParaAtor(identidadeOwner)
                     .ifPresent(preset -> put(workspace, "identidadeVisualSalva", preset));
         }
         return Map.copyOf(workspace);

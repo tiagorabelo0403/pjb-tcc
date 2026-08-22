@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.967%20unit%20%2B%20306%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.986%20unit%20%2B%20306%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -324,7 +324,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.967 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 4.986 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 306 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
@@ -341,7 +341,7 @@ Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.967 unitários (Surefire) e depois os 306 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.986 unitários (Surefire) e depois os 306 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,7 +379,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.967** |
+| Total de testes unitários | Surefire | **4.986** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~14 min** |
@@ -697,6 +697,8 @@ Cada documento tem origem, estado operacional, hash de integridade e cadeia de c
 **Identidade visual persistida por ator e rascunho resiliente:** o editor de peça (blueprint por tópicos que muda conforme o rito, com blocos multimídia inline e política de identidade visual) já existia; o que passou a existir é o perfil de papel timbrado reutilizável — `PeticaoIdentidadeVisual` guarda, por ator peticionante, logo (em object storage, nunca blob no banco — mesmo padrão de `tb_usuario_avatar`), nome/instituição, cabeçalho e rodapé livres e paleta de cores, aplicados sozinhos em toda peça em vez de reenviados a cada sessão; colunas `escopo`/`escopo_ref` já preveem estender a identidade institucional (defensoria por estado, MP, procuradorias, magistratura e perito) sem tocar o schema. O rascunho ganhou autosave resiliente: `PUT .../rascunhos/{id}/autosave` atualiza o rascunho no lugar (não perde o último conteúdo salvo mesmo com queda de energia ou conexão) e cada mudança real de conteúdo grava um snapshot imutável em `tb_peticao_draft_versao`, com dedup por hash, retenção das últimas 30 versões, listagem e restauração — tudo isolado por dono, ninguém vê rascunho alheio.
 
 **Formatação rica governada e sanitização anti-XSS:** o catálogo selado `RichTextFormatCatalog` fixa o que o editor pode oferecer — negrito, itálico, sublinhado, tachado, títulos, listas, tabela, alinhamento, além de um conjunto curado de fontes, tamanhos e cores — modelado sobre o documento JSON do TipTap/ProseMirror (o editor open-source MIT adotado como referência). Antes de salvar/publicar, `RichTextDocumentSanitizer` valida o documento contra esse catálogo usando só Jackson (nenhuma biblioteca nova): nós, marcas e atributos fora da allowlist são removidos, fontes/tamanhos/alinhamentos não permitidos são descartados e URLs de link/imagem com esquema perigoso (`javascript:`, `data:`, `file:`) são bloqueadas — a peça é vista por todos no processo, então isso é segurança, não cosmético. O catálogo é exposto no blueprint do editor (`richTextFormat`) e em `/api/v1/peticionamento/editor/formato`, para o toolbar oferecer exatamente o que é aceito. Export `.docx` (Apache POI) e a migração da minuta de HTML para o JSON validado como fonte de verdade ficam registrados como próximos passos que dependem de decisão de dependência (`D-peticao-formato-docx-e-json-fonte`).
+
+**Identidade institucional por cargo (magistratura, MP, defensoria, procuradorias):** `IdentidadeInstitucionalResolver` resolve, a partir do cargo (`TipoUsuario`) e da UF, o órgão e a nomenclatura corretos de cada ofício — "PODER JUDICIÁRIO / Tribunal de Justiça", "MINISTÉRIO PÚBLICO DO ESTADO DE {UF}", "DEFENSORIA PÚBLICA DA UNIÃO", "ADVOCACIA-GERAL DA UNIÃO" — sem tratar todos igual: o brasão é do **órgão**, não do indivíduo, e o perfil pessoal só acrescenta texto (nome/gabinete), nunca substitui o timbre institucional. O **perito** é deliberadamente profissional-individual (laudo sem brasão de órgão, com o registro do conselho certo — CRM/CREA/CRC…), não institucional. Brasão e cores **oficiais nunca são fabricados**: vêm da **curadoria** do próprio órgão (`/api/v1/peticionamento/identidade-visual/institucional/{escopoRef}`, restrito a administrador) e, enquanto não vierem, usa-se um default **neutro explicitamente marcado como substituível** (`DEFAULT_PJB_SUBSTITUIVEL`), jamais alegado como oficial. `usuario_id` passou a ser opcional (V341) para o perfil do órgão, único por `escopoRef`. A procuradoria **municipal desce ao município real** do procurador (via comarca), não só à UF. Duas camadas de segurança na curadoria, por construção: o `escopoRef` da URL é blindado (formato `A-Z0-9-` + família institucional conhecida `PJ-/MP-/DP-/PROC-`) antes de virar chave de object storage — fecha travessia de caminho — e a curadoria é gateada em dois pontos independentes (`@PreAuthorize` `ROLE_ADMIN` na borda HTTP **e** verificação de admin no serviço). Onde o cargo não permite deduzir o órgão exato sem inventar (qual tribunal superior de um ministro), a identidade entra pela mesma curadoria oficial — decisão de produção deliberada, não lacuna.
 </details>
 
 <details>
@@ -971,7 +973,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.967 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.986 · 0 falhas · 0 erros** |
 | Testes de integração (Failsafe) | **306 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1186,7 +1188,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 5.273 testes (4.967 unitários + 306 de integração) e 300 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 5.292 testes (4.986 unitários + 306 de integração) e 300 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

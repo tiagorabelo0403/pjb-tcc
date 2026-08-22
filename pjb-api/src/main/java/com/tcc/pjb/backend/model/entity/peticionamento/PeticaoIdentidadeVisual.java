@@ -27,7 +27,7 @@ public class PeticaoIdentidadeVisual {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "usuario_id", nullable = false)
+    @Column(name = "usuario_id")
     private Long usuarioId;
 
     @Column(name = "escopo", nullable = false, length = 20)
@@ -90,6 +90,17 @@ public class PeticaoIdentidadeVisual {
         this.exibirRegistroProfissional = true;
         this.exibirBrasaoLogomarca = true;
         this.ativo = true;
+    }
+
+    /** Perfil institucional (papel timbrado do órgão), sem dono individual — curado por admin do órgão. */
+    public static PeticaoIdentidadeVisual institucional(String escopoRef) {
+        PeticaoIdentidadeVisual e = new PeticaoIdentidadeVisual();
+        e.escopo = "INSTITUCIONAL";
+        e.escopoRef = escopoRef;
+        e.exibirRegistroProfissional = true;
+        e.exibirBrasaoLogomarca = true;
+        e.ativo = true;
+        return e;
     }
 
     @PrePersist

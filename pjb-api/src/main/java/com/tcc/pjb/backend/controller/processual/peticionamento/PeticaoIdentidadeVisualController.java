@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -89,5 +90,61 @@ public class PeticaoIdentidadeVisualController {
     @DeleteMapping("/logo")
     public ResponseEntity<IdentidadeVisualResponse> removerLogo() {
         return ResponseEntity.ok(service.removerLogo());
+    }
+
+    @GetMapping("/institucional/{escopoRef}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<java.util.Map<String, Object>> obterInstitucional(@PathVariable String escopoRef) {
+        return ResponseEntity.ok(service.obterInstitucional(escopoRef));
+    }
+
+    @PutMapping("/institucional/{escopoRef}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<java.util.Map<String, Object>> salvarInstitucional(@PathVariable String escopoRef,
+                                                                            @Valid @RequestBody IdentidadeVisualRequest request) {
+        return ResponseEntity.ok(service.salvarInstitucional(escopoRef, request));
+    }
+
+    @PostMapping(path = "/institucional/{escopoRef}/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<java.util.Map<String, Object>> uploadLogoInstitucional(@PathVariable String escopoRef,
+                                                                                 @RequestPart("file") MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        String ct = file.getContentType();
+        String normalized = ct == null ? "" : ct.trim().toLowerCase();
+        if (!normalized.equals("image/jpeg") && !normalized.equals("image/jpg") && !normalized.equals("image/png")) {
+            return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
+        }
+        try {
+            return ResponseEntity.ok(service.uploadLogoInstitucional(escopoRef, file.getBytes(), normalized));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
+        }
+    }
+
+    @GetMapping("/institucional/{escopoRef}/logo")
+    public ResponseEntity<Resource> lerLogoInstitucional(@PathVariable String escopoRef,
+                                                         HttpServletRequest request) throws IOException {
+        PeticaoIdentidadeVisualService.LogoLeitura logo = service.lerLogoInstitucional(escopoRef);
+        if (logo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        String etag = '"' + logo.sha256() + '"';
+        String ifNoneMatch = request.getHeader(HttpHeaders.IF_NONE_MATCH);
+        if (ifNoneMatch != null && !ifNoneMatch.isBlank() && ifNoneMatch.trim().equals(etag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                    .eTag(etag)
+                    .cacheControl(CacheControl.maxAge(Duration.ofMinutes(5)).cachePrivate())
+                    .build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(logo.contentType()))
+                .contentLength(logo.sizeBytes() == null ? logo.read().contentLength() : logo.sizeBytes())
+                .eTag(etag)
+                .cacheControl(CacheControl.maxAge(Duration.ofMinutes(5)).cachePrivate())
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .body(logo.read().resource());
     }
 }
