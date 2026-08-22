@@ -53,6 +53,8 @@ class PeticionamentoSessaoFacadeServiceWiringTest {
         InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService = mock(InstitutionalMultimediaWorkspaceService.class);
         OfficeProcessWorkspaceScopeService officeProcessWorkspaceScopeService = mock(OfficeProcessWorkspaceScopeService.class);
         CpfValidacaoService cpfValidacaoService = mock(CpfValidacaoService.class);
+        com.tcc.pjb.backend.service.processual.peticionamento.identidade.PeticaoIdentidadeVisualService peticaoIdentidadeVisualService =
+                mock(com.tcc.pjb.backend.service.processual.peticionamento.identidade.PeticaoIdentidadeVisualService.class);
 
         PeticionamentoSessaoFacadeService service = new PeticionamentoSessaoFacadeService(
                 currentUserService,
@@ -77,7 +79,8 @@ class PeticionamentoSessaoFacadeServiceWiringTest {
                 jurisprudenciaWorkspaceService,
                 institutionalMultimediaWorkspaceService,
                 officeScopeProvider(officeProcessWorkspaceScopeService),
-                cpfValidacaoService
+                cpfValidacaoService,
+                peticaoIdentidadeVisualService
         );
 
         for (Field field : PeticionamentoSessaoFacadeService.class.getDeclaredFields()) {

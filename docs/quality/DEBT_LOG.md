@@ -1879,3 +1879,22 @@ roteamento recursal e catálogo de câmaras/turmas seguem desconectados.
 o papel desses três continua sendo só rotulagem informativa, com uma camada de distribuição recursal
 real construída à parte, análoga ao `MapaCompetenciaDinamicoEngine`. Qualquer uma das duas rotas é maior
 que uma correção pontual.
+
+## D-identidade-visual-escopo-institucional-pendente
+
+**Status:** aberta (Fase 1 entregue para escopo individual; escopo institucional é a Fase 2).
+
+**Contexto:** `PeticaoIdentidadeVisual` (`tb_peticao_identidade_visual`) persiste o perfil de papel
+timbrado por ator peticionante — logo em object storage, nome/instituição, cabeçalho/rodapé, paleta —
+e é aplicado sozinho em toda peça via `identidadeVisualSalva` na sessão. A Fase 1 cobre o escopo
+`INDIVIDUAL` (advogado). As colunas `escopo`/`escopo_ref` já existem no schema justamente para a Fase 2,
+mas ainda não há resolução de identidade **institucional**: defensoria por estado (logo/cores do órgão
+por UF), Ministério Público, procuradorias municipal/estadual/federal, magistratura (até ministro) e
+perito. Hoje cada ator desses grupos só teria o próprio perfil individual, não o do órgão.
+
+**Risco:** nenhum risco de segurança ou correção — é ausência de cobertura, não bug. `resolvePreset`
+resolve só por `usuarioId`; um defensor não herda automaticamente o brasão da Defensoria do seu estado.
+
+**Quando revisitar:** Fase 2 — resolver o preset por `escopo=INSTITUCIONAL` + `escopo_ref` (UF/órgão),
+com precedência (perfil individual sobrepõe ou complementa o institucional, decisão de produto a definir),
+e um fluxo de curadoria institucional (quem cadastra o brasão/cores do órgão). Sem mudança de schema.

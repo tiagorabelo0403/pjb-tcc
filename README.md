@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.929%20unit%20%2B%20306%20IT%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-4.953%20unit%20%2B%20306%20IT%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -324,7 +324,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.929 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 4.953 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 306 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 ### Rodar apenas os testes unitários (rápido)
@@ -341,7 +341,7 @@ Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.929 unitários (Surefire) e depois os 306 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 4.953 unitários (Surefire) e depois os 306 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -379,7 +379,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.929** |
+| Total de testes unitários | Surefire | **4.953** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~14 min** |
@@ -693,6 +693,8 @@ Cada documento tem origem, estado operacional, hash de integridade e cadeia de c
 - Dos três canais que criam processo, só o marketplace não verificava documento obrigatório — chamava `AjuizamentoService.ajuizar()` direto, sem o `CompletudeDocumentalPolicyService` que o REST já usa.
 - Quando a checagem acusa pendência, o processo é criado normalmente (integração sistema-a-sistema não trava), mas `connectorSubmissionStatus` grava `PENDENTE_DOCUMENTACAO` e a resposta expõe `documentacaoCompleta`/`documentosFaltantes`.
 - O rito hardcoded em `COMUM_ORDINARIO` que esse canal carregava foi corrigido junto, com `ProceduralCatalogSupport.tryResolveRito()` lendo o payload. Detalhe completo: `docs/quality/DEBT_LOG.md` (`D-marketplace-sem-completude-documental`).
+
+**Identidade visual persistida por ator e rascunho resiliente:** o editor de peça (blueprint por tópicos que muda conforme o rito, com blocos multimídia inline e política de identidade visual) já existia; o que passou a existir é o perfil de papel timbrado reutilizável — `PeticaoIdentidadeVisual` guarda, por ator peticionante, logo (em object storage, nunca blob no banco — mesmo padrão de `tb_usuario_avatar`), nome/instituição, cabeçalho e rodapé livres e paleta de cores, aplicados sozinhos em toda peça em vez de reenviados a cada sessão; colunas `escopo`/`escopo_ref` já preveem estender a identidade institucional (defensoria por estado, MP, procuradorias, magistratura e perito) sem tocar o schema. O rascunho ganhou autosave resiliente: `PUT .../rascunhos/{id}/autosave` atualiza o rascunho no lugar (não perde o último conteúdo salvo mesmo com queda de energia ou conexão) e cada mudança real de conteúdo grava um snapshot imutável em `tb_peticao_draft_versao`, com dedup por hash, retenção das últimas 30 versões, listagem e restauração — tudo isolado por dono, ninguém vê rascunho alheio.
 </details>
 
 <details>
@@ -967,7 +969,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.929 · 0 falhas · 0 erros** |
+| Testes unitários (Surefire) | **4.953 · 0 falhas · 0 erros** |
 | Testes de integração (Failsafe) | **306 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1182,7 +1184,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 5.235 testes (4.929 unitários + 306 de integração) e 300 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 5.259 testes (4.953 unitários + 306 de integração) e 300 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
