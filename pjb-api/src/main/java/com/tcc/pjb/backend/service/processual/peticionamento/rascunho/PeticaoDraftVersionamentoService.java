@@ -1,9 +1,12 @@
 package com.tcc.pjb.backend.service.processual.peticionamento.rascunho;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.util.Hashes;
+import com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextDocumentSanitizer;
+import com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextHtmlRenderer;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.AutosaveRascunhoRequest;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.DraftVersaoResponse;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.RascunhoConteudoResponse;
@@ -35,15 +38,21 @@ public class PeticaoDraftVersionamentoService {
     private final PeticaoDraftVersaoRepository versaoRepository;
     private final CurrentUserService currentUserService;
     private final ObjectMapper objectMapper;
+    private final RichTextDocumentSanitizer sanitizer;
+    private final RichTextHtmlRenderer htmlRenderer;
 
     public PeticaoDraftVersionamentoService(LaianePeticaoInicialDraftSessionRepository draftRepository,
                                             PeticaoDraftVersaoRepository versaoRepository,
                                             CurrentUserService currentUserService,
-                                            ObjectMapper objectMapper) {
+                                            ObjectMapper objectMapper,
+                                            RichTextDocumentSanitizer sanitizer,
+                                            RichTextHtmlRenderer htmlRenderer) {
         this.draftRepository = Objects.requireNonNull(draftRepository, "draftRepository");
         this.versaoRepository = Objects.requireNonNull(versaoRepository, "versaoRepository");
         this.currentUserService = Objects.requireNonNull(currentUserService, "currentUserService");
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper");
+        this.sanitizer = Objects.requireNonNull(sanitizer, "sanitizer");
+        this.htmlRenderer = Objects.requireNonNull(htmlRenderer, "htmlRenderer");
     }
 
     @Transactional
@@ -51,18 +60,29 @@ public class PeticaoDraftVersionamentoService {
         LaianePeticaoInicialDraftSession draft = requireOwnedDraft(draftId);
 
         String titulo = firstNonBlank(request.tituloCaso(), draft.getTituloCaso());
+
+        // JSON validado é a fonte de verdade: quando o editor envia o documento, ele é sanitizado no
+        // servidor e o HTML da minuta passa a ser projeção derivada e segura desse JSON (o minutaHtml
+        // que o cliente mandou é descartado). Sem documentoJson, mantém o comportamento legado (HTML).
+        String conteudoJson = draft.getConteudoJson();
         String minuta = request.minutaHtml() != null ? request.minutaHtml() : draft.getMinutaInicial();
+        if (request.documentoJson() != null) {
+            JsonNode limpo = sanitizer.sanitize(request.documentoJson()).documento();
+            conteudoJson = limpo.toString();
+            minuta = htmlRenderer.toHtml(limpo);
+        }
         String fatosJson = request.fatos() != null ? writeList(request.fatos()) : draft.getFatosJson();
         String pedidosJson = request.pedidos() != null ? writeList(request.pedidos()) : draft.getPedidosJson();
         String fundamentosJson = request.fundamentos() != null ? writeList(request.fundamentos()) : draft.getFundamentosJson();
         String provasJson = request.provas() != null ? writeList(request.provas()) : draft.getProvasJson();
 
-        String novoHash = computeHash(titulo, minuta, fatosJson, pedidosJson, fundamentosJson, provasJson);
+        String novoHash = computeHash(titulo, conteudoJson, minuta, fatosJson, pedidosJson, fundamentosJson, provasJson);
         if (novoHash.equals(draft.getHashIntegridade())) {
             return toConteudo(draft, versaoRepository.maxVersaoSeq(draft.getId()), false);
         }
 
         draft.setTituloCaso(titulo == null ? draft.getTituloCaso() : titulo);
+        draft.setConteudoJson(conteudoJson);
         draft.setMinutaInicial(minuta == null ? "" : minuta);
         draft.setFatosJson(fatosJson);
         draft.setPedidosJson(pedidosJson);
@@ -91,6 +111,7 @@ public class PeticaoDraftVersionamentoService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("PeticaoDraftVersao", (long) versaoSeq));
 
         draft.setTituloCaso(versao.getTituloCaso() == null ? draft.getTituloCaso() : versao.getTituloCaso());
+        draft.setConteudoJson(versao.getConteudoJson());
         draft.setMinutaInicial(versao.getMinutaHtml() == null ? "" : versao.getMinutaHtml());
         draft.setFatosJson(versao.getFatosJson());
         draft.setPedidosJson(versao.getPedidosJson());
@@ -108,6 +129,7 @@ public class PeticaoDraftVersionamentoService {
         int proximaVersao = versaoRepository.maxVersaoSeq(draft.getId()) + 1;
         PeticaoDraftVersao versao = new PeticaoDraftVersao(draft.getId(), proximaVersao, origem);
         versao.setTituloCaso(draft.getTituloCaso());
+        versao.setConteudoJson(draft.getConteudoJson());
         versao.setMinutaHtml(draft.getMinutaInicial());
         versao.setFatosJson(draft.getFatosJson());
         versao.setPedidosJson(draft.getPedidosJson());
@@ -152,11 +174,23 @@ public class PeticaoDraftVersionamentoService {
                 draft.getId(),
                 draft.getStatus(),
                 draft.getTituloCaso(),
+                parseJson(draft.getConteudoJson()),
                 draft.getMinutaInicial(),
                 draft.getHashIntegridade(),
                 versaoAtual,
                 alterado,
                 draft.getUpdatedAt());
+    }
+
+    private JsonNode parseJson(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return objectMapper.readTree(raw);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String writeList(List<String> values) {

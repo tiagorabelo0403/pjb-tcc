@@ -46,6 +46,9 @@ public class PeticaoDraftVersao {
     @Column(name = "minuta_html", columnDefinition = "TEXT")
     private String minutaHtml;
 
+    @Column(name = "conteudo_json", columnDefinition = "TEXT")
+    private String conteudoJson;
+
     @Column(name = "fatos_json", columnDefinition = "TEXT")
     private String fatosJson;
 
@@ -110,6 +113,14 @@ public class PeticaoDraftVersao {
 
     public void setMinutaHtml(String minutaHtml) {
         this.minutaHtml = minutaHtml;
+    }
+
+    public String getConteudoJson() {
+        return conteudoJson;
+    }
+
+    public void setConteudoJson(String conteudoJson) {
+        this.conteudoJson = conteudoJson;
     }
 
     public String getFatosJson() {

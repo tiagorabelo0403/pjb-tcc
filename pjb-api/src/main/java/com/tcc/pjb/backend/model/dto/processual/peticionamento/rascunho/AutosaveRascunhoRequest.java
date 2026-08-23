@@ -1,10 +1,12 @@
 package com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record AutosaveRascunhoRequest(
         @Size(max = 180) String tituloCaso,
+        JsonNode documentoJson,
         @Size(max = 400_000) String minutaHtml,
         @Size(max = 200) List<@Size(max = 8000) String> fatos,
         @Size(max = 200) List<@Size(max = 8000) String> pedidos,

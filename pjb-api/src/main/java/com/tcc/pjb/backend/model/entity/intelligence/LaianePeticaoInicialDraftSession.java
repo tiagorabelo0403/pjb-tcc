@@ -125,6 +125,9 @@ public class LaianePeticaoInicialDraftSession {
     @Column(name = "minuta_inicial", columnDefinition = "TEXT", nullable = false)
     private String minutaInicial;
 
+    @Column(name = "conteudo_json", columnDefinition = "TEXT")
+    private String conteudoJson;
+
     @Column(name = "hash_integridade", length = 64, nullable = false)
     private String hashIntegridade;
 

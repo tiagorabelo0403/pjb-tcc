@@ -27,8 +27,8 @@ class PeticaoRascunhoVersaoControllerTest {
 
     @Test
     void autosalvarDelega() {
-        AutosaveRascunhoRequest req = new AutosaveRascunhoRequest("Caso", "<p>x</p>", null, null, null, null);
-        RascunhoConteudoResponse resp = new RascunhoConteudoResponse(5L, "RASCUNHO", "Caso", "<p>x</p>", "h", 2, true, Instant.now());
+        AutosaveRascunhoRequest req = new AutosaveRascunhoRequest("Caso", null, "<p>x</p>", null, null, null, null);
+        RascunhoConteudoResponse resp = new RascunhoConteudoResponse(5L, "RASCUNHO", "Caso", null, "<p>x</p>", "h", 2, true, Instant.now());
         when(service.autosalvar(5L, req)).thenReturn(resp);
 
         var out = controller.autosalvar(5L, req);
@@ -49,7 +49,7 @@ class PeticaoRascunhoVersaoControllerTest {
 
     @Test
     void restaurarDelega() {
-        RascunhoConteudoResponse resp = new RascunhoConteudoResponse(5L, "RASCUNHO", "Caso", "<p>v2</p>", "h", 6, true, Instant.now());
+        RascunhoConteudoResponse resp = new RascunhoConteudoResponse(5L, "RASCUNHO", "Caso", null, "<p>v2</p>", "h", 6, true, Instant.now());
         when(service.restaurar(5L, 2)).thenReturn(resp);
         var out = controller.restaurar(5L, 2);
         assertThat(out.getStatusCode().is2xxSuccessful()).isTrue();

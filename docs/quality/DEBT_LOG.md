@@ -1930,7 +1930,7 @@ e um fluxo de curadoria institucional (quem cadastra o brasão/cores do órgão)
 
 ## D-peticao-formato-docx-e-json-fonte
 
-**Status:** parcialmente FECHADA — export .docx entregue **sem dependência**; resta só JSON-como-fonte.
+**Status:** FECHADA — export .docx entregue sem dependência; JSON-como-fonte-de-verdade também entregue (V342).
 
 **Contexto:** `RichTextFormatCatalog` + `RichTextDocumentSanitizer` entregam a formatação rica governada
 da peça (negrito/itálico/sublinhado/títulos/listas/tabela/alinhamento/fonte/tamanho/cor) validada
@@ -1943,13 +1943,17 @@ contra allowlist sobre o documento JSON do TipTap/ProseMirror, usando só Jackso
    alinhamento e o timbre do ator no topo. Imagem inline vira marcador textual (embutir binário exigiria
    partes de mídia OOXML — decisão consciente de escopo desta geração leve, não dívida cega). Decisão de
    infra evitada por completo: nenhuma mudança no `pom.xml`.
-2. **JSON como fonte de verdade** (único item aberto): hoje a minuta persiste como HTML (`minuta_inicial`)
-   e o autosave também. O modelo seguro do TipTap é o JSON validado; migrar o armazenamento de HTML para
-   o JSON sanitizado (mantendo o HTML como projeção derivada) fecharia o ciclo de ponta a ponta, mas é
-   mudança de contrato de dados do rascunho — merece fatia própria com plano e aprovação.
+2. **JSON como fonte de verdade** — FECHADO (V342): `tb_laiane_peticao_inicial_draft` e
+   `tb_peticao_draft_versao` ganharam `conteudo_json`. No autosave, quando o editor manda o documento
+   (`documentoJson`), ele é **sanitizado no servidor** e vira a fonte autoritativa; a `minuta_inicial`
+   (HTML) passa a ser **projeção derivada e segura**, renderizada do JSON sanitizado por
+   `RichTextHtmlRenderer` (o `minutaHtml` que o cliente mandaria é descartado quando há JSON). O snapshot
+   de versão guarda o JSON, e a restauração o recupera. Sem `documentoJson`, o comportamento legado (HTML
+   direto) é preservado — retrocompatível. Ciclo de segurança fechado de ponta a ponta: o que persiste e
+   o que é publicado derivam do mesmo JSON validado.
 
-**Risco:** nenhum risco de segurança — o sanitizer bloqueia XSS no JSON validado, e o export reusa o
-documento sanitizado. O item aberto é unificação de fonte de dados, não bug.
+**Risco:** nenhum — o sanitizer bloqueia XSS no JSON validado, e tanto a projeção HTML quanto o export
+`.docx` derivam do documento sanitizado.
 
-**Quando revisitar:** quando o usuário aprovar a adição do Apache POI (export .docx) e/ou a migração
+**Quando revisitar:** entrada encerrada. (Histórico) previa aprovar Apache POI / migração
 do armazenamento da minuta para JSON validado. Ambos são fatias próprias com aprovação de infra.
