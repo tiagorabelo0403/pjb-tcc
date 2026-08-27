@@ -8,6 +8,7 @@ import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextDocumentSanitizer;
 import com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextHtmlRenderer;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.AutosaveRascunhoRequest;
+import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.DraftVersaoPreviewResponse;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.DraftVersaoResponse;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.RascunhoConteudoResponse;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -102,6 +103,69 @@ public class PeticaoDraftVersionamentoService {
         return versaoRepository.findTop50ByDraftIdOrderByVersaoSeqDesc(draftId).stream()
                 .map(DraftVersaoResponse::from)
                 .toList();
+    }
+
+    /**
+     * Prévia somente-leitura de uma versão anterior — sem tocar o rascunho ativo. O conteúdo é
+     * re-sanitizado e re-renderizado a partir do {@code conteudo_json} da versão (nunca confia
+     * cegamente no HTML já armazenado no snapshot), mesmo padrão de segurança de
+     * {@code PeticaoInicialLeituraService}: sem JSON, cai para a minuta legada escapada como texto
+     * puro — nunca reinterpretada como marcação.
+     */
+    @Transactional(readOnly = true)
+    public DraftVersaoPreviewResponse previsualizarVersao(Long draftId, int versaoSeq) {
+        requireOwnedDraft(draftId);
+        PeticaoDraftVersao versao = versaoRepository.findByDraftIdAndVersaoSeq(draftId, versaoSeq)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("PeticaoDraftVersao", (long) versaoSeq));
+
+        Conteudo conteudo = renderVersao(versao);
+        return new DraftVersaoPreviewResponse(
+                draftId,
+                versao.getVersaoSeq(),
+                versao.getOrigem(),
+                versao.getTituloCaso(),
+                conteudo.html(),
+                conteudo.origem(),
+                versao.getHashIntegridade(),
+                versao.getCreatedAt());
+    }
+
+    private Conteudo renderVersao(PeticaoDraftVersao versao) {
+        String json = versao.getConteudoJson();
+        if (json != null && !json.isBlank()) {
+            try {
+                JsonNode doc = objectMapper.readTree(json);
+                JsonNode limpo = sanitizer.sanitize(doc).documento();
+                return new Conteudo(htmlRenderer.toHtml(limpo), "JSON_SANITIZADO");
+            } catch (Exception e) {
+                // conteudo_json inválido: cai para a minuta legada (escapada), nunca para HTML bruto.
+            }
+        }
+        String minuta = versao.getMinutaHtml();
+        if (minuta != null && !minuta.isBlank()) {
+            return new Conteudo(escaparComoTexto(minuta), "MINUTA_TEXTO");
+        }
+        return new Conteudo("", "VAZIO");
+    }
+
+    private String escaparComoTexto(String texto) {
+        String esc = texto
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+        StringBuilder sb = new StringBuilder();
+        for (String bloco : esc.split("\\r?\\n\\r?\\n")) {
+            if (bloco.isBlank()) {
+                continue;
+            }
+            sb.append("<p>").append(bloco.replace("\r\n", "\n").replace("\n", "<br/>")).append("</p>");
+        }
+        return sb.toString();
+    }
+
+    private record Conteudo(String html, String origem) {
     }
 
     @Transactional

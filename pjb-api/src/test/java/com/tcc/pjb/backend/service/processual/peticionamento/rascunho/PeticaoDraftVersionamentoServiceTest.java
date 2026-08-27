@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.AutosaveRascunhoRequest;
+import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.DraftVersaoPreviewResponse;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.RascunhoConteudoResponse;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
@@ -195,6 +196,64 @@ class PeticaoDraftVersionamentoServiceTest {
         assertThat(draft.getMinutaInicial()).isEqualTo("<p><strong>petição</strong></p>");
         assertThat(resp.conteudoJson()).isNotNull();
         assertThat(resp.conteudoJson().get("content").size()).isEqualTo(1);
+    }
+
+    @Test
+    void previsualizarVersaoRenderizaOJsonDaVersaoSemAlterarORascunhoAtivo() {
+        LaianePeticaoInicialDraftSession draft = existingDraft(5L, "HASH_ATUAL", "<p>atual</p>");
+        when(draftRepository.findByIdAndSolicitante_Id(5L, 7L)).thenReturn(Optional.of(draft));
+        PeticaoDraftVersao versao = new PeticaoDraftVersao(5L, 2, "AUTOSAVE");
+        versao.setTituloCaso("Caso versao 2");
+        versao.setConteudoJson("""
+                {"type":"doc","content":[{"type":"paragraph","content":[
+                  {"type":"text","text":"forte","marks":[{"type":"bold"}]}
+                ]}]}""");
+        versao.setMinutaHtml("<p>nao deveria ser usado, ha json</p>");
+        versao.setHashIntegridade("HASH_V2");
+        when(versaoRepository.findByDraftIdAndVersaoSeq(5L, 2)).thenReturn(Optional.of(versao));
+
+        DraftVersaoPreviewResponse preview = service.previsualizarVersao(5L, 2);
+
+        assertThat(preview.draftId()).isEqualTo(5L);
+        assertThat(preview.versaoSeq()).isEqualTo(2);
+        assertThat(preview.origemConteudo()).isEqualTo("JSON_SANITIZADO");
+        assertThat(preview.conteudoHtml()).isEqualTo("<p><strong>forte</strong></p>");
+        assertThat(preview.hashIntegridade()).isEqualTo("HASH_V2");
+        // nao mutou o rascunho ativo nem gravou nova versao (sem efeito colateral)
+        assertThat(draft.getMinutaInicial()).isEqualTo("<p>atual</p>");
+        assertThat(draft.getHashIntegridade()).isEqualTo("HASH_ATUAL");
+        verify(draftRepository, never()).save(any());
+        verify(versaoRepository, never()).save(any());
+    }
+
+    @Test
+    void previsualizarVersaoSemJsonEscapaAMinutaLegadaComoTexto() {
+        LaianePeticaoInicialDraftSession draft = existingDraft(5L, "H", "<p>x</p>");
+        when(draftRepository.findByIdAndSolicitante_Id(5L, 7L)).thenReturn(Optional.of(draft));
+        PeticaoDraftVersao versao = new PeticaoDraftVersao(5L, 1, "AUTOSAVE");
+        versao.setMinutaHtml("<script>alert(1)</script>");
+        versao.setHashIntegridade("HASH_V1");
+        when(versaoRepository.findByDraftIdAndVersaoSeq(5L, 1)).thenReturn(Optional.of(versao));
+
+        DraftVersaoPreviewResponse preview = service.previsualizarVersao(5L, 1);
+
+        assertThat(preview.origemConteudo()).isEqualTo("MINUTA_TEXTO");
+        assertThat(preview.conteudoHtml()).contains("&lt;script&gt;alert(1)&lt;/script&gt;");
+        assertThat(preview.conteudoHtml()).doesNotContain("<script>");
+    }
+
+    @Test
+    void previsualizarVersaoInexistenteLanca() {
+        LaianePeticaoInicialDraftSession draft = existingDraft(5L, "H", "<p>x</p>");
+        when(draftRepository.findByIdAndSolicitante_Id(5L, 7L)).thenReturn(Optional.of(draft));
+        when(versaoRepository.findByDraftIdAndVersaoSeq(5L, 99)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> service.previsualizarVersao(5L, 99)).isInstanceOf(RecursoNaoEncontradoException.class);
+    }
+
+    @Test
+    void previsualizarVersaoDeRascunhoAlheioEBloqueado() {
+        when(draftRepository.findByIdAndSolicitante_Id(5L, 7L)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> service.previsualizarVersao(5L, 1)).isInstanceOf(RecursoNaoEncontradoException.class);
     }
 
     @Test

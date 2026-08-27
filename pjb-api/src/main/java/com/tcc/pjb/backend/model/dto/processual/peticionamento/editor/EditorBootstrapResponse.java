@@ -19,6 +19,7 @@ public record EditorBootstrapResponse(
     public record RascunhoCapabilitiesDto(
             String autosaveUrlTemplate,
             String versoesUrlTemplate,
+            String previsualizarVersaoUrlTemplate,
             String restaurarUrlTemplate,
             int maxVersoesRetidas,
             boolean dedupPorHash

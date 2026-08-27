@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.AutosaveRascunhoRequest;
+import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.DraftVersaoPreviewResponse;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.DraftVersaoResponse;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.RascunhoConteudoResponse;
 import com.tcc.pjb.backend.service.processual.peticionamento.rascunho.PeticaoDraftVersionamentoService;
@@ -45,6 +46,19 @@ class PeticaoRascunhoVersaoControllerTest {
         var out = controller.versoes(5L);
         assertThat(out.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(out.getBody()).hasSize(1);
+    }
+
+    @Test
+    void previsualizarVersaoDelega() {
+        DraftVersaoPreviewResponse preview = new DraftVersaoPreviewResponse(
+                5L, 2, "AUTOSAVE", "Caso", "<p><strong>forte</strong></p>", "JSON_SANITIZADO", "h2", Instant.now());
+        when(service.previsualizarVersao(5L, 2)).thenReturn(preview);
+
+        var out = controller.previsualizarVersao(5L, 2);
+
+        assertThat(out.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(out.getBody().conteudoHtml()).isEqualTo("<p><strong>forte</strong></p>");
+        verify(service).previsualizarVersao(5L, 2);
     }
 
     @Test

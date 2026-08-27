@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.controller.processual.peticionamento;
 
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.AutosaveRascunhoRequest;
+import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.DraftVersaoPreviewResponse;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.DraftVersaoResponse;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.RascunhoConteudoResponse;
 import com.tcc.pjb.backend.service.processual.peticionamento.rascunho.PeticaoDraftVersionamentoService;
@@ -37,6 +38,12 @@ public class PeticaoRascunhoVersaoController {
     @GetMapping("/versoes")
     public ResponseEntity<List<DraftVersaoResponse>> versoes(@PathVariable Long draftId) {
         return ResponseEntity.ok(service.listarVersoes(draftId));
+    }
+
+    @GetMapping("/versoes/{versaoSeq}")
+    public ResponseEntity<DraftVersaoPreviewResponse> previsualizarVersao(@PathVariable Long draftId,
+                                                                          @PathVariable int versaoSeq) {
+        return ResponseEntity.ok(service.previsualizarVersao(draftId, versaoSeq));
     }
 
     @PostMapping("/versoes/{versaoSeq}/restaurar")
