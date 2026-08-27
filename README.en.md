@@ -925,9 +925,9 @@ PostgreSQL's default `autovacuum_analyze_scale_factor` (10% of the table) is fin
 
 ## Database
 
-300 Flyway migrations (non-contiguous numbering from V0 to V338 — 39 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
+305 Flyway migrations (non-contiguous numbering from V0 to V343 — 39 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
 
-Row Level Security active per operation for confidential data. Materialized tables with asynchronous refresh for analytics (ADR-0053). Outbox pattern for post-commit effects with no risk of event loss on transaction failure. The outbox table is partitioned monthly — entire partition purge via `DROP TABLE`, no row scanning.
+Row Level Security active per operation, across two dimensions: case confidentiality (reading confidential cases is refused by the database before the ORM sees it) and actor — dedicated connection GUCs (`app.pjb_actor_id`, `app.pjb_actor_roles`) scope operational tables (support tickets, magistrate travel exceptions, the AI audit trail, hearing summons) faithful to each one's read `@PreAuthorize`, as defense in depth. Never decorative RLS: a table without a tenancy column gets no policy, and a migration-discipline test blocks `ENABLE ROW LEVEL SECURITY` without `FORCE` and without a policy — the orphan RLS a table owner ignores at runtime. Materialized tables with asynchronous refresh for analytics (ADR-0053). Outbox pattern for post-commit effects with no risk of event loss on transaction failure. The outbox table is partitioned monthly — entire partition purge via `DROP TABLE`, no row scanning.
 
 ```sql
 -- Example RLS policy for confidential cases

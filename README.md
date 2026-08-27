@@ -937,9 +937,9 @@ O limiar padrão de `autovacuum_analyze_scale_factor` do PostgreSQL (10% da tabe
 
 ## Banco de dados
 
-300 migrations Flyway (numeração não contígua de V0 a V338 — 39 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
+305 migrations Flyway (numeração não contígua de V0 a V343 — 39 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
 
-Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
+Row Level Security ativo por operação, em duas dimensões: sigilo do processo (leitura de casos sigilosos recusada pelo banco antes do ORM) e ator — GUCs de conexão dedicadas (`app.pjb_actor_id`, `app.pjb_actor_roles`) escopam tabelas operacionais (chamados de suporte, exceções de deslocamento de magistrado, trilha de auditoria da IA, intimações de audiência) fiéis ao `@PreAuthorize` de leitura de cada uma, como defesa em profundidade. Nunca RLS decorativo: tabela sem coluna de tenancy não recebe política, e um teste de disciplina de migration barra `ENABLE ROW LEVEL SECURITY` sem `FORCE` e sem política — o RLS órfão que o dono da tabela ignora em runtime. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
 
 ```sql
 -- Exemplo de política RLS para processos sigilosos

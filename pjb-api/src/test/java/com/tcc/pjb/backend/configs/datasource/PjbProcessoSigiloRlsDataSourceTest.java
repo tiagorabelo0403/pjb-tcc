@@ -45,7 +45,9 @@ class PjbProcessoSigiloRlsDataSourceTest {
                 null,
                 null
         ));
-        PjbProcessoSigiloRlsDataSource dataSource = new PjbProcessoSigiloRlsDataSource(delegate, context);
+        PjbRlsActorResolver actorResolver = mock(PjbRlsActorResolver.class);
+        when(actorResolver.currentOrAnonymous()).thenReturn(PjbRlsActorResolver.ANONYMOUS);
+        PjbProcessoSigiloRlsDataSource dataSource = new PjbProcessoSigiloRlsDataSource(delegate, context, actorResolver);
 
         Connection proxied = dataSource.getConnection();
         proxied.close();
@@ -56,6 +58,8 @@ class PjbProcessoSigiloRlsDataSourceTest {
         order.verify(applyStatement).setString(2, "TJCE");
         order.verify(applyStatement).setString(3, "UNID-9");
         order.verify(applyStatement).setString(4, "PROC_SIGILO|TJCE|UNID-9|SIGILO_N2");
+        order.verify(applyStatement).setString(5, "");
+        order.verify(applyStatement).setString(6, "");
         order.verify(applyStatement).execute();
         order.verify(applyStatement).close();
         order.verify(connection).prepareStatement(anyString());
@@ -63,6 +67,8 @@ class PjbProcessoSigiloRlsDataSourceTest {
         order.verify(resetStatement).setString(2, "");
         order.verify(resetStatement).setString(3, "");
         order.verify(resetStatement).setString(4, "");
+        order.verify(resetStatement).setString(5, "");
+        order.verify(resetStatement).setString(6, "");
         order.verify(resetStatement).execute();
         order.verify(resetStatement).close();
         verify(connection).close();
