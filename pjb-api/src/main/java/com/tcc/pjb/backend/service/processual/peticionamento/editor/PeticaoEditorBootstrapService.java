@@ -47,6 +47,7 @@ public class PeticaoEditorBootstrapService {
                 new EditorBootstrapResponse.RascunhoCapabilitiesDto(
                         "/api/v1/peticionamento/inicial/rascunhos/{draftId}/autosave",
                         "/api/v1/peticionamento/inicial/rascunhos/{draftId}/versoes",
+                        "/api/v1/peticionamento/inicial/rascunhos/{draftId}/versoes/{versaoSeq}",
                         "/api/v1/peticionamento/inicial/rascunhos/{draftId}/versoes/{versaoSeq}/restaurar",
                         PeticaoDraftVersionamentoService.MAX_VERSOES_RETIDAS,
                         true),

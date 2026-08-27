@@ -54,6 +54,7 @@ class PeticaoEditorBootstrapServiceTest {
         assertThat(resp.identidadeVisual().classeIdentidade()).isEqualTo("PROFISSIONAL_INDIVIDUAL");
         assertThat(resp.identidadeVisual().registroLabel()).isEqualTo("OAB");
         assertThat(resp.rascunho().autosaveUrlTemplate()).contains("/rascunhos/{draftId}/autosave");
+        assertThat(resp.rascunho().previsualizarVersaoUrlTemplate()).contains("/rascunhos/{draftId}/versoes/{versaoSeq}");
         assertThat(resp.rascunho().maxVersoesRetidas()).isEqualTo(PeticaoDraftVersionamentoService.MAX_VERSOES_RETIDAS);
         assertThat(resp.rascunho().dedupPorHash()).isTrue();
         assertThat(resp.midia().tiposImagemAceitos()).containsExactly("image/jpeg", "image/png");
