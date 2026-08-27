@@ -15,6 +15,7 @@ import com.tcc.pjb.backend.model.dto.processo.marketplace.MarketplaceProtocoloRe
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDecision;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.service.api.oauth.MarketplaceOAuth2Service;
+import com.tcc.pjb.backend.service.api.oauth.MarketplaceOAuthException;
 import com.tcc.pjb.backend.service.api.surface.MarketplaceSurfaceFacadeService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Set;
@@ -52,12 +53,13 @@ class ApiMarketplaceControllerTest {
     void protocolarPropagaFalhaQuandoEscopoInsuficiente() {
         HttpServletRequest servletRequest = mock(HttpServletRequest.class);
         when(marketplaceOAuth2Service.authorizeHttpRequest(servletRequest, "processos:protocolar"))
-                .thenThrow(new IllegalStateException("Escopo insuficiente."));
+                .thenThrow(new MarketplaceOAuthException(org.springframework.http.HttpStatus.FORBIDDEN, "Escopo insuficiente."));
 
-        assertThat(org.assertj.core.api.Assertions.catchThrowable(() ->
-                        controller.protocolar(mock(MarketplaceProtocoloRequest.class), null, servletRequest)))
-                .isInstanceOf(IllegalStateException.class);
+        Throwable thrown = org.assertj.core.api.Assertions.catchThrowable(() ->
+                controller.protocolar(mock(MarketplaceProtocoloRequest.class), null, servletRequest));
 
+        assertThat(thrown).isInstanceOf(MarketplaceOAuthException.class);
+        assertThat(((MarketplaceOAuthException) thrown).getStatus()).isEqualTo(org.springframework.http.HttpStatus.FORBIDDEN);
         verify(facadeService, org.mockito.Mockito.never()).protocolar(any(), any());
     }
 
