@@ -16,15 +16,20 @@ public class PjbProcessoSigiloRlsDataSource extends AbstractDataSource {
     private static final String APPLY_SQL = "select set_config('app.pjb_sigilo_clearance', ?, false), "
             + "set_config('app.pjb_tribunal_code', ?, false), "
             + "set_config('app.pjb_unit_code', ?, false), "
-            + "set_config('app.pjb_sigilo_scope', ?, false)";
+            + "set_config('app.pjb_sigilo_scope', ?, false), "
+            + "set_config('app.pjb_actor_id', ?, false), "
+            + "set_config('app.pjb_actor_roles', ?, false)";
 
     private final DataSource delegate;
     private final PjbProcessoSigiloRlsContext context;
+    private final PjbRlsActorResolver actorResolver;
 
     public PjbProcessoSigiloRlsDataSource(DataSource delegate,
-                                          PjbProcessoSigiloRlsContext context) {
+                                          PjbProcessoSigiloRlsContext context,
+                                          PjbRlsActorResolver actorResolver) {
         this.delegate = Objects.requireNonNull(delegate, "delegate");
         this.context = Objects.requireNonNull(context, "context");
+        this.actorResolver = Objects.requireNonNull(actorResolver, "actorResolver");
     }
 
     @Override
@@ -39,8 +44,9 @@ public class PjbProcessoSigiloRlsDataSource extends AbstractDataSource {
 
     private Connection wrap(Connection connection) throws SQLException {
         PjbProcessoSigiloRlsContext.SessionSettings settings = context.currentOrDefault();
+        PjbRlsActorResolver.ActorSettings actor = actorResolver.currentOrAnonymous();
         try {
-            applySettings(connection, settings);
+            applySettings(connection, settings, actor);
         } catch (SQLException ex) {
             try {
                 connection.close();
@@ -57,12 +63,16 @@ public class PjbProcessoSigiloRlsDataSource extends AbstractDataSource {
         );
     }
 
-    private void applySettings(Connection connection, PjbProcessoSigiloRlsContext.SessionSettings settings) throws SQLException {
+    private void applySettings(Connection connection,
+                               PjbProcessoSigiloRlsContext.SessionSettings settings,
+                               PjbRlsActorResolver.ActorSettings actor) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(APPLY_SQL)) {
             statement.setString(1, settings.sigiloClearance());
             statement.setString(2, settings.tribunalCode());
             statement.setString(3, settings.unitCode());
             statement.setString(4, settings.sigiloScope());
+            statement.setString(5, actor.actorId());
+            statement.setString(6, actor.roles());
             statement.execute();
         }
     }
@@ -110,7 +120,7 @@ public class PjbProcessoSigiloRlsDataSource extends AbstractDataSource {
             returned = true;
             SQLException failure = null;
             try {
-                applySettings(delegateConnection, PjbProcessoSigiloRlsContext.DEFAULT_SETTINGS);
+                applySettings(delegateConnection, PjbProcessoSigiloRlsContext.DEFAULT_SETTINGS, PjbRlsActorResolver.ANONYMOUS);
             } catch (SQLException ex) {
                 failure = ex;
             }

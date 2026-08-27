@@ -114,7 +114,8 @@ public class PjbReadWriteDataSourceConfig {
                                  PjbPrimaryReadPreferenceContext primaryReadPreferenceContext,
                                  PjbAdaptiveDataPlaneContext adaptiveDataPlaneContext,
                                  PjbDataSourceRoutingProperties routingProperties,
-                                 PjbProcessoSigiloRlsContext processoSigiloRlsContext) {
+                                 PjbProcessoSigiloRlsContext processoSigiloRlsContext,
+                                 PjbRlsActorResolver rlsActorResolver) {
         Map<Object, Object> targets = new LinkedHashMap<>();
         targets.put(PjbDataSourceRole.WRITE, writeDataSource);
         targets.put(PjbDataSourceRole.READ, readDataSource);
@@ -123,7 +124,7 @@ public class PjbReadWriteDataSourceConfig {
         routing.setTargetDataSources(targets);
         routing.setDefaultTargetDataSource(writeDataSource);
         routing.afterPropertiesSet();
-        DataSource sigiloAwareRouting = new PjbProcessoSigiloRlsDataSource(routing, processoSigiloRlsContext);
+        DataSource sigiloAwareRouting = new PjbProcessoSigiloRlsDataSource(routing, processoSigiloRlsContext, rlsActorResolver);
         return new LazyConnectionDataSourceProxy(sigiloAwareRouting);
     }
 
