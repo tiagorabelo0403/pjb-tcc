@@ -861,6 +861,7 @@ The security model is driven by identity, role, assignment, organization, unit, 
 | **Auditable Circuit Breaker** | Open/closed state of each circuit breaker is recorded with timestamp, cause, and failure count — the degradation history of an integration is traceable, not just the current state |
 | **LGPD** | Confidential data never sent to external services; auditable redact by version |
 | **Dual Approval** | Critical operations require confirmation from a second authorized actor |
+| **PII encryption at rest** | `Usuario.cpf`/`email` (login identity) and `Cliente.cpf`/`email` (law-firm module) encrypted via `SensitiveDataConverter`/`CryptoVaultService` — never stored in plain text |
 
 ### Secrets vault and the AES-GCM master key
 
@@ -882,6 +883,12 @@ bash scripts/vault_dev_bootstrap.sh        # enables KV v2 and writes test crede
 ```
 
 The script prints the 4 env vars the backend needs to pull credentials from Vault. The `vault` service in compose runs in dev-mode (no persistence, command `server -dev -dev-listen-address=0.0.0.0:8200`, token via `PJB_VAULT_DEV_ROOT_TOKEN`) — **for dev/demo only**. In production, point `VaultDbCredentialsProvider` at an externally-managed instance, using a real auth method (AppRole/Kubernetes/etc.), not a static root token.
+
+### Blind index for searching an encrypted column
+
+`Usuario.cpf`/`email` are encrypted (AES-GCM, random IV — the same value never produces the same ciphertext twice), which by definition makes them incomparable in a `WHERE` clause. The equality search that login, OAB validation, and case-party cross-referencing always needed keeps working through a blind index: `cpf_hash`/`email_hash` (HMAC-SHA256 keyed with the same master key, via `CryptoVaultService.hmacHex` + `UsuarioBlindIndexService`) — deterministic, so `WHERE cpf_hash = ?` works, but not reversible back to the original CPF. Deliberately **not** plain SHA-256: a CPF has a checksum and only ~10⁹ valid values, so an unkeyed hash would be reversible via a precomputed table.
+
+None of the 30+ call sites calling `usuarioRepository.findByCpf(cpf)`/`findByEmail(email)` changed — the signature and visible behavior are the same; underneath, `UsuarioRepositoryImpl` looks up by hash. The same holds for case-party cross-referencing: `ProcessoRepository.findAllByPartesCpf` matches the given CPF against `Usuario.cpfHash`, while `Processo.parteAutoraCpf`/`parteReuCpf` stay plain text (case-party data, a different scope from the user's own account data). `nome` is deliberately left out of this encryption: `MembroEquipeRepository` does a partial (`LIKE`) search directly on it, which a hash cannot support.
 
 [⬆ Back to top](#quick-navigation)
 

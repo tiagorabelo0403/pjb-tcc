@@ -871,6 +871,7 @@ O modelo de segurança é orientado por identidade, papel, lotação, órgão, u
 | **Circuit breaker auditável** | Estado de abertura/fechamento de cada circuit breaker é registrado com timestamp, causa e contagem de falhas — a história de degradação de uma integração é rastreável, não apenas o estado atual |
 | **LGPD** | Dados sigilosos nunca enviados a serviços externos; redact auditável por versão |
 | **Dual approval** | Operações críticas exigem confirmação de segundo ator autorizado |
+| **Criptografia de PII em repouso** | `Usuario.cpf`/`email` (identidade de login) e `Cliente.cpf`/`email` (módulo advocacia) cifrados via `SensitiveDataConverter`/`CryptoVaultService` — nunca em texto puro no banco |
 
 ### Cofre de segredos e a chave mestra AES-GCM
 
@@ -892,6 +893,12 @@ bash scripts/vault_dev_bootstrap.sh        # habilita KV v2 e grava credenciais 
 ```
 
 O script imprime as 4 envs que o backend precisa pra puxar credenciais do Vault. O serviço `vault` no compose roda em dev-mode (sem persistência, comando `server -dev -dev-listen-address=0.0.0.0:8200`, token via `PJB_VAULT_DEV_ROOT_TOKEN`) — **exclusivamente para dev/demo**. Em produção, apontar `VaultDbCredentialsProvider` para uma instância gerenciada externamente, com auth method próprio (AppRole/Kubernetes/etc.), não com root token estático.
+
+### Índice cego para busca em coluna criptografada
+
+`cpf`/`email` de `Usuario` são cifrados (AES-GCM, IV aleatório — o mesmo valor nunca produz o mesmo texto cifrado duas vezes), o que por definição os torna incomparáveis num `WHERE`. A busca por igualdade que login, validação de OAB e o cruzamento de parte com processo sempre precisaram continua funcionando através de um índice cego: `cpf_hash`/`email_hash` (HMAC-SHA256 com a mesma chave mestra, via `CryptoVaultService.hmacHex` + `UsuarioBlindIndexService`) — determinístico, permite `WHERE cpf_hash = ?`, mas não reversível para o CPF original. Deliberadamente **não** é SHA-256 simples: CPF tem checksum e só ~10⁹ valores válidos, um hash sem chave seria reversível por uma tabela pré-computada.
+
+Nenhum dos mais de 30 pontos do código que chamam `usuarioRepository.findByCpf(cpf)`/`findByEmail(email)` mudou — a assinatura e o comportamento visível são os mesmos; por baixo, `UsuarioRepositoryImpl` busca pelo hash. O mesmo vale para o cruzamento de parte processual: `ProcessoRepository.findAllByPartesCpf` casa o CPF informado com `Usuario.cpfHash`, mantendo `Processo.parteAutoraCpf`/`parteReuCpf` em texto puro (dado da parte no processo, escopo diferente do dado de conta do usuário). `nome` fica fora desta cifragem: `MembroEquipeRepository` faz busca parcial (`LIKE`) direto nele, que hash não suporta.
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
