@@ -71,7 +71,13 @@ class LaianePeticaoInicialDraftServiceTimingTest {
                 mock(MapaCompetenciaDinamicoEngine.class),
                 mock(ProtocoloCompletudeValidator.class),
                 mock(ProtocoloPendenciaApplicationService.class),
-                mock(ProtocoloCompletudeMetrics.class));
+                mock(ProtocoloCompletudeMetrics.class),
+                new com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextDocumentSanitizer(
+                        new ObjectMapper(), new com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextFormatCatalog()),
+                new com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextPlainTextExtractor(),
+                new com.tcc.pjb.backend.service.processual.peticionamento.editor.PeticaoInicialPdfExportService(),
+                mock(com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository.class),
+                mock(com.tcc.pjb.backend.repository.document.DocumentoPaginaRepository.class));
 
         Long processoIdDeTerceiro = 999L;
 

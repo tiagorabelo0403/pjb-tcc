@@ -183,6 +183,15 @@ public class MapaCompetenciaDinamicoEngine {
                 return cache.units();
             }
             List<UnidadeJudiciariaCompetencia> loaded = List.copyOf(unidadeRepository.findAll());
+            // As entidades sobrevivem no cache além da transação/sessão que as carregou. As três
+            // @ElementCollection(EAGER) precisam ser inicializadas aqui, dentro da sessão de carga —
+            // caso contrário uma leitura posterior a partir do cache (sessão já fechada) estoura
+            // LazyInitializationException, mesmo a coleção sendo declarada EAGER na entidade.
+            loaded.forEach(unidade -> {
+                org.hibernate.Hibernate.initialize(unidade.getEspecialidades());
+                org.hibernate.Hibernate.initialize(unidade.getClassesTpu());
+                org.hibernate.Hibernate.initialize(unidade.getAssuntosTpu());
+            });
             unitsCache.set(loaded.isEmpty() ? null : new CachedUnits(loaded, now.plus(UNIT_CACHE_TTL)));
             return loaded;
         }
