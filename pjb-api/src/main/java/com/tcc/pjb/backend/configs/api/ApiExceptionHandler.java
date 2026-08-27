@@ -36,6 +36,7 @@ import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitExceed
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalConstraintViolationException;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalRevisionConflictException;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalTransitionRejectedException;
+import com.tcc.pjb.backend.service.api.oauth.MarketplaceOAuthException;
 import com.tcc.pjb.backend.service.exception.ErroDeTetoException;
 import com.tcc.pjb.backend.service.exception.ErroTerritorialException;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
@@ -138,6 +139,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(AccessDeniedPjbException.class)
     public ResponseEntity<ProblemDetail> handleAccessDenied(AccessDeniedPjbException ex, HttpServletRequest request) {
         return build(HttpStatus.FORBIDDEN, "forbidden", "Acesso negado.", request, null);
+    }
+
+    @ExceptionHandler(MarketplaceOAuthException.class)
+    public ResponseEntity<ProblemDetail> handleMarketplaceOAuth(MarketplaceOAuthException ex, HttpServletRequest request) {
+        String code = ex.getStatus() == HttpStatus.FORBIDDEN ? "insufficient_scope" : "invalid_token";
+        return build(ex.getStatus(), code, ex.getMessage(), request, null);
     }
 
     @ExceptionHandler(AcessoForaDeEscopoException.class)

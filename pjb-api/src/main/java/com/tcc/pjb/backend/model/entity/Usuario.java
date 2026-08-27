@@ -9,7 +9,11 @@ import com.tcc.pjb.backend.model.entity.enums.EnteFederativo;
 import com.tcc.pjb.backend.model.entity.enums.PapelEquipe;
 import com.tcc.pjb.backend.model.entity.enums.SituacaoConta;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
+import com.tcc.pjb.backend.core.infra.spring.SpringContext;
+import com.tcc.pjb.backend.core.security.crypto.UsuarioBlindIndexService;
+import com.tcc.pjb.backend.model.converter.SensitiveDataConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -19,6 +23,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +41,21 @@ public class Usuario {
     private Long id;
 
     private String nome;
+
+    @Convert(converter = SensitiveDataConverter.class)
+    @Column(name = "email", length = 1000)
     private String email;
+
+    @Convert(converter = SensitiveDataConverter.class)
+    @Column(name = "cpf", length = 1000)
     private String cpf;
+
+    @Column(name = "cpf_hash", length = 64)
+    private String cpfHash;
+
+    @Column(name = "email_hash", length = 64)
+    private String emailHash;
+
     private String oab;
 
     @Column(name = "oab_normalizada")
@@ -92,6 +111,23 @@ public class Usuario {
 
     public String getCpf() { return cpf; }
     public void setCpf(String cpf) { this.cpf = cpf; }
+
+    public String getCpfHash() { return cpfHash; }
+    public String getEmailHash() { return emailHash; }
+
+    /**
+     * Recalcula o índice cego de cpf/email a partir do valor em texto puro que ainda está no objeto
+     * Java neste ponto (o {@code @Convert} só cifra no bind SQL, depois deste callback). Roda apenas
+     * quando Hibernate persiste/atualiza de verdade — nunca em {@code new Usuario()} isolado de teste
+     * unitário sem contexto Spring, como {@link SensitiveDataConverter} já garante para o mesmo caso.
+     */
+    @PrePersist
+    @PreUpdate
+    void recalcularIndiceCego() {
+        UsuarioBlindIndexService blindIndex = SpringContext.getBean(UsuarioBlindIndexService.class);
+        this.cpfHash = blindIndex.hashCpf(cpf);
+        this.emailHash = blindIndex.hashEmail(email);
+    }
 
     public String getOab() { return oab; }
     public void setOab(String oab) { this.oab = oab; }

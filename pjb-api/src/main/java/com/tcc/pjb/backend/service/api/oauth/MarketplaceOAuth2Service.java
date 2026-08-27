@@ -100,7 +100,7 @@ public class MarketplaceOAuth2Service {
                 .orElseThrow(() -> new IllegalArgumentException("Client id inválido."));
         ensureClientActive(client);
         if (!supportsGrant(client, "client_credentials")) {
-            throw new IllegalStateException("Cliente não habilitado para client_credentials.");
+            throw new MarketplaceOAuthException(org.springframework.http.HttpStatus.FORBIDDEN, "Cliente não habilitado para client_credentials.");
         }
         if (!secretMatches(client, request.clientSecret())) {
             audit(client, "TOKEN_DENIED", null, client.getClientId(), "Falha de autenticação do client secret.", ipAddress);
@@ -225,17 +225,17 @@ public class MarketplaceOAuth2Service {
             throw new IllegalArgumentException("Token inválido.");
         }
         if (!"ATIVO".equalsIgnoreCase(defaultText(record.getStatus(), ""))) {
-            throw new IllegalStateException("Token não está ativo.");
+            throw new MarketplaceOAuthException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Token não está ativo.");
         }
         if (record.getExpiresAt() == null || record.getExpiresAt().isBefore(Instant.now())) {
             record.setStatus("EXPIRADO");
             tokenRepository.save(record);
-            throw new IllegalStateException("Token expirado.");
+            throw new MarketplaceOAuthException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Token expirado.");
         }
         Set<String> required = normalizeScopes(requiredScopes);
         Set<String> current = splitScopes(record.getScope());
         if (!current.containsAll(required)) {
-            throw new IllegalStateException("Escopo insuficiente.");
+            throw new MarketplaceOAuthException(org.springframework.http.HttpStatus.FORBIDDEN, "Escopo insuficiente.");
         }
         if (emitUsageAudit) {
             audit(client, "TOKEN_USED", record.getJti(), client.getClientId(),
@@ -260,7 +260,7 @@ public class MarketplaceOAuth2Service {
         }
         long exp = parseEpoch(claims.get("exp"));
         if (exp <= Instant.now().getEpochSecond()) {
-            throw new IllegalStateException("Token expirado.");
+            throw new MarketplaceOAuthException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Token expirado.");
         }
         String clientId = String.valueOf(claims.getOrDefault("client_id", ""));
         String jti = String.valueOf(claims.getOrDefault("jti", ""));
@@ -322,7 +322,7 @@ public class MarketplaceOAuth2Service {
 
     private void ensureClientActive(MarketplaceClientApp client) {
         if (!"ATIVO".equalsIgnoreCase(defaultText(client.getStatus(), ""))) {
-            throw new IllegalStateException("Cliente OAuth2 inativo.");
+            throw new MarketplaceOAuthException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Cliente OAuth2 inativo.");
         }
     }
 

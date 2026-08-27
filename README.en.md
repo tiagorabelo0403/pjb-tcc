@@ -21,6 +21,7 @@
 
 **Quick Start**
 - [About the Project](#about-the-project)
+- [Security & Integrations — Overview](#security--integrations--overview)
 - [The Problem](#the-problem)
 - [The Proposal](#the-proposal)
 - [Glossary](#glossary)
@@ -64,6 +65,48 @@
 PJB is a total-replacement platform — not an incremental patch — for the electronic judicial systems currently running in Brazil. Five systems were built over decades by different entities, with no coordination of protocol, data model, or interface. Today, this fractured infrastructure supports more than **80 million active cases**, **91 courts**, and **approximately 30,000 judges**, alongside tens of millions of lawyers, litigants, and court staff — and none of those systems were designed to talk to each other.
 
 PJB was built from scratch to solve this problem properly. It is not a wrapper around legacy systems. It is a deliberate break from that model: domain modeled from the Brazilian Civil Procedure Code (CPC/2015), labor reforms, and current criminal legislation; attribute-based access control with row-level security at the database; an immutable audit trail on every action; and Java 21 Virtual Threads to scale without the cost of managing manual thread pools.
+
+[⬆ Back to top](#quick-navigation)
+
+---
+
+## Security & Integrations — Overview
+
+A highlighted summary for anyone evaluating the project without reading the whole document. No secret, token, or credential value in this section — each item links to its detailed section further down.
+
+### 🔐 Security implemented
+
+- **Passwordless authentication across 3 independent flows** — Gov.br (OIDC, federal identity provider), ICP-Brasil digital certificate (challenge-response: server-issued nonce, signed by the user's certificate, chain validation), Passkey/WebAuthn
+- **ABAC** (Attribute-Based Access Control) on every sensitive decision, with an immutable trail of who authorized it, when, and why (`tb_authz_trail`)
+- **RLS** (Row Level Security) in PostgreSQL — the database refuses confidential data before the ORM sees it, across two dimensions: case confidentiality and actor scope (owner/role), with a discipline test that blocks declared-but-not-enforced RLS in any future migration
+- **Password encryption** (BCrypt via `DelegatingPasswordEncoder`) and **PII encryption at rest** — user CPF/email encrypted (AES-GCM) with a blind index (HMAC) that preserves searchability without exposing the data
+- **Rate limiting** on critical routes (login, marketplace) with automatic IP blocking after repeated violations; standardized RFC 7807 response
+- **Zero public self-signup surface** — every account is provisioned through a verified channel (Gov.br, OAB validation, token-based judiciary activation), never an open registration form
+- **HSTS + hardened security headers** (`X-Frame-Options: DENY`, `Permissions-Policy`, `Cross-Origin-Opener/Resource-Policy`)
+- **Secrets vault** (HashiCorp Vault) with real database credential rotation
+- **BOLA guard** (cross-unit/cross-assignment object access) enforced at build time via ArchUnit — not dependent on code-review discipline
+- **Immutable audit trail** of every authorization decision and every relevant security event, in a structured log kept separate from the application log
+
+Full details, with the rationale behind each mechanism: [Security & Compliance](#security--compliance)
+
+### 🔌 External integrations — real clients implemented
+
+Each item below is a **real** integration client against the documented official endpoint — not a mock, not a simulation. Production credentials (the agency's token/certificate) are a deployment-environment configuration, outside the scope of an undergraduate thesis project — the client is ready to receive them.
+
+| Integration | Agency | What it does |
+|---|---|---|
+| **Gov.br** | Federal Government | Federal citizen login (OIDC) |
+| **MNI** (National Interoperability Model) | CNJ | Case exchange between justice-system platforms |
+| **DataJud** | CNJ | National Judiciary Database |
+| **PDPJ-Br** | CNJ | Digital Judiciary Platform |
+| **BNMP** | CNJ | National Arrest Warrant Database |
+| **SISBAJUD** | CNJ/Central Bank | Judicial freezing of financial assets |
+| **RENAJUD** | CNJ/Denatran | Judicial vehicle restrictions |
+| **INFOJUD** | CNJ/Federal Revenue | Tax information for case instruction |
+| **ICP-Brasil** | ITI | Certificate chain validation for qualified digital signatures |
+| **Anthropic Claude** | Anthropic | Legal AI (Laiane) |
+
+Beyond **consuming** these integrations, PJB also **exposes** its own API (OAuth2 client-credentials, signed JWT, per-client scope) so external partner systems can file and complement documents — the marketplace connects *to* PJB, not the other way around.
 
 [⬆ Back to top](#quick-navigation)
 
@@ -861,6 +904,7 @@ The security model is driven by identity, role, assignment, organization, unit, 
 | **Auditable Circuit Breaker** | Open/closed state of each circuit breaker is recorded with timestamp, cause, and failure count — the degradation history of an integration is traceable, not just the current state |
 | **LGPD** | Confidential data never sent to external services; auditable redact by version |
 | **Dual Approval** | Critical operations require confirmation from a second authorized actor |
+| **PII encryption at rest** | `Usuario.cpf`/`email` (login identity) and `Cliente.cpf`/`email` (law-firm module) encrypted via `SensitiveDataConverter`/`CryptoVaultService` — never stored in plain text |
 
 ### Secrets vault and the AES-GCM master key
 
@@ -882,6 +926,12 @@ bash scripts/vault_dev_bootstrap.sh        # enables KV v2 and writes test crede
 ```
 
 The script prints the 4 env vars the backend needs to pull credentials from Vault. The `vault` service in compose runs in dev-mode (no persistence, command `server -dev -dev-listen-address=0.0.0.0:8200`, token via `PJB_VAULT_DEV_ROOT_TOKEN`) — **for dev/demo only**. In production, point `VaultDbCredentialsProvider` at an externally-managed instance, using a real auth method (AppRole/Kubernetes/etc.), not a static root token.
+
+### Blind index for searching an encrypted column
+
+`Usuario.cpf`/`email` are encrypted (AES-GCM, random IV — the same value never produces the same ciphertext twice), which by definition makes them incomparable in a `WHERE` clause. The equality search that login, OAB validation, and case-party cross-referencing always needed keeps working through a blind index: `cpf_hash`/`email_hash` (HMAC-SHA256 keyed with the same master key, via `CryptoVaultService.hmacHex` + `UsuarioBlindIndexService`) — deterministic, so `WHERE cpf_hash = ?` works, but not reversible back to the original CPF. Deliberately **not** plain SHA-256: a CPF has a checksum and only ~10⁹ valid values, so an unkeyed hash would be reversible via a precomputed table.
+
+None of the 30+ call sites calling `usuarioRepository.findByCpf(cpf)`/`findByEmail(email)` changed — the signature and visible behavior are the same; underneath, `UsuarioRepositoryImpl` looks up by hash. The same holds for case-party cross-referencing: `ProcessoRepository.findAllByPartesCpf` matches the given CPF against `Usuario.cpfHash`, while `Processo.parteAutoraCpf`/`parteReuCpf` stay plain text (case-party data, a different scope from the user's own account data). `nome` is deliberately left out of this encryption: `MembroEquipeRepository` does a partial (`LIKE`) search directly on it, which a hash cannot support.
 
 [⬆ Back to top](#quick-navigation)
 

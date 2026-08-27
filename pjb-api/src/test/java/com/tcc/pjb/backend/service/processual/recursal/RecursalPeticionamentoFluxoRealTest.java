@@ -78,6 +78,11 @@ import org.springframework.test.context.ActiveProfiles;
         "logging.level.org.hibernate.SQL=OFF",
         "logging.level.org.hibernate.tool.schema=ERROR"
 })
+@org.springframework.context.annotation.Import({
+        com.tcc.pjb.backend.core.infra.spring.SpringContext.class,
+        com.tcc.pjb.backend.core.security.crypto.CryptoVaultService.class,
+        com.tcc.pjb.backend.core.security.crypto.UsuarioBlindIndexService.class
+})
 @ActiveProfiles("test")
 class RecursalPeticionamentoFluxoRealTest {
 

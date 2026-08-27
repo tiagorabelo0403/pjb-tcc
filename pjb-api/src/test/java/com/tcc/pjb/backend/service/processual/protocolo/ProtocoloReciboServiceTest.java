@@ -25,6 +25,11 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
+@org.springframework.context.annotation.Import({
+        com.tcc.pjb.backend.core.infra.spring.SpringContext.class,
+        com.tcc.pjb.backend.core.security.crypto.CryptoVaultService.class,
+        com.tcc.pjb.backend.core.security.crypto.UsuarioBlindIndexService.class
+})
 @ActiveProfiles("test")
 class ProtocoloReciboServiceTest {
 
