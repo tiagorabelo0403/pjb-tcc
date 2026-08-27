@@ -21,6 +21,7 @@
 
 **Início rápido**
 - [Sobre o projeto](#sobre-o-projeto)
+- [Segurança e integrações — visão geral](#segurança-e-integrações--visão-geral)
 - [O problema](#o-problema)
 - [A proposta](#a-proposta)
 - [Glossário](#glossário)
@@ -64,6 +65,48 @@
 O PJB é uma plataforma de substituição total — não incremental — dos sistemas judiciais eletrônicos em uso no Brasil. Cinco sistemas foram construídos ao longo de décadas por entidades diferentes, sem nenhuma coordenação de protocolo, modelo de dados ou interface. O resultado é uma infraestrutura que hoje suporta mais de **80 milhões de processos ativos**, **91 tribunais** e **cerca de 30 mil magistrados**, mas que não foi projetada para escalar, auditar ou integrar com o rigor que a legislação e a sociedade passaram a exigir.
 
 O PJB foi construído do zero com três compromissos inegociáveis: rastreabilidade total em cada ação do sistema, testabilidade como critério de aceite de qualquer funcionalidade e segurança por construção — ABAC, RLS e propagação governada de sigilo não são camadas adicionadas depois, são restrições que guiam cada decisão arquitetural.
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
+---
+
+## Segurança e integrações — visão geral
+
+Resumo em destaque para quem avalia o projeto sem precisar navegar o documento inteiro. Sem valor de segredo, token ou credencial nesta seção — cada item aponta para a seção detalhada correspondente.
+
+### 🔐 Segurança implementada
+
+- **Autenticação sem senha em 3 fluxos independentes** — Gov.br (OIDC, IDP federal), certificado digital ICP-Brasil (desafio-resposta: nonce do servidor, assinatura pelo certificado do usuário, validação de cadeia), Passkey/WebAuthn
+- **ABAC** (Attribute-Based Access Control) em toda decisão sensível, com trilha imutável de quem autorizou, quando e por quê (`tb_authz_trail`)
+- **RLS** (Row Level Security) no PostgreSQL — o banco recusa dado sigiloso antes do ORM, em duas dimensões: sigilo do processo e escopo por ator (dono/papel), com teste de disciplina que barra RLS declarado-mas-não-aplicado em qualquer migration futura
+- **Criptografia de senha** (BCrypt via `DelegatingPasswordEncoder`) e **criptografia de PII em repouso** — CPF/e-mail de usuário cifrados (AES-GCM) com índice cego (HMAC) para preservar busca sem expor o dado
+- **Rate limiting** em rotas críticas (login, marketplace) com bloqueio automático de IP após violações repetidas; resposta padronizada RFC 7807
+- **Zero superfície de autocadastro público** — todo acesso é provisionado por canal verificado (Gov.br, validação de OAB, ativação de magistratura por token), não por formulário aberto
+- **HSTS + cabeçalhos de segurança endurecidos** (`X-Frame-Options: DENY`, `Permissions-Policy`, `Cross-Origin-Opener/Resource-Policy`)
+- **Cofre de segredos** (HashiCorp Vault) com rotação real de credencial de banco de dados
+- **Guard BOLA** (acesso indevido a objeto de outra unidade/lotação) garantido em tempo de *build* via ArchUnit — não depende de disciplina de code review
+- **Auditoria imutável** de toda decisão de autorização e de todo evento de segurança relevante, em log estruturado separado do log de aplicação
+
+Detalhes completos, com justificativa de cada mecanismo: [Segurança e conformidade](#segurança-e-conformidade)
+
+### 🔌 Integrações externas — clientes reais implementados
+
+Cada item abaixo é um cliente de integração **real** contra o endpoint oficial documentado — não mock, não simulação. Credencial de produção (token/certificado do órgão) é configuração de ambiente de implantação, fora do escopo de um TCC — o cliente está pronto para recebê-la.
+
+| Integração | Órgão | O que faz |
+|---|---|---|
+| **Gov.br** | Governo Federal | Login federal do cidadão (OIDC) |
+| **MNI** (Modelo Nacional de Interoperabilidade) | CNJ | Intercâmbio de processos entre sistemas de justiça |
+| **DataJud** | CNJ | Base Nacional de Dados do Poder Judiciário |
+| **PDPJ-Br** | CNJ | Plataforma Digital do Poder Judiciário |
+| **BNMP** | CNJ | Banco Nacional de Mandados de Prisão |
+| **SISBAJUD** | CNJ/Bacen | Bloqueio judicial de ativos financeiros |
+| **RENAJUD** | CNJ/Denatran | Restrição judicial de veículos |
+| **INFOJUD** | CNJ/Receita Federal | Informações fiscais para instrução processual |
+| **ICP-Brasil** | ITI | Validação de cadeia de certificação para assinatura digital qualificada |
+| **Anthropic Claude** | Anthropic | Inteligência artificial jurídica (Laiane) |
+
+Além de **consumir** essas integrações, o PJB também **expõe** uma API própria (OAuth2 client-credentials, JWT assinado, escopo por cliente) para que sistemas parceiros externos protocolem e complementem documentos — o marketplace conecta *ao* PJB, não o contrário.
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
