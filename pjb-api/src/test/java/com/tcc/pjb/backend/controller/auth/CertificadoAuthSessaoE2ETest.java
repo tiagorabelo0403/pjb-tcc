@@ -86,11 +86,20 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @DataJpaTest
+@org.springframework.context.annotation.Import({
+        com.tcc.pjb.backend.core.infra.spring.SpringContext.class,
+        com.tcc.pjb.backend.core.security.crypto.CryptoVaultService.class,
+        com.tcc.pjb.backend.core.security.crypto.UsuarioBlindIndexService.class
+})
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 @TestPropertySource(properties = {
         "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=create-drop",
-        "spring.sql.init.mode=never"
+        "spring.sql.init.mode=never",
+        // Usuario.cpf/email agora sao criptografados (V344); esta fatia @DataJpaTest nao carrega
+        // beans @Service gerais, entao o import acima traz so o necessario para o @PrePersist/
+        // @PreUpdate de Usuario e o UsuarioRepositoryImpl funcionarem aqui.
+        "pjb.security.crypto.allow-plaintext-fallback=true"
 })
 class CertificadoAuthSessaoE2ETest {
 

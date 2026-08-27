@@ -10,15 +10,9 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 
 @Repository
-public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+public interface UsuarioRepository extends JpaRepository<Usuario, Long>, UsuarioRepositoryCustom {
 
-    
-    Optional<Usuario> findByEmail(String email);
 
-    
-    Optional<Usuario> findByCpf(String cpf);
-
-    
     Optional<Usuario> findByOabNormalizada(String oabNormalizada);
 
     

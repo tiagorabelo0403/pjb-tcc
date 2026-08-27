@@ -26,6 +26,13 @@ zeebe:
   client:
     enabled: false
 pjb:
+  security:
+    crypto:
+      # V344: Usuario.cpf/email passam a exigir CryptoVaultService no save/read. Sem chave mestra
+      # configurada aqui, TODA IT que salva Usuario (a esmagadora maioria da suíte) quebraria com
+      # IllegalStateException. Testes que precisam provar AES-GCM/HMAC real (não o fallback) sobrescrevem
+      # pjb.security.master-key + este flag via @TestPropertySource na própria classe.
+      allow-plaintext-fallback: true
   kafka:
     scale:
       listener-concurrency: 1

@@ -75,6 +75,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.mockito.Mockito;
 
 @DataJpaTest
+@org.springframework.context.annotation.Import({
+        com.tcc.pjb.backend.core.infra.spring.SpringContext.class,
+        com.tcc.pjb.backend.core.security.crypto.CryptoVaultService.class,
+        com.tcc.pjb.backend.core.security.crypto.UsuarioBlindIndexService.class
+})
 @ActiveProfiles("test")
 class DespachoProcessoProtocoladoTest {
 
