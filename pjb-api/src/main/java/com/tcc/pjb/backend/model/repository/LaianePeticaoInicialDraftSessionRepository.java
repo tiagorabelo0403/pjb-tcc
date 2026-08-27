@@ -10,4 +10,6 @@ public interface LaianePeticaoInicialDraftSessionRepository extends JpaRepositor
     List<LaianePeticaoInicialDraftSession> findTop100BySolicitante_IdOrderByCreatedAtDesc(Long solicitanteId);
 
     Optional<LaianePeticaoInicialDraftSession> findByIdAndSolicitante_Id(Long id, Long solicitanteId);
+
+    Optional<LaianePeticaoInicialDraftSession> findByProcesso_Id(Long processoId);
 }
