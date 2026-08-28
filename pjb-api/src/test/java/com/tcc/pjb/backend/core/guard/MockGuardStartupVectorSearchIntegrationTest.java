@@ -27,7 +27,9 @@ class MockGuardStartupVectorSearchIntegrationTest {
         assertThatThrownBy(() -> app.run(
                 "--pjb.ai.vector.mode=mock",
                 "--pjb.hsm.mock-enabled=false",
-                "--pjb.bnmp.mock-enabled=false"
+                "--pjb.bnmp.mock-enabled=false",
+                "--pjb.icp.enabled=true",
+                "--pjb.hsm.enabled=true"
         ))
                 .isInstanceOf(MockGuardViolationException.class)
                 .hasMessageContaining("pjb.ai.vector.mode");
