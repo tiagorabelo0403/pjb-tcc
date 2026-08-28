@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.controller;
 
 import com.tcc.pjb.backend.model.dto.workitem.WorkItemDoneRequest;
 import com.tcc.pjb.backend.model.dto.workitem.WorkItemDto;
-import com.tcc.pjb.backend.service.workitem.surface.WorkItemSurfaceFacadeService;
+import com.tcc.pjb.backend.service.workitem.WorkItemService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
@@ -23,30 +23,30 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @PreAuthorize("hasAnyAuthority('ROLE_SERVIDOR','ROLE_SERVIDOR_FORUM','ROLE_SERVIDOR_JUDICIARIO','ROLE_ADMIN','ROLE_ADMINISTRADOR','ROLE_MAGISTRADO','ROLE_JUIZ','ROLE_ASSESSOR_JUDICIAL','ROLE_ASSESSOR_DESEMBARGADOR','ROLE_ASSESSOR_MINISTRO')")
 public class WorkItemController {
 
-    private final WorkItemSurfaceFacadeService workItemSurfaceFacadeService;
+    private final WorkItemService workItemService;
 
-    public WorkItemController(WorkItemSurfaceFacadeService workItemSurfaceFacadeService) {
-        this.workItemSurfaceFacadeService = workItemSurfaceFacadeService;
+    public WorkItemController(WorkItemService workItemService) {
+        this.workItemService = workItemService;
     }
 
     @GetMapping("/inbox")
     public Page<WorkItemDto> inbox(@RequestParam(defaultValue = "0") @Min(0) int page,
                                    @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return workItemSurfaceFacadeService.inbox(page, size);
+        return workItemService.inbox(page, size);
     }
 
     @GetMapping("/{id}")
     public WorkItemDto get(@PathVariable @Positive Long id) {
-        return workItemSurfaceFacadeService.get(id);
+        return workItemService.get(id);
     }
 
     @PostMapping("/{id}/claim")
     public WorkItemDto claim(@PathVariable @Positive Long id) {
-        return workItemSurfaceFacadeService.claim(id);
+        return workItemService.claim(id);
     }
 
     @PostMapping("/{id}/done")
     public WorkItemDto done(@PathVariable @Positive Long id, @RequestBody(required = false) WorkItemDoneRequest req) {
-        return workItemSurfaceFacadeService.done(id, req != null ? req.observacao() : null);
+        return workItemService.done(id, req != null ? req.observacao() : null);
     }
 }
