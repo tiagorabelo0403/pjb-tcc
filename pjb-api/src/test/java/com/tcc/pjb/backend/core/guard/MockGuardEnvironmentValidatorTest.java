@@ -70,6 +70,30 @@ class MockGuardEnvironmentValidatorTest {
     }
 
     @Test
+    void prodComPjeMockEnabled_deveLancarExcecao() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("prod");
+        env.setProperty("pjb.integrations.pje.mock-enabled", "true");
+
+        assertThatThrownBy(() -> validator.postProcessEnvironment(env, dummyApp))
+                .isInstanceOf(MockGuardViolationException.class)
+                .hasMessageContaining("pjb.integrations.pje.mock-enabled")
+                .hasMessageContaining("PROD");
+    }
+
+    @Test
+    void prodComPjeSubmissionMockEnabled_deveLancarExcecao() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("prod");
+        env.setProperty("pjb.integrations.pje.submission.mock-enabled", "true");
+
+        assertThatThrownBy(() -> validator.postProcessEnvironment(env, dummyApp))
+                .isInstanceOf(MockGuardViolationException.class)
+                .hasMessageContaining("pjb.integrations.pje.submission.mock-enabled")
+                .hasMessageContaining("PROD");
+    }
+
+    @Test
     void prodSemMock_gravaRealEnvironmentProperty() {
         MockEnvironment env = new MockEnvironment();
         env.setActiveProfiles("prod");
