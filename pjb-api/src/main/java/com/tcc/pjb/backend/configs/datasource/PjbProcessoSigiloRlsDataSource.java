@@ -18,18 +18,24 @@ public class PjbProcessoSigiloRlsDataSource extends AbstractDataSource {
             + "set_config('app.pjb_unit_code', ?, false), "
             + "set_config('app.pjb_sigilo_scope', ?, false), "
             + "set_config('app.pjb_actor_id', ?, false), "
-            + "set_config('app.pjb_actor_roles', ?, false)";
+            + "set_config('app.pjb_actor_roles', ?, false), "
+            + "set_config('app.pjb_equipe_filter_active', ?, false), "
+            + "set_config('app.pjb_equipe_usuario_id', ?, false), "
+            + "set_config('app.pjb_equipe_id', ?, false)";
 
     private final DataSource delegate;
     private final PjbProcessoSigiloRlsContext context;
     private final PjbRlsActorResolver actorResolver;
+    private final PjbRlsEquipeResolver equipeResolver;
 
     public PjbProcessoSigiloRlsDataSource(DataSource delegate,
                                           PjbProcessoSigiloRlsContext context,
-                                          PjbRlsActorResolver actorResolver) {
+                                          PjbRlsActorResolver actorResolver,
+                                          PjbRlsEquipeResolver equipeResolver) {
         this.delegate = Objects.requireNonNull(delegate, "delegate");
         this.context = Objects.requireNonNull(context, "context");
         this.actorResolver = Objects.requireNonNull(actorResolver, "actorResolver");
+        this.equipeResolver = Objects.requireNonNull(equipeResolver, "equipeResolver");
     }
 
     @Override
@@ -45,8 +51,9 @@ public class PjbProcessoSigiloRlsDataSource extends AbstractDataSource {
     private Connection wrap(Connection connection) throws SQLException {
         PjbProcessoSigiloRlsContext.SessionSettings settings = context.currentOrDefault();
         PjbRlsActorResolver.ActorSettings actor = actorResolver.currentOrAnonymous();
+        PjbRlsEquipeResolver.EquipeSettings equipe = equipeResolver.currentOrInactive();
         try {
-            applySettings(connection, settings, actor);
+            applySettings(connection, settings, actor, equipe);
         } catch (SQLException ex) {
             try {
                 connection.close();
@@ -65,7 +72,11 @@ public class PjbProcessoSigiloRlsDataSource extends AbstractDataSource {
 
     private void applySettings(Connection connection,
                                PjbProcessoSigiloRlsContext.SessionSettings settings,
-                               PjbRlsActorResolver.ActorSettings actor) throws SQLException {
+                               PjbRlsActorResolver.ActorSettings actor,
+                               PjbRlsEquipeResolver.EquipeSettings equipe) throws SQLException {
+        if (!isPostgres(connection)) {
+            return;
+        }
         try (PreparedStatement statement = connection.prepareStatement(APPLY_SQL)) {
             statement.setString(1, settings.sigiloClearance());
             statement.setString(2, settings.tribunalCode());
@@ -73,8 +84,21 @@ public class PjbProcessoSigiloRlsDataSource extends AbstractDataSource {
             statement.setString(4, settings.sigiloScope());
             statement.setString(5, actor.actorId());
             statement.setString(6, actor.roles());
+            statement.setString(7, Boolean.toString(equipe.active()));
+            statement.setString(8, equipe.usuarioId());
+            statement.setString(9, equipe.equipeId());
             statement.execute();
         }
+    }
+
+    /**
+     * As GUCs {@code app.pjb_*} e a função {@code set_config} só existem no PostgreSQL. Sem essa
+     * checagem, qualquer ambiente que use outro banco (H2 em testes de contexto leves, por
+     * exemplo) quebraria em toda conexão assim que este wrapper deixasse de depender de
+     * {@code pjb.datasource.routing.enabled} — ver PjbRlsContextDataSourceConfig.
+     */
+    private static boolean isPostgres(Connection connection) throws SQLException {
+        return "PostgreSQL".equalsIgnoreCase(connection.getMetaData().getDatabaseProductName());
     }
 
     private final class ConnectionInvocationHandler implements InvocationHandler {
@@ -120,7 +144,7 @@ public class PjbProcessoSigiloRlsDataSource extends AbstractDataSource {
             returned = true;
             SQLException failure = null;
             try {
-                applySettings(delegateConnection, PjbProcessoSigiloRlsContext.DEFAULT_SETTINGS, PjbRlsActorResolver.ANONYMOUS);
+                applySettings(delegateConnection, PjbProcessoSigiloRlsContext.DEFAULT_SETTINGS, PjbRlsActorResolver.ANONYMOUS, PjbRlsEquipeResolver.INACTIVE);
             } catch (SQLException ex) {
                 failure = ex;
             }
