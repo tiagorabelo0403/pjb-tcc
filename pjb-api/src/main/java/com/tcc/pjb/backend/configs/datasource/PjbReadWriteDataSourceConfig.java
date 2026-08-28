@@ -12,8 +12,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
 
 @Configuration
 @ConditionalOnProperty(prefix = "pjb.datasource.routing", name = "enabled", havingValue = "true")
@@ -106,16 +104,18 @@ public class PjbReadWriteDataSourceConfig {
         return new PjbReplicaRoutingHealthIndicator(tracker, observationService);
     }
 
-    @Bean
-    @Primary
-    public DataSource dataSource(@Qualifier("pjbWriteRoutingDataSource") DataSource writeDataSource,
+    /**
+     * Datasource de routing read/write, sem o backstop de RLS — quem publica o
+     * {@code @Primary DataSource} da aplicação (sempre com RLS, com ou sem routing) é
+     * {@link PjbRlsContextDataSourceConfig}, que consome este bean quando presente.
+     */
+    @Bean(name = "pjbRoutingComposedDataSource")
+    public DataSource pjbRoutingComposedDataSource(@Qualifier("pjbWriteRoutingDataSource") DataSource writeDataSource,
                                  @Qualifier("pjbReadReplicaDataSource") DataSource readDataSource,
                                  @Qualifier("pjbRegionalReadReplicaDataSources") Map<String, DataSource> regionalReadDataSources,
                                  PjbPrimaryReadPreferenceContext primaryReadPreferenceContext,
                                  PjbAdaptiveDataPlaneContext adaptiveDataPlaneContext,
-                                 PjbDataSourceRoutingProperties routingProperties,
-                                 PjbProcessoSigiloRlsContext processoSigiloRlsContext,
-                                 PjbRlsActorResolver rlsActorResolver) {
+                                 PjbDataSourceRoutingProperties routingProperties) {
         Map<Object, Object> targets = new LinkedHashMap<>();
         targets.put(PjbDataSourceRole.WRITE, writeDataSource);
         targets.put(PjbDataSourceRole.READ, readDataSource);
@@ -124,8 +124,7 @@ public class PjbReadWriteDataSourceConfig {
         routing.setTargetDataSources(targets);
         routing.setDefaultTargetDataSource(writeDataSource);
         routing.afterPropertiesSet();
-        DataSource sigiloAwareRouting = new PjbProcessoSigiloRlsDataSource(routing, processoSigiloRlsContext, rlsActorResolver);
-        return new LazyConnectionDataSourceProxy(sigiloAwareRouting);
+        return routing;
     }
 
     private static HikariDataSource buildReplicaDataSource(String poolName,
