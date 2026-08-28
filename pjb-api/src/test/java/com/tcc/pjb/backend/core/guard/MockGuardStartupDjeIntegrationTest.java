@@ -43,7 +43,9 @@ class MockGuardStartupDjeIntegrationTest {
                 "--pjb.dje.mock-enabled=true",
                 "--pjb.hsm.mock-enabled=false",
                 "--pjb.bnmp.mock-enabled=false",
-                "--pjb.integrations.govbr.mock-enabled=false"
+                "--pjb.integrations.govbr.mock-enabled=false",
+                "--pjb.icp.enabled=true",
+                "--pjb.hsm.enabled=true"
         ))
                 .isInstanceOf(MockGuardViolationException.class)
                 .hasMessageContaining("pjb.dje.mock-enabled");

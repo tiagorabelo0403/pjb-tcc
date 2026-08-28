@@ -26,7 +26,9 @@ class MockGuardStartupIntegrationTest {
 
         assertThatThrownBy(() -> app.run(
                 "--pjb.hsm.mock-enabled=true",
-                "--pjb.bnmp.mock-enabled=false"
+                "--pjb.bnmp.mock-enabled=false",
+                "--pjb.icp.enabled=true",
+                "--pjb.hsm.enabled=true"
         ))
                 .isInstanceOf(MockGuardViolationException.class)
                 .hasMessageContaining("pjb.hsm.mock-enabled");
