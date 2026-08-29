@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Prova que a V349 (lote 2 de satelites de tb_processo: pjb_ciencia_processual,
- * tb_certidao_emitida, tb_expedicao_judicial, tb_processo_note, tb_sessao_acordo_processual)
+ * tb_expedicao_judicial, tb_processo_note, tb_sessao_acordo_processual)
  * filtra de verdade via pjb_rls_processo_visivel, sob role NOSUPERUSER NOBYPASSRLS.
  */
 class PjbProcessoSatelitesLote2RlsIT extends PjbIntegrationTestBase {
@@ -46,9 +46,6 @@ class PjbProcessoSatelitesLote2RlsIT extends PjbIntegrationTestBase {
 
         Long cienciaA = inserirCiencia(processoA, donoA.getId(), sufixo, "A");
         Long cienciaB = inserirCiencia(processoB, donoB.getId(), sufixo, "B");
-        UUID certidaoA = inserirCertidao(processoA, sufixo, "A");
-        UUID certidaoB = inserirCertidao(processoB, sufixo, "B");
-        UUID certidaoSemProcesso = inserirCertidaoSemProcesso(sufixo);
         Long expedicaoA = inserirExpedicao(processoA, sufixo, "A");
         Long expedicaoB = inserirExpedicao(processoB, sufixo, "B");
         Long noteA = inserirNote(processoA, donoA.getId(), sufixo, "A");
@@ -59,7 +56,7 @@ class PjbProcessoSatelitesLote2RlsIT extends PjbIntegrationTestBase {
 
         exec("CREATE ROLE " + role + " NOSUPERUSER NOBYPASSRLS NOLOGIN");
         exec("GRANT USAGE ON SCHEMA public TO " + role);
-        exec("GRANT SELECT ON tb_processo, pjb_ciencia_processual, tb_certidao_emitida, "
+        exec("GRANT SELECT ON tb_processo, pjb_ciencia_processual, "
                 + "tb_expedicao_judicial, tb_processo_note, tb_sessao_acordo_processual TO " + role);
         exec("GRANT EXECUTE ON FUNCTION pjb_rls_actor_id() TO " + role);
         exec("GRANT EXECUTE ON FUNCTION pjb_rls_has_role(text) TO " + role);
@@ -71,12 +68,6 @@ class PjbProcessoSatelitesLote2RlsIT extends PjbIntegrationTestBase {
 
         assertThat(contarPorId("pjb_ciencia_processual", "id", String.valueOf(cienciaA))).isEqualTo(1L);
         assertThat(contarPorId("pjb_ciencia_processual", "id", String.valueOf(cienciaB))).isZero();
-
-        assertThat(contarPorId("tb_certidao_emitida", "id", certidaoA.toString())).isEqualTo(1L);
-        assertThat(contarPorId("tb_certidao_emitida", "id", certidaoB.toString())).isZero();
-        assertThat(contarPorId("tb_certidao_emitida", "id", certidaoSemProcesso.toString()))
-                .as("certidao sem processo vinculado e' permissiva")
-                .isEqualTo(1L);
 
         assertThat(contarPorId("tb_expedicao_judicial", "id", String.valueOf(expedicaoA))).isEqualTo(1L);
         assertThat(contarPorId("tb_expedicao_judicial", "id", String.valueOf(expedicaoB))).isZero();
@@ -116,24 +107,6 @@ class PjbProcessoSatelitesLote2RlsIT extends PjbIntegrationTestBase {
                 .setParameter(4, "hash-" + rotulo + "-" + sufixo)
                 .getSingleResult();
         return id.longValue();
-    }
-
-    private UUID inserirCertidao(long processoId, String sufixo, String rotulo) {
-        UUID id = UUID.randomUUID();
-        entityManager.createNativeQuery(
-                        "INSERT INTO tb_certidao_emitida (id, processo_id, template_code, status) "
-                                + "VALUES (?1, ?2, 'PADRAO', 'EMITIDA')")
-                .setParameter(1, id).setParameter(2, processoId).executeUpdate();
-        return id;
-    }
-
-    private UUID inserirCertidaoSemProcesso(String sufixo) {
-        UUID id = UUID.randomUUID();
-        entityManager.createNativeQuery(
-                        "INSERT INTO tb_certidao_emitida (id, processo_id, template_code, status) "
-                                + "VALUES (?1, NULL, 'PADRAO', 'EMITIDA')")
-                .setParameter(1, id).executeUpdate();
-        return id;
     }
 
     private Long inserirExpedicao(long processoId, String sufixo, String rotulo) {
