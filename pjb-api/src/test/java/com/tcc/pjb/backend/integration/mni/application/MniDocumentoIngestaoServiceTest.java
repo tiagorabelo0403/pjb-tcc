@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.jupiter.api.BeforeEach;
+import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -104,7 +105,9 @@ class MniDocumentoIngestaoServiceTest {
 
         service.ingestar(processo, List.of(corrompido, valido));
 
-        verify(documentoRepository, times(1)).save(any());
+        ArgumentCaptor<DocumentoProcessual> captor = ArgumentCaptor.forClass(DocumentoProcessual.class);
+        verify(documentoRepository, times(1)).save(captor.capture());
+        assertThat(captor.getValue().getNomeOriginal()).isEqualTo("peticao_inicial.pdf");
     }
 
     @Test
