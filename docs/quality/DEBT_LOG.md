@@ -7,6 +7,29 @@ nenhuma entrega em andamento — para que não fiquem só na memória de quem in
 Cada entrada sai daqui quando a dívida é fechada; o fechamento é então narrado no `README.md`, seguindo
 o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
+## D-f1-remocao-govregistryclient-ajuizamentoworkflowadapter
+
+**Status:** aberta — dormente, não bloqueia boot
+
+**Contexto:** o lote 2/3 de remoção de código morto (F1, commit `cac80840`, 409 arquivos) removeu
+`NoopGovRegistryClient`/`ResilientGovRegistryClient` (únicas implementações de `GovRegistryClient`)
+e `DefaultAjuizamentoWorkflowAdapter` (única implementação de `AjuizamentoWorkflowAdapter`) por
+"zero referência direta" — mesmo padrão de falso positivo já corrigido para
+`PjbInetAddressResolverProvider` (ServiceLoader) e para `VectorSearchServiceDisabled`/
+`HeuristicEvidenceContradictionResolver`/`DeterministicHashEmbeddingService`/
+`JudicialConnectorSecureTransport` (interface injetada só por tipo): o scanner de classes mortas
+não cruza contra injeção Spring por tipo de interface.
+
+Essas duas não quebram o boot hoje porque os únicos consumidores estão desligados por padrão:
+`CrcIntegrationService` exige `pjb.gov.vital-monitor.enabled=true` (não setado em nenhum profile);
+`ComandoAjuizamentoConsumer` exige `@ConditionalOnBean(ZeebeClient.class)`, e nenhum `@Bean` de
+`ZeebeClient` existe no projeto. Confirmado por leitura de código + suíte de arquitetura completa
+verde após restaurar as 4 classes que quebravam o boot de verdade.
+
+**Quando revisitar:** se `pjb.gov.vital-monitor.enabled` ou a integração Zeebe forem ativados algum
+dia, essas duas features vão falhar no boot com `NoSuchBeanDefinitionException` até as
+implementações serem restauradas (`git show b0ac4bd9:<caminho>`) ou reescritas.
+
 ## D-territorio-string-solta-entidades-legadas
 
 **Status:** aberta
