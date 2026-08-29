@@ -5,7 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.tcc.pjb.backend.PjbIntegrationTestBase;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaEventoComportamental;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaRepository;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,6 +21,11 @@ import org.springframework.data.domain.Pageable;
  * grave um evento com dados errados, porque o mock nunca chega a persistir nada de verdade. O
  * efeito real de LaianeOficioAuditPostCommitService.on() so e observavel via AuditoriaRepository
  * (colaborador real), entao vira IT.
+ *
+ * registrarEventoImutavelJustificado despacha a escrita via
+ * PjbTransactionalExecutionSupport.runInNewTransaction (CompletableFuture, thread separada) --
+ * o teste do caminho feliz faz polling curto em vez de consultar uma unica vez logo apos a
+ * chamada, porque nao ha garantia de a escrita assincrona ja ter commitado nesse instante.
  */
 class LaianeOficioAuditPostCommitServiceIT extends PjbIntegrationTestBase {
 
@@ -38,10 +47,10 @@ class LaianeOficioAuditPostCommitServiceIT extends PjbIntegrationTestBase {
 
         handler.on(event);
 
-        Page<AuditoriaEventoComportamental> found =
-                auditoriaRepository.search(referenciaId, "MP_OFICIO_CRIADO", null, Pageable.unpaged());
-        assertThat(found.getContent()).hasSize(1);
-        AuditoriaEventoComportamental persisted = found.getContent().get(0);
+        List<AuditoriaEventoComportamental> found = awaitNonEmpty(
+                () -> auditoriaRepository.search(referenciaId, "MP_OFICIO_CRIADO", null, Pageable.unpaged()).getContent());
+        assertThat(found).hasSize(1);
+        AuditoriaEventoComportamental persisted = found.get(0);
         assertThat(persisted.getAcao()).isEqualTo("MP_OFICIO_CRIADO");
         assertThat(persisted.getReferenciaId()).isEqualTo(referenciaId);
         assertThat(persisted.getDetalhes()).isEqualTo("tipo=OFICIO_REQUISITORIO;destinoId=null");
@@ -77,5 +86,23 @@ class LaianeOficioAuditPostCommitServiceIT extends PjbIntegrationTestBase {
         // compartilhado (base sem rollback entre testes); a unica observacao real possivel aqui
         // e que a guard clause absorve o null sem propagar excecao.
         handler.on(null);
+    }
+
+    private static <T> List<T> awaitNonEmpty(Supplier<List<T>> query) {
+        Instant deadline = Instant.now().plus(Duration.ofSeconds(5));
+        List<T> result;
+        do {
+            result = query.get();
+            if (!result.isEmpty()) {
+                return result;
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return result;
+            }
+        } while (Instant.now().isBefore(deadline));
+        return result;
     }
 }
