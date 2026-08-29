@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.security.geofence;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -10,6 +11,7 @@ import com.tcc.pjb.backend.modules.suporte.entity.SupportTicketCategoria;
 import com.tcc.pjb.backend.modules.suporte.event.SupportTicketResolvedEvent;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class SupportTicketTravelExceptionListenerTest {
 
@@ -25,7 +27,14 @@ class SupportTicketTravelExceptionListenerTest {
 
         listener.aoResolverChamado(evento);
 
-        verify(repository).save(any());
+        ArgumentCaptor<JudgeTravelException> captor = ArgumentCaptor.forClass(JudgeTravelException.class);
+        verify(repository).save(captor.capture());
+        JudgeTravelException salvo = captor.getValue();
+        assertThat(salvo.getUsuarioId()).isEqualTo(5L);
+        assertThat(salvo.getUfOuPaisDestino()).isEqualTo("DF");
+        assertThat(salvo.getDataInicio()).isEqualTo(LocalDate.of(2026, 9, 1));
+        assertThat(salvo.getDataFim()).isEqualTo(LocalDate.of(2026, 9, 10));
+        assertThat(salvo.getTicketOrigemId()).isEqualTo(10L);
     }
 
     @Test
