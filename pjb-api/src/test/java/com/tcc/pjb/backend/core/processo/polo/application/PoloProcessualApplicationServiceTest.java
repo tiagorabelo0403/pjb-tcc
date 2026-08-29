@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.processo.polo.application;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,17 +25,26 @@ import com.tcc.pjb.backend.model.repository.PoloProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.secretariat.institucional.PoloInstitucionalComposicaoEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 
+/**
+ * F5 (plano de melhoria v3): eventPublisher era Mockito.mock(ApplicationEventPublisher.class) --
+ * os testes so provavam verify(eventPublisher).publishEvent(...)/never(), sem estado real por
+ * tras (mock nao guarda o que recebeu, so registra a chamada). ApplicationEventPublisher e uma
+ * interface funcional (void publishEvent(Object)); vira um fake real que coleta os eventos numa
+ * lista, e os testes afirmam o conteudo publicado (ou a lista vazia), nao a chamada ao mock.
+ */
 class PoloProcessualApplicationServiceTest {
 
     private PoloProcessualRepository repository;
     private ProcessoRepository processoRepository;
     private UsuarioRepository usuarioRepository;
+    private List<Object> publishedEvents;
     private ApplicationEventPublisher eventPublisher;
     private PoloProcessualApplicationService service;
 
@@ -43,7 +53,8 @@ class PoloProcessualApplicationServiceTest {
         repository = mock(PoloProcessualRepository.class);
         processoRepository = mock(ProcessoRepository.class);
         usuarioRepository = mock(UsuarioRepository.class);
-        eventPublisher = mock(ApplicationEventPublisher.class);
+        publishedEvents = new ArrayList<>();
+        eventPublisher = publishedEvents::add;
         service = new PoloProcessualApplicationService(repository, processoRepository, usuarioRepository, eventPublisher);
         when(repository.save(any(PoloProcessual.class))).thenAnswer(inv -> inv.getArgument(0));
         when(repository.findByProcessoIdAndAtivo(anyLong(), anyBoolean())).thenReturn(List.of());
@@ -158,10 +169,11 @@ class PoloProcessualApplicationServiceTest {
 
     @Test
     void incluirParteAutorNuncaPublicaEventoInstitucional() {
-        service.incluir(1L, TipoPolo.ATIVO, TipoParte.AUTOR,
+        PoloProcessual polo = service.incluir(1L, TipoPolo.ATIVO, TipoParte.AUTOR,
                 "João Silva", "12345678900", "CPF", null, null, 10L, null, null);
 
-        verify(eventPublisher, never()).publishEvent(any(PoloInstitucionalComposicaoEvent.class));
+        assertTrue(polo.isAtivo());
+        assertThat(publishedEvents).isEmpty();
     }
 
     @Test
@@ -172,7 +184,7 @@ class PoloProcessualApplicationServiceTest {
         service.incluir(1L, TipoPolo.MINISTERIO_PUBLICO, TipoParte.MINISTERIO_PUBLICO,
                 "MP Federal", null, null, null, null, 5L, null, null);
 
-        verify(eventPublisher).publishEvent(
+        assertThat(publishedEvents).containsExactly(
                 new PoloInstitucionalComposicaoEvent(1L, "Fortaleza", TipoUnidadeInstitucional.PROMOTORIA));
     }
 
@@ -185,7 +197,7 @@ class PoloProcessualApplicationServiceTest {
                 "Defensoria Publica", null, null, null, null, null, null, null,
                 "CE", "Sobral", "Sobral");
 
-        verify(eventPublisher).publishEvent(
+        assertThat(publishedEvents).containsExactly(
                 new PoloInstitucionalComposicaoEvent(2L, "Sobral", TipoUnidadeInstitucional.NUCLEO_DEFENSORIA));
     }
 
@@ -198,7 +210,7 @@ class PoloProcessualApplicationServiceTest {
                 "Procuradoria Municipal", null, null, null, null, null, null, null,
                 "CE", "Fortaleza", "Fortaleza", "PGM Fortaleza");
 
-        verify(eventPublisher).publishEvent(
+        assertThat(publishedEvents).containsExactly(
                 new PoloInstitucionalComposicaoEvent(3L, "Fortaleza", TipoUnidadeInstitucional.PROCURADORIA_PUBLICA));
     }
 
@@ -209,7 +221,7 @@ class PoloProcessualApplicationServiceTest {
         service.incluir(4L, TipoPolo.MINISTERIO_PUBLICO, TipoParte.MINISTERIO_PUBLICO,
                 "MP Federal", null, null, null, null, null, null, null);
 
-        verify(eventPublisher, never()).publishEvent(any(PoloInstitucionalComposicaoEvent.class));
+        assertThat(publishedEvents).isEmpty();
     }
 
     @Test
@@ -220,7 +232,7 @@ class PoloProcessualApplicationServiceTest {
         service.incluir(5L, TipoPolo.MINISTERIO_PUBLICO, TipoParte.MINISTERIO_PUBLICO,
                 "MP Federal", null, null, null, null, 5L, null, null);
 
-        verify(eventPublisher).publishEvent(
+        assertThat(publishedEvents).containsExactly(
                 new PoloInstitucionalComposicaoEvent(5L, null, TipoUnidadeInstitucional.PROMOTORIA));
     }
 
@@ -232,7 +244,7 @@ class PoloProcessualApplicationServiceTest {
 
         service.excluir(1L, 99L);
 
-        verify(eventPublisher, never()).publishEvent(any(PoloInstitucionalComposicaoEvent.class));
+        assertThat(publishedEvents).isEmpty();
     }
 
     @Test
@@ -245,7 +257,7 @@ class PoloProcessualApplicationServiceTest {
         service.incluir(1L, TipoPolo.ATIVO, TipoParte.AUTOR,
                 "Cidadão Assistido", "12345678900", "CPF", null, null, 77L, null, null);
 
-        verify(eventPublisher).publishEvent(
+        assertThat(publishedEvents).containsExactly(
                 new PoloInstitucionalComposicaoEvent(1L, "Fortaleza", TipoUnidadeInstitucional.NUCLEO_DEFENSORIA));
     }
 
@@ -259,7 +271,7 @@ class PoloProcessualApplicationServiceTest {
         service.incluir(1L, TipoPolo.ATIVO, TipoParte.AUTOR_POPULAR,
                 "Autor Popular", null, null, null, null, 88L, null, null);
 
-        verify(eventPublisher).publishEvent(
+        assertThat(publishedEvents).containsExactly(
                 new PoloInstitucionalComposicaoEvent(1L, "Fortaleza", TipoUnidadeInstitucional.PROMOTORIA));
     }
 
@@ -271,7 +283,7 @@ class PoloProcessualApplicationServiceTest {
         service.incluir(1L, TipoPolo.ATIVO, TipoParte.AUTOR,
                 "João Silva", "12345678900", "CPF", null, null, 10L, null, null);
 
-        verify(eventPublisher, never()).publishEvent(any(PoloInstitucionalComposicaoEvent.class));
+        assertThat(publishedEvents).isEmpty();
     }
 
     @Test
@@ -280,7 +292,7 @@ class PoloProcessualApplicationServiceTest {
                 "João Silva", null, null, null, null, null, null, null);
 
         verify(usuarioRepository, never()).findById(any());
-        verify(eventPublisher, never()).publishEvent(any(PoloInstitucionalComposicaoEvent.class));
+        assertThat(publishedEvents).isEmpty();
     }
 
     @Test
@@ -292,7 +304,7 @@ class PoloProcessualApplicationServiceTest {
                 "MP Federal", null, null, null, null, 5L, null, null);
 
         verify(usuarioRepository, never()).findById(any());
-        verify(eventPublisher).publishEvent(
+        assertThat(publishedEvents).containsExactly(
                 new PoloInstitucionalComposicaoEvent(1L, "Fortaleza", TipoUnidadeInstitucional.PROMOTORIA));
     }
 }
