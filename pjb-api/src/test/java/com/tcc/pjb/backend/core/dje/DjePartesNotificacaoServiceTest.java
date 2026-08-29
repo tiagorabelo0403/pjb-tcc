@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.core.dje;
 
 import com.tcc.pjb.backend.core.dje.domain.DjePartesNotificacaoResult;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,9 +27,15 @@ class DjePartesNotificacaoServiceTest {
                 .createdAt(Instant.now())
                 .build();
 
-        when(port.notificar(publicacao)).thenReturn(DjePartesNotificacaoResult.success(10L, "mock"));
-        service.notificarPartes(publicacao);
+        DjePartesNotificacaoResult esperado = DjePartesNotificacaoResult.success(10L, "mock");
+        when(port.notificar(publicacao)).thenReturn(esperado);
 
+        DjePartesNotificacaoResult result = service.notificarPartes(publicacao);
+
+        assertThat(result).isEqualTo(esperado);
         verify(port).notificar(publicacao);
+        verify(auditLedgerService).appendSafely(
+                "DJE_NOTIFICACAO_PARTES", "PROCESSO", "20",
+                "djeId=10 tipoAto=SENTENCA success=true");
     }
 }
