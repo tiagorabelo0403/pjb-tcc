@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.core.processo.conclusao.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -148,7 +149,13 @@ class ConclusaoProcessualApplicationServiceTest {
         when(processoRepository.findById(10L)).thenReturn(Optional.of(processoComUnidade()));
         doNothing().when(authorizationService)
                 .requireFuncaoServidorCapability(any(Processo.class), eq(AcaoProcessualServidor.CONCLUIR));
-        service.concluir(10L, 5L, 1L, "PARA_DECISAO", null);
+        ConclusaoProcessual conclusao = service.concluir(10L, 5L, 1L, "PARA_DECISAO", null);
+
+        assertEquals(10L, conclusao.getProcessoId());
+        assertEquals(5L, conclusao.getMagistradoId());
+        assertEquals(1L, conclusao.getServidorId());
+        assertEquals("PARA_DECISAO", conclusao.getTipoConclusao());
+        assertTrue(conclusao.isPendente());
         verify(estadoService).transitar(eq(10L), eq(StatusProcesso.CONCLUSO_JUIZ), eq(1L), anyString());
     }
 
@@ -158,6 +165,9 @@ class ConclusaoProcessualApplicationServiceTest {
                 "PARA_DECISAO", null, Instant.now().plusSeconds(86400));
         when(conclusaoRepository.findById(1L)).thenReturn(Optional.of(conclusao));
         service.devolver(1L, 5L);
+
+        assertEquals("DEVOLVIDA", conclusao.getStatus());
+        assertFalse(conclusao.isPendente());
         verify(estadoService).transitar(eq(10L), eq(StatusProcesso.DISTRIBUIDO), eq(5L), anyString());
     }
 
