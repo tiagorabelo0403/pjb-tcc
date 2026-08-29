@@ -18,6 +18,7 @@ import com.tcc.pjb.backend.model.repository.UnidadeInstitucionalAbrangenciaRepos
 import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 
 class UnidadeInstitucionalAdminServiceTest {
@@ -72,7 +73,14 @@ class UnidadeInstitucionalAdminServiceTest {
         service.reprocessarBacklogAposCriacaoDeUnidade(unidade);
 
         verify(enfileiramentoService).reprocessarSemUnidade(TipoUnidadeInstitucional.PROMOTORIA);
-        verify(auditService).appendSafely(org.mockito.ArgumentMatchers.eq("SECRETARIA_INSTITUCIONAL_REPROCESSAMENTO_EM_LOTE"), any());
+        ArgumentCaptor<String> detalhesCaptor = ArgumentCaptor.forClass(String.class);
+        verify(auditService).appendSafely(
+                org.mockito.ArgumentMatchers.eq("SECRETARIA_INSTITUCIONAL_REPROCESSAMENTO_EM_LOTE"),
+                detalhesCaptor.capture());
+        assertThat(detalhesCaptor.getValue())
+                .contains("tipo=PROMOTORIA")
+                .contains("itensResolvidos=2")
+                .contains("unidade 10");
     }
 
     @Test
