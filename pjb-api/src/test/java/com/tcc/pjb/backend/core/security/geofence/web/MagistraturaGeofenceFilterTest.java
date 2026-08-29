@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.security.geofence.web;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -17,11 +18,19 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletResponse;
 
+/**
+ * F5 (plano de melhoria v3): a versao original mockava HttpServletResponse/FilterChain e so
+ * verificava a chamada (verify(chain).doFilter(...), verify(response).setStatus(...)) -- passa
+ * mesmo que o corpo/status reais estivessem errados, porque Mockito.mock() nao tem estado de
+ * verdade por tras do metodo verificado. MockHttpServletResponse (fake real do Spring, nao mock)
+ * guarda o status/corpo de verdade; FilterChain vira um lambda com uma flag em vez de mock, ja que
+ * "a requisicao continuou" e o unico efeito observavel de um Filter e nao ha colaborador real por
+ * tras para consultar.
+ */
 class MagistraturaGeofenceFilterTest {
 
     private final MagistraturaGeofencePolicyService policyService = mock(MagistraturaGeofencePolicyService.class);
@@ -35,12 +44,14 @@ class MagistraturaGeofenceFilterTest {
     void naoElegivelSegueSemAvaliarGeofence() throws Exception {
         when(currentUserService.getOrNull()).thenReturn(usuario(TipoUsuario.CIDADAO));
         HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        FilterChain chain = mock(FilterChain.class);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (req, resp) -> chainCalled.set(true);
 
         filter.doFilter(request, response, chain);
 
-        verify(chain).doFilter(request, response);
+        assertThat(chainCalled.get()).isTrue();
+        assertThat(response.getStatus()).isEqualTo(200);
         verify(policyService, never()).avaliar(any(), anyString());
     }
 
@@ -52,15 +63,15 @@ class MagistraturaGeofenceFilterTest {
         when(clientIpResolver.resolve(request)).thenReturn("203.0.113.5");
         when(policyService.avaliar(promotor, "203.0.113.5"))
                 .thenReturn(new Avaliacao(Decisao.BLOQUEADO_PAIS, "Acesso fora do Brasil não autorizado"));
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        StringWriter sw = new StringWriter();
-        when(response.getWriter()).thenReturn(new PrintWriter(sw));
-        FilterChain chain = mock(FilterChain.class);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (req, resp) -> chainCalled.set(true);
 
         filter.doFilter(request, response, chain);
 
-        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
-        verify(chain, never()).doFilter(request, response);
+        assertThat(response.getStatus()).isEqualTo(403);
+        assertThat(response.getContentAsString()).contains("PJB_GEO_FORA_DE_ESCOPO");
+        assertThat(chainCalled.get()).isFalse();
     }
 
     @Test
@@ -71,15 +82,15 @@ class MagistraturaGeofenceFilterTest {
         when(clientIpResolver.resolve(request)).thenReturn("198.51.100.9");
         when(policyService.avaliar(defensor, "198.51.100.9"))
                 .thenReturn(new Avaliacao(Decisao.BLOQUEADO_VPN, "Acesso via VPN/datacenter detectado"));
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        StringWriter sw = new StringWriter();
-        when(response.getWriter()).thenReturn(new PrintWriter(sw));
-        FilterChain chain = mock(FilterChain.class);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (req, resp) -> chainCalled.set(true);
 
         filter.doFilter(request, response, chain);
 
-        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
-        verify(chain, never()).doFilter(request, response);
+        assertThat(response.getStatus()).isEqualTo(403);
+        assertThat(response.getContentAsString()).contains("PJB_VPN_DETECTADA_DESATIVE");
+        assertThat(chainCalled.get()).isFalse();
     }
 
     @Test
@@ -90,15 +101,15 @@ class MagistraturaGeofenceFilterTest {
         when(clientIpResolver.resolve(request)).thenReturn("203.0.113.7");
         when(policyService.avaliar(procurador, "203.0.113.7"))
                 .thenReturn(new Avaliacao(Decisao.BLOQUEADO_PAIS, "Acesso fora do Brasil não autorizado"));
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        StringWriter sw = new StringWriter();
-        when(response.getWriter()).thenReturn(new PrintWriter(sw));
-        FilterChain chain = mock(FilterChain.class);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (req, resp) -> chainCalled.set(true);
 
         filter.doFilter(request, response, chain);
 
-        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
-        verify(chain, never()).doFilter(request, response);
+        assertThat(response.getStatus()).isEqualTo(403);
+        assertThat(response.getContentAsString()).contains("PJB_GEO_FORA_DE_ESCOPO");
+        assertThat(chainCalled.get()).isFalse();
     }
 
     @Test
@@ -108,13 +119,14 @@ class MagistraturaGeofenceFilterTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(clientIpResolver.resolve(request)).thenReturn("189.1.1.1");
         when(policyService.avaliar(promotor, "189.1.1.1")).thenReturn(new Avaliacao(Decisao.PERMITIDO, null));
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        FilterChain chain = mock(FilterChain.class);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (req, resp) -> chainCalled.set(true);
 
         filter.doFilter(request, response, chain);
 
-        verify(chain).doFilter(request, response);
-        verify(response, never()).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        assertThat(chainCalled.get()).isTrue();
+        assertThat(response.getStatus()).isEqualTo(200);
     }
 
     private Usuario usuario(TipoUsuario tipo) {
