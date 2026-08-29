@@ -36,7 +36,11 @@ class AuditoriaServiceTest {
 
         service.registrar("juiz", "DESPACHAR", "processo:42");
 
-        verify(repository).save(any());
+        ArgumentCaptor<AuditoriaEvento> captor = ArgumentCaptor.forClass(AuditoriaEvento.class);
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getUsuario()).isEqualTo("juiz");
+        assertThat(captor.getValue().getAcao()).isEqualTo("DESPACHAR");
+        assertThat(captor.getValue().getAlvo()).isEqualTo("processo:42");
         verify(auditLedgerService).append(eq("DESPACHAR"), eq("AuditoriaOperacional"), eq("1"), isNull(), any());
     }
 

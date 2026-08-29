@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 class JudicialConnectorTelemetryServiceTest {
@@ -80,6 +81,15 @@ class JudicialConnectorTelemetryServiceTest {
 
         service.recordSubmissionResult(null, request, result);
 
-        verify(repository).save(any(JudicialConnectorTelemetry.class));
+        ArgumentCaptor<JudicialConnectorTelemetry> captor = ArgumentCaptor.forClass(JudicialConnectorTelemetry.class);
+        verify(repository).save(captor.capture());
+        JudicialConnectorTelemetry saved = captor.getValue();
+        assertThat(saved.getTribunalCodigo()).isEqualTo("TJCE");
+        assertThat(saved.getUnidadeJudiciariaCodigo()).isEqualTo("TJCE-CIVEL-CE-CAP");
+        assertThat(saved.getConnectorSystem()).isEqualTo(JudicialSystem.PJE);
+        assertThat(saved.getEventType()).isEqualTo("SUBMISSION_RESULT");
+        assertThat(saved.getStatus()).isEqualTo("SUBMITTED");
+        assertThat(saved.getAccepted()).isTrue();
+        assertThat(saved.getProtocolReference()).isEqualTo("PJE-1");
     }
 }

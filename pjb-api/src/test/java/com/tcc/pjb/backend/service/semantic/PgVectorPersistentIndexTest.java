@@ -31,14 +31,22 @@ class PgVectorPersistentIndexTest {
     }
 
     @Test
-    void upsertNormalizaMetadataParaLowercaseESerializaJsonb() {
+    void upsertNormalizaMetadataParaLowercaseESerializaJsonb() throws Exception {
         index.upsert("doc-1", new EmbeddingVector(new float[]{1f, 0f, 0f, 0f}),
                 Map.of("Ramo", "PENAL", "Rito", "COMUM_ORDINARIO"));
 
-        ArgumentCaptor<Object[]> params = ArgumentCaptor.forClass(Object[].class);
-        verify(jdbcTemplate).update(contains("ON CONFLICT (doc_id) DO UPDATE"), any(), any(), any(), any(), any(), any());
-        // no upsert com 6 params posicionais (id, titulo, ramo, conteudo, embedding, metadata),
-        // verificar via captura do metadata (ultimo) confere case-lower e jsonb valido
+        // upsert com 6 params posicionais (id, titulo, ramo, conteudo, embedding, metadata) --
+        // titulo/conteudo caem no default (id) por nao existir chave "titulo"/"conteudo" na
+        // metadata; ramo e o metadata json vem com chave e valor normalizados para lowercase.
+        // Map.of() nao garante ordem de iteracao, entao o JSON e comparado por conteudo
+        // (parseado de volta), nao por igualdade de string literal.
+        ArgumentCaptor<String> metadataJsonCaptor = ArgumentCaptor.forClass(String.class);
+        verify(jdbcTemplate).update(contains("ON CONFLICT (doc_id) DO UPDATE"),
+                eq("doc-1"), eq("doc-1"), eq("penal"), eq("doc-1"), any(),
+                metadataJsonCaptor.capture());
+        @SuppressWarnings("unchecked")
+        Map<String, String> metadata = new ObjectMapper().readValue(metadataJsonCaptor.getValue(), Map.class);
+        assertThat(metadata).containsExactlyInAnyOrderEntriesOf(Map.of("ramo", "penal", "rito", "comum_ordinario"));
     }
 
     @Test

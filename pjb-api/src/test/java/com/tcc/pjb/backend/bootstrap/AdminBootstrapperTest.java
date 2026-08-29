@@ -12,13 +12,18 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.mockito.ArgumentCaptor;
 
 @ExtendWith(MockitoExtension.class)
 class AdminBootstrapperTest {
@@ -42,7 +47,8 @@ class AdminBootstrapperTest {
 
         // Falha com o bug atual: bootstrap procede (env var bypassa o guard de perfil)
         verify(usuarioRepository, never()).save(any());
-        verify(auditLedgerService).appendSafely(eq("ADMIN_BOOTSTRAP_BLOQUEADO_PROD"), any(String.class));
+        verify(auditLedgerService).appendSafely(eq("ADMIN_BOOTSTRAP_BLOQUEADO_PROD"),
+                eq("PJB_ADMIN_BOOTSTRAP_ENABLED ativo em perfil não seguro — bootstrap bloqueado."));
     }
 
     @Test
@@ -55,7 +61,14 @@ class AdminBootstrapperTest {
         AdminBootstrapper sut = bootstrapper(key -> "PJB_ADMIN_BOOTSTRAP_ENABLED".equals(key) ? "true" : null);
         sut.run(applicationArguments);
 
-        verify(usuarioRepository).save(any());
+        ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
+        verify(usuarioRepository).save(captor.capture());
+        Usuario admin = captor.getValue();
+        assertThat(admin.getEmail()).isEqualTo("admin@pjb.local");
+        assertThat(admin.getCpf()).isEqualTo("00000000000");
+        assertThat(admin.getTipoUsuario()).isEqualTo(TipoUsuario.ADMINISTRADOR);
+        assertThat(admin.isAtivo()).isTrue();
+        assertThat(admin.getSenha()).isEqualTo("{bcrypt}$2a$10$teste");
         verify(auditLedgerService, never()).appendSafely(eq("ADMIN_BOOTSTRAP_BLOQUEADO_PROD"), any(String.class));
     }
 
@@ -79,6 +92,13 @@ class AdminBootstrapperTest {
         AdminBootstrapper sut = bootstrapper(key -> null);
         sut.run(applicationArguments);
 
-        verify(usuarioRepository).save(any());
+        ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
+        verify(usuarioRepository).save(captor.capture());
+        Usuario admin = captor.getValue();
+        assertThat(admin.getEmail()).isEqualTo("admin@pjb.local");
+        assertThat(admin.getCpf()).isEqualTo("00000000000");
+        assertThat(admin.getTipoUsuario()).isEqualTo(TipoUsuario.ADMINISTRADOR);
+        assertThat(admin.isAtivo()).isTrue();
+        assertThat(admin.getSenha()).isEqualTo("{bcrypt}$2a$10$teste");
     }
 }

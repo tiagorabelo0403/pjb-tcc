@@ -1,6 +1,8 @@
 package com.tcc.pjb.backend.command.ajuizamento;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -89,9 +91,11 @@ class AjuizarProcessoCommandPostCommitEffectsServiceTest {
                 .materialProbatorioResumo("Contrato e boletos")
                 .potencialAcordoScore(83)
                 .build();
+        LegalCompilerService.CompiledProcess compiled = compiledProcess();
+        ProceduralRoutingReport routing = routingReport();
         when(processoRepository.findById(91L)).thenReturn(Optional.of(processo));
-        when(legalCompilerService.compile(processo)).thenReturn(compiledProcess());
-        when(nationalProceduralRoutingService.analyzeProcess(processo)).thenReturn(routingReport());
+        when(legalCompilerService.compile(processo)).thenReturn(compiled);
+        when(nationalProceduralRoutingService.analyzeProcess(processo)).thenReturn(routing);
         when(proceduralSubmissionBlueprintService.analyzeProcess(any(), any())).thenReturn(submissionBlueprintReport());
         when(proceduralConnectorExecutionService.analyzeProcess(any(), any(), any())).thenReturn(connectorExecutionReport());
         when(judicialConnectorLifecycleService.submitAndSynchronize(any(Processo.class), any(), any(), org.mockito.ArgumentMatchers.anyBoolean()))
@@ -101,9 +105,17 @@ class AjuizarProcessoCommandPostCommitEffectsServiceTest {
 
         service.onProcessoAjuizado(ProcessoAjuizadoEvent.builder().processoId(91L).juizo100Digital(true).build());
 
-        verify(ajuizamentoCanonicalContextService).consolidate(any(Processo.class), any(), any());
+        verify(ajuizamentoCanonicalContextService).consolidate(eq(processo), eq(compiled), eq(routing));
         verify(judicialConnectorLifecycleService).submitAndSynchronize(org.mockito.ArgumentMatchers.eq(processo), any(), any(), org.mockito.ArgumentMatchers.anyBoolean());
-        verify(auditoriaInteligenteService).registrarEventoImutavel(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any(Object.class), org.mockito.ArgumentMatchers.anyString());
+        org.mockito.ArgumentCaptor<String> mensagemCaptor = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(auditoriaInteligenteService).registrarEventoImutavel(eq("PROCESSO_AJUIZADO"), eq(91L), mensagemCaptor.capture());
+        assertThat(mensagemCaptor.getValue())
+                .contains("Juízo 100% Digital: true")
+                .contains("Ramo: CIVIL")
+                .contains("Sigilo: PUBLICO")
+                .contains("Objeto: Inadimplemento contratual")
+                .contains("Pedido: Pagamento")
+                .contains("AcordoScore: 83");
         verify(materialObjetoEnrichmentService).enrich(processo);
         verify(processoRepository).save(processo);
     }
@@ -132,7 +144,7 @@ class AjuizarProcessoCommandPostCommitEffectsServiceTest {
 
         service.onProcessoAjuizado(ProcessoAjuizadoEvent.builder().processoId(92L).juizo100Digital(false).build());
 
-        verify(auditoriaInteligenteService).registrarEventoImutavel(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any(Object.class), org.mockito.ArgumentMatchers.anyString());
+        verify(auditoriaInteligenteService).registrarEventoImutavel(eq("PROCESSO_AJUIZADO"), eq(92L), org.mockito.ArgumentMatchers.anyString());
         verify(materialObjetoEnrichmentService, never()).enrich(any());
     }
     private static LegalCompilerService.CompiledProcess compiledProcess() {
