@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.core.comunicacao.judicial;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -77,7 +78,8 @@ class CitacaoIntimacaoEngineAcuseTest {
         engine().processarAcuseRecebimento(new CitacaoIntimacaoEngine.AcuseRecebimentoRequest(
                 exp.getExpedicaoUuid(), "token", "127.0.0.1", "device-1", "govbr-1"));
 
-        verify(movimentacaoRegistrar).registrar(any(Processo.class), eq(cidadao), any(), any());
+        verify(movimentacaoRegistrar).registrar(any(Processo.class), eq(cidadao), isNull(),
+                eq("Ciência da expedição confirmada pelo destinatário (acuse de recebimento)."));
     }
 
     @Test
@@ -103,6 +105,7 @@ class CitacaoIntimacaoEngineAcuseTest {
 
         engine().processarConfirmacaoLeitura(exp.getExpedicaoUuid(), "acuse-hash");
 
-        verify(movimentacaoRegistrar).registrar(any(Processo.class), eq(cidadao), any(), any());
+        verify(movimentacaoRegistrar).registrar(any(Processo.class), eq(cidadao), isNull(),
+                eq("Leitura da expedição confirmada pelo destinatário."));
     }
 }
