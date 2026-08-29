@@ -365,7 +365,15 @@ class LaianeMpServiceTest {
                 Mockito.mock(PjbTimeService.class), qsvc,
                 testObjectMapper, Mockito.mock(ApplicationEventPublisher.class), new SimpleMeterRegistry(), null, new PjbSecurityEventLogger(new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
 
-        service.getOficio(tc);
+        LaianeMpOficioResponse response = service.getOficio(tc);
+
+        assertThat(response.getDocumentoFormalAssinado()).isNotNull();
+        assertThat(response.getDocumentoFormalAssinado().tituloDocumento()).isEqualTo("Teste");
+        assertThat(response.getDocumentoFormalAssinado().conteudoAssinado()).isEqualTo("X");
+        assertThat(response.getDocumentoFormalAssinado().hashSha256()).isEqualTo("ab".repeat(32));
+        assertThat(response.getDocumentoFormalAssinado().selado()).isTrue();
+        assertThat(response.getDocumentoFormalAssinado().assinaturaQualificada()).isNull();
+        assertThat(response.getDocumentoFormalAssinado().validacaoSoberana()).isNull();
 
         verify(qsvc, never()).signFreeContent(
                 Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
