@@ -40,11 +40,8 @@ import com.tcc.pjb.backend.service.intelligence.PessoaLocalizacaoService;
 import com.tcc.pjb.backend.service.processual.peticionamento.workspace.InstitutionalMultimediaWorkspaceService;
 import com.tcc.pjb.backend.service.profile.PerfilCapabilityMatrixService;
 import com.tcc.pjb.backend.service.ui.branding.InstitutionalPanelBrandingService;
-import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
+import com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
-import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
@@ -70,7 +67,6 @@ public class OficialJusticaPainelService {
     private final DestinatarioProcessualResolverApplicationService destinatarioResolverApplicationService;
     private final OficialJusticaOficioCatalogService oficioCatalogService;
     private final OficialJusticaTraceableCommunicationLedgerService traceableCommunicationLedgerService;
-    private final OficialJusticaInstitutionalDispatchService institutionalDispatchService;
     private final OficialJusticaEnderecoTriageService enderecoTriageService;
     private final OficialJusticaPortfolioProcessualService portfolioProcessualService;
     private final OficialJusticaWorkbenchService workbenchService;
@@ -85,10 +81,7 @@ public class OficialJusticaPainelService {
     private final InstitutionalDocumentSecurityGateApplicationService institutionalDocumentSecurityGateApplicationService;
     private final InstitutionalAccessContextMaterializationApplicationService institutionalAccessContextMaterializationApplicationService;
     private final PainelSharedExperienceService sharedExperienceService;
-    private final PainelSignalReflectionService signalReflectionService;
-    private final PainelNativeCollectionCompositionService collectionCompositionService;
-    private final PainelActionSurfaceCompositionService actionSurfaceCompositionService;
-    private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
+    private final PainelCompositionPipelineService compositionPipeline;
     private final OficialJusticaCommunicationFormalModelService communicationFormalModelService;
 
     public OficialJusticaPainelService(PerfilDashboardContextFactory contextFactory,
@@ -105,7 +98,6 @@ public class OficialJusticaPainelService {
                                        DestinatarioProcessualResolverApplicationService destinatarioResolverApplicationService,
                                        OficialJusticaOficioCatalogService oficioCatalogService,
                                        OficialJusticaTraceableCommunicationLedgerService traceableCommunicationLedgerService,
-                                       OficialJusticaInstitutionalDispatchService institutionalDispatchService,
                                        OficialJusticaEnderecoTriageService enderecoTriageService,
                                        OficialJusticaPortfolioProcessualService portfolioProcessualService,
                                        OficialJusticaWorkbenchService workbenchService,
@@ -120,10 +112,7 @@ public class OficialJusticaPainelService {
                                        InstitutionalDocumentSecurityGateApplicationService institutionalDocumentSecurityGateApplicationService,
                                        InstitutionalAccessContextMaterializationApplicationService institutionalAccessContextMaterializationApplicationService,
                                        PainelSharedExperienceService sharedExperienceService,
-                                       PainelSignalReflectionService signalReflectionService,
-                                       PainelNativeCollectionCompositionService collectionCompositionService,
-                                       PainelActionSurfaceCompositionService actionSurfaceCompositionService,
-                                       PainelExecutionSurfaceCompositionService executionSurfaceCompositionService,
+                                       PainelCompositionPipelineService compositionPipeline,
                                        OficialJusticaCommunicationFormalModelService communicationFormalModelService) {
         this.contextFactory = contextFactory;
         this.commons = commons;
@@ -139,7 +128,6 @@ public class OficialJusticaPainelService {
         this.destinatarioResolverApplicationService = destinatarioResolverApplicationService;
         this.oficioCatalogService = oficioCatalogService;
         this.traceableCommunicationLedgerService = traceableCommunicationLedgerService;
-        this.institutionalDispatchService = institutionalDispatchService;
         this.enderecoTriageService = enderecoTriageService;
         this.portfolioProcessualService = portfolioProcessualService;
         this.workbenchService = workbenchService;
@@ -154,10 +142,7 @@ public class OficialJusticaPainelService {
         this.institutionalDocumentSecurityGateApplicationService = institutionalDocumentSecurityGateApplicationService;
         this.institutionalAccessContextMaterializationApplicationService = institutionalAccessContextMaterializationApplicationService;
         this.sharedExperienceService = sharedExperienceService;
-        this.signalReflectionService = signalReflectionService;
-        this.collectionCompositionService = collectionCompositionService;
-        this.actionSurfaceCompositionService = actionSurfaceCompositionService;
-        this.executionSurfaceCompositionService = executionSurfaceCompositionService;
+        this.compositionPipeline = compositionPipeline;
         this.communicationFormalModelService = communicationFormalModelService;
     }
 
@@ -191,56 +176,30 @@ public class OficialJusticaPainelService {
             organizacaoOperacional.put("agendaResumo", summaryAgenda);
         }
         Map<String, Object> sharedExperience = sharedExperienceService.snapshot("OFICIAL_JUSTICA");
-        Map<String, Object> operationalSignals = signalReflectionService.deriveSignals("OFICIAL_JUSTICA", sharedExperience, pendentes, ctx.prazoRadar().size(), "CUMPRIMENTO_EXTERNO");
-        Map<String, Object> nativeComposition = signalReflectionService.buildNativeComposition("OFICIAL_JUSTICA", operationalSignals);
-        proximos = collectionCompositionService.composeList("OFICIAL_JUSTICA", "PROXIMOS_MANDADOS", proximos, operationalSignals, nativeComposition);
-        penhoras = collectionCompositionService.composeList("OFICIAL_JUSTICA", "PENHORAS_AGENDADAS", penhoras, operationalSignals, nativeComposition);
-        Map<String, Object> collectionComposition = collectionCompositionService.buildCollectionComposition("OFICIAL_JUSTICA", operationalSignals, nativeComposition, Map.of(
+        Map<String, Object> operationalSignals = compositionPipeline.deriveSignals("OFICIAL_JUSTICA", sharedExperience, pendentes, ctx.prazoRadar().size(), "CUMPRIMENTO_EXTERNO");
+        Map<String, Object> nativeComposition = compositionPipeline.buildNativeComposition("OFICIAL_JUSTICA", operationalSignals);
+        proximos = compositionPipeline.composeList("OFICIAL_JUSTICA", "PROXIMOS_MANDADOS", proximos, operationalSignals, nativeComposition);
+        penhoras = compositionPipeline.composeList("OFICIAL_JUSTICA", "PENHORAS_AGENDADAS", penhoras, operationalSignals, nativeComposition);
+        Map<String, Object> collectionComposition = compositionPipeline.buildCollectionComposition("OFICIAL_JUSTICA", operationalSignals, nativeComposition, Map.of(
                 "proximosMandados", proximos,
                 "penhorasAgendadas", penhoras
         ));
-        Map<String, Object> actionSurface = actionSurfaceCompositionService.buildActionSurface("OFICIAL_JUSTICA", operationalSignals, nativeComposition, collectionComposition);
-        Map<String, Object> executionSurface = executionSurfaceCompositionService.buildExecutionSurface("OFICIAL_JUSTICA", operationalSignals, nativeComposition, collectionComposition, actionSurface);
+        Map<String, Object> actionSurface = compositionPipeline.buildActionSurface("OFICIAL_JUSTICA", operationalSignals, nativeComposition, collectionComposition);
+        Map<String, Object> executionSurface = compositionPipeline.buildExecutionSurface("OFICIAL_JUSTICA", operationalSignals, nativeComposition, collectionComposition, actionSurface);
         CalendarInstitutionalBridgeResponse institutionalBridge = institutionalBridgeService.bridgeForUser(usuario, java.time.LocalDate.now(java.time.ZoneOffset.UTC), java.time.LocalDate.now(java.time.ZoneOffset.UTC).plusDays(14), null);
         var institutionalFocus = institutionalBridgeService.focus(institutionalBridge);
         LinkedHashMap<String, Object> calendarioOperacionalMutable = new LinkedHashMap<>(calendarioOperacionalService.calendario(java.time.YearMonth.now(java.time.ZoneOffset.UTC)).toPanelMap());
         calendarioOperacionalMutable.put("institutionalBridge", institutionalBridgeService.toPanelMap(institutionalBridge));
         calendarioOperacionalMutable.put("institutionalFocus", institutionalBridgeService.toFocusPanelMap(institutionalFocus));
-        Map<String, Object> calendarioOperacional = signalReflectionService.reflectInBlock("OFICIAL_JUSTICA", "CALENDARIO", calendarioOperacionalMutable, operationalSignals);
-        calendarioOperacional = collectionCompositionService.decorateBlock("OFICIAL_JUSTICA", "CALENDARIO", calendarioOperacional, operationalSignals, nativeComposition);
-        calendarioOperacional = actionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "CALENDARIO", calendarioOperacional, actionSurface, nativeComposition);
-        calendarioOperacional = executionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "CALENDARIO", calendarioOperacional, executionSurface, nativeComposition);
-        Map<String, Object> balcaoVirtual = signalReflectionService.reflectInBlock("OFICIAL_JUSTICA", "OPERACIONAL", balcaoVirtualService.painelResumo(), operationalSignals);
-        balcaoVirtual = collectionCompositionService.decorateBlock("OFICIAL_JUSTICA", "OPERACIONAL", balcaoVirtual, operationalSignals, nativeComposition);
-        balcaoVirtual = actionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "OPERACIONAL", balcaoVirtual, actionSurface, nativeComposition);
-        balcaoVirtual = executionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "OPERACIONAL", balcaoVirtual, executionSurface, nativeComposition);
-        Map<String, Object> notificationCenter = signalReflectionService.reflectInBlock("OFICIAL_JUSTICA", "PENDENCIAS", notificationCenterService.painelResumo(), operationalSignals);
-        notificationCenter = collectionCompositionService.decorateBlock("OFICIAL_JUSTICA", "PENDENCIAS", notificationCenter, operationalSignals, nativeComposition);
-        notificationCenter = actionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "PENDENCIAS", notificationCenter, actionSurface, nativeComposition);
-        notificationCenter = executionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "PENDENCIAS", notificationCenter, executionSurface, nativeComposition);
-        organizacaoOperacional = new LinkedHashMap<>(signalReflectionService.reflectInBlock("OFICIAL_JUSTICA", "OPERACIONAL", organizacaoOperacional, operationalSignals));
-        organizacaoOperacional = new LinkedHashMap<>(collectionCompositionService.decorateBlock("OFICIAL_JUSTICA", "OPERACIONAL", organizacaoOperacional, operationalSignals, nativeComposition));
-        organizacaoOperacional = new LinkedHashMap<>(actionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "OPERACIONAL", organizacaoOperacional, actionSurface, nativeComposition));
-        organizacaoOperacional = new LinkedHashMap<>(executionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "OPERACIONAL", organizacaoOperacional, executionSurface, nativeComposition));
-        pendenciasOperacionais = signalReflectionService.reflectInBlock("OFICIAL_JUSTICA", "PENDENCIAS", pendenciasOperacionais, operationalSignals);
-        pendenciasOperacionais = collectionCompositionService.decorateBlock("OFICIAL_JUSTICA", "PENDENCIAS", pendenciasOperacionais, operationalSignals, nativeComposition);
-        pendenciasOperacionais = actionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "PENDENCIAS", pendenciasOperacionais, actionSurface, nativeComposition);
-        pendenciasOperacionais = executionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "PENDENCIAS", pendenciasOperacionais, executionSurface, nativeComposition);
-        rastreioOperacional = signalReflectionService.reflectInBlock("OFICIAL_JUSTICA", "OPERACIONAL", rastreioOperacional, operationalSignals);
-        rastreioOperacional = collectionCompositionService.decorateBlock("OFICIAL_JUSTICA", "OPERACIONAL", rastreioOperacional, operationalSignals, nativeComposition);
-        rastreioOperacional = actionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "OPERACIONAL", rastreioOperacional, actionSurface, nativeComposition);
-        rastreioOperacional = executionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "OPERACIONAL", rastreioOperacional, executionSurface, nativeComposition);
-        operationalWorkbench = signalReflectionService.reflectInBlock("OFICIAL_JUSTICA", "WORKBENCH", operationalWorkbench, operationalSignals);
-        operationalWorkbench = collectionCompositionService.decorateBlock("OFICIAL_JUSTICA", "WORKBENCH", operationalWorkbench, operationalSignals, nativeComposition);
-        operationalWorkbench = actionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "WORKBENCH", operationalWorkbench, actionSurface, nativeComposition);
-        operationalWorkbench = executionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "WORKBENCH", operationalWorkbench, executionSurface, nativeComposition);
-        agendaOperacional = signalReflectionService.reflectInBlock("OFICIAL_JUSTICA", "AGENDA", agendaOperacional, operationalSignals);
-        agendaOperacional = collectionCompositionService.decorateBlock("OFICIAL_JUSTICA", "AGENDA", agendaOperacional, operationalSignals, nativeComposition);
-        agendaOperacional = actionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "AGENDA", agendaOperacional, actionSurface, nativeComposition);
-        agendaOperacional = executionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "AGENDA", agendaOperacional, executionSurface, nativeComposition);
-        Map<String, Object> panelVisualIdentity = signalReflectionService.reflectInBlock("OFICIAL_JUSTICA", "VISUAL_IDENTITY", castMap(panelBranding.get("panelVisualIdentity")), operationalSignals);
-        panelVisualIdentity = actionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "VISUAL_IDENTITY", panelVisualIdentity, actionSurface, nativeComposition);
-        panelVisualIdentity = executionSurfaceCompositionService.decorateBlock("OFICIAL_JUSTICA", "VISUAL_IDENTITY", panelVisualIdentity, executionSurface, nativeComposition);
+        Map<String, Object> calendarioOperacional = compositionPipeline.decorate("OFICIAL_JUSTICA", "CALENDARIO", calendarioOperacionalMutable, operationalSignals, nativeComposition, actionSurface, executionSurface);
+        Map<String, Object> balcaoVirtual = compositionPipeline.decorate("OFICIAL_JUSTICA", "OPERACIONAL", balcaoVirtualService.painelResumo(), operationalSignals, nativeComposition, actionSurface, executionSurface);
+        Map<String, Object> notificationCenter = compositionPipeline.decorate("OFICIAL_JUSTICA", "PENDENCIAS", notificationCenterService.painelResumo(), operationalSignals, nativeComposition, actionSurface, executionSurface);
+        organizacaoOperacional = new LinkedHashMap<>(compositionPipeline.decorate("OFICIAL_JUSTICA", "OPERACIONAL", organizacaoOperacional, operationalSignals, nativeComposition, actionSurface, executionSurface));
+        pendenciasOperacionais = compositionPipeline.decorate("OFICIAL_JUSTICA", "PENDENCIAS", pendenciasOperacionais, operationalSignals, nativeComposition, actionSurface, executionSurface);
+        rastreioOperacional = compositionPipeline.decorate("OFICIAL_JUSTICA", "OPERACIONAL", rastreioOperacional, operationalSignals, nativeComposition, actionSurface, executionSurface);
+        operationalWorkbench = compositionPipeline.decorate("OFICIAL_JUSTICA", "WORKBENCH", operationalWorkbench, operationalSignals, nativeComposition, actionSurface, executionSurface);
+        agendaOperacional = compositionPipeline.decorate("OFICIAL_JUSTICA", "AGENDA", agendaOperacional, operationalSignals, nativeComposition, actionSurface, executionSurface);
+        Map<String, Object> panelVisualIdentity = compositionPipeline.decorateWithoutCollection("OFICIAL_JUSTICA", "VISUAL_IDENTITY", castMap(panelBranding.get("panelVisualIdentity")), operationalSignals, nativeComposition, actionSurface, executionSurface);
         String etag = commons.etag("OFICIAL", usuario.getId(), pendentes, cumpridos, frustrados, proximos, penhoras, ctx.behavioralAudit(), localizadorGovernado.metricas(), organizacaoOperacional, pendenciasOperacionais, portfolioProcessualNomeado, rastreioOperacional, operationalWorkbench, agendaOperacional, calendarioOperacional, balcaoVirtual, notificationCenter, institutionalBridge, operationalSignals);
         return new PerfilDashboardPayload.OficialJusticaPayload(
                 etag,
