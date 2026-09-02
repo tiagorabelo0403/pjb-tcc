@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.tcc.pjb.backend.ai.common.VectorSearchServiceMock;
 import com.tcc.pjb.backend.ai.common.VectorSearchTestFactory;
+import com.tcc.pjb.backend.ai.juridica.conversation.LegalAiCapabilityLifecycleOrchestrator;
 import com.tcc.pjb.backend.ai.juridica.conversation.LegalAiConversationApprovalService;
+import com.tcc.pjb.backend.ai.juridica.conversation.LegalAiConversationSessionInspectionOrchestrator;
+import com.tcc.pjb.backend.ai.juridica.conversation.LegalAiJuridicaSpineOrchestrator;
 import com.tcc.pjb.backend.ai.juridica.conversation.LegalAiConversationCapabilityCooldownService;
 import com.tcc.pjb.backend.ai.juridica.conversation.LegalAiConversationCapabilityRecurrenceService;
 import com.tcc.pjb.backend.ai.juridica.conversation.LegalAiConversationCapabilityRecoveryService;
@@ -190,9 +193,10 @@ public final class LegalAiTestFixtures {
         return new LegalAiConversationOrchestrator(
                 new LegalAiConversationRoutingService(),
                 new LegalAiConversationContextAssemblerService(mesh, spine, catalog),
-                new JuridicaResearchDossierService(VectorSearchTestFactory.forTest(), mesh, spine, catalog),
-                new JuridicaValidationEnvelopeService(spine, symbolicExecutionService()),
-                new JuridicaHallucinationGuardService(spine),
+                new LegalAiJuridicaSpineOrchestrator(
+                        new JuridicaResearchDossierService(VectorSearchTestFactory.forTest(), mesh, spine, catalog),
+                        new JuridicaValidationEnvelopeService(spine, symbolicExecutionService()),
+                        new JuridicaHallucinationGuardService(spine)),
                 new JuridicaVirtualTrendsCouncilService(),
                 new LegalAiConversationResponseComposerService(),
                 new LegalAiConversationMemoryService(),
@@ -202,13 +206,15 @@ public final class LegalAiTestFixtures {
                 new LegalSourceAllowlist(),
                 new LegalDocumentQuarantineService(),
                 new LegalToolScopePolicy(),
-                new LegalAiConversationSessionDoctorService(),
-                new LegalAiConversationSessionBootstrapService(),
-                new LegalAiConversationCapabilityRecoveryService(),
-                new LegalAiConversationCapabilityCooldownService(),
-                new LegalAiConversationCapabilityRehabilitationService(),
-                new LegalAiConversationCapabilityRecurrenceService(),
-                new LegalAiConversationCapabilitySuppressionService(),
+                new LegalAiConversationSessionInspectionOrchestrator(
+                        new LegalAiConversationSessionDoctorService(),
+                        new LegalAiConversationSessionBootstrapService()),
+                new LegalAiCapabilityLifecycleOrchestrator(
+                        new LegalAiConversationCapabilityRecoveryService(),
+                        new LegalAiConversationCapabilityCooldownService(),
+                        new LegalAiConversationCapabilityRehabilitationService(),
+                        new LegalAiConversationCapabilityRecurrenceService(),
+                        new LegalAiConversationCapabilitySuppressionService()),
                 new LegalAiConversationTrustZoneService(),
                 evidenceProvenanceService(),
                 coverageServiceStub(),
