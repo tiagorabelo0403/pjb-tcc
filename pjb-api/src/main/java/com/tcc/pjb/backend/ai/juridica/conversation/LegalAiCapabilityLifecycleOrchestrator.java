@@ -23,22 +23,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class LegalAiCapabilityLifecycleOrchestrator {
 
-    private final LegalAiConversationCapabilityRecoveryService recoveryService;
-    private final LegalAiConversationCapabilityCooldownService cooldownService;
-    private final LegalAiConversationCapabilityRehabilitationService rehabilitationService;
-    private final LegalAiConversationCapabilityRecurrenceService recurrenceService;
-    private final LegalAiConversationCapabilitySuppressionService suppressionService;
+    private final LegalAiConversationCapabilityRecoveryService capabilityRecoveryService;
+    private final LegalAiConversationCapabilityCooldownService capabilityCooldownService;
+    private final LegalAiConversationCapabilityRehabilitationService capabilityRehabilitationService;
+    private final LegalAiConversationCapabilityRecurrenceService capabilityRecurrenceService;
+    private final LegalAiConversationCapabilitySuppressionService capabilitySuppressionService;
 
-    public LegalAiCapabilityLifecycleOrchestrator(LegalAiConversationCapabilityRecoveryService recoveryService,
-                                                   LegalAiConversationCapabilityCooldownService cooldownService,
-                                                   LegalAiConversationCapabilityRehabilitationService rehabilitationService,
-                                                   LegalAiConversationCapabilityRecurrenceService recurrenceService,
-                                                   LegalAiConversationCapabilitySuppressionService suppressionService) {
-        this.recoveryService = Objects.requireNonNull(recoveryService);
-        this.cooldownService = Objects.requireNonNull(cooldownService);
-        this.rehabilitationService = Objects.requireNonNull(rehabilitationService);
-        this.recurrenceService = Objects.requireNonNull(recurrenceService);
-        this.suppressionService = Objects.requireNonNull(suppressionService);
+    public LegalAiCapabilityLifecycleOrchestrator(LegalAiConversationCapabilityRecoveryService capabilityRecoveryService,
+                                                   LegalAiConversationCapabilityCooldownService capabilityCooldownService,
+                                                   LegalAiConversationCapabilityRehabilitationService capabilityRehabilitationService,
+                                                   LegalAiConversationCapabilityRecurrenceService capabilityRecurrenceService,
+                                                   LegalAiConversationCapabilitySuppressionService capabilitySuppressionService) {
+        this.capabilityRecoveryService = Objects.requireNonNull(capabilityRecoveryService);
+        this.capabilityCooldownService = Objects.requireNonNull(capabilityCooldownService);
+        this.capabilityRehabilitationService = Objects.requireNonNull(capabilityRehabilitationService);
+        this.capabilityRecurrenceService = Objects.requireNonNull(capabilityRecurrenceService);
+        this.capabilitySuppressionService = Objects.requireNonNull(capabilitySuppressionService);
     }
 
     public LegalAiConversationCapabilityRecoverySnapshot inspectRecovery(LegalAiConversationRequest request,
@@ -49,7 +49,7 @@ public class LegalAiCapabilityLifecycleOrchestrator {
                                                                           LegalAiConversationToolScopeSnapshot toolScope,
                                                                           LegalAiConversationSessionDoctorSnapshot sessionDoctor,
                                                                           LegalAiConversationSessionBootstrapSnapshot sessionBootstrap) {
-        return recoveryService.inspect(request, capability, versionName, memory, documentSecurity, toolScope, sessionDoctor, sessionBootstrap);
+        return capabilityRecoveryService.inspect(request, capability, versionName, memory, documentSecurity, toolScope, sessionDoctor, sessionBootstrap);
     }
 
     public LegalAiConversationCapabilityCooldownSnapshot inspectCooldown(LegalAiConversationRequest request,
@@ -61,7 +61,7 @@ public class LegalAiCapabilityLifecycleOrchestrator {
                                                                           LegalAiConversationSessionDoctorSnapshot sessionDoctor,
                                                                           LegalAiConversationSessionBootstrapSnapshot sessionBootstrap,
                                                                           LegalAiConversationCapabilityRecoverySnapshot capabilityRecovery) {
-        return cooldownService.inspect(request, capability, versionName, memory, documentSecurity, toolScope, sessionDoctor, sessionBootstrap, capabilityRecovery);
+        return capabilityCooldownService.inspect(request, capability, versionName, memory, documentSecurity, toolScope, sessionDoctor, sessionBootstrap, capabilityRecovery);
     }
 
     public LegalAiConversationCapabilityRehabilitationSnapshot inspectRehabilitation(LegalAiConversationRequest request,
@@ -74,7 +74,7 @@ public class LegalAiCapabilityLifecycleOrchestrator {
                                                                                       LegalAiConversationSessionBootstrapSnapshot sessionBootstrap,
                                                                                       LegalAiConversationCapabilityRecoverySnapshot capabilityRecovery,
                                                                                       LegalAiConversationCapabilityCooldownSnapshot capabilityCooldown) {
-        return rehabilitationService.inspect(request, capability, versionName, memory, documentSecurity, toolScope, sessionDoctor, sessionBootstrap, capabilityRecovery, capabilityCooldown);
+        return capabilityRehabilitationService.inspect(request, capability, versionName, memory, documentSecurity, toolScope, sessionDoctor, sessionBootstrap, capabilityRecovery, capabilityCooldown);
     }
 
     public LegalAiConversationCapabilityRecurrenceSnapshot inspectRecurrence(LegalAiConversationRequest request,
@@ -88,7 +88,7 @@ public class LegalAiCapabilityLifecycleOrchestrator {
                                                                               LegalAiConversationCapabilityRecoverySnapshot capabilityRecovery,
                                                                               LegalAiConversationCapabilityCooldownSnapshot capabilityCooldown,
                                                                               LegalAiConversationCapabilityRehabilitationSnapshot capabilityRehabilitation) {
-        return recurrenceService.inspect(request, capability, versionName, memory, documentSecurity, toolScope, sessionDoctor, sessionBootstrap, capabilityRecovery, capabilityCooldown, capabilityRehabilitation);
+        return capabilityRecurrenceService.inspect(request, capability, versionName, memory, documentSecurity, toolScope, sessionDoctor, sessionBootstrap, capabilityRecovery, capabilityCooldown, capabilityRehabilitation);
     }
 
     public LegalAiConversationCapabilitySuppressionSnapshot inspectSuppression(LegalAiConversationRequest request,
@@ -99,6 +99,6 @@ public class LegalAiCapabilityLifecycleOrchestrator {
                                                                                 LegalAiConversationSessionDoctorSnapshot sessionDoctor,
                                                                                 LegalAiConversationSessionBootstrapSnapshot sessionBootstrap,
                                                                                 LegalAiConversationCapabilityRecurrenceSnapshot capabilityRecurrence) {
-        return suppressionService.inspect(request, capability, versionName, documentSecurity, toolScope, sessionDoctor, sessionBootstrap, capabilityRecurrence);
+        return capabilitySuppressionService.inspect(request, capability, versionName, documentSecurity, toolScope, sessionDoctor, sessionBootstrap, capabilityRecurrence);
     }
 }
