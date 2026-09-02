@@ -142,7 +142,7 @@ public class NationalCommunicationInstitutionalGovernanceSurfaceFacadeService {
     }
 
     public List<NationalCommunicationInstitutionalAffiliationResponse> afiliacoes() {
-        return affiliationService.listarAfiliacoes().stream().map(this::toAffiliation).toList();
+        return affiliationService.listarAfiliacoes().stream().map(governanceAssemblerSupport::toResponse).toList();
     }
 
     public AdminInstitutionalPublicRecognitionResponse reconhecimentoPublicoAfiliacao(String affiliationId) {
@@ -202,7 +202,7 @@ public class NationalCommunicationInstitutionalGovernanceSurfaceFacadeService {
     }
 
     public List<NationalCommunicationInstitutionalNominationResponse> nomeacoes(Long userId) {
-        return affiliationService.listarNomeacoes(userId).stream().map(this::toNomination).toList();
+        return affiliationService.listarNomeacoes(userId).stream().map(governanceAssemblerSupport::toResponse).toList();
     }
 
     public NationalCommunicationInstitutionalSecureEntrySummaryResponse entradaSegura() {
