@@ -56,17 +56,6 @@ class PjbFrontendAppApplicationServiceTest {
         OfficeWorkspaceModeService officeWorkspaceModeService = mock(OfficeWorkspaceModeService.class);
         OfficeWorkspaceCreationService officeWorkspaceCreationService = mock(OfficeWorkspaceCreationService.class);
         OfficeWorkspaceDashboardService officeWorkspaceDashboardService = mock(OfficeWorkspaceDashboardService.class);
-        OfficeAffiliationInviteService officeAffiliationInviteService = mock(OfficeAffiliationInviteService.class);
-        OfficeProcessTransferService officeProcessTransferService = mock(OfficeProcessTransferService.class);
-        OfficeProcessWorkspaceScopeService officeProcessWorkspaceScopeService = mock(OfficeProcessWorkspaceScopeService.class);
-        OfficeGovernedDocumentFilingService officeGovernedDocumentFilingService = mock(OfficeGovernedDocumentFilingService.class);
-        OfficeGovernedExternalProtocolService officeGovernedExternalProtocolService = mock(OfficeGovernedExternalProtocolService.class);
-        OfficeGovernedPetitionService officeGovernedPetitionService = mock(OfficeGovernedPetitionService.class);
-        OfficeGovernedUploadIngressService officeGovernedUploadIngressService = mock(OfficeGovernedUploadIngressService.class);
-        OfficeGovernedMultimediaWorkspaceService officeGovernedMultimediaWorkspaceService = mock(OfficeGovernedMultimediaWorkspaceService.class);
-        OfficeSignatureQueueService officeSignatureQueueService = mock(OfficeSignatureQueueService.class);
-        OfficeWorkspaceLegalCockpitService officeWorkspaceLegalCockpitService = mock(OfficeWorkspaceLegalCockpitService.class);
-        OfficeWorkspaceMainDashboardService officeWorkspaceMainDashboardService = mock(OfficeWorkspaceMainDashboardService.class);
         AuditLedgerService auditLedgerService = mock(AuditLedgerService.class);
 
         Usuario usuario = new Usuario();
@@ -93,32 +82,39 @@ class PjbFrontendAppApplicationServiceTest {
                 new PjbAuthenticatedSessionResponse(true, true, false, "JWT", "BEARER", "tiago@example.com", "sub-1", "issuer", "10", "12345678901", "tiago@example.com", "loa2", List.of("pwd"), List.of("ROLE_CIDADAO"), null, "prata", true, false, true, null, null, null, "/cidadao", "ACTIVE", "frontend-dev", "primary", true, true, true, true, false, List.of("jwt"), Instant.parse("2026-04-12T10:00:00Z"))));
         when(officeWorkspaceModeService.current(org.mockito.ArgumentMatchers.any())).thenReturn(new PjbFrontendOfficeModeView("PERSONAL", null, null, null, null, false, true, false, false, false, false, List.of(), List.of("Processos proprios em primeiro plano."), List.of("CIVIL", "PENAL"), true, null, null, null, false, 10L, "Tiago Silva"));
 
-        PjbFrontendAppApplicationService service = new PjbFrontendAppApplicationService(
-                currentUserService,
-                capabilitySurfaceFacadeService,
-                securityContextSurfaceFacadeService,
-                assuranceExtractor,
-                assurancePolicy,
-                officeWorkspaceModeService,
-                officeWorkspaceCreationService,
-                officeWorkspaceDashboardService,
-                officeAffiliationInviteService,
-                officeProcessTransferService,
-                officeProcessWorkspaceScopeService,
-                officeGovernedDocumentFilingService,
-                officeGovernedPetitionService,
-                officeGovernedExternalProtocolService,
-                officeGovernedUploadIngressService,
-                officeGovernedMultimediaWorkspaceService,
-                officeSignatureQueueService,
-                officeWorkspaceLegalCockpitService,
-                officeWorkspaceMainDashboardService,
+        FrontendAppIdentityContextOrchestrator identityContextOrchestrator = new FrontendAppIdentityContextOrchestrator(
+                capabilitySurfaceFacadeService, securityContextSurfaceFacadeService, assuranceExtractor, assurancePolicy);
+        FrontendOfficeWorkspaceOrchestrator officeWorkspaceOrchestrator = new FrontendOfficeWorkspaceOrchestrator(
+                officeWorkspaceModeService, officeWorkspaceCreationService, officeWorkspaceDashboardService);
+        FrontendOfficeCollaborationOrchestrator officeCollaborationOrchestrator = new FrontendOfficeCollaborationOrchestrator(
+                mock(OfficeAffiliationInviteService.class), mock(OfficeProcessTransferService.class));
+        FrontendOfficeGovernedActionsOrchestrator officeGovernedActionsOrchestrator = new FrontendOfficeGovernedActionsOrchestrator(
+                mock(OfficeProcessWorkspaceScopeService.class),
+                mock(OfficeGovernedDocumentFilingService.class),
+                mock(OfficeGovernedPetitionService.class),
+                mock(OfficeGovernedExternalProtocolService.class),
+                mock(OfficeGovernedUploadIngressService.class),
+                mock(OfficeGovernedMultimediaWorkspaceService.class));
+        FrontendOfficeExperienceOrchestrator officeExperienceOrchestrator = new FrontendOfficeExperienceOrchestrator(
+                mock(OfficeSignatureQueueService.class),
+                mock(OfficeWorkspaceLegalCockpitService.class),
+                mock(OfficeWorkspaceMainDashboardService.class),
                 mock(OfficeWorkspaceExecutiveDashboardService.class),
+                mock(OfficeWorkspaceTeamAvatarService.class));
+        FrontendProfessionalDashboardOrchestrator professionalDashboardOrchestrator = new FrontendProfessionalDashboardOrchestrator(
                 mock(ProfessionalForensicExecutiveDashboardService.class),
                 mock(ProfessionalRoleExecutiveDashboardService.class),
-                mock(ProfessionalOrganExecutiveDashboardService.class),
-                mock(OfficeWorkspaceTeamAvatarService.class),
-                auditLedgerService);
+                mock(ProfessionalOrganExecutiveDashboardService.class));
+
+        PjbFrontendAppApplicationService service = new PjbFrontendAppApplicationService(
+                currentUserService,
+                auditLedgerService,
+                identityContextOrchestrator,
+                officeWorkspaceOrchestrator,
+                officeCollaborationOrchestrator,
+                officeGovernedActionsOrchestrator,
+                officeExperienceOrchestrator,
+                professionalDashboardOrchestrator);
 
         TestingAuthenticationToken authentication = new TestingAuthenticationToken("tiago", "n/a", "ROLE_CIDADAO");
         MockHttpServletRequest request = new MockHttpServletRequest();

@@ -7,6 +7,7 @@ import com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendContextView;
 import com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendCurrentUserView;
 import com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendMenuItemView;
 import com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendOfficeAffiliationDecisionResultView;
+import com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendOfficeAffiliationInviteView;
 import com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendOfficeModeView;
 import com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendOfficeWorkspaceSummaryView;
 import com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendOfficeProcessAccessView;
@@ -35,9 +36,6 @@ import com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendProfessionalOrgan
 import com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendRamoDireitoCatalogEntry;
 import com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendSupportCatalogView;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
-import com.tcc.pjb.backend.core.security.GovBrAssuranceExtractor;
-import com.tcc.pjb.backend.core.storage.ObjectReadResult;
-import com.tcc.pjb.backend.core.security.GovBrAssurancePolicy;
 import com.tcc.pjb.backend.model.dto.profile.CapabilityExtensionResponse;
 import com.tcc.pjb.backend.model.dto.security.context.PjbAuthenticatedSessionResponse;
 import com.tcc.pjb.backend.model.dto.security.context.SecurityContextResponse;
@@ -66,27 +64,6 @@ import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.modules.advocacia.office.dto.OfficeQueueItemDto;
 import com.tcc.pjb.backend.modules.advocacia.office.enums.OfficeQueueStatus;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeAffiliationInviteService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeGovernedDocumentFilingService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeGovernedExternalProtocolService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeGovernedPetitionService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeGovernedMultimediaWorkspaceService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeGovernedUploadIngressService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeProcessTransferService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeProcessWorkspaceScopeService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeSignatureQueueService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeWorkspaceCreationService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeWorkspaceDashboardService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeWorkspaceModeService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeWorkspaceLegalCockpitService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeWorkspaceMainDashboardService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeWorkspaceTeamAvatarService;
-import com.tcc.pjb.backend.service.professional.ProfessionalForensicExecutiveDashboardService;
-import com.tcc.pjb.backend.service.professional.ProfessionalRoleExecutiveDashboardService;
-import com.tcc.pjb.backend.service.professional.ProfessionalOrganExecutiveDashboardService;
-import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeWorkspaceExecutiveDashboardService;
-import com.tcc.pjb.backend.service.profile.surface.PerfilCapabilitySurfaceFacadeService;
-import com.tcc.pjb.backend.service.security.surface.SecurityContextSurfaceFacadeService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -102,87 +79,36 @@ import org.springframework.transaction.annotation.Transactional;
 public class PjbFrontendAppApplicationService {
 
     private final CurrentUserService currentUserService;
-    private final PerfilCapabilitySurfaceFacadeService capabilitySurfaceFacadeService;
-    private final SecurityContextSurfaceFacadeService securityContextSurfaceFacadeService;
-    private final GovBrAssuranceExtractor govBrAssuranceExtractor;
-    private final GovBrAssurancePolicy govBrAssurancePolicy;
-    private final OfficeWorkspaceModeService officeWorkspaceModeService;
-    private final OfficeWorkspaceCreationService officeWorkspaceCreationService;
-    private final OfficeWorkspaceDashboardService officeWorkspaceDashboardService;
-    private final OfficeAffiliationInviteService officeAffiliationInviteService;
-    private final OfficeProcessTransferService officeProcessTransferService;
-    private final OfficeProcessWorkspaceScopeService officeProcessWorkspaceScopeService;
-    private final OfficeGovernedDocumentFilingService officeGovernedDocumentFilingService;
-    private final OfficeGovernedPetitionService officeGovernedPetitionService;
-    private final OfficeGovernedExternalProtocolService officeGovernedExternalProtocolService;
-    private final OfficeGovernedUploadIngressService officeGovernedUploadIngressService;
-    private final OfficeGovernedMultimediaWorkspaceService officeGovernedMultimediaWorkspaceService;
-    private final OfficeSignatureQueueService officeSignatureQueueService;
-    private final OfficeWorkspaceLegalCockpitService officeWorkspaceLegalCockpitService;
-    private final OfficeWorkspaceMainDashboardService officeWorkspaceMainDashboardService;
-    private final OfficeWorkspaceExecutiveDashboardService officeWorkspaceExecutiveDashboardService;
-    private final ProfessionalForensicExecutiveDashboardService professionalForensicExecutiveDashboardService;
-    private final ProfessionalRoleExecutiveDashboardService professionalRoleExecutiveDashboardService;
-    private final ProfessionalOrganExecutiveDashboardService professionalOrganExecutiveDashboardService;
-    private final OfficeWorkspaceTeamAvatarService officeWorkspaceTeamAvatarService;
     private final AuditLedgerService auditLedgerService;
+    private final FrontendAppIdentityContextOrchestrator identityContextOrchestrator;
+    private final FrontendOfficeWorkspaceOrchestrator officeWorkspaceOrchestrator;
+    private final FrontendOfficeCollaborationOrchestrator officeCollaborationOrchestrator;
+    private final FrontendOfficeGovernedActionsOrchestrator officeGovernedActionsOrchestrator;
+    private final FrontendOfficeExperienceOrchestrator officeExperienceOrchestrator;
+    private final FrontendProfessionalDashboardOrchestrator professionalDashboardOrchestrator;
 
     public PjbFrontendAppApplicationService(CurrentUserService currentUserService,
-                                            PerfilCapabilitySurfaceFacadeService capabilitySurfaceFacadeService,
-                                            SecurityContextSurfaceFacadeService securityContextSurfaceFacadeService,
-                                            GovBrAssuranceExtractor govBrAssuranceExtractor,
-                                            GovBrAssurancePolicy govBrAssurancePolicy,
-                                            OfficeWorkspaceModeService officeWorkspaceModeService,
-                                            OfficeWorkspaceCreationService officeWorkspaceCreationService,
-                                            OfficeWorkspaceDashboardService officeWorkspaceDashboardService,
-                                            OfficeAffiliationInviteService officeAffiliationInviteService,
-                                            OfficeProcessTransferService officeProcessTransferService,
-                                            OfficeProcessWorkspaceScopeService officeProcessWorkspaceScopeService,
-                                            OfficeGovernedDocumentFilingService officeGovernedDocumentFilingService,
-                                            OfficeGovernedPetitionService officeGovernedPetitionService,
-                                            OfficeGovernedExternalProtocolService officeGovernedExternalProtocolService,
-                                            OfficeGovernedUploadIngressService officeGovernedUploadIngressService,
-                                            OfficeGovernedMultimediaWorkspaceService officeGovernedMultimediaWorkspaceService,
-                                            OfficeSignatureQueueService officeSignatureQueueService,
-                                            OfficeWorkspaceLegalCockpitService officeWorkspaceLegalCockpitService,
-                                            OfficeWorkspaceMainDashboardService officeWorkspaceMainDashboardService,
-                                            OfficeWorkspaceExecutiveDashboardService officeWorkspaceExecutiveDashboardService,
-                                            ProfessionalForensicExecutiveDashboardService professionalForensicExecutiveDashboardService,
-                                            ProfessionalRoleExecutiveDashboardService professionalRoleExecutiveDashboardService,
-                                            ProfessionalOrganExecutiveDashboardService professionalOrganExecutiveDashboardService,
-                                            OfficeWorkspaceTeamAvatarService officeWorkspaceTeamAvatarService,
-                                            AuditLedgerService auditLedgerService) {
+                                            AuditLedgerService auditLedgerService,
+                                            FrontendAppIdentityContextOrchestrator identityContextOrchestrator,
+                                            FrontendOfficeWorkspaceOrchestrator officeWorkspaceOrchestrator,
+                                            FrontendOfficeCollaborationOrchestrator officeCollaborationOrchestrator,
+                                            FrontendOfficeGovernedActionsOrchestrator officeGovernedActionsOrchestrator,
+                                            FrontendOfficeExperienceOrchestrator officeExperienceOrchestrator,
+                                            FrontendProfessionalDashboardOrchestrator professionalDashboardOrchestrator) {
         this.currentUserService = Objects.requireNonNull(currentUserService);
-        this.capabilitySurfaceFacadeService = Objects.requireNonNull(capabilitySurfaceFacadeService);
-        this.securityContextSurfaceFacadeService = Objects.requireNonNull(securityContextSurfaceFacadeService);
-        this.govBrAssuranceExtractor = Objects.requireNonNull(govBrAssuranceExtractor);
-        this.govBrAssurancePolicy = Objects.requireNonNull(govBrAssurancePolicy);
-        this.officeWorkspaceModeService = Objects.requireNonNull(officeWorkspaceModeService);
-        this.officeWorkspaceCreationService = Objects.requireNonNull(officeWorkspaceCreationService);
-        this.officeWorkspaceDashboardService = Objects.requireNonNull(officeWorkspaceDashboardService);
-        this.officeAffiliationInviteService = Objects.requireNonNull(officeAffiliationInviteService);
-        this.officeProcessTransferService = Objects.requireNonNull(officeProcessTransferService);
-        this.officeProcessWorkspaceScopeService = Objects.requireNonNull(officeProcessWorkspaceScopeService);
-        this.officeGovernedDocumentFilingService = Objects.requireNonNull(officeGovernedDocumentFilingService);
-        this.officeGovernedPetitionService = Objects.requireNonNull(officeGovernedPetitionService);
-        this.officeGovernedExternalProtocolService = Objects.requireNonNull(officeGovernedExternalProtocolService);
-        this.officeGovernedUploadIngressService = Objects.requireNonNull(officeGovernedUploadIngressService);
-        this.officeGovernedMultimediaWorkspaceService = Objects.requireNonNull(officeGovernedMultimediaWorkspaceService);
-        this.officeSignatureQueueService = Objects.requireNonNull(officeSignatureQueueService);
-        this.officeWorkspaceLegalCockpitService = Objects.requireNonNull(officeWorkspaceLegalCockpitService);
-        this.officeWorkspaceMainDashboardService = Objects.requireNonNull(officeWorkspaceMainDashboardService);
-        this.officeWorkspaceExecutiveDashboardService = Objects.requireNonNull(officeWorkspaceExecutiveDashboardService);
-        this.professionalForensicExecutiveDashboardService = Objects.requireNonNull(professionalForensicExecutiveDashboardService);
-        this.professionalRoleExecutiveDashboardService = Objects.requireNonNull(professionalRoleExecutiveDashboardService);
-        this.professionalOrganExecutiveDashboardService = Objects.requireNonNull(professionalOrganExecutiveDashboardService);
-        this.officeWorkspaceTeamAvatarService = Objects.requireNonNull(officeWorkspaceTeamAvatarService);
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
+        this.identityContextOrchestrator = Objects.requireNonNull(identityContextOrchestrator);
+        this.officeWorkspaceOrchestrator = Objects.requireNonNull(officeWorkspaceOrchestrator);
+        this.officeCollaborationOrchestrator = Objects.requireNonNull(officeCollaborationOrchestrator);
+        this.officeGovernedActionsOrchestrator = Objects.requireNonNull(officeGovernedActionsOrchestrator);
+        this.officeExperienceOrchestrator = Objects.requireNonNull(officeExperienceOrchestrator);
+        this.professionalDashboardOrchestrator = Objects.requireNonNull(professionalDashboardOrchestrator);
     }
 
     @Transactional(readOnly = true)
     public PjbFrontendCurrentUserView me(Authentication authentication) {
         Usuario usuario = currentUserService.getRequired();
-        String assurance = govBrAssuranceExtractor.extract(authentication);
+        String assurance = identityContextOrchestrator.resolveAssurance(authentication);
         PjbFrontendCurrentUserView view = new PjbFrontendCurrentUserView(
                 usuario.getId(),
                 usuario.getNome(),
@@ -195,7 +121,7 @@ public class PjbFrontendAppApplicationService {
                 usuario.getComarca(),
                 usuario.isAtivo(),
                 assurance,
-                govBrAssurancePolicy.exigeStepUp(assurance, true),
+                identityContextOrchestrator.stepUpRequired(assurance),
                 authorities(authentication));
         auditLedgerService.appendSafely("FRONTEND_APP_ME_QUERY", "FRONTEND", String.valueOf(usuario.getId()), "tipo=" + view.tipoUsuario());
         return view;
@@ -204,7 +130,7 @@ public class PjbFrontendAppApplicationService {
     @Transactional(readOnly = true)
     public PjbFrontendCapabilitySummaryView capabilities() {
         Usuario usuario = currentUserService.getRequired();
-        CapabilityExtensionResponse response = capabilitySurfaceFacadeService.capacidades(null);
+        CapabilityExtensionResponse response = identityContextOrchestrator.loadCapabilities();
         List<String> capabilities = response.capabilities() == null ? List.of() : response.capabilities().stream().sorted().toList();
         PjbFrontendCapabilitySummaryView view = new PjbFrontendCapabilitySummaryView(
                 response.role(),
@@ -220,8 +146,8 @@ public class PjbFrontendAppApplicationService {
     @Transactional(readOnly = true)
     public PjbFrontendContextView context(Authentication authentication, HttpServletRequest request) {
         Usuario usuario = currentUserService.getRequired();
-        SecurityContextResponse securityContext = securityContextSurfaceFacadeService.context(request);
-        String assurance = govBrAssuranceExtractor.extract(authentication);
+        SecurityContextResponse securityContext = identityContextOrchestrator.loadSecurityContext(request);
+        String assurance = identityContextOrchestrator.resolveAssurance(authentication);
         SecurityStateResponse security = securityContext.security();
         PjbAuthenticatedSessionResponse session = securityContext.institutionalSession();
         PjbFrontendContextView view = new PjbFrontendContextView(
@@ -233,7 +159,7 @@ public class PjbFrontendAppApplicationService {
                 session != null && session.trustedDeviceAtivo(),
                 (session != null && session.contaGovBrVinculada()) || (security != null && security.govVerifiedAt() != null),
                 assurance,
-                govBrAssurancePolicy.exigeStepUp(assurance, true),
+                identityContextOrchestrator.stepUpRequired(assurance),
                 security != null && security.frozen(),
                 security == null || security.pendingSteps() == null ? 0 : security.pendingSteps().size(),
                 security == null || security.pendingSteps() == null ? List.of() : List.copyOf(security.pendingSteps()),
@@ -247,8 +173,9 @@ public class PjbFrontendAppApplicationService {
     @Transactional(readOnly = true)
     public List<PjbFrontendMenuItemView> menu(Authentication authentication) {
         Usuario usuario = currentUserService.getRequired();
-        String assurance = govBrAssuranceExtractor.extract(authentication);
-        List<PjbFrontendMenuItemView> menu = menuFor(usuario.getTipoUsuario(), assurance);
+        String assurance = identityContextOrchestrator.resolveAssurance(authentication);
+        boolean stepUp = identityContextOrchestrator.stepUpRequired(assurance);
+        List<PjbFrontendMenuItemView> menu = menuFor(usuario.getTipoUsuario(), stepUp);
         auditLedgerService.appendSafely("FRONTEND_APP_MENU_QUERY", "FRONTEND", String.valueOf(usuario.getId()), "items=" + menu.size());
         return menu;
     }
@@ -286,7 +213,7 @@ public class PjbFrontendAppApplicationService {
 
     @Transactional(readOnly = true)
     public List<PjbFrontendOwnedOfficeView> myOwnedOffices() {
-        List<PjbFrontendOwnedOfficeView> view = officeWorkspaceCreationService.myOwnedOffices();
+        List<PjbFrontendOwnedOfficeView> view = officeWorkspaceOrchestrator.myOwnedOffices();
         Usuario usuario = currentUserService.getRequired();
         auditLedgerService.appendSafely("FRONTEND_APP_OWNED_OFFICES_QUERY", "FRONTEND", String.valueOf(usuario.getId()), "count=" + view.size());
         return view;
@@ -294,12 +221,12 @@ public class PjbFrontendAppApplicationService {
 
     @Transactional
     public PjbFrontendOfficeModeView createOwnOffice(FrontendOfficeWorkspaceCreateRequest request) {
-        return officeWorkspaceCreationService.createOwnOffice(request);
+        return officeWorkspaceOrchestrator.createOwnOffice(request);
     }
 
     @Transactional
     public PjbFrontendOfficeModeView ensurePersonalOffice() {
-        PjbFrontendOfficeModeView view = officeWorkspaceCreationService.ensurePersonalOffice();
+        PjbFrontendOfficeModeView view = officeWorkspaceOrchestrator.ensurePersonalOffice();
         Usuario usuario = currentUserService.getRequired();
         auditLedgerService.appendSafely("FRONTEND_APP_PERSONAL_OFFICE_ENSURE", "FRONTEND", String.valueOf(usuario.getId()), "equipe=" + view.activeEquipeId());
         return view;
@@ -307,7 +234,7 @@ public class PjbFrontendAppApplicationService {
 
     @Transactional(readOnly = true)
     public PjbFrontendOfficeWorkspaceSummaryView officeWorkspaceSummary(Long equipeId, HttpServletRequest request) {
-        PjbFrontendOfficeWorkspaceSummaryView view = officeWorkspaceDashboardService.currentSummary(request, equipeId);
+        PjbFrontendOfficeWorkspaceSummaryView view = officeWorkspaceOrchestrator.currentSummary(request, equipeId);
         Usuario usuario = currentUserService.getRequired();
         auditLedgerService.appendSafely("FRONTEND_APP_OFFICE_WORKSPACE_SUMMARY", "FRONTEND", String.valueOf(usuario.getId()), "equipe=" + (view == null ? null : view.equipeId()));
         return view;
@@ -315,100 +242,100 @@ public class PjbFrontendAppApplicationService {
 
     @Transactional(readOnly = true)
     public PjbFrontendOfficeModeView officeMode(HttpServletRequest request) {
-        return officeWorkspaceModeService.current(request);
+        return officeWorkspaceOrchestrator.currentMode(request);
     }
 
     @Transactional
     public PjbFrontendOfficeModeView updateOfficeMode(FrontendOfficeModeUpdateRequest request) {
-        return officeWorkspaceModeService.update(request);
+        return officeWorkspaceOrchestrator.updateMode(request);
     }
 
     @Transactional
     public PjbFrontendOfficeModeView clearOfficeMode() {
-        return officeWorkspaceModeService.clear();
+        return officeWorkspaceOrchestrator.clearMode();
     }
 
 
     @Transactional(readOnly = true)
-    public List<com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendOfficeAffiliationInviteView> myIncomingOfficeInvites() {
-        return officeAffiliationInviteService.myIncomingInvites();
+    public List<PjbFrontendOfficeAffiliationInviteView> myIncomingOfficeInvites() {
+        return officeCollaborationOrchestrator.myIncomingInvites();
     }
 
     @Transactional(readOnly = true)
-    public List<com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendOfficeAffiliationInviteView> officeInvites(Long equipeId) {
-        return officeAffiliationInviteService.officeInvites(equipeId);
+    public List<PjbFrontendOfficeAffiliationInviteView> officeInvites(Long equipeId) {
+        return officeCollaborationOrchestrator.officeInvites(equipeId);
     }
 
     @Transactional
-    public com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendOfficeAffiliationInviteView createOfficeInvite(FrontendOfficeAffiliationInviteRequest request) {
-        return officeAffiliationInviteService.createInvite(request);
+    public PjbFrontendOfficeAffiliationInviteView createOfficeInvite(FrontendOfficeAffiliationInviteRequest request) {
+        return officeCollaborationOrchestrator.createInvite(request);
     }
 
     @Transactional
     public PjbFrontendOfficeAffiliationDecisionResultView acceptOfficeInvite(Long inviteId, FrontendOfficeAffiliationDecisionRequest request) {
-        return officeAffiliationInviteService.acceptInvite(inviteId, request);
+        return officeCollaborationOrchestrator.acceptInvite(inviteId, request);
     }
 
     @Transactional
     public PjbFrontendOfficeAffiliationDecisionResultView confirmOfficeInviteActivation(Long inviteId, FrontendOfficeAffiliationFinalApprovalRequest request) {
-        return officeAffiliationInviteService.confirmInviteActivation(inviteId, request);
+        return officeCollaborationOrchestrator.confirmInviteActivation(inviteId, request);
     }
 
     @Transactional
-    public com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendOfficeAffiliationInviteView rejectOfficeInvite(Long inviteId) {
-        return officeAffiliationInviteService.rejectInvite(inviteId);
+    public PjbFrontendOfficeAffiliationInviteView rejectOfficeInvite(Long inviteId) {
+        return officeCollaborationOrchestrator.rejectInvite(inviteId);
     }
 
     @Transactional
-    public com.tcc.pjb.backend.core.frontend.app.domain.PjbFrontendOfficeAffiliationInviteView revokeOfficeInvite(Long inviteId) {
-        return officeAffiliationInviteService.revokeInvite(inviteId);
+    public PjbFrontendOfficeAffiliationInviteView revokeOfficeInvite(Long inviteId) {
+        return officeCollaborationOrchestrator.revokeInvite(inviteId);
     }
 
     @Transactional(readOnly = true)
     public List<PjbFrontendOfficeProcessTransferView> myIncomingOfficeTransfers() {
-        return officeProcessTransferService.myIncomingTransfers();
+        return officeCollaborationOrchestrator.myIncomingTransfers();
     }
 
     @Transactional(readOnly = true)
     public PjbFrontendOfficeProcessTransferPreviewView previewOfficeTransfer(FrontendOfficeProcessTransferRequest request) {
-        return officeProcessTransferService.previewTransfer(request);
+        return officeCollaborationOrchestrator.previewTransfer(request);
     }
 
     @Transactional(readOnly = true)
     public List<PjbFrontendOfficeProcessTransferView> officeTransfers(Long equipeId) {
-        return officeProcessTransferService.officeTransfers(equipeId);
+        return officeCollaborationOrchestrator.officeTransfers(equipeId);
     }
 
     @Transactional
     public PjbFrontendOfficeProcessTransferView createOfficeTransfer(FrontendOfficeProcessTransferRequest request) {
-        return officeProcessTransferService.createTransfer(request);
+        return officeCollaborationOrchestrator.createTransfer(request);
     }
 
     @Transactional
     public PjbFrontendOfficeProcessTransferView acceptOfficeTransfer(Long transferId, FrontendOfficeProcessTransferDecisionRequest request) {
-        return officeProcessTransferService.acceptTransfer(transferId, request);
+        return officeCollaborationOrchestrator.acceptTransfer(transferId, request);
     }
 
     @Transactional
     public PjbFrontendOfficeProcessTransferView rejectOfficeTransfer(Long transferId) {
-        return officeProcessTransferService.rejectTransfer(transferId);
+        return officeCollaborationOrchestrator.rejectTransfer(transferId);
     }
 
     @Transactional(readOnly = true)
     public PjbFrontendOfficeWorkspaceProcessPageView officeWorkspaceProcesses(FrontendOfficeWorkspaceProcessQueryRequest request, HttpServletRequest httpServletRequest) {
-        return officeProcessWorkspaceScopeService.currentWorkspaceProcesses(request, httpServletRequest);
+        return officeGovernedActionsOrchestrator.currentWorkspaceProcesses(request, httpServletRequest);
     }
 
     @Transactional(readOnly = true)
     public PjbFrontendOfficeProcessAccessView officeWorkspaceProcessAccess(Long processoId, String actionType, HttpServletRequest httpServletRequest) {
-        return officeProcessWorkspaceScopeService.access(processoId, parseOfficeActionType(actionType), httpServletRequest);
+        return officeGovernedActionsOrchestrator.access(processoId, parseOfficeActionType(actionType), httpServletRequest);
     }
 
     @Transactional
     public PjbFrontendOfficeGovernedPetitionView submitOfficeGovernedPetition(Long processoId,
                                                                                FrontendOfficeGovernedPetitionRequest request,
                                                                                HttpServletRequest httpServletRequest) {
-        return officeGovernedPetitionService.submit(processoId, request, httpServletRequest);
+        return officeGovernedActionsOrchestrator.submitPetition(processoId, request, httpServletRequest);
     }
 
 
@@ -417,7 +344,7 @@ public class PjbFrontendAppApplicationService {
         int resolvedPage = page == null || page < 0 ? 0 : page;
         int resolvedSize = size == null || size < 1 ? 20 : Math.min(size, 100);
         OfficeQueueStatus resolvedStatus = parseOfficeQueueStatus(status);
-        var resultPage = officeSignatureQueueService.listarPorSigner(currentUserService.currentUserIdOrZero(), resolvedStatus, PageRequest.of(resolvedPage, resolvedSize));
+        var resultPage = officeExperienceOrchestrator.listSignatureQueue(currentUserService.currentUserIdOrZero(), resolvedStatus, PageRequest.of(resolvedPage, resolvedSize));
         return new PjbFrontendOfficeQueuePageView(
                 resultPage.getNumber(),
                 resultPage.getSize(),
@@ -430,24 +357,24 @@ public class PjbFrontendAppApplicationService {
 
     @Transactional
     public PjbFrontendOfficeQueueItemView approveOfficeWorkspaceQueue(Long queueItemId, FrontendOfficeQueueDecisionRequest request) {
-        return toFrontendQueueItem(officeSignatureQueueService.aprovar(currentUserService.currentUserIdOrZero(), queueItemId, request == null ? null : request.reason()));
+        return toFrontendQueueItem(officeExperienceOrchestrator.approveQueueItem(currentUserService.currentUserIdOrZero(), queueItemId, request == null ? null : request.reason()));
     }
 
     @Transactional
     public PjbFrontendOfficeQueueItemView rejectOfficeWorkspaceQueue(Long queueItemId, FrontendOfficeQueueDecisionRequest request) {
-        return toFrontendQueueItem(officeSignatureQueueService.rejeitar(currentUserService.currentUserIdOrZero(), queueItemId, request == null ? null : request.reason()));
+        return toFrontendQueueItem(officeExperienceOrchestrator.rejectQueueItem(currentUserService.currentUserIdOrZero(), queueItemId, request == null ? null : request.reason()));
     }
 
     @Transactional(readOnly = true)
     public PjbFrontendOfficeGovernedDocumentBatchPreviewView previewOfficeGovernedDocumentBatch(Long processoId, UUID batchId, HttpServletRequest httpServletRequest) {
-        return officeGovernedDocumentFilingService.preview(processoId, batchId, httpServletRequest);
+        return officeGovernedActionsOrchestrator.previewDocumentBatch(processoId, batchId, httpServletRequest);
     }
 
     @Transactional
     public PjbFrontendOfficeGovernedDocumentBatchLinkView linkOfficeGovernedDocumentBatch(Long processoId,
                                                                                            FrontendOfficeGovernedDocumentBatchLinkRequest request,
                                                                                            HttpServletRequest httpServletRequest) {
-        return officeGovernedDocumentFilingService.linkBatch(processoId, request, httpServletRequest);
+        return officeGovernedActionsOrchestrator.linkDocumentBatch(processoId, request, httpServletRequest);
     }
 
     @Transactional
@@ -455,19 +382,19 @@ public class PjbFrontendAppApplicationService {
                                                                                          Long protocolPackageId,
                                                                                          FrontendOfficeGovernedProtocolSubmitRequest request,
                                                                                          HttpServletRequest httpServletRequest) {
-        return officeGovernedExternalProtocolService.submit(processoId, protocolPackageId, request, httpServletRequest);
+        return officeGovernedActionsOrchestrator.submitProtocol(processoId, protocolPackageId, request, httpServletRequest);
     }
 
     @Transactional
     public PjbFrontendOfficeGovernedUploadBatchView createOfficeGovernedUploadBatch(Long processoId,
                                                                                      FrontendOfficeGovernedUploadBatchCreateRequest request,
                                                                                      HttpServletRequest httpServletRequest) {
-        return officeGovernedUploadIngressService.createBatch(processoId, request, httpServletRequest);
+        return officeGovernedActionsOrchestrator.createUploadBatch(processoId, request, httpServletRequest);
     }
 
     @Transactional(readOnly = true)
     public PjbFrontendOfficeGovernedUploadBatchView officeGovernedUploadBatch(Long processoId, UUID batchId, HttpServletRequest httpServletRequest) {
-        return officeGovernedUploadIngressService.batch(processoId, batchId, httpServletRequest);
+        return officeGovernedActionsOrchestrator.uploadBatch(processoId, batchId, httpServletRequest);
     }
 
     @Transactional
@@ -475,7 +402,7 @@ public class PjbFrontendAppApplicationService {
                                                                                                UUID batchId,
                                                                                                FrontendOfficeGovernedUploadReserveItemRequest request,
                                                                                                HttpServletRequest httpServletRequest) {
-        return officeGovernedUploadIngressService.reserveItem(processoId, batchId, request, httpServletRequest);
+        return officeGovernedActionsOrchestrator.reserveUploadItem(processoId, batchId, request, httpServletRequest);
     }
 
     @Transactional
@@ -484,7 +411,7 @@ public class PjbFrontendAppApplicationService {
                                                                                   UUID itemId,
                                                                                   String token,
                                                                                   HttpServletRequest httpServletRequest) throws Exception {
-        return officeGovernedUploadIngressService.directUpload(processoId, batchId, itemId, token, httpServletRequest);
+        return officeGovernedActionsOrchestrator.directUpload(processoId, batchId, itemId, token, httpServletRequest);
     }
 
     @Transactional
@@ -492,150 +419,150 @@ public class PjbFrontendAppApplicationService {
                                                                                           UUID batchId,
                                                                                           FrontendOfficeGovernedUploadFinalizeRequest request,
                                                                                           HttpServletRequest httpServletRequest) {
-        return officeGovernedUploadIngressService.finalizeBatch(processoId, batchId, request, httpServletRequest);
+        return officeGovernedActionsOrchestrator.finalizeUploadBatch(processoId, batchId, request, httpServletRequest);
     }
 
     @Transactional(readOnly = true)
     public PjbFrontendOfficeGovernedMultimediaWorkspaceView previewOfficeGovernedMultimediaWorkspace(Long processoId,
                                                                                                       FrontendOfficeGovernedMultimediaWorkspaceRequest request,
                                                                                                       HttpServletRequest httpServletRequest) {
-        return officeGovernedMultimediaWorkspaceService.preview(processoId, request, httpServletRequest);
+        return officeGovernedActionsOrchestrator.previewMultimediaWorkspace(processoId, request, httpServletRequest);
     }
 
 
-@Transactional(readOnly = true)
-public PjbFrontendOfficeWorkspaceLegalCockpitView officeWorkspaceLegalCockpit(Authentication authentication,
-                                                                              HttpServletRequest request,
-                                                                              java.time.LocalDate from,
-                                                                              java.time.LocalDate to,
-                                                                              Long processoId) {
-    PjbFrontendOfficeWorkspaceLegalCockpitView view = officeWorkspaceLegalCockpitService.cockpit(authentication, request, from, to, processoId);
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_OFFICE_LEGAL_COCKPIT", "FRONTEND", String.valueOf(usuario.getId()), "equipe=" + view.activeEquipeId() + " processo=" + processoId);
-    return view;
-}
+    @Transactional(readOnly = true)
+    public PjbFrontendOfficeWorkspaceLegalCockpitView officeWorkspaceLegalCockpit(Authentication authentication,
+                                                                                  HttpServletRequest request,
+                                                                                  java.time.LocalDate from,
+                                                                                  java.time.LocalDate to,
+                                                                                  Long processoId) {
+        PjbFrontendOfficeWorkspaceLegalCockpitView view = officeExperienceOrchestrator.legalCockpit(authentication, request, from, to, processoId);
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_OFFICE_LEGAL_COCKPIT", "FRONTEND", String.valueOf(usuario.getId()), "equipe=" + view.activeEquipeId() + " processo=" + processoId);
+        return view;
+    }
 
-@Transactional(readOnly = true)
-public PjbFrontendOfficeProcessReadingModeView officeProcessReadingMode(Long processoId,
-                                                                        HttpServletRequest request,
-                                                                        java.time.LocalDate from,
-                                                                        java.time.LocalDate to) {
-    PjbFrontendOfficeProcessReadingModeView view = officeWorkspaceLegalCockpitService.readingMode(processoId, request, from, to);
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_OFFICE_PROCESS_READING_MODE", "PROCESSO", String.valueOf(processoId), "usuario=" + usuario.getId());
-    return view;
-}
+    @Transactional(readOnly = true)
+    public PjbFrontendOfficeProcessReadingModeView officeProcessReadingMode(Long processoId,
+                                                                            HttpServletRequest request,
+                                                                            java.time.LocalDate from,
+                                                                            java.time.LocalDate to) {
+        PjbFrontendOfficeProcessReadingModeView view = officeExperienceOrchestrator.readingMode(processoId, request, from, to);
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_OFFICE_PROCESS_READING_MODE", "PROCESSO", String.valueOf(processoId), "usuario=" + usuario.getId());
+        return view;
+    }
 
-@Transactional(readOnly = true)
-public PjbFrontendOfficeWorkspaceMainDashboardView officeWorkspaceMainDashboard(Authentication authentication,
-                                                                                HttpServletRequest request,
-                                                                                java.time.LocalDate from,
-                                                                                java.time.LocalDate to) {
-    PjbFrontendOfficeWorkspaceMainDashboardView view = officeWorkspaceMainDashboardService.dashboard(authentication, request, from, to);
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_OFFICE_MAIN_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "equipe=" + view.activeEquipeId());
-    return view;
-}
+    @Transactional(readOnly = true)
+    public PjbFrontendOfficeWorkspaceMainDashboardView officeWorkspaceMainDashboard(Authentication authentication,
+                                                                                    HttpServletRequest request,
+                                                                                    java.time.LocalDate from,
+                                                                                    java.time.LocalDate to) {
+        PjbFrontendOfficeWorkspaceMainDashboardView view = officeExperienceOrchestrator.mainDashboard(authentication, request, from, to);
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_OFFICE_MAIN_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "equipe=" + view.activeEquipeId());
+        return view;
+    }
 
-@Transactional(readOnly = true)
-public PjbFrontendOfficeWorkspaceExecutiveDashboardView officeWorkspaceExecutiveDashboard(Authentication authentication,
-                                                                                         HttpServletRequest request,
-                                                                                         java.time.LocalDate from,
-                                                                                         java.time.LocalDate to) {
-    PjbFrontendOfficeWorkspaceExecutiveDashboardView view = officeWorkspaceExecutiveDashboardService.dashboard(authentication, request, from, to);
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_OFFICE_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "equipe=" + view.activeEquipeId());
-    return view;
-}
+    @Transactional(readOnly = true)
+    public PjbFrontendOfficeWorkspaceExecutiveDashboardView officeWorkspaceExecutiveDashboard(Authentication authentication,
+                                                                                             HttpServletRequest request,
+                                                                                             java.time.LocalDate from,
+                                                                                             java.time.LocalDate to) {
+        PjbFrontendOfficeWorkspaceExecutiveDashboardView view = officeExperienceOrchestrator.executiveDashboard(authentication, request, from, to);
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_OFFICE_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "equipe=" + view.activeEquipeId());
+        return view;
+    }
 
-@Transactional(readOnly = true)
-public PjbFrontendProfessionalWorkspaceExecutiveDashboardView professionalWorkspaceExecutiveDashboard(Authentication authentication,
-                                                                                                    java.time.LocalDate from,
-                                                                                                    java.time.LocalDate to) {
-    PjbFrontendProfessionalWorkspaceExecutiveDashboardView view = professionalForensicExecutiveDashboardService.dashboard(authentication, from, to);
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_PROFESSIONAL_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "actorClass=" + view.actorClass());
-    return view;
-}
+    @Transactional(readOnly = true)
+    public PjbFrontendProfessionalWorkspaceExecutiveDashboardView professionalWorkspaceExecutiveDashboard(Authentication authentication,
+                                                                                                        java.time.LocalDate from,
+                                                                                                        java.time.LocalDate to) {
+        PjbFrontendProfessionalWorkspaceExecutiveDashboardView view = professionalDashboardOrchestrator.forensicDashboard(authentication, from, to);
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_PROFESSIONAL_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "actorClass=" + view.actorClass());
+        return view;
+    }
 
-@Transactional(readOnly = true)
-public PjbFrontendProfessionalRoleExecutiveDashboardView magistratureExecutiveDashboard(Authentication authentication,
-                                                                                        java.time.LocalDate from,
-                                                                                        java.time.LocalDate to) {
-    PjbFrontendProfessionalRoleExecutiveDashboardView view = professionalRoleExecutiveDashboardService.magistratureDashboard(authentication, from, to);
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_MAGISTRATURE_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
-    return view;
-}
-
-@Transactional(readOnly = true)
-public PjbFrontendProfessionalRoleExecutiveDashboardView defensoriaExecutiveDashboard(Authentication authentication,
-                                                                                      java.time.LocalDate from,
-                                                                                      java.time.LocalDate to) {
-    PjbFrontendProfessionalRoleExecutiveDashboardView view = professionalRoleExecutiveDashboardService.defensoriaDashboard(authentication, from, to);
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_DEFENSORIA_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
-    return view;
-}
-
-@Transactional(readOnly = true)
-public PjbFrontendProfessionalRoleExecutiveDashboardView procuradoriaExecutiveDashboard(Authentication authentication,
-                                                                                        java.time.LocalDate from,
-                                                                                        java.time.LocalDate to) {
-    PjbFrontendProfessionalRoleExecutiveDashboardView view = professionalRoleExecutiveDashboardService.procuradoriaDashboard(authentication, from, to);
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_PROCURADORIA_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
-    return view;
-}
-
-@Transactional(readOnly = true)
-public PjbFrontendProfessionalOrganExecutiveDashboardView professionalOrganizationalExecutiveDashboard(Authentication authentication,
-                                                                                                       java.time.LocalDate from,
-                                                                                                       java.time.LocalDate to) {
-    PjbFrontendProfessionalOrganExecutiveDashboardView view = professionalOrganExecutiveDashboardService.dashboard(authentication, from, to);
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_PROFESSIONAL_ORGAN_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
-    return view;
-}
-
-@Transactional(readOnly = true)
-public PjbFrontendProfessionalOrganExecutiveDashboardView magistratureOrganExecutiveDashboard(Authentication authentication,
-                                                                                              java.time.LocalDate from,
-                                                                                              java.time.LocalDate to) {
-    PjbFrontendProfessionalOrganExecutiveDashboardView view = professionalOrganExecutiveDashboardService.magistratureDashboard(authentication, from, to);
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_MAGISTRATURE_ORGAN_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
-    return view;
-}
-
-@Transactional(readOnly = true)
-public PjbFrontendProfessionalOrganExecutiveDashboardView defensoriaOrganExecutiveDashboard(Authentication authentication,
+    @Transactional(readOnly = true)
+    public PjbFrontendProfessionalRoleExecutiveDashboardView magistratureExecutiveDashboard(Authentication authentication,
                                                                                             java.time.LocalDate from,
                                                                                             java.time.LocalDate to) {
-    PjbFrontendProfessionalOrganExecutiveDashboardView view = professionalOrganExecutiveDashboardService.defensoriaDashboard(authentication, from, to);
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_DEFENSORIA_ORGAN_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
-    return view;
-}
+        PjbFrontendProfessionalRoleExecutiveDashboardView view = professionalDashboardOrchestrator.roleMagistratureDashboard(authentication, from, to);
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_MAGISTRATURE_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
+        return view;
+    }
 
-@Transactional(readOnly = true)
-public PjbFrontendProfessionalOrganExecutiveDashboardView procuradoriaOrganExecutiveDashboard(Authentication authentication,
-                                                                                              java.time.LocalDate from,
-                                                                                              java.time.LocalDate to) {
-    PjbFrontendProfessionalOrganExecutiveDashboardView view = professionalOrganExecutiveDashboardService.procuradoriaDashboard(authentication, from, to);
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_PROCURADORIA_ORGAN_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
-    return view;
-}
+    @Transactional(readOnly = true)
+    public PjbFrontendProfessionalRoleExecutiveDashboardView defensoriaExecutiveDashboard(Authentication authentication,
+                                                                                          java.time.LocalDate from,
+                                                                                          java.time.LocalDate to) {
+        PjbFrontendProfessionalRoleExecutiveDashboardView view = professionalDashboardOrchestrator.roleDefensoriaDashboard(authentication, from, to);
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_DEFENSORIA_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
+        return view;
+    }
 
-@Transactional(readOnly = true)
-public OfficeBinaryPayload officeTeamMemberAvatar(Long userId, HttpServletRequest request) throws java.io.IOException {
-    var result = officeWorkspaceTeamAvatarService.read(userId, request);
-    byte[] bytes = result.content().resource().getInputStream().readAllBytes();
-    Usuario usuario = currentUserService.getRequired();
-    auditLedgerService.appendSafely("FRONTEND_APP_OFFICE_TEAM_AVATAR", "FRONTEND", String.valueOf(usuario.getId()), "target=" + userId);
-    return new OfficeBinaryPayload(result.content().contentType(), bytes, result.sha256());
-}
+    @Transactional(readOnly = true)
+    public PjbFrontendProfessionalRoleExecutiveDashboardView procuradoriaExecutiveDashboard(Authentication authentication,
+                                                                                            java.time.LocalDate from,
+                                                                                            java.time.LocalDate to) {
+        PjbFrontendProfessionalRoleExecutiveDashboardView view = professionalDashboardOrchestrator.roleProcuradoriaDashboard(authentication, from, to);
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_PROCURADORIA_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
+        return view;
+    }
+
+    @Transactional(readOnly = true)
+    public PjbFrontendProfessionalOrganExecutiveDashboardView professionalOrganizationalExecutiveDashboard(Authentication authentication,
+                                                                                                           java.time.LocalDate from,
+                                                                                                           java.time.LocalDate to) {
+        PjbFrontendProfessionalOrganExecutiveDashboardView view = professionalDashboardOrchestrator.organDashboard(authentication, from, to);
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_PROFESSIONAL_ORGAN_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
+        return view;
+    }
+
+    @Transactional(readOnly = true)
+    public PjbFrontendProfessionalOrganExecutiveDashboardView magistratureOrganExecutiveDashboard(Authentication authentication,
+                                                                                                  java.time.LocalDate from,
+                                                                                                  java.time.LocalDate to) {
+        PjbFrontendProfessionalOrganExecutiveDashboardView view = professionalDashboardOrchestrator.organMagistratureDashboard(authentication, from, to);
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_MAGISTRATURE_ORGAN_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
+        return view;
+    }
+
+    @Transactional(readOnly = true)
+    public PjbFrontendProfessionalOrganExecutiveDashboardView defensoriaOrganExecutiveDashboard(Authentication authentication,
+                                                                                                java.time.LocalDate from,
+                                                                                                java.time.LocalDate to) {
+        PjbFrontendProfessionalOrganExecutiveDashboardView view = professionalDashboardOrchestrator.organDefensoriaDashboard(authentication, from, to);
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_DEFENSORIA_ORGAN_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
+        return view;
+    }
+
+    @Transactional(readOnly = true)
+    public PjbFrontendProfessionalOrganExecutiveDashboardView procuradoriaOrganExecutiveDashboard(Authentication authentication,
+                                                                                                  java.time.LocalDate from,
+                                                                                                  java.time.LocalDate to) {
+        PjbFrontendProfessionalOrganExecutiveDashboardView view = professionalDashboardOrchestrator.organProcuradoriaDashboard(authentication, from, to);
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_PROCURADORIA_ORGAN_EXECUTIVE_DASHBOARD", "FRONTEND", String.valueOf(usuario.getId()), "kind=" + view.dashboardKind());
+        return view;
+    }
+
+    @Transactional(readOnly = true)
+    public OfficeBinaryPayload officeTeamMemberAvatar(Long userId, HttpServletRequest request) throws java.io.IOException {
+        var result = officeExperienceOrchestrator.readTeamAvatar(userId, request);
+        byte[] bytes = result.content().resource().getInputStream().readAllBytes();
+        Usuario usuario = currentUserService.getRequired();
+        auditLedgerService.appendSafely("FRONTEND_APP_OFFICE_TEAM_AVATAR", "FRONTEND", String.valueOf(usuario.getId()), "target=" + userId);
+        return new OfficeBinaryPayload(result.content().contentType(), bytes, result.sha256());
+    }
 
     @Transactional(readOnly = true)
     public PjbFrontendAppBootstrapView bootstrap(Authentication authentication, HttpServletRequest request) {
@@ -652,7 +579,7 @@ public OfficeBinaryPayload officeTeamMemberAvatar(Long userId, HttpServletReques
         return view;
     }
 
-    private List<PjbFrontendMenuItemView> menuFor(TipoUsuario tipoUsuario, String assurance) {
+    private List<PjbFrontendMenuItemView> menuFor(TipoUsuario tipoUsuario, boolean stepUpRequired) {
         ArrayList<PjbFrontendMenuItemView> items = new ArrayList<>();
         if (tipoUsuario == null || tipoUsuario == TipoUsuario.CIDADAO || tipoUsuario.isCidadaniaExterna()) {
             items.add(menu("dashboard", "Painel do cidadão", "/api/v1/cidadao/painel", "dashboard", "prata", false));
@@ -682,7 +609,7 @@ public OfficeBinaryPayload officeTeamMemberAvatar(Long userId, HttpServletReques
             items.add(menu("professional-executive", "Dashboard executivo profissional", "/api/v1/frontend/app/professional/workspace/executive-dashboard", "dashboard", "prata", false));
             items.add(menu("magistrature-executive", "Dashboard executivo da magistratura", "/api/v1/frontend/app/professional/workspace/magistrature-executive-dashboard", "dashboard", "prata", false));
             items.add(menu("magistrature-organ", "Painel institucional do gabinete", "/api/v1/frontend/app/professional/workspace/magistrature-organ-dashboard", "dashboard", "prata", false));
-            items.add(menu("seguranca", "Assurance Gov.br", "/api/v1/security/context", "seguranca", "ouro", govBrAssurancePolicy.exigeStepUp(assurance, true)));
+            items.add(menu("seguranca", "Assurance Gov.br", "/api/v1/security/context", "seguranca", "ouro", stepUpRequired));
         } else if (tipoUsuario.isAdministradorSistema()) {
             items.add(menu("final-closure", "Fechamento final", "/api/v1/admin/final-closure/summary", "admin", "prata", false));
             items.add(menu("frontend-readiness", "Readiness frontend", "/api/v1/admin/frontend-readiness/summary", "admin", "prata", false));
