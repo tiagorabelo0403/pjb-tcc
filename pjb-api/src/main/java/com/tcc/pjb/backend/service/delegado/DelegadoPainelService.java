@@ -21,12 +21,6 @@ import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.criminal.BoletimOcorrenciaDigitalService;
 import com.tcc.pjb.backend.service.criminal.InqueritoPolicialDigitalService;
 import com.tcc.pjb.backend.service.criminal.InqueritoMultimidiaWorkspaceService;
-import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeExecutionService;
-import com.tcc.pjb.backend.service.criminal.PjbPoliceNativeToolbeltService;
-import com.tcc.pjb.backend.service.criminal.PoliceInvestigationSystemLandscapeService;
-import com.tcc.pjb.backend.service.criminal.PoliceSovereignOperationalWorkbenchService;
-import com.tcc.pjb.backend.service.criminal.PoliceTraceableExecutionLedgerService;
-import com.tcc.pjb.backend.service.criminal.PoliceTransactionalAdapterMeshService;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
@@ -40,11 +34,8 @@ import com.tcc.pjb.backend.service.processual.document.envelope.dto.SignedDocume
 import com.tcc.pjb.backend.service.profile.PerfilCapabilityMatrixService;
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
 import com.tcc.pjb.backend.service.ui.branding.InstitutionalPanelBrandingService;
-import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
+import com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
-import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -73,18 +64,10 @@ public class DelegadoPainelService {
     private final InstitutionalActorRoutingService institutionalActorRoutingService;
     private final InstitutionalPanelBrandingService institutionalPanelBrandingService;
     private final InqueritoMultimidiaWorkspaceService inqueritoMultimidiaWorkspaceService;
-    private final PoliceInvestigationSystemLandscapeService policeInvestigationSystemLandscapeService;
-    private final PjbPoliceNativeToolbeltService pjbPoliceNativeToolbeltService;
-    private final PoliceTransactionalAdapterMeshService policeTransactionalAdapterMeshService;
-    private final PoliceSovereignOperationalWorkbenchService policeSovereignOperationalWorkbenchService;
-    private final PjbPoliceNativeExecutionService pjbPoliceNativeExecutionService;
-    private final PoliceTraceableExecutionLedgerService policeTraceableExecutionLedgerService;
+    private final DelegadoInvestigativeWorkbenchOrchestrator investigativeWorkbench;
     private final QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService;
     private final PainelSharedExperienceService sharedExperienceService;
-    private final PainelSignalReflectionService signalReflectionService;
-    private final PainelNativeCollectionCompositionService collectionCompositionService;
-    private final PainelActionSurfaceCompositionService actionSurfaceCompositionService;
-    private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
+    private final PainelCompositionPipelineService compositionPipeline;
     private final InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService;
 
     public DelegadoPainelService(PerfilDashboardContextFactory contextFactory,
@@ -102,18 +85,10 @@ public class DelegadoPainelService {
                                  InstitutionalActorRoutingService institutionalActorRoutingService,
                                  InstitutionalPanelBrandingService institutionalPanelBrandingService,
                                  InqueritoMultimidiaWorkspaceService inqueritoMultimidiaWorkspaceService,
-                                 PoliceInvestigationSystemLandscapeService policeInvestigationSystemLandscapeService,
-                                 PjbPoliceNativeToolbeltService pjbPoliceNativeToolbeltService,
-                                 PoliceTransactionalAdapterMeshService policeTransactionalAdapterMeshService,
-                                 PoliceSovereignOperationalWorkbenchService policeSovereignOperationalWorkbenchService,
-                                 PjbPoliceNativeExecutionService pjbPoliceNativeExecutionService,
-                                 PoliceTraceableExecutionLedgerService policeTraceableExecutionLedgerService,
+                                 DelegadoInvestigativeWorkbenchOrchestrator investigativeWorkbench,
                                  QualifiedDocumentSignatureEnvelopeService qualifiedDocumentSignatureEnvelopeService,
                                  PainelSharedExperienceService sharedExperienceService,
-                                 PainelSignalReflectionService signalReflectionService,
-                                 PainelNativeCollectionCompositionService collectionCompositionService,
-                                 PainelActionSurfaceCompositionService actionSurfaceCompositionService,
-                                 PainelExecutionSurfaceCompositionService executionSurfaceCompositionService,
+                                 PainelCompositionPipelineService compositionPipeline,
                                  InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService) {
         this.contextFactory = contextFactory;
         this.commons = commons;
@@ -130,17 +105,9 @@ public class DelegadoPainelService {
         this.institutionalActorRoutingService = institutionalActorRoutingService;
         this.institutionalPanelBrandingService = institutionalPanelBrandingService;
         this.inqueritoMultimidiaWorkspaceService = inqueritoMultimidiaWorkspaceService;
-        this.policeInvestigationSystemLandscapeService = policeInvestigationSystemLandscapeService;
-        this.pjbPoliceNativeToolbeltService = pjbPoliceNativeToolbeltService;
-        this.policeTransactionalAdapterMeshService = policeTransactionalAdapterMeshService;
-        this.policeSovereignOperationalWorkbenchService = policeSovereignOperationalWorkbenchService;
-        this.pjbPoliceNativeExecutionService = pjbPoliceNativeExecutionService;
-        this.policeTraceableExecutionLedgerService = policeTraceableExecutionLedgerService;
+        this.investigativeWorkbench = investigativeWorkbench;
         this.sharedExperienceService = sharedExperienceService;
-        this.signalReflectionService = signalReflectionService;
-        this.collectionCompositionService = collectionCompositionService;
-        this.actionSurfaceCompositionService = actionSurfaceCompositionService;
-        this.executionSurfaceCompositionService = executionSurfaceCompositionService;
+        this.compositionPipeline = compositionPipeline;
         this.qualifiedDocumentSignatureEnvelopeService = qualifiedDocumentSignatureEnvelopeService;
         this.institutionalMaterialActionGuardService = institutionalMaterialActionGuardService;
     }
@@ -161,36 +128,22 @@ public class DelegadoPainelService {
         String etag = commons.etag("DELEGADO", usuario.getId(), inqueritos, tcos, mandados, bos, alertas, ctx.behavioralAudit(), localizadorGovernado.metricas());
         String actorLane = usuario.getTipoUsuario().name().contains("FEDERAL") ? "POLICIA_FEDERAL" : "POLICIA_CIVIL";
         Map<String, Object> panelBranding = institutionalPanelBrandingService.resolve(actorLane, "PAINEL_INQUERITO_MULTIMIDIA", usuario.getTipoUsuario());
-        Map<String, Object> policeSystemLandscape = policeInvestigationSystemLandscapeService.landscapeFor(usuario.getTipoUsuario());
+        Map<String, Object> policeSystemLandscape = investigativeWorkbench.landscapeFor(usuario.getTipoUsuario());
         Map<String, Object> sharedExperience = sharedExperienceService.snapshot("DELEGADO");
-        Map<String, Object> operationalSignals = signalReflectionService.deriveSignals("DELEGADO", sharedExperience, inqueritos + tcos + mandados, (int) ctx.prazoRadar().stream().limit(3).count(), "TRIAGEM_INVESTIGATIVA");
-        Map<String, Object> nativeComposition = signalReflectionService.buildNativeComposition("DELEGADO", operationalSignals);
-        bos = collectionCompositionService.composeList("DELEGADO", "BOLETINS_OCORRENCIA_RECENTES", bos, operationalSignals, nativeComposition);
-        alertas = collectionCompositionService.composeList("DELEGADO", "ALERTAS_CRIME", alertas, operationalSignals, nativeComposition);
-        Map<String, Object> collectionComposition = collectionCompositionService.buildCollectionComposition("DELEGADO", operationalSignals, nativeComposition, Map.of(
+        Map<String, Object> operationalSignals = compositionPipeline.deriveSignals("DELEGADO", sharedExperience, inqueritos + tcos + mandados, (int) ctx.prazoRadar().stream().limit(3).count(), "TRIAGEM_INVESTIGATIVA");
+        Map<String, Object> nativeComposition = compositionPipeline.buildNativeComposition("DELEGADO", operationalSignals);
+        bos = compositionPipeline.composeList("DELEGADO", "BOLETINS_OCORRENCIA_RECENTES", bos, operationalSignals, nativeComposition);
+        alertas = compositionPipeline.composeList("DELEGADO", "ALERTAS_CRIME", alertas, operationalSignals, nativeComposition);
+        Map<String, Object> collectionComposition = compositionPipeline.buildCollectionComposition("DELEGADO", operationalSignals, nativeComposition, Map.of(
                 "boletinsOcorrenciaRecentes", bos,
                 "alertasCrime", alertas
         ));
-        Map<String, Object> actionSurface = actionSurfaceCompositionService.buildActionSurface("DELEGADO", operationalSignals, nativeComposition, collectionComposition);
-        Map<String, Object> executionSurface = executionSurfaceCompositionService.buildExecutionSurface("DELEGADO", operationalSignals, nativeComposition, collectionComposition, actionSurface);
-        Map<String, Object> investigativeWorkstation = policeSovereignOperationalWorkbenchService.compose(usuario.getTipoUsuario());
-        investigativeWorkstation = new LinkedHashMap<>(investigativeWorkstation);
-        investigativeWorkstation.put("nativeToolbelt", pjbPoliceNativeToolbeltService.nativeWorkbench(usuario.getTipoUsuario()));
-        investigativeWorkstation.put("transactionalAdapterMesh", policeTransactionalAdapterMeshService.sovereignMesh(usuario.getTipoUsuario()));
-        investigativeWorkstation.put("nativeExecutionWorkbench", pjbPoliceNativeExecutionService.nativeExecutionWorkbench(usuario.getTipoUsuario()));
-        investigativeWorkstation.put("traceableOperationalLedger", policeTraceableExecutionLedgerService.operationalLedgerBlueprint(usuario.getTipoUsuario()));
-        investigativeWorkstation.put("recentTraceableExecutions", policeTraceableExecutionLedgerService.recentExecutions(usuario.getTipoUsuario(), 8));
-        investigativeWorkstation = signalReflectionService.reflectInBlock("DELEGADO", "WORKBENCH", investigativeWorkstation, operationalSignals);
-        investigativeWorkstation = collectionCompositionService.decorateBlock("DELEGADO", "WORKBENCH", investigativeWorkstation, operationalSignals, nativeComposition);
-        investigativeWorkstation = actionSurfaceCompositionService.decorateBlock("DELEGADO", "WORKBENCH", investigativeWorkstation, actionSurface, nativeComposition);
-        investigativeWorkstation = executionSurfaceCompositionService.decorateBlock("DELEGADO", "WORKBENCH", investigativeWorkstation, executionSurface, nativeComposition);
-        policeSystemLandscape = signalReflectionService.reflectInBlock("DELEGADO", "LANDSCAPE", policeSystemLandscape, operationalSignals);
-        policeSystemLandscape = collectionCompositionService.decorateBlock("DELEGADO", "LANDSCAPE", policeSystemLandscape, operationalSignals, nativeComposition);
-        policeSystemLandscape = actionSurfaceCompositionService.decorateBlock("DELEGADO", "LANDSCAPE", policeSystemLandscape, actionSurface, nativeComposition);
-        policeSystemLandscape = executionSurfaceCompositionService.decorateBlock("DELEGADO", "LANDSCAPE", policeSystemLandscape, executionSurface, nativeComposition);
-        Map<String, Object> panelVisualIdentity = signalReflectionService.reflectInBlock("DELEGADO", "VISUAL_IDENTITY", castMap(panelBranding.get("panelVisualIdentity")), operationalSignals);
-        panelVisualIdentity = actionSurfaceCompositionService.decorateBlock("DELEGADO", "VISUAL_IDENTITY", panelVisualIdentity, actionSurface, nativeComposition);
-        panelVisualIdentity = executionSurfaceCompositionService.decorateBlock("DELEGADO", "VISUAL_IDENTITY", panelVisualIdentity, executionSurface, nativeComposition);
+        Map<String, Object> actionSurface = compositionPipeline.buildActionSurface("DELEGADO", operationalSignals, nativeComposition, collectionComposition);
+        Map<String, Object> executionSurface = compositionPipeline.buildExecutionSurface("DELEGADO", operationalSignals, nativeComposition, collectionComposition, actionSurface);
+        Map<String, Object> investigativeWorkstation = investigativeWorkbench.composeInvestigativeWorkstation(usuario.getTipoUsuario());
+        investigativeWorkstation = compositionPipeline.decorate("DELEGADO", "WORKBENCH", investigativeWorkstation, operationalSignals, nativeComposition, actionSurface, executionSurface);
+        policeSystemLandscape = compositionPipeline.decorate("DELEGADO", "LANDSCAPE", policeSystemLandscape, operationalSignals, nativeComposition, actionSurface, executionSurface);
+        Map<String, Object> panelVisualIdentity = compositionPipeline.decorateWithoutCollection("DELEGADO", "VISUAL_IDENTITY", castMap(panelBranding.get("panelVisualIdentity")), operationalSignals, nativeComposition, actionSurface, executionSurface);
         return new PerfilDashboardPayload.DelegadoPayload(
                 etag,
                 ctx.generatedAt(),
