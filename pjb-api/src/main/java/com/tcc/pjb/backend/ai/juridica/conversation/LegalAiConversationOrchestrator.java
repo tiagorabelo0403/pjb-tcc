@@ -5,9 +5,6 @@ import com.tcc.pjb.backend.ai.juridica.conversation.security.LegalDocumentQuaran
 import com.tcc.pjb.backend.ai.juridica.conversation.security.LegalSourceAllowlist;
 import com.tcc.pjb.backend.ai.juridica.conversation.security.LegalToolScopePolicy;
 import com.tcc.pjb.backend.ai.juridica.knowledge.LegalKnowledgeCoverageService;
-import com.tcc.pjb.backend.ai.juridica.spine.JuridicaHallucinationGuardService;
-import com.tcc.pjb.backend.ai.juridica.spine.JuridicaResearchDossierService;
-import com.tcc.pjb.backend.ai.juridica.spine.JuridicaValidationEnvelopeService;
 import com.tcc.pjb.backend.model.dto.ai.legal.conversation.LegalAiConversationRequest;
 import com.tcc.pjb.backend.model.dto.ai.legal.conversation.LegalAiConversationEvidenceProvenanceSnapshot;
 import com.tcc.pjb.backend.model.dto.ai.legal.conversation.LegalAiConversationResponse;
@@ -25,9 +22,7 @@ public class LegalAiConversationOrchestrator {
 
     private final LegalAiConversationRoutingService routingService;
     private final LegalAiConversationContextAssemblerService contextAssemblerService;
-    private final JuridicaResearchDossierService researchDossierService;
-    private final JuridicaValidationEnvelopeService validationEnvelopeService;
-    private final JuridicaHallucinationGuardService hallucinationGuardService;
+    private final LegalAiJuridicaSpineOrchestrator juridicaSpine;
     private final JuridicaVirtualTrendsCouncilService virtualTrendsCouncilService;
     private final LegalAiConversationResponseComposerService responseComposerService;
     private final LegalAiConversationMemoryService memoryService;
@@ -37,13 +32,8 @@ public class LegalAiConversationOrchestrator {
     private final LegalSourceAllowlist sourceAllowlist;
     private final LegalDocumentQuarantineService documentQuarantineService;
     private final LegalToolScopePolicy toolScopePolicy;
-    private final LegalAiConversationSessionDoctorService sessionDoctorService;
-    private final LegalAiConversationSessionBootstrapService sessionBootstrapService;
-    private final LegalAiConversationCapabilityRecoveryService capabilityRecoveryService;
-    private final LegalAiConversationCapabilityCooldownService capabilityCooldownService;
-    private final LegalAiConversationCapabilityRehabilitationService capabilityRehabilitationService;
-    private final LegalAiConversationCapabilityRecurrenceService capabilityRecurrenceService;
-    private final LegalAiConversationCapabilitySuppressionService capabilitySuppressionService;
+    private final LegalAiConversationSessionInspectionOrchestrator sessionInspection;
+    private final LegalAiCapabilityLifecycleOrchestrator capabilityLifecycle;
     private final LegalAiConversationTrustZoneService trustZoneService;
     private final LegalAiConversationEvidenceProvenanceService evidenceProvenanceService;
     private final LegalKnowledgeCoverageService knowledgeCoverageService;
@@ -52,9 +42,7 @@ public class LegalAiConversationOrchestrator {
 
     public LegalAiConversationOrchestrator(LegalAiConversationRoutingService routingService,
                                            LegalAiConversationContextAssemblerService contextAssemblerService,
-                                           JuridicaResearchDossierService researchDossierService,
-                                           JuridicaValidationEnvelopeService validationEnvelopeService,
-                                           JuridicaHallucinationGuardService hallucinationGuardService,
+                                           LegalAiJuridicaSpineOrchestrator juridicaSpine,
                                            JuridicaVirtualTrendsCouncilService virtualTrendsCouncilService,
                                            LegalAiConversationResponseComposerService responseComposerService,
                                            LegalAiConversationMemoryService memoryService,
@@ -64,13 +52,8 @@ public class LegalAiConversationOrchestrator {
                                            LegalSourceAllowlist sourceAllowlist,
                                            LegalDocumentQuarantineService documentQuarantineService,
                                            LegalToolScopePolicy toolScopePolicy,
-                                           LegalAiConversationSessionDoctorService sessionDoctorService,
-                                           LegalAiConversationSessionBootstrapService sessionBootstrapService,
-                                           LegalAiConversationCapabilityRecoveryService capabilityRecoveryService,
-                                           LegalAiConversationCapabilityCooldownService capabilityCooldownService,
-                                           LegalAiConversationCapabilityRehabilitationService capabilityRehabilitationService,
-                                           LegalAiConversationCapabilityRecurrenceService capabilityRecurrenceService,
-                                           LegalAiConversationCapabilitySuppressionService capabilitySuppressionService,
+                                           LegalAiConversationSessionInspectionOrchestrator sessionInspection,
+                                           LegalAiCapabilityLifecycleOrchestrator capabilityLifecycle,
                                            LegalAiConversationTrustZoneService trustZoneService,
                                            LegalAiConversationEvidenceProvenanceService evidenceProvenanceService,
                                            LegalKnowledgeCoverageService knowledgeCoverageService,
@@ -78,9 +61,7 @@ public class LegalAiConversationOrchestrator {
                                            LegalAiPreConsciousToolScopeEnricher preConsciousToolScopeEnricher) {
         this.routingService = Objects.requireNonNull(routingService, "routingService");
         this.contextAssemblerService = Objects.requireNonNull(contextAssemblerService, "contextAssemblerService");
-        this.researchDossierService = Objects.requireNonNull(researchDossierService, "researchDossierService");
-        this.validationEnvelopeService = Objects.requireNonNull(validationEnvelopeService, "validationEnvelopeService");
-        this.hallucinationGuardService = Objects.requireNonNull(hallucinationGuardService, "hallucinationGuardService");
+        this.juridicaSpine = Objects.requireNonNull(juridicaSpine, "juridicaSpine");
         this.virtualTrendsCouncilService = Objects.requireNonNull(virtualTrendsCouncilService, "virtualTrendsCouncilService");
         this.responseComposerService = Objects.requireNonNull(responseComposerService, "responseComposerService");
         this.memoryService = Objects.requireNonNull(memoryService, "memoryService");
@@ -90,13 +71,8 @@ public class LegalAiConversationOrchestrator {
         this.sourceAllowlist = Objects.requireNonNull(sourceAllowlist, "sourceAllowlist");
         this.documentQuarantineService = Objects.requireNonNull(documentQuarantineService, "documentQuarantineService");
         this.toolScopePolicy = Objects.requireNonNull(toolScopePolicy, "toolScopePolicy");
-        this.sessionDoctorService = Objects.requireNonNull(sessionDoctorService, "sessionDoctorService");
-        this.sessionBootstrapService = Objects.requireNonNull(sessionBootstrapService, "sessionBootstrapService");
-        this.capabilityRecoveryService = Objects.requireNonNull(capabilityRecoveryService, "capabilityRecoveryService");
-        this.capabilityCooldownService = Objects.requireNonNull(capabilityCooldownService, "capabilityCooldownService");
-        this.capabilityRehabilitationService = Objects.requireNonNull(capabilityRehabilitationService, "capabilityRehabilitationService");
-        this.capabilityRecurrenceService = Objects.requireNonNull(capabilityRecurrenceService, "capabilityRecurrenceService");
-        this.capabilitySuppressionService = Objects.requireNonNull(capabilitySuppressionService, "capabilitySuppressionService");
+        this.sessionInspection = Objects.requireNonNull(sessionInspection, "sessionInspection");
+        this.capabilityLifecycle = Objects.requireNonNull(capabilityLifecycle, "capabilityLifecycle");
         this.trustZoneService = Objects.requireNonNull(trustZoneService, "trustZoneService");
         this.evidenceProvenanceService = Objects.requireNonNull(evidenceProvenanceService, "evidenceProvenanceService");
         this.knowledgeCoverageService = Objects.requireNonNull(knowledgeCoverageService, "knowledgeCoverageService");
@@ -117,24 +93,24 @@ public class LegalAiConversationOrchestrator {
         var toolScope = toolScopePolicy.evaluate(effectiveRequest, capability, version.name(), spine.routedTools(), documentSecurity);
         var traceOpen = traceService.open(conversationId, effectiveRequest, version.name(), capability, spine.trace(), memoryBefore, sanitization, documentSecurity, toolScope);
         var preliminaryApproval = approvalService.evaluate(effectiveRequest, capability, version.name(), spine.approval(), spine.routedTools(), memoryBefore, traceOpen, documentSecurity, toolScope, sanitization);
-        var dossier = researchDossierService.build(contextAssemblerService.dossierRequest(effectiveRequest, version, capability));
-        var validation = validationEnvelopeService.validate(contextAssemblerService.validationRequest(effectiveRequest, version, capability, dossier));
-        var guard = hallucinationGuardService.evaluate(contextAssemblerService.guardRequest(effectiveRequest, capability, version));
+        var dossier = juridicaSpine.buildDossier(contextAssemblerService.dossierRequest(effectiveRequest, version, capability));
+        var validation = juridicaSpine.validate(contextAssemblerService.validationRequest(effectiveRequest, version, capability, dossier));
+        var guard = juridicaSpine.evaluateGuard(contextAssemblerService.guardRequest(effectiveRequest, capability, version));
         var bundle = contextAssemblerService.assemble(effectiveRequest, version, capability, dossier, validation, guard, memoryBefore, traceOpen, preliminaryApproval, sanitization.snapshot(), documentSecurity, toolScope);
         var enrichedToolScope = toolScopePolicy.enrichWithMcpPlan(toolScope, nestedMap(bundle.conversationContext().get("juridicaMcpPlan")));
-        var sessionDoctor = sessionDoctorService.inspect(effectiveRequest, capability, version.name(), memoryBefore, documentSecurity, enrichedToolScope, validation, guard);
+        var sessionDoctor = sessionInspection.inspectDoctor(effectiveRequest, capability, version.name(), memoryBefore, documentSecurity, enrichedToolScope, validation, guard);
         var toolScopeWithDoctor = toolScopePolicy.enrichWithSessionDoctor(enrichedToolScope, sessionDoctor);
-        var sessionBootstrap = sessionBootstrapService.inspect(effectiveRequest, capability, version.name(), memoryBefore, documentSecurity, toolScopeWithDoctor, sessionDoctor);
+        var sessionBootstrap = sessionInspection.inspectBootstrap(effectiveRequest, capability, version.name(), memoryBefore, documentSecurity, toolScopeWithDoctor, sessionDoctor);
         var toolScopeWithBootstrap = toolScopePolicy.enrichWithSessionBootstrap(toolScopeWithDoctor, sessionBootstrap);
-        var capabilityRecovery = capabilityRecoveryService.inspect(effectiveRequest, capability, version.name(), memoryBefore, documentSecurity, toolScopeWithBootstrap, sessionDoctor, sessionBootstrap);
+        var capabilityRecovery = capabilityLifecycle.inspectRecovery(effectiveRequest, capability, version.name(), memoryBefore, documentSecurity, toolScopeWithBootstrap, sessionDoctor, sessionBootstrap);
         var toolScopeWithRecovery = toolScopePolicy.enrichWithCapabilityRecovery(toolScopeWithBootstrap, capabilityRecovery);
-        var capabilityCooldown = capabilityCooldownService.inspect(effectiveRequest, capability, version.name(), memoryBefore, documentSecurity, toolScopeWithRecovery, sessionDoctor, sessionBootstrap, capabilityRecovery);
+        var capabilityCooldown = capabilityLifecycle.inspectCooldown(effectiveRequest, capability, version.name(), memoryBefore, documentSecurity, toolScopeWithRecovery, sessionDoctor, sessionBootstrap, capabilityRecovery);
         var toolScopeWithCooldown = toolScopePolicy.enrichWithCapabilityCooldown(toolScopeWithRecovery, capabilityCooldown);
-        var capabilityRehabilitation = capabilityRehabilitationService.inspect(effectiveRequest, capability, version.name(), memoryBefore, documentSecurity, toolScopeWithCooldown, sessionDoctor, sessionBootstrap, capabilityRecovery, capabilityCooldown);
+        var capabilityRehabilitation = capabilityLifecycle.inspectRehabilitation(effectiveRequest, capability, version.name(), memoryBefore, documentSecurity, toolScopeWithCooldown, sessionDoctor, sessionBootstrap, capabilityRecovery, capabilityCooldown);
         var toolScopeWithRehabilitation = toolScopePolicy.enrichWithCapabilityRehabilitation(toolScopeWithCooldown, capabilityRehabilitation);
-        var capabilityRecurrence = capabilityRecurrenceService.inspect(effectiveRequest, capability, version.name(), memoryBefore, documentSecurity, toolScopeWithRehabilitation, sessionDoctor, sessionBootstrap, capabilityRecovery, capabilityCooldown, capabilityRehabilitation);
+        var capabilityRecurrence = capabilityLifecycle.inspectRecurrence(effectiveRequest, capability, version.name(), memoryBefore, documentSecurity, toolScopeWithRehabilitation, sessionDoctor, sessionBootstrap, capabilityRecovery, capabilityCooldown, capabilityRehabilitation);
         var toolScopeWithRecurrence = toolScopePolicy.enrichWithCapabilityRecurrence(toolScopeWithRehabilitation, capabilityRecurrence);
-        var capabilitySuppression = capabilitySuppressionService.inspect(effectiveRequest, capability, version.name(), documentSecurity, toolScopeWithRecurrence, sessionDoctor, sessionBootstrap, capabilityRecurrence);
+        var capabilitySuppression = capabilityLifecycle.inspectSuppression(effectiveRequest, capability, version.name(), documentSecurity, toolScopeWithRecurrence, sessionDoctor, sessionBootstrap, capabilityRecurrence);
         var toolScopeWithSuppression = toolScopePolicy.enrichWithCapabilitySuppression(toolScopeWithRecurrence, capabilitySuppression);
         var trustZone = trustZoneService.inspect(effectiveRequest, capability, version.name(), documentSecurity, toolScopeWithSuppression, sessionDoctor, sessionBootstrap, capabilitySuppression);
         var toolScopeWithTrustZone = toolScopePolicy.enrichWithTrustZone(toolScopeWithSuppression, trustZone);
