@@ -21,7 +21,6 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 
 @Service
 public class ScaleArchitectureService {
@@ -79,7 +78,6 @@ public class ScaleArchitectureService {
         return cachePartitionGovernanceService.salvarPoliticaCache(request);
     }
 
-    @PjbTransactionalBudget(operation = "infra.scale-architecture.listar-planos-particao", maxMillis = 3000)
     public List<ScaleCachePartitionGovernanceService.PartitionPlanView> listarPlanosParticao() {
         return cachePartitionGovernanceService.listarPlanosParticao();
     }
