@@ -104,6 +104,21 @@ class NationalCommunicationFlowServiceTest {
         InstitutionalDocumentSecurityGateApplicationService documentSecurityGateService = Mockito.mock(InstitutionalDocumentSecurityGateApplicationService.class);
         InstitutionalRequestAccessContextFacadeService requestAccessContextFacadeService = Mockito.mock(InstitutionalRequestAccessContextFacadeService.class);
         when(concurrencyGuardService.execute(any(), any(), any())).thenAnswer(invocation -> ((java.util.function.Supplier<?>) invocation.getArgument(2)).get());
+        var institutionalOperationsFacade = new com.tcc.pjb.backend.service.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalOperationsFacade(
+                processoRepository,
+                currentUserService,
+                authorizationService,
+                vinculoResolver,
+                autorizacaoService,
+                inboxService,
+                auditInstitutionalService,
+                gateService,
+                deliveryQueueService,
+                observabilityService,
+                concurrencyGuardService,
+                hardeningApplicationService,
+                requestAccessContextFacadeService
+        );
         when(destinatarioResolver.resolver(any())).thenReturn(new ResolucaoDestinatarioProcessualResult(
                 new DestinatarioProcessual(
                         DestinatarioProcessualKind.ADVOGADO,
@@ -145,22 +160,15 @@ class NationalCommunicationFlowServiceTest {
                 authorizationService,
                 auditLedgerService,
                 catalogo,
-                vinculoResolver,
-                autorizacaoService,
                 atoCanonicoResolver,
                 motorRoteamento,
                 inboxService,
-                auditInstitutionalService,
-                gateService,
                 deliveryQueueService,
-                observabilityService,
-                concurrencyGuardService,
-                hardeningApplicationService,
                 workflowApplicationService,
                 flowAnalyticsApplicationService,
                 destinatarioResolver,
                 documentSecurityGateService,
-                requestAccessContextFacadeService
+                institutionalOperationsFacade
         );
         var response = service.expedir(new NationalCommunicationDispatchRequest(
                 3L,

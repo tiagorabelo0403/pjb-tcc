@@ -51,7 +51,9 @@ import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.processual.comunicacao.institutional.access.InstitutionalRequestAccessContextFacadeService;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.stereotype.Service;
 
+@Service
 public final class NationalCommunicationInstitutionalOperationsFacade {
 
     private final ProcessoRepository processoRepository;
