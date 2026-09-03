@@ -1,8 +1,6 @@
 package com.tcc.pjb.backend.service.oficial_justica;
 
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
-import com.tcc.pjb.backend.core.comunicacao.institucional.access.application.InstitutionalAccessContextMaterializationApplicationService;
-import com.tcc.pjb.backend.core.comunicacao.institucional.governance.application.InstitutionalDocumentSecurityGateApplicationService;
 import com.tcc.pjb.backend.model.dto.calendar.CalendarInstitutionalBridgeResponse;
 import com.tcc.pjb.backend.model.dto.dashboard.PerfilDashboardPayload;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -21,7 +19,6 @@ import com.tcc.pjb.backend.model.dto.profile.operational.OficialJusticaOficioReq
 import com.tcc.pjb.backend.model.dto.profile.operational.OficialJusticaOficioRetryRequest;
 import com.tcc.pjb.backend.model.dto.security.OperationalStepUpChallengeResponse;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
-import com.tcc.pjb.backend.model.entity.enums.InstitutionalSensitiveAct;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
@@ -32,7 +29,6 @@ import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
-import com.tcc.pjb.backend.core.comunicacao.processual.destinatario.application.DestinatarioProcessualResolverApplicationService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopologyMeshService;
 import com.tcc.pjb.backend.service.intelligence.PessoaLocalizacaoIntelligenceSummaryService;
@@ -64,13 +60,10 @@ public class OficialJusticaPainelService {
     private final InstitutionalActorRoutingService institutionalActorRoutingService;
     private final InstitutionalPanelBrandingService institutionalPanelBrandingService;
     private final InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService;
-    private final DestinatarioProcessualResolverApplicationService destinatarioResolverApplicationService;
-    private final OficialJusticaOficioCatalogService oficioCatalogService;
-    private final OficialJusticaTraceableCommunicationLedgerService traceableCommunicationLedgerService;
+    private final OficialJusticaOficioDispatchService oficioDispatchService;
     private final OficialJusticaEnderecoTriageService enderecoTriageService;
     private final OficialJusticaPortfolioProcessualService portfolioProcessualService;
     private final OficialJusticaWorkbenchService workbenchService;
-    private final OficialJusticaOficioSecurityService oficioSecurityService;
     private final OficialJusticaAgendaOperacionalService agendaOperacionalService;
     private final OficialJusticaCalendarioOperacionalService calendarioOperacionalService;
     private final OficialJusticaContextEnvelopeService contextEnvelopeService;
@@ -78,8 +71,6 @@ public class OficialJusticaPainelService {
     private final OficialJusticaNotificationCenterService notificationCenterService;
     private final OficialJusticaPanelEgressService panelEgressService;
     private final CalendarInstitutionalBridgeService institutionalBridgeService;
-    private final InstitutionalDocumentSecurityGateApplicationService institutionalDocumentSecurityGateApplicationService;
-    private final InstitutionalAccessContextMaterializationApplicationService institutionalAccessContextMaterializationApplicationService;
     private final PainelSharedExperienceService sharedExperienceService;
     private final PainelCompositionPipelineService compositionPipeline;
     private final OficialJusticaCommunicationFormalModelService communicationFormalModelService;
@@ -95,13 +86,10 @@ public class OficialJusticaPainelService {
                                        InstitutionalActorRoutingService institutionalActorRoutingService,
                                        InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService,
                                        InstitutionalPanelBrandingService institutionalPanelBrandingService,
-                                       DestinatarioProcessualResolverApplicationService destinatarioResolverApplicationService,
-                                       OficialJusticaOficioCatalogService oficioCatalogService,
-                                       OficialJusticaTraceableCommunicationLedgerService traceableCommunicationLedgerService,
+                                       OficialJusticaOficioDispatchService oficioDispatchService,
                                        OficialJusticaEnderecoTriageService enderecoTriageService,
                                        OficialJusticaPortfolioProcessualService portfolioProcessualService,
                                        OficialJusticaWorkbenchService workbenchService,
-                                       OficialJusticaOficioSecurityService oficioSecurityService,
                                        OficialJusticaAgendaOperacionalService agendaOperacionalService,
                                        OficialJusticaCalendarioOperacionalService calendarioOperacionalService,
                                        OficialJusticaContextEnvelopeService contextEnvelopeService,
@@ -109,8 +97,6 @@ public class OficialJusticaPainelService {
                                        OficialJusticaNotificationCenterService notificationCenterService,
                                        OficialJusticaPanelEgressService panelEgressService,
                                        CalendarInstitutionalBridgeService institutionalBridgeService,
-                                       InstitutionalDocumentSecurityGateApplicationService institutionalDocumentSecurityGateApplicationService,
-                                       InstitutionalAccessContextMaterializationApplicationService institutionalAccessContextMaterializationApplicationService,
                                        PainelSharedExperienceService sharedExperienceService,
                                        PainelCompositionPipelineService compositionPipeline,
                                        OficialJusticaCommunicationFormalModelService communicationFormalModelService) {
@@ -125,13 +111,10 @@ public class OficialJusticaPainelService {
         this.institutionalActorRoutingService = institutionalActorRoutingService;
         this.institutionalMultimediaWorkspaceService = institutionalMultimediaWorkspaceService;
         this.institutionalPanelBrandingService = institutionalPanelBrandingService;
-        this.destinatarioResolverApplicationService = destinatarioResolverApplicationService;
-        this.oficioCatalogService = oficioCatalogService;
-        this.traceableCommunicationLedgerService = traceableCommunicationLedgerService;
+        this.oficioDispatchService = oficioDispatchService;
         this.enderecoTriageService = enderecoTriageService;
         this.portfolioProcessualService = portfolioProcessualService;
         this.workbenchService = workbenchService;
-        this.oficioSecurityService = oficioSecurityService;
         this.agendaOperacionalService = agendaOperacionalService;
         this.calendarioOperacionalService = calendarioOperacionalService;
         this.contextEnvelopeService = contextEnvelopeService;
@@ -139,8 +122,6 @@ public class OficialJusticaPainelService {
         this.notificationCenterService = notificationCenterService;
         this.panelEgressService = panelEgressService;
         this.institutionalBridgeService = institutionalBridgeService;
-        this.institutionalDocumentSecurityGateApplicationService = institutionalDocumentSecurityGateApplicationService;
-        this.institutionalAccessContextMaterializationApplicationService = institutionalAccessContextMaterializationApplicationService;
         this.sharedExperienceService = sharedExperienceService;
         this.compositionPipeline = compositionPipeline;
         this.communicationFormalModelService = communicationFormalModelService;
@@ -272,39 +253,39 @@ public class OficialJusticaPainelService {
     }
 
     public Map<String, Object> catalogoOficios() {
-        return oficioCatalogService.catalogo(contextFactory.build().usuario().getTipoUsuario());
+        return oficioDispatchService.catalogo();
     }
 
     public Map<String, Object> listarExecucoesOficios(int limit) {
-        return traceableCommunicationLedgerService.recentExecutions(contextFactory.build().usuario().getTipoUsuario(), limit);
+        return oficioDispatchService.listarExecucoes(limit);
     }
 
     public Map<String, Object> statusExecucaoOficio(String executionId) {
-        return traceableCommunicationLedgerService.executionStatus(contextFactory.build().usuario().getTipoUsuario(), executionId);
+        return oficioDispatchService.statusExecucao(executionId);
     }
 
     public Map<String, Object> confirmarEntregaOficio(String executionId, OficialJusticaOficioConfirmationRequest request) {
-        return traceableCommunicationLedgerService.confirmDelivery(contextFactory.build().usuario().getTipoUsuario(), executionId, request);
+        return oficioDispatchService.confirmarEntrega(executionId, request);
     }
 
     public Map<String, Object> confirmarCanalOficio(String executionId, OficialJusticaOficioChannelAckRequest request) {
-        return traceableCommunicationLedgerService.confirmChannelDelivery(contextFactory.build().usuario().getTipoUsuario(), executionId, request);
+        return oficioDispatchService.confirmarCanal(executionId, request);
     }
 
     public Map<String, Object> ackCartorioOficio(String executionId, OficialJusticaOficioCartorioAckRequest request) {
-        return traceableCommunicationLedgerService.acknowledgeCartorio(contextFactory.build().usuario().getTipoUsuario(), executionId, request);
+        return oficioDispatchService.ackCartorio(executionId, request);
     }
 
     public Map<String, Object> reconciliarOficio(String executionId, OficialJusticaOficioReconciliationRequest request) {
-        return traceableCommunicationLedgerService.reconcileExecution(contextFactory.build().usuario().getTipoUsuario(), executionId, request);
+        return oficioDispatchService.reconciliar(executionId, request);
     }
 
     public Map<String, Object> malhaExternaOficio(String executionId) {
-        return traceableCommunicationLedgerService.externalMeshStatus(contextFactory.build().usuario().getTipoUsuario(), executionId);
+        return oficioDispatchService.malhaExterna(executionId);
     }
 
     public Map<String, Object> retentarEntregaOficio(String executionId, OficialJusticaOficioRetryRequest request) {
-        return traceableCommunicationLedgerService.retryExecution(contextFactory.build().usuario().getTipoUsuario(), executionId, request);
+        return oficioDispatchService.retentar(executionId, request);
     }
 
     public InstitutionalActorTopologyMeshService.InstitutionalActorTopologyMeshSnapshot malhaProcesso(Long processoId) {
@@ -431,190 +412,12 @@ public class OficialJusticaPainelService {
         return out;
     }
 
-    @Transactional
     public Map<String, Object> emitirOficio(Long processoId, OficialJusticaOficioRequest request) {
-        Processo processo = resolveProcessoObrigatorio(processoId);
-        Usuario usuario = contextFactory.build().usuario();
-        oficioSecurityService.enforceCanSendIntoProcess(processo, usuario, "OFICIO_OFICIAL_JUSTICA");
-        OficialJusticaOficioRequest safe = request == null
-                ? new OficialJusticaOficioRequest("Ofício do oficial de justiça", "Destinatário institucional", "Conteúdo não informado", "Fundamento não informado", null, null, null, null, List.of(), Map.of(), List.of(), List.of(), List.of(), List.of(), List.of(), Boolean.TRUE, Boolean.FALSE, Boolean.TRUE)
-                : request;
-        var destinatario = OficialJusticaOficioWorkflowSupport.resolveDestinatario(destinatarioResolverApplicationService, safe);
-        OficialJusticaOficioCatalogService.OficioTypeDefinition oficioType = oficioCatalogService.resolveType(safe.tipoOficioCode(), false);
-        OficialJusticaOficioCatalogService.TemplateDefinition template = oficioCatalogService.resolveTemplate(safe.minutaCode(), oficioType);
-        Map<String, Object> destinatarioMap = OficialJusticaOficioWorkflowSupport.buildDestinatarioMap(destinatario, safe);
-        Map<String, Object> minutaGovernada = oficioCatalogService.renderMinutaGovernada(safe, processo, usuario, destinatarioMap, oficioType, template, false);
-        InstitutionalActorRoutingService.InstitutionalRoute route = institutionalActorRoutingService.officialJustice(processoId, usuario.getTipoUsuario() == TipoUsuario.OFICIAL_JUSTICA_AVALIADOR, "OFICIO_OFICIAL_JUSTICA");
-        var institutionalSignatureGate = institutionalDocumentSecurityGateApplicationService.enforce(
-                null,
-                null,
-                InstitutionalSensitiveAct.PETICIONAR_EM_NOME_DO_ORGAO,
-                "OFICIO_OFICIAL_JUSTICA",
-                true);
-        WorkItem oficio = WorkItem.builder()
-                .processo(processo)
-                .faseOrigem(processo.getFaseAtual())
-                .templateCode("OFICIO_OFICIAL:" + processoId + ':' + usuario.getId() + ':' + Instant.now().toEpochMilli())
-                .type(WorkItemType.EXPEDICAO)
-                .titulo("Ofício do oficial de justiça — " + safe.assunto())
-                .descricao(OficialJusticaOficioWorkflowSupport.composeOficioDescricao(safe, false, oficioType, template, destinatarioMap, minutaGovernada))
-                .queueCode(route.queueCode())
-                .inboxKey(route.inboxKey())
-                .assignedRole(route.assignedRole())
-                .assignedUser(usuario)
-                .status(WorkItemStatus.CONCLUIDO)
-                .prioridade(1)
-                .dueAt(Instant.now())
-                .uf(usuario.getUf())
-                .comarca(usuario.getComarca())
-                .baseLegal(OficialJusticaOficioWorkflowSupport.normalizeFundamento(safe.fundamento()))
-                .build();
-        oficio = workItemRepository.save(oficio);
-        oficioSecurityService.enforceOriginalOnlyForDirectProcessSubmission(safe, minutaGovernada, true);
-        WorkItem juntadaDireta = OficialJusticaOficioWorkflowSupport.criarJuntadaDiretaNoProcesso(workItemRepository, processo, usuario, oficio, safe, minutaGovernada, false);
-        Map<String, Object> traceableExecution = traceableCommunicationLedgerService.registerExecution(
-                usuario.getTipoUsuario(),
-                processoId,
-                "OFICIO_OFICIAL_JUSTICA",
-                "JUNTADA_DIRETA_PROCESSO_ORIGINAL",
-                template.code(),
-                oficioType.asMap(),
-                destinatarioMap,
-                minutaGovernada,
-                false
-        );
-        String executionId = String.valueOf(traceableExecution.get("executionId"));
-        Map<String, Object> dispatchTopology = OficialJusticaOficioWorkflowSupport.directProcessDispatchTopology(processo, usuario, juntadaDireta, executionId, destinatarioMap, minutaGovernada, false);
-        traceableExecution = traceableCommunicationLedgerService.attachDispatchTopology(usuario.getTipoUsuario(), executionId, dispatchTopology);
-        commons.publishUserHistory(usuario, "OFICIAL", "OFICIO_REGISTRADO", "Ofício do oficial de justiça registrado e protocolado diretamente no processo dentro do PJB.", processo, oficio.getId());
-        commons.publishTerritoryHistory(usuario, "OFICIAL", "OFICIO_OFICIAL_JUNTADA_DIRETA", "Ofício original do oficial juntado diretamente no processo sem balcão intermediário.", processo, juntadaDireta.getId());
-        Map<String, Object> securityEnvelope = oficioSecurityService.envelope(processo, usuario, "OFICIO_OFICIAL_JUSTICA");
-        Map<String, Object> originalOnlyEnvelope = oficioSecurityService.originalOnlyEnvelope(safe, minutaGovernada, true);
-        LinkedHashMap<String, Object> out = new LinkedHashMap<>();
-        out.put("status", "OFICIO_REGISTRADO_DIRETO_NO_PROCESSO");
-        out.put("processoId", processoId);
-        out.put("workItemId", oficio.getId());
-        out.put("workflowAxis", route.routeAxis());
-        out.put("oficioType", oficioType.asMap());
-        out.put("minutaGovernada", minutaGovernada);
-        out.put("destinatarioResolvido", destinatarioMap);
-        out.put("traceableExecution", traceableExecution);
-        out.put("executionId", traceableExecution.get("executionId"));
-        out.put("institutionalDispatch", dispatchTopology);
-        out.put("registeredInsideNamedProcess", Boolean.TRUE);
-        out.put("protocoladoDiretoNoProcesso", Boolean.TRUE);
-        out.put("securityEnvelope", securityEnvelope);
-        out.put("originalOnlyEnvelope", originalOnlyEnvelope);
-        out.put("institutionalSignatureGate", institutionalSignatureGate.asMap());
-        out.put("institutionalAccessContext", institutionalAccessContextMaterializationApplicationService.materializar(institutionalSignatureGate.affiliationId(), institutionalSignatureGate.nominationId()).asMap());
-        out.put("oficio", commons.mapWorkItem(oficio));
-        out.put("juntadaDiretaProcesso", commons.mapWorkItem(juntadaDireta));
-        out.putAll(institutionalMultimediaWorkspaceService.enrich(
-                new InstitutionalMultimediaWorkspaceService.ResolveRequest(
-                        "OFICIAL_JUSTICA",
-                        "OFICIO_OFICIAL_JUSTICA",
-                        processoId,
-                        usuario.getTipoUsuario(),
-                        safe,
-                        safe.prepararPacoteProtocoloResolvido(),
-                        safe.sigiloSensivelResolvido(),
-                        false
-                )
-        ));
-        return out;
+        return oficioDispatchService.emitir(processoId, request);
     }
 
-    @Transactional
     public Map<String, Object> responderOficio(Long processoId, OficialJusticaOficioRequest request) {
-        Processo processo = resolveProcessoObrigatorio(processoId);
-        Usuario usuario = contextFactory.build().usuario();
-        oficioSecurityService.enforceCanSendIntoProcess(processo, usuario, "RESPOSTA_OFICIO_OFICIAL_JUSTICA");
-        OficialJusticaOficioRequest safe = request == null
-                ? new OficialJusticaOficioRequest("Resposta a ofício", "Destinatário institucional", "Resposta não informada", "Fundamento não informado", null, null, null, null, List.of(), Map.of(), List.of(), List.of(), List.of(), List.of(), List.of(), Boolean.TRUE, Boolean.FALSE, Boolean.TRUE)
-                : request;
-        var destinatario = OficialJusticaOficioWorkflowSupport.resolveDestinatario(destinatarioResolverApplicationService, safe);
-        OficialJusticaOficioCatalogService.OficioTypeDefinition oficioType = oficioCatalogService.resolveType(safe.tipoOficioCode(), true);
-        OficialJusticaOficioCatalogService.TemplateDefinition template = oficioCatalogService.resolveTemplate(safe.minutaCode(), oficioType);
-        Map<String, Object> destinatarioMap = OficialJusticaOficioWorkflowSupport.buildDestinatarioMap(destinatario, safe);
-        Map<String, Object> minutaGovernada = oficioCatalogService.renderMinutaGovernada(safe, processo, usuario, destinatarioMap, oficioType, template, true);
-        InstitutionalActorRoutingService.InstitutionalRoute route = institutionalActorRoutingService.officialJustice(processoId, usuario.getTipoUsuario() == TipoUsuario.OFICIAL_JUSTICA_AVALIADOR, "RESPOSTA_OFICIO_OFICIAL_JUSTICA");
-        var institutionalSignatureGate = institutionalDocumentSecurityGateApplicationService.enforce(
-                null,
-                null,
-                InstitutionalSensitiveAct.PETICIONAR_EM_NOME_DO_ORGAO,
-                "RESPOSTA_OFICIO_OFICIAL_JUSTICA",
-                true);
-        WorkItem resposta = WorkItem.builder()
-                .processo(processo)
-                .faseOrigem(processo.getFaseAtual())
-                .templateCode("RESPOSTA_OFICIO_OFICIAL:" + processoId + ':' + usuario.getId() + ':' + Instant.now().toEpochMilli())
-                .type(WorkItemType.EXPEDICAO)
-                .titulo("Resposta a ofício pelo oficial de justiça — " + safe.assunto())
-                .descricao(OficialJusticaOficioWorkflowSupport.composeOficioDescricao(safe, true, oficioType, template, destinatarioMap, minutaGovernada))
-                .queueCode(route.queueCode())
-                .inboxKey(route.inboxKey())
-                .assignedRole(route.assignedRole())
-                .assignedUser(usuario)
-                .status(WorkItemStatus.CONCLUIDO)
-                .prioridade(1)
-                .dueAt(Instant.now())
-                .uf(usuario.getUf())
-                .comarca(usuario.getComarca())
-                .baseLegal(OficialJusticaOficioWorkflowSupport.normalizeFundamento(safe.fundamento()))
-                .build();
-        resposta = workItemRepository.save(resposta);
-        oficioSecurityService.enforceOriginalOnlyForDirectProcessSubmission(safe, minutaGovernada, true);
-        WorkItem juntadaDireta = OficialJusticaOficioWorkflowSupport.criarJuntadaDiretaNoProcesso(workItemRepository, processo, usuario, resposta, safe, minutaGovernada, true);
-        Map<String, Object> traceableExecution = traceableCommunicationLedgerService.registerExecution(
-                usuario.getTipoUsuario(),
-                processoId,
-                "RESPOSTA_OFICIO_OFICIAL_JUSTICA",
-                "JUNTADA_DIRETA_PROCESSO_ORIGINAL",
-                template.code(),
-                oficioType.asMap(),
-                destinatarioMap,
-                minutaGovernada,
-                false
-        );
-        String executionId = String.valueOf(traceableExecution.get("executionId"));
-        Map<String, Object> dispatchTopology = OficialJusticaOficioWorkflowSupport.directProcessDispatchTopology(processo, usuario, juntadaDireta, executionId, destinatarioMap, minutaGovernada, true);
-        traceableExecution = traceableCommunicationLedgerService.attachDispatchTopology(usuario.getTipoUsuario(), executionId, dispatchTopology);
-        commons.publishUserHistory(usuario, "OFICIAL", "RESPOSTA_OFICIO_REGISTRADA", "Resposta a ofício registrada e protocolada diretamente no processo dentro do PJB.", processo, resposta.getId());
-        commons.publishTerritoryHistory(usuario, "OFICIAL", "RESPOSTA_OFICIO_JUNTADA_DIRETA", "Resposta a ofício do oficial juntada diretamente no processo sem balcão intermediário.", processo, juntadaDireta.getId());
-        Map<String, Object> securityEnvelope = oficioSecurityService.envelope(processo, usuario, "RESPOSTA_OFICIO_OFICIAL_JUSTICA");
-        Map<String, Object> originalOnlyEnvelope = oficioSecurityService.originalOnlyEnvelope(safe, minutaGovernada, true);
-        LinkedHashMap<String, Object> out = new LinkedHashMap<>();
-        out.put("status", "RESPOSTA_OFICIO_REGISTRADA_DIRETO_NO_PROCESSO");
-        out.put("processoId", processoId);
-        out.put("workItemId", resposta.getId());
-        out.put("workflowAxis", route.routeAxis());
-        out.put("oficioType", oficioType.asMap());
-        out.put("minutaGovernada", minutaGovernada);
-        out.put("destinatarioResolvido", destinatarioMap);
-        out.put("traceableExecution", traceableExecution);
-        out.put("executionId", traceableExecution.get("executionId"));
-        out.put("institutionalDispatch", dispatchTopology);
-        out.put("registeredInsideNamedProcess", Boolean.TRUE);
-        out.put("protocoladoDiretoNoProcesso", Boolean.TRUE);
-        out.put("securityEnvelope", securityEnvelope);
-        out.put("originalOnlyEnvelope", originalOnlyEnvelope);
-        out.put("institutionalSignatureGate", institutionalSignatureGate.asMap());
-        out.put("institutionalAccessContext", institutionalAccessContextMaterializationApplicationService.materializar(institutionalSignatureGate.affiliationId(), institutionalSignatureGate.nominationId()).asMap());
-        out.put("respostaOficio", commons.mapWorkItem(resposta));
-        out.put("juntadaDiretaProcesso", commons.mapWorkItem(juntadaDireta));
-        out.putAll(institutionalMultimediaWorkspaceService.enrich(
-                new InstitutionalMultimediaWorkspaceService.ResolveRequest(
-                        "OFICIAL_JUSTICA",
-                        "RESPOSTA_OFICIO_OFICIAL_JUSTICA",
-                        processoId,
-                        usuario.getTipoUsuario(),
-                        safe,
-                        safe.prepararPacoteProtocoloResolvido(),
-                        safe.sigiloSensivelResolvido(),
-                        false
-                )
-        ));
-        return out;
+        return oficioDispatchService.responder(processoId, request);
     }
 
     public Map<String, Object> resumoRastreioOperacional() {
@@ -762,10 +565,5 @@ public class OficialJusticaPainelService {
     @SuppressWarnings("unchecked")
     private static Map<String, Object> castMap(Object value) {
         return value instanceof Map<?, ?> map ? (Map<String, Object>) map : Map.of();
-    }
-
-    private Processo resolveProcessoObrigatorio(Long processoId) {
-        return processoRepository.findById(processoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo não encontrado: " + processoId));
     }
 }

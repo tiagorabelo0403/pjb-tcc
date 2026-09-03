@@ -8,9 +8,6 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.tcc.pjb.backend.core.comunicacao.institucional.access.application.InstitutionalAccessContextMaterializationApplicationService;
-import com.tcc.pjb.backend.core.comunicacao.institucional.governance.application.InstitutionalDocumentSecurityGateApplicationService;
-import com.tcc.pjb.backend.core.comunicacao.processual.destinatario.application.DestinatarioProcessualResolverApplicationService;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.dto.calendar.CalendarInstitutionalBridgeResponse;
 import com.tcc.pjb.backend.model.dto.calendar.CalendarInstitutionalFocusResponse;
@@ -108,13 +105,10 @@ class OficialJusticaPainelServiceBootstrapCharacterizationTest {
             mock(InstitutionalActorRoutingService.class),
             mock(InstitutionalMultimediaWorkspaceService.class),
             institutionalPanelBrandingService,
-            mock(DestinatarioProcessualResolverApplicationService.class),
-            mock(OficialJusticaOficioCatalogService.class),
-            mock(OficialJusticaTraceableCommunicationLedgerService.class),
+            mock(OficialJusticaOficioDispatchService.class),
             enderecoTriageService,
             portfolioProcessualService,
             workbenchService,
-            mock(OficialJusticaOficioSecurityService.class),
             agendaOperacionalService,
             calendarioOperacionalService,
             contextEnvelopeService,
@@ -122,8 +116,6 @@ class OficialJusticaPainelServiceBootstrapCharacterizationTest {
             notificationCenterService,
             panelEgressService,
             institutionalBridgeService,
-            mock(InstitutionalDocumentSecurityGateApplicationService.class),
-            mock(InstitutionalAccessContextMaterializationApplicationService.class),
             sharedExperienceService,
             compositionPipeline,
             mock(OficialJusticaCommunicationFormalModelService.class)
