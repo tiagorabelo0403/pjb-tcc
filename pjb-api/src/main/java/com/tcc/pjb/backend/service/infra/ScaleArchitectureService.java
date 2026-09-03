@@ -4,27 +4,13 @@ import com.tcc.pjb.backend.configs.datasource.PjbAdaptiveDataPlaneService;
 import com.tcc.pjb.backend.configs.datasource.PjbDataSourceRoutingProperties;
 import com.tcc.pjb.backend.configs.security.governance.ApiRouteGovernanceProperties;
 import com.tcc.pjb.backend.core.jobs.runtime.JobDispatcherProperties;
-import com.tcc.pjb.backend.core.procedural.NationalProceduralOperationalPlaybookService;
-import com.tcc.pjb.backend.core.procedural.NationalProceduralRightsCoverageService;
-import com.tcc.pjb.backend.core.procedural.NationalProceduralTribunalVariationService;
 import com.tcc.pjb.backend.service.infra.scaling.JudicialScaleProfile;
 import com.tcc.pjb.backend.service.infra.scaling.JudicialScaleProfileResolver;
 import com.tcc.pjb.backend.service.infra.scaling.JudicialScaleRuntimePolicyService;
-import com.tcc.pjb.backend.service.secretariat.query.reference.SecretariatInstitutionalAlignmentService;
-import com.tcc.pjb.backend.service.secretariat.query.reference.SecretariatJudicialReferenceModelService;
-import com.tcc.pjb.backend.service.secretariat.query.operational.SecretariatOperationalActionModelService;
-import com.tcc.pjb.backend.service.secretariat.query.operational.SecretariatOperationalDeskModelService;
-import com.tcc.pjb.backend.service.secretariat.query.operational.SecretariatOperationalTransactionModelService;
-import com.tcc.pjb.backend.model.entity.infra.CachePolicyOverride;
-import com.tcc.pjb.backend.model.entity.infra.PartitionPlan;
-import com.tcc.pjb.backend.model.repository.CachePolicyOverrideRepository;
-import com.tcc.pjb.backend.model.repository.PartitionPlanRepository;
 import com.tcc.pjb.backend.model.repository.ProcessualReadModelMaterializationTrailRepository;
 import com.tcc.pjb.backend.model.repository.ProcessualReadModelProjectionRepository;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import java.time.Duration;
-import java.time.Year;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,7 +19,6 @@ import java.util.Map;
 import java.util.Objects;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.env.Environment;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
@@ -41,11 +26,8 @@ import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 @Service
 public class ScaleArchitectureService {
 
-    private final CachePolicyOverrideRepository cachePolicyOverrideRepository;
-    private final PartitionPlanRepository partitionPlanRepository;
     private final ProcessualReadModelProjectionRepository processualReadModelProjectionRepository;
     private final ProcessualReadModelMaterializationTrailRepository processualReadModelMaterializationTrailRepository;
-    private final JdbcTemplate jdbcTemplate;
     private final ObjectProvider<PjbAdaptiveDataPlaneService> adaptiveDataPlaneServiceProvider;
     private final ObjectProvider<PjbDataSourceRoutingProperties> dataSourceRoutingPropertiesProvider;
     private final ObjectProvider<PjbProcessualReadModelMeshService> processualReadModelMeshServiceProvider;
@@ -54,21 +36,13 @@ public class ScaleArchitectureService {
     private final ObjectProvider<JobDispatcherProperties> jobDispatcherPropertiesProvider;
     private final JudicialScaleProfileResolver judicialScaleProfileResolver;
     private final JudicialScaleRuntimePolicyService judicialScaleRuntimePolicyService;
-    private final SecretariatJudicialReferenceModelService referenceModelService;
-    private final SecretariatInstitutionalAlignmentService institutionalAlignmentService;
-    private final SecretariatOperationalDeskModelService operationalDeskModelService;
-    private final SecretariatOperationalActionModelService operationalActionModelService;
-    private final SecretariatOperationalTransactionModelService operationalTransactionModelService;
-    private final NationalProceduralRightsCoverageService proceduralRightsCoverageService;
-    private final NationalProceduralOperationalPlaybookService proceduralOperationalPlaybookService;
-    private final NationalProceduralTribunalVariationService proceduralTribunalVariationService;
+    private final ScaleCachePartitionGovernanceService cachePartitionGovernanceService;
+    private final ScaleSecretariatModelGovernanceService secretariatModelGovernanceService;
+    private final ScaleProceduralGovernanceService proceduralGovernanceService;
     private final Environment environment;
 
-    public ScaleArchitectureService(CachePolicyOverrideRepository cachePolicyOverrideRepository,
-                                    PartitionPlanRepository partitionPlanRepository,
-                                    ProcessualReadModelProjectionRepository processualReadModelProjectionRepository,
+    public ScaleArchitectureService(ProcessualReadModelProjectionRepository processualReadModelProjectionRepository,
                                     ProcessualReadModelMaterializationTrailRepository processualReadModelMaterializationTrailRepository,
-                                    JdbcTemplate jdbcTemplate,
                                     ObjectProvider<PjbAdaptiveDataPlaneService> adaptiveDataPlaneServiceProvider,
                                     ObjectProvider<PjbDataSourceRoutingProperties> dataSourceRoutingPropertiesProvider,
                                     ObjectProvider<PjbProcessualReadModelMeshService> processualReadModelMeshServiceProvider,
@@ -77,20 +51,12 @@ public class ScaleArchitectureService {
                                     ObjectProvider<JobDispatcherProperties> jobDispatcherPropertiesProvider,
                                     JudicialScaleProfileResolver judicialScaleProfileResolver,
                                     JudicialScaleRuntimePolicyService judicialScaleRuntimePolicyService,
-                                    SecretariatJudicialReferenceModelService referenceModelService,
-                                    SecretariatInstitutionalAlignmentService institutionalAlignmentService,
-                                    SecretariatOperationalDeskModelService operationalDeskModelService,
-                                    SecretariatOperationalActionModelService operationalActionModelService,
-                                    SecretariatOperationalTransactionModelService operationalTransactionModelService,
-                                    NationalProceduralRightsCoverageService proceduralRightsCoverageService,
-                                    NationalProceduralOperationalPlaybookService proceduralOperationalPlaybookService,
-                                    NationalProceduralTribunalVariationService proceduralTribunalVariationService,
+                                    ScaleCachePartitionGovernanceService cachePartitionGovernanceService,
+                                    ScaleSecretariatModelGovernanceService secretariatModelGovernanceService,
+                                    ScaleProceduralGovernanceService proceduralGovernanceService,
                                     Environment environment) {
-        this.cachePolicyOverrideRepository = Objects.requireNonNull(cachePolicyOverrideRepository);
-        this.partitionPlanRepository = Objects.requireNonNull(partitionPlanRepository);
         this.processualReadModelProjectionRepository = Objects.requireNonNull(processualReadModelProjectionRepository);
         this.processualReadModelMaterializationTrailRepository = Objects.requireNonNull(processualReadModelMaterializationTrailRepository);
-        this.jdbcTemplate = Objects.requireNonNull(jdbcTemplate);
         this.adaptiveDataPlaneServiceProvider = Objects.requireNonNull(adaptiveDataPlaneServiceProvider);
         this.dataSourceRoutingPropertiesProvider = Objects.requireNonNull(dataSourceRoutingPropertiesProvider);
         this.processualReadModelMeshServiceProvider = Objects.requireNonNull(processualReadModelMeshServiceProvider);
@@ -99,57 +65,23 @@ public class ScaleArchitectureService {
         this.jobDispatcherPropertiesProvider = Objects.requireNonNull(jobDispatcherPropertiesProvider);
         this.judicialScaleProfileResolver = Objects.requireNonNull(judicialScaleProfileResolver);
         this.judicialScaleRuntimePolicyService = Objects.requireNonNull(judicialScaleRuntimePolicyService);
-        this.referenceModelService = Objects.requireNonNull(referenceModelService);
-        this.institutionalAlignmentService = Objects.requireNonNull(institutionalAlignmentService);
-        this.operationalDeskModelService = Objects.requireNonNull(operationalDeskModelService);
-        this.operationalActionModelService = Objects.requireNonNull(operationalActionModelService);
-        this.operationalTransactionModelService = Objects.requireNonNull(operationalTransactionModelService);
-        this.proceduralRightsCoverageService = Objects.requireNonNull(proceduralRightsCoverageService);
-        this.proceduralOperationalPlaybookService = Objects.requireNonNull(proceduralOperationalPlaybookService);
-        this.proceduralTribunalVariationService = Objects.requireNonNull(proceduralTribunalVariationService);
+        this.cachePartitionGovernanceService = Objects.requireNonNull(cachePartitionGovernanceService);
+        this.secretariatModelGovernanceService = Objects.requireNonNull(secretariatModelGovernanceService);
+        this.proceduralGovernanceService = Objects.requireNonNull(proceduralGovernanceService);
         this.environment = Objects.requireNonNull(environment);
     }
 
-    @Transactional(readOnly = true)
-    public List<CachePolicyView> listarPoliticasCache() {
-        List<CachePolicyView> overrides = cachePolicyOverrideRepository.findByEnabledTrueOrderByCacheNameAscRoleNameAsc().stream()
-                .map(entity -> new CachePolicyView(entity.getId(), entity.getCacheName(), entity.getRoleName(), entity.getTtlSeconds(),
-                        entity.getStaleWhileRevalidateSeconds(), entity.isEnabled(), entity.getNotes(), "OVERRIDE"))
-                .toList();
-        if (!overrides.isEmpty()) {
-            return overrides;
-        }
-        return defaults().entrySet().stream()
-                .map(entry -> {
-                    String[] parts = entry.getKey().split("\\|", 2);
-                    return new CachePolicyView(null, parts[0], parts[1], entry.getValue().ttlSeconds(), entry.getValue().staleWhileRevalidateSeconds(), true, entry.getValue().notes(), "DEFAULT");
-                })
-                .toList();
+    public List<ScaleCachePartitionGovernanceService.CachePolicyView> listarPoliticasCache() {
+        return cachePartitionGovernanceService.listarPoliticasCache();
     }
 
-    @Transactional
-    public CachePolicyView salvarPoliticaCache(CachePolicyRequest request) {
-        CachePolicyOverride entity = cachePolicyOverrideRepository
-                .findByCacheNameIgnoreCaseAndRoleNameIgnoreCase(request.cacheName(), request.roleName())
-                .orElseGet(CachePolicyOverride::new);
-        entity.setCacheName(normalize(request.cacheName()));
-        entity.setRoleName(normalize(request.roleName()));
-        entity.setTtlSeconds(Math.max(1, request.ttlSeconds()));
-        entity.setStaleWhileRevalidateSeconds(Math.max(0, request.staleWhileRevalidateSeconds()));
-        entity.setEnabled(request.enabled());
-        entity.setNotes(request.notes());
-        CachePolicyOverride saved = cachePolicyOverrideRepository.save(entity);
-        return new CachePolicyView(saved.getId(), saved.getCacheName(), saved.getRoleName(), saved.getTtlSeconds(),
-                saved.getStaleWhileRevalidateSeconds(), saved.isEnabled(), saved.getNotes(), "OVERRIDE");
+    public ScaleCachePartitionGovernanceService.CachePolicyView salvarPoliticaCache(ScaleCachePartitionGovernanceService.CachePolicyRequest request) {
+        return cachePartitionGovernanceService.salvarPoliticaCache(request);
     }
 
     @PjbTransactionalBudget(operation = "infra.scale-architecture.listar-planos-particao", maxMillis = 3000)
-    @Transactional(readOnly = true)
-    public List<PartitionPlanView> listarPlanosParticao() {
-        return partitionPlanRepository.findAll().stream()
-                .map(plan -> new PartitionPlanView(plan.getId(), plan.getTableName(), plan.getPartitionColumn(), plan.getPartitionPrefix(),
-                        plan.getStartYear(), plan.getYearsAhead(), plan.getStatus(), plan.getLastMaterializedYear(), plan.getNotes()))
-                .toList();
+    public List<ScaleCachePartitionGovernanceService.PartitionPlanView> listarPlanosParticao() {
+        return cachePartitionGovernanceService.listarPlanosParticao();
     }
 
 
@@ -243,106 +175,48 @@ public class ScaleArchitectureService {
         return new JudicialRuntimePolicyGovernanceView(policies);
     }
 
-    @Transactional(readOnly = true)
-    public JudicialSecretariatModelGovernanceView judicialSecretariatModelsView() {
-        SecretariatJudicialReferenceModelService.ReferenceCatalogView catalog = referenceModelService.catalog();
-        List<JudicialSecretariatModelRowView> rows = catalog.rows().stream()
-                .map(row -> new JudicialSecretariatModelRowView(
-                        row.instanceClass(),
-                        row.branchClass(),
-                        row.descriptor(),
-                        row.queueFamilies(),
-                        row.capabilities()
-                ))
-                .toList();
-        return new JudicialSecretariatModelGovernanceView(rows);
+    public ScaleSecretariatModelGovernanceService.JudicialSecretariatModelGovernanceView judicialSecretariatModelsView() {
+        return secretariatModelGovernanceService.judicialSecretariatModelsView();
     }
 
-
-    @Transactional(readOnly = true)
-    public JudicialOperationalDeskGovernanceView judicialOperationalDesksView() {
-        SecretariatOperationalDeskModelService.OperationalDeskCatalogView catalog = operationalDeskModelService.catalog();
-        List<JudicialOperationalDeskRowView> rows = catalog.rows().stream()
-                .map(row -> new JudicialOperationalDeskRowView(
-                        row.journeyMode(),
-                        row.descriptor(),
-                        row.desks()
-                ))
-                .toList();
-        return new JudicialOperationalDeskGovernanceView(rows);
+    public ScaleSecretariatModelGovernanceService.JudicialOperationalDeskGovernanceView judicialOperationalDesksView() {
+        return secretariatModelGovernanceService.judicialOperationalDesksView();
     }
 
-
-    @Transactional(readOnly = true)
-    public JudicialOperationalActionGovernanceView judicialOperationalActionsView() {
-        SecretariatOperationalActionModelService.OperationalActionCatalogView catalog = operationalActionModelService.catalog();
-        List<JudicialOperationalActionRowView> rows = catalog.rows().stream()
-                .map(row -> new JudicialOperationalActionRowView(
-                        row.journeyMode(),
-                        row.descriptor(),
-                        row.actions()
-                ))
-                .toList();
-        return new JudicialOperationalActionGovernanceView(rows);
+    public ScaleSecretariatModelGovernanceService.JudicialOperationalActionGovernanceView judicialOperationalActionsView() {
+        return secretariatModelGovernanceService.judicialOperationalActionsView();
     }
 
-
-    @Transactional(readOnly = true)
-    public JudicialOperationalTransactionGovernanceView judicialOperationalTransactionsView() {
-        SecretariatOperationalTransactionModelService.OperationalTransactionCatalogView catalog = operationalTransactionModelService.catalog();
-        List<JudicialOperationalTransactionRowView> rows = catalog.rows().stream()
-                .map(row -> new JudicialOperationalTransactionRowView(
-                        row.journeyMode(),
-                        row.descriptor(),
-                        row.transactions()
-                ))
-                .toList();
-        return new JudicialOperationalTransactionGovernanceView(rows);
+    public ScaleSecretariatModelGovernanceService.JudicialOperationalTransactionGovernanceView judicialOperationalTransactionsView() {
+        return secretariatModelGovernanceService.judicialOperationalTransactionsView();
     }
 
-    @Transactional(readOnly = true)
     public Object judicialProceduralCoverageView() {
-        return proceduralRightsCoverageService.snapshot();
+        return proceduralGovernanceService.judicialProceduralCoverageView();
     }
 
-    @Transactional(readOnly = true)
     public Object judicialProceduralCoverageDetailView(String rito) {
-        return proceduralRightsCoverageService.describe(rito);
+        return proceduralGovernanceService.judicialProceduralCoverageDetailView(rito);
     }
 
-
-    @Transactional(readOnly = true)
     public Object judicialProceduralPlaybookView() {
-        return proceduralOperationalPlaybookService.snapshot();
+        return proceduralGovernanceService.judicialProceduralPlaybookView();
     }
 
-    @Transactional(readOnly = true)
     public Object judicialProceduralPlaybookDetailView(String rito) {
-        return proceduralOperationalPlaybookService.describe(rito);
+        return proceduralGovernanceService.judicialProceduralPlaybookDetailView(rito);
     }
 
-    @Transactional(readOnly = true)
     public Object judicialTribunalVariationView() {
-        return proceduralTribunalVariationService.snapshot();
+        return proceduralGovernanceService.judicialTribunalVariationView();
     }
 
-    @Transactional(readOnly = true)
     public Object judicialTribunalVariationDetailView(String tribunalCodigo, String rito, String unidadeCodigo, String tipoJustica) {
-        return proceduralTribunalVariationService.describe(tribunalCodigo, unidadeCodigo, rito, tipoJustica);
+        return proceduralGovernanceService.judicialTribunalVariationDetailView(tribunalCodigo, rito, unidadeCodigo, tipoJustica);
     }
 
-    @Transactional(readOnly = true)
-    public JudicialInstitutionalAlignmentGovernanceView judicialInstitutionalAlignmentView() {
-        SecretariatInstitutionalAlignmentService.InstitutionalCatalogView catalog = institutionalAlignmentService.catalog();
-        List<JudicialInstitutionalAlignmentRowView> rows = catalog.rows().stream()
-                .map(row -> new JudicialInstitutionalAlignmentRowView(
-                        row.institutionalAxis(),
-                        row.descriptor(),
-                        row.cells(),
-                        row.touchpoints()
-                ))
-                .toList();
-        return new JudicialInstitutionalAlignmentGovernanceView(rows);
+    public ScaleSecretariatModelGovernanceService.JudicialInstitutionalAlignmentGovernanceView judicialInstitutionalAlignmentView() {
+        return secretariatModelGovernanceService.judicialInstitutionalAlignmentView();
     }
 
     @Transactional(readOnly = true)
@@ -540,67 +414,16 @@ public class ScaleArchitectureService {
         );
     }
 
-    @Transactional
-    public PartitionPlanView salvarPlanoParticao(PartitionPlanRequest request) {
-        PartitionPlan plan = partitionPlanRepository.findByTableNameIgnoreCase(request.tableName())
-                .orElseGet(PartitionPlan::new);
-        plan.setTableName(normalizeTable(request.tableName()));
-        plan.setPartitionColumn(normalize(request.partitionColumn()));
-        plan.setPartitionPrefix(normalizeTable(request.partitionPrefix()));
-        plan.setStartYear(Math.max(2020, request.startYear()));
-        plan.setYearsAhead(Math.max(1, request.yearsAhead()));
-        plan.setStatus("ATIVO");
-        plan.setNotes(request.notes());
-        PartitionPlan saved = partitionPlanRepository.save(plan);
-        return new PartitionPlanView(saved.getId(), saved.getTableName(), saved.getPartitionColumn(), saved.getPartitionPrefix(),
-                saved.getStartYear(), saved.getYearsAhead(), saved.getStatus(), saved.getLastMaterializedYear(), saved.getNotes());
+    public ScaleCachePartitionGovernanceService.PartitionPlanView salvarPlanoParticao(ScaleCachePartitionGovernanceService.PartitionPlanRequest request) {
+        return cachePartitionGovernanceService.salvarPlanoParticao(request);
     }
 
-    @Transactional(readOnly = true)
-    public PartitionPreview previewMaterializacao(String tableName) {
-        PartitionPlan plan = partitionPlanRepository.findByTableNameIgnoreCase(tableName)
-                .orElseThrow(() -> new IllegalArgumentException("Plano de particionamento nao encontrado."));
-        int currentYear = Year.now().getValue();
-        int initialYear = Math.max(plan.getStartYear(), currentYear);
-        int lastYear = Math.max(initialYear, currentYear + Math.max(1, plan.getYearsAhead()));
-        List<String> ddls = java.util.stream.IntStream.rangeClosed(initialYear, lastYear)
-                .mapToObj(year -> buildPartitionDdl(plan, year))
-                .toList();
-        return new PartitionPreview(plan.getTableName(), initialYear, lastYear, ddls);
+    public ScaleCachePartitionGovernanceService.PartitionPreview previewMaterializacao(String tableName) {
+        return cachePartitionGovernanceService.previewMaterializacao(tableName);
     }
 
-    @Transactional
-    public PartitionPreview materializar(String tableName) {
-        PartitionPreview preview = previewMaterializacao(tableName);
-        for (String ddl : preview.ddlStatements()) {
-            jdbcTemplate.execute(ddl);
-        }
-        PartitionPlan plan = partitionPlanRepository.findByTableNameIgnoreCase(tableName)
-                .orElseThrow(() -> new IllegalArgumentException("Plano de particionamento nao encontrado."));
-        plan.setLastMaterializedYear(preview.endYear());
-        partitionPlanRepository.save(plan);
-        return preview;
-    }
-
-    private String buildPartitionDdl(PartitionPlan plan, int year) {
-        String shardTable = normalizeTable(plan.getPartitionPrefix()) + "_" + year;
-        return "CREATE TABLE IF NOT EXISTS " + shardTable +
-                " (LIKE " + normalizeTable(plan.getTableName()) + " INCLUDING ALL);";
-    }
-
-    private String normalize(String input) {
-        return input == null ? "" : input.trim().toUpperCase(Locale.ROOT);
-    }
-
-    private String normalizeTable(String input) {
-        if (input == null) {
-            return "";
-        }
-        String normalized = input.trim().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9_]", "_");
-        while (normalized.contains("__")) {
-            normalized = normalized.replace("__", "_");
-        }
-        return normalized;
+    public ScaleCachePartitionGovernanceService.PartitionPreview materializar(String tableName) {
+        return cachePartitionGovernanceService.materializar(tableName);
     }
 
     private String maskJdbcUrl(String jdbcUrl) {
@@ -631,109 +454,6 @@ public class ScaleArchitectureService {
         return null;
     }
 
-    private Map<String, DefaultCachePolicy> defaults() {
-        Map<String, DefaultCachePolicy> out = new LinkedHashMap<>();
-        out.put("judge_dashboard|JUIZ", new DefaultCachePolicy(15, 5, "Painel decisional com refresh curto."));
-        out.put("public_timeline|CIDADAO", new DefaultCachePolicy(60, 20, "Linha do tempo publica de alto volume."));
-        out.put("laiane_judge|MAGISTRADO", new DefaultCachePolicy(20, 10, "IA magistratura com janela curta de reuso."));
-        out.put("processo_resumo|ADVOGADO", new DefaultCachePolicy(45, 15, "Resumo processual para advocacia."));
-        out.put("camara_governanca|DESEMBARGADOR", new DefaultCachePolicy(30, 10, "Painel colegiado com giro medio."));
-        out.put("plenario_publico|MINISTRO", new DefaultCachePolicy(25, 10, "Publicacao de sessao plenaria."));
-        out.put("processo_timeline_hot|ADVOGADO", new DefaultCachePolicy(20, 8, "Timeline resumida de processo com invalidação por evento."));
-        out.put("audiencia_agenda|SERVIDOR", new DefaultCachePolicy(30, 10, "Agenda forense e mapa de audiencias."));
-        out.put("peticionamento_workspace|ADVOGADO", new DefaultCachePolicy(12, 4, "Workspace de peticionamento com leitura quente e protecao de consistencia."));
-        return out;
-    }
-
-    private record DefaultCachePolicy(int ttlSeconds, int staleWhileRevalidateSeconds, String notes) {
-    }
-
-    public record CachePolicyRequest(
-            @NotBlank String cacheName,
-            @NotBlank String roleName,
-            @Min(1) int ttlSeconds,
-            @Min(0) int staleWhileRevalidateSeconds,
-            boolean enabled,
-            String notes
-    ) {
-    }
-
-    public record CachePolicyView(
-            Long id,
-            String cacheName,
-            String roleName,
-            Integer ttlSeconds,
-            Integer staleWhileRevalidateSeconds,
-            boolean enabled,
-            String notes,
-            String source
-    ) {
-    }
-
-    public record JudicialSecretariatModelGovernanceView(
-            List<JudicialSecretariatModelRowView> rows
-    ) {
-    }
-
-    public record JudicialSecretariatModelRowView(
-            String instanceClass,
-            String branchClass,
-            String descriptor,
-            List<String> queueFamilies,
-            Map<String, Object> capabilities
-    ) {
-    }
-
-
-    public record JudicialOperationalDeskGovernanceView(
-            List<JudicialOperationalDeskRowView> rows
-    ) {
-    }
-
-    public record JudicialOperationalDeskRowView(
-            String journeyMode,
-            String descriptor,
-            List<SecretariatOperationalDeskModelService.OperationalDeskView> desks
-    ) {
-    }
-
-
-    public record JudicialOperationalActionGovernanceView(
-            List<JudicialOperationalActionRowView> rows
-    ) {
-    }
-
-    public record JudicialOperationalActionRowView(
-            String journeyMode,
-            String descriptor,
-            List<SecretariatOperationalActionModelService.OperationalDeskActionView> actions
-    ) {
-    }
-
-    public record JudicialOperationalTransactionGovernanceView(
-            List<JudicialOperationalTransactionRowView> rows
-    ) {
-    }
-
-    public record JudicialOperationalTransactionRowView(
-            String journeyMode,
-            String descriptor,
-            List<SecretariatOperationalTransactionModelService.OperationalTransactionView> transactions
-    ) {
-    }
-
-    public record JudicialInstitutionalAlignmentGovernanceView(
-            List<JudicialInstitutionalAlignmentRowView> rows
-    ) {
-    }
-
-    public record JudicialInstitutionalAlignmentRowView(
-            String institutionalAxis,
-            String descriptor,
-            List<String> cells,
-            List<String> touchpoints
-    ) {
-    }
 
     public record AdaptiveDataPlaneView(
             boolean enabled,
@@ -951,34 +671,4 @@ public class ScaleArchitectureService {
     ) {
     }
 
-    public record PartitionPlanRequest(
-            @NotBlank String tableName,
-            @NotBlank String partitionColumn,
-            @NotBlank String partitionPrefix,
-            @Min(2020) int startYear,
-            @Min(1) int yearsAhead,
-            String notes
-    ) {
-    }
-
-    public record PartitionPlanView(
-            Long id,
-            String tableName,
-            String partitionColumn,
-            String partitionPrefix,
-            Integer startYear,
-            Integer yearsAhead,
-            String status,
-            Integer lastMaterializedYear,
-            String notes
-    ) {
-    }
-
-    public record PartitionPreview(
-            String tableName,
-            Integer startYear,
-            Integer endYear,
-            List<String> ddlStatements
-    ) {
-    }
 }
