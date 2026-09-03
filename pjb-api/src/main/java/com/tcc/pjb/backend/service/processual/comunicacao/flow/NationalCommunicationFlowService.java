@@ -2,15 +2,9 @@ package com.tcc.pjb.backend.service.processual.comunicacao.flow;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.CatalogoInstitucionalUnificadoService;
-import com.tcc.pjb.backend.core.comunicacao.institucional.access.AutorizacaoCaixaInstitucionalService;
-import com.tcc.pjb.backend.core.comunicacao.institucional.access.VinculoUsuarioCaixaInstitucionalResolver;
-import com.tcc.pjb.backend.core.comunicacao.institucional.audit.application.InstitutionalCommunicationAuditApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.canonico.AtoCanonicoProcessualResolver;
 import com.tcc.pjb.backend.core.comunicacao.institucional.delivery.application.InstitutionalDeliveryQueueApplicationService;
-import com.tcc.pjb.backend.core.comunicacao.institucional.gate.application.InstitutionalCommunicationGateApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.governance.application.InstitutionalDocumentSecurityGateApplicationService;
-import com.tcc.pjb.backend.core.comunicacao.institucional.hardening.application.InstitutionalCommunicationConcurrencyGuardService;
-import com.tcc.pjb.backend.core.comunicacao.institucional.hardening.application.InstitutionalCommunicationHardeningApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.inbox.application.InstitutionalInboxApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.observability.application.InstitutionalCommunicationObservabilityApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.routing.MotorRoteamentoComunicacaoInstitucional;
@@ -65,7 +59,7 @@ import com.tcc.pjb.backend.model.entity.enums.DestinatarioInstitucionalKind;
 import com.tcc.pjb.backend.model.entity.enums.StatusComunicacaoInstitucional;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
-import com.tcc.pjb.backend.service.processual.comunicacao.institutional.access.InstitutionalRequestAccessContextFacadeService;
+import com.tcc.pjb.backend.service.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalOperationsFacade;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,22 +78,15 @@ public class NationalCommunicationFlowService {
                                             PjbAuthorizationService authorizationService,
                                             AuditLedgerService auditLedgerService,
                                             CatalogoInstitucionalUnificadoService catalogoInstitucionalUnificadoService,
-                                            VinculoUsuarioCaixaInstitucionalResolver vinculoUsuarioCaixaInstitucionalResolver,
-                                            AutorizacaoCaixaInstitucionalService autorizacaoCaixaInstitucionalService,
                                             AtoCanonicoProcessualResolver atoCanonicoProcessualResolver,
                                             MotorRoteamentoComunicacaoInstitucional motorRoteamentoComunicacaoInstitucional,
                                             InstitutionalInboxApplicationService institutionalInboxApplicationService,
-                                            InstitutionalCommunicationAuditApplicationService institutionalCommunicationAuditApplicationService,
-                                            InstitutionalCommunicationGateApplicationService institutionalCommunicationGateApplicationService,
                                             InstitutionalDeliveryQueueApplicationService institutionalDeliveryQueueApplicationService,
-                                            InstitutionalCommunicationObservabilityApplicationService institutionalCommunicationObservabilityApplicationService,
-                                            InstitutionalCommunicationConcurrencyGuardService institutionalCommunicationConcurrencyGuardService,
-                                            InstitutionalCommunicationHardeningApplicationService institutionalCommunicationHardeningApplicationService,
                                             InstitutionalWorkflowApplicationService institutionalWorkflowApplicationService,
                                             InstitutionalFlowAnalyticsApplicationService institutionalFlowAnalyticsApplicationService,
                                             DestinatarioProcessualResolverApplicationService destinatarioProcessualResolverApplicationService,
                                             InstitutionalDocumentSecurityGateApplicationService institutionalDocumentSecurityGateApplicationService,
-                                            InstitutionalRequestAccessContextFacadeService institutionalRequestAccessContextFacadeService) {
+                                            NationalCommunicationInstitutionalOperationsFacade institutionalOperationsFacade) {
         this.facade = new NationalCommunicationFlowFacade(
                 citacaoIntimacaoEngine,
                 processoRepository,
@@ -109,22 +96,15 @@ public class NationalCommunicationFlowService {
                 authorizationService,
                 auditLedgerService,
                 catalogoInstitucionalUnificadoService,
-                vinculoUsuarioCaixaInstitucionalResolver,
-                autorizacaoCaixaInstitucionalService,
                 atoCanonicoProcessualResolver,
                 motorRoteamentoComunicacaoInstitucional,
                 institutionalInboxApplicationService,
-                institutionalCommunicationAuditApplicationService,
-                institutionalCommunicationGateApplicationService,
                 institutionalDeliveryQueueApplicationService,
-                institutionalCommunicationObservabilityApplicationService,
-                institutionalCommunicationConcurrencyGuardService,
-                institutionalCommunicationHardeningApplicationService,
                 institutionalWorkflowApplicationService,
                 institutionalFlowAnalyticsApplicationService,
                 destinatarioProcessualResolverApplicationService,
                 institutionalDocumentSecurityGateApplicationService,
-                institutionalRequestAccessContextFacadeService
+                institutionalOperationsFacade
         );
     }
     public NationalCommunicationDispatchResponse expedir(NationalCommunicationDispatchRequest request) {

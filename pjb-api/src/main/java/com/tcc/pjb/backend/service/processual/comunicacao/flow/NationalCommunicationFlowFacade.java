@@ -2,10 +2,7 @@ package com.tcc.pjb.backend.service.processual.comunicacao.flow;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.CatalogoInstitucionalUnificadoService;
-import com.tcc.pjb.backend.core.comunicacao.institucional.access.AutorizacaoCaixaInstitucionalService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.access.VinculoUsuarioCaixaInstitucional;
-import com.tcc.pjb.backend.core.comunicacao.institucional.access.VinculoUsuarioCaixaInstitucionalResolver;
-import com.tcc.pjb.backend.core.comunicacao.institucional.audit.application.InstitutionalCommunicationAuditApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.audit.domain.InstitutionalDeliveryProof;
 import com.tcc.pjb.backend.core.comunicacao.institucional.audit.domain.InstitutionalTimelineEvent;
 import com.tcc.pjb.backend.core.comunicacao.institucional.canonico.AtoCanonicoProcessualResolver;
@@ -14,11 +11,8 @@ import com.tcc.pjb.backend.core.comunicacao.institucional.canonico.ResolucaoAtoC
 import com.tcc.pjb.backend.core.comunicacao.institucional.delivery.application.InstitutionalDeliveryQueueApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.delivery.domain.InstitutionalDeadLetterEntry;
 import com.tcc.pjb.backend.core.comunicacao.institucional.delivery.domain.InstitutionalDeliveryJob;
-import com.tcc.pjb.backend.core.comunicacao.institucional.gate.application.InstitutionalCommunicationGateApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.gate.domain.InstitutionalGateState;
 import com.tcc.pjb.backend.core.comunicacao.institucional.governance.application.InstitutionalDocumentSecurityGateApplicationService;
-import com.tcc.pjb.backend.core.comunicacao.institucional.hardening.application.InstitutionalCommunicationConcurrencyGuardService;
-import com.tcc.pjb.backend.core.comunicacao.institucional.hardening.application.InstitutionalCommunicationHardeningApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.hardening.domain.InstitutionalCommunicationHardeningReport;
 import com.tcc.pjb.backend.core.comunicacao.institucional.inbox.application.InstitutionalInboxActionResult;
 import com.tcc.pjb.backend.core.comunicacao.institucional.inbox.application.InstitutionalInboxApplicationService;
@@ -26,7 +20,6 @@ import com.tcc.pjb.backend.core.comunicacao.institucional.inbox.domain.Instituti
 import com.tcc.pjb.backend.core.comunicacao.institucional.integration.domain.InstitutionalExternalDispatch;
 import com.tcc.pjb.backend.core.comunicacao.institucional.model.ResolucaoDestinoInstitucionalRequest;
 import com.tcc.pjb.backend.core.comunicacao.institucional.model.ResolucaoDestinoInstitucionalResult;
-import com.tcc.pjb.backend.core.comunicacao.institucional.observability.application.InstitutionalCommunicationObservabilityApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.observability.domain.InstitutionalObservabilityDashboard;
 import com.tcc.pjb.backend.core.comunicacao.institucional.routing.MotorRoteamentoComunicacaoInstitucional;
 import com.tcc.pjb.backend.core.comunicacao.institucional.routing.ResolucaoRoteamentoInstitucionalRequest;
@@ -107,7 +100,6 @@ import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
-import com.tcc.pjb.backend.service.processual.comunicacao.institutional.access.InstitutionalRequestAccessContextFacadeService;
 import com.tcc.pjb.backend.service.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalOperationsFacade;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -127,17 +119,10 @@ final class NationalCommunicationFlowFacade {
     private final PjbAuthorizationService authorizationService;
     private final AuditLedgerService auditLedgerService;
     private final CatalogoInstitucionalUnificadoService catalogoInstitucionalUnificadoService;
-    private final VinculoUsuarioCaixaInstitucionalResolver vinculoUsuarioCaixaInstitucionalResolver;
-    private final AutorizacaoCaixaInstitucionalService autorizacaoCaixaInstitucionalService;
     private final AtoCanonicoProcessualResolver atoCanonicoProcessualResolver;
     private final MotorRoteamentoComunicacaoInstitucional motorRoteamentoComunicacaoInstitucional;
     private final InstitutionalInboxApplicationService institutionalInboxApplicationService;
-    private final InstitutionalCommunicationAuditApplicationService institutionalCommunicationAuditApplicationService;
-    private final InstitutionalCommunicationGateApplicationService institutionalCommunicationGateApplicationService;
     private final InstitutionalDeliveryQueueApplicationService institutionalDeliveryQueueApplicationService;
-    private final InstitutionalCommunicationObservabilityApplicationService institutionalCommunicationObservabilityApplicationService;
-    private final InstitutionalCommunicationConcurrencyGuardService institutionalCommunicationConcurrencyGuardService;
-    private final InstitutionalCommunicationHardeningApplicationService institutionalCommunicationHardeningApplicationService;
     private final InstitutionalWorkflowApplicationService institutionalWorkflowApplicationService;
     private final InstitutionalFlowAnalyticsApplicationService institutionalFlowAnalyticsApplicationService;
     private final DestinatarioProcessualResolverApplicationService destinatarioProcessualResolverApplicationService;
@@ -152,22 +137,15 @@ final class NationalCommunicationFlowFacade {
                                             PjbAuthorizationService authorizationService,
                                             AuditLedgerService auditLedgerService,
                                             CatalogoInstitucionalUnificadoService catalogoInstitucionalUnificadoService,
-                                            VinculoUsuarioCaixaInstitucionalResolver vinculoUsuarioCaixaInstitucionalResolver,
-                                            AutorizacaoCaixaInstitucionalService autorizacaoCaixaInstitucionalService,
                                             AtoCanonicoProcessualResolver atoCanonicoProcessualResolver,
                                             MotorRoteamentoComunicacaoInstitucional motorRoteamentoComunicacaoInstitucional,
                                             InstitutionalInboxApplicationService institutionalInboxApplicationService,
-                                            InstitutionalCommunicationAuditApplicationService institutionalCommunicationAuditApplicationService,
-                                            InstitutionalCommunicationGateApplicationService institutionalCommunicationGateApplicationService,
                                             InstitutionalDeliveryQueueApplicationService institutionalDeliveryQueueApplicationService,
-                                            InstitutionalCommunicationObservabilityApplicationService institutionalCommunicationObservabilityApplicationService,
-                                            InstitutionalCommunicationConcurrencyGuardService institutionalCommunicationConcurrencyGuardService,
-                                            InstitutionalCommunicationHardeningApplicationService institutionalCommunicationHardeningApplicationService,
                                             InstitutionalWorkflowApplicationService institutionalWorkflowApplicationService,
                                             InstitutionalFlowAnalyticsApplicationService institutionalFlowAnalyticsApplicationService,
                                             DestinatarioProcessualResolverApplicationService destinatarioProcessualResolverApplicationService,
                                             InstitutionalDocumentSecurityGateApplicationService institutionalDocumentSecurityGateApplicationService,
-                                            InstitutionalRequestAccessContextFacadeService institutionalRequestAccessContextFacadeService) {
+                                            NationalCommunicationInstitutionalOperationsFacade institutionalOperationsFacade) {
         this.citacaoIntimacaoEngine = Objects.requireNonNull(citacaoIntimacaoEngine);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
@@ -176,36 +154,15 @@ final class NationalCommunicationFlowFacade {
         this.authorizationService = Objects.requireNonNull(authorizationService);
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
         this.catalogoInstitucionalUnificadoService = Objects.requireNonNull(catalogoInstitucionalUnificadoService);
-        this.vinculoUsuarioCaixaInstitucionalResolver = Objects.requireNonNull(vinculoUsuarioCaixaInstitucionalResolver);
-        this.autorizacaoCaixaInstitucionalService = Objects.requireNonNull(autorizacaoCaixaInstitucionalService);
         this.atoCanonicoProcessualResolver = Objects.requireNonNull(atoCanonicoProcessualResolver);
         this.motorRoteamentoComunicacaoInstitucional = Objects.requireNonNull(motorRoteamentoComunicacaoInstitucional);
         this.institutionalInboxApplicationService = Objects.requireNonNull(institutionalInboxApplicationService);
-        this.institutionalCommunicationAuditApplicationService = Objects.requireNonNull(institutionalCommunicationAuditApplicationService);
-        this.institutionalCommunicationGateApplicationService = Objects.requireNonNull(institutionalCommunicationGateApplicationService);
         this.institutionalDeliveryQueueApplicationService = Objects.requireNonNull(institutionalDeliveryQueueApplicationService);
-        this.institutionalCommunicationObservabilityApplicationService = Objects.requireNonNull(institutionalCommunicationObservabilityApplicationService);
-        this.institutionalCommunicationConcurrencyGuardService = Objects.requireNonNull(institutionalCommunicationConcurrencyGuardService);
-        this.institutionalCommunicationHardeningApplicationService = Objects.requireNonNull(institutionalCommunicationHardeningApplicationService);
         this.institutionalWorkflowApplicationService = Objects.requireNonNull(institutionalWorkflowApplicationService);
         this.institutionalFlowAnalyticsApplicationService = Objects.requireNonNull(institutionalFlowAnalyticsApplicationService);
         this.destinatarioProcessualResolverApplicationService = Objects.requireNonNull(destinatarioProcessualResolverApplicationService);
         this.institutionalDocumentSecurityGateApplicationService = Objects.requireNonNull(institutionalDocumentSecurityGateApplicationService);
-        this.institutionalOperationsFacade = new NationalCommunicationInstitutionalOperationsFacade(
-                processoRepository,
-                currentUserService,
-                authorizationService,
-                vinculoUsuarioCaixaInstitucionalResolver,
-                autorizacaoCaixaInstitucionalService,
-                institutionalInboxApplicationService,
-                institutionalCommunicationAuditApplicationService,
-                institutionalCommunicationGateApplicationService,
-                institutionalDeliveryQueueApplicationService,
-                institutionalCommunicationObservabilityApplicationService,
-                institutionalCommunicationConcurrencyGuardService,
-                institutionalCommunicationHardeningApplicationService,
-                institutionalRequestAccessContextFacadeService
-        );
+        this.institutionalOperationsFacade = Objects.requireNonNull(institutionalOperationsFacade);
     }
 
     @Transactional
