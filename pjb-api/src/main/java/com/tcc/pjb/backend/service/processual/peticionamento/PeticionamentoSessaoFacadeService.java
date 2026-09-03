@@ -41,6 +41,7 @@ import com.tcc.pjb.backend.service.processual.peticionamento.workspace.Instituti
 import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaPublicationGateService;
 import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaSecurityPipelineService;
 import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaStorageShieldService;
+import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaPipelineOrchestrator;
 import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMultimidiaComposerService;
 import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoThreatSentinelService;
 import com.tcc.pjb.backend.integration.serpro.datavalid.CpfValidacaoService;
@@ -58,15 +59,8 @@ public class PeticionamentoSessaoFacadeService {
     private final SigiloService sigiloService;
     private final PeticionamentoPreventiveGuardrailService peticionamentoPreventiveGuardrailService;
     private final PeticionamentoPayloadHardeningService payloadHardeningService;
-    private final PeticionamentoDocumentBatchReadingStrategyService documentBatchReadingStrategyService;
-    private final PeticionamentoProcedureSpecificVerifierService procedureSpecificVerifierService;
-    private final PeticionamentoProtocolEnvelopeHardeningService protocolEnvelopeHardeningService;
-    private final PeticionamentoMultimidiaComposerService multimidiaComposerService;
-    private final PeticionamentoMediaSecurityPipelineService mediaSecurityPipelineService;
-    private final PeticionamentoThreatSentinelService threatSentinelService;
-    private final PeticionamentoMediaStorageShieldService mediaStorageShieldService;
-    private final PeticionamentoPericiaEvidenceIntelligenceService periciaEvidenceIntelligenceService;
-    private final PeticionamentoMediaPublicationGateService mediaPublicationGateService;
+    private final PeticionamentoProtocolReadinessOrchestrator protocolReadinessOrchestrator;
+    private final PeticionamentoMediaPipelineOrchestrator mediaPipelineOrchestrator;
     private final UploadCapacityGovernanceService uploadCapacityGovernanceService;
     private final PeticionamentoJurisprudenciaWorkspaceService jurisprudenciaWorkspaceService;
     private final InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService;
@@ -83,15 +77,8 @@ public class PeticionamentoSessaoFacadeService {
                                              SigiloService sigiloService,
                                              PeticionamentoPreventiveGuardrailService peticionamentoPreventiveGuardrailService,
                                              PeticionamentoPayloadHardeningService payloadHardeningService,
-                                             PeticionamentoDocumentBatchReadingStrategyService documentBatchReadingStrategyService,
-                                             PeticionamentoProcedureSpecificVerifierService procedureSpecificVerifierService,
-                                             PeticionamentoProtocolEnvelopeHardeningService protocolEnvelopeHardeningService,
-                                             PeticionamentoMultimidiaComposerService multimidiaComposerService,
-                                             PeticionamentoMediaSecurityPipelineService mediaSecurityPipelineService,
-                                             PeticionamentoThreatSentinelService threatSentinelService,
-                                             PeticionamentoMediaStorageShieldService mediaStorageShieldService,
-                                             PeticionamentoPericiaEvidenceIntelligenceService periciaEvidenceIntelligenceService,
-                                             PeticionamentoMediaPublicationGateService mediaPublicationGateService,
+                                             PeticionamentoProtocolReadinessOrchestrator protocolReadinessOrchestrator,
+                                             PeticionamentoMediaPipelineOrchestrator mediaPipelineOrchestrator,
                                              UploadCapacityGovernanceService uploadCapacityGovernanceService,
                                              PeticionamentoJurisprudenciaWorkspaceService jurisprudenciaWorkspaceService,
                                              InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService,
@@ -107,15 +94,8 @@ public class PeticionamentoSessaoFacadeService {
         this.sigiloService = Objects.requireNonNull(sigiloService, "sigiloService");
         this.peticionamentoPreventiveGuardrailService = Objects.requireNonNull(peticionamentoPreventiveGuardrailService, "peticionamentoPreventiveGuardrailService");
         this.payloadHardeningService = Objects.requireNonNull(payloadHardeningService, "payloadHardeningService");
-        this.documentBatchReadingStrategyService = Objects.requireNonNull(documentBatchReadingStrategyService, "documentBatchReadingStrategyService");
-        this.procedureSpecificVerifierService = Objects.requireNonNull(procedureSpecificVerifierService, "procedureSpecificVerifierService");
-        this.protocolEnvelopeHardeningService = Objects.requireNonNull(protocolEnvelopeHardeningService, "protocolEnvelopeHardeningService");
-        this.multimidiaComposerService = Objects.requireNonNull(multimidiaComposerService, "multimidiaComposerService");
-        this.mediaSecurityPipelineService = Objects.requireNonNull(mediaSecurityPipelineService, "mediaSecurityPipelineService");
-        this.threatSentinelService = Objects.requireNonNull(threatSentinelService, "threatSentinelService");
-        this.mediaStorageShieldService = Objects.requireNonNull(mediaStorageShieldService, "mediaStorageShieldService");
-        this.periciaEvidenceIntelligenceService = Objects.requireNonNull(periciaEvidenceIntelligenceService, "periciaEvidenceIntelligenceService");
-        this.mediaPublicationGateService = Objects.requireNonNull(mediaPublicationGateService, "mediaPublicationGateService");
+        this.protocolReadinessOrchestrator = Objects.requireNonNull(protocolReadinessOrchestrator, "protocolReadinessOrchestrator");
+        this.mediaPipelineOrchestrator = Objects.requireNonNull(mediaPipelineOrchestrator, "mediaPipelineOrchestrator");
         this.uploadCapacityGovernanceService = Objects.requireNonNull(uploadCapacityGovernanceService, "uploadCapacityGovernanceService");
         this.jurisprudenciaWorkspaceService = Objects.requireNonNull(jurisprudenciaWorkspaceService, "jurisprudenciaWorkspaceService");
         this.institutionalMultimediaWorkspaceService = Objects.requireNonNull(institutionalMultimediaWorkspaceService, "institutionalMultimediaWorkspaceService");
@@ -171,129 +151,24 @@ public class PeticionamentoSessaoFacadeService {
             }
         }
 
-        PeticionamentoDocumentBatchReadingStrategyService.BatchReadingReport batchReading = documentBatchReadingStrategyService.plan(
-                new PeticionamentoDocumentBatchReadingStrategyService.ResolveRequest(
-                        safe.getTituloCaso(),
-                        safe.getRamoDireito(),
-                        safe.getRitoProcessual(),
-                        safe.getClasseProcessual(),
-                        safe.getTipoJustica(),
-                        safe.getMateriaPrincipal(),
-                        safe.getNaturezaJuridica(),
-                        effectiveDraftMarkdown,
-                        safe.getTextoPeticaoLivre(),
-                        safe.getTextoFatosResumido(),
-                        safe.getDocumentosAnexados(),
-                        safe.tutelaUrgenciaResolvida(),
-                        Boolean.TRUE.equals(safe.getCasoUrgente()),
-                        safe.prepararPacoteProtocoloResolvido(),
-                        representacao != null && representacao.exigeProcuracaoFormal(),
-                        sigiloDecision != null && sigiloDecision.nivel() != null && sigiloDecision.nivel().exigeCredencial()
-                )
-        );
-        PeticionamentoProcedureSpecificVerifierService.VerificationReport procedureVerifier = procedureSpecificVerifierService.analyze(
-                new PeticionamentoProcedureSpecificVerifierService.ResolveRequest(
-                        safe.getTituloCaso(),
-                        safe.getRamoDireito(),
-                        safe.getRitoProcessual(),
-                        safe.getClasseProcessual(),
-                        safe.getAssuntoTpu(),
-                        safe.getMateriaPrincipal(),
-                        safe.getNaturezaJuridica(),
-                        safe.getTipoJustica(),
-                        firstNonBlank(effectiveDraftMarkdown, safe.getTextoPeticaoLivre(), safe.getTextoFatosResumido()),
-                        safe.getFatos(),
-                        safe.getPedidos(),
-                        safe.getDocumentosAnexados(),
-                        safe.tutelaUrgenciaResolvida(),
-                        Boolean.TRUE.equals(safe.getCasoUrgente()),
-                        safe.prepararPacoteProtocoloResolvido(),
-                        representacao == null || representacao.regularidadeSuficiente(),
-                        sigiloDecision != null && sigiloDecision.nivel() != null && sigiloDecision.nivel().exigeCredencial(),
-                        usuario.getTipoUsuario()
-                )
-        );
+        PeticionamentoMediaPipelineOrchestrator.MediaPipelineReport mediaPipeline = mediaPipelineOrchestrator.resolve(safe, usuario, sigiloDecision, sessionKey);
+        PeticionamentoMultimidiaComposerService.CompositionReport multimediaComposition = mediaPipeline.multimediaComposition();
+        PeticionamentoMediaSecurityPipelineService.SecurityReport mediaSecurity = mediaPipeline.mediaSecurity();
+        PeticionamentoThreatSentinelService.ThreatSentinelReport threatSentinel = mediaPipeline.threatSentinel();
+        PeticionamentoMediaStorageShieldService.StorageShieldReport mediaStorageShield = mediaPipeline.mediaStorageShield();
+        PeticionamentoPericiaEvidenceIntelligenceService.PericiaEvidenceReport periciaEvidence = mediaPipeline.periciaEvidence();
+        PeticionamentoMediaPublicationGateService.PublicationGateReport mediaPublicationGate = mediaPipeline.mediaPublicationGate();
 
-        PeticionamentoMultimidiaComposerService.CompositionReport multimediaComposition = multimidiaComposerService.compose(
-                new PeticionamentoMultimidiaComposerService.ResolveRequest(
-                        safe.getMidiaInline(),
-                        safe.getProvasDocumentais(),
-                        safe.getDocumentosPessoais(),
-                        safe.getDocumentosRepresentacao(),
-                        safe.getDocumentosAnexados()
-                )
-        );
-        PeticionamentoMediaSecurityPipelineService.SecurityReport mediaSecurity = mediaSecurityPipelineService.assess(
-                new PeticionamentoMediaSecurityPipelineService.ResolveRequest(
-                        safe.getMidiaInline(),
-                        usuario.getTipoUsuario(),
-                        sigiloDecision != null && sigiloDecision.nivel() != null && sigiloDecision.nivel().exigeCredencial()
-                )
-        );
-        PeticionamentoThreatSentinelService.ThreatSentinelReport threatSentinel = threatSentinelService.plan(
-                new PeticionamentoThreatSentinelService.ResolveRequest(
-                        sessionKey,
-                        safe.getMidiaInline(),
-                        sigiloDecision != null && sigiloDecision.nivel() != null && sigiloDecision.nivel().exigeCredencial()
-                )
-        );
-
-        PeticionamentoMediaStorageShieldService.StorageShieldReport mediaStorageShield = mediaStorageShieldService.plan(
-                new PeticionamentoMediaStorageShieldService.ResolveRequest(
-                        safe.getMidiaInline(),
-                        safe.getProvasDocumentais(),
-                        safe.getDocumentosPessoais(),
-                        safe.getDocumentosRepresentacao(),
-                        safe.getDocumentosAnexados(),
-                        safe.prepararPacoteProtocoloResolvido()
-                )
-        );
-        PeticionamentoPericiaEvidenceIntelligenceService.PericiaEvidenceReport periciaEvidence = periciaEvidenceIntelligenceService.analyze(
-                new PeticionamentoPericiaEvidenceIntelligenceService.ResolveRequest(
-                        safe.getMidiaInline(),
-                        safe.getProvasDocumentais(),
-                        sigiloDecision != null && sigiloDecision.nivel() != null && sigiloDecision.nivel().exigeCredencial()
-                )
-        );
-        PeticionamentoMediaPublicationGateService.PublicationGateReport mediaPublicationGate = mediaPublicationGateService.resolve(
-                new PeticionamentoMediaPublicationGateService.ResolveRequest(
-                        safe.getMidiaInline(),
-                        multimediaComposition,
-                        mediaSecurity,
-                        mediaStorageShield,
-                        periciaEvidence,
-                        safe.prepararPacoteProtocoloResolvido()
-                )
-        );
         Map<String, Object> uploadGovernance = uploadCapacityGovernanceService.governanceSummary();
 
         PeticionamentoGuardrailResponse guardrails = peticionamentoPreventiveGuardrailService.analyze(representacao, sigiloDecision, manualDraft, assistiveAnalysis, protocolPackage != null);
 
-        PeticionamentoProtocolEnvelopeHardeningService.EnvelopeReport protocolEnvelope = protocolEnvelopeHardeningService.harden(
-                new PeticionamentoProtocolEnvelopeHardeningService.ResolveRequest(
-                        sessionKey,
-                        safe.getProcessoId(),
-                        safe.getTituloCaso(),
-                        safe.getRamoDireito(),
-                        safe.getRitoProcessual(),
-                        safe.getClasseProcessual(),
-                        safe.getTipoJustica(),
-                        usuario.getTipoUsuario(),
-                        representacao == null ? null : representacao.resolvedInstrument(),
-                        sigiloDecision == null || sigiloDecision.nivel() == null ? null : sigiloDecision.nivel().name(),
-                        representacao == null || representacao.regularidadeSuficiente(),
-                        safe.prepararPacoteProtocoloResolvido(),
-                        assistiveAnalysis != null && assistiveAnalysis.isProntaParaProtocolo(),
-                        hardened.fingerprint(),
-                        safe.getDocumentosAnexados(),
-                        batchReading.profile(),
-                        batchReading.blockingIssues(),
-                        procedureVerifier.profile(),
-                        procedureVerifier.resolvedTrack(),
-                        procedureVerifier.blockers(),
-                        protocolPackage == null ? null : protocolPackage.getProtocolPackage()
-                )
+        PeticionamentoProtocolReadinessOrchestrator.ProtocolReadinessReport protocolReadiness = protocolReadinessOrchestrator.resolve(
+                safe, usuario, representacao, sigiloDecision, effectiveDraftMarkdown, sessionKey, hardened, assistiveAnalysis, protocolPackage
         );
+        PeticionamentoDocumentBatchReadingStrategyService.BatchReadingReport batchReading = protocolReadiness.batchReading();
+        PeticionamentoProcedureSpecificVerifierService.VerificationReport procedureVerifier = protocolReadiness.procedureVerifier();
+        PeticionamentoProtocolEnvelopeHardeningService.EnvelopeReport protocolEnvelope = protocolReadiness.protocolEnvelope();
 
         if (protocolPackage != null) {
             protocolPackage.setBatchReading(batchReading.workspace());
@@ -1020,20 +895,6 @@ public class PeticionamentoSessaoFacadeService {
             fontes++;
         }
         return fontes == 0 ? null : Math.max(0, Math.min(100, (int) Math.round(total / fontes)));
-    }
-
-
-
-    private static String firstNonBlank(String... values) {
-        if (values == null || values.length == 0) {
-            return null;
-        }
-        for (String value : values) {
-            if (hasText(value)) {
-                return value.trim();
-            }
-        }
-        return null;
     }
 
     private static List<String> safeStringList(List<String> values) {
