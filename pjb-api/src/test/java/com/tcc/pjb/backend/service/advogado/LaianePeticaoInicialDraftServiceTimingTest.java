@@ -6,10 +6,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tcc.pjb.backend.core.processo.polo.application.PoloProcessualApplicationService;
-import com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeMetrics;
-import com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeValidator;
-import com.tcc.pjb.backend.core.protocolo.completude.ProtocoloPendenciaApplicationService;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.model.dto.processual.EnderecosProcessuaisRequest;
@@ -18,12 +14,6 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.LaianePeticaoInicialDraftSessionRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeProcessWorkspaceScopeService;
-import com.tcc.pjb.backend.service.AjuizamentoService;
-import com.tcc.pjb.backend.service.competencia.MapaCompetenciaDinamicoEngine;
-import com.tcc.pjb.backend.service.processual.guard.DefensoriaInstitutionalCompetenceGuardService;
-import com.tcc.pjb.backend.service.processual.legitimidade.OabValidationService;
-import com.tcc.pjb.backend.service.processual.numero.NumeroProcessoCnjService;
-import com.tcc.pjb.backend.service.processual.protocolo.ProtocoloReciboService;
 import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
 import java.math.BigDecimal;
 import java.util.List;
@@ -58,26 +48,11 @@ class LaianePeticaoInicialDraftServiceTimingTest {
         LaianePeticaoInicialDraftService service = new LaianePeticaoInicialDraftService(
                 mock(LaianePeticaoInicialDraftSessionRepository.class),
                 processoRepository,
-                mock(AjuizamentoService.class),
                 currentUserService,
                 new ObjectMapper(),
                 mock(RepresentacaoProcessualPolicyService.class),
                 officeScopeProvider,
-                mock(DefensoriaInstitutionalCompetenceGuardService.class),
-                mock(OabValidationService.class),
-                mock(NumeroProcessoCnjService.class),
-                mock(PoloProcessualApplicationService.class),
-                mock(ProtocoloReciboService.class),
-                mock(MapaCompetenciaDinamicoEngine.class),
-                mock(ProtocoloCompletudeValidator.class),
-                mock(ProtocoloPendenciaApplicationService.class),
-                mock(ProtocoloCompletudeMetrics.class),
-                new com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextDocumentSanitizer(
-                        new ObjectMapper(), new com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextFormatCatalog()),
-                new com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextPlainTextExtractor(),
-                new com.tcc.pjb.backend.service.processual.peticionamento.editor.PeticaoInicialPdfExportService(),
-                mock(com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository.class),
-                mock(com.tcc.pjb.backend.repository.document.DocumentoPaginaRepository.class));
+                mock(LaianePeticaoInicialProtocolarService.class));
 
         Long processoIdDeTerceiro = 999L;
 
