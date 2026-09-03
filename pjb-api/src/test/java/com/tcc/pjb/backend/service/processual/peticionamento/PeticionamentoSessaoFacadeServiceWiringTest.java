@@ -19,11 +19,6 @@ import org.junit.jupiter.api.Test;
 import com.tcc.pjb.backend.service.processual.peticionamento.workspace.PeticionamentoInitialIntakeWorkspaceService;
 import com.tcc.pjb.backend.service.processual.peticionamento.workspace.PeticionamentoJurisprudenciaWorkspaceService;
 import com.tcc.pjb.backend.service.processual.peticionamento.workspace.InstitutionalMultimediaWorkspaceService;
-import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaPublicationGateService;
-import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaSecurityPipelineService;
-import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaStorageShieldService;
-import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMultimidiaComposerService;
-import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoThreatSentinelService;
 import com.tcc.pjb.backend.integration.serpro.datavalid.CpfValidacaoService;
 
 class PeticionamentoSessaoFacadeServiceWiringTest {
@@ -39,15 +34,9 @@ class PeticionamentoSessaoFacadeServiceWiringTest {
         SigiloService sigiloService = mock(SigiloService.class);
         PeticionamentoPreventiveGuardrailService peticionamentoPreventiveGuardrailService = mock(PeticionamentoPreventiveGuardrailService.class);
         PeticionamentoPayloadHardeningService payloadHardeningService = mock(PeticionamentoPayloadHardeningService.class);
-        PeticionamentoDocumentBatchReadingStrategyService documentBatchReadingStrategyService = mock(PeticionamentoDocumentBatchReadingStrategyService.class);
-        PeticionamentoProcedureSpecificVerifierService procedureSpecificVerifierService = mock(PeticionamentoProcedureSpecificVerifierService.class);
-        PeticionamentoProtocolEnvelopeHardeningService protocolEnvelopeHardeningService = mock(PeticionamentoProtocolEnvelopeHardeningService.class);
-        PeticionamentoMultimidiaComposerService multimidiaComposerService = mock(PeticionamentoMultimidiaComposerService.class);
-        PeticionamentoMediaSecurityPipelineService mediaSecurityPipelineService = mock(PeticionamentoMediaSecurityPipelineService.class);
-        PeticionamentoThreatSentinelService threatSentinelService = mock(PeticionamentoThreatSentinelService.class);
-        PeticionamentoMediaStorageShieldService mediaStorageShieldService = mock(PeticionamentoMediaStorageShieldService.class);
-        PeticionamentoPericiaEvidenceIntelligenceService periciaEvidenceIntelligenceService = mock(PeticionamentoPericiaEvidenceIntelligenceService.class);
-        PeticionamentoMediaPublicationGateService mediaPublicationGateService = mock(PeticionamentoMediaPublicationGateService.class);
+        PeticionamentoProtocolReadinessOrchestrator protocolReadinessOrchestrator = mock(PeticionamentoProtocolReadinessOrchestrator.class);
+        com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaPipelineOrchestrator mediaPipelineOrchestrator =
+                mock(com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaPipelineOrchestrator.class);
         UploadCapacityGovernanceService uploadCapacityGovernanceService = mock(UploadCapacityGovernanceService.class);
         PeticionamentoJurisprudenciaWorkspaceService jurisprudenciaWorkspaceService = mock(PeticionamentoJurisprudenciaWorkspaceService.class);
         InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService = mock(InstitutionalMultimediaWorkspaceService.class);
@@ -66,15 +55,8 @@ class PeticionamentoSessaoFacadeServiceWiringTest {
                 sigiloService,
                 peticionamentoPreventiveGuardrailService,
                 payloadHardeningService,
-                documentBatchReadingStrategyService,
-                procedureSpecificVerifierService,
-                protocolEnvelopeHardeningService,
-                multimidiaComposerService,
-                mediaSecurityPipelineService,
-                threatSentinelService,
-                mediaStorageShieldService,
-                periciaEvidenceIntelligenceService,
-                mediaPublicationGateService,
+                protocolReadinessOrchestrator,
+                mediaPipelineOrchestrator,
                 uploadCapacityGovernanceService,
                 jurisprudenciaWorkspaceService,
                 institutionalMultimediaWorkspaceService,
