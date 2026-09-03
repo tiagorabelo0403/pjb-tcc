@@ -6,6 +6,7 @@ import com.tcc.pjb.backend.model.dto.infra.ScaleArchitectureReadModelRecompositi
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceCollectionResponse;
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
 import com.tcc.pjb.backend.service.infra.ScaleArchitectureService;
+import com.tcc.pjb.backend.service.infra.ScaleCachePartitionGovernanceService;
 import com.tcc.pjb.backend.service.surface.common.SurfaceProjectionSupport;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class ScaleArchitectureSurfaceFacadeService {
         return surfaceProjectionSupport.snapshot(
                 "admin.scale-architecture.cache-policies.salvar",
                 scaleArchitectureService.salvarPoliticaCache(
-                        new ScaleArchitectureService.CachePolicyRequest(
+                        new ScaleCachePartitionGovernanceService.CachePolicyRequest(
                                 request.cacheName(),
                                 request.roleName(),
                                 request.ttlSeconds(),
@@ -135,7 +136,7 @@ public class ScaleArchitectureSurfaceFacadeService {
         return surfaceProjectionSupport.snapshot(
                 "admin.scale-architecture.partition-plans.salvar",
                 scaleArchitectureService.salvarPlanoParticao(
-                        new ScaleArchitectureService.PartitionPlanRequest(
+                        new ScaleCachePartitionGovernanceService.PartitionPlanRequest(
                                 request.tableName(),
                                 request.partitionColumn(),
                                 request.partitionPrefix(),
