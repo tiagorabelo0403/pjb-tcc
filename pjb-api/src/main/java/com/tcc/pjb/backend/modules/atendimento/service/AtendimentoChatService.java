@@ -1,13 +1,10 @@
 package com.tcc.pjb.backend.modules.atendimento.service;
 
-import com.tcc.pjb.backend.core.moderation.ContentBlockedException;
-import com.tcc.pjb.backend.core.moderation.TextModerationService;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
-import com.tcc.pjb.backend.modules.advocacia.repository.ClienteRepository;
 import com.tcc.pjb.backend.modules.atendimento.dto.AtendimentoAdvogadoDto;
 import com.tcc.pjb.backend.modules.atendimento.dto.AtendimentoCreateThreadRequest;
 import com.tcc.pjb.backend.modules.atendimento.dto.AtendimentoMarkDeliveredRequest;
@@ -23,17 +20,12 @@ import com.tcc.pjb.backend.modules.atendimento.entity.AtendimentoMessageAttachme
 import com.tcc.pjb.backend.modules.atendimento.entity.AtendimentoMessageStatus;
 import com.tcc.pjb.backend.modules.atendimento.entity.AtendimentoReadState;
 import com.tcc.pjb.backend.modules.atendimento.entity.AtendimentoThread;
-import com.tcc.pjb.backend.modules.atendimento.entity.AtendimentoThreadPolicy;
 import com.tcc.pjb.backend.modules.atendimento.model.AtendimentoThreadStatus;
 import com.tcc.pjb.backend.modules.atendimento.repository.AtendimentoDeliveryStateRepository;
-import com.tcc.pjb.backend.modules.atendimento.repository.AtendimentoMessageAttachmentRepository;
 import com.tcc.pjb.backend.modules.atendimento.repository.AtendimentoMessageReceiptRepository;
 import com.tcc.pjb.backend.modules.atendimento.repository.AtendimentoMessageRepository;
 import com.tcc.pjb.backend.modules.atendimento.repository.AtendimentoReadStateRepository;
-import com.tcc.pjb.backend.modules.atendimento.repository.AtendimentoThreadPolicyRepository;
 import com.tcc.pjb.backend.modules.atendimento.repository.AtendimentoThreadRepository;
-import com.tcc.pjb.backend.modules.laiane.model.LaianeProcuracaoStatus;
-import com.tcc.pjb.backend.modules.laiane.repository.LaianeProcuracaoRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -57,21 +49,18 @@ public class AtendimentoChatService {
     private final CurrentUserService currentUser;
     private final Clock clock;
     private final ProcessoRepository processoRepository;
-    private final LaianeProcuracaoRepository procuracaoRepository;
-    private final ClienteRepository clienteRepository;
     private final AtendimentoThreadRepository threadRepository;
     private final AtendimentoMessageRepository messageRepository;
     private final AtendimentoReadStateRepository readStateRepository;
     private final AtendimentoDeliveryStateRepository deliveryStateRepository;
-    private final TextModerationService moderationService;
-    private final AtendimentoModerationEventService moderationEventService;
     private final AtendimentoTosService tosService;
-    private final AtendimentoMessageAttachmentRepository messageAttachmentRepository;
     private final AtendimentoMessageReceiptRepository receiptRepository;
-    private final AtendimentoThreadPolicyRepository policyRepository;
     private final AtendimentoChatAccessSupport accessSupport;
     private final AtendimentoChatThreadViewSupport threadViewSupport;
     private final AtendimentoChatMessagingSupport messagingSupport;
+    private final AtendimentoThreadCreationEligibilityService threadCreationEligibilityService;
+    private final AtendimentoOutboundMessageGuardService outboundMessageGuardService;
+    private final AtendimentoCidadaoSendWindowGuardService cidadaoSendWindowGuardService;
     private final boolean attachmentsEnabled;
     private final int attachmentMaxPerMessage;
     private final long attachmentMaxTotalBytesPerMessage;
@@ -79,42 +68,36 @@ public class AtendimentoChatService {
     public AtendimentoChatService(CurrentUserService currentUser,
                                   Clock clock,
                                   ProcessoRepository processoRepository,
-                                  LaianeProcuracaoRepository procuracaoRepository,
-                                  ClienteRepository clienteRepository,
                                   AtendimentoThreadRepository threadRepository,
                                   AtendimentoMessageRepository messageRepository,
                                   AtendimentoReadStateRepository readStateRepository,
                                   AtendimentoDeliveryStateRepository deliveryStateRepository,
-                                  TextModerationService moderationService,
-                                  AtendimentoModerationEventService moderationEventService,
                                   AtendimentoTosService tosService,
-                                  AtendimentoMessageAttachmentRepository messageAttachmentRepository,
                                   AtendimentoMessageReceiptRepository receiptRepository,
-                                  AtendimentoThreadPolicyRepository policyRepository,
                                   AtendimentoChatAccessSupport accessSupport,
                                   AtendimentoChatThreadViewSupport threadViewSupport,
                                   AtendimentoChatMessagingSupport messagingSupport,
+                                  AtendimentoThreadCreationEligibilityService threadCreationEligibilityService,
+                                  AtendimentoOutboundMessageGuardService outboundMessageGuardService,
+                                  AtendimentoCidadaoSendWindowGuardService cidadaoSendWindowGuardService,
                                   @Value("${pjb.atendimento.attachments.enabled:false}") boolean attachmentsEnabled,
                                   @Value("${pjb.atendimento.attachments.maxPerMessage:3}") int attachmentMaxPerMessage,
                                   @Value("${pjb.atendimento.attachments.maxTotalBytesPerMessage:20971520}") long attachmentMaxTotalBytesPerMessage) {
         this.currentUser = Objects.requireNonNull(currentUser);
         this.clock = Objects.requireNonNull(clock);
         this.processoRepository = Objects.requireNonNull(processoRepository);
-        this.procuracaoRepository = Objects.requireNonNull(procuracaoRepository);
-        this.clienteRepository = Objects.requireNonNull(clienteRepository);
         this.threadRepository = Objects.requireNonNull(threadRepository);
         this.messageRepository = Objects.requireNonNull(messageRepository);
         this.readStateRepository = Objects.requireNonNull(readStateRepository);
         this.deliveryStateRepository = Objects.requireNonNull(deliveryStateRepository);
-        this.moderationService = Objects.requireNonNull(moderationService);
-        this.moderationEventService = Objects.requireNonNull(moderationEventService);
         this.tosService = Objects.requireNonNull(tosService);
-        this.messageAttachmentRepository = Objects.requireNonNull(messageAttachmentRepository);
         this.receiptRepository = Objects.requireNonNull(receiptRepository);
-        this.policyRepository = Objects.requireNonNull(policyRepository);
         this.accessSupport = Objects.requireNonNull(accessSupport);
         this.threadViewSupport = Objects.requireNonNull(threadViewSupport);
         this.messagingSupport = Objects.requireNonNull(messagingSupport);
+        this.threadCreationEligibilityService = Objects.requireNonNull(threadCreationEligibilityService);
+        this.outboundMessageGuardService = Objects.requireNonNull(outboundMessageGuardService);
+        this.cidadaoSendWindowGuardService = Objects.requireNonNull(cidadaoSendWindowGuardService);
         this.attachmentsEnabled = attachmentsEnabled;
         this.attachmentMaxPerMessage = Math.max(0, attachmentMaxPerMessage);
         this.attachmentMaxTotalBytesPerMessage = Math.max(0L, attachmentMaxTotalBytesPerMessage);
@@ -180,11 +163,11 @@ public class AtendimentoChatService {
             accessSupport.enforceRead(actor, processo);
 
             String cpfHash = AtendimentoChatSupportUtils.cpfHash(actor.getCpf());
-            boolean isClient = clienteRepository.existsByCpfHashAndAdvogado_Id(cpfHash, advogadoId);
+            boolean isClient = threadCreationEligibilityService.cidadaoEhClienteDoAdvogado(cpfHash, advogadoId);
             if (!isClient) {
                 throw new AccessDeniedException("Acesso negado");
             }
-            boolean hasProcesso = procuracaoRepository.existsByAdvogado_IdAndProcessoIdAndStatus(advogadoId, processoId, LaianeProcuracaoStatus.ATIVA);
+            boolean hasProcesso = threadCreationEligibilityService.advogadoTemProcuracaoAtivaNoProcesso(advogadoId, processoId);
             if (!hasProcesso) {
                 throw new AccessDeniedException("Acesso negado");
             }
@@ -194,7 +177,7 @@ public class AtendimentoChatService {
         }
 
         if (actor.getTipoUsuario() == TipoUsuario.ADVOGADO) {
-            boolean hasProcesso = procuracaoRepository.existsByAdvogado_IdAndProcessoIdAndStatus(actor.getId(), processoId, LaianeProcuracaoStatus.ATIVA);
+            boolean hasProcesso = threadCreationEligibilityService.advogadoTemProcuracaoAtivaNoProcesso(actor.getId(), processoId);
             if (!hasProcesso) {
                 throw new AccessDeniedException("Acesso negado");
             }
@@ -209,7 +192,7 @@ public class AtendimentoChatService {
                 throw new AccessDeniedException("Acesso negado");
             }
             String cpfHash = AtendimentoChatSupportUtils.cpfHash(cpfNormalizado);
-            boolean isClient = clienteRepository.existsByCpfHashAndAdvogado_Id(cpfHash, actor.getId());
+            boolean isClient = threadCreationEligibilityService.cidadaoEhClienteDoAdvogado(cpfHash, actor.getId());
             if (!isClient) {
                 throw new AccessDeniedException("Acesso negado");
             }
@@ -322,12 +305,7 @@ public class AtendimentoChatService {
 
         AtendimentoMessage replyTarget = resolveReplyTarget(threadId, replyToId, actor.getId());
         if (body != null) {
-            try {
-                body = moderationService.validateMessage(body);
-            } catch (ContentBlockedException exception) {
-                moderationEventService.recordBlockedAttempt(actor, thread, exception.reason(), body);
-                throw exception;
-            }
+            body = outboundMessageGuardService.validateOrRecordBlocked(actor, thread, body);
         }
         if (thread.getStatus() == AtendimentoThreadStatus.ENCERRADO) {
             throw new AccessDeniedException("Thread encerrada");
@@ -368,7 +346,7 @@ public class AtendimentoChatService {
                 link.setThreadId(threadId);
                 links.add(link);
             }
-            messageAttachmentRepository.saveAll(links);
+            outboundMessageGuardService.linkAttachments(links);
         }
 
         thread.setUpdatedAt(now);
@@ -535,14 +513,7 @@ public class AtendimentoChatService {
     }
 
     private void enforceCidadaoSendWindow(Usuario actor, Long threadId) {
-        if (actor.getTipoUsuario() != TipoUsuario.CIDADAO) {
-            return;
-        }
-        AtendimentoThreadPolicy policy = policyRepository.findById(threadId).orElse(null);
-        Instant disabledUntil = policy != null ? policy.getCidadaoSendDisabledUntil() : null;
-        if (disabledUntil != null && Instant.now(clock).isBefore(disabledUntil)) {
-            throw new AccessDeniedException("cidadao_send_disabled");
-        }
+        cidadaoSendWindowGuardService.enforce(actor, threadId);
     }
 
     private AtendimentoMessage resolveReplyTarget(Long threadId, Long replyToId, Long viewerUserId) {
