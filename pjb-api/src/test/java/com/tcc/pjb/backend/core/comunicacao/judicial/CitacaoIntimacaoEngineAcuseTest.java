@@ -16,8 +16,6 @@ import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
-import com.tcc.pjb.backend.model.repository.UsuarioRepository;
-import com.tcc.pjb.backend.platform.jusos.v2.notificacao.NotificacaoInteligentePJB;
 import com.tcc.pjb.backend.platform.runtime.execution.PjbExecutionOrchestrator;
 import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import java.util.Optional;
@@ -36,23 +34,20 @@ class CitacaoIntimacaoEngineAcuseTest {
         return new CitacaoIntimacaoEngine(
                 expedicaoRepository,
                 processoRepository,
-                mock(UsuarioRepository.class),
                 mock(AuditLedgerService.class),
                 currentUserService,
-                mock(NotificacaoInteligentePJB.class),
                 mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(MatrizComunicacaoJudicialResolver.class),
                 mock(PjbHsmProperties.class),
                 mock(PjbExecutionOrchestrator.class),
-                movimentacaoRegistrar);
+                movimentacaoRegistrar,
+                mock(CitacaoWebhookNotifierService.class),
+                mock(CitacaoPortalRelayNotificationService.class),
+                mock(CitacaoJudiciaryNotificationService.class),
+                mock(CitacaoPrazoReveliaGatilhoService.class),
+                mock(CitacaoEditalCuradoriaService.class),
+                mock(CitacaoOficialJusticaQrMandadoService.class),
+                mock(CitacaoSefazCadastroEnrichmentService.class),
+                mock(CitacaoMatrizDecisionService.class));
     }
 
     private ExpedicaoJudicial expedicao(Long processoId) {
