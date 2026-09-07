@@ -19,8 +19,6 @@ import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.dashboard.PerfilPainelSupportService;
-import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
-import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopologyMeshService;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
 import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
@@ -59,8 +57,6 @@ class MinisterioPublicoPainelServiceInqueritosTest {
                 mock(ProcessoRepository.class),
                 workItemRepository,
                 mock(RecursalPeticionamentoFacadeService.class),
-                mock(InstitutionalActorTopologyMeshService.class),
-                mock(InstitutionalActorRoutingService.class),
                 mock(InstitutionalMultimediaWorkspaceService.class),
                 mock(InstitutionalPanelBrandingService.class),
                 mock(PainelSharedExperienceService.class),
@@ -71,7 +67,7 @@ class MinisterioPublicoPainelServiceInqueritosTest {
                 mock(InstitutionalMaterialActionGuardService.class),
                 inqueritoPolicialDigitalService,
                 mock(com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar.class),
-                mock(com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService.class));
+                mock(com.tcc.pjb.backend.service.mp.MinisterioPublicoInstitutionalRoutingService.class));
     }
 
     private Usuario promotor() {
