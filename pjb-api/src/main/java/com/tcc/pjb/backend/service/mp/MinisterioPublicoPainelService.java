@@ -8,14 +8,12 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
-import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
-import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopologyMeshService;
 import com.tcc.pjb.backend.service.processual.peticionamento.workspace.InstitutionalMultimediaWorkspaceService;
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
@@ -45,10 +43,8 @@ public class MinisterioPublicoPainelService {
     private final ProcessoRepository processoRepository;
     private final WorkItemRepository workItemRepository;
     private final RecursalPeticionamentoFacadeService recursalPeticionamentoFacadeService;
-    private final InstitutionalActorTopologyMeshService institutionalActorTopologyMeshService;
     private final InstitutionalPanelBrandingService institutionalPanelBrandingService;
     private final InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService;
-    private final InstitutionalActorRoutingService institutionalActorRoutingService;
     private final PainelSharedExperienceService sharedExperienceService;
     private final PainelSignalReflectionService signalReflectionService;
     private final PainelNativeCollectionCompositionService collectionCompositionService;
@@ -57,15 +53,13 @@ public class MinisterioPublicoPainelService {
     private final InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService;
     private final InqueritoPolicialDigitalService inqueritoPolicialDigitalService;
     private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
-    private final PjbAuthorizationService authorizationService;
+    private final MinisterioPublicoInstitutionalRoutingService institutionalRoutingService;
 
     public MinisterioPublicoPainelService(PerfilDashboardContextFactory contextFactory,
                                           PainelServiceCommons commons,
                                           ProcessoRepository processoRepository,
                                           WorkItemRepository workItemRepository,
                                           RecursalPeticionamentoFacadeService recursalPeticionamentoFacadeService,
-                                          InstitutionalActorTopologyMeshService institutionalActorTopologyMeshService,
-                                          InstitutionalActorRoutingService institutionalActorRoutingService,
                                           InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService,
                                           InstitutionalPanelBrandingService institutionalPanelBrandingService,
                                           PainelSharedExperienceService sharedExperienceService,
@@ -76,14 +70,12 @@ public class MinisterioPublicoPainelService {
                                           InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService,
                                           InqueritoPolicialDigitalService inqueritoPolicialDigitalService,
                                           MovimentacaoProcessualRegistrar movimentacaoRegistrar,
-                                          PjbAuthorizationService authorizationService) {
+                                          MinisterioPublicoInstitutionalRoutingService institutionalRoutingService) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
         this.workItemRepository = workItemRepository;
         this.recursalPeticionamentoFacadeService = recursalPeticionamentoFacadeService;
-        this.institutionalActorTopologyMeshService = institutionalActorTopologyMeshService;
-        this.institutionalActorRoutingService = institutionalActorRoutingService;
         this.institutionalMultimediaWorkspaceService = institutionalMultimediaWorkspaceService;
         this.institutionalPanelBrandingService = institutionalPanelBrandingService;
         this.sharedExperienceService = sharedExperienceService;
@@ -94,7 +86,7 @@ public class MinisterioPublicoPainelService {
         this.institutionalMaterialActionGuardService = institutionalMaterialActionGuardService;
         this.inqueritoPolicialDigitalService = inqueritoPolicialDigitalService;
         this.movimentacaoRegistrar = movimentacaoRegistrar;
-        this.authorizationService = authorizationService;
+        this.institutionalRoutingService = institutionalRoutingService;
     }
 
     public PerfilDashboardPayload.MinisterioPublicoPayload bootstrapPainel() {
@@ -156,8 +148,7 @@ public class MinisterioPublicoPainelService {
     }
 
     public InstitutionalActorTopologyMeshService.InstitutionalActorTopologyMeshSnapshot malhaProcesso(Long processoId) {
-        authorizationService.requireVinculoInstitucionalComProcesso(processoId);
-        return institutionalActorTopologyMeshService.snapshot(processoId);
+        return institutionalRoutingService.malhaProcesso(processoId);
     }
 
     public List<Map<String, Object>> listarManifestacoesPendentes() {
@@ -295,38 +286,8 @@ public class MinisterioPublicoPainelService {
         return marcado;
     }
 
-    @Transactional
     public Map<String, Object> requisitarDiligencia(Long processoId, Object request) {
-        Processo processo = processoRepository.findById(processoId).orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
-        institutionalMaterialActionGuardService.requireAllowedForProcessAction(processo, InstitutionalMaterialActionGuardService.MaterialAction.MINISTERIO_PUBLICO_REQUISICAO_DILIGENCIA);
-        Usuario usuario = contextFactory.build().usuario();
-        InstitutionalActorRoutingService.InstitutionalRoute route = institutionalActorRoutingService.policeDiligence(processoId);
-        WorkItem item = WorkItem.builder()
-                .processo(processo)
-                .faseOrigem(processo.getFaseAtual())
-                .templateCode("DELEGACIA_DILIGENCIA:" + processoId + ':' + Instant.now().toEpochMilli())
-                .type(WorkItemType.DILIGENCIA)
-                .titulo("Cumprir diligência requisitada pelo Ministério Público")
-                .descricao(String.valueOf(request))
-                .queueCode(route.queueCode())
-                .inboxKey(route.inboxKey())
-                .assignedRole(route.assignedRole())
-                .status(WorkItemStatus.PENDENTE)
-                .prioridade(1)
-                .dueAt(Instant.now().plus(48, ChronoUnit.HOURS))
-                .uf(usuario.getUf())
-                .comarca(usuario.getComarca())
-                .baseLegal("Requisição de diligência do Ministério Público")
-                .build();
-        item = workItemRepository.save(item);
-        commons.publishTerritoryHistory(usuario, "DELEGADO", "MP_REQUISITOU_DILIGENCIA", "Nova diligência recebida do MP.", processo, item.getId());
-        LinkedHashMap<String, Object> out = new LinkedHashMap<>();
-        out.put("status", "REQUISITADA");
-        out.put("workItemId", item.getId());
-        out.put("dueAt", item.getDueAt());
-        out.put("encaminhadoPara", route.inboxKey());
-        out.put("routeAxis", route.routeAxis());
-        return out;
+        return institutionalRoutingService.requisitarDiligencia(processoId, request);
     }
 
     public List<Map<String, Object>> listarPrazosDentroDe48h() {
