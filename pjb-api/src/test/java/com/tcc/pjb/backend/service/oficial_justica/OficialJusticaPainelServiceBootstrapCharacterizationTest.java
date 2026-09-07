@@ -20,7 +20,6 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
-import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.calendar.CalendarInstitutionalBridgeService;
 import com.tcc.pjb.backend.service.calendar.UserCalendarService;
@@ -28,7 +27,6 @@ import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.dashboard.PerfilPainelSupportService;
-import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopologyMeshService;
 import com.tcc.pjb.backend.service.intelligence.PessoaLocalizacaoIntelligenceSummaryService;
 import com.tcc.pjb.backend.service.intelligence.PessoaLocalizacaoService;
@@ -39,7 +37,6 @@ import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositi
 import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
-import com.tcc.pjb.backend.service.processual.peticionamento.workspace.InstitutionalMultimediaWorkspaceService;
 import com.tcc.pjb.backend.service.profile.PerfilCapabilityMatrixService;
 import com.tcc.pjb.backend.service.profile.PerfilRealtimeTopicService;
 import com.tcc.pjb.backend.service.ui.branding.InstitutionalPanelBrandingService;
@@ -96,14 +93,10 @@ class OficialJusticaPainelServiceBootstrapCharacterizationTest {
     private final OficialJusticaPainelService service = new OficialJusticaPainelService(
             contextFactory,
             commons,
-            mock(ProcessoRepository.class),
-            workItemRepository,
             authorizationService,
             capabilityMatrixService,
             intelligenceSummaryService,
             mock(InstitutionalActorTopologyMeshService.class),
-            mock(InstitutionalActorRoutingService.class),
-            mock(InstitutionalMultimediaWorkspaceService.class),
             institutionalPanelBrandingService,
             mock(OficialJusticaOficioDispatchService.class),
             enderecoTriageService,
@@ -118,7 +111,7 @@ class OficialJusticaPainelServiceBootstrapCharacterizationTest {
             institutionalBridgeService,
             sharedExperienceService,
             compositionPipeline,
-            mock(OficialJusticaCommunicationFormalModelService.class)
+            mock(OficialJusticaDesfechoDiligenciaService.class)
     );
 
     @Test

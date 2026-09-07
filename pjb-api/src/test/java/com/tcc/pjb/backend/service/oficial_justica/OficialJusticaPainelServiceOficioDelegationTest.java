@@ -13,17 +13,13 @@ import com.tcc.pjb.backend.model.dto.profile.operational.OficialJusticaOficioCon
 import com.tcc.pjb.backend.model.dto.profile.operational.OficialJusticaOficioReconciliationRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.OficialJusticaOficioRequest;
 import com.tcc.pjb.backend.model.dto.profile.operational.OficialJusticaOficioRetryRequest;
-import com.tcc.pjb.backend.model.repository.ProcessoRepository;
-import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.calendar.CalendarInstitutionalBridgeService;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
-import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopologyMeshService;
 import com.tcc.pjb.backend.service.intelligence.PessoaLocalizacaoIntelligenceSummaryService;
 import com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
-import com.tcc.pjb.backend.service.processual.peticionamento.workspace.InstitutionalMultimediaWorkspaceService;
 import com.tcc.pjb.backend.service.profile.PerfilCapabilityMatrixService;
 import com.tcc.pjb.backend.service.ui.branding.InstitutionalPanelBrandingService;
 import java.util.Map;
@@ -43,14 +39,10 @@ class OficialJusticaPainelServiceOficioDelegationTest {
     private final OficialJusticaPainelService service = new OficialJusticaPainelService(
             mock(PerfilDashboardContextFactory.class),
             mock(PainelServiceCommons.class),
-            mock(ProcessoRepository.class),
-            mock(WorkItemRepository.class),
             mock(PjbAuthorizationService.class),
             mock(PerfilCapabilityMatrixService.class),
             mock(PessoaLocalizacaoIntelligenceSummaryService.class),
             mock(InstitutionalActorTopologyMeshService.class),
-            mock(InstitutionalActorRoutingService.class),
-            mock(InstitutionalMultimediaWorkspaceService.class),
             mock(InstitutionalPanelBrandingService.class),
             oficioDispatchService,
             mock(OficialJusticaEnderecoTriageService.class),
@@ -65,7 +57,7 @@ class OficialJusticaPainelServiceOficioDelegationTest {
             mock(CalendarInstitutionalBridgeService.class),
             mock(PainelSharedExperienceService.class),
             mock(PainelCompositionPipelineService.class),
-            mock(OficialJusticaCommunicationFormalModelService.class)
+            mock(OficialJusticaDesfechoDiligenciaService.class)
     );
 
     @Test
