@@ -11,12 +11,6 @@ import com.tcc.pjb.backend.core.processo.migracao.application.ProcessoMigracaoAp
 import com.tcc.pjb.backend.core.processo.migracao.application.ProcessoMigracaoFactoryApplicationService;
 import com.tcc.pjb.backend.core.processo.migracao.domain.ProcessoMigracaoAggregate;
 import com.tcc.pjb.backend.core.processo.migracao.domain.ProcessoMigracaoFabricaAggregate;
-import com.tcc.pjb.backend.core.quality.apisurface.application.PjbApiSurfaceSanityApplicationService;
-import com.tcc.pjb.backend.core.quality.apisurface.domain.PjbApiSurfaceIssue;
-import com.tcc.pjb.backend.core.quality.apisurface.domain.PjbApiSurfaceSanityAggregate;
-import com.tcc.pjb.backend.core.quality.codebase.application.PjbCodebaseSanityApplicationService;
-import com.tcc.pjb.backend.core.quality.codebase.domain.PjbCodebaseSanityAggregate;
-import com.tcc.pjb.backend.core.quality.codebase.domain.PjbCodebaseSanityIssue;
 import com.tcc.pjb.backend.core.procedural.NationalProceduralRoutingService;
 import com.tcc.pjb.backend.core.procedural.ProceduralCanonicalResolver;
 import com.tcc.pjb.backend.core.procedural.ProceduralRoutingReport;
@@ -25,7 +19,6 @@ import com.tcc.pjb.backend.core.security.sigilo.repository.SigiloAccessRequestRe
 import com.tcc.pjb.backend.integration.judicial.JudicialConnectorCommandCenterReport;
 import com.tcc.pjb.backend.integration.judicial.JudicialConnectorCommandCenterService;
 import com.tcc.pjb.backend.integration.judicial.JudicialSystem;
-import com.tcc.pjb.backend.model.dto.governance.BuildGateEvaluationResponse;
 import com.tcc.pjb.backend.model.dto.processual.rollout.NationalFeatureRolloutRequest;
 import com.tcc.pjb.backend.model.dto.processual.rollout.NationalFeatureRolloutResponse;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -35,9 +28,6 @@ import com.tcc.pjb.backend.model.repository.institucional.InstitutionalInboxItem
 import com.tcc.pjb.backend.repository.outbox.OutboxEventRepository;
 import com.tcc.pjb.backend.service.SigiloService;
 import com.tcc.pjb.backend.service.SigiloService.SigiloDecision;
-import com.tcc.pjb.backend.service.governance.BuildGateGovernanceService;
-import com.tcc.pjb.backend.service.procedural.ProceduralArchitectureSanityService;
-import com.tcc.pjb.backend.service.procedural.ProceduralLegacyBoundaryAuditService;
 import com.tcc.pjb.backend.service.processual.rollout.NationalFeatureRolloutService;
 import java.time.Duration;
 import java.time.Instant;
@@ -59,11 +49,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PjbPlataformaSustentacaoApplicationService {
 
-    private final PjbCodebaseSanityApplicationService codebaseSanityApplicationService;
-    private final PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService;
-    private final ProceduralArchitectureSanityService proceduralArchitectureSanityService;
-    private final ProceduralLegacyBoundaryAuditService proceduralLegacyBoundaryAuditService;
-    private final BuildGateGovernanceService buildGateGovernanceService;
+    private final PjbPlataformaGateArquiteturalService gateArquiteturalService;
     private final NationalFeatureRolloutService nationalFeatureRolloutService;
     private final PjbFeatureFlagsProperties featureFlagsProperties;
     private final JudicialConnectorCommandCenterService judicialConnectorCommandCenterService;
@@ -79,11 +65,7 @@ public class PjbPlataformaSustentacaoApplicationService {
     private final SigiloAccessRequestRepository sigiloAccessRequestRepository;
     private final ApplicationContext applicationContext;
 
-    public PjbPlataformaSustentacaoApplicationService(PjbCodebaseSanityApplicationService codebaseSanityApplicationService,
-                                                      PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService,
-                                                      ProceduralArchitectureSanityService proceduralArchitectureSanityService,
-                                                      ProceduralLegacyBoundaryAuditService proceduralLegacyBoundaryAuditService,
-                                                      BuildGateGovernanceService buildGateGovernanceService,
+    public PjbPlataformaSustentacaoApplicationService(PjbPlataformaGateArquiteturalService gateArquiteturalService,
                                                       NationalFeatureRolloutService nationalFeatureRolloutService,
                                                       PjbFeatureFlagsProperties featureFlagsProperties,
                                                       JudicialConnectorCommandCenterService judicialConnectorCommandCenterService,
@@ -98,11 +80,7 @@ public class PjbPlataformaSustentacaoApplicationService {
                                                       ObjectProvider<InstitutionalInboxItemSnapshotRepository> institutionalInboxItemSnapshotRepositoryProvider,
                                                       ObjectProvider<SigiloAccessRequestRepository> sigiloAccessRequestRepositoryProvider,
                                                       ApplicationContext applicationContext) {
-        this.codebaseSanityApplicationService = Objects.requireNonNull(codebaseSanityApplicationService);
-        this.apiSurfaceSanityApplicationService = Objects.requireNonNull(apiSurfaceSanityApplicationService);
-        this.proceduralArchitectureSanityService = Objects.requireNonNull(proceduralArchitectureSanityService);
-        this.proceduralLegacyBoundaryAuditService = Objects.requireNonNull(proceduralLegacyBoundaryAuditService);
-        this.buildGateGovernanceService = Objects.requireNonNull(buildGateGovernanceService);
+        this.gateArquiteturalService = Objects.requireNonNull(gateArquiteturalService);
         this.nationalFeatureRolloutService = Objects.requireNonNull(nationalFeatureRolloutService);
         this.featureFlagsProperties = Objects.requireNonNull(featureFlagsProperties);
         this.judicialConnectorCommandCenterService = Objects.requireNonNull(judicialConnectorCommandCenterService);
@@ -180,56 +158,7 @@ public class PjbPlataformaSustentacaoApplicationService {
     }
 
     private PjbPlataformaSustentacaoEixo avaliarGateArquitetural() {
-        PjbCodebaseSanityAggregate codebase = codebaseSanityApplicationService.auditar();
-        PjbApiSurfaceSanityAggregate apiSurface = apiSurfaceSanityApplicationService.auditar();
-        ProceduralArchitectureSanityService.SanityReport architecture = proceduralArchitectureSanityService.report();
-        ProceduralLegacyBoundaryAuditService.BoundaryReport boundary = proceduralLegacyBoundaryAuditService.report();
-        BuildGateEvaluationResponse buildGate = buildGateGovernanceService.evaluate();
-        int score = average(
-                codebase.score(),
-                apiSurface.score(),
-                architecture.healthy() ? 95 : 58,
-                boundary.clean() ? 92 : 52,
-                buildGate.approved() ? 96 : 54
-        );
-        LinkedHashSet<String> sinais = new LinkedHashSet<>();
-        sinais.add(codebase.resumo());
-        sinais.add("apiSurfaceScore=" + apiSurface.score());
-        sinais.add("architectureHealthy=" + architecture.healthy());
-        sinais.add("legacyBoundaryClean=" + boundary.clean());
-        sinais.add("buildGateApproved=" + buildGate.approved());
-        sinais.add("routeGateApproved=" + buildGate.routeGateApproved());
-        sinais.add("validationGateApproved=" + buildGate.validationGateApproved());
-        LinkedHashSet<String> bloqueadores = new LinkedHashSet<>(buildGate.outstandingIssues());
-        bloqueadores.addAll(architecture.issues());
-        bloqueadores.addAll(boundary.violations().stream().map(ProceduralLegacyBoundaryAuditService.BoundaryViolation::reason).toList());
-        bloqueadores.addAll(codebase.issues().stream().map(PjbCodebaseSanityIssue::codigo).toList());
-        bloqueadores.addAll(apiSurface.issues().stream().map(PjbApiSurfaceIssue::codigo).toList());
-        LinkedHashSet<String> proximasAcoes = new LinkedHashSet<>(buildGate.nextActions());
-        if (!architecture.healthy()) {
-            proximasAcoes.add("NORMALIZAR_CATALOGO_PROCEDURAL_E_CONNECTORES_PREFERIDOS");
-        }
-        if (!boundary.clean()) {
-            proximasAcoes.add("EXPULSAR_REFERENCIAS_DIRETAS_A_ENUMS_LEGADOS_FORA_DA_CAMADA_CANONICA");
-        }
-        LinkedHashMap<String, Object> evidencias = new LinkedHashMap<>();
-        evidencias.put("codebaseScore", codebase.score());
-        evidencias.put("codebaseIssues", codebase.issues().size());
-        evidencias.put("apiSurfaceScore", apiSurface.score());
-        evidencias.put("apiSurfaceIssues", apiSurface.issues().size());
-        evidencias.put("architectureIssues", architecture.issues().size());
-        evidencias.put("legacyBoundaryViolations", boundary.violations().size());
-        evidencias.put("buildGateOutstandingIssues", buildGate.totalOutstandingIssues());
-        return eixo(
-                "gate.arquitetural",
-                "Gate arquitetural, surface e build",
-                score,
-                codebase.limpo() && apiSurface.limpo() && architecture.healthy() && boundary.clean() && buildGate.approved(),
-                sinais,
-                bloqueadores,
-                proximasAcoes,
-                evidencias
-        );
+        return gateArquiteturalService.avaliar();
     }
 
     private ManifestoBundle avaliarManifestoModular() {
