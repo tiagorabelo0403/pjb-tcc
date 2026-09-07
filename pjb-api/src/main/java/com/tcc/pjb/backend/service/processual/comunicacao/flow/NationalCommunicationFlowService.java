@@ -61,6 +61,7 @@ import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalOperationsFacade;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +70,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NationalCommunicationFlowService {
 
     private final NationalCommunicationFlowFacade facade;
+    private final NationalCommunicationInstitutionalOperationsFacade institutionalOperationsFacade;
 
     public NationalCommunicationFlowService(CitacaoIntimacaoEngine citacaoIntimacaoEngine,
                                             ProcessoRepository processoRepository,
@@ -103,9 +105,9 @@ public class NationalCommunicationFlowService {
                 institutionalWorkflowApplicationService,
                 institutionalFlowAnalyticsApplicationService,
                 destinatarioProcessualResolverApplicationService,
-                institutionalDocumentSecurityGateApplicationService,
-                institutionalOperationsFacade
+                institutionalDocumentSecurityGateApplicationService
         );
+        this.institutionalOperationsFacade = Objects.requireNonNull(institutionalOperationsFacade);
     }
     public NationalCommunicationDispatchResponse expedir(NationalCommunicationDispatchRequest request) {
         return facade.expedir(request);
@@ -181,65 +183,65 @@ public class NationalCommunicationFlowService {
     public java.util.List<NationalCommunicationInstitutionalMembershipResponse> minhasCaixasInstitucionais(DestinatarioInstitucionalKind destinatarioKind,
                                                                                                              String uf,
                                                                                                              String comarca) {
-        return facade.minhasCaixasInstitucionais(destinatarioKind, uf, comarca);
+        return institutionalOperationsFacade.minhasCaixasInstitucionais(destinatarioKind, uf, comarca);
     }
 
     @Transactional(readOnly = true)
     public NationalCommunicationInstitutionalAccessCheckResponse autorizarCaixaInstitucional(NationalCommunicationInstitutionalAccessCheckRequest request) {
-        return facade.autorizarCaixaInstitucional(request);
+        return institutionalOperationsFacade.autorizarCaixaInstitucional(request);
     }
 
     @Transactional(readOnly = true)
     public java.util.List<NationalCommunicationInstitutionalInboxItemResponse> listarInboxInstitucional(StatusComunicacaoInstitucional status,
                                                                                                          Long processoId) {
-        return facade.listarInboxInstitucional(status, processoId);
+        return institutionalOperationsFacade.listarInboxInstitucional(status, processoId);
     }
     public NationalCommunicationInstitutionalActionResponse receberInboxInstitucional(NationalCommunicationInstitutionalReceiveRequest request) {
-        return facade.receberInboxInstitucional(request);
+        return institutionalOperationsFacade.receberInboxInstitucional(request);
     }
     public NationalCommunicationInstitutionalActionResponse redistribuirInboxInstitucional(NationalCommunicationInstitutionalRedistributeRequest request) {
-        return facade.redistribuirInboxInstitucional(request);
+        return institutionalOperationsFacade.redistribuirInboxInstitucional(request);
     }
     public NationalCommunicationInstitutionalActionResponse certificarCienciaInstitucional(NationalCommunicationInstitutionalScienceRequest request) {
-        return facade.certificarCienciaInstitucional(request);
+        return institutionalOperationsFacade.certificarCienciaInstitucional(request);
     }
     public NationalCommunicationInstitutionalActionResponse cumprirInboxInstitucional(NationalCommunicationInstitutionalFulfillRequest request) {
-        return facade.cumprirInboxInstitucional(request);
+        return institutionalOperationsFacade.cumprirInboxInstitucional(request);
     }
 
     @Transactional(readOnly = true)
     public java.util.List<NationalCommunicationInstitutionalTimelineEventResponse> timelineInstitucional(String expedicaoUuid) {
-        return facade.timelineInstitucional(expedicaoUuid);
+        return institutionalOperationsFacade.timelineInstitucional(expedicaoUuid);
     }
 
     @Transactional(readOnly = true)
     public java.util.List<NationalCommunicationInstitutionalDeliveryProofResponse> provasInstitucionais(String expedicaoUuid) {
-        return facade.provasInstitucionais(expedicaoUuid);
+        return institutionalOperationsFacade.provasInstitucionais(expedicaoUuid);
     }
 
     @Transactional(readOnly = true)
     public java.util.List<NationalCommunicationInstitutionalGateStateResponse> gatesInstitucionais(Long processoId, String expedicaoUuid) {
-        return facade.gatesInstitucionais(processoId, expedicaoUuid);
+        return institutionalOperationsFacade.gatesInstitucionais(processoId, expedicaoUuid);
     }
 
     @Transactional(readOnly = true)
     public java.util.List<NationalCommunicationInstitutionalDeliveryQueueItemResponse> listarEntregasInstitucionais(Long processoId, String expedicaoUuid) {
-        return facade.listarEntregasInstitucionais(processoId, expedicaoUuid);
+        return institutionalOperationsFacade.listarEntregasInstitucionais(processoId, expedicaoUuid);
     }
 
     @Transactional(readOnly = true)
     public java.util.List<NationalCommunicationInstitutionalDeadLetterResponse> listarDlqInstitucional(Long processoId, String expedicaoUuid) {
-        return facade.listarDlqInstitucional(processoId, expedicaoUuid);
+        return institutionalOperationsFacade.listarDlqInstitucional(processoId, expedicaoUuid);
     }
     public NationalCommunicationInstitutionalDeliveryQueueItemResponse reprocessarEntregaInstitucional(
             NationalCommunicationInstitutionalReprocessDeliveryRequest request
     ) {
-        return facade.reprocessarEntregaInstitucional(request);
+        return institutionalOperationsFacade.reprocessarEntregaInstitucional(request);
     }
 
     @Transactional(readOnly = true)
     public java.util.List<NationalCommunicationInstitutionalExternalDispatchResponse> listarIntegracoesExternas(Long processoId, String expedicaoUuid) {
-        return facade.listarIntegracoesExternas(processoId, expedicaoUuid);
+        return institutionalOperationsFacade.listarIntegracoesExternas(processoId, expedicaoUuid);
     }
 
     @Transactional(readOnly = true)
@@ -248,12 +250,12 @@ public class NationalCommunicationFlowService {
             String uf,
             DestinatarioInstitucionalKind destinatarioKind
     ) {
-        return facade.observabilidadeInstitucional(processoId, uf, destinatarioKind);
+        return institutionalOperationsFacade.observabilidadeInstitucional(processoId, uf, destinatarioKind);
     }
 
     @Transactional(readOnly = true)
     public NationalCommunicationInstitutionalHardeningReportResponse hardeningInstitucional() {
-        return facade.hardeningInstitucional();
+        return institutionalOperationsFacade.hardeningInstitucional();
     }
     public NationalCommunicationDashboardResponse painel() {
         return facade.painel();
