@@ -55,19 +55,17 @@ public class SecretariatOperationalOrchestrationService {
     private final SecretariatQueueProjectionService secretariatQueueProjectionService;
     private final SecretariatRulePackFactory rulePackFactory;
     private final SecretariatOperationalRoutingResolver routingResolver;
-    private final PautaAudienciaNacionalService pautaAudienciaNacionalService;
     private final SecretariatOperationalChecklistEngine checklistEngine;
     private final SecretariatOperationalAssignmentService assignmentService;
-    private final SecretariatOperationalHearingResourceService hearingResourceService;
     private final SecretariatOperationalSlaService slaService;
     private final SecretariatOperationalActLineService actLineService;
-    private final SecretariatOperationalAttendanceService attendanceService;
     private final SecretariatOperationalExpeditionBatchService expeditionBatchService;
     private final SecretariatOperationalRedistributionService redistributionService;
     private final SecretariatOperationalBottleneckRadarService bottleneckRadarService;
     private final SecretariatOperationalStabilityService stabilityService;
     private final SecretariatOperationalBulkReassignmentService bulkReassignmentService;
     private final RitoUrgenciaPriorityPolicy ritoUrgenciaPriorityPolicy;
+    private final SecretariatAudienceOrchestrationService audienceOrchestrationService;
 
     public SecretariatOperationalOrchestrationService(CurrentUserService currentUserService,
                                                       ProcessoRepository processoRepository,
@@ -76,19 +74,17 @@ public class SecretariatOperationalOrchestrationService {
                                                       SecretariatQueueProjectionService secretariatQueueProjectionService,
                                                       SecretariatRulePackFactory rulePackFactory,
                                                       SecretariatOperationalRoutingResolver routingResolver,
-                                                      PautaAudienciaNacionalService pautaAudienciaNacionalService,
                                                       SecretariatOperationalChecklistEngine checklistEngine,
                                                       SecretariatOperationalAssignmentService assignmentService,
-                                                      SecretariatOperationalHearingResourceService hearingResourceService,
                                                       SecretariatOperationalSlaService slaService,
                                                       SecretariatOperationalActLineService actLineService,
-                                                      SecretariatOperationalAttendanceService attendanceService,
                                                       SecretariatOperationalExpeditionBatchService expeditionBatchService,
                                                       SecretariatOperationalRedistributionService redistributionService,
                                                       SecretariatOperationalBottleneckRadarService bottleneckRadarService,
                                                       SecretariatOperationalStabilityService stabilityService,
                                                       SecretariatOperationalBulkReassignmentService bulkReassignmentService,
-                                                      RitoUrgenciaPriorityPolicy ritoUrgenciaPriorityPolicy) {
+                                                      RitoUrgenciaPriorityPolicy ritoUrgenciaPriorityPolicy,
+                                                      SecretariatAudienceOrchestrationService audienceOrchestrationService) {
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
@@ -96,19 +92,17 @@ public class SecretariatOperationalOrchestrationService {
         this.secretariatQueueProjectionService = Objects.requireNonNull(secretariatQueueProjectionService);
         this.rulePackFactory = Objects.requireNonNull(rulePackFactory);
         this.routingResolver = Objects.requireNonNull(routingResolver);
-        this.pautaAudienciaNacionalService = Objects.requireNonNull(pautaAudienciaNacionalService);
         this.checklistEngine = Objects.requireNonNull(checklistEngine);
         this.assignmentService = Objects.requireNonNull(assignmentService);
-        this.hearingResourceService = Objects.requireNonNull(hearingResourceService);
         this.slaService = Objects.requireNonNull(slaService);
         this.actLineService = Objects.requireNonNull(actLineService);
-        this.attendanceService = Objects.requireNonNull(attendanceService);
         this.expeditionBatchService = Objects.requireNonNull(expeditionBatchService);
         this.redistributionService = Objects.requireNonNull(redistributionService);
         this.bottleneckRadarService = Objects.requireNonNull(bottleneckRadarService);
         this.stabilityService = Objects.requireNonNull(stabilityService);
         this.bulkReassignmentService = Objects.requireNonNull(bulkReassignmentService);
         this.ritoUrgenciaPriorityPolicy = Objects.requireNonNull(ritoUrgenciaPriorityPolicy);
+        this.audienceOrchestrationService = Objects.requireNonNull(audienceOrchestrationService);
     }
 
     @Transactional(readOnly = true)
@@ -236,56 +230,20 @@ public class SecretariatOperationalOrchestrationService {
                 stabilityService.estabilizar(processo, actor, profile, checklist, sla, acts));
     }
 
-    @Transactional(readOnly = true)
     public HearingSnapshot avaliarPauta(Long processoId,
                                         LocalDateTime inicio,
                                         Integer duracaoMinutos,
                                         String tipo,
                                         String local) {
-        Usuario actor = requireInstitutionalActor();
-        Processo processo = loadProcesso(processoId);
-        SecretariatOperationalRoutingProfile profile = routingResolver.resolve(processo);
-        PautaAudienciaNacionalService.PautaAudienciaDecision decision = pautaAudienciaNacionalService.avaliar(buildPautaCommand(actor, processo, profile, inicio, duracaoMinutos, tipo, local));
-        SecretariatOperationalHearingResourceService.HearingResourceSnapshot resources = hearingResourceService.avaliar(processo, actor, profile, decision, local);
-        return toHearingSnapshot(actor, processo, profile, decision, resources, false);
+        return audienceOrchestrationService.avaliarPauta(processoId, inicio, duracaoMinutos, tipo, local);
     }
 
-    @Transactional
     public HearingSnapshot registrarPauta(Long processoId,
                                           LocalDateTime inicio,
                                           Integer duracaoMinutos,
                                           String tipo,
                                           String local) {
-        Usuario actor = requireInstitutionalActor();
-        Processo processo = loadProcesso(processoId);
-        SecretariatOperationalRoutingProfile profile = routingResolver.resolve(processo);
-        PautaAudienciaNacionalService.PautaAudienciaDecision decision = pautaAudienciaNacionalService.registrar(buildPautaCommand(actor, processo, profile, inicio, duracaoMinutos, tipo, local));
-        Instant dueAt = decision.inicio() == null
-                ? Instant.now().plus(profile.audiencePreparationSla())
-                : decision.inicio().atZone(java.time.ZoneId.systemDefault()).toInstant().minus(profile.audiencePreparationSla());
-        String templateCode = "SECRETARIA:PAUTA:" + profile.routeKey() + ':' + processoId + ':' + (decision.pautaKey() == null ? "SEM_CHAVE" : decision.pautaKey());
-        WorkItem item = workItemRepository.findLatestByProcessoIdAndTemplateCode(processoId, templateCode).orElseGet(() -> WorkItem.builder()
-                .processo(processo)
-                .templateCode(templateCode)
-                .build());
-        item.setFaseOrigem(processo.getFaseAtual());
-        item.setType(WorkItemType.AUDIENCIA);
-        item.setTitulo("Preparação de audiência — " + firstNonBlank(tipo, "AUDIENCIA") + " — " + profile.secretariatCode());
-        item.setDescricao(buildAudienceDescription(processo, profile, actor, decision));
-        item.setQueueCode(profile.audienceQueueCode());
-        item.setInboxKey(profile.audienceInboxKey());
-        item.setAssignedRole(TipoUsuario.SERVIDOR_FORUM);
-        item.setStatus(WorkItemStatus.PENDENTE);
-        item.setPrioridade(resolveAudiencePriority(processo, profile));
-        item.setBlocking(processo.getNivelSigilo() != null && processo.getNivelSigilo() != NivelSigilo.PUBLICO);
-        item.setUf(processo.getUf());
-        item.setComarca(processo.getComarca());
-        item.setBaseLegal("Preparação de pauta pela secretaria competente " + profile.secretariatCode() + " com rota " + profile.organizationalPath());
-        item.setDueAt(dueAt);
-        WorkItem saved = workItemRepository.save(item);
-        secretariatQueueProjectionService.upsert(saved, computeScore(saved, saved.getPrioridade(), profile), computeTags(processo, profile, "AUDIENCIA", true));
-        SecretariatOperationalHearingResourceService.HearingResourceSnapshot resources = hearingResourceService.reservar(processo, actor, profile, decision, local);
-        return toHearingSnapshot(actor, processo, profile, decision, resources, true);
+        return audienceOrchestrationService.registrarPauta(processoId, inicio, duracaoMinutos, tipo, local);
     }
 
     @Transactional(readOnly = true)
@@ -323,48 +281,30 @@ public class SecretariatOperationalOrchestrationService {
                 assignmentService.atribuir(processo, profile, stage));
     }
 
-    @Transactional(readOnly = true)
     public HearingResourcesSnapshot avaliarRecursosAudiencia(Long processoId,
                                                              LocalDateTime inicio,
                                                              Integer duracaoMinutos,
                                                              String tipo,
                                                              String local) {
-        Usuario actor = requireInstitutionalActor();
-        Processo processo = loadProcesso(processoId);
-        SecretariatOperationalRoutingProfile profile = routingResolver.resolve(processo);
-        PautaAudienciaNacionalService.PautaAudienciaDecision decision = pautaAudienciaNacionalService.avaliar(buildPautaCommand(actor, processo, profile, inicio, duracaoMinutos, tipo, local));
-        return new HearingResourcesSnapshot(processo.getId(), firstNonBlank(processo.getNumeroProcesso(), processo.getNumeroUnificado(), processo.getNumero()), profile,
-                hearingResourceService.avaliar(processo, actor, profile, decision, local));
+        return audienceOrchestrationService.avaliarRecursosAudiencia(processoId, inicio, duracaoMinutos, tipo, local);
     }
 
-    @Transactional
     public HearingResourcesSnapshot reservarRecursosAudiencia(Long processoId,
                                                               LocalDateTime inicio,
                                                               Integer duracaoMinutos,
                                                               String tipo,
                                                               String local) {
-        Usuario actor = requireInstitutionalActor();
-        Processo processo = loadProcesso(processoId);
-        SecretariatOperationalRoutingProfile profile = routingResolver.resolve(processo);
-        PautaAudienciaNacionalService.PautaAudienciaDecision decision = pautaAudienciaNacionalService.registrar(buildPautaCommand(actor, processo, profile, inicio, duracaoMinutos, tipo, local));
-        return new HearingResourcesSnapshot(processo.getId(), firstNonBlank(processo.getNumeroProcesso(), processo.getNumeroUnificado(), processo.getNumero()), profile,
-                hearingResourceService.reservar(processo, actor, profile, decision, local));
+        return audienceOrchestrationService.reservarRecursosAudiencia(processoId, inicio, duracaoMinutos, tipo, local);
     }
 
-    @Transactional(readOnly = true)
     public AttendanceSnapshot avaliarPresencaAudiencia(Long processoId,
                                                        LocalDateTime inicio,
                                                        Integer duracaoMinutos,
                                                        String tipo,
                                                        String local) {
-        Usuario actor = requireInstitutionalActor();
-        Processo processo = loadProcesso(processoId);
-        SecretariatOperationalRoutingProfile profile = routingResolver.resolve(processo);
-        return new AttendanceSnapshot(processo.getId(), firstNonBlank(processo.getNumeroProcesso(), processo.getNumeroUnificado(), processo.getNumero()), profile,
-                attendanceService.avaliar(processo, actor, profile, inicio, duracaoMinutos, tipo, local));
+        return audienceOrchestrationService.avaliarPresencaAudiencia(processoId, inicio, duracaoMinutos, tipo, local);
     }
 
-    @Transactional
     public AttendanceSnapshot registrarPresencaAudiencia(Long processoId,
                                                          LocalDateTime inicio,
                                                          Integer duracaoMinutos,
@@ -373,11 +313,7 @@ public class SecretariatOperationalOrchestrationService {
                                                          String papel,
                                                          String nome,
                                                          String situacao) {
-        Usuario actor = requireInstitutionalActor();
-        Processo processo = loadProcesso(processoId);
-        SecretariatOperationalRoutingProfile profile = routingResolver.resolve(processo);
-        return new AttendanceSnapshot(processo.getId(), firstNonBlank(processo.getNumeroProcesso(), processo.getNumeroUnificado(), processo.getNumero()), profile,
-                attendanceService.registrar(processo, actor, profile, inicio, duracaoMinutos, tipo, local, papel, nome, situacao));
+        return audienceOrchestrationService.registrarPresencaAudiencia(processoId, inicio, duracaoMinutos, tipo, local, papel, nome, situacao);
     }
 
     @Transactional(readOnly = true)
@@ -488,58 +424,6 @@ public class SecretariatOperationalOrchestrationService {
         return new DeskLoadSnapshot(inboxKey, queueCode, active, overdue, expedited, band);
     }
 
-    private PautaAudienciaNacionalService.PautaAudienciaCommand buildPautaCommand(Usuario actor,
-                                                                                   Processo processo,
-                                                                                   SecretariatOperationalRoutingProfile profile,
-                                                                                   LocalDateTime inicio,
-                                                                                   Integer duracaoMinutos,
-                                                                                   String tipo,
-                                                                                   String local) {
-        LocalDateTime effectiveStart = inicio == null ? LocalDateTime.now().plusDays(2).withHour(10).withMinute(0).withSecond(0).withNano(0) : inicio;
-        int effectiveDuration = duracaoMinutos == null || duracaoMinutos <= 0 ? profile.audienceDefaultDurationMinutes() : duracaoMinutos;
-        String effectiveLocal = local == null || local.isBlank() ? profile.hearingRoomPrefix() + "_SALA_01" : local.trim();
-        return new PautaAudienciaNacionalService.PautaAudienciaCommand(
-                actor.getId(),
-                processo.getId(),
-                firstNonBlank(processo.getTribunalCodigoRoteado(), processo.getTribunal()),
-                processo.getUf(),
-                processo.getComarca(),
-                processo.getRamoDireito() == null ? com.tcc.pjb.backend.model.entity.enums.RamoDireito.CIVIL : processo.getRamoDireito(),
-                com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao.PRIMEIRO_GRAU,
-                effectiveStart,
-                effectiveDuration,
-                firstNonBlank(tipo, "AUDIENCIA_DE_SECRETARIA"),
-                effectiveLocal,
-                "/api/v1/secretariat/especializada/processos/" + processo.getId() + "/audiencias"
-        );
-    }
-
-    private HearingSnapshot toHearingSnapshot(Usuario actor,
-                                              Processo processo,
-                                              SecretariatOperationalRoutingProfile profile,
-                                              PautaAudienciaNacionalService.PautaAudienciaDecision decision,
-                                              SecretariatOperationalHearingResourceService.HearingResourceSnapshot resources,
-                                              boolean registrada) {
-        List<String> checklist = new ArrayList<>(profile.checklist());
-        checklist.add("Confirmar partes, advogados, sala e suporte da secretaria " + profile.secretariatCode() + '.');
-        checklist.add("Conferir recursos físicos e virtuais atrelados à pauta " + profile.audienceInboxKey() + '.');
-        checklist.add("Recurso selecionado: " + resources.selected().resourceCode() + '.');
-        if (profile.secrecyAware()) {
-            checklist.add("Aplicar trilha de audiência sigilosa com credenciais e sala controlada.");
-        }
-        return new HearingSnapshot(
-                actor.getId(),
-                actor.getNome(),
-                processo.getId(),
-                firstNonBlank(processo.getNumeroProcesso(), processo.getNumeroUnificado(), processo.getNumero()),
-                profile,
-                decision,
-                resources,
-                registrada,
-                List.copyOf(checklist)
-        );
-    }
-
     private String buildReceiptDescription(Processo processo,
                                            SecretariatOperationalRoutingProfile profile,
                                            SecretariatRulePack rulePack,
@@ -559,23 +443,6 @@ public class SecretariatOperationalOrchestrationService {
         if (hearingSensitive) {
             lines.add("Fluxo marcado como sensível à pauta de audiência.");
         }
-        return String.join("\n", lines);
-    }
-
-    private String buildAudienceDescription(Processo processo,
-                                            SecretariatOperationalRoutingProfile profile,
-                                            Usuario actor,
-                                            PautaAudienciaNacionalService.PautaAudienciaDecision decision) {
-        List<String> lines = new ArrayList<>();
-        lines.add("Preparação de pauta pela secretaria " + profile.secretariatCode());
-        lines.add("Ator responsável: " + actor.getNome() + " (#" + actor.getId() + ")");
-        lines.add("Trilha organizacional: " + profile.organizationalPath());
-        lines.add("Inbox de pauta conectado: " + profile.audienceInboxKey());
-        lines.add("Fila de pauta conectada: " + profile.audienceQueueCode());
-        lines.add("Inicio: " + decision.inicio());
-        lines.add("Fim: " + decision.fim());
-        lines.add("Fundamentos: " + String.join(" | ", decision.fundamentos()));
-        lines.add("Conflitos: " + String.join(" | ", decision.conflitos()));
         return String.join("\n", lines);
     }
 
@@ -607,19 +474,6 @@ public class SecretariatOperationalOrchestrationService {
             return 1;
         }
         if (processo.getRamoDireito() != null && processo.getRamoDireito().isFazendaLike()) {
-            return 2;
-        }
-        return 2;
-    }
-
-    private int resolveAudiencePriority(Processo processo, SecretariatOperationalRoutingProfile profile) {
-        if (processo.getNivelSigilo() != null && processo.getNivelSigilo() != NivelSigilo.PUBLICO) {
-            return 1;
-        }
-        if ("PENAL".equals(profile.ramoAxis()) || "MILITAR".equals(profile.ramoAxis())) {
-            return 1;
-        }
-        if (profile.regimeAxis().startsWith("JUIZADO")) {
             return 2;
         }
         return 2;
