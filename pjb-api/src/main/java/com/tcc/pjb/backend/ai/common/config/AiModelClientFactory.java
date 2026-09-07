@@ -5,6 +5,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import com.tcc.pjb.backend.ai.common.AiModelClient;
 import com.tcc.pjb.backend.ai.common.clients.local.LocalHeuristicAiModelClient;
+import com.tcc.pjb.backend.ai.common.clients.ollama.OllamaChatClient;
 import com.tcc.pjb.backend.ai.common.clients.openai.OpenAiChatCompletionsClient;
 
 @Component
@@ -24,6 +25,17 @@ public class AiModelClientFactory {
                 env.getProperty("pjb.ai.provider"),
                 "local"
         ).toLowerCase(Locale.ROOT);
+
+        if ("ollama".equals(provider)) {
+            String baseUrl = firstNonBlank(env.getProperty("pjb.ai.ollama.base-url"), "http://localhost:11434");
+            String model = firstNonBlank(env.getProperty("pjb.ai.ollama.model"), "qwen2.5:7b");
+            double temperature = parseDouble(env.getProperty("pjb.ai.ollama.temperature"), 0.2);
+            long timeoutMs = parseLong(env.getProperty("pjb.ai.ollama.timeout-ms"), 180_000);
+
+            OllamaChatClient client = new OllamaChatClient(baseUrl, model, temperature);
+            client.setTimeout(timeoutMs);
+            return client;
+        }
 
         if ("openai".equals(provider)) {
             String apiKey = firstNonBlank(
