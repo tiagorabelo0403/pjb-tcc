@@ -21,11 +21,8 @@ import com.tcc.pjb.backend.service.ui.branding.InstitutionalPanelBrandingService
 import com.tcc.pjb.backend.service.criminal.InqueritoPolicialDigitalService;
 import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalPeticionamentoFacadeService;
-import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
+import com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
-import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 import com.tcc.pjb.backend.service.rito.RitoUrgenciaPriorityPolicy;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -46,10 +43,7 @@ public class MinisterioPublicoPainelService {
     private final InstitutionalPanelBrandingService institutionalPanelBrandingService;
     private final InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService;
     private final PainelSharedExperienceService sharedExperienceService;
-    private final PainelSignalReflectionService signalReflectionService;
-    private final PainelNativeCollectionCompositionService collectionCompositionService;
-    private final PainelActionSurfaceCompositionService actionSurfaceCompositionService;
-    private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
+    private final PainelCompositionPipelineService compositionPipeline;
     private final InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService;
     private final InqueritoPolicialDigitalService inqueritoPolicialDigitalService;
     private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
@@ -63,10 +57,7 @@ public class MinisterioPublicoPainelService {
                                           InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService,
                                           InstitutionalPanelBrandingService institutionalPanelBrandingService,
                                           PainelSharedExperienceService sharedExperienceService,
-                                          PainelSignalReflectionService signalReflectionService,
-                                          PainelNativeCollectionCompositionService collectionCompositionService,
-                                          PainelActionSurfaceCompositionService actionSurfaceCompositionService,
-                                          PainelExecutionSurfaceCompositionService executionSurfaceCompositionService,
+                                          PainelCompositionPipelineService compositionPipeline,
                                           InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService,
                                           InqueritoPolicialDigitalService inqueritoPolicialDigitalService,
                                           MovimentacaoProcessualRegistrar movimentacaoRegistrar,
@@ -79,10 +70,7 @@ public class MinisterioPublicoPainelService {
         this.institutionalMultimediaWorkspaceService = institutionalMultimediaWorkspaceService;
         this.institutionalPanelBrandingService = institutionalPanelBrandingService;
         this.sharedExperienceService = sharedExperienceService;
-        this.signalReflectionService = signalReflectionService;
-        this.collectionCompositionService = collectionCompositionService;
-        this.actionSurfaceCompositionService = actionSurfaceCompositionService;
-        this.executionSurfaceCompositionService = executionSurfaceCompositionService;
+        this.compositionPipeline = compositionPipeline;
         this.institutionalMaterialActionGuardService = institutionalMaterialActionGuardService;
         this.inqueritoPolicialDigitalService = inqueritoPolicialDigitalService;
         this.movimentacaoRegistrar = movimentacaoRegistrar;
@@ -101,20 +89,17 @@ public class MinisterioPublicoPainelService {
         String etag = commons.etag("MP", usuario.getId(), manifestacoes, recursos, prazos48h, prioridadeAlta, inqueritos, ctx.behavioralAudit());
         Map<String, Object> panelBranding = institutionalPanelBrandingService.resolve("MINISTERIO_PUBLICO", "PAINEL_MINISTERIO_PUBLICO", usuario.getTipoUsuario());
         Map<String, Object> sharedExperience = sharedExperienceService.snapshot("MINISTERIO_PUBLICO");
-        Map<String, Object> operationalSignals = signalReflectionService.deriveSignals("MINISTERIO_PUBLICO", sharedExperience, manifestacoes + recursos, prazos48h, "ATUACAO_FINALISTICA");
-        Map<String, Object> nativeComposition = signalReflectionService.buildNativeComposition("MINISTERIO_PUBLICO", operationalSignals);
-        prioridadeAlta = collectionCompositionService.composeList("MINISTERIO_PUBLICO", "PROCESSOS_PRIORIDADE_ALTA", prioridadeAlta, operationalSignals, nativeComposition);
-        inqueritos = collectionCompositionService.composeList("MINISTERIO_PUBLICO", "INQUERITOS_EM_ACOMPANHAMENTO", inqueritos, operationalSignals, nativeComposition);
-        Map<String, Object> collectionComposition = collectionCompositionService.buildCollectionComposition("MINISTERIO_PUBLICO", operationalSignals, nativeComposition, Map.of(
+        Map<String, Object> operationalSignals = compositionPipeline.deriveSignals("MINISTERIO_PUBLICO", sharedExperience, manifestacoes + recursos, prazos48h, "ATUACAO_FINALISTICA");
+        Map<String, Object> nativeComposition = compositionPipeline.buildNativeComposition("MINISTERIO_PUBLICO", operationalSignals);
+        prioridadeAlta = compositionPipeline.composeList("MINISTERIO_PUBLICO", "PROCESSOS_PRIORIDADE_ALTA", prioridadeAlta, operationalSignals, nativeComposition);
+        inqueritos = compositionPipeline.composeList("MINISTERIO_PUBLICO", "INQUERITOS_EM_ACOMPANHAMENTO", inqueritos, operationalSignals, nativeComposition);
+        Map<String, Object> collectionComposition = compositionPipeline.buildCollectionComposition("MINISTERIO_PUBLICO", operationalSignals, nativeComposition, Map.of(
                 "processosPrioridadeAlta", prioridadeAlta,
                 "inqueritosEmAcompanhamento", inqueritos
         ));
-        Map<String, Object> actionSurface = actionSurfaceCompositionService.buildActionSurface("MINISTERIO_PUBLICO", operationalSignals, nativeComposition, collectionComposition);
-        Map<String, Object> executionSurface = executionSurfaceCompositionService.buildExecutionSurface("MINISTERIO_PUBLICO", operationalSignals, nativeComposition, collectionComposition, actionSurface);
-        Map<String, Object> panelVisualIdentity = signalReflectionService.reflectInBlock("MINISTERIO_PUBLICO", "VISUAL_IDENTITY", castMap(panelBranding.get("panelVisualIdentity")), operationalSignals);
-        panelVisualIdentity = collectionCompositionService.decorateBlock("MINISTERIO_PUBLICO", "VISUAL_IDENTITY", panelVisualIdentity, operationalSignals, nativeComposition);
-        panelVisualIdentity = actionSurfaceCompositionService.decorateBlock("MINISTERIO_PUBLICO", "VISUAL_IDENTITY", panelVisualIdentity, actionSurface, nativeComposition);
-        panelVisualIdentity = executionSurfaceCompositionService.decorateBlock("MINISTERIO_PUBLICO", "VISUAL_IDENTITY", panelVisualIdentity, executionSurface, nativeComposition);
+        Map<String, Object> actionSurface = compositionPipeline.buildActionSurface("MINISTERIO_PUBLICO", operationalSignals, nativeComposition, collectionComposition);
+        Map<String, Object> executionSurface = compositionPipeline.buildExecutionSurface("MINISTERIO_PUBLICO", operationalSignals, nativeComposition, collectionComposition, actionSurface);
+        Map<String, Object> panelVisualIdentity = compositionPipeline.decorate("MINISTERIO_PUBLICO", "VISUAL_IDENTITY", castMap(panelBranding.get("panelVisualIdentity")), operationalSignals, nativeComposition, actionSurface, executionSurface);
         return new PerfilDashboardPayload.MinisterioPublicoPayload(
                 etag,
                 ctx.generatedAt(),
