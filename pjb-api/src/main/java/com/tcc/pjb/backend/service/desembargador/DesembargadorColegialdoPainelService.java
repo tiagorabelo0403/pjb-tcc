@@ -35,11 +35,8 @@ import com.tcc.pjb.backend.service.julgamento.safety.DecisionSafetyService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopologyMeshService;
 import com.tcc.pjb.backend.service.processual.observability.business.ProcessBusinessObservabilityService;
-import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
+import com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
-import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 import com.tcc.pjb.backend.service.processual.document.template.RecursalQualifiedDocumentMaterializerService;
 
 @Service
@@ -60,10 +57,7 @@ public class DesembargadorColegialdoPainelService {
     private final InstitutionalActorRoutingService institutionalActorRoutingService;
     private final RecursalQualifiedDocumentMaterializerService recursalQualifiedDocumentMaterializerService;
     private final PainelSharedExperienceService sharedExperienceService;
-    private final PainelSignalReflectionService signalReflectionService;
-    private final PainelNativeCollectionCompositionService collectionCompositionService;
-    private final PainelActionSurfaceCompositionService actionSurfaceCompositionService;
-    private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
+    private final PainelCompositionPipelineService compositionPipeline;
 
     public DesembargadorColegialdoPainelService(PerfilDashboardContextFactory contextFactory,
                                                 PainelServiceCommons commons,
@@ -78,10 +72,7 @@ public class DesembargadorColegialdoPainelService {
                                                 InstitutionalActorRoutingService institutionalActorRoutingService,
                                                 RecursalQualifiedDocumentMaterializerService recursalQualifiedDocumentMaterializerService,
                                                 PainelSharedExperienceService sharedExperienceService,
-                                                PainelSignalReflectionService signalReflectionService,
-                                                PainelNativeCollectionCompositionService collectionCompositionService,
-                                                PainelActionSurfaceCompositionService actionSurfaceCompositionService,
-                                       PainelExecutionSurfaceCompositionService executionSurfaceCompositionService) {
+                                                PainelCompositionPipelineService compositionPipeline) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
@@ -95,10 +86,7 @@ public class DesembargadorColegialdoPainelService {
         this.institutionalActorRoutingService = institutionalActorRoutingService;
         this.recursalQualifiedDocumentMaterializerService = recursalQualifiedDocumentMaterializerService;
         this.sharedExperienceService = sharedExperienceService;
-        this.signalReflectionService = signalReflectionService;
-        this.collectionCompositionService = collectionCompositionService;
-        this.actionSurfaceCompositionService = actionSurfaceCompositionService;
-        this.executionSurfaceCompositionService = executionSurfaceCompositionService;
+        this.compositionPipeline = compositionPipeline;
     }
 
     public InstitutionalActorTopologyMeshService.InstitutionalActorTopologyMeshSnapshot malhaProcesso(Long processoId) {
@@ -118,20 +106,20 @@ public class DesembargadorColegialdoPainelService {
         int sessoesProgramadas = (int) inbox.stream().filter(this::isSessao).count();
         int prazosUrgentes = (int) inbox.stream().filter(i -> i.getDueAt() != null && i.getDueAt().isBefore(Instant.now().plus(48, ChronoUnit.HOURS))).count();
         Map<String, Object> sharedExperience = sharedExperienceService.snapshot("DESEMBARGADOR_COLEGIADO");
-        Map<String, Object> operationalSignals = signalReflectionService.deriveSignals("DESEMBARGADOR_COLEGIADO", sharedExperience, recursosParaRelatar.size() + votosParaProferir.size() + acordaosParaAssinatura.size(), prazosUrgentes, "PAUTA_E_ACORDAO");
-        Map<String, Object> nativeComposition = signalReflectionService.buildNativeComposition("DESEMBARGADOR_COLEGIADO", operationalSignals);
-        recursosParaRelatar = collectionCompositionService.composeList("DESEMBARGADOR_COLEGIADO", "RECURSOS_RELATORIA", recursosParaRelatar, operationalSignals, nativeComposition);
-        votosParaProferir = collectionCompositionService.composeList("DESEMBARGADOR_COLEGIADO", "VOTOS_PROFERIR", votosParaProferir, operationalSignals, nativeComposition);
-        acordaosParaAssinatura = collectionCompositionService.composeList("DESEMBARGADOR_COLEGIADO", "ACORDAOS_ASSINATURA", acordaosParaAssinatura, operationalSignals, nativeComposition);
-        pedidosDeVista = collectionCompositionService.composeList("DESEMBARGADOR_COLEGIADO", "PEDIDOS_VISTA", pedidosDeVista, operationalSignals, nativeComposition);
-        Map<String, Object> collectionComposition = collectionCompositionService.buildCollectionComposition("DESEMBARGADOR_COLEGIADO", operationalSignals, nativeComposition, Map.of(
+        Map<String, Object> operationalSignals = compositionPipeline.deriveSignals("DESEMBARGADOR_COLEGIADO", sharedExperience, recursosParaRelatar.size() + votosParaProferir.size() + acordaosParaAssinatura.size(), prazosUrgentes, "PAUTA_E_ACORDAO");
+        Map<String, Object> nativeComposition = compositionPipeline.buildNativeComposition("DESEMBARGADOR_COLEGIADO", operationalSignals);
+        recursosParaRelatar = compositionPipeline.composeList("DESEMBARGADOR_COLEGIADO", "RECURSOS_RELATORIA", recursosParaRelatar, operationalSignals, nativeComposition);
+        votosParaProferir = compositionPipeline.composeList("DESEMBARGADOR_COLEGIADO", "VOTOS_PROFERIR", votosParaProferir, operationalSignals, nativeComposition);
+        acordaosParaAssinatura = compositionPipeline.composeList("DESEMBARGADOR_COLEGIADO", "ACORDAOS_ASSINATURA", acordaosParaAssinatura, operationalSignals, nativeComposition);
+        pedidosDeVista = compositionPipeline.composeList("DESEMBARGADOR_COLEGIADO", "PEDIDOS_VISTA", pedidosDeVista, operationalSignals, nativeComposition);
+        Map<String, Object> collectionComposition = compositionPipeline.buildCollectionComposition("DESEMBARGADOR_COLEGIADO", operationalSignals, nativeComposition, Map.of(
                 "recursosParaRelatar", recursosParaRelatar,
                 "votosParaProferir", votosParaProferir,
                 "acordaosParaAssinatura", acordaosParaAssinatura,
                 "pedidosDeVista", pedidosDeVista
         ));
-        Map<String, Object> actionSurface = actionSurfaceCompositionService.buildActionSurface("DESEMBARGADOR_COLEGIADO", operationalSignals, nativeComposition, collectionComposition);
-        Map<String, Object> executionSurface = executionSurfaceCompositionService.buildExecutionSurface("DESEMBARGADOR_COLEGIADO", operationalSignals, nativeComposition, collectionComposition, actionSurface);
+        Map<String, Object> actionSurface = compositionPipeline.buildActionSurface("DESEMBARGADOR_COLEGIADO", operationalSignals, nativeComposition, collectionComposition);
+        Map<String, Object> executionSurface = compositionPipeline.buildExecutionSurface("DESEMBARGADOR_COLEGIADO", operationalSignals, nativeComposition, collectionComposition, actionSurface);
         return new ColegialdoSnapshot(
                 ctx.generatedAt(),
                 ctx.perfilAtivo(),
