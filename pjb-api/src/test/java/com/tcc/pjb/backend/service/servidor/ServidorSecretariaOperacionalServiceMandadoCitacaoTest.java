@@ -10,11 +10,8 @@ import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.calendar.CalendarInstitutionalBridgeService;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
-import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
+import com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
-import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 import java.time.LocalDateTime;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -39,10 +36,7 @@ class ServidorSecretariaOperacionalServiceMandadoCitacaoTest {
             mock(CalendarInstitutionalBridgeService.class),
             atosService,
             mock(PainelSharedExperienceService.class),
-            mock(PainelSignalReflectionService.class),
-            mock(PainelNativeCollectionCompositionService.class),
-            mock(PainelActionSurfaceCompositionService.class),
-            mock(PainelExecutionSurfaceCompositionService.class));
+            mock(PainelCompositionPipelineService.class));
 
     @Test
     void realizarJuntadaDelegaComOsMesmosArgumentos() {
