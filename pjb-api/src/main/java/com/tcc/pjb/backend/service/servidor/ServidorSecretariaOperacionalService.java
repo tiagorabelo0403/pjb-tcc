@@ -18,11 +18,8 @@ import com.tcc.pjb.backend.service.calendar.CalendarInstitutionalBridgeService;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
-import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
+import com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
-import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 @Service
 public class ServidorSecretariaOperacionalService {
@@ -34,10 +31,7 @@ private final PjbAuthorizationService authorizationService;
 private final CalendarInstitutionalBridgeService institutionalBridgeService;
 private final ServidorSecretariaAtosService atosService;
 private final PainelSharedExperienceService sharedExperienceService;
-private final PainelSignalReflectionService signalReflectionService;
-private final PainelNativeCollectionCompositionService collectionCompositionService;
-private final PainelActionSurfaceCompositionService actionSurfaceCompositionService;
-private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
+private final PainelCompositionPipelineService compositionPipeline;
 public ServidorSecretariaOperacionalService(PerfilDashboardContextFactory contextFactory,
 PainelServiceCommons commons,
 ProcessoRepository processoRepository,
@@ -46,10 +40,7 @@ PjbAuthorizationService authorizationService,
 CalendarInstitutionalBridgeService institutionalBridgeService,
 ServidorSecretariaAtosService atosService,
 PainelSharedExperienceService sharedExperienceService,
-PainelSignalReflectionService signalReflectionService,
-PainelNativeCollectionCompositionService collectionCompositionService,
-PainelActionSurfaceCompositionService actionSurfaceCompositionService,
-                                       PainelExecutionSurfaceCompositionService executionSurfaceCompositionService) {
+PainelCompositionPipelineService compositionPipeline) {
 this.contextFactory = contextFactory;
 this.commons = commons;
 this.processoRepository = processoRepository;
@@ -58,10 +49,7 @@ this.authorizationService = authorizationService;
 this.institutionalBridgeService = institutionalBridgeService;
 this.atosService = atosService;
 this.sharedExperienceService = sharedExperienceService;
-this.signalReflectionService = signalReflectionService;
-this.collectionCompositionService = collectionCompositionService;
-this.actionSurfaceCompositionService = actionSurfaceCompositionService;
-this.executionSurfaceCompositionService = executionSurfaceCompositionService;
+this.compositionPipeline = compositionPipeline;
 }
 public SecretariaSnapshot bootstrapSecretaria() {
 PerfilDashboardContext ctx = contextFactory.build();
@@ -87,20 +75,20 @@ int prazosVencendo24h = (int) inbox.stream()
 .filter(i -> i.getDueAt() != null
 && i.getDueAt().isBefore(Instant.now().plus(24, ChronoUnit.HOURS))).count();
 Map<String, Object> sharedExperience = sharedExperienceService.snapshot("SECRETARIA");
-Map<String, Object> operationalSignals = signalReflectionService.deriveSignals("SECRETARIA", sharedExperience, inbox.size(), prazosVencendo24h, "COORDENACAO_CARTORARIA");
-Map<String, Object> nativeComposition = signalReflectionService.buildNativeComposition("SECRETARIA", operationalSignals);
-juntadasPendentes = collectionCompositionService.composeList("SECRETARIA", "JUNTADAS_PENDENTES", juntadasPendentes, operationalSignals, nativeComposition);
-intimacoesExpedir = collectionCompositionService.composeList("SECRETARIA", "INTIMACOES_EXPEDIR", intimacoesExpedir, operationalSignals, nativeComposition);
-mandadosExpedir = collectionCompositionService.composeList("SECRETARIA", "MANDADOS_EXPEDIR", mandadosExpedir, operationalSignals, nativeComposition);
-conclusosPendentes = collectionCompositionService.composeList("SECRETARIA", "CONCLUSOS_PENDENTES", conclusosPendentes, operationalSignals, nativeComposition);
-Map<String, Object> collectionComposition = collectionCompositionService.buildCollectionComposition("SECRETARIA", operationalSignals, nativeComposition, Map.of(
+Map<String, Object> operationalSignals = compositionPipeline.deriveSignals("SECRETARIA", sharedExperience, inbox.size(), prazosVencendo24h, "COORDENACAO_CARTORARIA");
+Map<String, Object> nativeComposition = compositionPipeline.buildNativeComposition("SECRETARIA", operationalSignals);
+juntadasPendentes = compositionPipeline.composeList("SECRETARIA", "JUNTADAS_PENDENTES", juntadasPendentes, operationalSignals, nativeComposition);
+intimacoesExpedir = compositionPipeline.composeList("SECRETARIA", "INTIMACOES_EXPEDIR", intimacoesExpedir, operationalSignals, nativeComposition);
+mandadosExpedir = compositionPipeline.composeList("SECRETARIA", "MANDADOS_EXPEDIR", mandadosExpedir, operationalSignals, nativeComposition);
+conclusosPendentes = compositionPipeline.composeList("SECRETARIA", "CONCLUSOS_PENDENTES", conclusosPendentes, operationalSignals, nativeComposition);
+Map<String, Object> collectionComposition = compositionPipeline.buildCollectionComposition("SECRETARIA", operationalSignals, nativeComposition, Map.of(
 "juntadasPendentes", juntadasPendentes,
 "intimacoesExpedir", intimacoesExpedir,
 "mandadosExpedir", mandadosExpedir,
 "conclusosPendentes", conclusosPendentes
 ));
-Map<String, Object> actionSurface = actionSurfaceCompositionService.buildActionSurface("SECRETARIA", operationalSignals, nativeComposition, collectionComposition);
-        Map<String, Object> executionSurface = executionSurfaceCompositionService.buildExecutionSurface("SECRETARIA", operationalSignals, nativeComposition, collectionComposition, actionSurface);
+Map<String, Object> actionSurface = compositionPipeline.buildActionSurface("SECRETARIA", operationalSignals, nativeComposition, collectionComposition);
+        Map<String, Object> executionSurface = compositionPipeline.buildExecutionSurface("SECRETARIA", operationalSignals, nativeComposition, collectionComposition, actionSurface);
 CalendarInstitutionalBridgeResponse institutionalBridge = institutionalBridgeService.bridgeForUser(usuario, java.time.LocalDate.now(java.time.ZoneOffset.UTC), java.time.LocalDate.now(java.time.ZoneOffset.UTC).plusDays(14), null);
 var institutionalFocus = institutionalBridgeService.focus(institutionalBridge);
 return new SecretariaSnapshot(
