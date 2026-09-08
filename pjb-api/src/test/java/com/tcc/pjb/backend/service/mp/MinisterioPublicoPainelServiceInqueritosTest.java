@@ -20,11 +20,8 @@ import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.dashboard.PerfilPainelSupportService;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
-import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
+import com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
-import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
 import com.tcc.pjb.backend.service.processual.peticionamento.workspace.InstitutionalMultimediaWorkspaceService;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalPeticionamentoFacadeService;
@@ -60,10 +57,7 @@ class MinisterioPublicoPainelServiceInqueritosTest {
                 mock(InstitutionalMultimediaWorkspaceService.class),
                 mock(InstitutionalPanelBrandingService.class),
                 mock(PainelSharedExperienceService.class),
-                mock(PainelSignalReflectionService.class),
-                mock(PainelNativeCollectionCompositionService.class),
-                mock(PainelActionSurfaceCompositionService.class),
-                mock(PainelExecutionSurfaceCompositionService.class),
+                mock(PainelCompositionPipelineService.class),
                 mock(InstitutionalMaterialActionGuardService.class),
                 inqueritoPolicialDigitalService,
                 mock(com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar.class),
