@@ -858,6 +858,20 @@ Cobertura: `VectorSearchServicePgVectorTest` (8 testes, `JdbcTemplate` mockado �
 
 **Ingest real (não só busca):** o mesmo modo `pgvector` também substitui o `InMemoryCosineVectorIndex` (in-memory, LRU 20k, perdido a cada restart) pelo `PgVectorPersistentIndex` — implementação de `VectorIndex` que persiste no mesmo store `pjb_ai_vector_document`. O wiring é por `@ConditionalOnMissingBean(VectorIndex.class)` no in-memory e `@ConditionalOnProperty(mode=pgvector)` no persistente: sem a flag, comportamento histórico intacto; com a flag, `SemanticPrecedentSearchService` ganha persistência real, dados compartilhados entre instâncias, e o `bootstrapIfNeeded` (que já popula o índice lazy a partir do `PrecedenteRepository`) automaticamente vira ingest pipeline. Cobertura: `PgVectorPersistentIndexTest` (8 unit, `JdbcTemplate` mockado — upsert idempotente com normalização case-insensitive de metadata, `size()`, filtro JSONB, truncamento de dimensão) + `PgVectorPersistentIndexIT` (4 IT, Postgres real via Testcontainers na imagem `pgvector/pgvector:pg17`, migration V307 aplicada — prova que `@ConditionalOnMissingBean` substitui o backend, que indexar 3 documentos com vetores ortogonais produz ranking correto na query, que filtro `metadata @> jsonb` de verdade filtra, e que upsert com o mesmo `doc_id` substitui o conteúdo em vez de duplicar).
 
+### Provedor de IA local (Ollama, sem token)
+
+O `AiModelClientFactory` escolhe o provedor por `pjb.ai.{v1,v2,v3}.provider` (com fallback em `pjb.ai.provider`, default `openai`):
+
+| Provider | Quando usar | Dependência externa |
+|----------|-------------|----------------------|
+| `openai` (default) | Produção, com `OPENAI_API_KEY` configurada | API OpenAI, cobrada por token |
+| `ollama` | Ambiente sem chave de API ou sem acesso à internet — desenvolvimento local, demonstração offline | Servidor Ollama local (`http://localhost:11434` por padrão), sem custo por token |
+| `local` (fallback) | Nenhum provider configurado | Nenhuma — heurística determinística, sem LLM real |
+
+Ativar exige só variável de ambiente, sem mudança de código: `PJB_AI_PROVIDER=ollama` (chat) e `PJB_AI_EMBEDDING_MODE=ollama` (embedding, troca o `DeterministicHashEmbeddingService` por `OllamaEmbeddingService`). `PJB_AI_OLLAMA_MODEL`/`PJB_AI_OLLAMA_EMBEDDING_MODEL` escolhem o modelo (default `qwen2.5:7b` e `nomic-embed-text`, os mesmos usados na verificação manual desta integração). `OllamaChatClient` e `OllamaEmbeddingService` implementam os mesmos contratos (`AiModelClient`, `EmbeddingService`) usados pelo provider OpenAI — nenhum consumidor (`JudexOnDemandController`, `SemanticPrecedentSearchService` etc.) precisa saber qual provider está ativo.
+
+Cobertura: `OllamaChatClientTest` e `OllamaEmbeddingServiceTest` (4 testes, `HttpServer` em processo — não dependem do Ollama estar rodando em CI).
+
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
