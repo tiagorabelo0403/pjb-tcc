@@ -19,11 +19,8 @@ import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
-import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
+import com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
-import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
 import com.tcc.pjb.backend.service.processual.peticionamento.workspace.InstitutionalMultimediaWorkspaceService;
 import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
@@ -41,10 +38,7 @@ public class DefensorPublicoPainelService {
     private final InstitutionalPanelBrandingService institutionalPanelBrandingService;
     private final InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService;
     private final PainelSharedExperienceService sharedExperienceService;
-    private final PainelSignalReflectionService signalReflectionService;
-    private final PainelNativeCollectionCompositionService collectionCompositionService;
-    private final PainelActionSurfaceCompositionService actionSurfaceCompositionService;
-    private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
+    private final PainelCompositionPipelineService compositionPipeline;
     private final InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService;
     private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
 
@@ -55,10 +49,7 @@ public class DefensorPublicoPainelService {
                                         InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService,
                                         InstitutionalPanelBrandingService institutionalPanelBrandingService,
                                         PainelSharedExperienceService sharedExperienceService,
-                                        PainelSignalReflectionService signalReflectionService,
-                                        PainelNativeCollectionCompositionService collectionCompositionService,
-                                        PainelActionSurfaceCompositionService actionSurfaceCompositionService,
-                                        PainelExecutionSurfaceCompositionService executionSurfaceCompositionService,
+                                        PainelCompositionPipelineService compositionPipeline,
                                         InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService,
                                         MovimentacaoProcessualRegistrar movimentacaoRegistrar) {
         this.contextFactory = contextFactory;
@@ -68,10 +59,7 @@ public class DefensorPublicoPainelService {
         this.institutionalMultimediaWorkspaceService = institutionalMultimediaWorkspaceService;
         this.institutionalPanelBrandingService = institutionalPanelBrandingService;
         this.sharedExperienceService = sharedExperienceService;
-        this.signalReflectionService = signalReflectionService;
-        this.collectionCompositionService = collectionCompositionService;
-        this.actionSurfaceCompositionService = actionSurfaceCompositionService;
-        this.executionSurfaceCompositionService = executionSurfaceCompositionService;
+        this.compositionPipeline = compositionPipeline;
         this.institutionalMaterialActionGuardService = institutionalMaterialActionGuardService;
         this.movimentacaoRegistrar = movimentacaoRegistrar;
     }
@@ -89,18 +77,15 @@ public class DefensorPublicoPainelService {
         String etag = commons.etag("DEFENSOR", usuario.getId(), assistidos, audienciasHoje.size(), peticoes, recursos, prazos48h, prioridade, ctx.behavioralAudit());
         Map<String, Object> panelBranding = institutionalPanelBrandingService.resolve("DEFENSORIA", "PAINEL_DEFENSORIA", usuario.getTipoUsuario());
         Map<String, Object> sharedExperience = sharedExperienceService.snapshot("DEFENSOR_PUBLICO");
-        Map<String, Object> operationalSignals = signalReflectionService.deriveSignals("DEFENSOR_PUBLICO", sharedExperience, peticoes + recursos, prazos48h, "ATUACAO_ASSISTENCIAL");
-        Map<String, Object> nativeComposition = signalReflectionService.buildNativeComposition("DEFENSOR_PUBLICO", operationalSignals);
-        prioridade = collectionCompositionService.composeList("DEFENSOR_PUBLICO", "PROCESSOS_PRIORIDADE_ALTA", prioridade, operationalSignals, nativeComposition);
-        Map<String, Object> collectionComposition = collectionCompositionService.buildCollectionComposition("DEFENSOR_PUBLICO", operationalSignals, nativeComposition, Map.of(
+        Map<String, Object> operationalSignals = compositionPipeline.deriveSignals("DEFENSOR_PUBLICO", sharedExperience, peticoes + recursos, prazos48h, "ATUACAO_ASSISTENCIAL");
+        Map<String, Object> nativeComposition = compositionPipeline.buildNativeComposition("DEFENSOR_PUBLICO", operationalSignals);
+        prioridade = compositionPipeline.composeList("DEFENSOR_PUBLICO", "PROCESSOS_PRIORIDADE_ALTA", prioridade, operationalSignals, nativeComposition);
+        Map<String, Object> collectionComposition = compositionPipeline.buildCollectionComposition("DEFENSOR_PUBLICO", operationalSignals, nativeComposition, Map.of(
                 "processosPrioridadeAlta", prioridade
         ));
-        Map<String, Object> actionSurface = actionSurfaceCompositionService.buildActionSurface("DEFENSOR_PUBLICO", operationalSignals, nativeComposition, collectionComposition);
-        Map<String, Object> executionSurface = executionSurfaceCompositionService.buildExecutionSurface("DEFENSOR_PUBLICO", operationalSignals, nativeComposition, collectionComposition, actionSurface);
-        Map<String, Object> panelVisualIdentity = signalReflectionService.reflectInBlock("DEFENSOR_PUBLICO", "VISUAL_IDENTITY", castMap(panelBranding.get("panelVisualIdentity")), operationalSignals);
-        panelVisualIdentity = collectionCompositionService.decorateBlock("DEFENSOR_PUBLICO", "VISUAL_IDENTITY", panelVisualIdentity, operationalSignals, nativeComposition);
-        panelVisualIdentity = actionSurfaceCompositionService.decorateBlock("DEFENSOR_PUBLICO", "VISUAL_IDENTITY", panelVisualIdentity, actionSurface, nativeComposition);
-        panelVisualIdentity = executionSurfaceCompositionService.decorateBlock("DEFENSOR_PUBLICO", "VISUAL_IDENTITY", panelVisualIdentity, executionSurface, nativeComposition);
+        Map<String, Object> actionSurface = compositionPipeline.buildActionSurface("DEFENSOR_PUBLICO", operationalSignals, nativeComposition, collectionComposition);
+        Map<String, Object> executionSurface = compositionPipeline.buildExecutionSurface("DEFENSOR_PUBLICO", operationalSignals, nativeComposition, collectionComposition, actionSurface);
+        Map<String, Object> panelVisualIdentity = compositionPipeline.decorate("DEFENSOR_PUBLICO", "VISUAL_IDENTITY", castMap(panelBranding.get("panelVisualIdentity")), operationalSignals, nativeComposition, actionSurface, executionSurface);
         return new PerfilDashboardPayload.DefensorPublicoPayload(
                 etag,
                 ctx.generatedAt(),
