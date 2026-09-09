@@ -8,7 +8,7 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Tests](https://img.shields.io/badge/Tests-5%2C239%20unit%20%7C%200%20failures-brightgreen)
-![ADRs](https://img.shields.io/badge/ADRs-57-informational)
+![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[🇬🇧 English (this file)](./README.en.md)** · **[🇧🇷 Português](./README.md)** · **[📓 Interactive Visual Guide](docs/product/INTERACTIVE_VISUAL_GUIDE.md)**
@@ -545,7 +545,7 @@ pjb/
 │           └── modules/              specialized modules (laiane, advocacia)
 │
 ├── docs/
-│   ├── adr/                          57 Architecture Decision Records
+│   ├── adr/                          58 Architecture Decision Records
 │   ├── database/                     schemas and RLS policies
 │   ├── openapi/                      public API contracts
 │   ├── security/                     LGPD and Gov.br policies
@@ -1023,7 +1023,7 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 | SBOM | CycloneDX generated on every build |
 | Correlation ID | Mandatory on every request |
 
-57 ADRs document each architectural decision with motivation, consequences, and alternatives considered. They must be read before altering any package structure, concurrency pattern, or security policy.
+58 ADRs document each architectural decision with motivation, consequences, and alternatives considered. They must be read before altering any package structure, concurrency pattern, or security policy.
 
 The pipeline automatically generates a CycloneDX SBOM on every build, maintaining an auditable inventory of all dependencies with version and license. The CI evidence gate rejects merges without full structural guard coverage. Correlation ID mandatory on every request — propagated via context and recorded in every log entry, enabling end-to-end tracing without an external aggregator.
 
@@ -1225,7 +1225,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 5,239 unit tests and 116 integration test classes, and 300 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,239 unit tests and 116 integration test classes, and 300 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 
