@@ -4,7 +4,7 @@ import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.versioning.ApiVersion;
-import com.tcc.pjb.backend.service.admin.surface.AdminOperationalSurfaceFacadeService;
+import com.tcc.pjb.backend.service.admin.surface.AdminObservabilitySurfaceService;
 import java.util.Objects;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasAnyRole('ADMINISTRADOR','ADMIN')")
 public class NationalObservabilityController {
 
-    private final AdminOperationalSurfaceFacadeService facadeService;
+    private final AdminObservabilitySurfaceService facadeService;
     private final CapabilityRateLimiter rateLimiter;
 
-    public NationalObservabilityController(AdminOperationalSurfaceFacadeService facadeService,
+    public NationalObservabilityController(AdminObservabilitySurfaceService facadeService,
                                            CapabilityRateLimiter rateLimiter) {
         this.facadeService = Objects.requireNonNull(facadeService);
         this.rateLimiter = Objects.requireNonNull(rateLimiter);

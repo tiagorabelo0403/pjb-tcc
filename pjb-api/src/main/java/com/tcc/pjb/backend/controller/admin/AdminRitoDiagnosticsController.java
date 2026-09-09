@@ -1,7 +1,7 @@
 package com.tcc.pjb.backend.controller.admin;
 
 import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
-import com.tcc.pjb.backend.service.admin.surface.AdminOperationalSurfaceFacadeService;
+import com.tcc.pjb.backend.service.admin.surface.AdminRitoDiagnosticoSurfaceService;
 import java.util.Objects;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/admin/ritos")
 public class AdminRitoDiagnosticsController {
 
-    private final AdminOperationalSurfaceFacadeService facadeService;
+    private final AdminRitoDiagnosticoSurfaceService facadeService;
 
-    public AdminRitoDiagnosticsController(AdminOperationalSurfaceFacadeService facadeService) {
+    public AdminRitoDiagnosticsController(AdminRitoDiagnosticoSurfaceService facadeService) {
         this.facadeService = Objects.requireNonNull(facadeService);
     }
 
