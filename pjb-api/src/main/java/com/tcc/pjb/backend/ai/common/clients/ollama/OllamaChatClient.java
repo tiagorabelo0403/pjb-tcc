@@ -9,12 +9,17 @@ import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.ai.common.AiModelClient;
+import com.tcc.pjb.backend.ai.common.AiProviderException;
 
 public class OllamaChatClient implements AiModelClient {
 
+    private static final Logger log = LoggerFactory.getLogger(OllamaChatClient.class);
+    private static final String PROVEDOR = "ollama";
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final HttpClient http;
@@ -54,24 +59,26 @@ public class OllamaChatClient implements AiModelClient {
 
             HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
             if (resp.statusCode() / 100 != 2) {
-                return "[OLLAMA-ERROR] status=" + resp.statusCode() + " body=" + safeTrim(resp.body());
+                log.warn("Ollama respondeu status={} body={}", resp.statusCode(), safeTrim(resp.body()));
+                throw new AiProviderException(PROVEDOR, "HTTP " + resp.statusCode());
             }
 
             Map<String, Object> json = MAPPER.readValue(resp.body(), new TypeReference<>() {});
             Object response = json.get("response");
-            if (response != null) {
-                return String.valueOf(response);
+            if (response == null) {
+                throw new AiProviderException(PROVEDOR, "resposta sem conteudo");
             }
+            return String.valueOf(response);
 
-            return "[OLLAMA-EMPTY]";
-
+        } catch (AiProviderException e) {
+            throw e;
         } catch (IOException e) {
-            return "[OLLAMA-IO] " + e.getMessage();
+            throw new AiProviderException(PROVEDOR, "falha de comunicacao", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return "[OLLAMA-INTERRUPTED]";
+            throw new AiProviderException(PROVEDOR, "execucao interrompida", e);
         } catch (Exception e) {
-            return "[OLLAMA-ERROR] " + e.getClass().getSimpleName() + ": " + e.getMessage();
+            throw new AiProviderException(PROVEDOR, "falha inesperada (" + e.getClass().getSimpleName() + ")", e);
         }
     }
 
