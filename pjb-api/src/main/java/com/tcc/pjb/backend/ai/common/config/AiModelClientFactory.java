@@ -6,15 +6,21 @@ import org.springframework.stereotype.Component;
 import com.tcc.pjb.backend.ai.common.AiModelClient;
 import com.tcc.pjb.backend.ai.common.clients.local.LocalHeuristicAiModelClient;
 import com.tcc.pjb.backend.ai.common.clients.ollama.OllamaChatClient;
+import com.tcc.pjb.backend.ai.common.clients.guard.GuardedAiModelClient;
 import com.tcc.pjb.backend.ai.common.clients.openai.OpenAiChatCompletionsClient;
+import com.tcc.pjb.backend.ai.legalai.security.AiPromptEgressGuard;
+import com.tcc.pjb.backend.core.security.audit.PjbSecurityEventLogger;
 
 @Component
 public class AiModelClientFactory {
 
     private final Environment env;
+    private final PjbSecurityEventLogger securityEventLogger;
+    private final AiPromptEgressGuard promptEgressGuard = new AiPromptEgressGuard();
 
-    public AiModelClientFactory(Environment env) {
+    public AiModelClientFactory(Environment env, PjbSecurityEventLogger securityEventLogger) {
         this.env = env;
+        this.securityEventLogger = securityEventLogger;
     }
 
     public AiModelClient create(String version) {
@@ -34,7 +40,7 @@ public class AiModelClientFactory {
 
             OllamaChatClient client = new OllamaChatClient(baseUrl, model, temperature);
             client.setTimeout(timeoutMs);
-            return client;
+            return guardado(client, v);
         }
 
         if ("openai".equals(provider)) {
@@ -52,12 +58,16 @@ public class AiModelClientFactory {
                 OpenAiChatCompletionsClient client = new OpenAiChatCompletionsClient(apiKey, baseUrl, model, temperature, maxTokens, v);
                 long timeoutMs = parseLong(env.getProperty("pjb.ai.openai.timeout-ms"), 180_000);
                 client.setTimeout(timeoutMs);
-                return client;
+                return guardado(client, v);
             }
         }
 
-        
-        return new LocalHeuristicAiModelClient(v);
+
+        return guardado(new LocalHeuristicAiModelClient(v), v);
+    }
+
+    private AiModelClient guardado(AiModelClient client, String versao) {
+        return new GuardedAiModelClient(client, promptEgressGuard, securityEventLogger, versao);
     }
 
     private static String firstNonBlank(String... values) {

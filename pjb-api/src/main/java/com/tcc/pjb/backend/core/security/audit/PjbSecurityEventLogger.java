@@ -34,6 +34,12 @@ public final class PjbSecurityEventLogger {
         meterRegistry.counter("pjb.security.ratelimit.exceeded", "capability", capability).increment();
     }
 
+    public void promptInjectionDetectada(String versaoModelo, String sinais, boolean neutralizado) {
+        SECURITY.warn("AI_PROMPT_INJECTION correlationId={} model={} signals={} neutralized={}",
+                MDC.get("correlationId"), versaoModelo, sinais, neutralizado);
+        meterRegistry.counter("pjb.security.ai.prompt.injection", "model", versaoModelo).increment();
+    }
+
     public void idempotencyHit(String bodyHash, String existingTrackingCode) {
         SECURITY.info("IDEMPOTENCY_HIT correlationId={} bodyHash={} existingTrackingCode={}",
                 MDC.get("correlationId"), bodyHash, existingTrackingCode);
