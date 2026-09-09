@@ -15,7 +15,7 @@ class JuridicaLegalAiSelectiveSignedOriginArchitectureTest {
         Path resourceRoot = PjbTestPaths.pjbApiTestResourcesRoot().resolve("pacts/provider");
         Path configRoot = PjbTestPaths.pjbApiMainResourcesRoot().resolve("application.yml");
         assertTrue(Files.exists(testRoot.resolve("contracts/provider/LegalAiSelectiveSignedOriginProviderContractTest.java")));
-        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiSelectiveSignedOriginGovernanceIT.java")));
+        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiSelectiveSignedOriginGovernanceTest.java")));
         assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiSignedOriginTestSupport.java")));
         assertTrue(Files.exists(testRoot.resolve("ai/juridica/conversation/JuridicaLegalAiSelectiveSignedOriginArchitectureTest.java")));
         assertTrue(Files.exists(resourceRoot.resolve("PjbLegalAiSelectiveSignedOriginConsumer-PjbLegalAiSelectiveSignedOriginProvider.json")));

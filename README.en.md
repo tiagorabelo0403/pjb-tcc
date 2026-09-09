@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-5%2C001%20unit%20%2B%20306%20IT%20%7C%200%20failures-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-5%2C239%20unit%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-57-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -367,8 +367,10 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 5,001 tests with Mockito and in-memory H2. Fast, no Docker required.
-- **Integration tests (Failsafe):** 306 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
+- **Unit tests (Surefire):** 5,239 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Integration tests (Failsafe):** 116 classes against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
+
+The naming convention is enforced in CI by the `integration_test_naming_guard.py` guard: a class suffixed `IT` must carry a real integration marker — Testcontainers, a Spring context, or an inherited integration base. Without that marker the class would run in neither phase (Surefire skips it by name, and Failsafe only runs under `verify`), so the build fails instead of leaving the test invisible.
 
 ### Run Unit Tests Only (fast)
 
@@ -384,7 +386,7 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api
 ```
 
-This is the official project gate. It runs the 5,001 unit tests (Surefire) and then the 306 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 5,239 unit tests (Surefire) and then the 116 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 Expected time: **~50 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
 
@@ -413,11 +415,11 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **5,001** |
+| Total unit tests | Surefire | **5,239** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~14 min** |
-| Total integration tests | Failsafe | **306** ¹ |
+| Integration test classes | Failsafe | **116** ¹ |
 | Polo-composition-engine tests | Failsafe | **+10 green** (role by procedural type: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | IT failures | Failsafe | **0** (0E + 0F) |
 | Full verify execution time | Surefire + Failsafe | **~50 min** |
@@ -1013,8 +1015,8 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **5,001 · 0 failures · 0 errors** |
-| Integration tests (Failsafe) | **306 · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
+| Unit tests (Surefire) | **5,239 · 0 failures · 0 errors** |
+| Integration tests (Failsafe) | **116 classes · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
 | Python Guards | 7 scripts active in CI |
@@ -1223,7 +1225,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 5,307 tests (5,001 unit + 306 integration), and 300 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 5,239 unit tests and 116 integration test classes, and 300 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 
