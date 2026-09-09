@@ -43,10 +43,14 @@ public final class AiPromptEgressGuard {
             new Sinal("modo_irrestrito", Pattern.compile(
                     "(?i)\\b(modo\\s+desenvolvedor|modo\\s+irrestrito|developer\\s+mode|jailbreak)\\b")),
             new Sinal("sobrepor_salvaguarda", Pattern.compile(
-                    "(?i)\\b(desative|desabilite|remova|sobreponha)\\s+(as\\s+|os\\s+)?"
-                            + "(regras|restricoes|diretrizes|salvaguardas|filtros)")),
+                    "(?i)\\b(desative|desabilite|remova|sobreponha|burle|burlar|contorne|contornar)\\s+"
+                            + "(todas?\\s+)?(as\\s+|os\\s+)?"
+                            + "(regras|restricoes|diretrizes|salvaguardas|filtros|limites)")),
             new Sinal("sobrepor_salvaguarda", Pattern.compile(
-                    "(?i)\\boverride\\s+(safety|guidelines|rules|constraints)\\b")),
+                    "(?i)\\b(override|bypass|disable|ignore)\\s+(all\\s+)?(the\\s+)?"
+                            + "(safety|guidelines|rules|constraints|restrictions|filters|limits)\\b")),
+            new Sinal("persona_jailbreak", Pattern.compile(
+                    "(?i)(\\bDAN\\b|\\bdo\\s+anything\\s+now\\b)")),
             new Sinal("marcador_de_papel", Pattern.compile(
                     "(?im)^\\s*(system|assistant|human|sistema|assistente)\\s*:\\s")),
             new Sinal("nova_instrucao", Pattern.compile(
