@@ -86,6 +86,7 @@ Resumo em destaque para quem avalia o projeto sem precisar navegar o documento i
 - **Cofre de segredos** (HashiCorp Vault) com rotação real de credencial de banco de dados
 - **Guard BOLA** (acesso indevido a objeto de outra unidade/lotação) garantido em tempo de *build* via ArchUnit — não depende de disciplina de code review
 - **Auditoria imutável** de toda decisão de autorização e de todo evento de segurança relevante, em log estruturado separado do log de aplicação
+- **Guarda de egresso de prompt de IA** — todo prompt entregue a um provedor de modelo passa por um ponto único de inspeção que neutraliza marcadores de protocolo do provedor e sinaliza tentativa de injeção em português e inglês; por decisão de projeto a guarda registra e prossegue, nunca recusa o ato processual
 
 Detalhes completos, com justificativa de cada mecanismo: [Segurança e conformidade](#segurança-e-conformidade)
 

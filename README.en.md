@@ -86,6 +86,7 @@ A highlighted summary for anyone evaluating the project without reading the whol
 - **Secrets vault** (HashiCorp Vault) with real database credential rotation
 - **BOLA guard** (cross-unit/cross-assignment object access) enforced at build time via ArchUnit — not dependent on code-review discipline
 - **Immutable audit trail** of every authorization decision and every relevant security event, in a structured log kept separate from the application log
+- **AI prompt egress guard** — every prompt handed to a model provider passes through a single inspection point that neutralizes provider protocol markers and flags injection attempts in Portuguese and English; by design the guard records and proceeds, and never refuses the procedural act itself
 
 Full details, with the rationale behind each mechanism: [Security & Compliance](#security--compliance)
 
