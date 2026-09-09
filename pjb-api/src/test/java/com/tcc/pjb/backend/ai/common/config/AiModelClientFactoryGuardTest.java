@@ -10,7 +10,9 @@ import com.tcc.pjb.backend.ai.common.clients.guard.GuardedAiModelClient;
 import com.tcc.pjb.backend.ai.common.clients.local.LocalHeuristicAiModelClient;
 import com.tcc.pjb.backend.ai.common.clients.ollama.OllamaChatClient;
 import com.tcc.pjb.backend.ai.common.clients.openai.OpenAiChatCompletionsClient;
+import com.tcc.pjb.backend.ai.common.clients.resilience.ResilientAiModelClient;
 import com.tcc.pjb.backend.core.security.audit.PjbSecurityEventLogger;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 class AiModelClientFactoryGuardTest {
 
@@ -18,7 +20,7 @@ class AiModelClientFactoryGuardTest {
             new PjbSecurityEventLogger(new SimpleMeterRegistry());
 
     private AiModelClientFactory factoryCom(MockEnvironment env) {
-        return new AiModelClientFactory(env, securityEventLogger);
+        return new AiModelClientFactory(env, securityEventLogger, CircuitBreakerRegistry.ofDefaults());
     }
 
     @Test
@@ -38,8 +40,9 @@ class AiModelClientFactoryGuardTest {
         AiModelClient client = factoryCom(env).create("v2");
 
         assertThat(client).isInstanceOf(GuardedAiModelClient.class);
-        assertThat(((GuardedAiModelClient) client).delegate())
-                .isInstanceOf(OllamaChatClient.class);
+        AiModelClient resiliente = ((GuardedAiModelClient) client).delegate();
+        assertThat(resiliente).isInstanceOf(ResilientAiModelClient.class);
+        assertThat(((ResilientAiModelClient) resiliente).delegate()).isInstanceOf(OllamaChatClient.class);
     }
 
     @Test
@@ -51,8 +54,9 @@ class AiModelClientFactoryGuardTest {
         AiModelClient client = factoryCom(env).create("v3");
 
         assertThat(client).isInstanceOf(GuardedAiModelClient.class);
-        assertThat(((GuardedAiModelClient) client).delegate())
-                .isInstanceOf(OpenAiChatCompletionsClient.class);
+        AiModelClient resiliente = ((GuardedAiModelClient) client).delegate();
+        assertThat(resiliente).isInstanceOf(ResilientAiModelClient.class);
+        assertThat(((ResilientAiModelClient) resiliente).delegate()).isInstanceOf(OpenAiChatCompletionsClient.class);
     }
 
     @Test

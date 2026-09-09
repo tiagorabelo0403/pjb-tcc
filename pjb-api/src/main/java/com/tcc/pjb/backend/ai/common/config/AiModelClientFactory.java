@@ -6,7 +6,9 @@ import org.springframework.stereotype.Component;
 import com.tcc.pjb.backend.ai.common.AiModelClient;
 import com.tcc.pjb.backend.ai.common.clients.local.LocalHeuristicAiModelClient;
 import com.tcc.pjb.backend.ai.common.clients.ollama.OllamaChatClient;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import com.tcc.pjb.backend.ai.common.clients.guard.GuardedAiModelClient;
+import com.tcc.pjb.backend.ai.common.clients.resilience.ResilientAiModelClient;
 import com.tcc.pjb.backend.ai.common.clients.openai.OpenAiChatCompletionsClient;
 import com.tcc.pjb.backend.ai.legalai.security.AiPromptEgressGuard;
 import com.tcc.pjb.backend.core.security.audit.PjbSecurityEventLogger;
@@ -16,11 +18,15 @@ public class AiModelClientFactory {
 
     private final Environment env;
     private final PjbSecurityEventLogger securityEventLogger;
+    private final CircuitBreakerRegistry circuitBreakerRegistry;
     private final AiPromptEgressGuard promptEgressGuard = new AiPromptEgressGuard();
 
-    public AiModelClientFactory(Environment env, PjbSecurityEventLogger securityEventLogger) {
+    public AiModelClientFactory(Environment env,
+                                PjbSecurityEventLogger securityEventLogger,
+                                CircuitBreakerRegistry circuitBreakerRegistry) {
         this.env = env;
         this.securityEventLogger = securityEventLogger;
+        this.circuitBreakerRegistry = circuitBreakerRegistry;
     }
 
     public AiModelClient create(String version) {
@@ -40,7 +46,7 @@ public class AiModelClientFactory {
 
             OllamaChatClient client = new OllamaChatClient(baseUrl, model, temperature);
             client.setTimeout(timeoutMs);
-            return guardado(client, v);
+            return guardado(resiliente(client, "ollama"), v);
         }
 
         if ("openai".equals(provider)) {
@@ -58,7 +64,7 @@ public class AiModelClientFactory {
                 OpenAiChatCompletionsClient client = new OpenAiChatCompletionsClient(apiKey, baseUrl, model, temperature, maxTokens, v);
                 long timeoutMs = parseLong(env.getProperty("pjb.ai.openai.timeout-ms"), 180_000);
                 client.setTimeout(timeoutMs);
-                return guardado(client, v);
+                return guardado(resiliente(client, "openai"), v);
             }
         }
 
@@ -68,6 +74,13 @@ public class AiModelClientFactory {
 
     private AiModelClient guardado(AiModelClient client, String versao) {
         return new GuardedAiModelClient(client, promptEgressGuard, securityEventLogger, versao);
+    }
+
+    private AiModelClient resiliente(AiModelClient client, String provedor) {
+        return new ResilientAiModelClient(
+                client,
+                circuitBreakerRegistry.circuitBreaker(ResilientAiModelClient.CIRCUIT_BREAKER_NAME),
+                provedor);
     }
 
     private static String firstNonBlank(String... values) {
