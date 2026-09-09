@@ -15,7 +15,7 @@ class JuridicaLegalAiEdgeBoundaryArchitectureTest {
         Path resourceRoot = PjbTestPaths.pjbApiTestResourcesRoot().resolve("pacts/provider");
         Path configRoot = PjbTestPaths.pjbApiMainResourcesRoot().resolve("application.yml");
         assertTrue(Files.exists(testRoot.resolve("contracts/provider/LegalAiEdgePolicyProviderContractTest.java")));
-        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiEdgeGovernanceIT.java")));
+        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiEdgeGovernanceTest.java")));
         assertTrue(Files.exists(testRoot.resolve("ai/juridica/conversation/JuridicaLegalAiEdgeBoundaryArchitectureTest.java")));
         assertTrue(Files.exists(resourceRoot.resolve("PjbLegalAiEdgePolicyConsumer-PjbLegalAiEdgePolicyProvider.json")));
         String pact = Files.readString(resourceRoot.resolve("PjbLegalAiEdgePolicyConsumer-PjbLegalAiEdgePolicyProvider.json"));

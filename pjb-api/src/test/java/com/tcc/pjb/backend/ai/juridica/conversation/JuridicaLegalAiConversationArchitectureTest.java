@@ -241,9 +241,9 @@ class JuridicaLegalAiConversationArchitectureTest {
         Path resourceRoot = PjbTestPaths.pjbApiTestResourcesRoot().resolve("pacts/provider");
         Path configRoot = PjbTestPaths.pjbApiMainResourcesRoot().resolve("application.yml");
         assertTrue(Files.exists(testRoot.resolve("contracts/provider/LegalAiControllerProviderContractTest.java")));
-        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiControllerIT.java")));
-        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiConversationControllerIT.java")));
-        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiKnowledgeControllerIT.java")));
+        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiControllerTest.java")));
+        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiConversationControllerTest.java")));
+        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiKnowledgeControllerTest.java")));
         assertTrue(Files.exists(testRoot.resolve("ai/juridica/conversation/JuridicaLegalAiConversationArchitectureTest.java")));
         assertTrue(Files.exists(resourceRoot.resolve("PjbLegalAiConsumer-PjbLegalAiProvider.json")));
         String pact = Files.readString(resourceRoot.resolve("PjbLegalAiConsumer-PjbLegalAiProvider.json"));
