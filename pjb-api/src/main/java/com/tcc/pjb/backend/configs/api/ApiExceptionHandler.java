@@ -114,6 +114,13 @@ public class ApiExceptionHandler {
     }
 
 
+    @ExceptionHandler(com.tcc.pjb.backend.ai.common.AiProviderException.class)
+    public ResponseEntity<ProblemDetail> handleAiProvider(
+            com.tcc.pjb.backend.ai.common.AiProviderException ex, HttpServletRequest request) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, "ai-provider-unavailable",
+                "Servico de inteligencia artificial indisponivel. Nenhum conteudo foi gerado.", request, null);
+    }
+
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<ProblemDetail> handleSecurity(SecurityException ex, HttpServletRequest request) {
         return build(HttpStatus.FORBIDDEN, "forbidden", "Acesso negado.", request, null);

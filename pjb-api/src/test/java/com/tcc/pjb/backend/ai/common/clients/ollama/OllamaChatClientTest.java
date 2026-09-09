@@ -1,8 +1,10 @@
 package com.tcc.pjb.backend.ai.common.clients.ollama;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tcc.pjb.backend.ai.common.AiProviderException;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -71,12 +73,37 @@ class OllamaChatClientTest {
     }
 
     @Test
-    void generatePropagaErroHttpComoTextoMarcado() {
+    void erroHttpFalhaComExcecaoTipadaEmVezDeVirarTextoDeResposta() {
         stub(500, "{\"error\":\"model not found\"}");
 
         OllamaChatClient client = new OllamaChatClient(baseUrl, "qwen2.5:7b", 0.2);
-        String result = client.generate("teste");
 
-        assertThat(result).startsWith("[OLLAMA-ERROR] status=500");
+        assertThatThrownBy(() -> client.generate("teste"))
+                .isInstanceOf(AiProviderException.class)
+                .hasMessageContaining("ollama")
+                .hasMessageContaining("HTTP 500");
+    }
+
+    @Test
+    void mensagemDeFalhaNaoVazaOCorpoDeErroDoProvedor() {
+        stub(500, "{\"error\":\"model not found\",\"internal\":\"trace-abc\"}");
+
+        OllamaChatClient client = new OllamaChatClient(baseUrl, "qwen2.5:7b", 0.2);
+
+        assertThatThrownBy(() -> client.generate("teste"))
+                .isInstanceOf(AiProviderException.class)
+                .hasMessageNotContaining("model not found")
+                .hasMessageNotContaining("trace-abc");
+    }
+
+    @Test
+    void respostaSemConteudoFalhaEmVezDeDevolverMarcadorVazio() throws Exception {
+        stub(200, MAPPER.writeValueAsString(Map.of("model", "qwen2.5:7b", "done", true)));
+
+        OllamaChatClient client = new OllamaChatClient(baseUrl, "qwen2.5:7b", 0.2);
+
+        assertThatThrownBy(() -> client.generate("teste"))
+                .isInstanceOf(AiProviderException.class)
+                .hasMessageContaining("resposta sem conteudo");
     }
 }
