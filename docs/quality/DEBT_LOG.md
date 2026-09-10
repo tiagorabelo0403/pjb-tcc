@@ -799,12 +799,39 @@ outra natureza.
 `PjbFrontendDeliveryApplicationService.parseRoutes` escaneia `@PostMapping`/`@GetMapping` via regex e não lê headers HTTP de depreciação — os 4 endpoints recursais legados aparecem no catálogo `/api/v1/frontend/delivery/routes` com o mesmo peso da rota unificada nova, achado ao investigar consumidores antes da Etapa 3.
 Revisitar se o catálogo vier a ser consumido por um frontend real: cruzar rota com `RecursalLegacyDeprecationHeaders` ou marcador equivalente antes de expor como pronta para uso.
 
-## D-auditoria-salario-minimo-sem-garantia-de-persistencia
+## D-auditoria-ledger-falha-de-persistencia-sem-retry
 
-**Status:** parcialmente atendida — persistSafely ainda engole exceção
+**Status:** aberta — observabilidade corrigida; decisão de retry/outbox pendente
 
-FECHADA parcialmente. `AuditLedgerService.persistSafely` continua engolindo exceção em `try/catch` (contrato de "nunca lança" preservado — dezenas de call sites dependem disso), mas agora incrementa `Counter` Micrometer `pjb.audit_ledger.persist_failures` no catch, tornando a falha observável sem mudar o comportamento. `MeterRegistry` injetado via construtor único (sem overload, respeitando `spring_ambiguous_constructor_guard`); 6 testes que construíam a classe manualmente (`BnmpIntegracaoServiceRegistrarBranchesTest`, `IcpBrasilChainValidatorTest`, `RecursalFormalizacaoServiceTest`, `RecursalPdfArtifactValidationServiceTest`, `RecursalPdfLongTermValidationServiceTest`, `RecursalPdfNativeSignatureServiceTest`) atualizados para passar `SimpleMeterRegistry`. `payload_hash=null` sintetizando SHA-256 via `safePayloadHash()` permanece como estava, apenas documentado corretamente.
-Revisitar: decidir se falha de persistência de evento crítico deveria propagar ou alimentar retry/outbox em vez de só logar+contar — mudança em classe usada por dezenas de call sites, fora do escopo desta correção pontual.
+`AuditLedgerService.persistSafely` engole exceção de persistência por contrato: são **425 pontos de
+chamada** e nenhum ato judicial deve falhar porque a auditoria falhou. Isso permanece correto e não
+está em discussão.
+
+**Correção aplicada:** a entrada anterior deste registro afirmava que o `Counter`
+`pjb.audit_ledger.persist_failures` era incrementado no `catch`, "tornando a falha observável". Isso
+era falso — o contador era declarado e construído, mas **nunca incrementado em lugar nenhum da
+classe**. A métrica lia zero permanentemente, o que é pior que não existir: um painel em zero dá
+confiança de que nenhuma entrada está se perdendo.
+
+O incremento passou a existir de fato. O log subiu de `WARN` para `ERROR` e passou a registrar
+identidade reconstituível — `action`, `resourceType`, `resourceId`, `payloadHash`, `entryHash` e
+`prevHash` — sem `description`, `justificativa`, IP ou user agent, para não vazar conteúdo.
+
+**Por que os hashes importam:** `AuditLedgerEntry` tem `prevHash`/`entryHash` e a entrada entra na
+cadeia em memória **antes** de persistir. Uma entrada perdida não perde só um registro: deixa a
+próxima apontando para um elo ausente. Com os hashes no log, o elo é reconstituível.
+
+**O que continua aberto:** decidir se falha de persistência de evento crítico deve alimentar
+retry ou outbox. O projeto tem padrão outbox e o README promete "zero perda de evento em falha de
+commit", o que hoje não vale para o ledger de auditoria.
+
+A dificuldade real: os 425 eventos são heterogêneos, de `PDF_WATERMARK_ISSUED` a auditoria de
+comunicação institucional. Roteamento indiscriminado para outbox é caro e desnecessário para a
+maioria; roteamento seletivo exige classificar criticidade por evento, que é trabalho de domínio,
+não de infraestrutura.
+
+**Verificado nesta correção:** varredura em `pjb-api/src/main` não encontrou nenhum outro `Counter`
+declarado e nunca incrementado. O problema era isolado, não sistêmico.
 
 ## D-marketplace-payload-multiplo-anexo
 
