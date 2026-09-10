@@ -79,7 +79,7 @@ A highlighted summary for anyone evaluating the project without reading the whol
 - **Passwordless authentication across 3 independent flows** — Gov.br (OIDC, federal identity provider), ICP-Brasil digital certificate (challenge-response: server-issued nonce, signed by the user's certificate, chain validation), Passkey/WebAuthn
 - **ABAC** (Attribute-Based Access Control) on every sensitive decision, with an immutable trail of who authorized it, when, and why (`tb_authz_trail`)
 - **RLS** (Row Level Security) in PostgreSQL — the database refuses confidential data before the ORM sees it, across two dimensions: case confidentiality and actor scope (owner/role), with a discipline test that blocks declared-but-not-enforced RLS in any future migration
-- **Password encryption** (BCrypt via `DelegatingPasswordEncoder`) and **PII encryption at rest** — user CPF/email encrypted (AES-GCM) with a blind index (HMAC) that preserves searchability without exposing the data
+- **Password encryption** (BCrypt via `DelegatingPasswordEncoder`) and **PII encryption at rest** — user CPF/email encrypted (AES-GCM) with a blind index (HMAC) that preserves searchability without exposing the data — the index is recomputed by a JPA listener at the persistence boundary, so no write path can store a user without it
 - **Rate limiting** on critical routes (login, marketplace) with automatic IP blocking after repeated violations; standardized RFC 7807 response
 - **Zero public self-signup surface** — every account is provisioned through a verified channel (Gov.br, OAB validation, token-based judiciary activation), never an open registration form
 - **HSTS + hardened security headers** (`X-Frame-Options: DENY`, `Permissions-Policy`, `Cross-Origin-Opener/Resource-Policy`)
