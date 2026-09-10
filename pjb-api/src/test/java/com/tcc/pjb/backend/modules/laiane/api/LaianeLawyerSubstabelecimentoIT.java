@@ -9,6 +9,7 @@ import com.tcc.pjb.backend.PjbIntegrationTestBase;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.modules.laiane.entity.LaianeProcuracao;
 import com.tcc.pjb.backend.modules.laiane.model.LaianeProcuracaoStatus;
 import com.tcc.pjb.backend.modules.laiane.repository.LaianeProcuracaoRepository;
@@ -25,6 +26,17 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @AutoConfigureMockMvc
 class LaianeLawyerSubstabelecimentoIT extends PjbIntegrationTestBase {
+
+    /**
+     * Mantido como mock, diferente das outras 10 ITs que passaram a neutralizar o rate limit por
+     * configuracao: o mock e o que da a esta classe um contexto Spring proprio. Sem ele a classe
+     * entra no contexto compartilhado e os dois testes passam a devolver 503 antes de alcancar a
+     * logica de negocio, tanto o que espera 200 quanto o que espera 403. Isolada passa em contexto
+     * novo. A causa do 503 nao foi identificada e esta registrada como
+     * D-laiane-substabelecimento-503-em-contexto-compartilhado.
+     */
+    @MockitoBean
+    CapabilityRateLimiter capabilityRateLimiter;
 
     @Autowired
     MockMvc mockMvc;
