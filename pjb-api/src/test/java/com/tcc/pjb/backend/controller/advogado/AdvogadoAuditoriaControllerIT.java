@@ -13,7 +13,6 @@ import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +29,6 @@ class AdvogadoAuditoriaControllerIT extends PjbFlowItBase {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private CapabilityRateLimiter capabilityRateLimiter;
 
     @Autowired
     private ObjectMapper objectMapper;

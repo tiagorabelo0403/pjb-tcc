@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.dto.dashboard.PerfilDashboardPayload;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.service.defensor.DefensorPublicoPainelService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,8 +27,6 @@ class DefensorPublicoPainelControllerIT extends PjbFlowItBase {
     @MockitoBean
     private DefensorPublicoPainelService service;
 
-    @MockitoBean
-    private CapabilityRateLimiter capabilityRateLimiter;
 
     private static PerfilDashboardPayload.DefensorPublicoPayload minimalPayload() {
         return new PerfilDashboardPayload.DefensorPublicoPayload(

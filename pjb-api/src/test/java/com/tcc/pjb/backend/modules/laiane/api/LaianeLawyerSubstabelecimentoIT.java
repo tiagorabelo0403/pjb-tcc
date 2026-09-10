@@ -12,7 +12,6 @@ import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.modules.laiane.entity.LaianeProcuracao;
 import com.tcc.pjb.backend.modules.laiane.model.LaianeProcuracaoStatus;
 import com.tcc.pjb.backend.modules.laiane.repository.LaianeProcuracaoRepository;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import java.time.LocalDate;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -39,8 +38,6 @@ class LaianeLawyerSubstabelecimentoIT extends PjbIntegrationTestBase {
     @Autowired
     ObjectMapper objectMapper;
 
-    @MockitoBean
-    CapabilityRateLimiter capabilityRateLimiter;
 
     private Usuario criarAdvogado(String nome, String email, String cpf) {
         Usuario advogado = new Usuario();

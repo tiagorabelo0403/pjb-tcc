@@ -18,8 +18,6 @@ import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDecision;
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -56,8 +54,6 @@ class InstitutionalWorkbenchControllerIT extends PjbIntegrationTestBase {
     @MockitoBean
     private InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService;
 
-    @MockitoBean
-    private CapabilityRateLimiter capabilityRateLimiter;
 
     private Processo processo;
 
@@ -99,7 +95,6 @@ class InstitutionalWorkbenchControllerIT extends PjbIntegrationTestBase {
                 .comarca("Fortaleza")
                 .build());
 
-        when(capabilityRateLimiter.enforce(any(), any(), any(), any())).thenReturn(new CapabilityRateLimitDecision(true, 100L, 99L, 0L, 60, 1));
         when(institutionalMaterialActionGuardService.analyzeCatalogAction(any(), any())).thenReturn(decisionAllow());
         when(institutionalMaterialActionGuardService.analyzeProcessAction(any(), any())).thenReturn(decisionAllow());
     }
