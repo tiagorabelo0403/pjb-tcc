@@ -33,6 +33,12 @@ pjb:
       # IllegalStateException. Testes que precisam provar AES-GCM/HMAC real (não o fallback) sobrescrevem
       # pjb.security.master-key + este flag via @TestPropertySource na própria classe.
       allow-plaintext-fallback: true
+    capability-ratelimit:
+      # Neutraliza o rate limit por configuracao em vez de @MockitoBean nas ITs. Cada conjunto
+      # distinto de mocks entra na chave de cache do contexto Spring, entao mockar o limiter
+      # fragmentava o cache sem necessidade. Aqui o bean real roda desligado, exercitando o
+      # caminho de codigo verdadeiro. Ver D-fragmentacao-de-contexto-spring-nos-its.
+      enabled: false
   kafka:
     scale:
       listener-concurrency: 1

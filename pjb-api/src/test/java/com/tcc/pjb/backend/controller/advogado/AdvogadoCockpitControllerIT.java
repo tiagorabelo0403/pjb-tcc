@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.tcc.pjb.backend.PjbFlowItBase;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.service.advogado.surface.AdvogadoSurfaceFacadeService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -26,8 +25,6 @@ class AdvogadoCockpitControllerIT extends PjbFlowItBase {
     @MockitoBean
     private AdvogadoSurfaceFacadeService facadeService;
 
-    @MockitoBean
-    private CapabilityRateLimiter capabilityRateLimiter;
 
     @Test
     void anonimo_recebeNegacaoAntesDeTocarFacade() throws Exception {

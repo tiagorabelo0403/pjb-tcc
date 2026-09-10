@@ -16,11 +16,11 @@ testes, ~1h38 contra Postgres e Kafka reais):
 
 | Métrica | Valor |
 |---|---|
-| Configurações distintas de contexto Spring | 47 |
-| Configurações usadas por uma única classe | 38 |
+| Configurações distintas de contexto Spring | 44 (eram 47) |
+| Configurações usadas por uma única classe | 33 (eram 38) |
 | Configurações se nenhum IT mockasse bean | 21 |
-| ITs que mockam bean | 38 de 116 |
-| Declarações de mock em ITs | 84, sobre 50 tipos distintos |
+| ITs que mockam bean | 35 de 116 (eram 38) |
+| Declarações de mock em ITs | 73, sobre 49 tipos distintos |
 
 O custo da suíte é governado por **quantos contextos distintos existem**, não por quantos testes há.
 Classe que sobe contexto próprio custa 70–220 s; classe que reaproveita contexto roda em frações de
@@ -29,12 +29,12 @@ então cada combinação de mocks cria um contexto novo.
 
 **Dois padrões concretos por trás da fragmentação:**
 
-1. **Mock como neutralizador.** 11 ITs mockam `CapabilityRateLimiter` apenas para tirá-lo do caminho
-   — por exemplo `AdvogadoCockpitControllerIT.anonimo_recebeNegacaoAntesDeTocarFacade`, que quer
-   provar que a negação de autorização acontece antes. O rate limiter já tem flag
-   (`pjb.security.capability-ratelimit`, checada em `CapabilityRateLimiter` via `props.isEnabled()`),
-   então configuração no perfil de teste faria o mesmo sem fragmentar o cache. Antes de trocar em
-   lote é preciso confirmar teste a teste que nenhum deles está simulando bloqueio de verdade.
+1. ~~**Mock como neutralizador**~~ — **RESOLVIDO**: os 11 mocks de `CapabilityRateLimiter` deram
+   lugar a `pjb.security.capability-ratelimit.enabled: false` no perfil `integration-test`.
+   Confirmado antes de trocar que nenhum dos 11 simulava bloqueio (9 sem stub, 2 stubando
+   `CapabilityRateLimitDecision(true, ...)`) e que nenhum teste do projeto exercita negação real.
+   Ganho de quebra: o limiter usa Redis downstream, e o desligamento retorna antes de
+   `store.tryConsume(...)`, removendo dependência latente de infra em ambiente sem Redis.
 
 2. **Mock do próprio serviço sob teste.** Ex.: `DefensorPublicoPainelControllerIT` mocka
    `DefensorPublicoPainelService`. Isso não é teste de integração — é teste de fatia de controller

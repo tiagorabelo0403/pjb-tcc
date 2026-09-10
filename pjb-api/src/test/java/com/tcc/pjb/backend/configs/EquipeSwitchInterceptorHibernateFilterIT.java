@@ -17,7 +17,6 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.modules.advocacia.repository.ClienteRepository;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.service.advogado.surface.AdvogadoSurfaceFacadeService;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -83,8 +82,6 @@ class EquipeSwitchInterceptorHibernateFilterIT extends PjbFlowItBase {
     @MockitoBean
     private AdvogadoSurfaceFacadeService facadeService;
 
-    @MockitoBean
-    private CapabilityRateLimiter capabilityRateLimiter;
 
     private Logger interceptorLogger;
     private Level originalLevel;
