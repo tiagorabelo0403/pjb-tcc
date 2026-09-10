@@ -7,6 +7,47 @@ nenhuma entrega em andamento — para que não fiquem só na memória de quem in
 Cada entrada sai daqui quando a dívida é fechada; o fechamento é então narrado no `README.md`, seguindo
 o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
+## D-fragmentacao-de-contexto-spring-nos-its
+
+**Status:** aberta — medida, com alavanca identificada; exige julgamento por teste
+
+**Medição de 2026-09-09**, primeira execução completa da suíte de integração (116 classes, 292
+testes, ~1h38 contra Postgres e Kafka reais):
+
+| Métrica | Valor |
+|---|---|
+| Configurações distintas de contexto Spring | 47 |
+| Configurações usadas por uma única classe | 38 |
+| Configurações se nenhum IT mockasse bean | 21 |
+| ITs que mockam bean | 38 de 116 |
+| Declarações de mock em ITs | 84, sobre 50 tipos distintos |
+
+O custo da suíte é governado por **quantos contextos distintos existem**, não por quantos testes há.
+Classe que sobe contexto próprio custa 70–220 s; classe que reaproveita contexto roda em frações de
+segundo (medido: 0,055 s a 0,66 s). Cada `@MockitoBean` distinto entra na chave de cache do contexto,
+então cada combinação de mocks cria um contexto novo.
+
+**Dois padrões concretos por trás da fragmentação:**
+
+1. **Mock como neutralizador.** 11 ITs mockam `CapabilityRateLimiter` apenas para tirá-lo do caminho
+   — por exemplo `AdvogadoCockpitControllerIT.anonimo_recebeNegacaoAntesDeTocarFacade`, que quer
+   provar que a negação de autorização acontece antes. O rate limiter já tem flag
+   (`pjb.security.capability-ratelimit`, checada em `CapabilityRateLimiter` via `props.isEnabled()`),
+   então configuração no perfil de teste faria o mesmo sem fragmentar o cache. Antes de trocar em
+   lote é preciso confirmar teste a teste que nenhum deles está simulando bloqueio de verdade.
+
+2. **Mock do próprio serviço sob teste.** Ex.: `DefensorPublicoPainelControllerIT` mocka
+   `DefensorPublicoPainelService`. Isso não é teste de integração — é teste de fatia de controller
+   pagando custo de contexto Spring completo mais container Postgres. É o espelho do achado da PR #98
+   (unitários com nome de integração); aqui são fatias com custo de integração.
+
+**Por que não foi resolvido em lote:** remover mock muda o que cada teste prova. O próprio plano de
+melhoria proíbe refatoração comportamental em lote, e converter 38 classes de uma vez reproduziria o
+processo que gerou o problema.
+
+**Pré-requisito que isto bloqueia:** qualquer forma de CI de integração. Com 1h38 não existe versão
+que caiba no caminho do PR; reduzir contexto é o que torna a discussão possível.
+
 ## D-springcontext-estatico-no-prepersist-de-usuario
 
 **Status:** aberta — reduzida de 6 para 1 uso; sem impacto em produção
