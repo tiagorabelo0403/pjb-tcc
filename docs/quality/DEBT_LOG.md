@@ -7,6 +7,38 @@ nenhuma entrega em andamento — para que não fiquem só na memória de quem in
 Cada entrada sai daqui quando a dívida é fechada; o fechamento é então narrado no `README.md`, seguindo
 o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
+## D-schedulers-processuais-desligados-por-decisao-nao-tomada
+
+**Status:** aberta — flags agora visíveis; decisão de ativação pendente
+
+Varredura por `@ConditionalOnProperty` sem `matchIfMissing` cuja propriedade não existe em nenhum
+`application*.yml` encontrou **16 beans desligados em todo ambiente**, por flags que não apareciam em
+config, env, compose nem k8s. Não era decisão de desligar: era ausência de declaração.
+
+As flags foram declaradas em `application.yml` seguindo a convenção do projeto
+(`${PJB_XXX:default}`), com o **default efetivo atual**, então nada mudou de comportamento —
+mudou a possibilidade de decidir. Verificado antes: nenhuma delas é usada com `matchIfMissing = true`
+em outro ponto, então declarar `false` é neutro.
+
+**O que fica pendente de decisão de produto, agora que é visível:**
+
+| Flag | Bean | Consequência de seguir desligado |
+|---|---|---|
+| `pjb.outbox.relay.enabled` | `OutboxRelayWorker` | `pjb.outbox.ingress.enabled` é `true` por padrão, então eventos entram no outbox e **nada os drena**. O README promete "zero perda de evento em falha de commit" |
+| `pjb.jobs.ciencia-ficta.enabled` | `CienciaFictaScheduler` | ciência ficta é marco de prazo processual; sem o scheduler, não é aplicada automaticamente |
+| `pjb.jobs.conclusao-expirada.enabled` | `ConclusaoExpiradaScheduler` | conclusão vencida não é detectada |
+| `pjb.jobs.protocolo-completude.enabled` | 2 schedulers de expiração e notificação | prazo de completude documental não expira nem notifica |
+| `pjb.sync.salario-minimo.enabled` | `SalarioMinimoNacionalSyncScheduler` | ver `D-scheduler-salario-minimo-nunca-ativado` |
+| `pjb.secretariat.enabled` | `SecretariadoCommandCenter`, `SecretariatDossieController` | superfície de secretaria indisponível |
+
+**Por que não liguei nada:** schedulers processuais **mutam estado de processo em background**. Ligar
+por conta própria, sem ambiente para observar o efeito, é o oposto de "não quebrar o projeto". A
+decisão de quais devem rodar em produção é de produto e de operação.
+
+**Guarda criada:** `conditional_property_declared_guard.py`, no job *Guards (enforce)*, falha o build
+quando um bean exige propriedade que não está declarada em nenhum config. Impede que a próxima flag
+nasça invisível.
+
 ## D-teto-rpv-duplicado-como-literal-em-seis-pontos
 
 **Status:** aberta — achado do revisor ao fechar `PrecatorioRadarService`
