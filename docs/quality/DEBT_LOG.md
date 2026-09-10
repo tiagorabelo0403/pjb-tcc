@@ -485,33 +485,6 @@ assinatura.
 (`RepresentacaoProcessualPolicyRequest`) ou builder no lugar dos parâmetros posicionais, migrando os
 10 call sites de uma vez. Não vale a pena isolado, só quando a assinatura for mexida por outro motivo.
 
-## D-jus-postulandi-recurso-tst
-
-**FECHADA — correção do diagnóstico original, não implementação de regra nova.** A premissa de que
-`RECURSO_REVISTA` e `AGRAVO_RECURSO_REVISTA` "não têm entrada em `toRecursoProcessualTipo()`" estava
-errada para `AGRAVO_RECURSO_REVISTA` desde antes desta dívida ser escrita — confirmado por
-`git log -p`/`git show` no commit imediatamente anterior ao que registrou esta entrada (24/07 21:22,
-oito minutos antes): `case AGRAVO_INSTRUMENTO, AGRAVO_RESP_RE, AGRAVO_RECURSO_REVISTA ->
-RecursoProcessualTipo.AGRAVO_DE_INSTRUMENTO` já existia desde 25/05. Os dois tipos têm destinos
-diferentes de verdade:
-- **`AGRAVO_RECURSO_REVISTA`** *tem* mapeamento processual e passa pela checagem de legitimidade.
-  Como não está em `TRABALHISTA_JUS_POSTULANDI_APPEAL_TYPES` (só `RECURSO_ORDINARIO_TRABALHISTA` e
-  `EMBARGOS_DECLARACAO`), a Súmula 425/TST **já era aplicada de verdade** — não por acidente, por
-  enforcement ativo da allowlist —, só nunca tinha teste de regressão provando isso.
-- **`RECURSO_REVISTA`** (sem "Agravo") de fato não tem entrada no switch e cai em
-  `"Tipo recursal sem correspondencia processual minima."` para qualquer ator, advogado incluído —
-  esse sim é o bloqueio acidental que a dívida original descrevia, mas só se aplica a este tipo.
-
-**Fechamento:** 4 testes novos em `RecursalValidacaoMinimaServiceTest` — cidadão trabalhista barrado
-em `AGRAVO_RECURSO_REVISTA` por ilegitimidade (prova o enforcement real da Súmula 425), advogado
-segue legítimo no mesmo tipo (prova que a restrição é só de jus postulandi), e o par cidadão/advogado
-em `RECURSO_REVISTA` provando que os dois batem no mesmo erro de mapeamento ausente — não é
-específico de jus postulandi, então não precisa de allowlist nova. 13/13 verde na classe inteira.
-
-**Quando revisitar:** só se `RECURSO_REVISTA` ganhar mapeamento em `toRecursoProcessualTipo()` no
-futuro — nesse momento, adicionar teste explícito confirmando que jus postulandi trabalhista continua
-barrado nele (mesmo padrão que `AGRAVO_RECURSO_REVISTA` já tem agora).
-
 ## D-jus-postulandi-recurso-jef-turma-recursal
 
 **Status:** parcialmente atendida — enforcement do comportamento atual agora é verificado por teste;
@@ -819,98 +792,31 @@ hoje), (d) avaliar se cabe seed inicial via migration para garantir base populad
 primeira execução. Não integrar essa etapa com a de fixes atuais — é decisão operacional de
 outra natureza.
 
-## D-titularidade-cidadao-duplicada-dois-guards
-
-**FECHADA.** Extraído `ProcessoPartyCpfMatcher` (novo, `core/security/access/`) com resultado tipado via `sealed interface PartyMatchResult` (`Matched(PartyRole role)` / `NotMatched`) — elimina a comparação de CPF duplicada byte a byte entre `PjbAuthorizationService.requireReadProcessoAsCidadaoParte` e `PersonalProcessAccessGuardService.requireCurrentUserAsParty`. Os dois métodos de alto nível continuam existindo com suas políticas distintas (o primeiro só age para `CIDADAO` e roda ABAC antes; o segundo age para qualquer autenticado, sem ABAC prévio) — só o predicado interno foi unificado, nenhum dos 11 call sites (10 do primeiro + 1 do segundo) muda de comportamento.
-**Fecha por dedup, não por auditabilidade equivalente:** os dois métodos passaram a auditar suas decisões, mas por convenções assimétricas e deliberadamente diferentes — `requireReadProcessoAsCidadaoParte` grava `AUTHZ_CIDADAO_PARTE_ALLOW/DENY` na trilha ABAC real (`PjbAuthorizationTrailAssembler`/`PjbAuthorizationAuditFacade`, com ator/motivo/risco), `requireCurrentUserAsParty` grava um par mais simples `PERSONAL_ACCESS_ALLOW/DENY` direto via `AuditLedgerService` (esse método nunca teve acesso à máquina ABAC, que é `package-private` a `core.security.abac`). As duas trilhas usam espaços de `resourceId` diferentes sob o mesmo `resourceType="PROCESSO"` (`numeroUnificado` vs. id numérico) — não são joináveis entre si por design, achado confirmado na revisão final de branch inteira.
-
-## D-peticionamento-controller-domain-lacuna-cidadao
-
-**FECHADA.** O bug era mais estrutural do que o achado original sugeria: `PeticionamentoController.resolveDomain()` era uma de 3 reimplementações independentes da mesma regra `Authentication`→`CapabilityRateLimitDomain` (a segunda, `ProcessualParticipacaoControllerRateLimitSupport`, tinha o mesmo bug; a terceira, `UserCalendarController`, parecia correta por ter um branch explícito para `CIDADAO`). Corrigido criando `CapabilityRateLimitDomainResolver` (novo `@Component` único) e migrando os 4 controllers pra ele, eliminando as 3 reimplementações de uma vez.
-**Achado real durante a revisão final, não durante a implementação:** a versão inicial do resolver copiou `UserCalendarController.resolveDomain` como "referência correta", mas essa referência tinha ela mesma um bug latente desde antes desta fatia — `PjbGrantedAuthorityFactory` concede `ROLE_USER` a *todo* usuário autenticado, não só a `CIDADAO`, então o check `ROLE_CIDADAO || ROLE_USER` pro domínio `CITIZEN` na verdade casava com qualquer um, tornando `INSTITUCIONAL` inalcançável em produção pros 4 controllers migrados (juiz, defensor, procurador, perito etc. caindo silenciosamente em `CITIZEN`). Corrigido removendo `ROLE_USER` do check (só `ROLE_CIDADAO` identifica cidadão de forma confiável); suíte de teste do resolver reconstruída usando `PjbGrantedAuthorityFactory.authoritiesFor(tipo, ente)` real em vez de fixtures de authority isolada, que era estruturalmente incapaz de pegar esse bug.
-
-## D-cidadao-parte-guard-sem-teste-rejeicao
-
-**FECHADA.** `CidadaoInstanciasControllerCpfMismatchIT` (novo, Testcontainers Postgres + JWT real, sem mocks no caminho de autorização) prova 403 para `CIDADAO` cujo CPF não bate com nenhuma parte do processo, e que a decisão gera a entrada `AUTHZ_CIDADAO_PARTE_DENY` real no ledger de auditoria em vez de negação silenciosa; também prova 200 quando o CPF bate com a parte autora. Escopo da dívida original era `requireReadProcessoAsCidadaoParte` especificamente — fechada como tal.
-**Achado durante a revisão final, registrado à parte por ser um método diferente:** `requireCurrentUserAsParty` (o guard irmão de `D-titularidade-cidadao-duplicada-dois-guards`) tinha zero cobertura de teste mesmo depois de reescrito para usar o novo predicado compartilhado e ganhar auditoria — fechado na mesma fatia com 2 testes unitários novos (match e no-match, ambos com `verify` no mock de `AuditLedgerService`), mas via teste unitário, não IT (não precisa: `appendSafely` é chamada direta sem dependência de `RequestContext`, ao contrário do caminho ABAC).
-
 ## D-frontend-delivery-routes-nao-sinaliza-depreciacao
+
+**Status:** aberta — varredura por regex, não sinaliza depreciação de rota
 
 `PjbFrontendDeliveryApplicationService.parseRoutes` escaneia `@PostMapping`/`@GetMapping` via regex e não lê headers HTTP de depreciação — os 4 endpoints recursais legados aparecem no catálogo `/api/v1/frontend/delivery/routes` com o mesmo peso da rota unificada nova, achado ao investigar consumidores antes da Etapa 3.
 Revisitar se o catálogo vier a ser consumido por um frontend real: cruzar rota com `RecursalLegacyDeprecationHeaders` ou marcador equivalente antes de expor como pronta para uso.
 
-## D-tribunal-rule-engine-wiring-manual-de-colaborador
-
-FECHADA. `TribunalRuleResolutionSupport` e `TribunalRulePackSynchronizationSupport` viraram `@Component` e passaram a ser injetados via construtor em `TribunalRuleEngine`, eliminando os dois `new` internos — único consumidor mapeado (`TribunalRuleEngineTest`, `TribunalRuleEngineBehaviorTest`, 2 sites de construção) e atualizado para montar os colaboradores explicitamente antes de passar ao engine. `mvnw test-compile -pl pjb-api` limpo após a mudança.
-Não revisitar — alinhado ao padrão de constructor injection do resto do projeto, nenhum comportamento mudou.
-
 ## D-auditoria-salario-minimo-sem-garantia-de-persistencia
+
+**Status:** parcialmente atendida — persistSafely ainda engole exceção
 
 FECHADA parcialmente. `AuditLedgerService.persistSafely` continua engolindo exceção em `try/catch` (contrato de "nunca lança" preservado — dezenas de call sites dependem disso), mas agora incrementa `Counter` Micrometer `pjb.audit_ledger.persist_failures` no catch, tornando a falha observável sem mudar o comportamento. `MeterRegistry` injetado via construtor único (sem overload, respeitando `spring_ambiguous_constructor_guard`); 6 testes que construíam a classe manualmente (`BnmpIntegracaoServiceRegistrarBranchesTest`, `IcpBrasilChainValidatorTest`, `RecursalFormalizacaoServiceTest`, `RecursalPdfArtifactValidationServiceTest`, `RecursalPdfLongTermValidationServiceTest`, `RecursalPdfNativeSignatureServiceTest`) atualizados para passar `SimpleMeterRegistry`. `payload_hash=null` sintetizando SHA-256 via `safePayloadHash()` permanece como estava, apenas documentado corretamente.
 Revisitar: decidir se falha de persistência de evento crítico deveria propagar ou alimentar retry/outbox em vez de só logar+contar — mudança em classe usada por dezenas de call sites, fora do escopo desta correção pontual.
 
-## D-testes-it-contaminacao-em-lote-amplo-service-package
-
-FECHADA. Causa raiz real (não suposição): sem `forkCount`/`reuseForks` no pom, Failsafe roda todas as ITs do lote na mesma JVM/mesmo banco (`PjbIntegrationTestBase`). `PjbFlowItBase.truncateDatabaseBeforeEach()` autodescobria e truncava TODAS as tabelas de `public` a cada `@BeforeEach`, incluindo `tb_jurisdicao_territorial`/`tb_jurisdicao_territorial_unidade` — catálogos semeados uma única vez pelo Flyway (V304/V305/V306), nunca recriados depois. Qualquer uma das 11 classes que herdam `PjbFlowItBase` rodando antes de `Trt7CearaJurisdicaoCargaIT` no mesmo fork apaga o catálogo para o resto da execução, explicando o sintoma exato (`MunicipioForaDoCatalogo` em vez de `Resolvida`) e por que a classe isolada sempre dava 9/9 verde. Reproduzido deliberadamente com `-Dit.test=AjuizamentoServiceFlowIT,Trt7CearaJurisdicaoCargaIT` (9 falhas) e novamente após o fix (12/12 verde) — não é suposição, é reprodução controlada nos dois sentidos.
-Corrigido em duas camadas: (1) excluídos os dois catálogos do TRUNCATE autodescoberto de `PjbFlowItBase`, documentado em Javadoc; (2) `AjuizamentoServiceFlowIT` tinha um `@AfterAll truncateAfterAll()` próprio com a MESMA query copiada e colada, sem a exclusão — causa do fix inicial não bastar sozinho. Extraído `truncateAllTrackedTables()` protected em `PjbFlowItBase`, reutilizado pelo `@AfterAll` em vez de duplicar a SQL, eliminando a duplicação que causou a divergência. `-Dtest="pacote.**"` continua desaconselhado como atalho de regressão ampla (lote compartilhado é característica do design, não bug), mas o vazamento específico que gerava falso-negativo está eliminado e comprovado.
-
-## D-salario-minimo-watchdog-limiar-sem-base-documentada
-
-**FECHADA.** O limiar default de 1 ano (`pjb.observability.salario-minimo.staleness-limiar-anos:1`) foi fundamentado a posteriori com evidência do próprio projeto: `FALLBACK_OFICIAL` registra 2023→2024→2025→2026 sem nenhuma lacuna, confirmando que o reajuste anual do salário mínimo nacional é cadência histórica sem exceção conhecida no período coberto. `defasagemAnos > limiarAnos` (estritamente maior, não `>=`) foi escolha deliberada, não sobra: em janeiro de cada ano o valor do ano novo pode legitimamente ainda não ter sido cadastrado enquanto o decreto está saindo, o que produziria `defasagemAnos == 1` de forma normal e não anômala — usar `> 1` exige que um ciclo anual inteiro tenha sido perdido antes de alertar, evitando falso-positivo recorrente todo início de ano sem deixar de capturar o caso real (dois anos ou mais sem atualização).
-Não revisitar por falta de critério — o critério agora é a própria cadência histórica registrada no código; revisitar apenas se o padrão de publicação do decreto mudar (ex.: atraso legislativo real documentado).
-
-## D-anomaisrecenteconhecido-divergia-da-resolucao-real-de-valorPorAno
-
-**FECHADA nesta mesma etapa.** `SalarioMinimoNacionalService.anoMaisRecenteConhecido()` usava `findTopByAtivoTrueOrderByAnoReferenciaDesc()` (máximo irrestrito do banco) e só considerava a persistência quando o ano superava o teto do fallback — divergindo de `valorPorAno()`, que prioriza qualquer registro do banco de forma incondicional, mesmo mais antigo que o fallback. Cenário real: banco só com registro de 2023, fallback até 2026 — o watchdog reportava "sem defasagem" enquanto `valorPorAno(anoAtual)` de fato servia o valor de 2023.
-Corrigido reusando a mesma query e cadeia de resolução de `valorPorAno` (`findTopByAnoReferenciaLessThanEqualAndAtivoTrueOrderByAnoReferenciaDesc`), retornando o ano que efetivamente governa o valor servido. 3 testes cobrem banco vazio, banco mais antigo que o fallback (o cenário real do achado) e banco no ano corrente.
-
-## D-mutableclock-duplicado-em-3-testes
-
-FECHADA. Os 3 restantes (`PjbCodebaseSanityApplicationServiceCacheTest`, `PjbWriteFailoverTrackerTest`, `AcordoProcessualApplicationServiceTest`) migrados para `com.tcc.pjb.backend.support.MutableClock`, zerando as 4 cópias originais. `AcordoProcessualApplicationServiceTest` usava acesso direto a campo (`fx.clock.now = ...`), incompatível com a classe compartilhada — adicionado `set(Instant)` a `MutableClock` e os 3 sites de uso migrados para `fx.clock.set(...)`. `mvnw test-compile -pl pjb-api` limpo após a migração.
-Não revisitar — nenhuma cópia privada de `MutableClock` restante no módulo.
-
 ## D-marketplace-payload-multiplo-anexo
+
+**Status:** aberta — achado da revisão final da Fase 2 de completude documental
 
 Achado na revisão final de branch inteiro do `D-marketplace-sem-completude-documental` Fase 2. O limite de payload da rota `marketplace-institutional` (`application-api-governance.yml`) foi elevado de 2MB para 8MB — cobre com folga UM anexo no limite documentado de `DocumentContentValidator` (5MB, inflado ~1.33x pelo base64 do JSON). Mas `MarketplaceComplementoDocumentalRequest.documentos` e `MarketplaceProtocoloRequest.documentos` aceitam `List<Attachment>` sem limite de quantidade — um cliente que envie vários anexos grandes na mesma chamada ainda pode estourar o limite de payload antes mesmo de qualquer anexo individual ser validado, recebendo um erro de transporte genérico em vez do `TAMANHO_EXCEDIDO` documentado. Decisão de produto em aberto: limitar quantidade de anexos por chamada, ou elevar o limite de payload proporcionalmente (custo: janela maior para abuso de banda). Não corrigido nesta fatia — corrigir exigiria decidir o número real de anexos esperado por chamada, que não está especificado em nenhum lugar do contrato atual.
 
-## D-marketplace-scope-oauth-nao-checado-no-path-primario
-
-**FECHADA.** `ApiMarketplaceController.protocolar`/`complementarDocumentos` resolviam `clientId` de duas formas: via `Authentication` já populada pelo filtro de segurança (path primário, sem checagem de escopo) ou via `marketplaceOAuth2Service.authorizeHttpRequest(...)` como fallback (com checagem de escopo). Investigação confirmou que nenhum filtro/`AuthenticationProvider` do `SecurityConfig` reconhece o JWT próprio do marketplace — o path primário só era alcançado quando QUALQUER outro usuário PJB (passkey/certificado/Gov.br) chamava o endpoint com sua própria sessão, tratando `authentication.getName()` como se fosse um `client_id` de marketplace, sem checar escopo nem que o principal é de fato um `MarketplaceClientApp` registrado.
-
-Corrigido removendo o path primário por completo: os dois métodos agora sempre resolvem `clientId` via `marketplaceOAuth2Service.authorizeHttpRequest(...)`, então escopo é sempre checado e `connectorClientId` é sempre um `MarketplaceClientApp.clientId` verificado, nunca o nome de outro principal autenticado.
-
-**Achado adicional na mesma investigação, corrigido junto:** `/api/marketplace/oauth/v1/token`, `/api/marketplace/v1/processos` e `/api/marketplace/v1/processos/*/documentos` não estavam em nenhum `permitAll()` do `SecurityConfig` — caíam no catch-all `anyRequest().authenticated()`. Como a autenticação real desses endpoints é o JWT próprio do marketplace (validado manualmente dentro do controller, nunca pelo Spring Security), isso tornava o endpoint de emissão de token inalcançável por um integrador externo sem sessão PJB prévia — circular, já que não é possível ter sessão sem antes ter token. Corrigido liberando os três caminhos com `permitAll()` e trocando `@PreAuthorize("isAuthenticated()")` de `ApiMarketplaceController` para `permitAll()` (mesmo padrão já usado por `CertificadoAuthController`/`PasskeyAuthController`/`GovBrLoginController`, que também fazem sua própria verificação de credencial dentro do método).
-
-`CapabilityRateLimiter` passou a usar o `clientId` verificado como chave de rate limit (em vez do subject "anonymous" compartilhado por todo requisitante não autenticado) — reaproveita o overload `anonymousSubjectFallback` já construído para o mesmo problema em `ConsultasPublicasController`/`PublicProcessoPessoaController`.
-
-Testado com `ApiMarketplaceControllerTest` (3/3): prova que `clientId` nunca vem de `authentication.getName()`, mesmo quando outro principal autenticado está presente, e que falha de escopo propaga como erro sem chamar o service.
-
 ## D-marketplace-connectorclientid-sem-backfill-para-janela-entre-commits
 
+**Status:** aberta — janela entre commits sem backfill em V309
+
 Achado na revisão da correção do finding B (checagem de posse). A migração `V309__processo_connector_client_id.sql` adiciona a coluna `connector_client_id` sem backfill. Isso é seguro para dados anteriores ao commit `c5203968` (que introduziu o endpoint `/documentos` inteiro), mas esse mesmo commit já persistia `connectorProtocolReference` no formato `clientId:referencia` — teoricamente, qualquer `Processo` protocolado entre `c5203968` e a correção (`5b1551c9`) fica com `connector_client_id = null` e nunca mais alcança `complementar()` (404 permanente, sem caminho de remediação operacional). Não corrigido porque não há dado real nessa janela: a branch nunca foi implantada em produção entre esses dois commits — ambas as migrações chegam juntas no primeiro deploy real da fatia. Revisitar apenas se algum dia esses dois commits forem implantados separadamente (não é o plano atual).
-
-## D-reprocessamento-unidade-nova-mesma-transacao-fk-invisivel
-
-**FECHADA.** Achada durante a rodada de correção da revisão formal de `secretarias institucionais diferenciadas` (Important #1), ao escrever o teste real que a própria correção exigia. `UnidadeInstitucionalAdminService.criarUnidade` chamava `unidadeRepository.save(unidade)` (INSERT imediato, `GenerationType.IDENTITY`) e, na MESMA transação (`@Transactional` padrão, `REQUIRED`), chamava `SecretariaInstitucionalEnfileiramentoService.reprocessarSemUnidade(tipo)`, que resolve itens presos via `resolverUnidade(...)` e persiste cada um via `SecretariaInstitucionalItemGravador.gravar(item)`, propositalmente `@Transactional(propagation = REQUIRES_NEW)` (para isolar conflito de índice único por item, ver comentário na própria classe). Quando `resolverUnidade` encontrava a unidade RECÉM-CRIADA na mesma transação externa (ainda não commitada), o `REQUIRES_NEW` rodava em conexão física separada, que só enxerga dados já commitados — a `UPDATE ... unidade_institucional_id = <nova unidade>` falhava com violação de FK (`secretaria_institucional_item_unidade_institucional_id_fkey`), silenciosamente engolida pelo mesmo `catch (DataIntegrityViolationException)` que trata a corrida do índice único. Reproduzido de forma determinística contra um Testcontainers Postgres limpo (não era artefato de dado residual de teste).
-
-**Correção real aplicada** (aprovada explicitamente pelo dono do projeto, depois de registrada como dívida): `UnidadeInstitucionalAdminService.criarUnidade` separado em dois métodos `@Transactional` distintos — `criarUnidade(...)` faz só a criação/persistência/auditoria da unidade e retorna (commita ao retornar); `reprocessarBacklogAposCriacaoDeUnidade(UnidadeInstituicao unidade)` (novo) faz só a chamada a `reprocessarSemUnidade` + auditoria do lote, em transação própria. `UnidadeInstitucionalAdminController.criarUnidade` (que não é transacional) chama os dois métodos em sequência, um depois do outro — nunca via self-invocation dentro da mesma classe (o proxy `@Transactional` do Spring não intercepta chamadas internas `this.metodo()`, mesma armadilha já identificada na investigação do `EquipeSwitchInterceptor`). Como as duas chamadas partem do controller (bean externo), cada uma passa pelo proxy do Spring e abre sua própria transação física — quando `reprocessarBacklogAposCriacaoDeUnidade` começa, a unidade já está commitada e visível para o `REQUIRES_NEW` do gravador. `adicionarAbrangencia` foi confirmado como não afetado (lido de novo antes de concluir): ele referencia uma `UnidadeInstituicao` já existente e commitada, nunca cria uma nova, então o alvo do FK já está sempre visível.
-
-Verificação real: `SecretariaInstitucionalReprocessamentoEntidadeSujaIT` ganhou um segundo teste (`criarUnidadeResolveBacklogDeVerdadeQuandoAUnidadeNovaEAQueOsItensPresosEsperavam`) reproduzindo exatamente o cenário real antes evitado — unidade nova = unidade alvo do backlog — provando que o item preso é resolvido de verdade (status `PENDENTE`, `unidadeInstitucionalId` apontando pra unidade recém-criada) depois da correção. `UnidadeInstitucionalAdminServiceTest`/`UnidadeInstitucionalAdminControllerTest` atualizados para provar a ordem das duas chamadas (`InOrder`) e que `criarUnidade` sozinho não reprocessa mais nada. Rodado 2x seguidas contra Testcontainers Postgres limpo, 0 falhas nas duas vezes.
-Não revisitar — o corte de transação está estrutural, não é um workaround pontual.
-
-## D-ha-pgbouncer-prepared-statements
-
-**FECHADA.** Achada durante o round de verificação de boot completo da topologia HA (registrada como dívida aberta em `secretarias-institucionais/fix-round-2-report.md` e narrada no README). `backend`/`backend-a` nunca conseguia subir em `docker-compose.ha.yml`: o Flyway quebrava no boot com `ERROR: prepared statement "S_n" does not exist`. Causa raiz confirmada contra containers reais: `pgbouncer-rw`/`pgbouncer-ro` dessa topologia rodam a imagem 1.18.0 em `pool_mode = transaction`; suporte a prepared statements em modo de pooling por transação (`max_prepared_statements`) só existe a partir do PgBouncer 1.21. Em `pool_mode = transaction` o pgbouncer pode entregar uma conexão física diferente a cada transação — um prepared statement nomeado que o driver pgjdbc cria do lado servidor depois da 5ª execução da mesma query na mesma conexão lógica (`prepareThreshold=5`, default do driver) deixa de existir na física seguinte.
-
-**Correção real aplicada:** `prepareThreshold=0` nas propriedades de datasource (`spring.datasource.hikari.data-source-properties.prepareThreshold` para o caminho de escrita, `pjb.datasource.routing.replica.data-source-properties.prepareThreshold` para o de leitura), desabilitando prepared statements do lado servidor via novo parâmetro `PJB_DB_PREPARE_THRESHOLD` (default `5` = comportamento nativo inalterado em todo lugar que não define a env var — dev, prod, `docker-compose.yml` base, Testcontainers). `docker-compose.ha.yml` passa a fixar `PJB_DB_PREPARE_THRESHOLD: "0"` só em `backend`/`backend-b`. Validado contra a documentação real antes de aplicar: o próprio FAQ do PgBouncer recomenda `prepareThreshold=0` como correção oficial para JDBC nessa combinação (`pool_mode=transaction` + versão sem `max_prepared_statements`); a documentação do driver pgjdbc confirma que o parâmetro desabilita completamente prepared statements do lado servidor. Das 3 alternativas identificadas na investigação anterior (mudar `pool_mode` pra `session`, `prepareThreshold=0`, ou atualizar a imagem do pgbouncer pra ≥1.21), esta foi escolhida por ser a única que não muda o modo de pooling que a topologia HA foi desenhada pra ter nem exige trocar a imagem Docker — menor blast radius, reversível com uma env var.
-
-**Trade-off aceito e documentado:** com `prepareThreshold=0`, o driver nunca usa prepared statement nomeado do lado servidor nessa topologia — perde reuso de plano de execução, binary transfer de parâmetros/resultado, e reenvia o SQL completo a cada execução. Custo aceitável porque é estritamente melhor que o estado anterior (`backend` não subia de jeito nenhum) e porque `pool_mode=transaction` já impunha esse teto de qualquer forma — não há como ter prepared statements nomeados persistentes de verdade sob esse modo de pooling sem subir o pgbouncer pra ≥1.21 (não feito nesta correção).
-
-**Verificação real:** imagem `pjb-backend:local` reconstruída com as mudanças; topologia HA completa subida via `docker compose -f docker-compose.yml -f docker-compose.ha.yml --profile app --profile ha up -d` em projeto Docker isolado (`-p pjb_ha_pgbouncerfix`, volumes novos, `down -v` ao final). `backend` completou as 280 migrations Flyway via `pgbouncer-rw` e alcançou `healthy` (`docker inspect .State.Health.Status`) em **5 boots consecutivos** — zero ocorrência de "prepared statement ... does not exist" em qualquer um. O cenário de >5 execuções da mesma query na mesma conexão lógica foi exercitado de sobra: 280 migrations sequenciais mais o próprio bookkeeping do Flyway em `flyway_schema_history` (INSERT/SELECT repetidos dezenas de vezes) na mesma pool Hikari por trás do `pgbouncer-rw`.
-
-**Achado incidental durante a mesma verificação, não corrigido (fora de escopo):** com o bug de prepared statements resolvido, o boot avança o suficiente para expor uma segunda falha, pré-existente e desta vez encontrada pela primeira vez porque ninguém tinha chegado tão longe: `PjbReplicaTopologyVerifier` (`pjb.datasource.routing.verify-topology-on-startup`, default `true`) executa `select pg_is_in_recovery()` no datasource de leitura e falha com `IllegalStateException: Datasource de leitura padrão: não confirmou réplica PostgreSQL física` — porque `pgbouncer-ro` desta topologia local aponta pro MESMO Postgres que `pgbouncer-rw` (não há réplica física de verdade em `docker-compose.ha.yml`), então `pg_is_in_recovery()` sempre retorna `false`. Isso derruba `backend`/`backend-a` poucos segundos depois de `Started BackendApplication` (confirmado presente já no primeiro boot limpo, antes de qualquer mudança de `backend-b` — não é efeito colateral desta correção). Ver `D-ha-replica-topology-verifier-sem-replica-real` (nova entrada, aberta).
-
-Não revisitar a parte de prepared statements — a causa está eliminada estruturalmente (parâmetro de conexão, não workaround de dado).
 
 ## D-ha-replica-topology-verifier-sem-replica-real
 
@@ -923,70 +829,6 @@ Não revisitar a parte de prepared statements — a causa está eliminada estrut
 **Cobertura de teste:** nenhuma — só descoberto rodando a topologia real, não há IT que suba `docker-compose.ha.yml` de ponta a ponta.
 
 **Quando revisitar:** ao decidir como o dev local vai simular um read-replica de verdade (ex.: segundo Postgres com `pg_basebackup`/streaming replication, ou desabilitar o verifier via `PJB_DB_READ_VERIFY_TOPOLOGY_ON_STARTUP=false` explicitamente só em `docker-compose.ha.yml` como uma escolha deliberada e documentada, não um bug).
-
-## D-equipe-switch-interceptor-noop-quatro-bugs-empilhados
-
-**FECHADA — 2026-08-13.** O isolamento por equipe/usuário via Hibernate `@Filter`
-(`filtroEquipe`/`filtroEquipeProcesso` em `Cliente`/`Processo`) estava confirmado inativo desde a
-investigação anterior (`EquipeSwitchInterceptorHibernateFilterIT`, prova direta contra Postgres
-real). Duas tentativas de correção anteriores (`TransactionSynchronizationManager` e
-`TransactionExecutionListener`, ambas registradas e descartadas em rodadas prévias) falharam
-porque nenhuma delas era a causa real — eram todas tentativas de consertar o *timing* de ativação
-do filtro dentro de `EquipeSwitchInterceptor.preHandle()`, mas o interceptor nunca chegava a
-executar. A causa raiz verdadeira só apareceu depois de instrumentar o `WebConfig` e descobrir que
-o bean do interceptor era `null` no registro de interceptors — o que expôs, em cascata, quatro
-bugs pré-existentes e independentes, cada um mascarando o próximo:
-
-1. **`EquipeSwitchInterceptor` nunca era criado.** A classe é um `@Component` comum (não uma
-   classe de auto-configuração) com `@ConditionalOnBean({MembroEquipeRepository.class,
-   EntityManager.class, ...})` no nível da classe. `@ConditionalOnBean` sobre um `@Component`
-   escaneado é uma armadilha conhecida do Spring Boot: a condição é avaliada durante a fase de
-   component-scan, antes dos beans de infraestrutura JPA/Spring Data (repositórios, EntityManager)
-   estarem registrados — a condição resolvia falso sempre, e `WebConfig` (usando
-   `ObjectProvider.getIfAvailable()`) simplesmente pulava o registro do interceptor sem erro
-   nenhum. Isolamento por equipe morto silenciosamente desde que a anotação foi escrita. Corrigido
-   removendo `@ConditionalOnBean` da classe (mantido `@ConditionalOnWebApplication`).
-2. **`AuditLedgerService.append`/`appendSafely` sem isolamento transacional.** Assim que o
-   interceptor passou a rodar de verdade, qualquer chamador com `@Transactional(readOnly = true)`
-   (ex.: `OfficeWorkspaceModeService.current()` → `buildView()`, chamado de dentro do próprio
-   `preHandle`) tinha o `INSERT` do log de auditoria rejeitado pelo Postgres ("cannot execute
-   INSERT in a read-only transaction"). `persistSafely` engolia a exceção, mas a transação
-   ambiente já ficava marcada rollback-only — a chamada inteira falhava com
-   `UnexpectedRollbackException` no commit, mesmo em requisições que nunca tocaram auditoria
-   diretamente. Corrigido com `@Transactional(propagation = REQUIRES_NEW)` em `append()` e nos 4
-   overloads de `appendSafely` (todos precisam da anotação — `appendSafely` chama `append` por
-   self-invocation, que não passa pelo proxy do Spring).
-3. **`Cliente.filtroEquipe` sem `@FilterDef`.** `Cliente.java` tinha `@Filter(name =
-   "filtroEquipe", ...)` mas nenhum `@FilterDef(name = "filtroEquipe", ...)` em lugar nenhum do
-   código — `session.enableFilter("filtroEquipe")` sempre lançava `UnknownFilterException`. O
-   filtro nunca existiu de verdade na `SessionFactory`. Corrigido adicionando o `@FilterDef`
-   correspondente (parâmetros `usuarioIdParam`/`equipeIdParam`, mesmo padrão já usado em
-   `Processo.filtroEquipeProcesso`).
-4. **`Processo.filtroEquipeProcesso` com parêntese desbalanceado.** A string de `condition` do
-   `@Filter` em `Processo.java` tinha 14 parênteses de abertura e 13 de fechamento — um parêntese
-   externo aberto em `(((` (linha 62) nunca era fechado no final da condição. Nunca fora exercitado
-   porque o filtro nunca chegava a ser habilitado (bug #1). Assim que #1 e #3 foram corrigidos, a
-   primeira consulta real via `ProcessoRepository` quebrou com `ERROR: syntax error at end of
-   input` (SQLState 42601). Corrigido adicionando o parêntese de fechamento faltante.
-
-**Verificação real:** `EquipeSwitchInterceptorHibernateFilterIT` — 2/2 verde contra Postgres real
-(Testcontainers), confirmando `filtroEquipe`/`filtroEquipeProcesso` genuinamente ativos numa Session
-vinculada a uma transação de negócio real, e que o `ThreadLocal` de contexto (`EquipeFiltroContexto`)
-não vaza entre duas requisições sucessivas na mesma thread.
-
-**Efeito colateral capturado e corrigido na mesma rodada:** com o interceptor genuinamente ativo em
-toda rota `/api/v1/**`, `AdvogadoAuditoriaControllerIT.ledgerReturnsEvents` passou a falhar —
-`OfficeWorkspaceModeService.current()` agora grava um evento `ADV_OFFICE_MODE_VIEW` real a cada
-requisição autenticada, inclusive a chamada MockMvc que o próprio teste faz ao endpoint de ledger,
-tornando a asserção posicional (`content.get(0)`) frágil. Teste corrigido para verificar presença
-do evento esperado em vez de posição — o comportamento novo é correto (o interceptor deveria
-mesmo rodar em toda rota `/api/v1/**`), a asserção antiga é que estava desatualizada.
-
-**Cobertura de teste:** `EquipeSwitchInterceptorHibernateFilterIT` (prova direta, 2 testes),
-`AdvogadoAuditoriaControllerIT` (regressão corrigida). Regressão ampla rodada:
-`AdvogadoCockpitControllerIT`, `ProcessoCommandControllerIT`, `AuditLedgerServicePayloadHashNuloIT`
-— todos verdes.
-Não revisitar — os quatro pontos são estruturais, não workarounds.
 
 ## D-funcao-servidor-proferir-nao-implementado
 
