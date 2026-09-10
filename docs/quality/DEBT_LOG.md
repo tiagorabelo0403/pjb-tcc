@@ -7,6 +7,46 @@ nenhuma entrega em andamento — para que não fiquem só na memória de quem in
 Cada entrada sai daqui quando a dívida é fechada; o fechamento é então narrado no `README.md`, seguindo
 o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
+## D-teto-rpv-duplicado-como-literal-em-seis-pontos
+
+**Status:** aberta — achado do revisor ao fechar `PrecatorioRadarService`
+
+O teto de RPV é parâmetro legal e está duplicado como literal `new BigDecimal("60")` /
+`new BigDecimal("40")` em seis pontos:
+
+| Valor | Onde |
+|---|---|
+| 60 SM (RPV federal / competência JEF) | `CalculoJudicialAssistenciaService:259`, `CalculoJudicialIaFinanceiraService:554`, `FederalPrevidenciarioCjfCalculoAvancadoService:144`, `PrecatorioRadarService` |
+| 40 SM (competência JEC / ente subnacional) | `NationalRulePackEngine:418`, `PrecatorioRadarService` |
+
+**Por que importa:** teto de RPV muda por lei, e cada ente federado pode fixar o seu (ADCT art. 87
+estabelece pisos até que estados e municípios legislem). Com o valor espalhado, uma mudança
+normativa exige encontrar os seis pontos, e esquecer um produz classificação RPV/precatório
+divergente entre telas do mesmo sistema.
+
+**Correção sugerida:** fonte canônica de parâmetros monetários processuais, no mesmo espírito de
+`SalarioMinimoNacionalService` — que já é a fonte única do salário mínimo e é consultada por data.
+O teto em salários mínimos deveria ser resolvido por ente e por data de referência, não por
+literal.
+
+**Por que não foi feito na mesma fatia:** três dos quatro pontos de 60 SM estão em serviços de
+cálculo com consumidores reais, e o valor entra neles como *default* de request opcional. Unificar
+muda a superfície desses serviços. É fatia própria, com verificação própria.
+
+## D-rpv-municipal-sem-limite-proprio
+
+**Status:** aberta — sem evidência no projeto, não inventada
+
+`PrecatorioRadarService.limiteRpv` trata `MUNICIPAL` com o mesmo teto de `ESTADUAL` (40 salários
+mínimos), porque a busca no projeto não encontrou nenhuma fonte definindo limite municipal próprio.
+
+O ADCT art. 87 estabelece pisos distintos por ente enquanto não houver lei local, e a constante foi
+nomeada `SALARIOS_MINIMOS_RPV_SUBNACIONAL` para deixar explícito que hoje os dois entes compartilham
+o mesmo valor por ausência de fonte, não por decisão.
+
+**O que falta:** confirmar com o Tiago qual valor o PJB deve adotar para município, e se o teto deve
+ser configurável por ente federado (ver `D-teto-rpv-duplicado-como-literal-em-seis-pontos`).
+
 ## D-laiane-substabelecimento-503-em-contexto-compartilhado
 
 **Status:** aberta — contida, causa não identificada
