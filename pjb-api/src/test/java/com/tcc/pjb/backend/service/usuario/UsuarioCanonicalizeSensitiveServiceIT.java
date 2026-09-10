@@ -8,7 +8,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -22,7 +21,6 @@ import org.springframework.test.context.TestPropertySource;
         "pjb.security.master-key=MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=",
         "pjb.security.crypto.allow-plaintext-fallback=false"
 })
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 class UsuarioCanonicalizeSensitiveServiceIT extends PjbIntegrationTestBase {
 
     @Autowired
