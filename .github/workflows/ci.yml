@@ -139,6 +139,10 @@ jobs:
         working-directory: scripts
         run: python java_comment_discipline_guard.py
 
+      - name: debt_log_hygiene_guard
+        working-directory: scripts
+        run: python debt_log_hygiene_guard.py
+
       - name: Upload Guard Reports
         if: always()
         uses: actions/upload-artifact@v7
