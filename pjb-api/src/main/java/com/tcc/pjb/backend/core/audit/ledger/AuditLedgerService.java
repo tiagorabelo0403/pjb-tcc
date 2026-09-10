@@ -88,7 +88,11 @@ public class AuditLedgerService {
             }
             auditLedgerRepository.save(entry);
         } catch (Exception e) {
-            log.warn("Falha ao persistir entrada de auditoria (não bloqueante): action={} erro={}", entry.getAction(), e.getMessage());
+            persistFailureCounter.increment();
+            log.error("AUDIT_LEDGER_PERSIST_FAILURE action={} resourceType={} resourceId={} "
+                            + "payloadHash={} entryHash={} prevHash={} erro={}",
+                    entry.getAction(), entry.getResourceType(), entry.getResourceId(),
+                    entry.getPayloadHash(), entry.getEntryHash(), entry.getPrevHash(), e.getMessage());
         }
     }
 
