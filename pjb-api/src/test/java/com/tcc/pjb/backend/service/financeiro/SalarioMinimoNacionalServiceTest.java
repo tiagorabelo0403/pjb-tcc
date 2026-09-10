@@ -49,4 +49,19 @@ class SalarioMinimoNacionalServiceTest {
 
         assertThat(service.anoMaisRecenteConhecido()).isEqualTo(anoAtual);
     }
+
+    @Test
+    void valorPorAnoFuturoDevolveOMaiorAnoConhecidoDeFormaDeterministica() {
+        SalarioMinimoNacionalRepository repository = mock(SalarioMinimoNacionalRepository.class);
+        when(repository.findTopByAnoReferenciaLessThanEqualAndAtivoTrueOrderByAnoReferenciaDesc(
+                org.mockito.ArgumentMatchers.anyInt())).thenReturn(Optional.empty());
+        SalarioMinimoNacionalService service = new SalarioMinimoNacionalService(repository);
+
+        int maiorAnoConhecido = Collections.max(SalarioMinimoNacionalService.FALLBACK_OFICIAL.keySet());
+        java.math.BigDecimal esperado = SalarioMinimoNacionalService.FALLBACK_OFICIAL.get(maiorAnoConhecido);
+
+        assertThat(service.valorPorAno(maiorAnoConhecido + 4))
+                .as("o fallback iterava Map.copyOf, cuja ordem e indefinida; precisa ser o maior ano, nao o ultimo iterado")
+                .isEqualByComparingTo(esperado);
+    }
 }

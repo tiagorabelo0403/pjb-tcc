@@ -763,34 +763,42 @@ declaração de constante) até fechamento.
 
 ## D-scheduler-salario-minimo-nunca-ativado
 
-**Status:** aberta — dívida operacional, não bug ativo (achado transversal da investigação de
-`D-salario-minimo-hardcoded-fora-de-gratuidade`)
+**Status:** aberta — decisão de ativação pendente; defasagem agora observável
 
-**Contexto:** `SalarioMinimoNacionalSyncScheduler` (`@Scheduled(cron = "${pjb.sync.salario-minimo.cron:0 0 3 * * *}")`)
-existe com cron diário às 03:00 UTC e consumiria a série 1619 do Banco Central via
-`SalarioMinimoBcbClient`. Está protegido por dois gates: `@Profile("!test")` e
-`@ConditionalOnProperty(name = "pjb.sync.salario-minimo.enabled", havingValue = "true")` — sem
-`matchIfMissing=true`. **A propriedade `pjb.sync.salario-minimo.enabled` não está setada em
-nenhum `application*.yml`/`.properties` de `pjb-api/src/main/resources`.** Nenhuma migration
-popula a tabela `salario_minimo_nacional` como seed. Consequência: em todo ambiente, toda consulta
-a `SalarioMinimoNacionalService.valorPorAno(ano)` cai no `FALLBACK_OFICIAL` estático (2023=1320,
-2024=1412, 2025=1518, 2026=1621), e o último recurso do fallback devolve `1621` fixo para qualquer
-ano ≥ 2026. Quando 2027 chegar, o service devolverá 1621 para 2027 sem intervenção humana — valor
-de 2026 congelado como default eterno.
+**Contexto:** `SalarioMinimoNacionalSyncScheduler` existe com cron diário e consumiria a série 1619
+do Banco Central, mas está atrás de `@ConditionalOnProperty(pjb.sync.salario-minimo.enabled)` sem
+`matchIfMissing`, e a propriedade não é definida em nenhum `application*.yml`. Nenhuma migration
+semeia `salario_minimo_nacional`. Consequência: toda consulta cai no `FALLBACK_OFICIAL` estático.
 
-**Risco:** a plataforma parece dinâmica (consulta service canônico, propaga data de referência,
-guard anti-hardcode ativo) mas a fonte por trás é estática e envelhece silenciosamente. Correção
-dos 3 hardcodes da etapa atual (Falencia + FrontendCatalog + EconomicReference) melhora o desenho
-mas não elimina a dívida de fonte: enquanto o scheduler não subir, a atualização anual do salário
-mínimo continua manual (via PR editando `FALLBACK_OFICIAL`).
+**Corrigido nesta etapa:**
 
-**Quando revisitar:** decisão operacional de deploy + segurança. Ativar o scheduler exige (a)
-setar `pjb.sync.salario-minimo.enabled=true` no perfil de produção, (b) confirmar que a chamada
-externa ao BCB é aceitável no ambiente (whitelist de saída, rate limit), (c) monitorar as
-primeiras execuções via log ou métrica dedicada (o scheduler não escreve em `AuditLedgerService`
-hoje), (d) avaliar se cabe seed inicial via migration para garantir base populada mesmo antes da
-primeira execução. Não integrar essa etapa com a de fixes atuais — é decisão operacional de
-outra natureza.
+- O fallback para ano além da tabela usava `reduce((a, b) -> b)` sobre `FALLBACK_OFICIAL`, que é um
+  `Map.copyOf` — cuja ordem de iteração o javadoc declara **indefinida e sujeita a mudança**. Não era
+  bug ativo (probe confirmou que hoje a ordem sai ascendente e o resultado é correto), mas era
+  fragilidade latente: acrescentar um ano ou trocar de JDK poderia alterar o valor em silêncio.
+  Passou a usar `max(Map.Entry.comparingByKey())`, que é o mesmo critério que
+  `anoMaisRecenteConhecido()` já usava na mesma classe.
+- `SalarioMinimoStalenessWatchdogService` só registrava `log.warn`. Ganhou o gauge
+  `pjb.salario_minimo.defasagem_anos`, que expõe a defasagem corrente mesmo quando ela está **abaixo**
+  do limiar de alerta. Inicia em `-1` para distinguir "watchdog ainda não rodou" de "defasagem zero".
+
+**Achado do revisor — interação entre duas dívidas que nenhuma descreve sozinha:**
+
+O limiar `defasagemAnos > 1` do watchdog é decisão documentada e correta em sua premissa: em janeiro
+o valor do ano novo pode legitimamente ainda não estar cadastrado enquanto o decreto sai, e alertar
+em `defasagem == 1` produziria falso positivo todo início de ano.
+
+Mas essa premissa supõe que **alguém cadastra o valor durante o ano**. Como o sync nunca é ativado e
+não há seed, o que seria um transitório de janeiro vira permanente — e a tolerância desenhada para o
+transitório passa a cobrir a condição permanente por um ano inteiro sem alerta.
+
+Não alterei o limiar: a decisão está fundamentada e a instrução registrada é não revisitá-la sem
+mudança no padrão de publicação do decreto. O gauge resolve o sintoma (a defasagem tolerada agora é
+visível); a causa é a ativação da fonte.
+
+**Decisão pendente do Tiago:** ativar o sync contra o Banco Central (exige rede de saída em produção)
+ou semear `salario_minimo_nacional` por migration com os valores oficiais. A segunda opção é
+determinística e não depende de rede, mas exige atualização manual por decreto.
 
 ## D-frontend-delivery-routes-nao-sinaliza-depreciacao
 
