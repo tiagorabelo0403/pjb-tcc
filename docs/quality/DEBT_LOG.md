@@ -7,47 +7,41 @@ nenhuma entrega em andamento — para que não fiquem só na memória de quem in
 Cada entrada sai daqui quando a dívida é fechada; o fechamento é então narrado no `README.md`, seguindo
 o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
-## D-springcontext-estatico-no-conversor-de-pii
+## D-springcontext-estatico-no-prepersist-de-usuario
 
-**Status:** aberta — sem impacto em produção, causa raiz de flakiness em teste de integração
+**Status:** aberta — reduzida de 6 para 1 uso; sem impacto em produção
 
-**Contexto:** `SensitiveDataConverter` é o `AttributeConverter` que cifra e decifra CPF e e-mail de
-usuário. Ele não recebe o serviço de criptografia por injeção: busca via
-`SpringContext.getBean(CryptoVaultService.class)`.
+**Contexto:** `SpringContext` guarda o `ApplicationContext` num `private static volatile`
+sobrescrito por `setApplicationContext` a cada contexto criado na JVM — semântica de
+último-escritor-vence. Quem resolve bean por ele pode receber o bean de outro contexto.
 
-`SpringContext` guarda o `ApplicationContext` num campo `private static volatile` sobrescrito por
-`setApplicationContext` a cada contexto criado na JVM — semântica de último-escritor-vence.
+**Por que não é bug de produção:** a aplicação sobe um único `ApplicationContext`.
 
-**Por que não é bug de produção:** a aplicação sobe um único `ApplicationContext`, então o holder
-sempre aponta para ele e a chave resolvida é a correta.
+**Por que era dívida real:** sob Failsafe, todas as ITs do lote rodam na mesma JVM, e cada classe
+com `@TestPropertySource` própria cria contexto próprio. Classe que reutiliza contexto em cache não
+re-executa `setApplicationContext`, então o holder segue apontando para o contexto criado por
+último e a chave mestra resolvida é a errada.
 
-**Por que é dívida real:** sob Failsafe todas as ITs do lote rodam na mesma JVM, e cada classe com
-`@TestPropertySource` própria cria um contexto próprio. Quando uma classe reutiliza contexto em cache,
-`setApplicationContext` não roda de novo, e o holder continua apontando para o contexto criado por
-último. O conversor então cifra ou calcula índice cego com a chave mestra de **outro** contexto.
+Sintoma que expôs o problema em 2026-09-09, na primeira execução completa da suíte de integração:
+`UsuarioCanonicalizeSensitiveServiceIT` falhava em lote e passava isolada. As duas metades foram
+provadas separadamente — com a correção dos repositórios a falha migrou da linha 61 (`findByCpf`,
+índice cego) para a linha 63 (`findById().getCpf()`, decifragem pelo conversor).
 
-Sintoma observado em 2026-09-09, na primeira execução da suíte de integração completa desta base:
-`UsuarioCanonicalizeSensitiveServiceIT.backfillCifraEHasheiaLinhaLegadaSemPassarPorJpa` falhava em
-lote (`findByCpf` devolvia `Optional` vazio logo após o backfill gravar `cpf_hash` de 64 caracteres)
-e passava isolada. O `application-integration-test.yml` declara explicitamente que a chave mestra é
-definida "via `@TestPropertySource` na própria classe", ou seja, a divergência de chave entre
-contextos é o desenho vigente.
+**Fechado:** `UsuarioRepositoryImpl`, `ProcessoRepositoryImpl` e `SensitiveDataConverter` passaram a
+receber a dependência por `ObjectProvider`. Nos repositórios o provider preserva o adiamento que as
+fatias `@DataJpaTest` exigem (dependência de construtor direta quebraria a criação do bean mesmo em
+teste que nunca chame o método). No conversor, o Boot já configura
+`hibernate.resource.beans.container` com `SpringBeanContainer`, então o Hibernate pede a instância
+ao contexto dono em vez de criá-la por reflexão.
 
-**Mitigação aplicada:** `@DirtiesContext(BEFORE_CLASS)` na classe afetada força contexto novo e
-realinha o holder. É contenção do sintoma, não correção da causa.
+**Aberto:** `Usuario.java:127`, dentro do callback de ciclo de vida JPA. Entidade é instanciada pelo
+Hibernate, não pelo Spring — não há ponto de injeção. Fechar exige mover o cálculo do índice cego do
+callback da entidade para a camada de serviço, o que muda onde a invariante é garantida e precisa de
+decisão de desenho, não de refatoração mecânica.
 
-**Correção adequada:** tornar `SensitiveDataConverter` gerenciado pelo Spring e receber
-`CryptoVaultService` por construtor. O Spring Boot já configura
-`hibernate.resource.beans.container` com `SpringBeanContainer`, então o Hibernate pede o conversor
-ao contexto correto em vez de instanciá-lo por reflexão.
-
-**Por que não foi feito junto:** a mudança afeta toda coluna de PII cifrada do sistema. Exige rodar
-a suíte de criptografia inteira contra Postgres real antes de mesclar, e uma falha silenciosa aqui
-corromperia dado sensível em vez de quebrar o build. É fatia própria, com verificação própria.
-
-**Área de risco associada:** `SpringContext.getBean` é um service locator estático disponível a
-qualquer classe do projeto. Vale levantar quantos outros pontos o usam antes de decidir se a
-correção é local ao conversor ou se o holder deve sair de circulação.
+**Área de risco associada:** enquanto esse uso existir, `SpringContext` continua disponível a
+qualquer classe do projeto como service locator estático. Vale um guard que impeça novos usos antes
+de o último sair.
 
 ## D-f1-remocao-govregistryclient-ajuizamentoworkflowadapter
 
