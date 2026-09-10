@@ -79,7 +79,7 @@ Resumo em destaque para quem avalia o projeto sem precisar navegar o documento i
 - **Autenticação sem senha em 3 fluxos independentes** — Gov.br (OIDC, IDP federal), certificado digital ICP-Brasil (desafio-resposta: nonce do servidor, assinatura pelo certificado do usuário, validação de cadeia), Passkey/WebAuthn
 - **ABAC** (Attribute-Based Access Control) em toda decisão sensível, com trilha imutável de quem autorizou, quando e por quê (`tb_authz_trail`)
 - **RLS** (Row Level Security) no PostgreSQL — o banco recusa dado sigiloso antes do ORM, em duas dimensões: sigilo do processo e escopo por ator (dono/papel), com teste de disciplina que barra RLS declarado-mas-não-aplicado em qualquer migration futura
-- **Criptografia de senha** (BCrypt via `DelegatingPasswordEncoder`) e **criptografia de PII em repouso** — CPF/e-mail de usuário cifrados (AES-GCM) com índice cego (HMAC) para preservar busca sem expor o dado
+- **Criptografia de senha** (BCrypt via `DelegatingPasswordEncoder`) e **criptografia de PII em repouso** — CPF/e-mail de usuário cifrados (AES-GCM) com índice cego (HMAC) para preservar busca sem expor o dado — o índice é recalculado por listener JPA na fronteira de persistência, de modo que nenhum caminho de escrita consegue gravar usuário sem ele
 - **Rate limiting** em rotas críticas (login, marketplace) com bloqueio automático de IP após violações repetidas; resposta padronizada RFC 7807
 - **Zero superfície de autocadastro público** — todo acesso é provisionado por canal verificado (Gov.br, validação de OAB, ativação de magistratura por token), não por formulário aberto
 - **HSTS + cabeçalhos de segurança endurecidos** (`X-Frame-Options: DENY`, `Permissions-Policy`, `Cross-Origin-Opener/Resource-Policy`)

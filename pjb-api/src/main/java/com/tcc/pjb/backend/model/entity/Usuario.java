@@ -9,13 +9,12 @@ import com.tcc.pjb.backend.model.entity.enums.EnteFederativo;
 import com.tcc.pjb.backend.model.entity.enums.PapelEquipe;
 import com.tcc.pjb.backend.model.entity.enums.SituacaoConta;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
-import com.tcc.pjb.backend.core.infra.spring.SpringContext;
-import com.tcc.pjb.backend.core.security.crypto.UsuarioBlindIndexService;
 import com.tcc.pjb.backend.model.converter.SensitiveDataConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -23,8 +22,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +30,7 @@ import java.util.UUID;
 
 @PjbDataOwnership(module = PjbModuleId.IDENTIDADE_SEGURANCA, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
 @Entity
+@EntityListeners(UsuarioBlindIndexListener.class)
 @Table(name = "tb_usuario")
 public class Usuario {
 
@@ -115,18 +113,9 @@ public class Usuario {
     public String getCpfHash() { return cpfHash; }
     public String getEmailHash() { return emailHash; }
 
-    /**
-     * Recalcula o índice cego de cpf/email a partir do valor em texto puro que ainda está no objeto
-     * Java neste ponto (o {@code @Convert} só cifra no bind SQL, depois deste callback). Roda apenas
-     * quando Hibernate persiste/atualiza de verdade — nunca em {@code new Usuario()} isolado de teste
-     * unitário sem contexto Spring, como {@link SensitiveDataConverter} já garante para o mesmo caso.
-     */
-    @PrePersist
-    @PreUpdate
-    void recalcularIndiceCego() {
-        UsuarioBlindIndexService blindIndex = SpringContext.getBean(UsuarioBlindIndexService.class);
-        this.cpfHash = blindIndex.hashCpf(cpf);
-        this.emailHash = blindIndex.hashEmail(email);
+    void aplicarIndiceCego(String cpfHash, String emailHash) {
+        this.cpfHash = cpfHash;
+        this.emailHash = emailHash;
     }
 
     public String getOab() { return oab; }

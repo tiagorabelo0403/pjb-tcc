@@ -48,42 +48,6 @@ processo que gerou o problema.
 **Pré-requisito que isto bloqueia:** qualquer forma de CI de integração. Com 1h38 não existe versão
 que caiba no caminho do PR; reduzir contexto é o que torna a discussão possível.
 
-## D-springcontext-estatico-no-prepersist-de-usuario
-
-**Status:** aberta — reduzida de 6 para 1 uso; sem impacto em produção
-
-**Contexto:** `SpringContext` guarda o `ApplicationContext` num `private static volatile`
-sobrescrito por `setApplicationContext` a cada contexto criado na JVM — semântica de
-último-escritor-vence. Quem resolve bean por ele pode receber o bean de outro contexto.
-
-**Por que não é bug de produção:** a aplicação sobe um único `ApplicationContext`.
-
-**Por que era dívida real:** sob Failsafe, todas as ITs do lote rodam na mesma JVM, e cada classe
-com `@TestPropertySource` própria cria contexto próprio. Classe que reutiliza contexto em cache não
-re-executa `setApplicationContext`, então o holder segue apontando para o contexto criado por
-último e a chave mestra resolvida é a errada.
-
-Sintoma que expôs o problema em 2026-09-09, na primeira execução completa da suíte de integração:
-`UsuarioCanonicalizeSensitiveServiceIT` falhava em lote e passava isolada. As duas metades foram
-provadas separadamente — com a correção dos repositórios a falha migrou da linha 61 (`findByCpf`,
-índice cego) para a linha 63 (`findById().getCpf()`, decifragem pelo conversor).
-
-**Fechado:** `UsuarioRepositoryImpl`, `ProcessoRepositoryImpl` e `SensitiveDataConverter` passaram a
-receber a dependência por `ObjectProvider`. Nos repositórios o provider preserva o adiamento que as
-fatias `@DataJpaTest` exigem (dependência de construtor direta quebraria a criação do bean mesmo em
-teste que nunca chame o método). No conversor, o Boot já configura
-`hibernate.resource.beans.container` com `SpringBeanContainer`, então o Hibernate pede a instância
-ao contexto dono em vez de criá-la por reflexão.
-
-**Aberto:** `Usuario.java:127`, dentro do callback de ciclo de vida JPA. Entidade é instanciada pelo
-Hibernate, não pelo Spring — não há ponto de injeção. Fechar exige mover o cálculo do índice cego do
-callback da entidade para a camada de serviço, o que muda onde a invariante é garantida e precisa de
-decisão de desenho, não de refatoração mecânica.
-
-**Área de risco associada:** enquanto esse uso existir, `SpringContext` continua disponível a
-qualquer classe do projeto como service locator estático. Vale um guard que impeça novos usos antes
-de o último sair.
-
 ## D-f1-remocao-govregistryclient-ajuizamentoworkflowadapter
 
 **Status:** aberta — dormente, não bloqueia boot
