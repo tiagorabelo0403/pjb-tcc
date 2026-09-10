@@ -53,7 +53,7 @@ public class SalarioMinimoNacionalService {
         }
         return normalizar(FALLBACK_OFICIAL.entrySet().stream()
                 .filter(e -> e.getKey() <= ano)
-                .reduce((a, b) -> b)
+                .max(Map.Entry.comparingByKey())
                 .map(Map.Entry::getValue)
                 .orElse(new BigDecimal("1621.00")));
     }
