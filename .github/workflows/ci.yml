@@ -149,6 +149,9 @@ jobs:
           python -m pip install --quiet pyyaml
           python conditional_property_declared_guard.py
 
+      - name: access_key_and_unavailability_guard
+        run: python scripts/access_key_and_unavailability_guard.py
+
       - name: Upload Guard Reports
         if: always()
         uses: actions/upload-artifact@v7
