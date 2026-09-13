@@ -58,10 +58,29 @@ class PjbArchitectureTest {
 
     @Test
     void controllers_nao_devem_importar_repositories() {
+        // A regra e por nome de classe, e nao por pacote. Enquanto olhava apenas `..controller..`
+        // dependendo de `..model.repository..` ela dava zero violacao e escondia seis: o projeto tem
+        // pelo menos oito pacotes de repository, e controller nem sempre mora sob `controller`. Regra
+        // mais estreita que o proprio nome e pior que regra ausente, porque produz confianca falsa.
         ArchRule rule = noClasses()
-                .that().resideInAPackage("..controller..").or().resideInAPackage("..controllers..")
-                .should().dependOnClassesThat().resideInAPackage("..model.repository..");
-        rule.check(classes);
+                .that().haveSimpleNameEndingWith("Controller")
+                .should().dependOnClassesThat().haveSimpleNameEndingWith("Repository");
+
+        List<String> violacoes = violacoesDe(rule);
+
+        assertThat(nomesDeClasseEm(violacoes))
+                .as("baseline conhecido: seis controllers chamam repository direto. Tres estao fora de "
+                        + "pacote `controller` (ai.juridica, ai.legalai, core.servidor.api) e dois importam "
+                        + "repository fora de `model.repository`, entao a versao por pacote nao os via. "
+                        + "Migrar cada um exige cobrir antes o caminho de negativa no proprio controller, "
+                        + "como foi feito em ProtocoloReciboController. Nome novo nesta lista e regressao.")
+                .containsExactlyInAnyOrder(
+                        "com.tcc.pjb.backend.ai.juridica.v2.JudexOnDemandController",
+                        "com.tcc.pjb.backend.ai.legalai.MemoryCandidateReviewController",
+                        "com.tcc.pjb.backend.ai.legalai.MemoryStoreController",
+                        "com.tcc.pjb.backend.controller.DocumentoController",
+                        "com.tcc.pjb.backend.controller.advogado.AdvogadoAuditoriaController",
+                        "com.tcc.pjb.backend.core.servidor.api.FuncaoServidorAdminController");
     }
 
     @Test

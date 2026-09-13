@@ -9,7 +9,7 @@ o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
 ## D-guards-existentes-fora-do-ci
 
-**Status:** aberta — 22 guards fora do CI; 15 passam e poderiam entrar hoje, 7 acusam algo
+**Status:** aberta — 22 guards fora do CI; 15 passam e poderiam entrar hoje, 7 acusam algo e todos foram triados
 
 O projeto tem **44 scripts em `scripts/`** e **21 estão no `ci.yml`**. Parte dos 22 restantes
 é ferramenta local legítima (`docker_zombie_container_guard`, `reap_orphan_test_jvms`) ou gerador
@@ -30,12 +30,19 @@ Executados todos os que têm forma de guarda, a partir de `scripts/`, que é o `
   `docker_zombie_container_guard` — este último é ferramenta local e sai com código ≠ 0 ao encontrar
   container órfão, comportamento esperado fora do CI.
 
-  Cada um exige a mesma triagem que os já examinados: distinguir achado real de defeito do próprio
-  guard. Dos **oito** examinados até aqui, **cinco acusavam por defeito próprio** — catálogo de
-  assinaturas escrito à mão, proibição por substring que pegava português legítimo, varredura de
-  comentário como se fosse código, e dois que varriam o sistema de arquivos em vez do que o git
-  versiona. "Guard vermelho" não é sinônimo de "código errado" — mas o oitavo,
-  `salario_minimo_hardcoded_guard`, acusava defeito real de domínio.
+  A triagem dos doze foi concluída. **Cinco acusavam por defeito próprio** — catálogo de assinaturas
+  escrito à mão, proibição por substring que pegava português legítimo, varredura de comentário como
+  se fosse código, e dois que varriam o sistema de arquivos em vez do que o git versiona. "Guard
+  vermelho" não é sinônimo de "código errado".
+
+  **Sete acusavam achado real**: `salario_minimo_hardcoded_guard` (limiar legal contra salário mínimo
+  errado), `modular_monolith_guard` (catraca com baseline estourado, ver
+  `D-modular-monolith-baseline-estourado`) e os cinco que apontam as 24 classes apagadas pelo F1, em
+  `D-vinte-e-quatro-classes-com-guarda-apagadas-pelo-f1`.
+
+  Os que seguem fora do CI estão fora porque **acusam algo aberto**, não porque foram ignorados.
+  `docker_zombie_container_guard` é ferramenta local e sai com código ≠ 0 ao encontrar container
+  órfão, comportamento esperado fora do CI.
 
 - **6 passaram a passar em fatias recentes** e já estão ligados ao CI:
   `access_key_and_unavailability_guard`, `java_regression_signature_guard`,
@@ -96,6 +103,99 @@ em `src/test`**, onde a catraca não se aplica:
 
 **Por que não foi fechado junto:** nenhum deles é `[removal]`, então não há prazo do compilador; e o
 lote do Zeebe muda superfície de integração, que não cabe na mesma fatia de configuração de segurança.
+
+## D-vinte-e-quatro-classes-com-guarda-apagadas-pelo-f1
+
+**Status:** aberta — decisão de produto: restaurar, descartar ou escolher subconjunto
+
+Cinco guardas acusam **24 classes ausentes**. Todas as 24 foram apagadas pelo mesmo commit
+`6fcf76aa` ("remove lote 2 de classes mortas (F1) — Tier 1, 66 arquivos"); nenhuma "nunca existiu".
+Somando com as três restauradas em PR #116, **27 dos 66 arquivos** daquele lote eram classes que o
+projeto tinha guarda explícita exigindo que existissem.
+
+| | |
+|---|---|
+| classes ausentes | 24 |
+| linhas | 1.354 |
+| com anotação Spring | 0 |
+| com teste antes da remoção | 0 |
+| pacotes que sobreviveram | 24 de 24 |
+
+**O F1 não foi descuidado.** Pelos sinais usuais — zero referência, zero teste — essas classes
+pareciam mortas. O que as tornava vivas era o projeto ter escrito guardas exigindo que existissem, e a
+varredura não consultou esse sinal. É a mesma forma estrutural da contradição que havia sobre a rota
+institucional: dois mecanismos do projeto discordando, com um deles fora do CI.
+
+**Por que não foram restauradas junto com as três de PR #116:** aquelas codificavam obrigação legal
+(prorrogação de prazo por indisponibilidade — Lei 11.419 art. 10; política de chave de acesso com
+segredo de justiça), e ausência ali é risco jurídico. Estas 24 são capacidade de produto: gêmeo
+digital do tribunal, piloto automático de secretaria, linha do tempo em linguagem simples, score de
+acesso à justiça, ponte de protocolo para juizado adjunto.
+
+Não é código vazio: `PjbContextualPanelPolicy` esconde `GUIA_CUSTAS_PRIMEIRO_GRAU` e
+`CITACAO_POR_EDITAL_PADRAO` quando o rito é Juizado — correto, porque o JEC não tem custas em primeiro
+grau (Lei 9.099 art. 54) e citação por edital é incompatível com o sumaríssimo.
+
+**As três saídas:**
+
+1. **Restaurar as 24 e ligar as cinco guardas.** Risco zero de comportamento — lógica pura, sem bean,
+   sem referência — e honra decisão já registrada no repositório. Custo: 1.354 linhas sem teste e sem
+   uso voltam, e seguem não conectadas até alguém ligá-las.
+2. **Apagar as cinco guardas e os registros órfãos.** Decide que o PJB não quer mais essas
+   capacidades. Custo: perde-se o desenho, e os arquivos que restaram nos 24 pacotes precisam de
+   triagem individual.
+3. **Restaurar apenas o subconjunto ainda desejado**, com as guardas passando a listar só esse
+   subconjunto.
+
+Enquanto a decisão não vem, as cinco guardas não podem entrar no CI: elas reprovam.
+
+## D-controllers-que-chamam-repository-direto
+
+**Status:** aberta — 6 controllers, afirmados por nome no `PjbArchitectureTest`
+
+A regra `controllers_nao_devem_importar_repositories` foi declarada fechada com zero violação, e a
+declaração estava errada — não pela contagem, mas pelo escopo. Ela olhava apenas classes em
+`..controller..` dependendo de `..model.repository..`, e o projeto tem **pelo menos oito pacotes de
+repository** (`model/repository`, `repository/document`, `core/security/sigilo/repository`,
+`modules/*/repository`, além de repositories fora de qualquer pacote `repository`, como
+`core.audit.ledger.AuditLedgerRepository`). Controller também não mora sempre sob `controller`.
+
+Regra mais estreita que o próprio nome é pior que regra ausente: dá verde e produz confiança falsa.
+Quem apontou a divergência foi o `modular_monolith_guard`, que contava 6 onde o ArchUnit contava 0.
+
+A regra passou a ser por nome de classe — `*Controller` não depende de `*Repository` — e os seis
+ficam afirmados por nome:
+
+- `JudexOnDemandController`, `MemoryCandidateReviewController` e `MemoryStoreController` — fora de
+  pacote `controller` (`ai.juridica.v2`, `ai.legalai`), invisíveis para a versão por pacote.
+- `DocumentoController` — importa `repository.document.DocumentoProcessualRepository`.
+- `AdvogadoAuditoriaController` — importa `core.audit.ledger.AuditLedgerRepository`.
+- `FuncaoServidorAdminController` — em `core.servidor.api`.
+
+Migrar cada um exige cobrir antes o caminho de negativa no próprio controller, como foi feito em
+`ProtocoloReciboController`: mover autorização sem teste de 403 é refatorar no escuro.
+
+## D-modular-monolith-baseline-estourado
+
+**Status:** aberta — catraca já ultrapassada; guard não pode entrar no CI antes da triagem
+
+`modular_monolith_guard` é catraca com baseline versionado, e o baseline está estourado:
+
+| regra | atual | baseline |
+|---|---|---|
+| total de avisos | 449 | 418 |
+| `module-package-shape` | 332 | 304 |
+| `module-imports-legacy-repository` | 40 | 36 |
+| `controller-imports-repository` | 6 | 5 |
+
+`errors` continua em 0 — o que estourou é a faixa de aviso. `module-package-shape` é a maior fatia e
+aponta módulos em layout legado dentro de `modules.*` (`controller/`, `dto/`, `entity/` em vez de
+`domain/application`), migração de onda que nunca foi feita.
+
+Verificado que a deriva **não** veio das fatias recentes: nenhum arquivo criado a partir de
+2026-09-12 aparece entre os 449 achados. Fechar exige decidir entre migrar o layout dos módulos ou
+reconhecer o baseline atual como o novo piso — e reconhecer sem migrar transforma a catraca em
+carimbo.
 
 ## D-entidades-sem-classificacao-de-titularidade
 
