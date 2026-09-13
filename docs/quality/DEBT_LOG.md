@@ -321,47 +321,6 @@ o mesmo valor por ausência de fonte, não por decisão.
 **O que falta:** confirmar com o Tiago qual valor o PJB deve adotar para município, e se o teto deve
 ser configurável por ente federado (ver `D-teto-rpv-duplicado-como-literal-em-seis-pontos`).
 
-## D-laiane-substabelecimento-503-em-contexto-compartilhado
-
-**Status:** aberta — causa identificada em 2026-09-13, correção pendente
-
-**Atualização (2026-09-13, run 34774950817):** medido no CI sem OOM mascarando, o status **não é 503, é
-`429`** — nos dois testes, `expected: 200 but was: 429` e `expected: 403 but was: 429`. `429` é
-`CapabilityRateLimitExceededException`, ou seja, **o limitador de capacidade está ativo**. Isso confirma
-a hipótese abaixo e remove o "causa não identificada": a propriedade
-`pjb.security.capability-ratelimit.enabled: false` não está surtindo efeito para esta classe no contexto
-compartilhado, e o `@MockitoBean CapabilityRateLimiter` removido na PR #108 era justamente o que dava a
-ela contexto próprio. A correção é devolver isolamento de contexto a esta classe ou garantir que a
-propriedade alcance o contexto que ela usa — não mexer na regra de substabelecimento, que não chega a
-ser exercitada.
-
-**Sintoma original:** `LaianeLawyerSubstabelecimentoIT` devolve **503 nos dois testes** quando roda em lote
-compartilhando contexto Spring — tanto no que espera 200 quanto no que espera 403. Isolada, em
-contexto novo, passa 2/2. O 503 acontece antes da lógica de negócio: os dois casos falham com o
-mesmo status, apesar de exercitarem caminhos de autorização diferentes.
-
-**Como apareceu:** a PR #108 removeu o `@MockitoBean CapabilityRateLimiter` de 11 ITs, trocando por
-`pjb.security.capability-ratelimit.enabled: false`. O mock era o que dava a esta classe um contexto
-Spring próprio; sem ele, ela passou a entrar no contexto compartilhado e a falhar no lote 4.
-
-**O que foi descartado como causa:**
-
-- Rate limit negando: negação devolve 429, não 503, e o desligamento por configuração retorna antes
-  de `store.tryConsume(...)`.
-- Exceção não tratada: o handler genérico de `ApiExceptionHandler` registra `Unhandled exception` em
-  log, e não há registro no relatório do Failsafe.
-- Dado ausente por `TRUNCATE`: o teste cria substabelecente, destinatário e procuração dentro do
-  próprio método.
-
-**Contenção aplicada:** o mock foi restaurado **apenas nesta classe**, o que devolve a ela o contexto
-dedicado e o estado verde anterior. As outras 10 ITs seguem com a neutralização por configuração.
-
-**Custo da contenção:** 1 contexto Spring, algo em torno de 1 minuto na suíte.
-
-**Próximo passo sugerido:** capturar o corpo do `ProblemDetail` do 503 (o teste hoje assere só o
-status) para identificar o `type` e, com ele, o handler de origem. Sem esse dado qualquer correção
-seria chute.
-
 ## D-fragmentacao-de-contexto-spring-nos-its
 
 **Status:** aberta — medida, com alavanca identificada; exige julgamento por teste
@@ -1369,7 +1328,6 @@ judicial, transforma resposta de negócio em incidente operacional aparente.
 de a transição ser recusada por regra processual ou por estado concorrente. Não é varredura
 mecânica: mapear em lote pelo nome repetiria o erro de tratar categoria semântica como sintaxe.
 
-
 ## D-workbench-it-limpeza-viola-chave-estrangeira
 
 **Status:** aberta
@@ -1387,20 +1345,3 @@ existente e não verifica nada.
 **Quando revisitar:** junto de `D-pjbflowitbase-cleanup-only-beforeeach`, que é a mesma família
 (limpeza de teste que não conhece o grafo de dependências real).
 
-## D-gate-institucional-delegado-sem-classificacao
-
-**Status:** aberta
-
-**Contexto:** `InstitutionalDelegadoGateIT.requisicaoDiligencia_comDelegadoAutenticado_passaPeloGateInstitucional`
-espera `"DELEGADO_REQUISICAO_DILIGENCIA"` e recebe `null` — a mensagem da própria asserção é
-"Gate rodou depois da auth e classificou a operacao de delegado". O gate institucional executa, mas
-não classifica a operação do delegado. Medido em CI (run 34774950817).
-
-**Risco:** classificação institucional ausente significa que a operação atravessa sem rótulo — o que
-importa aqui não é o teste vermelho, e sim uma operação de autoridade policial passando pelo gate sem
-ser identificada como tal para fins de trilha e política de acesso.
-
-**Quando revisitar:** exige ler o classificador do gate e decidir se o caso do delegado nunca foi
-mapeado ou se deixou de ser; as classes irmãs (`InstitutionalJuizGabineteGateIT`,
-`InstitutionalOficialJusticaGateIT`, `InstitutionalSecretariaGateIT`) passaram nesta execução, o que
-sugere lacuna pontual e não quebra do mecanismo.
