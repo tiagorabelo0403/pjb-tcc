@@ -151,7 +151,7 @@ Enquanto a decisão não vem, as cinco guardas não podem entrar no CI: elas rep
 
 ## D-controllers-que-chamam-repository-direto
 
-**Status:** aberta — 5 controllers, afirmados por nome no `PjbArchitectureTest`
+**Status:** aberta — 4 controllers, afirmados por nome no `PjbArchitectureTest`
 
 A regra `controllers_nao_devem_importar_repositories` foi declarada fechada com zero violação, e a
 declaração estava errada — não pela contagem, mas pelo escopo. Ela olhava apenas classes em
@@ -166,14 +166,20 @@ Quem apontou a divergência foi o `modular_monolith_guard`, que contava 6 onde o
 A regra passou a ser por nome de classe — `*Controller` não depende de `*Repository` — e os seis
 ficam afirmados por nome:
 
-- `JudexOnDemandController`, `MemoryCandidateReviewController` e `MemoryStoreController` — fora de
-  pacote `controller` (`ai.juridica.v2`, `ai.legalai`), invisíveis para a versão por pacote.
+- `JudexOnDemandController` e `MemoryStoreController` — fora de pacote `controller`
+  (`ai.juridica.v2`, `ai.legalai`), invisíveis para a versão por pacote. Os repositórios que eles usam
+  em `ai.legalai` são **portas de domínio** (interfaces em `pjb-core/.../memory/domain`, com adaptador
+  em `pjb-api/.../infra`), e não Spring Data — a violação é o controller orquestrar domínio sem passar
+  pela aplicação, não o controller tocar JPA.
 - `DocumentoController` — importa `repository.document.DocumentoProcessualRepository`.
 - `AdvogadoAuditoriaController` — importa `core.audit.ledger.AuditLedgerRepository`.
 
-`FuncaoServidorAdminController` saiu do baseline: a consulta de unidades candidatas passou para
-`UnidadesCandidatasParaDesignacaoService`, serviço próprio porque "quais unidades entram na lista de
-escolha" é pergunta sobre a malha judiciária, não sobre o ciclo de vida da função do servidor.
+Dois já saíram do baseline. `FuncaoServidorAdminController`: a consulta de unidades candidatas passou
+para `UnidadesCandidatasParaDesignacaoService`, serviço próprio porque "quais unidades entram na lista
+de escolha" é pergunta sobre a malha judiciária, não sobre o ciclo de vida da função do servidor.
+`MemoryCandidateReviewController`: `aprovar` e `rejeitar` já delegavam ao serviço de aplicação, e só as
+duas leituras furavam a camada — foram para o `MemoryCandidateReviewService`, que já existia e já tinha
+a porta injetada.
 
 Migrar cada um exige cobrir antes o caminho de negativa no próprio controller, como foi feito em
 `ProtocoloReciboController`: mover autorização sem teste de 403 é refatorar no escuro.

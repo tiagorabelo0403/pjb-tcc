@@ -13,7 +13,6 @@ import com.tcc.pjb.backend.ai.legalai.dto.MemoryCandidateReviewDecisionRequest;
 import com.tcc.pjb.backend.ai.legalai.memory.application.MemoryCandidateReviewService;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryCandidateReview;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryCandidateReviewId;
-import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryCandidateReviewRepository;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryCandidateType;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemorySigiloNivel;
 import java.time.Instant;
@@ -30,19 +29,18 @@ class MemoryCandidateReviewControllerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final MemoryCandidateReviewService reviewService = mock(MemoryCandidateReviewService.class);
-    private final MemoryCandidateReviewRepository reviewRepository = mock(MemoryCandidateReviewRepository.class);
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(
-                new MemoryCandidateReviewController(reviewService, reviewRepository)).build();
+                new MemoryCandidateReviewController(reviewService)).build();
     }
 
     @Test
     void deveListarReviewsPendentes() throws Exception {
         MemoryCandidateReview review = reviewPendente();
-        when(reviewRepository.listarPendentes()).thenReturn(List.of(review));
+        when(reviewService.listarPendentes()).thenReturn(List.of(review));
 
         mockMvc.perform(get("/api/v1/legal-ai/memory-candidates"))
                 .andExpect(status().isOk())
@@ -54,7 +52,7 @@ class MemoryCandidateReviewControllerTest {
     @Test
     void deveBuscarReviewPorId() throws Exception {
         MemoryCandidateReview review = reviewPendente();
-        when(reviewRepository.buscarPorId(any())).thenReturn(Optional.of(review));
+        when(reviewService.buscarPorId(any())).thenReturn(Optional.of(review));
 
         mockMvc.perform(get("/api/v1/legal-ai/memory-candidates/{reviewId}", review.id().value()))
                 .andExpect(status().isOk())
@@ -64,7 +62,7 @@ class MemoryCandidateReviewControllerTest {
 
     @Test
     void deveRetornar404QuandoReviewNaoEncontrada() throws Exception {
-        when(reviewRepository.buscarPorId(any())).thenReturn(Optional.empty());
+        when(reviewService.buscarPorId(any())).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/v1/legal-ai/memory-candidates/{reviewId}", UUID.randomUUID()))
                 .andExpect(status().isNotFound());
