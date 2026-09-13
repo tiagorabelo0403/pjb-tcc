@@ -5,7 +5,6 @@ import com.tcc.pjb.backend.ai.legalai.dto.MemoryCandidateReviewResponse;
 import com.tcc.pjb.backend.ai.legalai.memory.application.MemoryCandidateReviewService;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryCandidateReview;
 import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryCandidateReviewId;
-import com.tcc.pjb.backend.ai.legalai.memory.domain.MemoryCandidateReviewRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,19 +25,16 @@ import java.util.UUID;
 public class MemoryCandidateReviewController {
 
     private final MemoryCandidateReviewService reviewService;
-    private final MemoryCandidateReviewRepository reviewRepository;
 
     public MemoryCandidateReviewController(
-            MemoryCandidateReviewService reviewService,
-            MemoryCandidateReviewRepository reviewRepository) {
+            MemoryCandidateReviewService reviewService) {
         this.reviewService = reviewService;
-        this.reviewRepository = reviewRepository;
     }
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<MemoryCandidateReviewResponse>> listarPendentes() {
-        List<MemoryCandidateReviewResponse> pendentes = reviewRepository.listarPendentes()
+        List<MemoryCandidateReviewResponse> pendentes = reviewService.listarPendentes()
                 .stream().map(this::toResponse).toList();
         return ResponseEntity.ok(pendentes);
     }
@@ -46,7 +42,7 @@ public class MemoryCandidateReviewController {
     @GetMapping("/{reviewId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MemoryCandidateReviewResponse> buscar(@PathVariable UUID reviewId) {
-        return reviewRepository.buscarPorId(MemoryCandidateReviewId.de(reviewId))
+        return reviewService.buscarPorId(MemoryCandidateReviewId.de(reviewId))
                 .map(this::toResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
