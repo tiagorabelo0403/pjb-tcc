@@ -44,8 +44,16 @@ jobs:
 
       # `-am` nao e opcional: sem ele o pjb-core vem do ~/.m2 em vez do reator, e um jar velho
       # produz `cannot find symbol` em classe que existe no fonte.
+      #
+      # O heap de 4g do pom (test.forked.jvm.xmx) nao cabe aqui. Medido na primeira execucao real
+      # (run 34772855652): 22 contextos Spring distintos numa unica JVM de Failsafe, retidos pelo
+      # cache do TestContext, e OutOfMemoryError: Java heap space em 54 pontos — dai 55 dos 63
+      # problemas relatados serem "Failed to load ApplicationContext" em cascata, e nao defeito de
+      # produto. O runner tem 15.989 MB; 8g de heap deixa folga para os containers e para o
+      # launcher. Isto NAO corrige a fragmentacao de contexto (D-fragmentacao-de-contexto-spring-
+      # nos-its), so para de esconder o resto atras de OOM.
       - name: Verify (Surefire + Failsafe contra containers reais)
-        run: ./mvnw -B verify -pl pjb-api -am
+        run: ./mvnw -B verify -pl pjb-api -am -Dtest.forked.jvm.xmx=8g
 
       - name: Upload dos relatorios
         if: always()
