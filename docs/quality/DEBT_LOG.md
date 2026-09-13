@@ -151,7 +151,7 @@ Enquanto a decisão não vem, as cinco guardas não podem entrar no CI: elas rep
 
 ## D-controllers-que-chamam-repository-direto
 
-**Status:** aberta — 3 controllers, afirmados por nome no `PjbArchitectureTest`
+**Status:** aberta — 2 controllers, afirmados por nome no `PjbArchitectureTest`
 
 A regra `controllers_nao_devem_importar_repositories` foi declarada fechada com zero violação, e a
 declaração estava errada — não pela contagem, mas pelo escopo. Ela olhava apenas classes em
@@ -166,11 +166,11 @@ Quem apontou a divergência foi o `modular_monolith_guard`, que contava 6 onde o
 A regra passou a ser por nome de classe — `*Controller` não depende de `*Repository` — e os seis
 ficam afirmados por nome:
 
-- `JudexOnDemandController` e `MemoryStoreController` — fora de pacote `controller`
-  (`ai.juridica.v2`, `ai.legalai`), invisíveis para a versão por pacote. Os repositórios que eles usam
-  em `ai.legalai` são **portas de domínio** (interfaces em `pjb-core/.../memory/domain`, com adaptador
-  em `pjb-api/.../infra`), e não Spring Data — a violação é o controller orquestrar domínio sem passar
-  pela aplicação, não o controller tocar JPA.
+- `MemoryStoreController` — fora de pacote `controller` (`ai.legalai`), invisível para a versão por
+  pacote. O repositório que ele usa é **porta de domínio** (interface em `pjb-core/.../memory/domain`,
+  com adaptador em `pjb-api/.../infra`), e não Spring Data — a violação é o controller orquestrar
+  domínio sem passar pela aplicação, não o controller tocar JPA. É CRUD completo (criar, buscar,
+  listar, atualizar, arquivar) e **não tem teste de controller**, então precisa da receita completa.
 - `DocumentoController` — importa `repository.document.DocumentoProcessualRepository`.
 
 Dois já saíram do baseline. `FuncaoServidorAdminController`: a consulta de unidades candidatas passou
@@ -180,7 +180,10 @@ de escolha" é pergunta sobre a malha judiciária, não sobre o ciclo de vida da
 duas leituras furavam a camada — foram para o `MemoryCandidateReviewService`, que já existia e já tinha
 a porta injetada. `AdvogadoAuditoriaController`: a consulta da trilha passou para
 `AdvogadoAuditoriaLedgerService`, que escopa a busca ao próprio solicitante — o id do ator vem de quem
-está autenticado, nunca de parâmetro da requisição.
+está autenticado, nunca de parâmetro da requisição. `JudexOnDemandController`: o caso de uso inteiro da
+minuta passou para `JudexMinutaService`, e no caminho apareceu defeito de contrato — processo
+inexistente no índice de leitura lançava `RuntimeException` crua, que vira 500, onde cabia
+`RecursoNaoEncontradoException` e 404. Esse caminho não tinha teste.
 
 Migrar cada um exige cobrir antes o caminho de negativa no próprio controller, como foi feito em
 `ProtocoloReciboController`: mover autorização sem teste de 403 é refatorar no escuro.

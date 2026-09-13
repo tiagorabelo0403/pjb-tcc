@@ -69,13 +69,12 @@ class PjbArchitectureTest {
         List<String> violacoes = violacoesDe(rule);
 
         assertThat(nomesDeClasseEm(violacoes))
-                .as("baseline conhecido: tres controllers chamam repository direto. Dois estao fora de "
-                        + "pacote `controller` (ai.juridica, ai.legalai) e um importa repository fora de "
-                        + "`model.repository`, entao a versao por pacote nao os via. Migrar cada um exige "
-                        + "cobrir antes o comportamento no proprio controller. Nome novo nesta lista e "
-                        + "regressao; a lista so encolhe.")
+                .as("baseline conhecido: dois controllers chamam repository direto. MemoryStoreController "
+                        + "esta fora de pacote `controller` e usa porta de dominio; DocumentoController "
+                        + "importa repository fora de `model.repository` -- nenhum dos dois era visto pela "
+                        + "versao por pacote da regra. Migrar cada um exige cobrir antes o comportamento no "
+                        + "proprio controller. Nome novo nesta lista e regressao; a lista so encolhe.")
                 .containsExactlyInAnyOrder(
-                        "com.tcc.pjb.backend.ai.juridica.v2.JudexOnDemandController",
                         "com.tcc.pjb.backend.ai.legalai.MemoryStoreController",
                         "com.tcc.pjb.backend.controller.DocumentoController");
     }
