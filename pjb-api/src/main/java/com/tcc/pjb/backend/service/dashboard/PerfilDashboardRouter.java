@@ -1,6 +1,6 @@
 package com.tcc.pjb.backend.service.dashboard;
 
-import com.tcc.pjb.backend.core.comunicacao.institucional.InstitutionalApiRoutes;
+import com.tcc.pjb.backend.platform.api.institucional.InstitutionalApiRoutes;
 import com.tcc.pjb.backend.core.operational.OperationalApiRoutes;
 import org.springframework.stereotype.Service;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;

@@ -1,4 +1,4 @@
-package com.tcc.pjb.backend.core.comunicacao.institucional;
+package com.tcc.pjb.backend.platform.api.institucional;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;

@@ -161,6 +161,10 @@ jobs:
         working-directory: scripts
         run: python internal_type_hygiene_guard.py
 
+      - name: canonical_institutional_route_guard
+        working-directory: scripts
+        run: python canonical_institutional_route_guard.py
+
       - name: access_key_and_unavailability_guard
         working-directory: scripts
         run: python access_key_and_unavailability_guard.py
