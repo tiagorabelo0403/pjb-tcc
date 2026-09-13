@@ -3,9 +3,10 @@ package com.tcc.pjb.backend.controller.secretariat.institucional;
 import com.tcc.pjb.backend.model.dto.secretariat.AdicionarAbrangenciaRequest;
 import com.tcc.pjb.backend.model.dto.secretariat.CriarInstituicaoRequest;
 import com.tcc.pjb.backend.model.dto.secretariat.CriarUnidadeInstituicaoRequest;
-import com.tcc.pjb.backend.model.entity.Instituicao;
+import com.tcc.pjb.backend.model.dto.secretariat.InstituicaoResponse;
+import com.tcc.pjb.backend.model.dto.secretariat.UnidadeInstitucionalAbrangenciaResponse;
+import com.tcc.pjb.backend.model.dto.secretariat.UnidadeInstituicaoResponse;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
-import com.tcc.pjb.backend.model.entity.UnidadeInstitucionalAbrangencia;
 import com.tcc.pjb.backend.service.secretariat.institucional.UnidadeInstitucionalAdminService;
 import jakarta.validation.Valid;
 import java.util.Objects;
@@ -27,22 +28,24 @@ public class UnidadeInstitucionalAdminController {
     }
 
     @PostMapping("/api/v1/secretaria-institucional/instituicoes")
-    public ResponseEntity<Instituicao> criarInstituicao(@Valid @RequestBody CriarInstituicaoRequest request) {
-        return ResponseEntity.ok(service.criarInstituicao(request.tipo(), request.nome(), request.sigla()));
+    public ResponseEntity<InstituicaoResponse> criarInstituicao(@Valid @RequestBody CriarInstituicaoRequest request) {
+        return ResponseEntity.ok(InstituicaoResponse.de(
+                service.criarInstituicao(request.tipo(), request.nome(), request.sigla())));
     }
 
     @PostMapping("/api/v1/secretaria-institucional/unidades")
-    public ResponseEntity<UnidadeInstituicao> criarUnidade(@Valid @RequestBody CriarUnidadeInstituicaoRequest request) {
+    public ResponseEntity<UnidadeInstituicaoResponse> criarUnidade(@Valid @RequestBody CriarUnidadeInstituicaoRequest request) {
         UnidadeInstituicao unidade = service.criarUnidade(request.instituicaoId(), request.nome(), request.tipo(),
                 request.comarca(), request.uf());
         service.reprocessarBacklogAposCriacaoDeUnidade(unidade);
-        return ResponseEntity.ok(unidade);
+        return ResponseEntity.ok(UnidadeInstituicaoResponse.de(unidade));
     }
 
     @PostMapping("/api/v1/secretaria-institucional/unidades/{unidadeId}/abrangencia")
-    public ResponseEntity<UnidadeInstitucionalAbrangencia> adicionarAbrangencia(@PathVariable Long unidadeId,
-                                                                                @Valid @RequestBody AdicionarAbrangenciaRequest request) {
-        return ResponseEntity.ok(service.adicionarAbrangencia(unidadeId, request.comarcaAtendida()));
+    public ResponseEntity<UnidadeInstitucionalAbrangenciaResponse> adicionarAbrangencia(@PathVariable Long unidadeId,
+                                                                                        @Valid @RequestBody AdicionarAbrangenciaRequest request) {
+        return ResponseEntity.ok(UnidadeInstitucionalAbrangenciaResponse.de(
+                service.adicionarAbrangencia(unidadeId, request.comarcaAtendida())));
     }
 
     @PostMapping("/api/v1/secretaria-institucional/unidades/{unidadeId}/desativar")
