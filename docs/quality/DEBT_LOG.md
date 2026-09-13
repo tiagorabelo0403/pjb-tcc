@@ -7,6 +7,34 @@ nenhuma entrega em andamento — para que não fiquem só na memória de quem in
 Cada entrada sai daqui quando a dívida é fechada; o fechamento é então narrado no `README.md`, seguindo
 o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
+## D-guards-existentes-fora-do-ci
+
+**Status:** aberta — 30 guards fora do CI; 12 passam e poderiam entrar hoje, 3 acusam achado real
+
+O projeto tem **40 scripts em `scripts/`** e apenas **10 estão no `ci.yml`**. Parte dos 30 restantes
+é ferramenta local legítima (`docker_zombie_container_guard`, `reap_orphan_test_jvms`) ou gerador
+(`frontend_integration_pack`, `migration_alignment_report`), mas a maioria é guarda de verdade.
+
+Executados todos os que têm forma de guarda:
+
+- **12 passam** e poderiam ser ligados sem nenhum trabalho: `config_taxonomy_guard`,
+  `docker_compose_guard`, `drain_quiet_period_argline_guard`, `flyway_migration_version_guard`,
+  `git_secret_guard`, `internal_type_hygiene_guard`, `java_string_literal_sanity_guard`,
+  `legal_ai_policy_catalog_guard`, `legal_ai_surface_split_guard`, `legal_knowledge_catalog_guard`,
+  `legal_mcp_catalog_guard`, `pjb_runtime_memory_recipe_guard`, `powershell_test_collector_guard`.
+- **1 passou a passar nesta fatia**: `access_key_and_unavailability_guard`, ligado ao CI aqui.
+- **3 acusam achado real e seguem abertos**, cada um virando dívida própria:
+  - `canonical_institutional_route_guard` — 12 controllers de comunicação institucional fora da rota canônica.
+  - `java_regression_signature_guard` — uso de `JsonNode.fields()` (depreciado no Jackson) em `RichTextDocumentSanitizer`.
+  - `readme_truthfulness_guard` — README referencia `docs/escopo`, que não existe. As outras duas queixas
+    (`target/pjb-api.jar` e `target/site/jacoco/index.html`) são artefatos de build e o guard não deveria
+    exigi-los; isso é defeito do próprio guard.
+
+**Por que importa:** um guard que existe e não roda é o padrão dominante de defeito deste projeto
+(ver `project_padrao_instrumento_que_nao_age` na memória). Foi assim que o
+`legal_ai_surface_split_guard` ficou quebrado sem ninguém ver, e foi assim que três classes de regra
+jurídica foram apagadas apesar de existir guarda proibindo.
+
 ## D-schedulers-processuais-desligados-por-decisao-nao-tomada
 
 **Status:** aberta — flags agora visíveis; decisão de ativação pendente
