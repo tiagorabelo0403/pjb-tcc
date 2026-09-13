@@ -1328,20 +1328,3 @@ judicial, transforma resposta de negócio em incidente operacional aparente.
 de a transição ser recusada por regra processual ou por estado concorrente. Não é varredura
 mecânica: mapear em lote pelo nome repetiria o erro de tratar categoria semântica como sintaxe.
 
-## D-workbench-it-limpeza-viola-chave-estrangeira
-
-**Status:** aberta
-
-**Contexto:** `InstitutionalWorkbenchControllerIT.setup:64` aborta os quatro métodos da classe com
-`DataIntegrityViolationException`: `delete from tb_usuario where id=1 was aborted: ERROR: update or
-delete on table ... violates foreign key constraint`. A limpeza apaga o usuário sem apagar antes as
-linhas que o referenciam — ou sem usar a ordem/cascata correta. Medido em CI (run 34774950817), com
-Postgres real; não aparece sob H2 nem em execução isolada da classe.
-
-**Risco:** baixo em produção, alto em confiança: são 4 dos 7 problemas restantes da suíte de
-integração, e um `setup` que sempre falha torna a classe inteira decorativa — ela consta como
-existente e não verifica nada.
-
-**Quando revisitar:** junto de `D-pjbflowitbase-cleanup-only-beforeeach`, que é a mesma família
-(limpeza de teste que não conhece o grafo de dependências real).
-
