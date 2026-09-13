@@ -5,15 +5,28 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.ArchRule;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 class PjbArchitectureTest {
+
+    /**
+     * Primeiro tipo citado numa linha de violacao do ArchUnit. Pacote em minusculas, classe comecando
+     * em maiuscula: serve tanto para {@code Class <...Instituicao>} quanto para
+     * {@code Constructor <...ProtocoloReciboController.<init>(...)>}.
+     */
+    private static final Pattern CLASSE_VIOLADORA =
+            Pattern.compile("<(com\\.tcc\\.pjb\\.backend(?:\\.[a-z][A-Za-z0-9_]*)*\\.[A-Z][A-Za-z0-9_]*)");
 
     static JavaClasses classes;
 
@@ -22,13 +35,44 @@ class PjbArchitectureTest {
         classes = new ClassFileImporter().withImportOption(new ImportOption.DoNotIncludeTests()).importPackages("com.tcc.pjb.backend");
     }
 
+    /**
+     * Avalia a regra sem lancar, para que o baseline conhecido possa ser afirmado por nome em vez de
+     * a regra ficar desligada. Uma regra desligada nao verifica nada; um baseline afirmado por nome
+     * ainda reprova qualquer violacao nova.
+     */
+    private static List<String> violacoesDe(ArchRule rule) {
+        return rule.evaluate(classes).getFailureReport().getDetails();
+    }
+
+    private static Set<String> nomesDeClasseEm(List<String> detalhes) {
+        Set<String> nomes = new TreeSet<>();
+        for (String detalhe : detalhes) {
+            Matcher matcher = CLASSE_VIOLADORA.matcher(detalhe);
+            assertThat(matcher.find())
+                    .as("linha de violacao sem tipo reconhecivel, o extrator perderia o achado: %s", detalhe)
+                    .isTrue();
+            nomes.add(matcher.group(1));
+        }
+        return nomes;
+    }
+
     @Test
-    @Disabled("Baseline legado será migrado por facades de superfície sem bloquear a esteira de correções funcionais.")
     void controllers_nao_devem_importar_repositories() {
         ArchRule rule = noClasses()
                 .that().resideInAPackage("..controller..").or().resideInAPackage("..controllers..")
                 .should().dependOnClassesThat().resideInAPackage("..model.repository..");
-        rule.check(classes);
+
+        List<String> violacoes = violacoesDe(rule);
+
+        assertThat(nomesDeClasseEm(violacoes))
+                .as("baseline conhecido: dois controllers ainda chamam repository direto. "
+                        + "ProtocoloReciboController busca Processo para autorizar antes de emitir o recibo e "
+                        + "SecretariaInstitucionalItemController lista itens sem unidade resolvida. Nenhum dos "
+                        + "dois tem teste de controller hoje, então a migração para o service exige cobrir o "
+                        + "caminho de 403 antes de mover. Novo nome nesta lista é regressão: use o service.")
+                .containsExactlyInAnyOrder(
+                        "com.tcc.pjb.backend.controller.processual.protocolo.ProtocoloReciboController",
+                        "com.tcc.pjb.backend.controller.secretariat.institucional.SecretariaInstitucionalItemController");
     }
 
     @Test
@@ -65,12 +109,35 @@ class PjbArchitectureTest {
     }
 
     @Test
-    @Disabled("Baseline legado será classificado por catálogo LGPD/ownership em rodada dedicada.")
     void entities_devem_ter_anotacao_ownership() {
         ArchRule rule = classes()
                 .that().resideInAPackage("..model.entity..").and().areAnnotatedWith(jakarta.persistence.Entity.class)
                 .should().beAnnotatedWith(PjbDataOwnership.class);
-        rule.check(classes);
+
+        List<String> violacoes = violacoesDe(rule);
+
+        assertThat(nomesDeClasseEm(violacoes))
+                .as("baseline conhecido: 16 entidades sem classificacao de titularidade de dado. Cada uma "
+                        + "exige decisao de dominio sobre quem e o titular e qual a base legal, entao nao se "
+                        + "fecha por anotacao mecanica. Entidade nova precisa nascer anotada: qualquer nome "
+                        + "fora desta lista e regressao.")
+                .containsExactlyInAnyOrder(
+                        "com.tcc.pjb.backend.model.entity.Instituicao",
+                        "com.tcc.pjb.backend.model.entity.LotacaoInstituicao",
+                        "com.tcc.pjb.backend.model.entity.SecretariaInstitucionalItem",
+                        "com.tcc.pjb.backend.model.entity.UnidadeInstitucionalAbrangencia",
+                        "com.tcc.pjb.backend.model.entity.UnidadeInstituicao",
+                        "com.tcc.pjb.backend.model.entity.comunicacao.CienciaProcessual",
+                        "com.tcc.pjb.backend.model.entity.processo.CargaProcesso",
+                        "com.tcc.pjb.backend.model.entity.processo.ConclusaoProcessual",
+                        "com.tcc.pjb.backend.model.entity.processo.ImpedimentoMinistro",
+                        "com.tcc.pjb.backend.model.entity.processo.PautaSTF",
+                        "com.tcc.pjb.backend.model.entity.processo.PedidoVistaSTF",
+                        "com.tcc.pjb.backend.model.entity.processo.PoloProcessual",
+                        "com.tcc.pjb.backend.model.entity.processo.ProcessoEstadoLog",
+                        "com.tcc.pjb.backend.model.entity.processo.SequencialNumeracaoCnj",
+                        "com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorJudiciarioEntity",
+                        "com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorSolicitacao");
     }
 
     @Test

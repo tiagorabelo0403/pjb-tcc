@@ -1041,7 +1041,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **5.285 · 0 falhas · 0 erros · 5 pulados** |
+| Testes unitários (Surefire) | **5.285 · 0 falhas · 0 erros · 1 pulado** |
 | Testes de integração (Failsafe) | **116 classes · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1099,6 +1099,21 @@ python scripts/runtime_concurrency_guard.py
 | `java_regression_signature_guard` | Assinaturas de API que já causaram regressão no projeto e não devem voltar |
 | `guard_cwd_independence_guard` | Guard que resolve caminho do repositório contra o diretório de trabalho — o CI roda de `scripts/`, onde esse caminho não existe, e a varredura sai vazia reportando sucesso |
 | `internal_type_hygiene_guard` | Tipos aninhados em arquivos acima de 900 linhas |
+
+### Baseline legado afirmado por nome
+
+Regra de arquitetura com violação legada não é desligada. Ela roda e afirma o baseline por nome
+(`containsExactlyInAnyOrder`), de modo que a violação existente é uma lista fechada e qualquer nome
+novo reprova. Duas regras do `PjbArchitectureTest` seguem esse formato: controllers que ainda chamam
+repository direto, e entidades sem classificação de titularidade de dado.
+
+A diferença prática em relação a `@Disabled` é que a regra continua verificando, o tamanho da dívida
+fica visível no próprio teste, e a afirmação não pode passar por vacuidade — extrator quebrado devolve
+conjunto vazio e reprova.
+
+Verificação que depende de arquivo gerado fora do build não entra na suíte. Um teste sob
+`Assumptions.assumeTrue(Files.exists(...))` sobre artefato que nada produz nunca executa e ainda
+aparece como cobertura no relatório.
 
 ### Resolução de caminho nos guards
 
