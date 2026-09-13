@@ -168,7 +168,21 @@ def main() -> None:
     REPORT_MD.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
     if findings:
+        # Sem isto o guard saia com codigo 1 e saida vazia: no CI o job falhava sem dizer por que, e
+        # so quem baixasse o artefato de relatorio descobriria o motivo.
+        print('SALARIO MINIMO HARDCODED GUARD: FAIL')
+        print(
+            'Calculo baseado em salario minimo sem data de referencia do dominio. O valor correto '
+            'depende de qual salario minimo rege o caso, nao do de hoje:'
+        )
+        for entry in findings:
+            for hit in entry['hits']:
+                print(f" - {entry['file']}:{hit['line']}  [{hit['pattern']}]  {hit['match']}")
+                print(f"     {hit['snippet']}")
+                print(f"     acao: {hit['recommendedAction']}")
         raise SystemExit(1)
+
+    print(f'SALARIO MINIMO HARDCODED GUARD: OK ({files_scanned} arquivos varridos)')
 
 
 if __name__ == '__main__':

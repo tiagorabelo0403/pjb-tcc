@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-5.296%20unit%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-5.300%20unit%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -368,7 +368,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 5.296 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 5.300 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 116 classes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 A convenção de nome é verificada no CI pelo guard `integration_test_naming_guard.py`: uma classe com sufixo `IT` precisa exibir marcador real de integração — Testcontainers, contexto Spring ou base de integração herdada. Sem esse marcador a classe não seria executada por nenhuma das duas fases (o Surefire a ignora pelo nome, e o Failsafe só roda sob `verify`), e o build falha em vez de deixar o teste invisível.
@@ -387,7 +387,7 @@ Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 5.296 unitários (Surefire) e depois as 116 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 5.300 unitários (Surefire) e depois as 116 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
@@ -425,7 +425,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **5.296** |
+| Total de testes unitários | Surefire | **5.300** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~14 min** |
@@ -631,7 +631,7 @@ graph TD
 | IA Jurídica | Anthropic Claude API — Memory Stores, Dreams, síntese reflexiva |
 | Observabilidade | Micrometer, Spring Actuator, Process Mining materializado |
 | Análise estática | Qodana (JetBrains), JaCoCo, Checkstyle, SpotBugs, ArchUnit, catraca de depreciação no compilador |
-| Guards estruturais | 20 scripts Python + ArchUnit integrados ao CI |
+| Guards estruturais | 21 scripts Python + ArchUnit integrados ao CI |
 | Containerização | Docker Compose (dev/test), Kubernetes (produção) |
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
@@ -1041,11 +1041,11 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **5.296 · 0 falhas · 0 erros · 1 pulado** |
+| Testes unitários (Surefire) | **5.300 · 0 falhas · 0 erros · 1 pulado** |
 | Testes de integração (Failsafe) | **116 classes · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
-| Guards Python | 20 scripts ativos em CI |
+| Guards Python | 21 scripts ativos em CI |
 | SBOM | CycloneDX gerado a cada build |
 | Correlation ID | Obrigatório em toda requisição |
 
@@ -1099,6 +1099,21 @@ python scripts/runtime_concurrency_guard.py
 | `java_regression_signature_guard` | Assinaturas de API que já causaram regressão no projeto e não devem voltar |
 | `guard_cwd_independence_guard` | Guard que resolve caminho do repositório contra o diretório de trabalho — o CI roda de `scripts/`, onde esse caminho não existe, e a varredura sai vazia reportando sucesso |
 | `internal_type_hygiene_guard` | Tipos aninhados em arquivos acima de 900 linhas |
+
+### Limiar legal em salários mínimos
+
+Limiar expresso em salários mínimos — 40 SM do Juizado Especial, 60 SM do JEF, 150 SM do crédito
+trabalhista do art. 83 I, 40 SM da impontualidade do art. 94 I — se calcula contra o salário mínimo
+que rege o marco do processo, e nunca contra o de hoje. `SalarioMinimoNacionalService` é a fonte
+canônica, e recebe sempre uma data de domínio: data do pedido, da distribuição, do fato.
+
+`LocalDate.now()` dentro dessa chamada equivale a hardcode, porque faz o mesmo processo mudar de
+resposta conforme o dia em que for consultado, e mudar de novo na virada do ano. Sem data de domínio
+disponível, o alerta não é emitido: competência calculada contra o salário errado é pior que
+competência não sinalizada.
+
+`salario_minimo_hardcoded_guard` verifica a regra, e recusa tanto a constante monetária local quanto
+o `LocalDate.now()` inline.
 
 ### Catálogo de rotas institucionais
 
@@ -1317,7 +1332,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.296 testes unitários, 116 classes de integração e 300 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.300 testes unitários, 116 classes de integração e 300 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

@@ -298,7 +298,7 @@ public class CejuscEngine {
                 ramo,
                 grau,
                 tribunalCodigo,
-                Map.of(
+                extrasComDataDeReferencia(processo,
                         "valorCausa", Optional.ofNullable(processo.getValorCausa()).orElse(BigDecimal.ZERO),
                         "conciliacao", true,
                         "mediacao", true,
@@ -599,7 +599,7 @@ public class CejuscEngine {
                 processo.getRamoDireito(),
                 processo.getJurisdicao() != null ? processo.getJurisdicao().getGrau() : null,
                 processo.getJurisdicao() != null ? processo.getJurisdicao().getCodigo() : null,
-                Map.of(
+                extrasComDataDeReferencia(processo,
                         "valorCausa", Optional.ofNullable(processo.getValorCausa()).orElse(BigDecimal.ZERO),
                         "conciliacao", true,
                         "sigilo", processo.getNivelSigilo() != null ? processo.getNivelSigilo().name() : "PUBLICO"
@@ -1054,5 +1054,23 @@ public class CejuscEngine {
                 .replace("\"", "&quot;")
                 .replace("'", "&#39;")
                 .replace("\n", "<br/>");
+    }
+    /**
+     * Extras da regra, com a data que rege os limiares expressos em salários mínimos. A data é a da
+     * distribuição do processo, e não a de hoje: competência por valor da causa se afere no marco do
+     * processo, e com {@code LocalDate.now()} o mesmo processo mudaria de resposta conforme o dia da
+     * consulta. Processo sem distribuição registrada não recebe a chave — sem marco do domínio, o
+     * motor deixa de emitir o alerta, que é melhor do que emiti-lo contra o salário mínimo errado.
+     */
+    private static Map<String, Object> extrasComDataDeReferencia(Processo processo, Object... paresChaveValor) {
+        Map<String, Object> extras = new LinkedHashMap<>();
+        for (int i = 0; i + 1 < paresChaveValor.length; i += 2) {
+            extras.put(String.valueOf(paresChaveValor[i]), paresChaveValor[i + 1]);
+        }
+        LocalDateTime distribuicao = processo == null ? null : processo.getDataDistribuicao();
+        if (distribuicao != null) {
+            extras.put("dataReferencia", distribuicao.toLocalDate());
+        }
+        return extras;
     }
 }
