@@ -100,10 +100,43 @@ class NationalRulePackEngineTest {
         var resultado = engine.aplicar(contextoCivil(Map.of("valorCausa", new BigDecimal("1000.00"))));
 
         assertThat(resultado.aplicadas())
-                .as("sem marco do dominio o alerta nao sai: competencia calculada contra o salario "
+                .as("sem marco do dominio o limiar nao pode ser calculado: competencia contra o salario "
                         + "errado e pior que competencia nao sinalizada")
                 .noneMatch(regra -> "JEC_COMPETENCIA_POTENCIAL".equals(regra.codigo()));
         verify(servico, never()).multiplicar(any(BigDecimal.class), any(LocalDate.class));
+    }
+
+    @Test
+    void faltaDeDataDeReferenciaEDitaEmVozAltaEmVezDeSilencio() {
+        SalarioMinimoNacionalService servico = mock(SalarioMinimoNacionalService.class);
+        NationalRulePackEngine engine = new NationalRulePackEngine(servico);
+
+        var resultado = engine.aplicar(contextoCivil(Map.of("valorCausa", new BigDecimal("1000.00"))));
+
+        var naoAvaliada = resultado.aplicadas().stream()
+                .filter(regra -> "COMPETENCIA_POR_VALOR_NAO_AVALIADA".equals(regra.codigo()))
+                .findFirst();
+
+        assertThat(naoAvaliada)
+                .as("quem informou valorCausa esperava a avaliacao de competencia; nao emitir nada faria "
+                        + "a ausencia do alerta se confundir com \"o valor excede o limite\", que e o oposto")
+                .isPresent();
+        assertThat(((NationalRulePackEngine.RegraAlerta) naoAvaliada.orElseThrow()).mensagemAlerta())
+                .contains("dataReferencia")
+                .contains("NÃO significa que o valor excede o limite");
+    }
+
+    @Test
+    void semValorDaCausaNaoAvisaNadaSobreCompetencia() {
+        SalarioMinimoNacionalService servico = mock(SalarioMinimoNacionalService.class);
+        NationalRulePackEngine engine = new NationalRulePackEngine(servico);
+
+        var resultado = engine.aplicar(contextoCivil(Map.of("conciliacao", true)));
+
+        assertThat(resultado.aplicadas())
+                .as("quem nao informou valor da causa nao pediu avaliacao de competencia por valor: o "
+                        + "aviso so faz sentido para quem esperava a resposta")
+                .noneMatch(regra -> "COMPETENCIA_POR_VALOR_NAO_AVALIADA".equals(regra.codigo()));
     }
 
     @Test
