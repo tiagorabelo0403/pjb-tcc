@@ -43,12 +43,12 @@ class VectorSearchServicePgVectorTest {
     @Test
     void ajustaDimensaoTruncandoQuandoOEmbeddingEMaior() throws Exception {
         when(embeddingService.embed(anyString())).thenReturn(new EmbeddingVector(new float[]{1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f}));
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RowMapper.class))).thenReturn(List.of());
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class))).thenReturn(List.of());
 
         service.searchSimilarResult("q", Map.of(), 3);
 
         ArgumentCaptor<Object[]> paramsCaptor = ArgumentCaptor.forClass(Object[].class);
-        verify(jdbcTemplate).query(anyString(), paramsCaptor.capture(), any(RowMapper.class));
+        verify(jdbcTemplate).query(anyString(), any(RowMapper.class), paramsCaptor.capture());
         String pgLiteral = (String) paramsCaptor.getValue()[0];
         // literal deve ter exatamente 4 componentes (targetDimension configurado no @BeforeEach)
         assertThat(pgLiteral.split(",")).hasSize(4);
@@ -62,8 +62,8 @@ class VectorSearchServicePgVectorTest {
         when(rs.getString("titulo")).thenReturn("Titulo teste");
         when(rs.getString("ramo")).thenReturn("PENAL");
         when(rs.getDouble("distance")).thenReturn(0.25);
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RowMapper.class))).thenAnswer(inv -> {
-            RowMapper<VectorSearchService.ResultItem> mapper = inv.getArgument(2);
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class))).thenAnswer(inv -> {
+            RowMapper<VectorSearchService.ResultItem> mapper = inv.getArgument(1);
             return List.of(mapper.mapRow(rs, 0));
         });
 
@@ -82,29 +82,29 @@ class VectorSearchServicePgVectorTest {
     @Test
     void filtroMetadataViraJsonbNoWhere() {
         when(embeddingService.embed(anyString())).thenReturn(new EmbeddingVector(new float[]{1f, 0f, 0f, 0f}));
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RowMapper.class))).thenReturn(List.of());
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class))).thenReturn(List.of());
 
         service.searchSimilarResult("q", Map.of("ramo", "PENAL"), 3);
 
-        verify(jdbcTemplate).query(contains("metadata @> ?::jsonb"), any(Object[].class), any(RowMapper.class));
+        verify(jdbcTemplate).query(contains("metadata @> ?::jsonb"), any(RowMapper.class), any(Object[].class));
     }
 
     @Test
     void semFiltro_naoAdicionaWhereJsonb() {
         when(embeddingService.embed(anyString())).thenReturn(new EmbeddingVector(new float[]{1f, 0f, 0f, 0f}));
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RowMapper.class))).thenReturn(List.of());
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class))).thenReturn(List.of());
 
         service.searchSimilarResult("q", Map.of(), 3);
 
         ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
-        verify(jdbcTemplate).query(sqlCaptor.capture(), any(Object[].class), any(RowMapper.class));
+        verify(jdbcTemplate).query(sqlCaptor.capture(), any(RowMapper.class), any(Object[].class));
         assertThat(sqlCaptor.getValue()).doesNotContain("metadata @>");
     }
 
     @Test
     void erroDoJdbcRetornaResultadoDegradadoSemLancar() {
         when(embeddingService.embed(anyString())).thenReturn(new EmbeddingVector(new float[]{1f, 0f, 0f, 0f}));
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RowMapper.class)))
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class)))
                 .thenThrow(new org.springframework.dao.DataAccessResourceFailureException("pgvector down"));
 
         VectorSearchService.VectorSearchResult result = service.searchSimilarResult("q", Map.of(), 3);
@@ -117,12 +117,12 @@ class VectorSearchServicePgVectorTest {
     @Test
     void topKZero_usaDefaultConfigurado() {
         when(embeddingService.embed(anyString())).thenReturn(new EmbeddingVector(new float[]{1f, 0f, 0f, 0f}));
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RowMapper.class))).thenReturn(List.of());
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class))).thenReturn(List.of());
 
         service.searchSimilarResult("q", Map.of(), 0);
 
         ArgumentCaptor<Object[]> paramsCaptor = ArgumentCaptor.forClass(Object[].class);
-        verify(jdbcTemplate).query(anyString(), paramsCaptor.capture(), any(RowMapper.class));
+        verify(jdbcTemplate).query(anyString(), any(RowMapper.class), paramsCaptor.capture());
         Object[] params = paramsCaptor.getValue();
         // ultimo parametro e o LIMIT (topK)
         assertThat(params[params.length - 1]).isEqualTo(5);
@@ -131,7 +131,7 @@ class VectorSearchServicePgVectorTest {
     @Test
     void versoesV1V2V3_marcamIaVersionCorreta() {
         when(embeddingService.embed(anyString())).thenReturn(new EmbeddingVector(new float[]{1f, 0f, 0f, 0f}));
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RowMapper.class))).thenReturn(List.of());
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class))).thenReturn(List.of());
 
         assertThat(service.searchSimilarV1("q", Map.of(), 3).iaVersion()).isEqualTo("v1");
         assertThat(service.searchSimilarV2("q", Map.of(), 3).iaVersion()).isEqualTo("v2");

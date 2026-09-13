@@ -61,8 +61,8 @@ class PgVectorPersistentIndexTest {
         when(rs.getString("doc_id")).thenReturn("doc-7");
         when(rs.getString("metadata")).thenReturn("{\"ramo\":\"penal\"}");
         when(rs.getDouble("distance")).thenReturn(0.25);
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RowMapper.class))).thenAnswer(inv -> {
-            RowMapper<VectorSearchHit> mapper = inv.getArgument(2);
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class))).thenAnswer(inv -> {
+            RowMapper<VectorSearchHit> mapper = inv.getArgument(1);
             return List.of(mapper.mapRow(rs, 0));
         });
 
@@ -77,21 +77,21 @@ class PgVectorPersistentIndexTest {
 
     @Test
     void searchSemFiltro_omiteWhereJsonb() {
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RowMapper.class))).thenReturn(List.of());
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class))).thenReturn(List.of());
         index.search(new EmbeddingVector(new float[]{1f, 0f, 0f, 0f}), 3, Map.of());
 
         ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
-        verify(jdbcTemplate).query(sql.capture(), any(Object[].class), any(RowMapper.class));
+        verify(jdbcTemplate).query(sql.capture(), any(RowMapper.class), any(Object[].class));
         assertThat(sql.getValue()).doesNotContain("metadata @>");
     }
 
     @Test
     void searchComFiltro_normalizaLowercaseAntesDeMandarParaJsonb() {
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RowMapper.class))).thenReturn(List.of());
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class))).thenReturn(List.of());
         index.search(new EmbeddingVector(new float[]{1f, 0f, 0f, 0f}), 3, Map.of("Ramo", "PENAL"));
 
         ArgumentCaptor<Object[]> params = ArgumentCaptor.forClass(Object[].class);
-        verify(jdbcTemplate).query(contains("metadata @> ?::jsonb"), params.capture(), any(RowMapper.class));
+        verify(jdbcTemplate).query(contains("metadata @> ?::jsonb"), any(RowMapper.class), params.capture());
         // params: [pgLiteral, jsonFilter, pgLiteral, topK]
         String jsonFilter = (String) params.getValue()[1];
         assertThat(jsonFilter).isEqualTo("{\"ramo\":\"penal\"}");
@@ -99,11 +99,11 @@ class PgVectorPersistentIndexTest {
 
     @Test
     void adjustDimension_truncaSeMaior() {
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RowMapper.class))).thenReturn(List.of());
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class))).thenReturn(List.of());
         index.search(new EmbeddingVector(new float[]{1f, 0f, 0f, 0f, 0f, 0f}), 3, Map.of());
 
         ArgumentCaptor<Object[]> params = ArgumentCaptor.forClass(Object[].class);
-        verify(jdbcTemplate).query(anyString(), params.capture(), any(RowMapper.class));
+        verify(jdbcTemplate).query(anyString(), any(RowMapper.class), params.capture());
         String pgLiteral = (String) params.getValue()[0];
         assertThat(pgLiteral.split(",")).hasSize(4); // targetDimension configurado no @BeforeEach
     }

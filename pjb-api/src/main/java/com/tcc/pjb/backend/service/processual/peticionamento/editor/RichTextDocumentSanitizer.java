@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.springframework.stereotype.Service;
@@ -105,12 +106,12 @@ public class RichTextDocumentSanitizer {
     private ObjectNode sanitizeAttrs(String nodeType, ObjectNode attrs, Set<String> remocoes) {
         ObjectNode limpo = objectMapper.createObjectNode();
         Set<String> permitidos = catalog.attrsPermitidosNo(nodeType);
-        attrs.fields().forEachRemaining(entry -> {
+        for (Map.Entry<String, JsonNode> entry : attrs.properties()) {
             String key = entry.getKey();
             JsonNode value = entry.getValue();
             if (!permitidos.contains(key)) {
                 remocoes.add("atributo removido de " + nodeType + ": " + key);
-                return;
+                continue;
             }
             switch (key) {
                 case "level" -> {
@@ -137,7 +138,7 @@ public class RichTextDocumentSanitizer {
                 }
                 default -> limpo.set(key, value);
             }
-        });
+        }
         return limpo;
     }
 
@@ -171,12 +172,12 @@ public class RichTextDocumentSanitizer {
     private ObjectNode sanitizeMarkAttrs(String markType, ObjectNode attrs, Set<String> remocoes) {
         ObjectNode limpo = objectMapper.createObjectNode();
         Set<String> permitidos = catalog.attrsPermitidosMarca(markType);
-        attrs.fields().forEachRemaining(entry -> {
+        for (Map.Entry<String, JsonNode> entry : attrs.properties()) {
             String key = entry.getKey();
             JsonNode value = entry.getValue();
             if (!permitidos.contains(key)) {
                 remocoes.add("atributo removido da marca " + markType + ": " + key);
-                return;
+                continue;
             }
             switch (key) {
                 case "href" -> {
@@ -202,7 +203,7 @@ public class RichTextDocumentSanitizer {
                 }
                 default -> limpo.set(key, value);
             }
-        });
+        }
         return limpo;
     }
 }
