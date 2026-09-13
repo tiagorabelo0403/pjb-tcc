@@ -57,14 +57,29 @@ class PjbArchitectureTest {
     }
 
     @Test
-    void controllers_nao_devem_importar_repositories() {
+    void controllers_nao_devem_alcancar_dados_por_conta_propria() {
         // A regra e por nome de classe, e nao por pacote. Enquanto olhava apenas `..controller..`
         // dependendo de `..model.repository..` ela dava zero violacao e escondia seis: o projeto tem
         // pelo menos oito pacotes de repository, e controller nem sempre mora sob `controller`. Regra
         // mais estreita que o proprio nome e pior que regra ausente, porque produz confianca falsa.
+        //
+        // A segunda ampliacao veio pelo mesmo erro, um nivel adiante: "Repository" e apenas um dos
+        // nomes que acesso a dado usa. PjbDemoStatusController falava com o banco por JdbcTemplate e
+        // atravessou a regra sem ser visto, porque JdbcTemplate nao termina em Repository.
+        //
+        // O que esta coberto e alcance a dado: repositorio, DAO, template JDBC, EntityManager,
+        // DataSource, conexao. O que NAO esta coberto, e de proposito, e capturar tipo de excecao de
+        // persistencia no controller (jakarta.persistence.EntityNotFoundException) — vazamento real,
+        // porem de outra natureza, que esta regra nao promete pegar.
         ArchRule rule = noClasses()
                 .that().haveSimpleNameEndingWith("Controller")
-                .should().dependOnClassesThat().haveSimpleNameEndingWith("Repository");
+                .should().dependOnClassesThat().haveSimpleNameEndingWith("Repository")
+                .orShould().dependOnClassesThat().haveSimpleNameEndingWith("Dao")
+                .orShould().dependOnClassesThat()
+                .resideInAnyPackage("org.springframework.jdbc..", "javax.sql..", "org.hibernate..")
+                .orShould().dependOnClassesThat().haveNameMatching(
+                        "jakarta\\.persistence\\.EntityManager(Factory)?|java\\.sql\\.(Connection|Statement"
+                                + "|PreparedStatement|CallableStatement|ResultSet|DriverManager)");
         rule.check(classes);
     }
 
