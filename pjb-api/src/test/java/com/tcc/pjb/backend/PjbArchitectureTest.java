@@ -1,10 +1,14 @@
 package com.tcc.pjb.backend;
 
 import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.domain.JavaCodeUnit;
+import com.tngtech.archunit.core.domain.TryCatchBlock;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.ArchRule;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -68,9 +72,8 @@ class PjbArchitectureTest {
         // atravessou a regra sem ser visto, porque JdbcTemplate nao termina em Repository.
         //
         // O que esta coberto e alcance a dado: repositorio, DAO, template JDBC, EntityManager,
-        // DataSource, conexao. O que NAO esta coberto, e de proposito, e capturar tipo de excecao de
-        // persistencia no controller (jakarta.persistence.EntityNotFoundException) — vazamento real,
-        // porem de outra natureza, que esta regra nao promete pegar.
+        // DataSource, conexao. Tipo de excecao de persistencia e vazamento de outra natureza e tem
+        // regra propria logo abaixo — esta aqui nao promete pega-lo.
         ArchRule rule = noClasses()
                 .that().haveSimpleNameEndingWith("Controller")
                 .should().dependOnClassesThat().haveSimpleNameEndingWith("Repository")
@@ -81,6 +84,44 @@ class PjbArchitectureTest {
                         "jakarta\\.persistence\\.EntityManager(Factory)?|java\\.sql\\.(Connection|Statement"
                                 + "|PreparedStatement|CallableStatement|ResultSet|DriverManager)");
         rule.check(classes);
+    }
+
+    @Test
+    void controllers_nao_devem_capturar_excecao_de_persistencia() {
+        // Separado da regra de cima de proposito: aquela cobre alcance a dado, esta cobre traduzir
+        // excecao de persistencia dentro do controller. FuncaoServidorAdminController capturava
+        // jakarta.persistence.EntityNotFoundException para devolver 404 — tapava a mao, num controller
+        // so, um buraco que era do ApiExceptionHandler e que deixava os outros 33 lancamentos da mesma
+        // excecao responderem 500 para recurso inexistente.
+        //
+        // A checagem e explicita, e nao `noClasses().should().dependOnClassesThat()`, porque a forma
+        // declarativa NAO ve tipo capturado: escrevi a regra declarativa primeiro, restaurei o catch
+        // numa sonda, e ela passou verde com a violacao no lugar. Tipo de catch vive na tabela de
+        // excecoes do bytecode, fora do conjunto de dependencias que o ArchUnit monta.
+        List<String> capturas = new ArrayList<>();
+        int throwablesCapturadosEmControllers = 0;
+        for (JavaClass tipo : classes) {
+            if (!tipo.getSimpleName().endsWith("Controller")) {
+                continue;
+            }
+            for (JavaCodeUnit metodo : tipo.getCodeUnits()) {
+                for (TryCatchBlock bloco : metodo.getTryCatchBlocks()) {
+                    for (JavaClass capturado : bloco.getCaughtThrowables()) {
+                        throwablesCapturadosEmControllers++;
+                        if (capturado.getPackageName().startsWith("jakarta.persistence")) {
+                            capturas.add(tipo.getName() + "#" + metodo.getName() + " captura "
+                                    + capturado.getName());
+                        }
+                    }
+                }
+            }
+        }
+
+        assertThat(throwablesCapturadosEmControllers)
+                .as("nenhum catch encontrado em controller nenhum: a varredura nao esta vendo o "
+                        + "bytecode, e a lista vazia abaixo nao significaria nada")
+                .isPositive();
+        assertThat(capturas).isEmpty();
     }
 
     @Test
