@@ -3,26 +3,23 @@ package com.tcc.pjb.backend.quality;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.core.util.Json;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 @Tag("contract")
 class PjbOpenApiContractWeaknessDetectorTest {
 
-    private static final Path SNAPSHOT = Path.of("../target/openapi-snapshot.json");
-    private static final Path ALLOWLIST = Path.of("../docs/architecture/openapi-contract-hardening-allowlist.yml");
+    private static final Path BACKEND = Path.of("src/main/java/com/tcc/pjb/backend");
 
     private static final Pattern ADDITIONAL_PROPERTIES_TRUE =
             Pattern.compile("additionalProperties\\s*=\\s*(?:true|SchemaType\\.BOOLEAN_TRUE|SchemaType\\.Boolean\\.TRUE)");
@@ -30,10 +27,18 @@ class PjbOpenApiContractWeaknessDetectorTest {
     private static final Pattern SCHEMA_EXAMPLE_ZERO =
             Pattern.compile("@Schema[^)]*example\\s*=\\s*\"0\"[^)]*\\)");
 
-    private static final Pattern ALLOWLIST_SCHEMA =
-            Pattern.compile("schema:\\s*(\\S+)");
+    /**
+     * {@code @Schema(example = "0")} imediatamente antes de um membro booleano. O contrato publicado
+     * passa a declarar {@code type: boolean} com {@code example: 0}, que nenhum cliente consegue
+     * interpretar: zero não é nem {@code true} nem {@code false}.
+     */
+    private static final Pattern EXAMPLE_ZERO_EM_BOOLEAN = Pattern.compile(
+            "@Schema\\((?:[^()]|\\([^()]*\\))*example\\s*=\\s*\"0\"(?:[^()]|\\([^()]*\\))*\\)\\s*"
+                    + "(?:@\\w+(?:\\((?:[^()]|\\([^()]*\\))*\\))?\\s*)*"
+                    + "(?:(?:private|protected|public)\\s+)?(?:final\\s+)?(?:boolean|Boolean)\\b",
+            Pattern.DOTALL);
 
-    private static final ObjectMapper JSON = new ObjectMapper();
+    private static final ObjectMapper JSON = Json.mapper();
 
     @Test
     void laiane_nao_deve_ter_additionalProperties_true_em_schema() throws IOException {
@@ -106,77 +111,61 @@ class PjbOpenApiContractWeaknessDetectorTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    void snapshot_nao_deve_ter_additionalProperties_aberto_fora_da_allowlist() throws IOException {
-        Assumptions.assumeTrue(Files.exists(SNAPSHOT),
-            "Snapshot OpenAPI ausente — gere com: curl -s http://localhost:8080/v3/api-docs > target/openapi-snapshot.json");
-
-        Set<String> allowlisted = carregarAllowlistSchemas();
-
-        Map<String, Object> doc = JSON.readValue(SNAPSHOT.toFile(), Map.class);
-        Map<String, Object> components = (Map<String, Object>) doc.getOrDefault("components", Map.of());
-        Map<String, Object> schemas = (Map<String, Object>) components.getOrDefault("schemas", Map.of());
-
-        List<String> violacoes = new ArrayList<>();
-        for (Map.Entry<String, Object> entry : schemas.entrySet()) {
-            String sname = entry.getKey();
-            if (allowlisted.contains(sname)) continue;
-            Map<String, Object> sdef = (Map<String, Object>) entry.getValue();
-            Map<String, Object> props = (Map<String, Object>) sdef.getOrDefault("properties", Map.of());
-            for (Map.Entry<String, Object> prop : props.entrySet()) {
-                Map<String, Object> pdef = (Map<String, Object>) prop.getValue();
-                Object ap = pdef.get("additionalProperties");
-                if (ap instanceof Map && ((Map<?, ?>) ap).isEmpty()) {
-                    violacoes.add(sname + "." + prop.getKey());
+    void oDetectorDeExampleZeroEmBooleanReconheceUmPositivoConhecido() {
+        String fonteComViolacao = """
+                public record ExemploResponse(
+                        @Schema(description = "indica se houve ciencia", example = "0")
+                        boolean cientificado) {
                 }
-            }
-        }
+                """;
+        String fonteSemViolacao = """
+                public record ExemploResponse(
+                        @Schema(description = "quantidade de intimacoes", example = "0")
+                        int intimacoes,
+                        @Schema(description = "indica se houve ciencia", example = "false")
+                        boolean cientificado) {
+                }
+                """;
 
-        assertThat(violacoes)
-            .as("Campos Map<String,Object> com additionalProperties:{} fora da allowlist. " +
-                "Adicione o schema ao allowlist ou tipe o Map. " +
-                "SpringDoc 2.8+ gera {} (nao true) para Map<String,Object>.")
-            .isEmpty();
+        assertThat(EXAMPLE_ZERO_EM_BOOLEAN.matcher(fonteComViolacao).find())
+                .as("o detector precisa acusar um positivo conhecido; se não acusa, a varredura vazia "
+                        + "do teste seguinte não significa nada")
+                .isTrue();
+        assertThat(EXAMPLE_ZERO_EM_BOOLEAN.matcher(fonteSemViolacao).find())
+                .as("example=\"0\" em campo numérico é legítimo e não pode ser confundido com o booleano")
+                .isFalse();
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    void snapshot_nao_deve_ter_boolean_com_example_zero() throws IOException {
-        Assumptions.assumeTrue(Files.exists(SNAPSHOT),
-            "Snapshot OpenAPI ausente — gere com: curl -s http://localhost:8080/v3/api-docs > target/openapi-snapshot.json");
-
-        Map<String, Object> doc = JSON.readValue(SNAPSHOT.toFile(), Map.class);
-        Map<String, Object> components = (Map<String, Object>) doc.getOrDefault("components", Map.of());
-        Map<String, Object> schemas = (Map<String, Object>) components.getOrDefault("schemas", Map.of());
-
+    void nenhum_campo_boolean_publico_declara_example_zero() throws IOException {
         List<String> violacoes = new ArrayList<>();
-        for (Map.Entry<String, Object> entry : schemas.entrySet()) {
-            Map<String, Object> sdef = (Map<String, Object>) entry.getValue();
-            Map<String, Object> props = (Map<String, Object>) sdef.getOrDefault("properties", Map.of());
-            for (Map.Entry<String, Object> prop : props.entrySet()) {
-                Map<String, Object> pdef = (Map<String, Object>) prop.getValue();
-                Object type = pdef.get("type");
-                Object example = pdef.get("example");
-                if ("boolean".equals(type) && Integer.valueOf(0).equals(example)) {
-                    violacoes.add(entry.getKey() + "." + prop.getKey());
+        AtomicInteger arquivosVaridos = new AtomicInteger();
+
+        try (Stream<Path> paths = Files.walk(BACKEND)) {
+            paths.filter(p -> p.toString().endsWith(".java")).forEach(p -> {
+                arquivosVaridos.incrementAndGet();
+                String source = ler(p);
+                if (!source.contains("example") || !source.contains("\"0\"")) {
+                    return;
                 }
-            }
+                var matcher = EXAMPLE_ZERO_EM_BOOLEAN.matcher(source);
+                while (matcher.find()) {
+                    long linha = source.substring(0, matcher.start()).lines().count() + 1;
+                    violacoes.add(BACKEND.relativize(p) + ":" + linha);
+                }
+            });
         }
 
-        assertThat(violacoes)
-            .as("Campos boolean com example:0 detectados no snapshot OpenAPI. " +
-                "Use @Schema(example=\"false\") ou @Schema(example=\"true\") conforme o default real.")
-            .isEmpty();
-    }
+        assertThat(arquivosVaridos.get())
+                .as("a varredura precisa alcançar o código de produção; zero arquivo aqui tornaria a "
+                        + "asserção seguinte aprovada por vacuidade")
+                .isGreaterThan(5000);
 
-    @SuppressWarnings("unchecked")
-    private Set<String> carregarAllowlistSchemas() throws IOException {
-        if (!Files.exists(ALLOWLIST)) return Set.of();
-        String content = Files.readString(ALLOWLIST);
-        Set<String> result = new HashSet<>();
-        Matcher m = ALLOWLIST_SCHEMA.matcher(content);
-        while (m.find()) result.add(m.group(1));
-        return result;
+        assertThat(violacoes)
+                .as("Campo boolean anotado com @Schema(example=\"0\"). O contrato publicado passa a "
+                    + "declarar type: boolean com example: 0, que nenhum cliente interpreta. "
+                    + "Use example=\"false\" ou example=\"true\" conforme o default real.")
+                .isEmpty();
     }
 
     private static String ler(Path p) {

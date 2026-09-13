@@ -87,27 +87,69 @@ em `src/test`**, onde a catraca não se aplica:
 **Por que não foi fechado junto:** nenhum deles é `[removal]`, então não há prazo do compilador; e o
 lote do Zeebe muda superfície de integração, que não cabe na mesma fatia de configuração de segurança.
 
-## D-verificacoes-de-qualidade-desligadas-na-suite
+## D-baselines-de-arquitetura-afirmados-por-nome
 
-**Status:** aberta — 4 dos 5 testes pulados da suíte são verificação de qualidade que não roda
+**Status:** aberta — 2 controllers e 16 entidades no baseline; as regras voltaram a rodar
 
-A suíte unitária fecha em **5.285 testes, 0 falhas, 0 erros, 5 pulados**. Os 5 pulados foram
-identificados um a um:
+Duas regras do `PjbArchitectureTest` estavam desligadas por `@Disabled`, com a justificativa de que o
+baseline legado seria migrado "por facades de superfície" e classificado "por catálogo LGPD/ownership
+em rodada dedicada" — nenhuma das duas rodadas com data. Medido, o baseline é pequeno e agora está
+afirmado por nome, de modo que a regra reprova qualquer violação nova:
 
-- `LaianeMpOpenApiSchemaTest#exportarBaselineVersionado` — `@Disabled` legítimo. É gerador de
-  `docs/api/laiane-mp-openapi-v1.json`, rodado sob demanda, não verificação.
-- `PjbArchitectureTest` — **2 regras de arquitetura desligadas** por `@Disabled`, com a justificativa
-  de que o baseline legado seria migrado "por facades de superfície" e classificado "por catálogo
-  LGPD/ownership em rodada dedicada". Nenhuma das duas rodadas tem data nem dívida própria; enquanto
-  isso `PjbArchitectureTest` aparece verde e não verifica essas duas regras.
-- `PjbOpenApiContractWeaknessDetectorTest` — **2 testes sob `Assumptions.assumeTrue(Files.exists(SNAPSHOT))`**.
-  Se o snapshot de contrato desaparecer, o detector de fraqueza de OpenAPI não falha: ele pula, e a
-  suíte segue verde. A condição que deveria ser o motivo da falha é o motivo do silêncio.
+**`controllers_nao_devem_importar_repositories` — 2 controllers.** O ArchUnit conta 6 violações
+porque conta construtor, campo e chamada separadamente.
 
-**Por que importa:** os dois últimos casos são o padrão dominante do projeto
-(`project_padrao_instrumento_que_nao_age`) dentro da própria suíte de testes — o lugar onde a
-aparência de cobertura é mais convincente. Um `@Disabled` com justificativa e um `assumeTrue` sobre
-existência de arquivo produzem o mesmo efeito de um teste ausente, com um relatório verde por cima.
+- `ProtocoloReciboController` busca `Processo` por id para poder autorizar antes de emitir o recibo.
+- `SecretariaInstitucionalItemController` lista itens sem unidade resolvida direto do repository.
+
+Nenhum dos dois tem teste de controller hoje — só o serviço tem. Como o primeiro decide 403 no
+próprio controller, mover a busca para o serviço sem antes cobrir o caminho de negativa seria refatorar
+no escuro. A fatia de migração precisa começar pelo teste.
+
+**`entities_devem_ter_anotacao_ownership` — 16 entidades** sem `@PjbDataOwnership`: `Instituicao`,
+`LotacaoInstituicao`, `SecretariaInstitucionalItem`, `UnidadeInstitucionalAbrangencia`,
+`UnidadeInstituicao`, `CienciaProcessual`, `CargaProcesso`, `ConclusaoProcessual`,
+`ImpedimentoMinistro`, `PautaSTF`, `PedidoVistaSTF`, `PoloProcessual`, `ProcessoEstadoLog`,
+`SequencialNumeracaoCnj`, `FuncaoServidorJudiciarioEntity` e `FuncaoServidorSolicitacao`.
+
+Não se fecha por anotação mecânica: cada uma exige decisão de domínio sobre quem é o titular do dado e
+qual a base legal do tratamento. `PoloProcessual` e `CienciaProcessual` carregam dado de parte;
+`ImpedimentoMinistro` e `PautaSTF` são dado institucional de colegiado. Classificar por analogia
+superficial produziria catálogo LGPD errado, que é pior que catálogo ausente.
+
+**Por que a forma mudou:** `@Disabled` com justificativa em prosa não verifica nada e não tem número.
+A afirmação por nome (`containsExactlyInAnyOrder`) roda, não pode passar por vacuidade — extrator
+quebrado devolve conjunto vazio e reprova — e transforma a dívida em lista fechada que só encolhe.
+
+## D-contrato-openapi-gerado-sem-verificacao-automatica
+
+**Status:** aberta — nenhum teste lê o contrato OpenAPI efetivamente publicado
+
+Dois testes de `PjbOpenApiContractWeaknessDetectorTest` liam `target/openapi-snapshot.json` sob
+`Assumptions.assumeTrue(Files.exists(SNAPSHOT))`. **Nada no repositório gera esse arquivo** — as duas
+únicas menções a ele eram as próprias mensagens de skip — então os dois nunca rodaram, e nunca
+rodariam no CI, que executa só a fase de teste unitário. Foram removidos: verificação que não executa
+não tem valor e produz confiança falsa.
+
+O que se recuperou: a checagem de **boolean com `example: "0"`** não existia em nenhum outro lugar e
+voltou como varredura de fonte sobre todo o `src/main`, com auto-teste contra um positivo conhecido e
+piso de arquivos varridos contra aprovação por vacuidade. Hoje: zero violações.
+
+O que **fica aberto**:
+
+- Nenhum teste lê o contrato que o springdoc realmente publica. As verificações equivalentes são por
+  fonte, e por isso não enxergam schema gerado por tipo que não seja literalmente `Map<String,Object>`.
+- `docs/architecture/openapi-contract-hardening-allowlist.yml` tem **243 entradas e 135 KB**,
+  construídas contra um snapshot que ninguém consegue regenerar. `PjbHardeningAllowlistSchemaTest`
+  valida o formato do arquivo, não a correspondência com o contrato real.
+- O detector vivo `PjbNoMapObjectInPublicDtoTest` cobre 12 caminhos e **não cobre** `model/dto/ai`
+  (74 arquivos com `Map<String,Object>`), `model/dto/secretariat` (11), `model/dto/distribuicao` (4)
+  nem os subpacotes de `model/dto/processual` fora de `calculo`, `peticionamento` e `substituicao`.
+
+Fechar exige decidir como produzir o contrato publicado dentro do build. Subir o contexto na fase de
+teste unitário é caro e frágil; gerar por `ModelConverters` é barato mas não reproduz os
+customizadores do springdoc, e um gerador que diverge do contrato real é mais um instrumento que não
+mede o que afirma medir.
 
 ## D-test-drift-relatorio-desatualizado
 
