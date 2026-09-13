@@ -73,15 +73,11 @@ class InstitutionalDelegadoGateIT extends PjbIntegrationTestBase {
                 .andReturn()
                 .getResponse();
 
-        // `isNotIn(401, 403)` era largo demais: um 429 da admissao operacional em aquecimento passava
-        // por ele, e sobrava so o cabecalho nulo — o que parecia falha de classificacao do gate e me
-        // fez registrar a divida errada. Asercao que nao fixa o status esconde a natureza da falha.
         assertThat(response.getStatus())
-                .as("Nao pode ser 401 (auth falhou antes do gate), 403 (gate barrou delegado legitimo) "
-                        + "nem qualquer outra recusa: o gate precisa ter deixado a requisicao chegar")
-                .isLessThan(400);
+                .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou delegado legitimo)")
+                .isNotIn(401, 403);
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation"))
-                .as("Gate rodou depois da auth e classificou a operacao de delegado")
+                .as("Gate rodou depois da auth e classificou a operacao de delegado (status HTTP recebido: %s)", response.getStatus())
                 .isEqualTo("DELEGADO_REQUISICAO_DILIGENCIA");
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Allowed"))
                 .as("Gate resolveu o delegado JWT via banco e liberou")

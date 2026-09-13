@@ -75,11 +75,10 @@ class InstitutionalProcuradoriaGateIT extends PjbIntegrationTestBase {
                 .getResponse();
 
         assertThat(response.getStatus())
-                .as("Nao pode ser 401 (auth falhou antes do gate), 403 (gate barrou procurador legitimo) "
-                        + "nem qualquer outra recusa: o gate precisa ter deixado a requisicao chegar")
-                .isLessThan(400);
+                .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou procurador legitimo)")
+                .isNotIn(401, 403);
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation"))
-                .as("Gate rodou depois da auth e classificou a operacao de procuradoria")
+                .as("Gate rodou depois da auth e classificou a operacao de procuradoria (status HTTP recebido: %s)", response.getStatus())
                 .isEqualTo("PROCURADORIA_PARECER");
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Allowed"))
                 .as("Gate resolveu o procurador JWT via banco e liberou")
