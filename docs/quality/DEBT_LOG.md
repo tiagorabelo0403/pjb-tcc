@@ -323,9 +323,19 @@ ser configurável por ente federado (ver `D-teto-rpv-duplicado-como-literal-em-s
 
 ## D-laiane-substabelecimento-503-em-contexto-compartilhado
 
-**Status:** aberta — contida, causa não identificada
+**Status:** aberta — causa identificada em 2026-09-13, correção pendente
 
-**Sintoma:** `LaianeLawyerSubstabelecimentoIT` devolve **503 nos dois testes** quando roda em lote
+**Atualização (2026-09-13, run 34774950817):** medido no CI sem OOM mascarando, o status **não é 503, é
+`429`** — nos dois testes, `expected: 200 but was: 429` e `expected: 403 but was: 429`. `429` é
+`CapabilityRateLimitExceededException`, ou seja, **o limitador de capacidade está ativo**. Isso confirma
+a hipótese abaixo e remove o "causa não identificada": a propriedade
+`pjb.security.capability-ratelimit.enabled: false` não está surtindo efeito para esta classe no contexto
+compartilhado, e o `@MockitoBean CapabilityRateLimiter` removido na PR #108 era justamente o que dava a
+ela contexto próprio. A correção é devolver isolamento de contexto a esta classe ou garantir que a
+propriedade alcance o contexto que ela usa — não mexer na regra de substabelecimento, que não chega a
+ser exercitada.
+
+**Sintoma original:** `LaianeLawyerSubstabelecimentoIT` devolve **503 nos dois testes** quando roda em lote
 compartilhando contexto Spring — tanto no que espera 200 quanto no que espera 403. Isolada, em
 contexto novo, passa 2/2. O 503 acontece antes da lógica de negócio: os dois casos falham com o
 mesmo status, apesar de exercitarem caminhos de autorização diferentes.
@@ -392,6 +402,15 @@ processo que gerou o problema.
 
 **Pré-requisito que isto bloqueia:** CI de integração **no caminho da PR**. Com 1h38 não existe
 versão que caiba ali; reduzir contexto é o que torna essa discussão possível.
+
+**Medição (2026-09-13, run 34772855652):** a fragmentação virou falha observável pela primeira vez.
+Numa única JVM de Failsafe foram criados **22 contextos Spring distintos**, todos retidos pelo cache do
+`TestContext` (limite padrão 32, portanto nenhum despejado), contra `-Xmx4g` do `pom.xml`. Resultado:
+`OutOfMemoryError: Java heap space` em 54 pontos e **55 dos 63 problemas relatados eram
+`Failed to load ApplicationContext` em cascata**, não defeito de produto. Com `-Dtest.forked.jvm.xmx=8g`
+na execução do portão (run 34774950817): zero OOM, 292 testes executados contra 273, e o número real de
+problemas caiu para 7. O heap maior **não corrige** esta dívida — só para de escondê-la atrás de OOM, e
+o teto de 8g é folga finita: cada contexto novo come dessa folga.
 
 **Atualização:** a parte que não dependia disto foi feita — `.github/workflows/it.yml`
 (`PJB Integration Gate`) roda `mvnw verify -pl pjb-api -am` diariamente contra o `master`, fora do
@@ -1349,3 +1368,39 @@ judicial, transforma resposta de negócio em incidente operacional aparente.
 `AcordoDomainException` pode ser 409 ou 422 conforme o caso, e `TransicaoInvalidaException` depende
 de a transição ser recusada por regra processual ou por estado concorrente. Não é varredura
 mecânica: mapear em lote pelo nome repetiria o erro de tratar categoria semântica como sintaxe.
+
+
+## D-workbench-it-limpeza-viola-chave-estrangeira
+
+**Status:** aberta
+
+**Contexto:** `InstitutionalWorkbenchControllerIT.setup:64` aborta os quatro métodos da classe com
+`DataIntegrityViolationException`: `delete from tb_usuario where id=1 was aborted: ERROR: update or
+delete on table ... violates foreign key constraint`. A limpeza apaga o usuário sem apagar antes as
+linhas que o referenciam — ou sem usar a ordem/cascata correta. Medido em CI (run 34774950817), com
+Postgres real; não aparece sob H2 nem em execução isolada da classe.
+
+**Risco:** baixo em produção, alto em confiança: são 4 dos 7 problemas restantes da suíte de
+integração, e um `setup` que sempre falha torna a classe inteira decorativa — ela consta como
+existente e não verifica nada.
+
+**Quando revisitar:** junto de `D-pjbflowitbase-cleanup-only-beforeeach`, que é a mesma família
+(limpeza de teste que não conhece o grafo de dependências real).
+
+## D-gate-institucional-delegado-sem-classificacao
+
+**Status:** aberta
+
+**Contexto:** `InstitutionalDelegadoGateIT.requisicaoDiligencia_comDelegadoAutenticado_passaPeloGateInstitucional`
+espera `"DELEGADO_REQUISICAO_DILIGENCIA"` e recebe `null` — a mensagem da própria asserção é
+"Gate rodou depois da auth e classificou a operacao de delegado". O gate institucional executa, mas
+não classifica a operação do delegado. Medido em CI (run 34774950817).
+
+**Risco:** classificação institucional ausente significa que a operação atravessa sem rótulo — o que
+importa aqui não é o teste vermelho, e sim uma operação de autoridade policial passando pelo gate sem
+ser identificada como tal para fins de trilha e política de acesso.
+
+**Quando revisitar:** exige ler o classificador do gate e decidir se o caso do delegado nunca foi
+mapeado ou se deixou de ser; as classes irmãs (`InstitutionalJuizGabineteGateIT`,
+`InstitutionalOficialJusticaGateIT`, `InstitutionalSecretariaGateIT`) passaram nesta execução, o que
+sugere lacuna pontual e não quebra do mecanismo.

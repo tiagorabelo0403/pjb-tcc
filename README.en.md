@@ -431,8 +431,11 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 | Unit test execution time | Surefire | **~14 min** |
 | Integration test classes | Failsafe | **116** ¹ |
 | Polo-composition-engine tests | Failsafe | **+10 green** (role by procedural type: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
-| IT failures | Failsafe | **0** (0E + 0F) |
-| Full verify execution time | Surefire + Failsafe | **~50 min** |
+| Integration tests executed | Failsafe | **292** (measured in CI, 2026-09-13) |
+| IT failures | Failsafe | **3 failures + 4 errors** ² |
+| Full verify execution time | Surefire + Failsafe | **~50 min** locally · **~38 min** in CI |
+
+² Until 2026-09-13 this row read `0 (0E + 0F)`, a number inherited from an old local run that nothing re-verified. The first `PJB Integration Gate` execution measured the real value. The seven remaining occurrences are open and tracked in the [`DEBT_LOG`](./docs/quality/DEBT_LOG.md): four are inter-test cleanup failures in `InstitutionalWorkbenchControllerIT`, two are capability-rate-limiter `429`s in `LaianeLawyerSubstabelecimentoIT`, and one is a missing classification in the delegado institutional gate.
 
 The integration suite went through a structural stabilization process: failures caused by incorrect environment variables, cross-test data contamination, and hardcoded IDs without seeding were eliminated down to zero. Two of those fixes exposed real production bugs, not just test issues: `AuditLedgerService` recorded audit events only in memory, without persisting to the repository the audit endpoints actually query; and root-proceeding resolution in `CaseContinuityOrchestratorService` used a mutable field during the case lifecycle, causing ambiguity between the root proceeding and its branches (e.g., judgment enforcement) after archiving.
 
