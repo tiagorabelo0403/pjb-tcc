@@ -323,17 +323,34 @@ ser configurável por ente federado (ver `D-teto-rpv-duplicado-como-literal-em-s
 
 ## D-laiane-substabelecimento-503-em-contexto-compartilhado
 
-**Status:** aberta — causa identificada em 2026-09-13, correção pendente
+**Status:** fechada 2026-09-13 — causa real era admissão operacional em aquecimento
 
-**Atualização (2026-09-13, run 34774950817):** medido no CI sem OOM mascarando, o status **não é 503, é
-`429`** — nos dois testes, `expected: 200 but was: 429` e `expected: 403 but was: 429`. `429` é
-`CapabilityRateLimitExceededException`, ou seja, **o limitador de capacidade está ativo**. Isso confirma
-a hipótese abaixo e remove o "causa não identificada": a propriedade
-`pjb.security.capability-ratelimit.enabled: false` não está surtindo efeito para esta classe no contexto
-compartilhado, e o `@MockitoBean CapabilityRateLimiter` removido na PR #108 era justamente o que dava a
-ela contexto próprio. A correção é devolver isolamento de contexto a esta classe ou garantir que a
-propriedade alcance o contexto que ela usa — não mexer na regra de substabelecimento, que não chega a
-ser exercitada.
+**Correção de diagnóstico (2026-09-13):** esta entrada chegou a afirmar, na PR #140, que o `429`
+observado vinha de `CapabilityRateLimitExceededException` e que isso confirmava a hipótese do
+`@MockitoBean CapabilityRateLimiter` removido na PR #108. **Estava errado.** O `429` foi inferido pelo
+código de status, sem ler o corpo da resposta. O corpo real, no dump do MockMvc:
+
+```
+Status = 429
+Content type = application/problem+json
+Body = {"type":"https://pjb.local/problems/runtime_warming_up",
+        "title":"Operational Admission Control", "status":429,
+        "detail":"A instância ainda está em aquecimento operacional..."}
+Handler: Type = null
+```
+
+`Handler = null` — a requisição nunca alcançou controller nenhum. Quem rejeitou foi
+`PjbOperationalAdmissionFilter`, e não o limitador de capacidade. As três ocorrências de `429` da
+execução inteira são desse mesmo tipo, incluindo a do gate de delegado. `PjbRuntimePressureService`
+calcula `warmingUp = uptime < minimumReadyAge()`, janela padrão de **20s contados da criação do bean de
+pressão** — ou seja, de cada contexto Spring novo. Classe recém-subida que dispara rota "cara" nos
+primeiros 20s leva `429` antes de qualquer regra de negócio, e passa ou falha conforme o boot demore
+mais ou menos que isso.
+
+**Fechamento:** `reject-during-warmup: false` no perfil `integration-test`, e a proteção de aquecimento
+— que **não tinha teste nenhum** — ganhou cobertura determinística em `PjbOperationalAdmissionServiceTest`.
+Produção segue com o default `true`. A regra de substabelecimento nunca foi exercitada nestas falhas e
+não foi tocada.
 
 **Sintoma original:** `LaianeLawyerSubstabelecimentoIT` devolve **503 nos dois testes** quando roda em lote
 compartilhando contexto Spring — tanto no que espera 200 quanto no que espera 403. Isolada, em
@@ -1389,7 +1406,23 @@ existente e não verifica nada.
 
 ## D-gate-institucional-delegado-sem-classificacao
 
-**Status:** aberta
+**Status:** fechada 2026-09-13 — mesma causa da entrada de substabelecimento, e o diagnóstico original
+desta entrada estava errado
+
+**Correção de diagnóstico (2026-09-13):** esta entrada foi criada afirmando que "o gate institucional
+executa, mas não classifica a operação do delegado". **Não é isso.** O gate não executou: a requisição
+levou `429 RUNTIME_WARMING_UP` de `PjbOperationalAdmissionFilter`, que roda antes dele, e por isso o
+cabeçalho `X-PJB-Institutional-Gate-Operation` veio `null`. O mapeamento
+`/api/v1/delegado/requisicao/diligencia` → `DELEGADO_REQUISICAO_DILIGENCIA` existe em
+`InstitutionalCriticalActionHttpGuardFilter:148` e tem teste unitário afirmando-o
+(`InstitutionalCriticalActionHttpGuardFilterPolicyMappingTest:62`). Rodada isolada da classe: **1/1
+verde**, contra Postgres real.
+
+O erro de leitura tem uma causa concreta que vale registrar: a asserção de status do teste é
+`isNotIn(401, 403)`, larga demais — um `429` passa por ela, e aí só o cabeçalho nulo aparece, o que
+parece falha de classificação. **Asserção que não fixa o status esconde a natureza da falha.**
+
+**Status anterior (mantido como histórico):** aberta
 
 **Contexto:** `InstitutionalDelegadoGateIT.requisicaoDiligencia_comDelegadoAutenticado_passaPeloGateInstitucional`
 espera `"DELEGADO_REQUISICAO_DILIGENCIA"` e recebe `null` — a mensagem da própria asserção é
