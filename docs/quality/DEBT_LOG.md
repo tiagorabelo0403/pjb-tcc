@@ -9,9 +9,9 @@ o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
 ## D-guards-existentes-fora-do-ci
 
-**Status:** aberta — 25 guards fora do CI; 15 passam e poderiam entrar hoje, 10 acusam algo
+**Status:** aberta — 23 guards fora do CI; 15 passam e poderiam entrar hoje, 8 acusam algo
 
-O projeto tem **44 scripts em `scripts/`** e **18 estão no `ci.yml`**. Parte dos 25 restantes
+O projeto tem **44 scripts em `scripts/`** e **20 estão no `ci.yml`**. Parte dos 23 restantes
 é ferramenta local legítima (`docker_zombie_container_guard`, `reap_orphan_test_jvms`) ou gerador
 (`frontend_integration_pack`, `migration_alignment_report`), mas a maioria é guarda de verdade.
 
@@ -24,17 +24,17 @@ Executados todos os que têm forma de guarda, a partir de `scripts/`, que é o `
   `legal_ai_surface_split_guard`, `legal_knowledge_catalog_guard`, `legal_mcp_catalog_guard`,
   `pjb_runtime_memory_recipe_guard`, `powershell_test_collector_guard`, `replacement_matrix_guard`,
   `spring_ambiguous_constructor_guard`, `spring_surface_guard`.
-- **10 acusam algo e não foram examinados**: `judicial_innovation_guard`,
+- **8 acusam algo e não foram examinados**: `judicial_innovation_guard`,
   `judicial_innovation_part_two_guard`, `judicial_innovation_part_three_guard`,
-  `modular_monolith_guard`, `repository_cleanliness_guard`, `repository_layout_guard`,
-  `salario_minimo_hardcoded_guard`, `tribunal_readiness_guard`, `universal_digital_core_guard` e
-  `docker_zombie_container_guard` — este último é ferramenta local e sai com código ≠ 0 ao encontrar
-  container órfão, comportamento esperado fora do CI.
+  `modular_monolith_guard`, `salario_minimo_hardcoded_guard`, `tribunal_readiness_guard`,
+  `universal_digital_core_guard` e `docker_zombie_container_guard` — este último é ferramenta local e
+  sai com código ≠ 0 ao encontrar container órfão, comportamento esperado fora do CI.
 
   Cada um exige a mesma triagem que os já examinados: distinguir achado real de defeito do próprio
-  guard. Dos cinco examinados até aqui, **três acusavam por defeito próprio** — catálogo de assinaturas
-  escrito à mão, proibição por substring que pegava português legítimo, e varredura de comentário como
-  se fosse código. "Guard vermelho" não é sinônimo de "código errado".
+  guard. Dos **sete** examinados até aqui, **cinco acusavam por defeito próprio** — catálogo de
+  assinaturas escrito à mão, proibição por substring que pegava português legítimo, varredura de
+  comentário como se fosse código, e dois que varriam o sistema de arquivos em vez do que o git
+  versiona. "Guard vermelho" não é sinônimo de "código errado".
 
 - **6 passaram a passar em fatias recentes** e já estão ligados ao CI:
   `access_key_and_unavailability_guard`, `java_regression_signature_guard`,
