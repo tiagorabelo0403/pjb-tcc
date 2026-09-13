@@ -151,7 +151,7 @@ Enquanto a decisão não vem, as cinco guardas não podem entrar no CI: elas rep
 
 ## D-controllers-que-chamam-repository-direto
 
-**Status:** aberta — 2 controllers, afirmados por nome no `PjbArchitectureTest`
+**Status:** aberta — 1 controller, afirmado por nome no `PjbArchitectureTest`
 
 A regra `controllers_nao_devem_importar_repositories` foi declarada fechada com zero violação, e a
 declaração estava errada — não pela contagem, mas pelo escopo. Ela olhava apenas classes em
@@ -171,7 +171,6 @@ ficam afirmados por nome:
   com adaptador em `pjb-api/.../infra`), e não Spring Data — a violação é o controller orquestrar
   domínio sem passar pela aplicação, não o controller tocar JPA. É CRUD completo (criar, buscar,
   listar, atualizar, arquivar) e **não tem teste de controller**, então precisa da receita completa.
-- `DocumentoController` — importa `repository.document.DocumentoProcessualRepository`.
 
 Dois já saíram do baseline. `FuncaoServidorAdminController`: a consulta de unidades candidatas passou
 para `UnidadesCandidatasParaDesignacaoService`, serviço próprio porque "quais unidades entram na lista
@@ -183,7 +182,11 @@ a porta injetada. `AdvogadoAuditoriaController`: a consulta da trilha passou par
 está autenticado, nunca de parâmetro da requisição. `JudexOnDemandController`: o caso de uso inteiro da
 minuta passou para `JudexMinutaService`, e no caminho apareceu defeito de contrato — processo
 inexistente no índice de leitura lançava `RuntimeException` crua, que vira 500, onde cabia
-`RecursoNaoEncontradoException` e 404. Esse caminho não tinha teste.
+`RecursoNaoEncontradoException` e 404. Esse caminho não tinha teste. `DocumentoController`: a busca do
+documento e a dupla autorização por sigilo efetivo passaram para `DocumentoPdfDownloadService`. O
+registro do contexto da requisição continua acontecendo **antes** da autorização, por meio de um
+registrador que o controller entrega — o orçamento de download lê esse contexto inclusive quando o
+acesso é negado, e registrar depois o perderia justamente na negativa.
 
 Migrar cada um exige cobrir antes o caminho de negativa no próprio controller, como foi feito em
 `ProtocoloReciboController`: mover autorização sem teste de 403 é refatorar no escuro.
@@ -209,6 +212,33 @@ Verificado que a deriva **não** veio das fatias recentes: nenhum arquivo criado
 2026-09-12 aparece entre os 449 achados. Fechar exige decidir entre migrar o layout dos módulos ou
 reconhecer o baseline atual como o novo piso — e reconhecer sem migrar transforma a catraca em
 carimbo.
+
+## D-accept-ranges-declarado-e-sobrescrito-no-download-de-pdf
+
+**Status:** aberta — intenção declarada no código, efeito nenhum na resposta
+
+`DocumentoController` monta o download de PDF com `headers.set("Accept-Ranges", "none")`, ao lado dos
+demais cabeçalhos defensivos (`no-store`, `nosniff`, `DENY`, `noindex`). A resposta sai com
+**`Accept-Ranges: bytes`**: o `ResourceHttpMessageConverter` do Spring sobrescreve o valor ao escrever
+um `Resource`.
+
+Medido por teste com `@WebMvcTest`, que usa os conversores reais — não é artefato de harness.
+
+**Não é vulnerabilidade.** A autorização por sigilo efetivo já aconteceu antes de o conteúdo ser
+resolvido, e requisição por faixa sobre resposta autorizada não contorna nada. O que existe é
+intenção declarada sem efeito: quem lê o controller conclui que requisição por faixa está desabilitada
+num documento sob segredo de justiça, e não está.
+
+Fechar exige decidir entre duas saídas, e nenhuma é trivial o bastante para entrar de carona numa
+fatia de layering:
+
+1. **Tornar efetivo** — devolver `ResponseEntity<byte[]>` em vez de `Resource` faz o cabeçalho valer,
+   ao custo de carregar o documento inteiro em memória, o que num PDF grande de processo não é neutro.
+2. **Remover a linha** e assumir que requisição por faixa é permitida, deixando o código honesto sobre
+   o que de fato acontece.
+
+O teste `pdfAutorizadoSaiComOsCabecalhosQueImpedemCacheEIndexacao` afirma o valor **real** (`bytes`),
+com o motivo em comentário, para que a divergência não volte a passar despercebida.
 
 ## D-entidades-sem-classificacao-de-titularidade
 
