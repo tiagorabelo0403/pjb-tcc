@@ -9,9 +9,9 @@ o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
 ## D-guards-existentes-fora-do-ci
 
-**Status:** aberta — 30 guards fora do CI; 14 passam e poderiam entrar hoje, 2 acusam achado real
+**Status:** aberta — 28 guards fora do CI; 14 passam e poderiam entrar hoje, 2 acusam achado real
 
-O projeto tem **43 scripts em `scripts/`** e **13 estão no `ci.yml`**. Parte dos 30 restantes
+O projeto tem **44 scripts em `scripts/`** e **15 estão no `ci.yml`**. Parte dos 28 restantes
 é ferramenta local legítima (`docker_zombie_container_guard`, `reap_orphan_test_jvms`) ou gerador
 (`frontend_integration_pack`, `migration_alignment_report`), mas a maioria é guarda de verdade.
 
@@ -23,14 +23,10 @@ Executados todos os que têm forma de guarda:
   `legal_ai_surface_split_guard`, `legal_knowledge_catalog_guard`, `legal_mcp_catalog_guard`,
   `pjb_runtime_memory_recipe_guard`, `powershell_test_collector_guard`, `replacement_matrix_guard`,
   `spring_ambiguous_constructor_guard`.
-- **1 não pode ser ligado como está**: `internal_type_hygiene_guard` passa quando rodado da raiz do
-  repositório e estoura `FileNotFoundError: docs\reports\internal_type_hygiene_guard.json` quando
-  rodado de dentro de `scripts/` — que é exatamente o `working-directory` que o `ci.yml` usa para os
-  guards. Ele escreve o relatório em caminho relativo ao cwd em vez de relativo ao arquivo. Ligá-lo
-  sem corrigir isso quebra o CI. Uma revisão anterior desta mesma entrada o listou entre os que
-  "passam e poderiam entrar hoje"; isso estava errado, porque foi medido da raiz.
-- **2 passaram a passar em fatias recentes**: `access_key_and_unavailability_guard` e
-  `java_regression_signature_guard`, ambos já ligados ao CI.
+- **4 passaram a passar em fatias recentes**: `access_key_and_unavailability_guard`,
+  `java_regression_signature_guard`, `internal_type_hygiene_guard` (destravado quando os guards
+  deixaram de resolver caminho contra o cwd) e o novo `guard_cwd_independence_guard`. Os quatro já
+  estão ligados ao CI.
 - **2 acusam achado real e seguem abertos**, cada um virando dívida própria:
   - `canonical_institutional_route_guard` — 12 controllers de comunicação institucional fora da rota canônica.
   - `readme_truthfulness_guard` — README referencia `docs/escopo`, que não existe. As outras duas queixas
@@ -41,6 +37,29 @@ Executados todos os que têm forma de guarda:
 (ver `project_padrao_instrumento_que_nao_age` na memória). Foi assim que o
 `legal_ai_surface_split_guard` ficou quebrado sem ninguém ver, e foi assim que três classes de regra
 jurídica foram apagadas apesar de existir guarda proibindo.
+
+## D-hotspots-de-tamanho-ocultos-por-guard-cego
+
+**Status:** aberta — 18 classes e 27 services acima do limiar, mais 2 pacotes espalhados
+
+O `architecture_hygiene_guard` reportava totais zerados no CI porque resolvia
+`Path('pjb-api/src/main/java/...')` contra o diretório de trabalho, e o `ci.yml` o invoca de dentro de
+`scripts/`, onde esse caminho não existe. Varria o conjunto vazio e reportava sucesso. Com a raiz
+ancorada em `project_roots.ROOT`, os achados reais apareceram:
+
+- **18 classes acima de 1.000 linhas.** A maior é `MapaCompetenciaDinamicoEngine`, com 1.247; em
+  seguida `ProfessionalInstitutionalAccessGrantAdminService` (1.163), `NotificacaoInteligentePJB`
+  (1.161) e `RecursalIaPlannerService` (1.118).
+- **27 services/engines acima de 900 linhas.**
+- **2 pacotes acima do limiar de espalhamento**: `model.repository` com 163 arquivos e
+  `core.procedural` com 159.
+
+O `internal_type_hygiene_guard`, que tinha o mesmo defeito, sinaliza **18 arquivos com 118 tipos
+aninhados** acima de 900 linhas — conjunto que se sobrepõe ao anterior.
+
+Nada disso é regressão nova: é o backlog de F6 (god services), que estava invisível porque o
+instrumento que deveria medi-lo não media nada. Não foi fechado junto com a correção do guard por ser
+refatoração de domínio, não higiene de ferramenta.
 
 ## D-apis-depreciadas-em-codigo-de-teste
 

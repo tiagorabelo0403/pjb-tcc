@@ -2,9 +2,11 @@ from pathlib import Path
 import json
 import re
 
-BASE = Path('pjb-api/src/main/java/com/tcc/pjb/backend')
-REPORT_JSON = Path('docs/reports/internal_type_hygiene_guard.json')
-REPORT_MD = Path('docs/reports/internal_type_hygiene_guard.md')
+from project_roots import ROOT
+
+BASE = ROOT / 'pjb-api/src/main/java/com/tcc/pjb/backend'
+REPORT_JSON = ROOT / 'docs/reports/internal_type_hygiene_guard.json'
+REPORT_MD = ROOT / 'docs/reports/internal_type_hygiene_guard.md'
 THRESHOLD = 900
 pattern = re.compile(r'\b(private|protected|public)?\s*(static\s+)?(final\s+)?(sealed\s+)?(record|enum|class|interface)\s+([A-Za-z0-9_]+)')
 
@@ -27,7 +29,7 @@ for path in sorted(BASE.rglob('*.java')):
             continue
         nested.append({'line': idx, 'kind': kind, 'name': name, 'declaration': line.strip()})
     if nested:
-        results.append({'file': str(path), 'lines': len(lines), 'nestedTypes': nested})
+        results.append({'file': path.relative_to(ROOT).as_posix(), 'lines': len(lines), 'nestedTypes': nested})
 
 summary = {
     'filesScanned': sum(1 for _ in BASE.rglob('*.java')),
@@ -39,7 +41,7 @@ REPORT_JSON.write_text(json.dumps({'summary': summary, 'flaggedFiles': results},
 md = [
     '# Internal Type Hygiene Guard',
     '',
-    f"- Base analisada: `{BASE}`",
+    f"- Base analisada: `{BASE.relative_to(ROOT).as_posix()}`",
     f"- Arquivos Java: **{summary['filesScanned']}**",
     f"- Threshold de tamanho: **{THRESHOLD} linhas**",
     f"- Arquivos sinalizados: **{summary['filesFlagged']}**",

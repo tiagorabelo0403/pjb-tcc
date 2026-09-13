@@ -89,6 +89,10 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: guard_cwd_independence_guard
+        working-directory: scripts
+        run: python guard_cwd_independence_guard.py
+
       - name: internal_reference_drift_guard
         working-directory: scripts
         run: python internal_reference_drift_guard.py
@@ -153,8 +157,13 @@ jobs:
         working-directory: scripts
         run: python java_regression_signature_guard.py
 
+      - name: internal_type_hygiene_guard
+        working-directory: scripts
+        run: python internal_type_hygiene_guard.py
+
       - name: access_key_and_unavailability_guard
-        run: python scripts/access_key_and_unavailability_guard.py
+        working-directory: scripts
+        run: python access_key_and_unavailability_guard.py
 
       - name: Upload Guard Reports
         if: always()
