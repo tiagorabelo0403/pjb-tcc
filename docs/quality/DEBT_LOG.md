@@ -321,64 +321,6 @@ o mesmo valor por ausência de fonte, não por decisão.
 **O que falta:** confirmar com o Tiago qual valor o PJB deve adotar para município, e se o teto deve
 ser configurável por ente federado (ver `D-teto-rpv-duplicado-como-literal-em-seis-pontos`).
 
-## D-laiane-substabelecimento-503-em-contexto-compartilhado
-
-**Status:** fechada 2026-09-13 — causa real era admissão operacional em aquecimento
-
-**Correção de diagnóstico (2026-09-13):** esta entrada chegou a afirmar, na PR #140, que o `429`
-observado vinha de `CapabilityRateLimitExceededException` e que isso confirmava a hipótese do
-`@MockitoBean CapabilityRateLimiter` removido na PR #108. **Estava errado.** O `429` foi inferido pelo
-código de status, sem ler o corpo da resposta. O corpo real, no dump do MockMvc:
-
-```
-Status = 429
-Content type = application/problem+json
-Body = {"type":"https://pjb.local/problems/runtime_warming_up",
-        "title":"Operational Admission Control", "status":429,
-        "detail":"A instância ainda está em aquecimento operacional..."}
-Handler: Type = null
-```
-
-`Handler = null` — a requisição nunca alcançou controller nenhum. Quem rejeitou foi
-`PjbOperationalAdmissionFilter`, e não o limitador de capacidade. As três ocorrências de `429` da
-execução inteira são desse mesmo tipo, incluindo a do gate de delegado. `PjbRuntimePressureService`
-calcula `warmingUp = uptime < minimumReadyAge()`, janela padrão de **20s contados da criação do bean de
-pressão** — ou seja, de cada contexto Spring novo. Classe recém-subida que dispara rota "cara" nos
-primeiros 20s leva `429` antes de qualquer regra de negócio, e passa ou falha conforme o boot demore
-mais ou menos que isso.
-
-**Fechamento:** `reject-during-warmup: false` no perfil `integration-test`, e a proteção de aquecimento
-— que **não tinha teste nenhum** — ganhou cobertura determinística em `PjbOperationalAdmissionServiceTest`.
-Produção segue com o default `true`. A regra de substabelecimento nunca foi exercitada nestas falhas e
-não foi tocada.
-
-**Sintoma original:** `LaianeLawyerSubstabelecimentoIT` devolve **503 nos dois testes** quando roda em lote
-compartilhando contexto Spring — tanto no que espera 200 quanto no que espera 403. Isolada, em
-contexto novo, passa 2/2. O 503 acontece antes da lógica de negócio: os dois casos falham com o
-mesmo status, apesar de exercitarem caminhos de autorização diferentes.
-
-**Como apareceu:** a PR #108 removeu o `@MockitoBean CapabilityRateLimiter` de 11 ITs, trocando por
-`pjb.security.capability-ratelimit.enabled: false`. O mock era o que dava a esta classe um contexto
-Spring próprio; sem ele, ela passou a entrar no contexto compartilhado e a falhar no lote 4.
-
-**O que foi descartado como causa:**
-
-- Rate limit negando: negação devolve 429, não 503, e o desligamento por configuração retorna antes
-  de `store.tryConsume(...)`.
-- Exceção não tratada: o handler genérico de `ApiExceptionHandler` registra `Unhandled exception` em
-  log, e não há registro no relatório do Failsafe.
-- Dado ausente por `TRUNCATE`: o teste cria substabelecente, destinatário e procuração dentro do
-  próprio método.
-
-**Contenção aplicada:** o mock foi restaurado **apenas nesta classe**, o que devolve a ela o contexto
-dedicado e o estado verde anterior. As outras 10 ITs seguem com a neutralização por configuração.
-
-**Custo da contenção:** 1 contexto Spring, algo em torno de 1 minuto na suíte.
-
-**Próximo passo sugerido:** capturar o corpo do `ProblemDetail` do 503 (o teste hoje assere só o
-status) para identificar o `type` e, com ele, o handler de origem. Sem esse dado qualquer correção
-seria chute.
-
 ## D-fragmentacao-de-contexto-spring-nos-its
 
 **Status:** aberta — medida, com alavanca identificada; exige julgamento por teste
@@ -1386,7 +1328,6 @@ judicial, transforma resposta de negócio em incidente operacional aparente.
 de a transição ser recusada por regra processual ou por estado concorrente. Não é varredura
 mecânica: mapear em lote pelo nome repetiria o erro de tratar categoria semântica como sintaxe.
 
-
 ## D-workbench-it-limpeza-viola-chave-estrangeira
 
 **Status:** aberta
@@ -1404,36 +1345,3 @@ existente e não verifica nada.
 **Quando revisitar:** junto de `D-pjbflowitbase-cleanup-only-beforeeach`, que é a mesma família
 (limpeza de teste que não conhece o grafo de dependências real).
 
-## D-gate-institucional-delegado-sem-classificacao
-
-**Status:** fechada 2026-09-13 — mesma causa da entrada de substabelecimento, e o diagnóstico original
-desta entrada estava errado
-
-**Correção de diagnóstico (2026-09-13):** esta entrada foi criada afirmando que "o gate institucional
-executa, mas não classifica a operação do delegado". **Não é isso.** O gate não executou: a requisição
-levou `429 RUNTIME_WARMING_UP` de `PjbOperationalAdmissionFilter`, que roda antes dele, e por isso o
-cabeçalho `X-PJB-Institutional-Gate-Operation` veio `null`. O mapeamento
-`/api/v1/delegado/requisicao/diligencia` → `DELEGADO_REQUISICAO_DILIGENCIA` existe em
-`InstitutionalCriticalActionHttpGuardFilter:148` e tem teste unitário afirmando-o
-(`InstitutionalCriticalActionHttpGuardFilterPolicyMappingTest:62`). Rodada isolada da classe: **1/1
-verde**, contra Postgres real.
-
-O erro de leitura tem uma causa concreta que vale registrar: a asserção de status do teste é
-`isNotIn(401, 403)`, larga demais — um `429` passa por ela, e aí só o cabeçalho nulo aparece, o que
-parece falha de classificação. **Asserção que não fixa o status esconde a natureza da falha.**
-
-**Status anterior (mantido como histórico):** aberta
-
-**Contexto:** `InstitutionalDelegadoGateIT.requisicaoDiligencia_comDelegadoAutenticado_passaPeloGateInstitucional`
-espera `"DELEGADO_REQUISICAO_DILIGENCIA"` e recebe `null` — a mensagem da própria asserção é
-"Gate rodou depois da auth e classificou a operacao de delegado". O gate institucional executa, mas
-não classifica a operação do delegado. Medido em CI (run 34774950817).
-
-**Risco:** classificação institucional ausente significa que a operação atravessa sem rótulo — o que
-importa aqui não é o teste vermelho, e sim uma operação de autoridade policial passando pelo gate sem
-ser identificada como tal para fins de trilha e política de acesso.
-
-**Quando revisitar:** exige ler o classificador do gate e decidir se o caso do delegado nunca foi
-mapeado ou se deixou de ser; as classes irmãs (`InstitutionalJuizGabineteGateIT`,
-`InstitutionalOficialJusticaGateIT`, `InstitutionalSecretariaGateIT`) passaram nesta execução, o que
-sugere lacuna pontual e não quebra do mecanismo.

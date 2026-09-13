@@ -74,8 +74,9 @@ class InstitutionalPsicossocialGateIT extends PjbIntegrationTestBase {
                 .getResponse();
 
         assertThat(response.getStatus())
-                .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou psicologo legitimo)")
-                .isNotIn(401, 403);
+                .as("Nao pode ser 401 (auth falhou antes do gate), 403 (gate barrou psicologo legitimo) "
+                        + "nem qualquer outra recusa: o gate precisa ter deixado a requisicao chegar")
+                .isLessThan(400);
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation"))
                 .as("Gate rodou depois da auth e classificou a operacao psicossocial")
                 .isEqualTo("PSICOSSOCIAL_PARECER");

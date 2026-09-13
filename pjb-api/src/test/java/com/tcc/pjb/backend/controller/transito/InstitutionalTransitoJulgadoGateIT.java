@@ -77,8 +77,9 @@ class InstitutionalTransitoJulgadoGateIT extends PjbIntegrationTestBase {
                 .getResponse();
 
         assertThat(response.getStatus())
-                .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou juiz legitimo)")
-                .isNotIn(401, 403);
+                .as("Nao pode ser 401 (auth falhou antes do gate), 403 (gate barrou juiz legitimo) "
+                        + "nem qualquer outra recusa: o gate precisa ter deixado a requisicao chegar")
+                .isLessThan(400);
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation"))
                 .as("Gate rodou depois da auth e classificou a operacao de transito em julgado")
                 .isEqualTo("TRANSITO_CERTIDAO");
