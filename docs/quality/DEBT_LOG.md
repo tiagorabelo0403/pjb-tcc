@@ -390,8 +390,14 @@ então cada combinação de mocks cria um contexto novo.
 melhoria proíbe refatoração comportamental em lote, e converter 38 classes de uma vez reproduziria o
 processo que gerou o problema.
 
-**Pré-requisito que isto bloqueia:** qualquer forma de CI de integração. Com 1h38 não existe versão
-que caiba no caminho do PR; reduzir contexto é o que torna a discussão possível.
+**Pré-requisito que isto bloqueia:** CI de integração **no caminho da PR**. Com 1h38 não existe
+versão que caiba ali; reduzir contexto é o que torna essa discussão possível.
+
+**Atualização:** a parte que não dependia disto foi feita — `.github/workflows/it.yml`
+(`PJB Integration Gate`) roda `mvnw verify -pl pjb-api -am` diariamente contra o `master`, fora do
+caminho da PR. Isso fecha o buraco de "nada reverifica a suíte de integração", mas não este item:
+enquanto o custo for de ~1h38, integração continua sendo portão noturno e não portão de merge, e a
+regressão é descoberta depois de já estar no `master`.
 
 ## D-f1-remocao-govregistryclient-ajuizamentoworkflowadapter
 

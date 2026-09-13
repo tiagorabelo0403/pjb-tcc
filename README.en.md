@@ -383,14 +383,24 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ### Run the Full Suite Including Integration Tests (official gate)
 
 ```bash
-./mvnw verify -pl pjb-api
+./mvnw verify -pl pjb-api -am
 ```
 
 This is the official project gate. It runs the 5,342 unit tests (Surefire) and then the 116 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
+The `-am` is not cosmetic: without it `pjb-core` is resolved from `~/.m2` instead of the reactor, and a stale artifact there produces `cannot find symbol` pointing at classes that exist in the source tree.
+
 Expected time: **~50 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
 
 > **Why so slow?** Each IT class boots a full Spring context with a real PostgreSQL, applies the Flyway migrations, and executes requests the way an external client would. That gives full confidence that what passed in test will pass in production — but it costs time.
+
+### The Integration Gate in CI
+
+`ci.yml` runs unit tests only: the 116 integration test classes do not fit in a pull request's critical path. They run in their own workflow — `PJB Integration Gate` (`.github/workflows/it.yml`) — scheduled daily at 05:00 UTC against `master`, and triggerable on demand via `workflow_dispatch`.
+
+When the integration suite breaks, the workflow opens an issue carrying the commit and the run link, and comments on it for subsequent breaks instead of creating one issue per night. When the suite goes green again, it closes the issue itself. Surefire and Failsafe reports are attached as a run artifact for 30 days.
+
+The split is deliberate: a pull request still closes in minutes, and an integration regression surfaces within 24 hours with an owner, a history and attached evidence — instead of depending on someone opening the Actions tab.
 
 The Surefire/Failsafe `argLine` sets `-Dpjb.runtime.lifecycle.drain-quiet-period=10ms`. The graceful drain coordinator (`PjbRuntimeDrainCoordinator`) sleeps 20s by default on every Spring context close — correct in production, where there is real traffic to drain before shutdown, but pure waste in a test JVM. Without this override, a full `verify` run can exceed Surefire's own 30s fork-exit watchdog (`forkedProcessExitTimeoutInSeconds`) and force-kill the forked JVM at teardown, even with every test already green — a symptom that only shows up on long full-suite runs, never in an isolated class.
 
