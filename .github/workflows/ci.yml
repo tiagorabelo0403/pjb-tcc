@@ -181,6 +181,10 @@ jobs:
         working-directory: scripts
         run: python repository_cleanliness_guard.py
 
+      - name: salario_minimo_hardcoded_guard
+        working-directory: scripts
+        run: python salario_minimo_hardcoded_guard.py
+
       - name: access_key_and_unavailability_guard
         working-directory: scripts
         run: python access_key_and_unavailability_guard.py
