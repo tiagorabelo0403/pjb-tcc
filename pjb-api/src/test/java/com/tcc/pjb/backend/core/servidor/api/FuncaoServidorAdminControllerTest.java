@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.tcc.pjb.backend.configs.api.ApiExceptionHandler;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorApplicationService;
 import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorDesignacaoService;
@@ -25,6 +26,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -37,9 +39,23 @@ class FuncaoServidorAdminControllerTest {
             mock(UnidadesCandidatasParaDesignacaoService.class);
     private final CurrentUserService currentUserService = mock(CurrentUserService.class);
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules().registerModule(new JavaTimeModule());
+
+    /**
+     * A advice real entra no setup porque o controller deixou de traduzir {@code EntityNotFoundException}
+     * a mão: o 404 agora vem de {@code ApiExceptionHandler}, como vem para os outros 33 lançamentos da
+     * mesma exceção espalhados pelos serviços. Sem a advice aqui o teste de "função inexistente"
+     * passaria a medir o catch-all do MockMvc, e não o comportamento real da API.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static ApiExceptionHandler adviceReal() {
+        ObjectProvider<Object> semColaborador = mock(ObjectProvider.class);
+        when(semColaborador.getIfAvailable()).thenReturn(null);
+        return new ApiExceptionHandler((ObjectProvider) semColaborador, (ObjectProvider) semColaborador);
+    }
+
     private final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(
             new FuncaoServidorAdminController(designacaoService, funcaoServidorApplicationService, unidadesCandidatasService, currentUserService)
-    ).build();
+    ).setControllerAdvice(adviceReal()).build();
 
     @Test
     void designarDelegaParaOServicoComOAdminAutenticado() throws Exception {
@@ -80,7 +96,7 @@ class FuncaoServidorAdminControllerTest {
     }
 
     @Test
-    void encerrarConvertePraRecursoNaoEncontradoQuandoFuncaoNaoExiste() throws Exception {
+    void encerrarFuncaoInexistenteResponde404PelaAdvice() throws Exception {
         Usuario admin = new Usuario();
         admin.setId(1L);
         when(currentUserService.getRequired()).thenReturn(admin);
@@ -91,7 +107,8 @@ class FuncaoServidorAdminControllerTest {
         mockMvc.perform(post("/api/v1/admin/servidores/designacoes/{funcaoId}/encerrar", 999L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"dataFim\":\"" + fim + "\"}"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.type").value("https://pjb.local/problems/not_found"));
     }
 
     @Test
