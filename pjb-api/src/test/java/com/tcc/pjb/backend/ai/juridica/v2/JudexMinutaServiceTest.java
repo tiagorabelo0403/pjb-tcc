@@ -1,11 +1,13 @@
 package com.tcc.pjb.backend.ai.juridica.v2;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,21 +18,21 @@ import com.tcc.pjb.backend.model.entity.jurisprudencia.Precedente;
 import com.tcc.pjb.backend.query.ProcessoQueryModel;
 import com.tcc.pjb.backend.query.ProcessoQueryRepository;
 import com.tcc.pjb.backend.service.semantic.SemanticPrecedentSearchService;
+import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.http.ResponseEntity;
 
-class JudexOnDemandControllerTest {
+class JudexMinutaServiceTest {
 
     private AiModelClient aiModelV2;
     private ObjectProvider<ProcessoQueryRepository> queryRepositoryProvider;
     private ObjectProvider<SemanticPrecedentSearchService> precedentSearchProvider;
     private SemanticPrecedentSearchService precedentSearch;
-    private JudexOnDemandController controller;
+    private JudexMinutaService service;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
@@ -45,7 +47,7 @@ class JudexOnDemandControllerTest {
         precedentSearchProvider = mock(ObjectProvider.class);
         when(precedentSearchProvider.getIfAvailable()).thenReturn(precedentSearch);
 
-        controller = new JudexOnDemandController(aiModelV2, queryRepositoryProvider, precedentSearchProvider);
+        service = new JudexMinutaService(aiModelV2, queryRepositoryProvider, precedentSearchProvider);
     }
 
     @Test
@@ -59,9 +61,9 @@ class JudexOnDemandControllerTest {
         JudexGenerateMinutaRequest request = new JudexGenerateMinutaRequest(
                 null, "considere o prazo", "triagem inicial", "texto da peticao");
 
-        ResponseEntity<String> response = controller.gerarMinuta(request);
+        String minuta = service.gerar(request);
 
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(minuta).isNotNull();
         ArgumentCaptor<String> promptCaptor = ArgumentCaptor.forClass(String.class);
         verify(aiModelV2).generate(promptCaptor.capture());
         String prompt = promptCaptor.getValue();
@@ -79,7 +81,7 @@ class JudexOnDemandControllerTest {
         JudexGenerateMinutaRequest request = new JudexGenerateMinutaRequest(
                 null, null, "triagem inicial", "texto da peticao");
 
-        controller.gerarMinuta(request);
+        service.gerar(request);
 
         ArgumentCaptor<String> promptCaptor = ArgumentCaptor.forClass(String.class);
         verify(aiModelV2).generate(promptCaptor.capture());
@@ -93,7 +95,7 @@ class JudexOnDemandControllerTest {
         JudexGenerateMinutaRequest request = new JudexGenerateMinutaRequest(
                 null, null, "triagem inicial", "texto da peticao");
 
-        controller.gerarMinuta(request);
+        service.gerar(request);
 
         ArgumentCaptor<String> promptCaptor = ArgumentCaptor.forClass(String.class);
         verify(aiModelV2).generate(promptCaptor.capture());
@@ -108,10 +110,9 @@ class JudexOnDemandControllerTest {
         JudexGenerateMinutaRequest request = new JudexGenerateMinutaRequest(
                 null, null, "triagem inicial", "texto da peticao");
 
-        ResponseEntity<String> response = controller.gerarMinuta(request);
+        String minuta = service.gerar(request);
 
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody()).isEqualTo("minuta gerada");
+        assertThat(minuta).isEqualTo("minuta gerada");
         ArgumentCaptor<String> promptCaptor = ArgumentCaptor.forClass(String.class);
         verify(aiModelV2).generate(promptCaptor.capture());
         assertThat(promptCaptor.getValue()).doesNotContain("Precedentes relacionados");
@@ -132,12 +133,43 @@ class JudexOnDemandControllerTest {
                 .thenReturn(List.of());
 
         JudexGenerateMinutaRequest request = new JudexGenerateMinutaRequest(42L, null, null, null);
-        controller.gerarMinuta(request);
+        service.gerar(request);
 
         verify(precedentSearch).semanticSearch(
                 (RamoDireito) org.mockito.ArgumentMatchers.isNull(),
                 org.mockito.ArgumentMatchers.eq("PROCEDIMENTO_COMUM_ORDINARIO"),
                 anyString(),
                 anyInt());
+    }
+
+    @Test
+    void processoInexistenteNoIndiceDeLeituraNaoVirarErroDeServidor() {
+        ProcessoQueryRepository repo = mock(ProcessoQueryRepository.class);
+        when(queryRepositoryProvider.getIfAvailable()).thenReturn(repo);
+        when(repo.findById(99L)).thenReturn(Optional.empty());
+
+        JudexGenerateMinutaRequest request = new JudexGenerateMinutaRequest(99L, null, null, null);
+
+        assertThatThrownBy(() -> service.gerar(request))
+                .as("pedir minuta de processo inexistente e erro de quem pede, nao falha do servidor: "
+                        + "RecursoNaoEncontradoException vira 404 no tratador da API, e RuntimeException "
+                        + "crua virava 500")
+                .isInstanceOf(RecursoNaoEncontradoException.class);
+
+        verify(aiModelV2, never()).generate(anyString());
+    }
+
+    @Test
+    void semTextoNemProcessoNaoChamaOModelo() {
+        when(queryRepositoryProvider.getIfAvailable()).thenReturn(null);
+
+        // ordem do record: processoId, promptAdicional, analiseV1, peticaoInicialText
+        JudexGenerateMinutaRequest request = new JudexGenerateMinutaRequest(null, "so instrucoes", null, null);
+
+        assertThatThrownBy(() -> service.gerar(request))
+                .isInstanceOf(JudexMinutaService.DadosInsuficientesException.class)
+                .hasMessageContaining("Dados insuficientes");
+
+        verify(aiModelV2, never()).generate(anyString());
     }
 }
