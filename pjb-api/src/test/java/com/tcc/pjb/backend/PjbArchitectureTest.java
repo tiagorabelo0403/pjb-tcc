@@ -61,16 +61,7 @@ class PjbArchitectureTest {
         ArchRule rule = noClasses()
                 .that().resideInAPackage("..controller..").or().resideInAPackage("..controllers..")
                 .should().dependOnClassesThat().resideInAPackage("..model.repository..");
-
-        List<String> violacoes = violacoesDe(rule);
-
-        assertThat(nomesDeClasseEm(violacoes))
-                .as("baseline conhecido: um controller ainda chama repository direto. "
-                        + "ProtocoloReciboController busca Processo para poder autorizar antes de emitir o "
-                        + "recibo, e não tem teste de controller — só o service tem. Como o 403 é decidido no "
-                        + "próprio controller, a migração precisa cobrir o caminho de negativa antes de mover a "
-                        + "busca. Novo nome nesta lista é regressão: use o service.")
-                .containsExactly("com.tcc.pjb.backend.controller.processual.protocolo.ProtocoloReciboController");
+        rule.check(classes);
     }
 
     @Test

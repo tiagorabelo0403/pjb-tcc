@@ -87,29 +87,16 @@ em `src/test`**, onde a catraca não se aplica:
 **Por que não foi fechado junto:** nenhum deles é `[removal]`, então não há prazo do compilador; e o
 lote do Zeebe muda superfície de integração, que não cabe na mesma fatia de configuração de segurança.
 
-## D-baselines-de-arquitetura-afirmados-por-nome
+## D-entidades-sem-classificacao-de-titularidade
 
-**Status:** aberta — 1 controller e 16 entidades no baseline; as regras voltaram a rodar
+**Status:** aberta — 16 entidades no baseline, afirmado por nome no `PjbArchitectureTest`
 
-Duas regras do `PjbArchitectureTest` estavam desligadas por `@Disabled`, com a justificativa de que o
-baseline legado seria migrado "por facades de superfície" e classificado "por catálogo LGPD/ownership
-em rodada dedicada" — nenhuma das duas rodadas com data. Medido, o baseline é pequeno e agora está
-afirmado por nome, de modo que a regra reprova qualquer violação nova:
+A regra `entities_devem_ter_anotacao_ownership` estava desligada por `@Disabled`, com a justificativa
+de que o baseline legado seria classificado "por catálogo LGPD/ownership em rodada dedicada" — sem
+data. Medido, são 16, e a regra voltou a rodar afirmando essa lista por nome: entidade nova precisa
+nascer anotada, porque qualquer nome fora da lista reprova.
 
-**`controllers_nao_devem_importar_repositories` — 1 controller.** O ArchUnit conta 3 violações
-porque conta construtor, campo e chamada separadamente.
-
-`ProtocoloReciboController` busca `Processo` por id para poder autorizar antes de emitir o recibo.
-Não tem teste de controller — só o serviço tem. Como o 403 é decidido no próprio controller, mover a
-busca para o serviço sem antes cobrir o caminho de negativa seria refatorar no escuro. A fatia de
-migração precisa começar pelo teste.
-
-`SecretariaInstitucionalItemController` saiu do baseline: a listagem de itens sem unidade resolvida
-passou para `SecretariaInstitucionalTriagemService`, serviço próprio porque triagem administrativa do
-resíduo sem unidade não é a mesma responsabilidade que a fila de uma unidade, que tem visibilidade de
-usuário e filtro de sessão.
-
-**`entities_devem_ter_anotacao_ownership` — 16 entidades** sem `@PjbDataOwnership`: `Instituicao`,
+As **16 sem `@PjbDataOwnership`**: `Instituicao`,
 `LotacaoInstituicao`, `SecretariaInstitucionalItem`, `UnidadeInstitucionalAbrangencia`,
 `UnidadeInstituicao`, `CienciaProcessual`, `CargaProcesso`, `ConclusaoProcessual`,
 `ImpedimentoMinistro`, `PautaSTF`, `PedidoVistaSTF`, `PoloProcessual`, `ProcessoEstadoLog`,
