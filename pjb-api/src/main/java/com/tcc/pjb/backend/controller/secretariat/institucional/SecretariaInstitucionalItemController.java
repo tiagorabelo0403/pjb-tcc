@@ -2,11 +2,10 @@ package com.tcc.pjb.backend.controller.secretariat.institucional;
 
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.dto.secretariat.SecretariaInstitucionalFilaResponse;
-import com.tcc.pjb.backend.model.entity.SecretariaInstitucionalItem;
+import com.tcc.pjb.backend.model.dto.secretariat.SecretariaInstitucionalItemResponse;
 import com.tcc.pjb.backend.model.entity.Usuario;
-import com.tcc.pjb.backend.model.entity.enums.StatusSecretariaInstitucionalItem;
-import com.tcc.pjb.backend.model.repository.SecretariaInstitucionalItemRepository;
 import com.tcc.pjb.backend.service.secretariat.institucional.SecretariaInstitucionalFilaService;
+import com.tcc.pjb.backend.service.secretariat.institucional.SecretariaInstitucionalTriagemService;
 import com.tcc.pjb.backend.service.secretariat.institucional.TomarCienciaService;
 import java.util.List;
 import java.util.Objects;
@@ -23,16 +22,16 @@ public class SecretariaInstitucionalItemController {
     private final TomarCienciaService tomarCienciaService;
     private final SecretariaInstitucionalFilaService filaService;
     private final CurrentUserService currentUserService;
-    private final SecretariaInstitucionalItemRepository itemRepository;
+    private final SecretariaInstitucionalTriagemService triagemService;
 
     public SecretariaInstitucionalItemController(TomarCienciaService tomarCienciaService,
                                                   SecretariaInstitucionalFilaService filaService,
                                                   CurrentUserService currentUserService,
-                                                  SecretariaInstitucionalItemRepository itemRepository) {
+                                                  SecretariaInstitucionalTriagemService triagemService) {
         this.tomarCienciaService = Objects.requireNonNull(tomarCienciaService);
         this.filaService = Objects.requireNonNull(filaService);
         this.currentUserService = Objects.requireNonNull(currentUserService);
-        this.itemRepository = Objects.requireNonNull(itemRepository);
+        this.triagemService = Objects.requireNonNull(triagemService);
     }
 
     @PostMapping("/api/v1/secretaria-institucional/itens/{itemId}/tomar-ciencia")
@@ -65,7 +64,7 @@ public class SecretariaInstitucionalItemController {
 
     @GetMapping("/api/v1/secretaria-institucional/sem-unidade-resolvida")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<List<SecretariaInstitucionalItem>> itensSemUnidadeResolvida() {
-        return ResponseEntity.ok(itemRepository.findByStatus(StatusSecretariaInstitucionalItem.SEM_UNIDADE_RESOLVIDA));
+    public ResponseEntity<List<SecretariaInstitucionalItemResponse>> itensSemUnidadeResolvida() {
+        return ResponseEntity.ok(triagemService.itensSemUnidadeResolvida());
     }
 }

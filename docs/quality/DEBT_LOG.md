@@ -89,22 +89,25 @@ lote do Zeebe muda superfície de integração, que não cabe na mesma fatia de 
 
 ## D-baselines-de-arquitetura-afirmados-por-nome
 
-**Status:** aberta — 2 controllers e 16 entidades no baseline; as regras voltaram a rodar
+**Status:** aberta — 1 controller e 16 entidades no baseline; as regras voltaram a rodar
 
 Duas regras do `PjbArchitectureTest` estavam desligadas por `@Disabled`, com a justificativa de que o
 baseline legado seria migrado "por facades de superfície" e classificado "por catálogo LGPD/ownership
 em rodada dedicada" — nenhuma das duas rodadas com data. Medido, o baseline é pequeno e agora está
 afirmado por nome, de modo que a regra reprova qualquer violação nova:
 
-**`controllers_nao_devem_importar_repositories` — 2 controllers.** O ArchUnit conta 6 violações
+**`controllers_nao_devem_importar_repositories` — 1 controller.** O ArchUnit conta 3 violações
 porque conta construtor, campo e chamada separadamente.
 
-- `ProtocoloReciboController` busca `Processo` por id para poder autorizar antes de emitir o recibo.
-- `SecretariaInstitucionalItemController` lista itens sem unidade resolvida direto do repository.
+`ProtocoloReciboController` busca `Processo` por id para poder autorizar antes de emitir o recibo.
+Não tem teste de controller — só o serviço tem. Como o 403 é decidido no próprio controller, mover a
+busca para o serviço sem antes cobrir o caminho de negativa seria refatorar no escuro. A fatia de
+migração precisa começar pelo teste.
 
-Nenhum dos dois tem teste de controller hoje — só o serviço tem. Como o primeiro decide 403 no
-próprio controller, mover a busca para o serviço sem antes cobrir o caminho de negativa seria refatorar
-no escuro. A fatia de migração precisa começar pelo teste.
+`SecretariaInstitucionalItemController` saiu do baseline: a listagem de itens sem unidade resolvida
+passou para `SecretariaInstitucionalTriagemService`, serviço próprio porque triagem administrativa do
+resíduo sem unidade não é a mesma responsabilidade que a fila de uma unidade, que tem visibilidade de
+usuário e filtro de sessão.
 
 **`entities_devem_ter_anotacao_ownership` — 16 entidades** sem `@PjbDataOwnership`: `Instituicao`,
 `LotacaoInstituicao`, `SecretariaInstitucionalItem`, `UnidadeInstitucionalAbrangencia`,

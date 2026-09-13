@@ -65,14 +65,12 @@ class PjbArchitectureTest {
         List<String> violacoes = violacoesDe(rule);
 
         assertThat(nomesDeClasseEm(violacoes))
-                .as("baseline conhecido: dois controllers ainda chamam repository direto. "
-                        + "ProtocoloReciboController busca Processo para autorizar antes de emitir o recibo e "
-                        + "SecretariaInstitucionalItemController lista itens sem unidade resolvida. Nenhum dos "
-                        + "dois tem teste de controller hoje, então a migração para o service exige cobrir o "
-                        + "caminho de 403 antes de mover. Novo nome nesta lista é regressão: use o service.")
-                .containsExactlyInAnyOrder(
-                        "com.tcc.pjb.backend.controller.processual.protocolo.ProtocoloReciboController",
-                        "com.tcc.pjb.backend.controller.secretariat.institucional.SecretariaInstitucionalItemController");
+                .as("baseline conhecido: um controller ainda chama repository direto. "
+                        + "ProtocoloReciboController busca Processo para poder autorizar antes de emitir o "
+                        + "recibo, e não tem teste de controller — só o service tem. Como o 403 é decidido no "
+                        + "próprio controller, a migração precisa cobrir o caminho de negativa antes de mover a "
+                        + "busca. Novo nome nesta lista é regressão: use o service.")
+                .containsExactly("com.tcc.pjb.backend.controller.processual.protocolo.ProtocoloReciboController");
     }
 
     @Test
