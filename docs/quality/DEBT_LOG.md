@@ -149,48 +149,6 @@ grau (Lei 9.099 art. 54) e citação por edital é incompatível com o sumaríss
 
 Enquanto a decisão não vem, as cinco guardas não podem entrar no CI: elas reprovam.
 
-## D-controllers-que-chamam-repository-direto
-
-**Status:** aberta — 1 controller, afirmado por nome no `PjbArchitectureTest`
-
-A regra `controllers_nao_devem_importar_repositories` foi declarada fechada com zero violação, e a
-declaração estava errada — não pela contagem, mas pelo escopo. Ela olhava apenas classes em
-`..controller..` dependendo de `..model.repository..`, e o projeto tem **pelo menos oito pacotes de
-repository** (`model/repository`, `repository/document`, `core/security/sigilo/repository`,
-`modules/*/repository`, além de repositories fora de qualquer pacote `repository`, como
-`core.audit.ledger.AuditLedgerRepository`). Controller também não mora sempre sob `controller`.
-
-Regra mais estreita que o próprio nome é pior que regra ausente: dá verde e produz confiança falsa.
-Quem apontou a divergência foi o `modular_monolith_guard`, que contava 6 onde o ArchUnit contava 0.
-
-A regra passou a ser por nome de classe — `*Controller` não depende de `*Repository` — e os seis
-ficam afirmados por nome:
-
-- `MemoryStoreController` — fora de pacote `controller` (`ai.legalai`), invisível para a versão por
-  pacote. O repositório que ele usa é **porta de domínio** (interface em `pjb-core/.../memory/domain`,
-  com adaptador em `pjb-api/.../infra`), e não Spring Data — a violação é o controller orquestrar
-  domínio sem passar pela aplicação, não o controller tocar JPA. É CRUD completo (criar, buscar,
-  listar, atualizar, arquivar) e **não tem teste de controller**, então precisa da receita completa.
-
-Dois já saíram do baseline. `FuncaoServidorAdminController`: a consulta de unidades candidatas passou
-para `UnidadesCandidatasParaDesignacaoService`, serviço próprio porque "quais unidades entram na lista
-de escolha" é pergunta sobre a malha judiciária, não sobre o ciclo de vida da função do servidor.
-`MemoryCandidateReviewController`: `aprovar` e `rejeitar` já delegavam ao serviço de aplicação, e só as
-duas leituras furavam a camada — foram para o `MemoryCandidateReviewService`, que já existia e já tinha
-a porta injetada. `AdvogadoAuditoriaController`: a consulta da trilha passou para
-`AdvogadoAuditoriaLedgerService`, que escopa a busca ao próprio solicitante — o id do ator vem de quem
-está autenticado, nunca de parâmetro da requisição. `JudexOnDemandController`: o caso de uso inteiro da
-minuta passou para `JudexMinutaService`, e no caminho apareceu defeito de contrato — processo
-inexistente no índice de leitura lançava `RuntimeException` crua, que vira 500, onde cabia
-`RecursoNaoEncontradoException` e 404. Esse caminho não tinha teste. `DocumentoController`: a busca do
-documento e a dupla autorização por sigilo efetivo passaram para `DocumentoPdfDownloadService`. O
-registro do contexto da requisição continua acontecendo **antes** da autorização, por meio de um
-registrador que o controller entrega — o orçamento de download lê esse contexto inclusive quando o
-acesso é negado, e registrar depois o perderia justamente na negativa.
-
-Migrar cada um exige cobrir antes o caminho de negativa no próprio controller, como foi feito em
-`ProtocoloReciboController`: mover autorização sem teste de 403 é refatorar no escuro.
-
 ## D-modular-monolith-baseline-estourado
 
 **Status:** aberta — catraca já ultrapassada; guard não pode entrar no CI antes da triagem

@@ -65,16 +65,7 @@ class PjbArchitectureTest {
         ArchRule rule = noClasses()
                 .that().haveSimpleNameEndingWith("Controller")
                 .should().dependOnClassesThat().haveSimpleNameEndingWith("Repository");
-
-        List<String> violacoes = violacoesDe(rule);
-
-        assertThat(nomesDeClasseEm(violacoes))
-                .as("baseline conhecido: um controller chama repository direto. MemoryStoreController "
-                        + "esta fora de pacote `controller` e usa porta de dominio, entao a versao por "
-                        + "pacote da regra nao o via. E CRUD completo sem teste de controller: migrar exige "
-                        + "cobrir antes o comportamento. Nome novo nesta lista e regressao; a lista so "
-                        + "encolhe.")
-                .containsExactly("com.tcc.pjb.backend.ai.legalai.MemoryStoreController");
+        rule.check(classes);
     }
 
     @Test
