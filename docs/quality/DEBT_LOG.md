@@ -151,7 +151,7 @@ Enquanto a decisão não vem, as cinco guardas não podem entrar no CI: elas rep
 
 ## D-controllers-que-chamam-repository-direto
 
-**Status:** aberta — 6 controllers, afirmados por nome no `PjbArchitectureTest`
+**Status:** aberta — 5 controllers, afirmados por nome no `PjbArchitectureTest`
 
 A regra `controllers_nao_devem_importar_repositories` foi declarada fechada com zero violação, e a
 declaração estava errada — não pela contagem, mas pelo escopo. Ela olhava apenas classes em
@@ -170,7 +170,10 @@ ficam afirmados por nome:
   pacote `controller` (`ai.juridica.v2`, `ai.legalai`), invisíveis para a versão por pacote.
 - `DocumentoController` — importa `repository.document.DocumentoProcessualRepository`.
 - `AdvogadoAuditoriaController` — importa `core.audit.ledger.AuditLedgerRepository`.
-- `FuncaoServidorAdminController` — em `core.servidor.api`.
+
+`FuncaoServidorAdminController` saiu do baseline: a consulta de unidades candidatas passou para
+`UnidadesCandidatasParaDesignacaoService`, serviço próprio porque "quais unidades entram na lista de
+escolha" é pergunta sobre a malha judiciária, não sobre o ciclo de vida da função do servidor.
 
 Migrar cada um exige cobrir antes o caminho de negativa no próprio controller, como foi feito em
 `ProtocoloReciboController`: mover autorização sem teste de 403 é refatorar no escuro.
