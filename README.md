@@ -384,14 +384,24 @@ Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 ### Rodar a suíte completa com integração (portão oficial)
 
 ```bash
-./mvnw verify -pl pjb-api
+./mvnw verify -pl pjb-api -am
 ```
 
 Esse comando é o portão oficial do projeto. Ele roda os 5.342 unitários (Surefire) e depois as 116 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
+O `-am` não é cosmético: sem ele o `pjb-core` é resolvido a partir do `~/.m2` em vez do reator, e um artefato desatualizado ali produz `cannot find symbol` apontando para classes que existem no código-fonte.
+
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
 > **Por que tão demorado?** Cada classe de IT sobe um contexto Spring completo com PostgreSQL real, aplica as migrations Flyway e executa as requests HTTP como um cliente externo faria. Isso dá confiança total de que o que passou em teste vai passar em produção — mas tem um custo de tempo.
+
+### O portão de integração no CI
+
+O `ci.yml` executa apenas os unitários: as 116 classes de integração não cabem no caminho crítico de uma pull request. Elas rodam em workflow próprio — `PJB Integration Gate` (`.github/workflows/it.yml`) —, agendado diariamente às 05:00 UTC contra o `master` e disparável sob demanda por `workflow_dispatch`.
+
+Quando a suíte de integração quebra, o workflow abre uma issue com o commit e o link da execução, e comenta nela nas quebras seguintes em vez de criar uma issue por noite. Quando volta ao verde, fecha a issue sozinho. Os relatórios de Surefire e Failsafe ficam anexados como artefato de cada execução por 30 dias.
+
+A separação é deliberada: uma pull request continua fechando em minutos, e uma regressão de integração aparece em até 24 horas com dono, histórico e evidência anexada — em vez de depender de alguém abrir a aba de execuções.
 
 O `argLine` do Surefire/Failsafe fixa `-Dpjb.runtime.lifecycle.drain-quiet-period=10ms`. O coordenador de drenagem graciosa (`PjbRuntimeDrainCoordinator`) dorme 20s por padrão a cada fechamento de contexto Spring — correto em produção, onde existe tráfego real para drenar antes do shutdown, mas puro desperdício numa JVM de teste. Sem esse override, um `verify` completo pode estourar o watchdog de 30s do próprio Surefire (`forkedProcessExitTimeoutInSeconds`) e matar a JVM forkada à força no encerramento, mesmo com todos os testes já verdes — sintoma que só aparece em rodadas longas, nunca isolando uma classe.
 
