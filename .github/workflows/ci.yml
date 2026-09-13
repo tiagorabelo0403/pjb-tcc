@@ -173,6 +173,14 @@ jobs:
         working-directory: scripts
         run: python test_drift_guard.py
 
+      - name: repository_layout_guard
+        working-directory: scripts
+        run: python repository_layout_guard.py
+
+      - name: repository_cleanliness_guard
+        working-directory: scripts
+        run: python repository_cleanliness_guard.py
+
       - name: access_key_and_unavailability_guard
         working-directory: scripts
         run: python access_key_and_unavailability_guard.py
