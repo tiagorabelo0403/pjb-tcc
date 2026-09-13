@@ -9,9 +9,9 @@ o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
 ## D-guards-existentes-fora-do-ci
 
-**Status:** aberta — 28 guards fora do CI; 14 passam e poderiam entrar hoje, 2 acusam achado real
+**Status:** aberta — 27 guards fora do CI; 14 passam e poderiam entrar hoje, 1 acusa achado real
 
-O projeto tem **44 scripts em `scripts/`** e **15 estão no `ci.yml`**. Parte dos 28 restantes
+O projeto tem **44 scripts em `scripts/`** e **16 estão no `ci.yml`**. Parte dos 27 restantes
 é ferramenta local legítima (`docker_zombie_container_guard`, `reap_orphan_test_jvms`) ou gerador
 (`frontend_integration_pack`, `migration_alignment_report`), mas a maioria é guarda de verdade.
 
@@ -27,8 +27,7 @@ Executados todos os que têm forma de guarda:
   `java_regression_signature_guard`, `internal_type_hygiene_guard` (destravado quando os guards
   deixaram de resolver caminho contra o cwd) e o novo `guard_cwd_independence_guard`. Os quatro já
   estão ligados ao CI.
-- **2 acusam achado real e seguem abertos**, cada um virando dívida própria:
-  - `canonical_institutional_route_guard` — 12 controllers de comunicação institucional fora da rota canônica.
+- **1 acusa achado real e segue aberto**:
   - `readme_truthfulness_guard` — README referencia `docs/escopo`, que não existe. As outras duas queixas
     (`target/pjb-api.jar` e `target/site/jacoco/index.html`) são artefatos de build e o guard não deveria
     exigi-los; isso é defeito do próprio guard.
@@ -86,45 +85,6 @@ em `src/test`**, onde a catraca não se aplica:
 
 **Por que não foi fechado junto:** nenhum deles é `[removal]`, então não há prazo do compilador; e o
 lote do Zeebe muda superfície de integração, que não cabe na mesma fatia de configuração de segurança.
-
-## D-duas-regras-do-projeto-se-contradizem-sobre-a-rota-institucional
-
-**Status:** aberta — decisão de fronteira de módulo, com a deriva já bloqueada por teste
-
-Duas verificações do próprio projeto cobrem **os mesmos 12 arquivos** e são mutuamente exclusivas:
-
-- `canonical_institutional_route_guard` exige que os controllers institucionais importem
-  `com.tcc.pjb.backend.core.comunicacao.institucional.InstitutionalApiRoutes`.
-- `PjbInstitutionalCommunicationSurfaceDisciplineTest` exige que esses mesmos arquivos **não contenham**
-  a string `core.comunicacao.institucional`.
-
-Uma nunca pode ficar verde enquanto a outra estiver. O teste só passa hoje porque o guard nunca entrou
-no CI: a contradição existe desde o commit raiz do repositório e nenhuma das duas mudou desde então, o
-que significa que o git não oferece nenhum sinal de qual é a decisão mais recente.
-
-**O que a medição mostrou, e que muda o enquadramento:** são **17 controllers institucionais no mesmo
-pacote**, divididos 5/12. Cinco já importam o catálogo canônico em `core`. Doze importam uma classe
-interna de mesmo nome simples (`InstitutionalApiRoutes`) aninhada no holder legado da superfície, de
-modo que o `@RequestMapping` dos doze *lê* exatamente como o dos cinco sem apontar para a mesma classe.
-E o teste de disciplina lista **exatamente esses doze** — ele não implementa uma regra de pacote, fixa
-o estado de doze arquivos, enquanto cinco irmãos fazem o que ele proíbe sem objeção nenhuma.
-
-**Divergência de valor hoje: zero.** Verificado por valor resolvido, não por texto de expressão: 104
-constantes do holder legado e 48 da classe interna resolvem exatamente para os valores canônicos.
-`PjbInstitutionalRouteCatalogNaoPodeDivergirTest` passou a travar isso, então a deriva silenciosa já
-está bloqueada independentemente da decisão abaixo.
-
-**A decisão que falta** é onde o catálogo de rotas institucionais deve morar:
-
-1. **Em `core`** — os doze migram, e o teste de disciplina precisa ser reescrito, porque hoje ele
-   proibiria a migração. Fica a pergunta de por que o mesmo pacote pode em cinco arquivos e não em doze.
-2. **Na superfície** — o catálogo em `core` é que é a cópia, e os cinco controllers que já o usam é que
-   estão fora do padrão; o guard é que está desatualizado.
-3. **Num terceiro pacote neutro** que superfície e core possam depender — atende à intenção das duas
-   regras, ao custo de mover a classe e atualizar as duas verificações.
-
-Não foi decidido aqui porque muda fronteira de módulo e porque qualquer uma das opções exige alterar
-uma verificação que hoje proíbe algo — a categoria em que enfraquecer por conveniência é o maior risco.
 
 ## D-entidades-sem-classificacao-de-titularidade
 

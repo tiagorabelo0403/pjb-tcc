@@ -2,75 +2,71 @@ package com.tcc.pjb.backend.core.quality.apisurface;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.service.processual.comunicacao.institutional.surface.NationalCommunicationInstitutionalHttpRoutes;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 /**
- * O catálogo de rotas institucionais existe hoje em dois lugares: `core.comunicacao.institucional` e o
- * holder legado da superfície, que ainda tem uma classe interna de mesmo nome simples
- * ({@code InstitutionalApiRoutes}). Dos 17 controllers institucionais, 5 importam o primeiro e 12 o
- * segundo — e como o nome simples é igual, o {@code @RequestMapping} dos doze lê exatamente como o dos
- * cinco sem apontar para a mesma classe.
+ * O catálogo de rotas institucionais já existiu em dois lugares ao mesmo tempo: em
+ * {@code core.comunicacao.institucional} e numa classe interna de <b>mesmo nome simples</b> aninhada
+ * no holder legado da superfície. Dos 17 controllers institucionais, 5 importavam o primeiro e 12 o
+ * segundo — e como o nome simples era idêntico, o {@code @RequestMapping} dos doze lia exatamente como
+ * o dos cinco sem apontar para a mesma classe. Os valores nunca chegaram a divergir, mas nada impedia.
  *
- * <p>Enquanto os dois catálogos coexistirem, editar um e esquecer o outro muda a rota de uma parte dos
- * controllers em silêncio. A comparação aqui é por <b>valor resolvido</b>, não por texto da expressão:
- * constante derivada como {@code PATH_X + "/sufixo"} só prova igualdade depois de resolvida.
+ * <p>Hoje o catálogo mora em {@code platform.api.institucional}, fora de {@code core} e fora da
+ * superfície, para que controller e domínio possam depender dele sem que o controller alcance o
+ * domínio interno. O que este teste impede é o renascimento da duplicata: um segundo
+ * {@code InstitutionalApiRoutes} em qualquer outro pacote volta a produzir o import que parece
+ * canônico e não é.
  */
 class PjbInstitutionalRouteCatalogNaoPodeDivergirTest {
 
-    private static Map<String, String> constantesDe(Class<?> tipo) throws IllegalAccessException {
-        Map<String, String> valores = new LinkedHashMap<>();
-        for (Field campo : tipo.getDeclaredFields()) {
-            if (Modifier.isStatic(campo.getModifiers()) && campo.getType() == String.class) {
-                campo.setAccessible(true);
-                valores.put(campo.getName(), (String) campo.get(null));
-            }
-        }
-        return valores;
-    }
+    private static final Path RAIZ = Path.of("src/main/java/com/tcc/pjb/backend");
+    private static final Path CANONICO =
+            RAIZ.resolve("platform/api/institucional/InstitutionalApiRoutes.java");
 
-    private static Map<String, String> divergencias(Map<String, String> canonico, Map<String, String> outro) {
-        Map<String, String> divergentes = new TreeMap<>();
-        outro.forEach((nome, valor) -> {
-            String esperado = canonico.get(nome);
-            if (esperado == null) {
-                divergentes.put(nome, "ausente no catálogo canônico; valor legado " + valor);
-            } else if (!esperado.equals(valor)) {
-                divergentes.put(nome, "canônico=" + esperado + " legado=" + valor);
-            }
-        });
-        return divergentes;
+    @Test
+    void existeExatamenteUmCatalogoDeRotasInstitucionais() throws IOException {
+        List<Path> declaracoes;
+        try (Stream<Path> paths = Files.walk(RAIZ)) {
+            declaracoes = paths
+                    .filter(p -> p.getFileName().toString().equals("InstitutionalApiRoutes.java"))
+                    .sorted()
+                    .toList();
+        }
+
+        assertThat(CANONICO)
+                .as("o catálogo canônico precisa existir onde os controllers o importam")
+                .exists();
+        assertThat(declaracoes)
+                .as("um segundo arquivo InstitutionalApiRoutes recria a colisão de nome simples que fazia "
+                        + "doze controllers parecerem canônicos importando o catálogo legado")
+                .containsExactly(CANONICO);
     }
 
     @Test
-    void catalogoLegadoResolveExatamenteOsMesmosCaminhosDoCanonico() throws IllegalAccessException {
-        Map<String, String> canonico =
-                constantesDe(com.tcc.pjb.backend.core.comunicacao.institucional.InstitutionalApiRoutes.class);
-        Map<String, String> holderLegado = constantesDe(NationalCommunicationInstitutionalHttpRoutes.class);
-        Map<String, String> internaLegada =
-                constantesDe(NationalCommunicationInstitutionalHttpRoutes.InstitutionalApiRoutes.class);
+    void nenhumaClasseInternaRessuscitaONomeDoCatalogo() throws IOException {
+        List<String> aninhadas;
+        try (Stream<Path> paths = Files.walk(RAIZ)) {
+            aninhadas = paths
+                    .filter(p -> p.toString().endsWith(".java"))
+                    .filter(p -> !p.equals(CANONICO))
+                    .filter(p -> ler(p).contains("class InstitutionalApiRoutes"))
+                    .map(p -> RAIZ.relativize(p).toString())
+                    .sorted()
+                    .toList();
+        }
 
-        assertThat(canonico)
-                .as("catálogo canônico vazio tornaria as comparações seguintes aprovadas por vacuidade")
-                .hasSizeGreaterThan(50);
-        assertThat(holderLegado)
-                .as("catálogo legado vazio tornaria a comparação seguinte aprovada por vacuidade")
-                .isNotEmpty();
-        assertThat(internaLegada).isNotEmpty();
+        assertThat(aninhadas)
+                .as("classe interna de mesmo nome simples é justamente a forma que a duplicata tinha: o "
+                        + "import lê como canônico e resolve para outro catálogo")
+                .isEmpty();
+    }
 
-        assertThat(divergencias(canonico, holderLegado))
-                .as("o holder legado da superfície deixou de resolver os mesmos caminhos do catálogo "
-                        + "canônico. Enquanto os dois existirem, divergir aqui muda a rota dos 12 controllers "
-                        + "que importam o legado sem tocar nos 5 que importam o canônico.")
-                .isEmpty();
-        assertThat(divergencias(canonico, internaLegada))
-                .as("a classe interna de mesmo nome simples divergiu do catálogo canônico — é justamente a "
-                        + "que os @RequestMapping dos doze controllers resolvem")
-                .isEmpty();
+    private static String ler(Path p) {
+        try { return Files.readString(p); } catch (IOException e) { return ""; }
     }
 }

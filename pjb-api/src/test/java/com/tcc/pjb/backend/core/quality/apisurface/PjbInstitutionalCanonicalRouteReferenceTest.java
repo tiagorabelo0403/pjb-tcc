@@ -28,7 +28,7 @@ class PjbInstitutionalCanonicalRouteReferenceTest {
 
     @Test
     void canonicalInstitutionalLiteralMustBeUsedAcrossRuntimeHelpers() {
-        String routes = ApiSurfaceTestSupport.read(Path.of("src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/InstitutionalApiRoutes.java"));
+        String routes = ApiSurfaceTestSupport.read(Path.of("src/main/java/com/tcc/pjb/backend/platform/api/institucional/InstitutionalApiRoutes.java"));
         assertTrue(routes.contains("public static final String CANONICAL_BASE = \"/api/v1/institucional\";"));
         assertFalse(routes.contains("LEGACY_BASE"));
         assertTrue(routes.contains("public static String painelExecutivo()"));
