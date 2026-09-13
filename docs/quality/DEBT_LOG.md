@@ -9,28 +9,38 @@ o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
 ## D-guards-existentes-fora-do-ci
 
-**Status:** aberta — 27 guards fora do CI; 14 passam e poderiam entrar hoje, 1 acusa achado real
+**Status:** aberta — 25 guards fora do CI; 15 passam e poderiam entrar hoje, 10 acusam algo
 
-O projeto tem **44 scripts em `scripts/`** e **16 estão no `ci.yml`**. Parte dos 27 restantes
+O projeto tem **44 scripts em `scripts/`** e **18 estão no `ci.yml`**. Parte dos 25 restantes
 é ferramenta local legítima (`docker_zombie_container_guard`, `reap_orphan_test_jvms`) ou gerador
 (`frontend_integration_pack`, `migration_alignment_report`), mas a maioria é guarda de verdade.
 
-Executados todos os que têm forma de guarda:
+Executados todos os que têm forma de guarda, a partir de `scripts/`, que é o `working-directory` que o
+`ci.yml` usa:
 
-- **14 passam** e poderiam ser ligados sem nenhum trabalho: `config_taxonomy_guard`,
+- **15 passam** e poderiam ser ligados sem nenhum trabalho: `config_taxonomy_guard`,
   `docker_compose_guard`, `drain_quiet_period_argline_guard`, `flyway_migration_version_guard`,
   `git_secret_guard`, `java_string_literal_sanity_guard`, `legal_ai_policy_catalog_guard`,
   `legal_ai_surface_split_guard`, `legal_knowledge_catalog_guard`, `legal_mcp_catalog_guard`,
   `pjb_runtime_memory_recipe_guard`, `powershell_test_collector_guard`, `replacement_matrix_guard`,
-  `spring_ambiguous_constructor_guard`.
-- **4 passaram a passar em fatias recentes**: `access_key_and_unavailability_guard`,
-  `java_regression_signature_guard`, `internal_type_hygiene_guard` (destravado quando os guards
-  deixaram de resolver caminho contra o cwd) e o novo `guard_cwd_independence_guard`. Os quatro já
-  estão ligados ao CI.
-- **1 acusa achado real e segue aberto**:
-  - `readme_truthfulness_guard` — README referencia `docs/escopo`, que não existe. As outras duas queixas
-    (`target/pjb-api.jar` e `target/site/jacoco/index.html`) são artefatos de build e o guard não deveria
-    exigi-los; isso é defeito do próprio guard.
+  `spring_ambiguous_constructor_guard`, `spring_surface_guard`.
+- **10 acusam algo e não foram examinados**: `judicial_innovation_guard`,
+  `judicial_innovation_part_two_guard`, `judicial_innovation_part_three_guard`,
+  `modular_monolith_guard`, `repository_cleanliness_guard`, `repository_layout_guard`,
+  `salario_minimo_hardcoded_guard`, `tribunal_readiness_guard`, `universal_digital_core_guard` e
+  `docker_zombie_container_guard` — este último é ferramenta local e sai com código ≠ 0 ao encontrar
+  container órfão, comportamento esperado fora do CI.
+
+  Cada um exige a mesma triagem que os já examinados: distinguir achado real de defeito do próprio
+  guard. Dos cinco examinados até aqui, **três acusavam por defeito próprio** — catálogo de assinaturas
+  escrito à mão, proibição por substring que pegava português legítimo, e varredura de comentário como
+  se fosse código. "Guard vermelho" não é sinônimo de "código errado".
+
+- **6 passaram a passar em fatias recentes** e já estão ligados ao CI:
+  `access_key_and_unavailability_guard`, `java_regression_signature_guard`,
+  `internal_type_hygiene_guard` (destravado quando os guards deixaram de resolver caminho contra o
+  cwd), `guard_cwd_independence_guard` (novo), `canonical_institutional_route_guard` e
+  `readme_truthfulness_guard` + `test_drift_guard`, estes dois depois de corrigidos os falsos positivos.
 
 **Por que importa:** um guard que existe e não roda é o padrão dominante de defeito deste projeto
 (ver `project_padrao_instrumento_que_nao_age` na memória). Foi assim que o
@@ -139,17 +149,6 @@ Fechar exige decidir como produzir o contrato publicado dentro do build. Subir o
 teste unitário é caro e frágil; gerar por `ModelConverters` é barato mas não reproduz os
 customizadores do springdoc, e um gerador que diverge do contrato real é mais um instrumento que não
 mede o que afirma medir.
-
-## D-test-drift-relatorio-desatualizado
-
-**Status:** aberta — relatório versionado afirma 0 achados; execução atual acusa 3
-
-`docs/reports/test_drift_scan_batch4.md` está commitado dizendo "Total de achados: 0 — Nenhum achado
-heurístico encontrado". Rodar `scripts/test_drift_guard.py` hoje devolve 3 achados de
-`missing_static_import`, em `LaianeOficioAuditPostCommitServiceIT` (`verify`) e
-`PersonalProcessAccessGuardServiceTest` (`any`, `eq`). O relatório versionado não é regenerado por
-ninguém, então afirma um estado que já não é verdade — o mesmo padrão de instrumento que não age, desta
-vez na forma de evidência congelada.
 
 ## D-schedulers-processuais-desligados-por-decisao-nao-tomada
 

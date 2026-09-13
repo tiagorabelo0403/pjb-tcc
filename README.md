@@ -631,7 +631,7 @@ graph TD
 | IA Jurídica | Anthropic Claude API — Memory Stores, Dreams, síntese reflexiva |
 | Observabilidade | Micrometer, Spring Actuator, Process Mining materializado |
 | Análise estática | Qodana (JetBrains), JaCoCo, Checkstyle, SpotBugs, ArchUnit, catraca de depreciação no compilador |
-| Guards estruturais | 16 scripts Python + ArchUnit integrados ao CI |
+| Guards estruturais | 18 scripts Python + ArchUnit integrados ao CI |
 | Containerização | Docker Compose (dev/test), Kubernetes (produção) |
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
@@ -1025,10 +1025,10 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 | `PJB_DB_USER` / `PJB_DB_PASS` | Superusuário inicial do Postgres (`pjb`/`pjb`) — só inicializa o container, RLS não vale para ele |
 | `PJB_DB_APP_USER` / `PJB_DB_APP_PASS` | Role restrita (`pjb_app`/`pjb_app_pass` por padrão) — é com ela que `SPRING_DATASOURCE_USERNAME`/`PASSWORD` do `backend` conectam de fato; é essa conexão que faz a RLS valer |
 
-**Pendências conhecidas, documentadas explicitamente (não implementadas nesta rodada):**
+**Pendências conhecidas, documentadas explicitamente:**
 
 - **Volume já existente**: scripts de `docker-entrypoint-initdb.d` só rodam com `PGDATA` vazio. Um volume de dev anterior a este hardening (ex.: `pjb_pjb_pg_data` já populado) nunca cria `pjb_app` sozinho — o cabeçalho de `infra/docker/postgres/init/01-app-role.sh` traz o SQL equivalente para rodar manualmente via `docker exec ... psql` num volume desses. Isso sozinho não basta se migrations `<= V313` já rodaram nesse volume como o superusuário antigo (`pjb`): `ALTER TABLE ... ALTER COLUMN ... TYPE` (caso de `V317`) exige posse da tabela, não só `GRANT` — o mesmo cabeçalho do script traz o `ALTER TABLE ... OWNER TO pjb_app` (em bloco `DO` iterando `pg_tables`) que transfere a posse das tabelas existentes; **não** resolva concedendo `pjb_app` membro de `pjb` (`GRANT pjb_app TO pjb`), isso reabre o bypass de RLS que a role restrita existe pra fechar.
-- **Volume que já aplicou a `V317` antiga**: quem rodou o stack entre a introdução original de `V317__fix_unidade_institucional_uf_type.sql` e esta correção de conteúdo vai ter o checksum antigo gravado em `flyway_schema_history` — o Flyway recusa reaplicar migrations já aplicadas com checksum divergente (`validateOnMigrate=true`). Um volume novo não sofre isso (é como a reverificação de boot desta rodada testou). Num volume que já tinha a `V317` antiga, rode `flyway repair` (recalcula o checksum gravado para o conteúdo atual do arquivo) antes do próximo boot, ou descarte o volume em ambiente de dev.
+- **Volume que já aplicou a `V317` antiga**: quem rodou o stack entre a introdução original de `V317__fix_unidade_institucional_uf_type.sql` e esta correção de conteúdo vai ter o checksum antigo gravado em `flyway_schema_history` — o Flyway recusa reaplicar migrations já aplicadas com checksum divergente (`validateOnMigrate=true`). Um volume novo não sofre isso. Num volume que já tinha a `V317` antiga, rode `flyway repair` (recalcula o checksum gravado para o conteúdo atual do arquivo) antes do próximo boot, ou descarte o volume em ambiente de dev.
 - **`docker-compose.read-replica.yml` e o caminho de leitura roteada de `docker-compose.ha.yml`**: `PJB_DB_READ_USER`/`PASS` continuam apontando para o superusuário `pjb`, não para `pjb_app`. Isso significa que **a proteção de RLS nasce desligada no caminho de leitura roteada** — não é só uma migração pendente, é uma lacuna de proteção real e conhecida. Consultas que podem ser roteadas para a réplica/HA (ex.: `SecretariaInstitucionalFilaService.consultarFila`, `@Transactional(readOnly = true)`) seguem protegidas hoje só pelas camadas 1 e 2 (checagem de aplicação + Hibernate `@Filter`), não pela camada 3 (RLS). Ver `.superpowers/sdd/2026-08-08-secretarias-institucionais/db-role-hardening-report.md` para o histórico completo da investigação.
 - **`docker-compose.ha.yml`**: os nós `backend`/`backend-b` dessa topologia usam `pjb`/`pjb` explicitamente (não `pjb_app`) porque o `pgbouncer` da topologia (`infra/docker/pgbouncer/entrypoint.sh`) só conhece `pjb` no `userlist.txt` e sempre abre a conexão real com o Postgres do lado servidor como `pjb`, fixo — a RLS ficaria inerte atrás do pgbouncer mesmo corrigindo a autenticação cliente→pgbouncer. Estado explícito, não silenciosamente quebrado; migrar essa topologia para `pjb_app` de ponta a ponta é trabalho futuro.
 - **Produção real (k8s)**: `infra/k8s/base/secret.yaml`/`configmap.yaml` continuam nas credenciais antigas — a mesma lógica de role restrita precisa ser replicada lá separadamente.
@@ -1045,7 +1045,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 | Testes de integração (Failsafe) | **116 classes · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
-| Guards Python | 16 scripts ativos em CI |
+| Guards Python | 18 scripts ativos em CI |
 | SBOM | CycloneDX gerado a cada build |
 | Correlation ID | Obrigatório em toda requisição |
 
@@ -1188,10 +1188,10 @@ Expõe leitura viva do estado estrutural: hotspots do core, trilhas internas de 
 | Branch | Finalidade |
 |--------|-----------|
 | `master` | Branch principal — sempre estável, reflete produção |
-| `feature/nome-da-feature` | Novas funcionalidades |
-| `fix/descricao-do-bug` | Correções de bug |
-| `refactor/escopo` | Refatorações sem mudança de comportamento |
-| `docs/escopo` | Atualizações de documentação |
+| `feature/<nome-da-feature>` | Novas funcionalidades |
+| `fix/<descricao-do-bug>` | Correções de bug |
+| `refactor/<escopo>` | Refatorações sem mudança de comportamento |
+| `docs/<escopo>` | Atualizações de documentação |
 
 ### Padrão de commits (Conventional Commits)
 
