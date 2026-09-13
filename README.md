@@ -442,12 +442,12 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 | Classes de teste de integração | Failsafe | **116** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Testes de integração executados | Failsafe | **292** (medido no CI, 2026-09-13) |
-| Falhas IT | Failsafe | **3 falhas + 4 erros** ² |
-| Tempo verify completo | Surefire + Failsafe | **~50 min** local · **~38 min** no CI |
+| Falhas IT | Failsafe | **0** (0E + 0F) ² |
+| Tempo verify completo | Surefire + Failsafe | **~50 min** local · **~27 min** no CI |
 
 A suíte de integração passou por uma etapa de estabilização estrutural: falhas por variável de ambiente incorreta, contaminação de dados entre testes e IDs hardcoded sem seed foram eliminadas por completo.
 
-² Até 2026-09-13 esta linha dizia `0 (0E + 0F)`, número herdado de uma execução local antiga que nada reverificava. A primeira execução do `PJB Integration Gate` mediu o valor real. As sete ocorrências estão rastreadas no [`DEBT_LOG`](./docs/quality/DEBT_LOG.md). As três falhas de asserção tinham uma causa só — `429 RUNTIME_WARMING_UP` da admissão operacional, que rejeita rotas caras nos primeiros 20s de cada contexto Spring novo — e foram fechadas desligando essa proteção no perfil de integração, com cobertura unitária determinística em troca. Os quatro erros restantes são falha de limpeza entre testes em `InstitutionalWorkbenchControllerIT` e seguem abertos.
+² Este número passou a ser verificado. Até 2026-09-13 a linha dizia `0 (0E + 0F)` por herança de uma execução local antiga que nada reverificava; a primeira execução do `PJB Integration Gate` mediu **273 testes, 8 falhas e 55 erros**. Os 55 erros eram uma causa só (heap insuficiente para 22 contextos Spring numa JVM), e as 3 falhas eram outra (`429 RUNTIME_WARMING_UP` da admissão operacional durante os primeiros 20s de cada contexto). Os 4 erros restantes vinham de uma limpeza de teste que apagava `tb_usuario` sem respeitar chave estrangeira. As três causas estão corrigidas e o zero acima é medido a cada execução do portão, não herdado.
 
 O `verify` padrão (Failsafe) não alcança 13 métodos de teste distribuídos em 6 classes¹ que combinam a convenção `*Test.java` com `@Tag("integration")` — o Surefire exclui essas classes por tag e o Failsafe não as reconhece pelo padrão de nome de arquivo. Todas as 13 já foram confirmadas verdes individualmente via `-Dit.test=`, mas ficam fora da contagem de rotina do `verify`.
 

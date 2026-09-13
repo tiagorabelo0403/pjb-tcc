@@ -432,10 +432,10 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 | Integration test classes | Failsafe | **116** ¹ |
 | Polo-composition-engine tests | Failsafe | **+10 green** (role by procedural type: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Integration tests executed | Failsafe | **292** (measured in CI, 2026-09-13) |
-| IT failures | Failsafe | **3 failures + 4 errors** ² |
-| Full verify execution time | Surefire + Failsafe | **~50 min** locally · **~38 min** in CI |
+| IT failures | Failsafe | **0** (0E + 0F) ² |
+| Full verify execution time | Surefire + Failsafe | **~50 min** locally · **~27 min** in CI |
 
-² Until 2026-09-13 this row read `0 (0E + 0F)`, a number inherited from an old local run that nothing re-verified. The first `PJB Integration Gate` execution measured the real value. The seven occurrences are tracked in the [`DEBT_LOG`](./docs/quality/DEBT_LOG.md). The three assertion failures had a single cause — `429 RUNTIME_WARMING_UP` from operational admission control, which sheds expensive routes during the first 20s of every fresh Spring context — and were closed by disabling that protection in the integration profile, trading it for deterministic unit coverage. The four remaining errors are inter-test cleanup failures in `InstitutionalWorkbenchControllerIT` and stay open.
+² This number is now verified. Until 2026-09-13 the row read `0 (0E + 0F)`, inherited from an old local run that nothing re-verified; the first `PJB Integration Gate` execution measured **273 tests, 8 failures and 55 errors**. The 55 errors had a single cause (heap too small for 22 Spring contexts in one JVM), and the 3 failures had another (`429 RUNTIME_WARMING_UP` from operational admission control during the first 20s of every context). The remaining 4 errors came from a test cleanup that deleted `tb_usuario` without respecting a foreign key. All three causes are fixed, and the zero above is measured on every gate run rather than inherited.
 
 The integration suite went through a structural stabilization process: failures caused by incorrect environment variables, cross-test data contamination, and hardcoded IDs without seeding were eliminated down to zero. Two of those fixes exposed real production bugs, not just test issues: `AuditLedgerService` recorded audit events only in memory, without persisting to the repository the audit endpoints actually query; and root-proceeding resolution in `CaseContinuityOrchestratorService` used a mutable field during the case lifecycle, causing ambiguity between the root proceeding and its branches (e.g., judgment enforcement) after archiving.
 
