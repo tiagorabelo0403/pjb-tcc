@@ -631,7 +631,7 @@ graph TD
 | IA Jurídica | Anthropic Claude API — Memory Stores, Dreams, síntese reflexiva |
 | Observabilidade | Micrometer, Spring Actuator, Process Mining materializado |
 | Análise estática | Qodana (JetBrains), JaCoCo, Checkstyle, SpotBugs, ArchUnit, catraca de depreciação no compilador |
-| Guards estruturais | 13 scripts Python + ArchUnit integrados ao CI |
+| Guards estruturais | 15 scripts Python + ArchUnit integrados ao CI |
 | Containerização | Docker Compose (dev/test), Kubernetes (produção) |
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
@@ -1045,7 +1045,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 | Testes de integração (Failsafe) | **116 classes · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
-| Guards Python | 13 scripts ativos em CI |
+| Guards Python | 15 scripts ativos em CI |
 | SBOM | CycloneDX gerado a cada build |
 | Correlation ID | Obrigatório em toda requisição |
 
@@ -1097,6 +1097,19 @@ python scripts/runtime_concurrency_guard.py
 | `anti_mock_prod_guard` | Bloqueia se mocks de integração crítica estiverem ativos em produção: Gov.br, ICP-Brasil, Kafka, Elasticsearch, IA |
 | `openapi_weakness_detector` | Detecta `Map<String,Object>` sem schema tipado, campos sem `format: date-time` e rotas sem contrato OpenAPI registrado |
 | `java_regression_signature_guard` | Assinaturas de API que já causaram regressão no projeto e não devem voltar |
+| `guard_cwd_independence_guard` | Guard que resolve caminho do repositório contra o diretório de trabalho — o CI roda de `scripts/`, onde esse caminho não existe, e a varredura sai vazia reportando sucesso |
+| `internal_type_hygiene_guard` | Tipos aninhados em arquivos acima de 900 linhas |
+
+### Resolução de caminho nos guards
+
+O `ci.yml` invoca os guards com `working-directory: scripts`, então nenhum deles pode resolver caminho
+do repositório contra o diretório de trabalho: o caminho não existe ali, a varredura sai vazia e o
+guard reporta sucesso sem ter olhado nada. A raiz canônica é `project_roots.ROOT`, que sobe de
+`__file__` até encontrar `pom.xml` junto de `pjb-api`.
+
+Caminhos gravados em relatório saem relativos à raiz, para que o arquivo versionado não dependa de
+onde o guard foi executado. `guard_cwd_independence_guard` verifica a regra por análise sintática dos
+scripts.
 
 ### Catraca de depreciação
 

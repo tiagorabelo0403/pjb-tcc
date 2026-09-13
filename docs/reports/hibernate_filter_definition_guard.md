@@ -1,6 +1,6 @@
 # Hibernate Filter Definition Guard
 
-- Arquivos Java escaneados: **8236**
+- Arquivos Java escaneados: **7978**
 - Nomes de @FilterDef encontrados: filtroEquipe, filtroEquipeProcesso, filtroUnidadeInstitucional
 - Total de achados: **0**
 
