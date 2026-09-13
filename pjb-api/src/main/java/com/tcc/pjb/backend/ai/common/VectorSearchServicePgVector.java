@@ -125,14 +125,14 @@ public class VectorSearchServicePgVector implements VectorSearchService {
         params.add(pgVectorLiteral);
         params.add(topK);
 
-        return jdbcTemplate.query(sql.toString(), params.toArray(), (rs, rowNum) -> {
+        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
             String docId = rs.getString("doc_id");
             String titulo = rs.getString("titulo");
             String ramo = rs.getString("ramo");
             double distance = rs.getDouble("distance");
             double score = Math.max(MIN_SCORE, 1.0 - distance);
             return new ResultItem(docId, titulo, ramo, score, 1.0 - distance, 0.0);
-        });
+        }, params.toArray());
     }
 
     private float[] adjustDimension(EmbeddingVector source) {

@@ -9,23 +9,30 @@ o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
 ## D-guards-existentes-fora-do-ci
 
-**Status:** aberta — 30 guards fora do CI; 12 passam e poderiam entrar hoje, 3 acusam achado real
+**Status:** aberta — 30 guards fora do CI; 14 passam e poderiam entrar hoje, 2 acusam achado real
 
-O projeto tem **40 scripts em `scripts/`** e apenas **10 estão no `ci.yml`**. Parte dos 30 restantes
+O projeto tem **43 scripts em `scripts/`** e **13 estão no `ci.yml`**. Parte dos 30 restantes
 é ferramenta local legítima (`docker_zombie_container_guard`, `reap_orphan_test_jvms`) ou gerador
 (`frontend_integration_pack`, `migration_alignment_report`), mas a maioria é guarda de verdade.
 
 Executados todos os que têm forma de guarda:
 
-- **12 passam** e poderiam ser ligados sem nenhum trabalho: `config_taxonomy_guard`,
+- **14 passam** e poderiam ser ligados sem nenhum trabalho: `config_taxonomy_guard`,
   `docker_compose_guard`, `drain_quiet_period_argline_guard`, `flyway_migration_version_guard`,
-  `git_secret_guard`, `internal_type_hygiene_guard`, `java_string_literal_sanity_guard`,
-  `legal_ai_policy_catalog_guard`, `legal_ai_surface_split_guard`, `legal_knowledge_catalog_guard`,
-  `legal_mcp_catalog_guard`, `pjb_runtime_memory_recipe_guard`, `powershell_test_collector_guard`.
-- **1 passou a passar nesta fatia**: `access_key_and_unavailability_guard`, ligado ao CI aqui.
-- **3 acusam achado real e seguem abertos**, cada um virando dívida própria:
+  `git_secret_guard`, `java_string_literal_sanity_guard`, `legal_ai_policy_catalog_guard`,
+  `legal_ai_surface_split_guard`, `legal_knowledge_catalog_guard`, `legal_mcp_catalog_guard`,
+  `pjb_runtime_memory_recipe_guard`, `powershell_test_collector_guard`, `replacement_matrix_guard`,
+  `spring_ambiguous_constructor_guard`.
+- **1 não pode ser ligado como está**: `internal_type_hygiene_guard` passa quando rodado da raiz do
+  repositório e estoura `FileNotFoundError: docs\reports\internal_type_hygiene_guard.json` quando
+  rodado de dentro de `scripts/` — que é exatamente o `working-directory` que o `ci.yml` usa para os
+  guards. Ele escreve o relatório em caminho relativo ao cwd em vez de relativo ao arquivo. Ligá-lo
+  sem corrigir isso quebra o CI. Uma revisão anterior desta mesma entrada o listou entre os que
+  "passam e poderiam entrar hoje"; isso estava errado, porque foi medido da raiz.
+- **2 passaram a passar em fatias recentes**: `access_key_and_unavailability_guard` e
+  `java_regression_signature_guard`, ambos já ligados ao CI.
+- **2 acusam achado real e seguem abertos**, cada um virando dívida própria:
   - `canonical_institutional_route_guard` — 12 controllers de comunicação institucional fora da rota canônica.
-  - `java_regression_signature_guard` — uso de `JsonNode.fields()` (depreciado no Jackson) em `RichTextDocumentSanitizer`.
   - `readme_truthfulness_guard` — README referencia `docs/escopo`, que não existe. As outras duas queixas
     (`target/pjb-api.jar` e `target/site/jacoco/index.html`) são artefatos de build e o guard não deveria
     exigi-los; isso é defeito do próprio guard.
@@ -34,6 +41,65 @@ Executados todos os que têm forma de guarda:
 (ver `project_padrao_instrumento_que_nao_age` na memória). Foi assim que o
 `legal_ai_surface_split_guard` ficou quebrado sem ninguém ver, e foi assim que três classes de regra
 jurídica foram apagadas apesar de existir guarda proibindo.
+
+## D-apis-depreciadas-em-codigo-de-teste
+
+**Status:** aberta — produção em zero e travada por catraca; 13 avisos restam em `src/test`
+
+A varredura que fechou `java_regression_signature_guard` não foi feita por catálogo de assinaturas, e
+sim perguntando ao compilador (`-Dmaven.compiler.showDeprecation=true` sobre build limpo, porque a
+compilação incremental responde "Nothing to compile" e produz medição fantasma). O retrato era de
+**32 usos de API depreciada**, dos quais o guard catalogava **um**.
+
+`src/main` foi zerado nesta fatia e o `default-compile` passou a rodar com `-Xlint:deprecation,removal`
+e `failOnWarning`, então uma API depreciada nova em produção derruba o build. Sobram **13 avisos, todos
+em `src/test`**, onde a catraca não se aplica:
+
+- **8** — `io.camunda.zeebe.client.api.response.ActivatedJob` em `PeticionamentoSagaWorkerTest` e
+  `PeticionamentoSagaWorkerStringIdTest`. Migrar exige trocar a superfície do cliente Zeebe; é fatia
+  própria, não higiene.
+- **2** — `AbstractAssert.asList()` (AssertJ) em `AdvogadoCockpitServiceProrrogacaoPrazoLoteTest`.
+  Troca direta por `asInstanceOf(InstanceOfAssertFactories.LIST)`.
+- **2** — `X509Certificate.getSubjectDN()` / `getIssuerDN()` em `IcpBrasilChainValidatorTest`. O
+  substituto (`getSubjectX500Principal()`) devolve o DN em formato RFC 2253, diferente do formato
+  legado; como o teste é de cadeia ICP-Brasil, a troca precisa conferir a asserção, não só o método.
+- **1** — construtor `Provider(String,double,String)` em `JudicialPkcs11ProviderRegistryTest`.
+
+**Por que não foi fechado junto:** nenhum deles é `[removal]`, então não há prazo do compilador; e o
+lote do Zeebe muda superfície de integração, que não cabe na mesma fatia de configuração de segurança.
+
+## D-verificacoes-de-qualidade-desligadas-na-suite
+
+**Status:** aberta — 4 dos 5 testes pulados da suíte são verificação de qualidade que não roda
+
+A suíte unitária fecha em **5.285 testes, 0 falhas, 0 erros, 5 pulados**. Os 5 pulados foram
+identificados um a um:
+
+- `LaianeMpOpenApiSchemaTest#exportarBaselineVersionado` — `@Disabled` legítimo. É gerador de
+  `docs/api/laiane-mp-openapi-v1.json`, rodado sob demanda, não verificação.
+- `PjbArchitectureTest` — **2 regras de arquitetura desligadas** por `@Disabled`, com a justificativa
+  de que o baseline legado seria migrado "por facades de superfície" e classificado "por catálogo
+  LGPD/ownership em rodada dedicada". Nenhuma das duas rodadas tem data nem dívida própria; enquanto
+  isso `PjbArchitectureTest` aparece verde e não verifica essas duas regras.
+- `PjbOpenApiContractWeaknessDetectorTest` — **2 testes sob `Assumptions.assumeTrue(Files.exists(SNAPSHOT))`**.
+  Se o snapshot de contrato desaparecer, o detector de fraqueza de OpenAPI não falha: ele pula, e a
+  suíte segue verde. A condição que deveria ser o motivo da falha é o motivo do silêncio.
+
+**Por que importa:** os dois últimos casos são o padrão dominante do projeto
+(`project_padrao_instrumento_que_nao_age`) dentro da própria suíte de testes — o lugar onde a
+aparência de cobertura é mais convincente. Um `@Disabled` com justificativa e um `assumeTrue` sobre
+existência de arquivo produzem o mesmo efeito de um teste ausente, com um relatório verde por cima.
+
+## D-test-drift-relatorio-desatualizado
+
+**Status:** aberta — relatório versionado afirma 0 achados; execução atual acusa 3
+
+`docs/reports/test_drift_scan_batch4.md` está commitado dizendo "Total de achados: 0 — Nenhum achado
+heurístico encontrado". Rodar `scripts/test_drift_guard.py` hoje devolve 3 achados de
+`missing_static_import`, em `LaianeOficioAuditPostCommitServiceIT` (`verify`) e
+`PersonalProcessAccessGuardServiceTest` (`any`, `eq`). O relatório versionado não é regenerado por
+ninguém, então afirma um estado que já não é verdade — o mesmo padrão de instrumento que não age, desta
+vez na forma de evidência congelada.
 
 ## D-schedulers-processuais-desligados-por-decisao-nao-tomada
 

@@ -90,13 +90,13 @@ public class PgVectorPersistentIndex implements VectorIndex {
         params.add(pgLiteral);
         params.add(k);
 
-        return jdbcTemplate.query(sql.toString(), params.toArray(), (rs, rowNum) -> {
+        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
             String docId = rs.getString("doc_id");
             String metaJson = rs.getString("metadata");
             double distance = rs.getDouble("distance");
             float score = (float) Math.max(0.0, 1.0 - distance);
             return new VectorSearchHit(docId, score, parseMetadata(metaJson));
-        });
+        }, params.toArray());
     }
 
     @Override

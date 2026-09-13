@@ -310,7 +310,7 @@ pjb:
           rate-limit-key-strategy: ip_user
           no-store-response: true
         - name: process-twin-sensitive
-          paths: ["/api/v1/processos/**/twin"]
+          paths: ["/api/v1/processos/*/twin"]
           methods: ["GET"]
           authorities: ["ROLE_ADMIN", "ROLE_ADMINISTRADOR", "ROLE_CIDADAO", "ROLE_ADVOGADO", "ROLE_SERVIDOR", "ROLE_SERVIDOR_FORUM", "ROLE_SERVIDOR_JUDICIARIO", "ROLE_MAGISTRADO", "ROLE_JUIZ", "ROLE_DESEMBARGADOR", "ROLE_MINISTRO", "ROLE_DEFENSOR_PUBLICO", "ROLE_DEFENSOR_PUBLICO_FEDERAL", "ROLE_PROCURADOR", "ROLE_PROCURADORIA_MUNICIPAL", "ROLE_PROCURADORIA_ESTADUAL", "ROLE_PROCURADORIA_FEDERAL", "ROLE_MEMBRO_MINISTERIO_PUBLICO", "ROLE_PROMOTOR", "ROLE_PROMOTOR_JUSTICA"]
           max-page-size: 10
