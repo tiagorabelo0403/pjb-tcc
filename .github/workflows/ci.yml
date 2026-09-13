@@ -185,6 +185,26 @@ jobs:
         working-directory: scripts
         run: python salario_minimo_hardcoded_guard.py
 
+      - name: tribunal_readiness_guard
+        working-directory: scripts
+        run: python tribunal_readiness_guard.py
+
+      - name: universal_digital_core_guard
+        working-directory: scripts
+        run: python universal_digital_core_guard.py
+
+      - name: judicial_innovation_guard
+        working-directory: scripts
+        run: python judicial_innovation_guard.py
+
+      - name: judicial_innovation_part_two_guard
+        working-directory: scripts
+        run: python judicial_innovation_part_two_guard.py
+
+      - name: judicial_innovation_part_three_guard
+        working-directory: scripts
+        run: python judicial_innovation_part_three_guard.py
+
       - name: access_key_and_unavailability_guard
         working-directory: scripts
         run: python access_key_and_unavailability_guard.py

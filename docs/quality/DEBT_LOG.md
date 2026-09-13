@@ -9,9 +9,9 @@ o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
 ## D-guards-existentes-fora-do-ci
 
-**Status:** aberta — 22 guards fora do CI; 15 passam e poderiam entrar hoje, 7 acusam algo e todos foram triados
+**Status:** aberta — 17 guards fora do CI; 15 passam e poderiam entrar hoje, 2 acusam algo
 
-O projeto tem **44 scripts em `scripts/`** e **21 estão no `ci.yml`**. Parte dos 22 restantes
+O projeto tem **44 scripts em `scripts/`** e **26 estão no `ci.yml`**. Parte dos 17 restantes
 é ferramenta local legítima (`docker_zombie_container_guard`, `reap_orphan_test_jvms`) ou gerador
 (`frontend_integration_pack`, `migration_alignment_report`), mas a maioria é guarda de verdade.
 
@@ -104,50 +104,30 @@ em `src/test`**, onde a catraca não se aplica:
 **Por que não foi fechado junto:** nenhum deles é `[removal]`, então não há prazo do compilador; e o
 lote do Zeebe muda superfície de integração, que não cabe na mesma fatia de configuração de segurança.
 
-## D-vinte-e-quatro-classes-com-guarda-apagadas-pelo-f1
+## D-classes-restauradas-sem-teste-e-sem-conexao
 
-**Status:** aberta — decisão de produto: restaurar, descartar ou escolher subconjunto
+**Status:** aberta — 24 classes de volta, 1.354 linhas, nenhuma com teste ou chamador
 
-Cinco guardas acusam **24 classes ausentes**. Todas as 24 foram apagadas pelo mesmo commit
-`6fcf76aa` ("remove lote 2 de classes mortas (F1) — Tier 1, 66 arquivos"); nenhuma "nunca existiu".
-Somando com as três restauradas em PR #116, **27 dos 66 arquivos** daquele lote eram classes que o
-projeto tinha guarda explícita exigindo que existissem.
+As 24 classes que cinco guardas exigiam foram restauradas do commit `6fcf76aa^`, que as havia apagado
+no lote 2 do F1. Somadas às três de PR #116, são **27 dos 66 arquivos** daquele lote que o projeto
+tinha guarda explícita para manter.
 
-| | |
-|---|---|
-| classes ausentes | 24 |
-| linhas | 1.354 |
-| com anotação Spring | 0 |
-| com teste antes da remoção | 0 |
-| pacotes que sobreviveram | 24 de 24 |
+Verificado antes de restaurar: compilam limpo com a catraca `-Xlint:deprecation,removal` ativa,
+nenhuma tem anotação Spring, nenhuma tem chamador, e as cinco guardas passaram de acusando para
+nenhum achado. As cinco entraram no `ci.yml`, que passa a rodar 26.
 
-**O F1 não foi descuidado.** Pelos sinais usuais — zero referência, zero teste — essas classes
-pareciam mortas. O que as tornava vivas era o projeto ter escrito guardas exigindo que existissem, e a
-varredura não consultou esse sinal. É a mesma forma estrutural da contradição que havia sobre a rota
-institucional: dois mecanismos do projeto discordando, com um deles fora do CI.
-
-**Por que não foram restauradas junto com as três de PR #116:** aquelas codificavam obrigação legal
-(prorrogação de prazo por indisponibilidade — Lei 11.419 art. 10; política de chave de acesso com
-segredo de justiça), e ausência ali é risco jurídico. Estas 24 são capacidade de produto: gêmeo
-digital do tribunal, piloto automático de secretaria, linha do tempo em linguagem simples, score de
-acesso à justiça, ponte de protocolo para juizado adjunto.
+**O que fica aberto é o que a restauração não resolve:** nenhuma das 24 tem teste, e nenhuma está
+conectada a fluxo. Elas voltaram a existir e a ser protegidas contra remoção — o que impede a perda
+silenciosa —, mas continuam sendo capacidade planejada e não ligada, exatamente como as 16 tabelas de
+F2 em `project_f2_tabelas_planejadas_nao_conectadas`.
 
 Não é código vazio: `PjbContextualPanelPolicy` esconde `GUIA_CUSTAS_PRIMEIRO_GRAU` e
 `CITACAO_POR_EDITAL_PADRAO` quando o rito é Juizado — correto, porque o JEC não tem custas em primeiro
-grau (Lei 9.099 art. 54) e citação por edital é incompatível com o sumaríssimo.
+grau (Lei 9.099 art. 54) e citação por edital é incompatível com o sumaríssimo. Mas essa regra não
+roda em lugar nenhum.
 
-**As três saídas:**
-
-1. **Restaurar as 24 e ligar as cinco guardas.** Risco zero de comportamento — lógica pura, sem bean,
-   sem referência — e honra decisão já registrada no repositório. Custo: 1.354 linhas sem teste e sem
-   uso voltam, e seguem não conectadas até alguém ligá-las.
-2. **Apagar as cinco guardas e os registros órfãos.** Decide que o PJB não quer mais essas
-   capacidades. Custo: perde-se o desenho, e os arquivos que restaram nos 24 pacotes precisam de
-   triagem individual.
-3. **Restaurar apenas o subconjunto ainda desejado**, com as guardas passando a listar só esse
-   subconjunto.
-
-Enquanto a decisão não vem, as cinco guardas não podem entrar no CI: elas reprovam.
+Conectar cada uma é decisão de produto, uma por uma. Enquanto não for, o valor da restauração é
+preservar o desenho e tornar a próxima remoção impossível de passar despercebida.
 
 ## D-modular-monolith-baseline-estourado
 
@@ -247,10 +227,27 @@ O que **fica aberto**:
   (74 arquivos com `Map<String,Object>`), `model/dto/secretariat` (11), `model/dto/distribuicao` (4)
   nem os subpacotes de `model/dto/processual` fora de `calculo`, `peticionamento` e `substituicao`.
 
-Fechar exige decidir como produzir o contrato publicado dentro do build. Subir o contexto na fase de
-teste unitário é caro e frágil; gerar por `ModelConverters` é barato mas não reproduz os
-customizadores do springdoc, e um gerador que diverge do contrato real é mais um instrumento que não
-mede o que afirma medir.
+**A implementação já existiu e está recuperável.** `OpenApiContractIT` subia a aplicação com
+`RANDOM_PORT`, buscava `/v3/api-docs` e tinha `maybeUpdateOrEnforceSnapshot`, com dois modos:
+`-Dopenapi.snapshot.update=true` regravava o snapshot canônico em
+`src/test/resources/openapi/openapi-snapshot.json`, e `-Dopenapi.snapshot.enforce=true` comparava o
+contrato vivo contra o versionado e falhava em drift. Foi removido em **2026-07-14, commit
+`691752d9`**, cujo objetivo declarado era fechar `D-openapi-scan` "sem tocar barriers" — o IT virou
+teste unitário puro de `OpenApiConfig`. O snapshot versionado saiu junto, e o pacote
+`src/test/resources/openapi/` não existe mais.
+
+A remoção foi limpa: não sobrou órfão, diferente do que aconteceu com as 24 classes. Mas a capacidade
+de detectar drift no contrato publicado se perdeu inteira, e o código dela está em `691752d9^`.
+
+**Nota sobre os dois testes removidos:** eles liam `../target/openapi-snapshot.json`, e o gerador
+escrevia em `src/test/resources/openapi/openapi-snapshot.json`. **Nunca apontaram para o mesmo
+arquivo** — nasceram mortos, não morreram com a remoção do gerador.
+
+Fechar exige decidir como produzir o contrato publicado dentro do build. Restaurar o IT devolve a
+capacidade, mas ele sobe contexto e o CI não roda a fase de integração, então voltaria a ser
+verificação que não executa. Gerar por `ModelConverters` é barato e roda na fase unitária, mas não
+reproduz os customizadores do springdoc, e um gerador que diverge do contrato real é mais um
+instrumento que não mede o que afirma medir.
 
 ## D-schedulers-processuais-desligados-por-decisao-nao-tomada
 
