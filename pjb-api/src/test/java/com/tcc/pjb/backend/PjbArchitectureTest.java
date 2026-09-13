@@ -69,18 +69,18 @@ class PjbArchitectureTest {
         List<String> violacoes = violacoesDe(rule);
 
         assertThat(nomesDeClasseEm(violacoes))
-                .as("baseline conhecido: seis controllers chamam repository direto. Tres estao fora de "
-                        + "pacote `controller` (ai.juridica, ai.legalai, core.servidor.api) e dois importam "
-                        + "repository fora de `model.repository`, entao a versao por pacote nao os via. "
-                        + "Migrar cada um exige cobrir antes o caminho de negativa no proprio controller, "
-                        + "como foi feito em ProtocoloReciboController. Nome novo nesta lista e regressao.")
+                .as("baseline conhecido: cinco controllers chamam repository direto. Tres estao fora de "
+                        + "pacote `controller` (ai.juridica, ai.legalai) e dois importam repository fora de "
+                        + "`model.repository`, entao a versao por pacote nao os via. Migrar cada um exige "
+                        + "cobrir antes o caminho de negativa no proprio controller, como foi feito em "
+                        + "ProtocoloReciboController e FuncaoServidorAdminController. Nome novo nesta lista "
+                        + "e regressao; a lista so encolhe.")
                 .containsExactlyInAnyOrder(
                         "com.tcc.pjb.backend.ai.juridica.v2.JudexOnDemandController",
                         "com.tcc.pjb.backend.ai.legalai.MemoryCandidateReviewController",
                         "com.tcc.pjb.backend.ai.legalai.MemoryStoreController",
                         "com.tcc.pjb.backend.controller.DocumentoController",
-                        "com.tcc.pjb.backend.controller.advogado.AdvogadoAuditoriaController",
-                        "com.tcc.pjb.backend.core.servidor.api.FuncaoServidorAdminController");
+                        "com.tcc.pjb.backend.controller.advogado.AdvogadoAuditoriaController");
     }
 
     @Test

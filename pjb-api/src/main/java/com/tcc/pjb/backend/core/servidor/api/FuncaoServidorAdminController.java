@@ -7,7 +7,7 @@ import com.tcc.pjb.backend.core.servidor.api.dto.FuncaoServidorDesignacaoRespons
 import com.tcc.pjb.backend.core.servidor.api.dto.UnidadeCandidataResponse;
 import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorApplicationService;
 import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorDesignacaoService;
-import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
+import com.tcc.pjb.backend.core.servidor.application.UnidadesCandidatasParaDesignacaoService;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -29,16 +29,16 @@ public class FuncaoServidorAdminController {
 
     private final FuncaoServidorDesignacaoService designacaoService;
     private final FuncaoServidorApplicationService funcaoServidorApplicationService;
-    private final UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository;
+    private final UnidadesCandidatasParaDesignacaoService unidadesCandidatasService;
     private final CurrentUserService currentUserService;
 
     public FuncaoServidorAdminController(FuncaoServidorDesignacaoService designacaoService,
                                           FuncaoServidorApplicationService funcaoServidorApplicationService,
-                                          UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository,
+                                          UnidadesCandidatasParaDesignacaoService unidadesCandidatasService,
                                           CurrentUserService currentUserService) {
         this.designacaoService = Objects.requireNonNull(designacaoService);
         this.funcaoServidorApplicationService = Objects.requireNonNull(funcaoServidorApplicationService);
-        this.unidadeJudiciariaCompetenciaRepository = Objects.requireNonNull(unidadeJudiciariaCompetenciaRepository);
+        this.unidadesCandidatasService = Objects.requireNonNull(unidadesCandidatasService);
         this.currentUserService = Objects.requireNonNull(currentUserService);
     }
 
@@ -63,9 +63,6 @@ public class FuncaoServidorAdminController {
     @GetMapping("/unidades-candidatas")
     public List<UnidadeCandidataResponse> unidadesCandidatas(@RequestParam String comarcaUf,
                                                                @RequestParam String comarcaNome) {
-        return unidadeJudiciariaCompetenciaRepository
-                .findAllByUfIgnoreCaseAndComarcaIgnoreCase(comarcaUf, comarcaNome).stream()
-                .map(UnidadeCandidataResponse::from)
-                .toList();
+        return unidadesCandidatasService.naComarca(comarcaUf, comarcaNome);
     }
 }

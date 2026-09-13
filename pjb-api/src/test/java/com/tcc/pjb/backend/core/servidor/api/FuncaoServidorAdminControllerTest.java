@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,10 +17,10 @@ import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorApplicationService;
 import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorDesignacaoService;
 import com.tcc.pjb.backend.model.entity.Usuario;
-import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia;
 import com.tcc.pjb.backend.model.entity.enums.FuncaoServidorJudiciario;
 import com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorJudiciarioEntity;
-import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
+import com.tcc.pjb.backend.core.servidor.api.dto.UnidadeCandidataResponse;
+import com.tcc.pjb.backend.core.servidor.application.UnidadesCandidatasParaDesignacaoService;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.util.List;
@@ -32,11 +33,12 @@ class FuncaoServidorAdminControllerTest {
 
     private final FuncaoServidorDesignacaoService designacaoService = mock(FuncaoServidorDesignacaoService.class);
     private final FuncaoServidorApplicationService funcaoServidorApplicationService = mock(FuncaoServidorApplicationService.class);
-    private final UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+    private final UnidadesCandidatasParaDesignacaoService unidadesCandidatasService =
+            mock(UnidadesCandidatasParaDesignacaoService.class);
     private final CurrentUserService currentUserService = mock(CurrentUserService.class);
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules().registerModule(new JavaTimeModule());
     private final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(
-            new FuncaoServidorAdminController(designacaoService, funcaoServidorApplicationService, unidadeRepository, currentUserService)
+            new FuncaoServidorAdminController(designacaoService, funcaoServidorApplicationService, unidadesCandidatasService, currentUserService)
     ).build();
 
     @Test
@@ -94,19 +96,18 @@ class FuncaoServidorAdminControllerTest {
 
     @Test
     void unidadesCandidatasFiltraPorComarcaEUf() throws Exception {
-        UnidadeJudiciariaCompetencia unidade = mock(UnidadeJudiciariaCompetencia.class);
-        when(unidade.getId()).thenReturn(5L);
-        when(unidade.getCodigo()).thenReturn("VARA-1");
-        when(unidade.getComarca()).thenReturn("Fortaleza");
-        when(unidade.getUf()).thenReturn("CE");
-        when(unidadeRepository.findAllByUfIgnoreCaseAndComarcaIgnoreCase("CE", "Fortaleza"))
-                .thenReturn(List.of(unidade));
+        when(unidadesCandidatasService.naComarca("CE", "Fortaleza"))
+                .thenReturn(List.of(new UnidadeCandidataResponse(5L, "VARA-1", "Fortaleza", "CE")));
 
         mockMvc.perform(get("/api/v1/admin/servidores/designacoes/unidades-candidatas")
                         .param("comarcaUf", "CE")
                         .param("comarcaNome", "Fortaleza"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(5))
+                .andExpect(jsonPath("$[0].codigo").value("VARA-1"))
+                .andExpect(jsonPath("$[0].comarca").value("Fortaleza"))
+                .andExpect(jsonPath("$[0].uf").value("CE"));
 
-        verify(unidadeRepository).findAllByUfIgnoreCaseAndComarcaIgnoreCase("CE", "Fortaleza");
+        verify(unidadesCandidatasService).naComarca("CE", "Fortaleza");
     }
 }
