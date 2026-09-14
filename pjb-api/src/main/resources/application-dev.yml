@@ -20,7 +20,16 @@ spring:
         binaryTransfer: ${PJB_DB_BINARY_TRANSFER:true}
   jpa:
     hibernate:
-      ddl-auto: update
+      # `validate`, igual a docker e prod. Aqui o banco e PostgreSQL real e o Flyway roda (herdado
+      # do application.yml), entao as 318 migrations constroem o schema. Com `update`, o Hibernate
+      # remendava por cima o que a migration nao criou — e o desenvolvedor nunca via a migration
+      # faltante: ela so explodia em docker/prod, que usam `validate`. Era a mecanica que deixava
+      # drift entidade<->migration sobreviver ate o deploy.
+      #
+      # local e frontend-dev seguem em `update` de proposito: la o banco e H2 em memoria e o Flyway
+      # esta desligado, porque as migrations sao Postgres puro (pgvector, CREATE EXTENSION vector).
+      # Naqueles dois o Hibernate e a unica coisa que cria o schema.
+      ddl-auto: validate
     show-sql: true
     open-in-view: false
     properties:

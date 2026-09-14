@@ -120,6 +120,14 @@ jobs:
         working-directory: scripts
         run: python hash_column_width_guard.py
 
+      # `update` sobre banco real com Flyway ligado esconde migration faltante: as migrations
+      # constroem o schema e o Hibernate remenda por cima. Era o caso do perfil dev. Nao reprova
+      # local/frontend-dev, que usam H2 em memoria com Flyway desligado — la o Hibernate e a unica
+      # coisa que cria o schema, e `update` e correto.
+      - name: ddl_auto_discipline_guard
+        working-directory: scripts
+        run: python ddl_auto_discipline_guard.py
+
       - name: guard_cwd_independence_guard
         working-directory: scripts
         run: python guard_cwd_independence_guard.py
