@@ -41,6 +41,13 @@ jobs:
       - name: Unit Tests
         run: ./mvnw -pl pjb-api -am test -DfailIfNoTests=false -q
 
+      # Roda aqui, e nao no job de guards, porque so aqui existe relatorio de Surefire no disco — e
+      # o checkout e novo, entao o conjunto e exatamente o desta execucao. No job separado o guard
+      # se recusaria a conferir a contagem de testes, que e justamente a alegacao que mais envelhece.
+      - name: README Numeric Truth
+        working-directory: scripts
+        run: python3 readme_numeric_truth_guard.py
+
       - name: ArchUnit Guards
         run: ./mvnw -pl pjb-api -am -Dtest="*ArchitectureTest,*ArchTest,PjbSecurityArchitectureTest" test -q
 

@@ -256,7 +256,7 @@ Open `.env` and fill in the required variables:
 docker compose up -d
 ```
 
-This starts PostgreSQL 17, Apache Kafka 3.8, Redis 7.4, and Elasticsearch 8.15. Flyway migrations (numbered up to V331) are applied automatically on the first backend connection.
+This starts PostgreSQL 17, Apache Kafka 3.8, Redis 7.4, and Elasticsearch 8.15. Flyway migrations (numbered up to V354) are applied automatically on the first backend connection.
 
 ### 4. Check Spring Profiles
 
@@ -622,7 +622,7 @@ graph TD
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Database | PostgreSQL 17 with Row Level Security per operation |
 | Test Database | In-memory H2 + Testcontainers |
-| Migrations | Flyway — numbered up to V331, with monthly partitioning on event tables |
+| Migrations | Flyway — numbered up to V354, with monthly partitioning on event tables |
 | Persistence | JPA / Hibernate with `ddl-auto: validate` in production |
 | Messaging | Apache Kafka 3.8 — judicial events and outbox |
 | Workflow orchestration | Camunda 8 / Zeebe — BPMN applied to the filing workflow |
@@ -991,7 +991,7 @@ PostgreSQL's default `autovacuum_analyze_scale_factor` (10% of the table) is fin
 
 ## Database
 
-305 Flyway migrations (non-contiguous numbering from V0 to V343 — 39 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
+316 Flyway migrations (non-contiguous numbering from V0 to V354 — 39 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
 
 Row Level Security active per operation, across two dimensions: case confidentiality (reading confidential cases is refused by the database before the ORM sees it) and actor — dedicated connection GUCs (`app.pjb_actor_id`, `app.pjb_actor_roles`) scope operational tables (support tickets, magistrate travel exceptions, the AI audit trail, hearing summons) faithful to each one's read `@PreAuthorize`, as defense in depth. Never decorative RLS: a table without a tenancy column gets no policy, and a migration-discipline test blocks `ENABLE ROW LEVEL SECURITY` without `FORCE` and without a policy — the orphan RLS a table owner ignores at runtime. `tb_usuario` and the `tb_identidade_juridica_*` cluster (national CPF/CNPJ registry) are deliberate exclusions from that sweep, not gaps: both are legitimately queried for third-party data by institutional roles (a lawyer seen by a court clerk, a defendant's document looked up by a bailiff) just as much as for self-service — there is no per-row ownership boundary to enforce without breaking those legitimate cross-actor reads; `tb_usuario` is protected by gating its entire controller behind admin `@PreAuthorize` (no self-service by-id endpoint exists), and PII in both is protected by encryption at rest with a blind index, not by RLS. Materialized tables with asynchronous refresh for analytics (ADR-0053). Outbox pattern for post-commit effects with no risk of event loss on transaction failure. The outbox table is partitioned monthly — entire partition purge via `DROP TABLE`, no row scanning.
 
@@ -1238,7 +1238,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,344 unit tests and 116 integration test classes, and 300 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,344 unit tests and 116 integration test classes, and 316 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 
