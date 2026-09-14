@@ -1123,55 +1123,6 @@ Achado na revisão da correção do finding B (checagem de posse). A migração 
 
 **Quando revisitar:** ao decidir como o dev local vai simular um read-replica de verdade (ex.: segundo Postgres com `pg_basebackup`/streaming replication, ou desabilitar o verifier via `PJB_DB_READ_VERIFY_TOPOLOGY_ON_STARTUP=false` explicitamente só em `docker-compose.ha.yml` como uma escolha deliberada e documentada, não um bug).
 
-## D-funcao-servidor-proferir-nao-implementado
-
-**Status:** FECHADA
-
-**Contexto:** a fatia que conecta `FuncaoServidorJudiciario` ao motor ABAC real
-(`PjbAuthorizationService.requireFuncaoServidorCapability(Processo, AcaoProcessualServidor)`)
-fechou os 4 gates que já tinham um fluxo real chamando o motor: `CONCLUIR` (conclusão processual),
-`INTIMAR` (intimação de audiência), `ARQUIVAR` e `DISTRIBUIR`. O enum `AcaoProcessualServidor`
-também declara `PROFERIR`, e `FuncaoServidorJudiciario.podeProferir()` já existe e é testado
-isoladamente (ex.: `DIRETOR_SECRETARIA.podeProferir()` retorna `true`), mas **nenhum endpoint ou
-fluxo real do sistema chama `requireFuncaoServidorCapability(processo, AcaoProcessualServidor.PROFERIR)`**
-— o caso de uso que essa capacidade representa (despacho de mero expediente praticado por
-servidor, sem decisão de mérito, nos termos do art. 93, XIV da CF/88 e do art. 203, §4º do CPC) não
-tem nenhuma feature construída no PJB ainda.
-
-Diferente dos outros 4 valores do enum, `PROFERIR` hoje só existe no modelo (enum +
-`possuiCapacidade()` no `switch` de `PjbAuthorizationFuncaoServidorFacade` + booleano na entidade
-`FuncaoServidorJudiciario`) — não há controller, service ou comando que o invoque. Isso é
-esperado e está fora do escopo desta fatia, que conecta capacidades **já existentes** à
-autorização real; construir o fluxo de despacho de mero expediente por servidor é uma feature nova,
-não uma conexão de fiação já pronta.
-
-**Risco:** nenhum imediato — `PROFERIR` sem chamador não é uma porta aberta (o gate nega por
-padrão na ausência de chamada, não existe bypass). O risco é de expectativa: alguém lendo o enum
-ou a entidade pode presumir que a capacidade já está em uso.
-
-**Cobertura de teste:** nenhuma direta para o caminho `PROFERIR` fim-a-fim (não existe fim-a-fim
-para testar). `possuiCapacidade()` (privado em `PjbAuthorizationFuncaoServidorFacade`, chaveado por
-`AcaoProcessualServidor`) é coberto isoladamente por `PjbAuthorizationFuncaoServidorFacadeTest` —
-`FuncaoServidorApplicationServiceTest` **não** o toca, apesar do que a versão anterior desta
-entrada afirmava. `podeProferir()` (o booleano do enum `FuncaoServidorJudiciario` em si, não o
-`switch` do facade) é, esse sim, coberto diretamente por `FuncaoServidorApplicationServiceTest`
-(`diretorSecretariaPoderProferirTrue`/`tecnicoJudiciarioPoderProferirFalse`, linhas 87-93), que
-também cobre `verificarPermissao(String)` do próprio `FuncaoServidorApplicationService` — ver
-`D-duas-tabelas-verdade-capacidade-servidor` abaixo para a duplicação entre esse método e
-`possuiCapacidade()`.
-
-**Fechamento:** `AtoOrdinatorioServidorApplicationService.proferir` conecta `PROFERIR` a um fluxo real —
-`POST /api/v1/processo/ato-ordinatorio`. Catálogo `TipoAtoOrdinatorio` (6 valores, CPC art. 203, §4º)
-cobre juntada, vista (parte contrária e ambas), aguarde de prazo, remessa a órgão auxiliar e expedição em
-cumprimento de decisão já proferida — deliberadamente sem `WorkItem`/`ProcessoLifecycleMachine`/
-`DecisionSafetyService`, porque ato ordinatório não é decisão. Documento assinado via
-`QualifiedDocumentSignatureEnvelopeService.signGovernedContent` (papel `UNIDADE_JUDICIAL`), persistido
-como `DocumentoProcessual`, selado via `DocumentTrustChainService`, e uma `MovimentacaoProcessual` (mesma
-fase de/para) registra o ato na timeline do processo. Testado por
-`AtoOrdinatorioServidorApplicationServiceTest` (unit), `AtoOrdinatorioServidorControllerTest` (unit,
-`@PreAuthorize` + validação) e `AtoOrdinatorioServidorFlowIT` (E2E: `DIRETOR_SECRETARIA` consegue,
-`TECNICO_JUDICIARIO` sem `podeProferir()` é barrado pelo gate real).
-
 ## D-duas-tabelas-verdade-capacidade-servidor
 
 **Status:** aberta
