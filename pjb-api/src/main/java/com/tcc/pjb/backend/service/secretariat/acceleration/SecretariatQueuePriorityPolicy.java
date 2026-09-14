@@ -11,11 +11,11 @@ public final class SecretariatQueuePriorityPolicy {
 
     public SecretariatQueuePriorityPolicy() {}
 
-    private static final String TAG_REU_PRESO = "REU_PRESO";
-    private static final String TAG_TUTELA = "TUTELA_URGENCIA";
-    private static final String TAG_SIGILO = "SIGILO_CRITICO";
-    private static final String TAG_PRIORIDADE_LEGAL = "PRIORIDADE_LEGAL";
-    private static final String TAG_RISCO_NULIDADE = "RISCO_NULIDADE";
+    public static final String TAG_REU_PRESO = "REU_PRESO";
+    public static final String TAG_TUTELA = "TUTELA_URGENCIA";
+    public static final String TAG_SIGILO = "SIGILO_CRITICO";
+    public static final String TAG_PRIORIDADE_LEGAL = "PRIORIDADE_LEGAL";
+    public static final String TAG_RISCO_NULIDADE = "RISCO_NULIDADE";
 
     public List<SecretariatQueuePanelItemDto> ordenar(List<SecretariatQueuePanelItemDto> itens) {
         return itens.stream()

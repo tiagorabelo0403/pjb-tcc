@@ -321,6 +321,25 @@ public boolean requiresSegredoByDefault() {
             || this == PENAL_MARIA_DA_PENHA;
 }
 
+public NivelUrgenciaProcessual nivelUrgenciaPadrao() {
+    if (this == PENAL_MARIA_DA_PENHA
+            || this == ESPECIAL_HABEAS_CORPUS
+            || this == PENAL_HABEAS_CORPUS_PREVENTIVO
+            || this == MILITAR_HABEAS_CORPUS_MILITAR) {
+        return NivelUrgenciaProcessual.MAXIMA;
+    }
+    if (this == CIVIL_TUTELA_URGENTE
+            || this == CIVIL_TUTELA_CAUTELAR_ANTECEDENTE
+            || this == CIVIL_TUTELA_ANTECIPADA_ANTECEDENTE
+            || this == AMBIENTAL_TUTELA_URGENTE
+            || this == TRABALHISTA_TUTELA_CAUTELAR
+            || this == INFANCIA_JUVENTUDE_INFRACIONAL
+            || this == PENAL_ECA_INFRACIONAL) {
+        return NivelUrgenciaProcessual.ALTA;
+    }
+    return NivelUrgenciaProcessual.PADRAO;
+}
+
 public RamoDireito suggestedRamo() {
     if (isPenal()) return RamoDireito.PENAL;
     if (isTrabalhista()) return RamoDireito.TRABALHISTA;

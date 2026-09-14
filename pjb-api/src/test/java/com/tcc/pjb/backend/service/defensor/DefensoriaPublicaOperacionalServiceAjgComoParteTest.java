@@ -22,11 +22,8 @@ import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopologyMeshService;
-import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
+import com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
-import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -49,10 +46,7 @@ class DefensoriaPublicaOperacionalServiceAjgComoParteTest {
                 mock(InstitutionalActorTopologyMeshService.class),
                 institutionalActorRoutingService,
                 mock(PainelSharedExperienceService.class),
-                mock(PainelSignalReflectionService.class),
-                mock(PainelNativeCollectionCompositionService.class),
-                mock(PainelActionSurfaceCompositionService.class),
-                mock(PainelExecutionSurfaceCompositionService.class),
+                mock(PainelCompositionPipelineService.class),
                 movimentacaoRegistrar);
     }
 

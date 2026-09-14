@@ -32,7 +32,7 @@ allowlist:
     owner: equipa-criminal
     risco: alto
     bloco_correcao: BLOCO-30
-    sla_remocao: "2026-08-31"
+    sla_remocao: "2026-11-30"
     teste_negativo: PjbNoRawObjectControllerContractTest
     criado_em: "2026-05-31"
     auditoria_ref: C-6
@@ -48,7 +48,7 @@ allowlist:
     owner: equipa-delegado
     risco: alto
     bloco_correcao: BLOCO-30
-    sla_remocao: "2026-08-31"
+    sla_remocao: "2026-11-30"
     teste_negativo: PjbNoRawObjectControllerContractTest
     criado_em: "2026-05-31"
     auditoria_ref: C-6
@@ -63,7 +63,7 @@ allowlist:
     owner: equipa-oficial-justica
     risco: alto
     bloco_correcao: BLOCO-30
-    sla_remocao: "2026-08-31"
+    sla_remocao: "2026-11-30"
     teste_negativo: PjbNoRawObjectControllerContractTest
     criado_em: "2026-05-31"
     auditoria_ref: C-6

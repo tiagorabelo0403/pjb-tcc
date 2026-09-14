@@ -140,10 +140,11 @@ class UsuarioServiceTest {
         dto.setCpf("12345678909");
         dto.setEmail("servidor@test.local");
 
-        service.criarUsuario(dto);
+        UsuarioResponse response = service.criarUsuario(dto);
 
+        assertThat(response).isNotNull();
         verify(usuarioRepository).findByEmail("servidor@test.local");
-        verify(identidadeJuridicaNacionalService).sincronizarUsuario(any());
+        verify(identidadeJuridicaNacionalService).sincronizarUsuario(entidade);
         verify(securityChallengeService, org.mockito.Mockito.never()).createEmailOtp(any(), any(), any());
     }
 

@@ -195,8 +195,31 @@ pjb:
   jobs:
     pg-listen:
       enabled: ${PJB_JOBS_PG_LISTEN_ENABLED:true}
+    ciencia-ficta:
+      enabled: ${PJB_JOBS_CIENCIA_FICTA_ENABLED:false}
+    conclusao-expirada:
+      enabled: ${PJB_JOBS_CONCLUSAO_EXPIRADA_ENABLED:false}
+    protocolo-completude:
+      enabled: ${PJB_JOBS_PROTOCOLO_COMPLETUDE_ENABLED:false}
   scheduling:
     enabled: ${PJB_SCHEDULING_ENABLED:true}
+  db:
+    credentials:
+      rotation:
+        enabled: ${PJB_DB_CREDENTIALS_ROTATION_ENABLED:false}
+  sync:
+    salario-minimo:
+      enabled: ${PJB_SYNC_SALARIO_MINIMO_ENABLED:false}
+  ai:
+    spring-ai:
+      enabled: ${PJB_AI_SPRING_AI_ENABLED:false}
+  api:
+    legacy-paths:
+      enabled: ${PJB_API_LEGACY_PATHS_ENABLED:false}
+  debug:
+    enabled: ${PJB_DEBUG_ENABLED:false}
+    jurisdiction:
+      enabled: ${PJB_DEBUG_JURISDICTION_ENABLED:false}
   kafka:
     enabled: ${PJB_KAFKA_ENABLED:false}
     scale:
@@ -236,6 +259,7 @@ pjb:
         consulta-url-por-uf: {}
 
   secretariat:
+    enabled: ${PJB_SECRETARIAT_ENABLED:false}
     sse:
       bufferSize: ${PJB_SECRETARIAT_SSE_BUFFER_SIZE:400}
       subscriberQueue: ${PJB_SECRETARIAT_SSE_SUBSCRIBER_QUEUE:256}
@@ -667,6 +691,8 @@ pjb:
 
   outbox:
     strictTypes: ${PJB_OUTBOX_STRICT_TYPES:false}
+    relay:
+      enabled: ${PJB_OUTBOX_RELAY_ENABLED:false}
     ingress:
       enabled: ${PJB_OUTBOX_INGRESS_ENABLED:true}
       capacity: ${PJB_OUTBOX_INGRESS_CAPACITY:4096}

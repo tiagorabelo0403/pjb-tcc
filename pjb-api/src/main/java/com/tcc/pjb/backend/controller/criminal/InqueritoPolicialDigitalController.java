@@ -21,6 +21,7 @@ import com.tcc.pjb.backend.service.criminal.PoliceSovereignOperationalWorkbenchS
 import com.tcc.pjb.backend.service.criminal.PoliceTraceableExecutionLedgerService;
 import com.tcc.pjb.backend.service.criminal.PoliceTransactionalAdapterMeshService;
 import com.tcc.pjb.backend.service.criminal.surface.InqueritoPolicialDigitalSurfaceFacadeService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -264,9 +265,10 @@ public class InqueritoPolicialDigitalController {
     @PostMapping
     @PreAuthorize("hasAnyRole('DELEGADO_POLICIA','DELEGADO_POLICIA_FEDERAL','AGENTE_POLICIAL','ESCRIVAO_POLICIAL')")
     public ResponseEntity<SurfaceSnapshotResponse> registrar(@Valid @RequestBody InqueritoCadastroRequest request,
-                                                             Authentication authentication) {
+                                                             Authentication authentication,
+                                                             HttpServletRequest servletRequest) {
         enforce(authentication, "inquerito_digital_registrar");
-        return ResponseEntity.status(HttpStatus.CREATED).body(facadeService.registrar(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(facadeService.registrar(request, servletRequest));
     }
 
     @PatchMapping("/{inqueritoId}")

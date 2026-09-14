@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Test;
  *   (2) mock=true + env=PROD → MockGuardViolationException
  *   (3) enabled=true         → mock bean não registrado (sem guard)
  *
- * NOTA: O cenário mock-enabled=false (sem bean, NoSuchBeanDefinitionException)
- * é coberto pelo MockGuardStartupDjeIntegrationTest (item 17), não por este teste.
- * A separação é intencional: aqui testamos o guard em isolamento via injeção direta;
- * o cenário "sem bean" requer contexto Spring completo para observar a exceção.
+ * NOTA: os cenários "sem mock e sem implementação real" (em ambiente real, nenhum bean
+ * registrado; fora de ambiente real, bean de fallback que só falha ao ser usado) são cobertos
+ * por MockGuardStartupDjeIntegrationTest, via ApplicationContextRunner isolado em DjeConfiguration
+ * — não por este teste, que testa o guard em isolamento via injeção direta.
  */
 class DjeConfigurationGuardTest {
 

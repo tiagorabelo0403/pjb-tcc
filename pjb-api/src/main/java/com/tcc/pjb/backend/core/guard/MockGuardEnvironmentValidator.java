@@ -21,6 +21,8 @@ public final class MockGuardEnvironmentValidator implements EnvironmentPostProce
     public static final String DJE_MOCK_PROPERTY    = "pjb.dje.mock-enabled";
     public static final String GOVBR_MOCK_PROPERTY  = "pjb.integrations.govbr.mock-enabled";
     public static final String VECTOR_MOCK_PROPERTY = "pjb.ai.vector.mode";
+    public static final String PJE_MOCK_PROPERTY            = "pjb.integrations.pje.mock-enabled";
+    public static final String PJE_SUBMISSION_MOCK_PROPERTY = "pjb.integrations.pje.submission.mock-enabled";
 
     private static final Logger log = LoggerFactory.getLogger(MockGuardEnvironmentValidator.class);
     private static final Marker MOCK_GUARD_VIOLATION = MarkerFactory.getMarker("MOCK_GUARD_VIOLATION");
@@ -39,6 +41,8 @@ public final class MockGuardEnvironmentValidator implements EnvironmentPostProce
         checkMockEnabled(environment, DJE_MOCK_PROPERTY,    "true", "dje",           detectedProfile);
         checkMockEnabled(environment, GOVBR_MOCK_PROPERTY,  "true", "govbr",         detectedProfile);
         checkMockEnabled(environment, VECTOR_MOCK_PROPERTY, "mock", "vector-search", detectedProfile);
+        checkMockEnabled(environment, PJE_MOCK_PROPERTY,            "true", "pje",            detectedProfile);
+        checkMockEnabled(environment, PJE_SUBMISSION_MOCK_PROPERTY, "true", "pje-submission", detectedProfile);
 
         environment.getPropertySources().addFirst(
                 new MapPropertySource("mockGuardRealEnv", Map.of(REAL_ENV_PROPERTY, "true")));

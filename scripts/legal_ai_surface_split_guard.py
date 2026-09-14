@@ -18,8 +18,8 @@ for path in TEST_ROOT.rglob("*.java"):
         violations.append(f"{path.relative_to(ROOT)} usa /conversation sem montar LegalAiConversationController")
 
 required = [
-    TEST_ROOT / "com/tcc/pjb/backend/ai/juridica/api/LegalAiConversationControllerIT.java",
-    TEST_ROOT / "com/tcc/pjb/backend/ai/juridica/api/LegalAiKnowledgeControllerIT.java",
+    TEST_ROOT / "com/tcc/pjb/backend/ai/juridica/api/LegalAiConversationControllerTest.java",
+    TEST_ROOT / "com/tcc/pjb/backend/ai/juridica/api/LegalAiKnowledgeControllerTest.java",
     TEST_ROOT / "com/tcc/pjb/backend/contracts/provider/LegalAiControllerProviderContractTest.java",
 ]
 for path in required:
@@ -29,7 +29,11 @@ for path in required:
 provider = TEST_ROOT / "com/tcc/pjb/backend/contracts/provider/LegalAiControllerProviderContractTest.java"
 if provider.exists():
     text = provider.read_text(encoding="utf-8")
-    if "conversationController" not in text or "target.setControllers(controller, conversationController);" not in text:
+    montagens = (
+        "target.setControllers(controller, conversationController);",
+        "PactProviderSpring6Support.configure(context, controller, conversationController)",
+    )
+    if "conversationController" not in text or not any(m in text for m in montagens):
         violations.append("LegalAiControllerProviderContractTest não está montando a surface dedicada de conversation")
 
 if violations:

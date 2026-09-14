@@ -111,6 +111,45 @@ class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
     }
 
     @Test
+    void peticionamentoMaterializaPecaInicialComoDocumentoProcessualPdfReal() {
+        Usuario advogado = salvarUsuario(TipoUsuario.ADVOGADO, "OAB/CE 12345");
+        LaianePeticaoInicialDraftSession draft = salvarDraft(advogado);
+        draft.setConteudoJson("""
+                {"type":"doc","content":[
+                  {"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"Dos Fatos"}]},
+                  {"type":"paragraph","content":[{"type":"text","text":"O réu descumpriu o contrato de prestação de serviços."}]}
+                ]}""");
+        draft = draftRepository.save(draft);
+        when(currentUserService.getRequired()).thenReturn(advogado);
+        when(oabValidationClient.validate(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.same(advogado)))
+                .thenReturn(OabValidationResult.apto("test"));
+
+        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
+
+        Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
+        DocumentoProcessual peca = documentoProcessualRepository.findByProcessoId(processo.getId()).stream()
+                .filter(documento -> "Petição Inicial".equals(documento.getTitulo()))
+                .findFirst()
+                .orElseThrow();
+        assertThat(peca.getTipoDocumento()).isEqualTo(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.PETICAO_INICIAL);
+        assertThat(peca.getContentType()).isEqualTo("application/pdf");
+        assertThat(peca.getSha256()).hasSize(64);
+        assertThat(peca.getSha384()).hasSize(96);
+        assertThat(peca.getQuantidadePaginas()).isGreaterThanOrEqualTo(1);
+        assertThat(peca.getNivelSigilo()).isEqualTo(com.tcc.pjb.backend.model.entity.enums.NivelSigilo.PUBLICO);
+        byte[] pdf = peca.getPdf();
+        assertThat(pdf).isNotNull();
+        assertThat(new String(pdf, 0, 5, java.nio.charset.StandardCharsets.ISO_8859_1)).isEqualTo("%PDF-");
+        List<DocumentoPagina> paginas = documentoPaginaRepository.findByDocumentoId(peca.getId());
+        assertThat(paginas).hasSize(1);
+        assertThat(paginas.getFirst().getTextoExtraido()).contains(
+                "Dos Fatos",
+                "O réu descumpriu o contrato de prestação de serviços."
+        );
+    }
+
+    @Test
     void oabInaptaBloqueiaPeticionamentoENaoPersisteProcesso() {
         Usuario advogado = salvarUsuario(TipoUsuario.ADVOGADO, "OAB/CE 12345");
         LaianePeticaoInicialDraftSession draft = salvarDraft(advogado);

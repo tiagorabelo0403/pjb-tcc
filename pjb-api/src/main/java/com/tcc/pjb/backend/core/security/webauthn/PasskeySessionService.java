@@ -8,6 +8,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.OrigemAutenticacaoSessao;
 import com.tcc.pjb.backend.model.entity.security.PasskeySession;
 import com.tcc.pjb.backend.model.repository.security.PasskeySessionRepository;
 
@@ -26,15 +27,15 @@ public class PasskeySessionService {
     }
 
     @Transactional
-    public IssuedPasskeySession issue(Usuario usuario, Long deviceId, String ip) {
+    public IssuedPasskeySession issue(Usuario usuario, Long deviceId, String ip, OrigemAutenticacaoSessao origem) {
         boolean termosPendentes = termosAceiteService.precisaAceitar(usuario);
-        return issueScoped(usuario, deviceId, ip, null, null, false, ttlMinutesForLogin(), termosPendentes);
+        return issueScoped(usuario, deviceId, ip, null, null, false, ttlMinutesForLogin(), termosPendentes, origem);
     }
 
     @Transactional
     public IssuedPasskeySession issueStepUp(Usuario usuario, Long deviceId, String ip, String scopeAction, String scopeRequestHash, boolean oneShot) {
         int ttl = Math.max(1, props.getPasskeyStepUpTtlMinutes());
-        return issueScoped(usuario, deviceId, ip, scopeAction, scopeRequestHash, oneShot, ttl, false);
+        return issueScoped(usuario, deviceId, ip, scopeAction, scopeRequestHash, oneShot, ttl, false, null);
     }
 
     private IssuedPasskeySession issueScoped(Usuario usuario,
@@ -44,7 +45,8 @@ public class PasskeySessionService {
                                             String scopeRequestHash,
                                             boolean scopeOneShot,
                                             int ttlMinutes,
-                                            boolean termosPendentes) {
+                                            boolean termosPendentes,
+                                            OrigemAutenticacaoSessao origem) {
         Objects.requireNonNull(usuario, "usuario");
 
         String token = generateToken();
@@ -59,6 +61,7 @@ public class PasskeySessionService {
         s.setScopeRequestHash(safeHash(scopeRequestHash));
         s.setScopeOneShot(scopeOneShot);
         s.setTermosPendentes(termosPendentes);
+        s.setOrigemAutenticacao(origem);
         s.setExpiresAt(LocalDateTime.now().plusMinutes(Math.max(1, ttlMinutes)));
         repo.save(s);
 

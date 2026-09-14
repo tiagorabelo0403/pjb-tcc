@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,8 +31,13 @@ class PjbExecutionOrchestratorTest {
             PjbExecutionOrchestrator orchestrator = new PjbExecutionOrchestrator(new PjbBoundedExecutorProvider(io, burst, externalIo, live, job), scheduler, new PjbProcessoSigiloRlsContext());
             String result = orchestrator.supply(PjbExecutionDescriptor.io("snapshot-op", Duration.ofSeconds(1)), () -> "OK").get(2, TimeUnit.SECONDS);
             assertEquals("OK", result);
+            // completedTasks é atualizado num callback assíncrono após o future completar; aguardar o
+            // snapshot estabilizar em vez de ler imediatamente (evita corrida sob carga de CI).
+            boolean materializou = aguardar(() -> orchestrator.snapshot().operations().stream()
+                    .anyMatch(operation -> operation.operationName().equals("snapshot-op") && operation.completedTasks() == 1L),
+                    Duration.ofSeconds(3));
+            assertTrue(materializou, "snapshot deveria materializar completedTasks==1 para snapshot-op");
             var snapshot = orchestrator.snapshot();
-            assertTrue(snapshot.operations().stream().anyMatch(operation -> operation.operationName().equals("snapshot-op") && operation.completedTasks() == 1L));
             assertTrue(snapshot.lanes().stream().anyMatch(lane -> lane.lane().equals("io") && lane.submittedTasks() >= 1L));
         } finally {
             scheduler.shutdownNow();
@@ -166,6 +172,17 @@ class PjbExecutionOrchestratorTest {
 
     private static void drainScheduler(ScheduledExecutorService scheduler) throws Exception {
         scheduler.submit(() -> {}).get(1, TimeUnit.SECONDS);
+    }
+
+    private static boolean aguardar(BooleanSupplier condicao, Duration timeout) throws InterruptedException {
+        long limite = System.nanoTime() + timeout.toNanos();
+        while (System.nanoTime() < limite) {
+            if (condicao.getAsBoolean()) {
+                return true;
+            }
+            Thread.sleep(20L);
+        }
+        return condicao.getAsBoolean();
     }
 
 }

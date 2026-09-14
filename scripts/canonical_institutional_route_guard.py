@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / "pjb-api" / "src" / "main" / "java" / "com" / "tcc" / "pjb" / "backend" / "controller" / "processual" / "comunicacao" / "institutional"
 LEGACY = "NationalCommunicationInstitutionalHttpRoutes"
 CANONICAL_REQUEST_MAPPING = "@RequestMapping(InstitutionalApiRoutes.CANONICAL_BASE)"
-CANONICAL_IMPORT = "import com.tcc.pjb.backend.core.comunicacao.institucional.InstitutionalApiRoutes;"
+CANONICAL_IMPORT = "import com.tcc.pjb.backend.platform.api.institucional.InstitutionalApiRoutes;"
 
 
 def main() -> int:

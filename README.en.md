@@ -7,8 +7,8 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-4%2C819%20unit%20%2B%20306%20IT%20%7C%200%20failures-brightgreen)
-![ADRs](https://img.shields.io/badge/ADRs-57-informational)
+![Tests](https://img.shields.io/badge/Tests-5%2C239%20unit%20%7C%200%20failures-brightgreen)
+![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 **[🇬🇧 English (this file)](./README.en.md)** · **[🇧🇷 Português](./README.md)** · **[📓 Interactive Visual Guide](docs/product/INTERACTIVE_VISUAL_GUIDE.md)**
@@ -21,6 +21,7 @@
 
 **Quick Start**
 - [About the Project](#about-the-project)
+- [Security & Integrations — Overview](#security--integrations--overview)
 - [The Problem](#the-problem)
 - [The Proposal](#the-proposal)
 - [Glossary](#glossary)
@@ -64,6 +65,49 @@
 PJB is a total-replacement platform — not an incremental patch — for the electronic judicial systems currently running in Brazil. Five systems were built over decades by different entities, with no coordination of protocol, data model, or interface. Today, this fractured infrastructure supports more than **80 million active cases**, **91 courts**, and **approximately 30,000 judges**, alongside tens of millions of lawyers, litigants, and court staff — and none of those systems were designed to talk to each other.
 
 PJB was built from scratch to solve this problem properly. It is not a wrapper around legacy systems. It is a deliberate break from that model: domain modeled from the Brazilian Civil Procedure Code (CPC/2015), labor reforms, and current criminal legislation; attribute-based access control with row-level security at the database; an immutable audit trail on every action; and Java 21 Virtual Threads to scale without the cost of managing manual thread pools.
+
+[⬆ Back to top](#quick-navigation)
+
+---
+
+## Security & Integrations — Overview
+
+A highlighted summary for anyone evaluating the project without reading the whole document. No secret, token, or credential value in this section — each item links to its detailed section further down.
+
+### 🔐 Security implemented
+
+- **Passwordless authentication across 3 independent flows** — Gov.br (OIDC, federal identity provider), ICP-Brasil digital certificate (challenge-response: server-issued nonce, signed by the user's certificate, chain validation), Passkey/WebAuthn
+- **ABAC** (Attribute-Based Access Control) on every sensitive decision, with an immutable trail of who authorized it, when, and why (`tb_authz_trail`)
+- **RLS** (Row Level Security) in PostgreSQL — the database refuses confidential data before the ORM sees it, across two dimensions: case confidentiality and actor scope (owner/role), with a discipline test that blocks declared-but-not-enforced RLS in any future migration
+- **Password encryption** (BCrypt via `DelegatingPasswordEncoder`) and **PII encryption at rest** — user CPF/email encrypted (AES-GCM) with a blind index (HMAC) that preserves searchability without exposing the data — the index is recomputed by a JPA listener at the persistence boundary, so no write path can store a user without it
+- **Rate limiting** on critical routes (login, marketplace) with automatic IP blocking after repeated violations; standardized RFC 7807 response
+- **Zero public self-signup surface** — every account is provisioned through a verified channel (Gov.br, OAB validation, token-based judiciary activation), never an open registration form
+- **HSTS + hardened security headers** (`X-Frame-Options: DENY`, `Permissions-Policy`, `Cross-Origin-Opener/Resource-Policy`)
+- **Secrets vault** (HashiCorp Vault) with real database credential rotation
+- **BOLA guard** (cross-unit/cross-assignment object access) enforced at build time via ArchUnit — not dependent on code-review discipline
+- **Immutable audit trail** of every authorization decision and every relevant security event, in a structured log kept separate from the application log
+- **AI prompt egress guard** — every prompt handed to a model provider passes through a single inspection point that neutralizes provider protocol markers and flags injection attempts in Portuguese and English; by design the guard records and proceeds, and never refuses the procedural act itself
+
+Full details, with the rationale behind each mechanism: [Security & Compliance](#security--compliance)
+
+### 🔌 External integrations — real clients implemented
+
+Each item below is a **real** integration client against the documented official endpoint — not a mock, not a simulation. Production credentials (the agency's token/certificate) are a deployment-environment configuration, outside the scope of an undergraduate thesis project — the client is ready to receive them.
+
+| Integration | Agency | What it does |
+|---|---|---|
+| **Gov.br** | Federal Government | Federal citizen login (OIDC) |
+| **MNI** (National Interoperability Model) | CNJ | Case exchange between justice-system platforms |
+| **DataJud** | CNJ | National Judiciary Database |
+| **PDPJ-Br** | CNJ | Digital Judiciary Platform |
+| **BNMP** | CNJ | National Arrest Warrant Database |
+| **SISBAJUD** | CNJ/Central Bank | Judicial freezing of financial assets |
+| **RENAJUD** | CNJ/Denatran | Judicial vehicle restrictions |
+| **INFOJUD** | CNJ/Federal Revenue | Tax information for case instruction |
+| **ICP-Brasil** | ITI | Certificate chain validation for qualified digital signatures |
+| **Anthropic Claude** | Anthropic | Legal AI (Laiane) |
+
+Beyond **consuming** these integrations, PJB also **exposes** its own API (OAuth2 client-credentials, signed JWT, per-client scope) so external partner systems can file and complement documents — the marketplace connects *to* PJB, not the other way around.
 
 [⬆ Back to top](#quick-navigation)
 
@@ -212,7 +256,7 @@ Open `.env` and fill in the required variables:
 docker compose up -d
 ```
 
-This starts PostgreSQL 17, Apache Kafka 3.8, Redis 7.4, and Elasticsearch 8.15. Flyway migrations (numbered up to V331) are applied automatically on the first backend connection.
+This starts PostgreSQL 17, Apache Kafka 3.8, Redis 7.4, and Elasticsearch 8.15. Flyway migrations (numbered up to V354) are applied automatically on the first backend connection.
 
 ### 4. Check Spring Profiles
 
@@ -323,8 +367,10 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 4,819 tests with Mockito and in-memory H2. Fast, no Docker required.
-- **Integration tests (Failsafe):** 306 tests against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
+- **Unit tests (Surefire):** 5,370 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Integration tests (Failsafe):** 116 classes against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
+
+The naming convention is enforced in CI by the `integration_test_naming_guard.py` guard: a class suffixed `IT` must carry a real integration marker — Testcontainers, a Spring context, or an inherited integration base. Without that marker the class would run in neither phase (Surefire skips it by name, and Failsafe only runs under `verify`), so the build fails instead of leaving the test invisible.
 
 ### Run Unit Tests Only (fast)
 
@@ -337,14 +383,26 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ### Run the Full Suite Including Integration Tests (official gate)
 
 ```bash
-./mvnw verify -pl pjb-api
+./mvnw verify -pl pjb-api -am
 ```
 
-This is the official project gate. It runs the 4,819 unit tests (Surefire) and then the 306 integration tests (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 5,370 unit tests (Surefire) and then the 116 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+
+The `-am` is not cosmetic: without it `pjb-core` is resolved from `~/.m2` instead of the reactor, and a stale artifact there produces `cannot find symbol` pointing at classes that exist in the source tree.
 
 Expected time: **~50 min** on local hardware. Most of this time is the Spring context boot with Testcontainers and the IT tests that perform real HTTP requests against the running server. A full verify produces a complete diagnostic of every failure cluster in the suite — if you are investigating a problem, this is the number that matters, not the `test` output alone.
 
 > **Why so slow?** Each IT class boots a full Spring context with a real PostgreSQL, applies the Flyway migrations, and executes requests the way an external client would. That gives full confidence that what passed in test will pass in production — but it costs time.
+
+### The Integration Gate in CI
+
+`ci.yml` runs unit tests only: the 116 integration test classes do not fit in a pull request's critical path. They run in their own workflow — `PJB Integration Gate` (`.github/workflows/it.yml`) — triggered on **every merge to `master`**, plus a scheduled run at 05:00 UTC and on-demand dispatch via `workflow_dispatch`.
+
+The merge trigger is what closes the window: an integration regression merged in the morning would only surface the following night if the schedule were the only path. The schedule stays as a net for breakage that does not come from a commit — a container image, a dependency resolved at runtime, fixture data that expires.
+
+When the integration suite breaks, the workflow opens an issue carrying the commit and the run link, and comments on it for subsequent breaks instead of creating one issue per night. When the suite goes green again, it closes the issue itself. Surefire and Failsafe reports are attached as a run artifact for 30 days.
+
+The split is deliberate: a pull request still closes in minutes, and an integration regression surfaces within 24 hours with an owner, a history and attached evidence — instead of depending on someone opening the Actions tab.
 
 The Surefire/Failsafe `argLine` sets `-Dpjb.runtime.lifecycle.drain-quiet-period=10ms`. The graceful drain coordinator (`PjbRuntimeDrainCoordinator`) sleeps 20s by default on every Spring context close — correct in production, where there is real traffic to drain before shutdown, but pure waste in a test JVM. Without this override, a full `verify` run can exceed Surefire's own 30s fork-exit watchdog (`forkedProcessExitTimeoutInSeconds`) and force-kill the forked JVM at teardown, even with every test already green — a symptom that only shows up on long full-suite runs, never in an isolated class.
 
@@ -369,14 +427,17 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **4,819** |
+| Total unit tests | Surefire | **5,370** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~14 min** |
-| Total integration tests | Failsafe | **306** ¹ |
+| Integration test classes | Failsafe | **116** ¹ |
 | Polo-composition-engine tests | Failsafe | **+10 green** (role by procedural type: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
-| IT failures | Failsafe | **0** (0E + 0F) |
-| Full verify execution time | Surefire + Failsafe | **~50 min** |
+| Integration tests executed | Failsafe | **292** (measured in CI, 2026-09-13) |
+| IT failures | Failsafe | **0** (0E + 0F) ² |
+| Full verify execution time | Surefire + Failsafe | **~50 min** locally · **~27 min** in CI |
+
+² This number is now verified. Until 2026-09-13 the row read `0 (0E + 0F)`, inherited from an old local run that nothing re-verified; the first `PJB Integration Gate` execution measured **273 tests, 8 failures and 55 errors**. The 55 errors had a single cause (heap too small for 22 Spring contexts in one JVM), and the 3 failures had another (`429 RUNTIME_WARMING_UP` from operational admission control during the first 20s of every context). The remaining 4 errors came from a test cleanup that deleted `tb_usuario` without respecting a foreign key. All three causes are fixed, and the zero above is measured on every gate run rather than inherited.
 
 The integration suite went through a structural stabilization process: failures caused by incorrect environment variables, cross-test data contamination, and hardcoded IDs without seeding were eliminated down to zero. Two of those fixes exposed real production bugs, not just test issues: `AuditLedgerService` recorded audit events only in memory, without persisting to the repository the audit endpoints actually query; and root-proceeding resolution in `CaseContinuityOrchestratorService` used a mutable field during the case lifecycle, causing ambiguity between the root proceeding and its branches (e.g., judgment enforcement) after archiving.
 
@@ -499,7 +560,7 @@ pjb/
 │           └── modules/              specialized modules (laiane, advocacia)
 │
 ├── docs/
-│   ├── adr/                          57 Architecture Decision Records
+│   ├── adr/                          58 Architecture Decision Records
 │   ├── database/                     schemas and RLS policies
 │   ├── openapi/                      public API contracts
 │   ├── security/                     LGPD and Gov.br policies
@@ -563,7 +624,7 @@ graph TD
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Database | PostgreSQL 17 with Row Level Security per operation |
 | Test Database | In-memory H2 + Testcontainers |
-| Migrations | Flyway — numbered up to V331, with monthly partitioning on event tables |
+| Migrations | Flyway — numbered up to V354, with monthly partitioning on event tables |
 | Persistence | JPA / Hibernate with `ddl-auto: validate` in production |
 | Messaging | Apache Kafka 3.8 — judicial events and outbox |
 | Workflow orchestration | Camunda 8 / Zeebe — BPMN applied to the filing workflow |
@@ -619,6 +680,8 @@ Each load matched the municipality name from the PDF against the official IBGE l
 Each of the three loads is locked by a permanent regression test against the source document — the municipality-to-court distribution is re-parsed independently of the script that generated the migration before it becomes an `assert`, so that a future migration change, or a migration from another region that accidentally corrupts data via a table-name mistake, gets caught rather than silently accepted.
 
 **Court and district as real entities.** `Tribunal` and `Comarca` are proper JPA entities (`model/entity/competencia/`), no longer loose text — `UnidadeJudiciariaCompetencia`, `JurisdicaoTerritorial`, `Jurisdicao`, `Usuario`, `Processo`, `WorkItem`, `OrgaoJudiciario`, `PeritoSorteioAudit`, and `PeritoDisponibilidade` reference `Comarca` by foreign key. Since the `Comarca` catalog currently only covers the municipalities from the three Labor Justice regions loaded above (CE/MG/RN), each of these nine entities keeps `uf`/`comarca` as a real String column alongside the FK — no data is ever discarded for lack of catalog coverage: the FK resolves when the municipality is catalogued, and the text remains the source of truth everywhere else. `AssessorGabineteGuardRailService.territoryMatches()` compares by real identity (`Comarca.getId()`) when both sides resolve the FK, and falls back to normalized text comparison otherwise — eliminating, for already-catalogued municipalities, the bug class where a spelling divergence between an assessor's registration and a case's registration could produce a false positive or false negative territorial match. An architecture test (`OrganizacaoJudiciariaArchitectureTest`) locks in the pattern for any new entity that declares `uf`/`comarca` as a String without the matching `Comarca` FK in the same class; pre-existing entities in other domains that don't yet follow this pattern are listed in `docs/quality/DEBT_LOG.md` (`D-territorio-string-solta-entidades-legadas`).
+
+**Procedural-type urgency engine.** `RitoUrgenciaPriorityPolicy` classifies every procedural type into one of three tiers on real legal grounds, never an arbitrary call: habeas corpus and Maria da Penha cases sit at maximum urgency (Constitution art. 5, LXVIII; Law 11.340/06 arts. 18 and 22), emergency relief and juvenile-offense proceedings under the ECA sit at high urgency (CPC art. 300; ECA art. 108), everything else at standard priority. The tier translates into `WorkItem` priority — the policy only escalates, never de-escalates a priority already set higher by another source — and into the same tags consumed by the clerk's-office queue (`SecretariatQueuePriorityPolicy`) and by the Public Prosecutor's Office and Public Defender's Office panels: one single engine feeds all four consumers, with no urgency signal computed differently per channel.
 </details>
 
 <details>
@@ -681,7 +744,14 @@ Each document has origin, operational state, integrity hash, and a verifiable ch
 - Of the three channels that create a case, only the marketplace did not check for required documents — it called `AjuizamentoService.ajuizar()` directly, bypassing the `CompletudeDocumentalPolicyService` that REST already used.
 - When the check flags a pending item, the case is still created normally (system-to-system integration never blocks), but `connectorSubmissionStatus` records `PENDENTE_DOCUMENTACAO` and the response exposes `documentacaoCompleta`/`documentosFaltantes`.
 - The hardcoded `COMUM_ORDINARIO` procedural type this channel carried was fixed alongside it, with `ProceduralCatalogSupport.tryResolveRito()` reading the payload. Full detail: `docs/quality/DEBT_LOG.md` (`D-marketplace-sem-completude-documental`).
-</details>
+
+**Per-actor persisted visual identity and resilient drafts:** the petition editor (a topic-by-topic blueprint that changes with the procedural type, with inline multimedia blocks and a visual-identity policy) already existed; what is new is the reusable letterhead profile — `PeticaoIdentidadeVisual` stores, per filing actor, a logo (in object storage, never a DB blob — same pattern as `tb_usuario_avatar`), display/institution name, free header and footer, and a color palette, applied automatically to every petition instead of being re-sent each session; `escopo`/`escopo_ref` columns already anticipate extending this to institutional identity (public defense by state, prosecution, attorney's offices, the judiciary, and expert witnesses) without touching the schema. Drafts gained resilient autosave: `PUT .../rascunhos/{id}/autosave` updates the draft in place (the last saved content survives a power or connection loss) and every real content change writes an immutable snapshot into `tb_peticao_draft_versao`, with hash-based dedup, retention of the last 30 versions, listing, and restore — all owner-isolated, with no one seeing another's draft. Between listing (metadata only) and restoring (destructive — overwrites the active draft) there was no middle ground: `GET .../versoes/{versaoSeq}` shows a prior version's content without touching the active draft, re-sanitizing and re-rendering that version's `conteudo_json` on every read (never blindly trusting the HTML already stored in the snapshot) — the same security pattern as reading the published petition.
+
+**Governed rich-text formatting and anti-XSS sanitization:** the sealed `RichTextFormatCatalog` pins what the editor may offer — bold, italic, underline, strikethrough, headings, lists, tables, alignment, plus a curated set of fonts, sizes, and colors — modeled on the TipTap/ProseMirror JSON document (the MIT open-source editor adopted as the reference). Before saving/publishing, `RichTextDocumentSanitizer` validates the document against that catalog using Jackson alone (no new library): nodes, marks, and attributes outside the allowlist are removed, disallowed fonts/sizes/alignments are dropped, and link/image URLs with a dangerous scheme (`javascript:`, `data:`, `file:`) are blocked — the petition is seen by everyone in the case, so this is security, not cosmetics. The catalog is exposed in the editor blueprint (`richTextFormat`) and at `/api/v1/peticionamento/editor/formato`, so the toolbar offers exactly what is accepted. `.docx` export (Word/LibreOffice) is delivered **with no external dependency** — `DocxExportService` builds the WordprocessingML and packages it with the JDK itself (no Apache POI in the build), always from the already-sanitized document, at `POST /api/v1/peticionamento/editor/exportar/docx` (bold/italic/underline/font/size/color, headings, lists, block quotes, tables, and alignment; the actor's letterhead is placed at the top automatically). The validated JSON is now the **source of truth** for the draft content (V342, a `conteudo_json` column on both the draft and the version snapshot): on autosave, when the editor sends the document, it is **sanitized server-side** and becomes the authoritative content, and `minuta_inicial` (HTML) becomes a **derived, safe projection** rendered from the sanitized JSON by `RichTextHtmlRenderer` — the HTML the client would send is discarded. So what is persisted, what is published, and what is exported to `.docx` all derive from the same validated JSON, closing the security loop end to end (backward-compatible: with no JSON document, the legacy HTML flow is preserved). Reading the published petition closes the write→read pair: `GET /api/v1/processos/{processoId}/peticao-inicial/leitura` renders the same sanitized JSON as safe HTML for whoever reads the petition in the case — judge, clerk, party, authorized public — gated by the same ABAC/confidentiality as document download (`requireReadProcessoAtSecrecy`); with no `conteudo_json`, the legacy draft is escaped as plain text, never reinterpreted as markup. On protocol, the petition is also materialized as a real `DocumentoProcessual` — `PeticaoInicialPdfExportService` renders a genuine PDF (Apache PDFBox, already a project dependency; the same hand-rolled technique as `RecursalPdfExportService`) from the text extracted out of the sanitized JSON (`RichTextPlainTextExtractor`), with `tipoDocumento=PETICAO_INICIAL` and confidentiality inherited from the case. That makes it visible, with no new code, in the document reading panel and the authenticated download — both of which already list every document on the case.
+
+**Per-role institutional identity (judiciary, prosecution, public defense, attorney's offices):** `IdentidadeInstitucionalResolver` resolves, from the role (`TipoUsuario`) and the state, the correct office and nomenclature for each — "PODER JUDICIÁRIO / Tribunal de Justiça", "MINISTÉRIO PÚBLICO DO ESTADO DE {UF}", "DEFENSORIA PÚBLICA DA UNIÃO", "ADVOCACIA-GERAL DA UNIÃO" — without treating them alike: the coat of arms belongs to the **office**, not the individual, and the personal profile only adds text (name/chambers), never replacing the institutional letterhead. The **expert witness** is deliberately professional-individual (a report with no office coat of arms, carrying the correct council registration — CRM/CREA/CRC…), not institutional. Official coats of arms and colors are **never fabricated**: they come from the office's own **curation** (`/api/v1/peticionamento/identidade-visual/institucional/{escopoRef}`, admin-restricted) and, until they do, a **neutral default explicitly marked as replaceable** (`DEFAULT_PJB_SUBSTITUIVEL`) is used, never claimed as official. `usuario_id` became optional (V341) for the office profile, unique per `escopoRef`. Municipal attorney's offices **resolve down to the attorney's real municipality** (via county), not just the state. Curation is hardened in two layers by construction: the URL `escopoRef` is validated (format `A-Z0-9-` plus a known institutional family `PJ-/MP-/DP-/PROC-`) before it becomes an object-storage key — closing path traversal — and curation is gated at two independent points (`@PreAuthorize` `ROLE_ADMIN` at the HTTP boundary **and** an admin check in the service). Where the role can't determine the exact office without fabricating (which superior court a given minister sits on), the identity enters through that same official curation — a deliberate production decision, not a gap.
+
+**A single typed contract for the frontend (`GET /api/v1/peticionamento/editor/bootstrap`):** one call returns, typed (records, no generic map), everything the editor needs to open for the current actor — the formatting catalog (`RichTextFormatoDto`), the already-resolved visual identity (`IdentidadeVisualEfetivaDto`, institutional + individual), and the draft (autosave/versions, retention, dedup) and media (logo limits, accepted types, validation/catalog URLs) endpoints and limits. Designed for typed-client generation — the frontend (TipTap) builds the editor from a single contract, without discovering endpoint by endpoint or hitting a typing gap.
 
 <details>
 <summary><strong>8 — Filing, Correction, and Metadata Quality</strong></summary>
@@ -696,7 +766,9 @@ Governed correction with a legal diff — every change goes through policy revie
 
 Ingests cases from PJe, e-SAJ, eProc, Projudi, Creta, MNI, and PDPJ. Each external system has its own normalizer that standardizes the NPU, the CNJ procedural class, and the procedural type before persisting. Import conflicts are recorded with an auditable diff.
 
-The MNI adapter (`intercomunicacao-2.2.2`, using the `polo`/`parte`/`pessoa` attributes from the CNJ's official schema) materializes the plaintiff and defendant of the imported case, including the full party record, through the same procedural-type composition engine used for direct filing — a case imported via MNI is no longer left without identified parties.
+The MNI adapter (`intercomunicacao-2.2.2`, using the `polo`/`parte`/`pessoa` attributes from the CNJ's official schema) materializes the plaintiff and defendant of the imported case, including the full party record, through the same procedural-type composition engine used for direct filing — a case imported via MNI is no longer left without identified parties. The same adapter also extracts `movimento` (movement history, with the real date from the XML — never "now" at import time) and `documento` (binary content decoded from base64, re-ingested through the same validated confidentiality/storage/SHA-256-hash pipeline already used by the marketplace channel, never raw bytes written straight to the database). A document whose type cannot be resolved by keyword matching against the internal vocabulary (`TipoDocumento`, ~105 values with no generic fallback) is still kept with its content intact in a manual-classification queue — never classified blindly.
+
+**Batch migration.** `MniMigrationBatchItem` (staging queue) and `MniBatchMigrationJobHandler` reuse the same `BackfillRun` framework already used for the client-canonicalization backfill: a resumable cursor, per-item transaction isolation (one malformed XML from a single case never brings down the rest of the batch or forces a full reprocess), and admin endpoints to enqueue/kick off/check status/list failures. The orchestrator does not remove the need for a real credential from the source court — `MniHttpClient` only supports sending (`enviarAutos`), with no active query against a remote MNI endpoint; pulling cases from a live PJe instance in production still depends on a query client that does not exist yet and on a credential issued by the source court, which is an operational dependency, not a code gap.
 </details>
 
 <details>
@@ -725,7 +797,7 @@ AI operates as a support layer — it never replaces human decision-making. Ever
 
 **Process Completeness Gate:** verifies that the document package is complete before allowing the case to advance to the next phase. Validation has two layers: structural (configurable checklists per procedural type, with typed pending items and resolution deadlines) and semantic (OCR + VectorSearch detects the actual presence of required content in already-attached documents, not just the existence of the file). Pending items are notified via outbox with a traceable resolution cycle. The case does not advance while there is a completeness gap — and the clerk can override with a minimum auditable justification.
 
-**Judicial decision advisory:** `advisoryMode` always returns `ADVISORY_DRAFT_ONLY` — Laiane produces only an assisted draft; it never renders a decision. `reviewRequired` and `publicationLocked` are always `true`: every consultation requires full human review before publication, with no exception carved out for any template or case. This is not conditional behavior — it is a deliberate security policy. The three advisory modes documented in an earlier version of the API (`SUGESTIVO`, `RESTRITIVO`, `BLOQUEADOR`) were never actually implemented, and differentiating advisory levels remains an open product decision (`D-advisory-modos-nao-implementados`), not a pending bug fix.
+**Three-tier judicial decision advisory.** `advisoryMode` (`LaianeAdvisoryMode`) is derived from the same confidence signal the template engine already computes per case — never a user choice or an external setting: `SUGESTIVO` when a case pattern is recognized (settlement, withdrawal, acknowledgment of the claim, Maria da Penha protective order, health emergency relief) with no flagged fact gap, carrying a full draft order; `RESTRITIVO` when the same pattern is recognized but a relevant detail is missing from the case corpus (e.g., a settlement with no stated amount/deadline, a protective order with no described risk vector) — here the draft order is withheld (`dispositiveBase = null`), Laiane hands back only the checklist and legal grounds, forcing the judge to write the operative text; `BLOQUEADOR` when no case pattern is recognized at all — no draft order, assistance limited to the structuring checklist. In none of the three tiers do `reviewRequired`/`publicationLocked` stop being `true` — Laiane never decides or publishes, and that never varies by mode. The three mode names come from an earlier API doc that was never actually implemented (`D-advisory-modos-nao-implementados`); the real differentiation today reuses a confidence signal the service already computed and discarded, not a new heuristic invented for the occasion.
 </details>
 
 <details>
@@ -751,6 +823,8 @@ The police precinct is modeled as a first-line institutional unit, with its own 
 Incident reports produce traceable investigations. Each report carries a classification, the parties involved, a document chain of custody, and an automatic link to the criminal case once formal charges are filed. The investigation follows the case from the police phase all the way through the judicial phase without any break in traceability.
 
 Police-side scope is resolved by assignment, not by role. What a given officer sees and can act on is determined by the precinct they are assigned to. `DelegadoPainel` materializes exactly that restricted view, with no data exposure from any other unit. `WorkItemScopeGuard` enforces this restriction as a P0 control: any access to a work item outside the officer's assignment scope is blocked at the central guard, and ArchUnit verifies at build time that no code path can bypass it.
+
+**Investigation intake with an automatic draft order.** When an investigation is forwarded to the judiciary, the system generates a draft reception order with the real procedure number and legal grounds (CPP art. 28, Law 13.964/2019) interpolated into the text — never a placeholder — leaving an explicit reserved space for the judge to complement or rewrite before signing; the draft is never published on its own. Registering the investigation blocks with an explicit message listing what's missing whenever the officer forgets the number, date, or signature, and requires the same ICP-Brasil digital-certificate challenge-response already used for certificate login — with no distinction between on-duty and regional precincts, or between civil and federal police.
 </details>
 
 [⬆ Back to top](#quick-navigation)
@@ -848,6 +922,7 @@ The security model is driven by identity, role, assignment, organization, unit, 
 | **Auditable Circuit Breaker** | Open/closed state of each circuit breaker is recorded with timestamp, cause, and failure count — the degradation history of an integration is traceable, not just the current state |
 | **LGPD** | Confidential data never sent to external services; auditable redact by version |
 | **Dual Approval** | Critical operations require confirmation from a second authorized actor |
+| **PII encryption at rest** | `Usuario.cpf`/`email` (login identity) and `Cliente.cpf`/`email` (law-firm module) encrypted via `SensitiveDataConverter`/`CryptoVaultService` — never stored in plain text |
 
 ### Secrets vault and the AES-GCM master key
 
@@ -869,6 +944,12 @@ bash scripts/vault_dev_bootstrap.sh        # enables KV v2 and writes test crede
 ```
 
 The script prints the 4 env vars the backend needs to pull credentials from Vault. The `vault` service in compose runs in dev-mode (no persistence, command `server -dev -dev-listen-address=0.0.0.0:8200`, token via `PJB_VAULT_DEV_ROOT_TOKEN`) — **for dev/demo only**. In production, point `VaultDbCredentialsProvider` at an externally-managed instance, using a real auth method (AppRole/Kubernetes/etc.), not a static root token.
+
+### Blind index for searching an encrypted column
+
+`Usuario.cpf`/`email` are encrypted (AES-GCM, random IV — the same value never produces the same ciphertext twice), which by definition makes them incomparable in a `WHERE` clause. The equality search that login, OAB validation, and case-party cross-referencing always needed keeps working through a blind index: `cpf_hash`/`email_hash` (HMAC-SHA256 keyed with the same master key, via `CryptoVaultService.hmacHex` + `UsuarioBlindIndexService`) — deterministic, so `WHERE cpf_hash = ?` works, but not reversible back to the original CPF. Deliberately **not** plain SHA-256: a CPF has a checksum and only ~10⁹ valid values, so an unkeyed hash would be reversible via a precomputed table.
+
+None of the 30+ call sites calling `usuarioRepository.findByCpf(cpf)`/`findByEmail(email)` changed — the signature and visible behavior are the same; underneath, `UsuarioRepositoryImpl` looks up by hash. The same holds for case-party cross-referencing: `ProcessoRepository.findAllByPartesCpf` matches the given CPF against `Usuario.cpfHash`, while `Processo.parteAutoraCpf`/`parteReuCpf` stay plain text (case-party data, a different scope from the user's own account data). `nome` is deliberately left out of this encryption: `MembroEquipeRepository` does a partial (`LIKE`) search directly on it, which a hash cannot support.
 
 [⬆ Back to top](#quick-navigation)
 
@@ -902,21 +983,44 @@ All 8 Kafka topics are declared explicitly via `NewTopic` beans in `PjbKafkaTopi
 
 Sensitive personal data — CPF and CNPJ — have been removed from every layer where they are not needed: ICP-Brasil API metadata responses, certificate cache, signature events, and ICP chain audit ledger entries. Where the identifier is needed for correlation, it is stored as a hashed reference, never in clear text.
 
+Every `docker-compose*.yml` (base, HA, read-replica, n8n) has an explicit `mem_limit`/`cpus` per service, configurable via env (`PJB_<SERVICE>_MEM_LIMIT`/`_CPUS`, with a sane per-service default). Without a memory ceiling, `pjb-runtime.sh` calculates `-XX:MaxRAMPercentage` off the total RAM visible to the container instead of a real limit — a container stuck in retry (a dependency that never came up, for instance) can claim up to 72% of the entire Docker Desktop VM by itself, starving every other process of memory. `backend`/`backend-b` also switched from `restart: unless-stopped` to `on-failure:5`: a persistently broken external dependency should not produce an infinite, silent restart loop. `scripts/docker_zombie_container_guard.py` specifically detects this pattern (prolonged unhealthy state or a high restart count) for any container that slips past those two safety nets.
+
+PostgreSQL's default `autovacuum_analyze_scale_factor` (10% of the table) is fine for a small table, but leaves the query planner working off stale statistics for far too long on a multi-million-row table after a bulk load — measured in a real environment: 266ms with stale statistics versus 0.18ms on the same query right after `ANALYZE`, the planner picking the wrong index because it estimated `rows=1` where actual cardinality was 60 thousand. `tb_processo`, `tb_movimentacao_processual`, and `tb_documento_processual` have had `autovacuum_analyze_scale_factor=0.02`/`autovacuum_analyze_threshold=200` since V337 — autovacuum triggers `ANALYZE` at 2% of change on these specific tables, not 10%, with no manual intervention required after a batch load.
+
 [⬆ Back to top](#quick-navigation)
 
 ---
 
 ## Database
 
-294 Flyway migrations (non-contiguous numbering up to V331 — 38 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
+316 Flyway migrations (non-contiguous numbering from V0 to V354 — 39 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
 
-Row Level Security active per operation for confidential data. Materialized tables with asynchronous refresh for analytics (ADR-0053). Outbox pattern for post-commit effects with no risk of event loss on transaction failure. The outbox table is partitioned monthly — entire partition purge via `DROP TABLE`, no row scanning.
+Row Level Security active per operation, across two dimensions: case confidentiality (reading confidential cases is refused by the database before the ORM sees it) and actor — dedicated connection GUCs (`app.pjb_actor_id`, `app.pjb_actor_roles`) scope operational tables (support tickets, magistrate travel exceptions, the AI audit trail, hearing summons) faithful to each one's read `@PreAuthorize`, as defense in depth. Never decorative RLS: a table without a tenancy column gets no policy, and a migration-discipline test blocks `ENABLE ROW LEVEL SECURITY` without `FORCE` and without a policy — the orphan RLS a table owner ignores at runtime. `tb_usuario` and the `tb_identidade_juridica_*` cluster (national CPF/CNPJ registry) are deliberate exclusions from that sweep, not gaps: both are legitimately queried for third-party data by institutional roles (a lawyer seen by a court clerk, a defendant's document looked up by a bailiff) just as much as for self-service — there is no per-row ownership boundary to enforce without breaking those legitimate cross-actor reads; `tb_usuario` is protected by gating its entire controller behind admin `@PreAuthorize` (no self-service by-id endpoint exists), and PII in both is protected by encryption at rest with a blind index, not by RLS. Materialized tables with asynchronous refresh for analytics (ADR-0053). Outbox pattern for post-commit effects with no risk of event loss on transaction failure. The outbox table is partitioned monthly — entire partition purge via `DROP TABLE`, no row scanning.
 
 ```sql
 -- Example RLS policy for confidential cases
 CREATE POLICY processo_sigilo ON processo
     USING (sigilo = false OR current_setting('app.papel') IN ('JUIZ', 'PROMOTOR'));
 ```
+
+### Application connection role (`pjb_app`)
+
+The Postgres container's initial `POSTGRES_USER` (`pjb` by default) is created by the official image's `initdb` as a **superuser** — and a superuser ignores RLS, even with `FORCE ROW LEVEL SECURITY`. An active RLS policy (such as the one on `secretaria_institucional_item`, V316) protects nothing for real if the application connects as that user.
+
+That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boot (`docker-entrypoint-initdb.d`), a second role — `pjb_app` — with `NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE`, with the `GRANT`s Flyway needs to run every migration (including `CREATE EXTENSION` for trusted extensions). It's this role, not `pjb`, that `backend` uses to connect in `docker-compose.yml`, via the new environment variables:
+
+| Variable | Role |
+|----------|------|
+| `PJB_DB_USER` / `PJB_DB_PASS` | Postgres' initial superuser (`pjb`/`pjb`) — only initializes the container, RLS does not apply to it |
+| `PJB_DB_APP_USER` / `PJB_DB_APP_PASS` | Restricted role (`pjb_app`/`pjb_app_pass` by default) — this is what `backend`'s `SPRING_DATASOURCE_USERNAME`/`PASSWORD` actually connect with; this connection is what makes RLS matter |
+
+**Known pending items, explicitly documented (not implemented in this round):**
+
+- **Pre-existing volume**: `docker-entrypoint-initdb.d` scripts only run against an empty `PGDATA`. A dev volume that predates this hardening (e.g., an already-populated `pjb_pjb_pg_data`) never creates `pjb_app` on its own — the header of `infra/docker/postgres/init/01-app-role.sh` carries the equivalent SQL to run manually via `docker exec ... psql` against such a volume. That alone isn't enough if migrations `<= V313` already ran on that volume as the old superuser (`pjb`): `ALTER TABLE ... ALTER COLUMN ... TYPE` (the `V317` case) requires table ownership, not just a `GRANT` — the same script header carries the `ALTER TABLE ... OWNER TO pjb_app` statement (in a `DO` block iterating `pg_tables`) that transfers ownership of existing tables; **do not** resolve this by granting `pjb_app` membership in `pjb` (`GRANT pjb_app TO pjb`) — that reopens the RLS bypass the restricted role exists to close.
+- **Volume that already applied the old `V317`**: anyone who ran the stack between the original introduction of `V317__fix_unidade_institucional_uf_type.sql` and this content fix will have the old checksum recorded in `flyway_schema_history` — Flyway refuses to reapply already-applied migrations with a divergent checksum (`validateOnMigrate=true`). A fresh volume doesn't hit this (which is how this round's boot re-verification tested it). On a volume that already had the old `V317`, run `flyway repair` (recomputes the recorded checksum against the file's current content) before the next boot, or discard the volume in a dev environment.
+- **`docker-compose.read-replica.yml` and the routed-read path of `docker-compose.ha.yml`**: `PJB_DB_READ_USER`/`PASS` still point at the superuser `pjb`, not at `pjb_app`. That means **RLS protection is born disabled on the routed-read path** — not just a pending migration, a real and known protection gap. Queries that can be routed to the replica/HA node (e.g., `SecretariaInstitucionalFilaService.consultarFila`, `@Transactional(readOnly = true)`) remain protected today only by layers 1 and 2 (application check + Hibernate `@Filter`), not by layer 3 (RLS). See `.superpowers/sdd/2026-08-08-secretarias-institucionais/db-role-hardening-report.md` for the full investigation history.
+- **`docker-compose.ha.yml`**: the `backend`/`backend-b` nodes in this topology use `pjb`/`pjb` explicitly (not `pjb_app`) because the topology's `pgbouncer` (`infra/docker/pgbouncer/entrypoint.sh`) only knows `pjb` in `userlist.txt` and always opens the real server-side Postgres connection as `pjb`, fixed — RLS would stay inert behind pgbouncer even after fixing client→pgbouncer authentication. An explicit, known state, not a silent break; migrating this topology to `pjb_app` end-to-end is future work.
+- **Real production (k8s)**: `infra/k8s/base/secret.yaml`/`configmap.yaml` still carry the old credentials — the same restricted-role logic needs to be replicated there separately.
 
 [⬆ Back to top](#quick-navigation)
 
@@ -926,15 +1030,15 @@ CREATE POLICY processo_sigilo ON processo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **4,819 · 0 failures · 0 errors** |
-| Integration tests (Failsafe) | **306 · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
+| Unit tests (Surefire) | **5,370 · 0 failures · 0 errors · 1 skipped** |
+| Integration tests (Failsafe) | **116 classes · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
 | Python Guards | 7 scripts active in CI |
 | SBOM | CycloneDX generated on every build |
 | Correlation ID | Mandatory on every request |
 
-57 ADRs document each architectural decision with motivation, consequences, and alternatives considered. They must be read before altering any package structure, concurrency pattern, or security policy.
+58 ADRs document each architectural decision with motivation, consequences, and alternatives considered. They must be read before altering any package structure, concurrency pattern, or security policy.
 
 The pipeline automatically generates a CycloneDX SBOM on every build, maintaining an auditable inventory of all dependencies with version and license. The CI evidence gate rejects merges without full structural guard coverage. Correlation ID mandatory on every request — propagated via context and recorded in every log entry, enabling end-to-end tracing without an external aggregator.
 
@@ -1136,7 +1240,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 57 ADRs, 5,125 tests (4,819 unit + 306 integration), and 294 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,370 unit tests and 116 integration test classes, and 316 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

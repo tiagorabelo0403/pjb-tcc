@@ -51,11 +51,13 @@ class SalarioMinimoMetricsTest {
         when(service.anoMaisRecenteConhecido()).thenReturn(2026);
         new SalarioMinimoMetrics(registry, service, Clock.systemUTC());
 
-        registry.get("pjb.salario_minimo.ano_referencia_atual").gauge().value();
+        double primeiraLeitura = registry.get("pjb.salario_minimo.ano_referencia_atual").gauge().value();
         registry.get("pjb.salario_minimo.fallback_idade_dias").gauge().value();
-        registry.get("pjb.salario_minimo.ano_referencia_atual").gauge().value();
+        double segundaLeitura = registry.get("pjb.salario_minimo.ano_referencia_atual").gauge().value();
         registry.get("pjb.salario_minimo.fallback_idade_dias").gauge().value();
 
+        assertThat(primeiraLeitura).isEqualTo(2026.0);
+        assertThat(segundaLeitura).isEqualTo(2026.0);
         verify(service, times(1)).anoMaisRecenteConhecido();
     }
 
@@ -67,15 +69,18 @@ class SalarioMinimoMetricsTest {
         MutableClock clock = new MutableClock(Instant.parse("2026-07-31T00:00:00Z"));
         SalarioMinimoMetrics metrics = new SalarioMinimoMetrics(registry, service, clock);
 
-        registry.get("pjb.salario_minimo.ano_referencia_atual").gauge().value();
+        double leituraInicial = registry.get("pjb.salario_minimo.ano_referencia_atual").gauge().value();
         clock.advance(Duration.ofSeconds(59));
-        registry.get("pjb.salario_minimo.ano_referencia_atual").gauge().value();
+        double leituraDentroDoTtl = registry.get("pjb.salario_minimo.ano_referencia_atual").gauge().value();
 
+        assertThat(leituraInicial).isEqualTo(2026.0);
+        assertThat(leituraDentroDoTtl).isEqualTo(2026.0);
         verify(service, times(1)).anoMaisRecenteConhecido();
 
         clock.advance(Duration.ofSeconds(2));
-        registry.get("pjb.salario_minimo.ano_referencia_atual").gauge().value();
+        double leituraAposTtl = registry.get("pjb.salario_minimo.ano_referencia_atual").gauge().value();
 
+        assertThat(leituraAposTtl).isEqualTo(2026.0);
         verify(service, times(2)).anoMaisRecenteConhecido();
     }
 }

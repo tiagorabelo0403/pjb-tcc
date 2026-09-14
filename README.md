@@ -7,8 +7,8 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-4.819%20unit%20%2B%20306%20IT%20%7C%200%20falhas-brightgreen)
-![ADRs](https://img.shields.io/badge/ADRs-57-informational)
+![Testes](https://img.shields.io/badge/Testes-5.370%20unit%20%7C%200%20falhas-brightgreen)
+![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
 **[🇧🇷 Português (este arquivo)](./README.md)** · **[🇬🇧 English](./README.en.md)** · **[📓 Guia Visual Interativo](docs/product/GUIA_VISUAL_INTERATIVO.md)**
@@ -21,6 +21,7 @@
 
 **Início rápido**
 - [Sobre o projeto](#sobre-o-projeto)
+- [Segurança e integrações — visão geral](#segurança-e-integrações--visão-geral)
 - [O problema](#o-problema)
 - [A proposta](#a-proposta)
 - [Glossário](#glossário)
@@ -64,6 +65,49 @@
 O PJB é uma plataforma de substituição total — não incremental — dos sistemas judiciais eletrônicos em uso no Brasil. Cinco sistemas foram construídos ao longo de décadas por entidades diferentes, sem nenhuma coordenação de protocolo, modelo de dados ou interface. O resultado é uma infraestrutura que hoje suporta mais de **80 milhões de processos ativos**, **91 tribunais** e **cerca de 30 mil magistrados**, mas que não foi projetada para escalar, auditar ou integrar com o rigor que a legislação e a sociedade passaram a exigir.
 
 O PJB foi construído do zero com três compromissos inegociáveis: rastreabilidade total em cada ação do sistema, testabilidade como critério de aceite de qualquer funcionalidade e segurança por construção — ABAC, RLS e propagação governada de sigilo não são camadas adicionadas depois, são restrições que guiam cada decisão arquitetural.
+
+[⬆ Voltar à navegação rápida](#navegação-rápida)
+
+---
+
+## Segurança e integrações — visão geral
+
+Resumo em destaque para quem avalia o projeto sem precisar navegar o documento inteiro. Sem valor de segredo, token ou credencial nesta seção — cada item aponta para a seção detalhada correspondente.
+
+### 🔐 Segurança implementada
+
+- **Autenticação sem senha em 3 fluxos independentes** — Gov.br (OIDC, IDP federal), certificado digital ICP-Brasil (desafio-resposta: nonce do servidor, assinatura pelo certificado do usuário, validação de cadeia), Passkey/WebAuthn
+- **ABAC** (Attribute-Based Access Control) em toda decisão sensível, com trilha imutável de quem autorizou, quando e por quê (`tb_authz_trail`)
+- **RLS** (Row Level Security) no PostgreSQL — o banco recusa dado sigiloso antes do ORM, em duas dimensões: sigilo do processo e escopo por ator (dono/papel), com teste de disciplina que barra RLS declarado-mas-não-aplicado em qualquer migration futura
+- **Criptografia de senha** (BCrypt via `DelegatingPasswordEncoder`) e **criptografia de PII em repouso** — CPF/e-mail de usuário cifrados (AES-GCM) com índice cego (HMAC) para preservar busca sem expor o dado — o índice é recalculado por listener JPA na fronteira de persistência, de modo que nenhum caminho de escrita consegue gravar usuário sem ele
+- **Rate limiting** em rotas críticas (login, marketplace) com bloqueio automático de IP após violações repetidas; resposta padronizada RFC 7807
+- **Zero superfície de autocadastro público** — todo acesso é provisionado por canal verificado (Gov.br, validação de OAB, ativação de magistratura por token), não por formulário aberto
+- **HSTS + cabeçalhos de segurança endurecidos** (`X-Frame-Options: DENY`, `Permissions-Policy`, `Cross-Origin-Opener/Resource-Policy`)
+- **Cofre de segredos** (HashiCorp Vault) com rotação real de credencial de banco de dados
+- **Guard BOLA** (acesso indevido a objeto de outra unidade/lotação) garantido em tempo de *build* via ArchUnit — não depende de disciplina de code review
+- **Auditoria imutável** de toda decisão de autorização e de todo evento de segurança relevante, em log estruturado separado do log de aplicação
+- **Guarda de egresso de prompt de IA** — todo prompt entregue a um provedor de modelo passa por um ponto único de inspeção que neutraliza marcadores de protocolo do provedor e sinaliza tentativa de injeção em português e inglês; por decisão de projeto a guarda registra e prossegue, nunca recusa o ato processual
+
+Detalhes completos, com justificativa de cada mecanismo: [Segurança e conformidade](#segurança-e-conformidade)
+
+### 🔌 Integrações externas — clientes reais implementados
+
+Cada item abaixo é um cliente de integração **real** contra o endpoint oficial documentado — não mock, não simulação. Credencial de produção (token/certificado do órgão) é configuração de ambiente de implantação, fora do escopo de um TCC — o cliente está pronto para recebê-la.
+
+| Integração | Órgão | O que faz |
+|---|---|---|
+| **Gov.br** | Governo Federal | Login federal do cidadão (OIDC) |
+| **MNI** (Modelo Nacional de Interoperabilidade) | CNJ | Intercâmbio de processos entre sistemas de justiça |
+| **DataJud** | CNJ | Base Nacional de Dados do Poder Judiciário |
+| **PDPJ-Br** | CNJ | Plataforma Digital do Poder Judiciário |
+| **BNMP** | CNJ | Banco Nacional de Mandados de Prisão |
+| **SISBAJUD** | CNJ/Bacen | Bloqueio judicial de ativos financeiros |
+| **RENAJUD** | CNJ/Denatran | Restrição judicial de veículos |
+| **INFOJUD** | CNJ/Receita Federal | Informações fiscais para instrução processual |
+| **ICP-Brasil** | ITI | Validação de cadeia de certificação para assinatura digital qualificada |
+| **Anthropic Claude** | Anthropic | Inteligência artificial jurídica (Laiane) |
+
+Além de **consumir** essas integrações, o PJB também **expõe** uma API própria (OAuth2 client-credentials, JWT assinado, escopo por cliente) para que sistemas parceiros externos protocolem e complementem documentos — o marketplace conecta *ao* PJB, não o contrário.
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
@@ -213,7 +257,7 @@ Abra o `.env` e preencha as variáveis obrigatórias:
 docker compose up -d
 ```
 
-Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V331) são aplicadas automaticamente na primeira conexão do backend.
+Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V354) são aplicadas automaticamente na primeira conexão do backend.
 
 ### 4. Verificar os profiles Spring
 
@@ -324,8 +368,10 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 4.819 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 306 testes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes unitários (Surefire):** 5.370 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes de integração (Failsafe):** 116 classes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+
+A convenção de nome é verificada no CI pelo guard `integration_test_naming_guard.py`: uma classe com sufixo `IT` precisa exibir marcador real de integração — Testcontainers, contexto Spring ou base de integração herdada. Sem esse marcador a classe não seria executada por nenhuma das duas fases (o Surefire a ignora pelo nome, e o Failsafe só roda sob `verify`), e o build falha em vez de deixar o teste invisível.
 
 ### Rodar apenas os testes unitários (rápido)
 
@@ -338,14 +384,26 @@ Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 ### Rodar a suíte completa com integração (portão oficial)
 
 ```bash
-./mvnw verify -pl pjb-api
+./mvnw verify -pl pjb-api -am
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 4.819 unitários (Surefire) e depois os 306 testes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 5.370 unitários (Surefire) e depois as 116 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+
+O `-am` não é cosmético: sem ele o `pjb-core` é resolvido a partir do `~/.m2` em vez do reator, e um artefato desatualizado ali produz `cannot find symbol` apontando para classes que existem no código-fonte.
 
 Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring com Testcontainers e a execução dos ITs que fazem requisições HTTP reais contra o servidor). Um verify completo produz diagnóstico de todos os clusters de falha da suíte — se você está investigando um problema específico, esse é o número que importa, não o do `test`.
 
 > **Por que tão demorado?** Cada classe de IT sobe um contexto Spring completo com PostgreSQL real, aplica as migrations Flyway e executa as requests HTTP como um cliente externo faria. Isso dá confiança total de que o que passou em teste vai passar em produção — mas tem um custo de tempo.
+
+### O portão de integração no CI
+
+O `ci.yml` executa apenas os unitários: as 116 classes de integração não cabem no caminho crítico de uma pull request. Elas rodam em workflow próprio — `PJB Integration Gate` (`.github/workflows/it.yml`) —, disparado em **todo merge para o `master`**, mais uma execução agendada às 05:00 UTC e disparo sob demanda por `workflow_dispatch`.
+
+O gatilho por merge é o que fecha a janela: uma regressão de integração mesclada de manhã apareceria só na madrugada seguinte se o agendamento fosse o único caminho. O agendamento permanece como rede para a quebra que não vem de commit — imagem de container, dependência resolvida em runtime, dado de fixture que expira.
+
+Quando a suíte de integração quebra, o workflow abre uma issue com o commit e o link da execução, e comenta nela nas quebras seguintes em vez de criar uma issue por noite. Quando volta ao verde, fecha a issue sozinho. Os relatórios de Surefire e Failsafe ficam anexados como artefato de cada execução por 30 dias.
+
+A separação é deliberada: uma pull request continua fechando em minutos, e uma regressão de integração aparece em até 24 horas com dono, histórico e evidência anexada — em vez de depender de alguém abrir a aba de execuções.
 
 O `argLine` do Surefire/Failsafe fixa `-Dpjb.runtime.lifecycle.drain-quiet-period=10ms`. O coordenador de drenagem graciosa (`PjbRuntimeDrainCoordinator`) dorme 20s por padrão a cada fechamento de contexto Spring — correto em produção, onde existe tráfego real para drenar antes do shutdown, mas puro desperdício numa JVM de teste. Sem esse override, um `verify` completo pode estourar o watchdog de 30s do próprio Surefire (`forkedProcessExitTimeoutInSeconds`) e matar a JVM forkada à força no encerramento, mesmo com todos os testes já verdes — sintoma que só aparece em rodadas longas, nunca isolando uma classe.
 
@@ -379,16 +437,19 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **4.819** |
+| Total de testes unitários | Surefire | **5.370** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~14 min** |
-| Total de testes de integração | Failsafe | **306** ¹ |
+| Classes de teste de integração | Failsafe | **116** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
-| Falhas IT | Failsafe | **0** (0E + 0F) |
-| Tempo verify completo | Surefire + Failsafe | **~50 min** |
+| Testes de integração executados | Failsafe | **292** (medido no CI, 2026-09-13) |
+| Falhas IT | Failsafe | **0** (0E + 0F) ² |
+| Tempo verify completo | Surefire + Failsafe | **~50 min** local · **~27 min** no CI |
 
 A suíte de integração passou por uma etapa de estabilização estrutural: falhas por variável de ambiente incorreta, contaminação de dados entre testes e IDs hardcoded sem seed foram eliminadas por completo.
+
+² Este número passou a ser verificado. Até 2026-09-13 a linha dizia `0 (0E + 0F)` por herança de uma execução local antiga que nada reverificava; a primeira execução do `PJB Integration Gate` mediu **273 testes, 8 falhas e 55 erros**. Os 55 erros eram uma causa só (heap insuficiente para 22 contextos Spring numa JVM), e as 3 falhas eram outra (`429 RUNTIME_WARMING_UP` da admissão operacional durante os primeiros 20s de cada contexto). Os 4 erros restantes vinham de uma limpeza de teste que apagava `tb_usuario` sem respeitar chave estrangeira. As três causas estão corrigidas e o zero acima é medido a cada execução do portão, não herdado.
 
 O `verify` padrão (Failsafe) não alcança 13 métodos de teste distribuídos em 6 classes¹ que combinam a convenção `*Test.java` com `@Tag("integration")` — o Surefire exclui essas classes por tag e o Failsafe não as reconhece pelo padrão de nome de arquivo. Todas as 13 já foram confirmadas verdes individualmente via `-Dit.test=`, mas ficam fora da contagem de rotina do `verify`.
 
@@ -509,7 +570,7 @@ pjb/
 │           └── modules/              módulos especializados (laiane, advocacia)
 │
 ├── docs/
-│   ├── adr/                          57 Architecture Decision Records
+│   ├── adr/                          58 Architecture Decision Records
 │   ├── database/                     esquemas e políticas RLS
 │   ├── openapi/                      contratos de API pública
 │   ├── security/                     políticas LGPD e Gov.br
@@ -573,7 +634,7 @@ graph TD
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Banco | PostgreSQL 17 com Row Level Security por operação |
 | Banco de testes | H2 em memória + Testcontainers |
-| Migrations | Flyway — numeração até V331, com particionamento mensal em tabelas de evento |
+| Migrations | Flyway — numeração até V354, com particionamento mensal em tabelas de evento |
 | Persistência | JPA / Hibernate com `ddl-auto: validate` em produção |
 | Mensageria | Apache Kafka 3.8 — eventos judiciais e outbox |
 | Orquestração de workflow | Camunda 8 / Zeebe — BPMN aplicado ao fluxo de ajuizamento |
@@ -584,8 +645,8 @@ graph TD
 | Contratos | Pact — Consumer-Driven Contract Testing |
 | IA Jurídica | Anthropic Claude API — Memory Stores, Dreams, síntese reflexiva |
 | Observabilidade | Micrometer, Spring Actuator, Process Mining materializado |
-| Análise estática | Qodana (JetBrains), JaCoCo, Checkstyle, SpotBugs, ArchUnit |
-| Guards estruturais | 7 scripts Python + ArchUnit integrados ao CI |
+| Análise estática | Qodana (JetBrains), JaCoCo, Checkstyle, SpotBugs, ArchUnit, catraca de depreciação no compilador |
+| Guards estruturais | 26 scripts Python + ArchUnit integrados ao CI |
 | Containerização | Docker Compose (dev/test), Kubernetes (produção) |
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
@@ -631,6 +692,8 @@ Cada carga cruzou o nome do município do PDF contra a lista oficial do IBGE por
 Cada uma das três cargas é travada por teste de regressão permanente contra o documento-fonte — a distribuição de varas por município é reparseada de forma independente do script que gerou a migration antes de virar `assert`, para que uma alteração futura na migration ou uma migration de outra região que corrompa dado por acidente de nome de tabela seja detectada, não silenciosamente aceita.
 
 **Tribunal e Comarca como entidade real.** `Tribunal` e `Comarca` são entidades JPA próprias (`model/entity/competencia/`), não mais texto solto — `UnidadeJudiciariaCompetencia`, `JurisdicaoTerritorial`, `Jurisdicao`, `Usuario`, `Processo`, `WorkItem`, `OrgaoJudiciario`, `PeritoSorteioAudit` e `PeritoDisponibilidade` referenciam `Comarca` por FK. Como o catálogo de `Comarca` hoje só cobre os municípios das três regiões trabalhistas carregadas acima (CE/MG/RN), cada uma dessas nove entidades mantém `uf`/`comarca` como coluna String real ao lado da FK — nunca dado descartado por falta de cobertura de catálogo, a FK resolve quando o município está catalogado e o texto continua sendo a fonte de verdade nos demais. `AssessorGabineteGuardRailService.territoryMatches()` compara por identidade real (`Comarca.getId()`) quando as duas pontas resolvem a FK, e cai na comparação textual normalizada nos demais casos — elimina, para os municípios já catalogados, a classe de bug em que grafia divergente entre o cadastro do assessor e o do processo produzia falso positivo ou falso negativo de correspondência territorial. Um teste de arquitetura (`OrganizacaoJudiciariaArchitectureTest`) trava qualquer entidade nova que declare `uf`/`comarca` como String sem a FK `Comarca` correspondente na mesma classe; entidades pré-existentes em outros domínios que ainda não seguem esse padrão estão listadas em `docs/quality/DEBT_LOG.md` (`D-territorio-string-solta-entidades-legadas`).
+
+**Motor de urgência por rito.** `RitoUrgenciaPriorityPolicy` classifica cada rito em três níveis com fundamento legal real, não arbitrário: habeas corpus e Lei Maria da Penha em urgência máxima (CF art. 5º, LXVIII; Lei 11.340/06 arts. 18 e 22), tutela de urgência e ato infracional do ECA em urgência alta (CPC art. 300; ECA art. 108), os demais ritos em prioridade padrão. O nível se traduz em prioridade de `WorkItem` — a política só escalona, nunca de-escalona uma prioridade já mais urgente atribuída por outra origem — e nas mesmas tags consumidas pela fila de secretaria (`SecretariatQueuePriorityPolicy`) e pelos painéis do Ministério Público e da Defensoria Pública: um único motor alimenta os quatro pontos de consumo, sem sinal de urgência calculado de forma divergente em cada canal.
 </details>
 
 <details>
@@ -693,7 +756,14 @@ Cada documento tem origem, estado operacional, hash de integridade e cadeia de c
 - Dos três canais que criam processo, só o marketplace não verificava documento obrigatório — chamava `AjuizamentoService.ajuizar()` direto, sem o `CompletudeDocumentalPolicyService` que o REST já usa.
 - Quando a checagem acusa pendência, o processo é criado normalmente (integração sistema-a-sistema não trava), mas `connectorSubmissionStatus` grava `PENDENTE_DOCUMENTACAO` e a resposta expõe `documentacaoCompleta`/`documentosFaltantes`.
 - O rito hardcoded em `COMUM_ORDINARIO` que esse canal carregava foi corrigido junto, com `ProceduralCatalogSupport.tryResolveRito()` lendo o payload. Detalhe completo: `docs/quality/DEBT_LOG.md` (`D-marketplace-sem-completude-documental`).
-</details>
+
+**Identidade visual persistida por ator e rascunho resiliente:** o editor de peça (blueprint por tópicos que muda conforme o rito, com blocos multimídia inline e política de identidade visual) já existia; o que passou a existir é o perfil de papel timbrado reutilizável — `PeticaoIdentidadeVisual` guarda, por ator peticionante, logo (em object storage, nunca blob no banco — mesmo padrão de `tb_usuario_avatar`), nome/instituição, cabeçalho e rodapé livres e paleta de cores, aplicados sozinhos em toda peça em vez de reenviados a cada sessão; colunas `escopo`/`escopo_ref` já preveem estender a identidade institucional (defensoria por estado, MP, procuradorias, magistratura e perito) sem tocar o schema. O rascunho ganhou autosave resiliente: `PUT .../rascunhos/{id}/autosave` atualiza o rascunho no lugar (não perde o último conteúdo salvo mesmo com queda de energia ou conexão) e cada mudança real de conteúdo grava um snapshot imutável em `tb_peticao_draft_versao`, com dedup por hash, retenção das últimas 30 versões, listagem e restauração — tudo isolado por dono, ninguém vê rascunho alheio. Entre listar (só metadados) e restaurar (destrutivo — sobrescreve o rascunho ativo) faltava um meio-termo: `GET .../versoes/{versaoSeq}` mostra o conteúdo de uma versão anterior sem tocar o rascunho ativo, re-sanitizando e re-renderizando o `conteudo_json` daquela versão a cada leitura (nunca confia cegamente no HTML já armazenado no snapshot) — mesmo padrão de segurança da leitura da peça publicada.
+
+**Formatação rica governada e sanitização anti-XSS:** o catálogo selado `RichTextFormatCatalog` fixa o que o editor pode oferecer — negrito, itálico, sublinhado, tachado, títulos, listas, tabela, alinhamento, além de um conjunto curado de fontes, tamanhos e cores — modelado sobre o documento JSON do TipTap/ProseMirror (o editor open-source MIT adotado como referência). Antes de salvar/publicar, `RichTextDocumentSanitizer` valida o documento contra esse catálogo usando só Jackson (nenhuma biblioteca nova): nós, marcas e atributos fora da allowlist são removidos, fontes/tamanhos/alinhamentos não permitidos são descartados e URLs de link/imagem com esquema perigoso (`javascript:`, `data:`, `file:`) são bloqueadas — a peça é vista por todos no processo, então isso é segurança, não cosmético. O catálogo é exposto no blueprint do editor (`richTextFormat`) e em `/api/v1/peticionamento/editor/formato`, para o toolbar oferecer exatamente o que é aceito. O export `.docx` (Word/LibreOffice) está entregue **sem dependência externa** — `DocxExportService` monta o WordprocessingML e empacota com a própria JDK (nenhum Apache POI no build), sempre a partir do documento já sanitizado, em `POST /api/v1/peticionamento/editor/exportar/docx` (negrito/itálico/sublinhado/fonte/tamanho/cor, títulos, listas, citação, tabela e alinhamento; o timbre do ator entra no topo automaticamente). O JSON validado passou a ser a **fonte de verdade** do conteúdo do rascunho (V342, coluna `conteudo_json` no rascunho e no snapshot de versão): no autosave, quando o editor envia o documento, ele é **sanitizado no servidor** e vira o conteúdo autoritativo, e a `minuta_inicial` (HTML) passa a ser **projeção derivada e segura**, renderizada do JSON sanitizado por `RichTextHtmlRenderer` — o HTML que o cliente mandaria é descartado. Assim o que persiste, o que é publicado e o que é exportado em `.docx` derivam todos do mesmo JSON validado, fechando o ciclo de segurança de ponta a ponta (retrocompatível: sem documento JSON, o fluxo HTML legado é preservado). A leitura da peça publicada fecha o par escrever→ler: `GET /api/v1/processos/{processoId}/peticao-inicial/leitura` renderiza o mesmo JSON sanitizado como HTML seguro para quem lê a peça no processo — juiz, servidor, parte, público autorizado — gateado pelo mesmo ABAC/sigilo do download de documento (`requireReadProcessoAtSecrecy`); sem `conteudo_json`, a minuta legada é escapada como texto puro, nunca reinterpretada como marcação. No protocolo, a peça também é materializada como `DocumentoProcessual` de verdade — `PeticaoInicialPdfExportService` renderiza PDF real (Apache PDFBox, já dependência do projeto; mesma técnica hand-rolled de `RecursalPdfExportService`) a partir do texto extraído do JSON sanitizado (`RichTextPlainTextExtractor`), com `tipoDocumento=PETICAO_INICIAL` e sigilo herdado do processo. Isso a torna visível, sem código novo, no painel de leitura documental e no download autenticado — que já listam qualquer documento do processo.
+
+**Identidade institucional por cargo (magistratura, MP, defensoria, procuradorias):** `IdentidadeInstitucionalResolver` resolve, a partir do cargo (`TipoUsuario`) e da UF, o órgão e a nomenclatura corretos de cada ofício — "PODER JUDICIÁRIO / Tribunal de Justiça", "MINISTÉRIO PÚBLICO DO ESTADO DE {UF}", "DEFENSORIA PÚBLICA DA UNIÃO", "ADVOCACIA-GERAL DA UNIÃO" — sem tratar todos igual: o brasão é do **órgão**, não do indivíduo, e o perfil pessoal só acrescenta texto (nome/gabinete), nunca substitui o timbre institucional. O **perito** é deliberadamente profissional-individual (laudo sem brasão de órgão, com o registro do conselho certo — CRM/CREA/CRC…), não institucional. Brasão e cores **oficiais nunca são fabricados**: vêm da **curadoria** do próprio órgão (`/api/v1/peticionamento/identidade-visual/institucional/{escopoRef}`, restrito a administrador) e, enquanto não vierem, usa-se um default **neutro explicitamente marcado como substituível** (`DEFAULT_PJB_SUBSTITUIVEL`), jamais alegado como oficial. `usuario_id` passou a ser opcional (V341) para o perfil do órgão, único por `escopoRef`. A procuradoria **municipal desce ao município real** do procurador (via comarca), não só à UF. Duas camadas de segurança na curadoria, por construção: o `escopoRef` da URL é blindado (formato `A-Z0-9-` + família institucional conhecida `PJ-/MP-/DP-/PROC-`) antes de virar chave de object storage — fecha travessia de caminho — e a curadoria é gateada em dois pontos independentes (`@PreAuthorize` `ROLE_ADMIN` na borda HTTP **e** verificação de admin no serviço). Onde o cargo não permite deduzir o órgão exato sem inventar (qual tribunal superior de um ministro), a identidade entra pela mesma curadoria oficial — decisão de produção deliberada, não lacuna.
+
+**Contrato único para o frontend (`GET /api/v1/peticionamento/editor/bootstrap`):** uma chamada devolve, tipada (records, sem mapa genérico), tudo que o editor precisa para abrir para o ator atual — o catálogo de formatação (`RichTextFormatoDto`), a identidade visual já resolvida (`IdentidadeVisualEfetivaDto`, institucional + individual), e os endpoints/limites de rascunho (autosave/versões, retenção, dedup) e de mídia (limites de logo, tipos aceitos, URLs de validação/catálogo). Pensado para geração de client tipado — o frontend (TipTap) monta o editor a partir de um só contrato, sem descobrir endpoint por endpoint nem lacuna de tipagem.
 
 <details>
 <summary><strong>8 — Autuação, retificação e qualidade de metadados</strong></summary>
@@ -708,7 +778,9 @@ Retificação governada com diff jurídico — cada alteração passa por polít
 
 Ingesta processos de PJe, e-SAJ, eProc, Projudi, Creta, MNI e PDPJ. Cada sistema externo tem normalizador específico que padroniza NPU, classe processual CNJ e rito antes de persistir. Conflitos de importação são registrados com diff auditável.
 
-O adapter MNI (`intercomunicacao-2.2.2`, atributos `polo`/`parte`/`pessoa` do schema oficial do CNJ) materializa autor e réu do processo importado, incluindo o polo processual pelo mesmo motor de composição por rito usado no ajuizamento direto — processo importado via MNI não fica mais sem partes identificadas.
+O adapter MNI (`intercomunicacao-2.2.2`, atributos `polo`/`parte`/`pessoa` do schema oficial do CNJ) materializa autor e réu do processo importado, incluindo o polo processual pelo mesmo motor de composição por rito usado no ajuizamento direto — processo importado via MNI não fica mais sem partes identificadas. O mesmo adapter também extrai `movimento` (histórico de movimentação, com a data real do XML — nunca "agora" no momento da importação) e `documento` (conteúdo binário decodificado de base64, reingerido pela mesma pipeline validada de sigilo/storage/hash SHA-256 já usada no canal marketplace, não gravação de bytes crus). Documento cujo tipo não é reconhecido por casamento de palavra-chave contra o vocabulário interno (`TipoDocumento`, ~105 valores sem fallback genérico) é retido com conteúdo íntegro numa fila de classificação manual — nunca classificado às cegas.
+
+**Migração em lote.** `MniMigrationBatchItem` (fila de staging) e `MniBatchMigrationJobHandler` reaproveitam o mesmo framework `BackfillRun` já usado no backfill de canonicalização de clientes: cursor resumível, isolamento de transação por item (um XML malformado de um caso não derruba os demais nem exige reprocessar o lote inteiro) e endpoints administrativos de enfileirar/kickoff/status/falhas. O orquestrador não elimina a necessidade de credencial real do tribunal de origem — `MniHttpClient` só oferece envio (`enviarAutos`), sem consulta ativa a um MNI remoto; buscar processos de um PJe real em produção ainda depende de um client de consulta que não existe hoje e de credencial emitida pelo tribunal de origem, o que é uma dependência operacional, não uma lacuna de código.
 </details>
 
 <details>
@@ -737,7 +809,7 @@ A IA opera como camada de suporte — nunca substitui decisão humana. Toda inte
 
 **Gate de completude processual:** verifica se o pacote documental está completo antes de permitir que o processo avance de fase. A validação tem duas camadas: estrutural (checklists configuráveis por rito, com pendências tipificadas e prazo de resolução) e semântica (OCR + VectorSearch detecta a presença efetiva de conteúdo exigido em documentos já anexados, não apenas a existência do arquivo). Pendências são notificadas via outbox com ciclo de resolução rastreável. O processo não avança enquanto houver lacuna de completude — e a secretaria pode fazer override com justificativa mínima auditável.
 
-**Consultoria de decisão judicial:** `advisoryMode` sempre retorna `ADVISORY_DRAFT_ONLY` — a Laiane produz apenas minuta assistida, nunca decide. `reviewRequired` e `publicationLocked` são sempre `true`: toda consultoria exige revisão humana integral antes de publicação, sem exceção por template ou caso. Não é comportamento condicional, é política de segurança deliberada — os três modos de consultoria (`SUGESTIVO`, `RESTRITIVO`, `BLOQUEADOR`) documentados numa versão anterior da API nunca chegaram a ser implementados, e a diferenciação de níveis de consultoria fica registrada como decisão de produto em aberto (`D-advisory-modos-nao-implementados`), não como funcionalidade pendente de bug fix.
+**Consultoria de decisão judicial em três níveis.** `advisoryMode` (`LaianeAdvisoryMode`) é derivado do próprio sinal de confiança que o motor de template já calcula por caso — nunca uma escolha do usuário nem uma configuração externa: `SUGESTIVO` quando um padrão de caso é reconhecido (acordo, desistência, reconhecimento da procedência, medida protetiva Maria da Penha, tutela de urgência em saúde) sem pendência de fato identificada, com minuta de dispositivo completa; `RESTRITIVO` quando o mesmo padrão é reconhecido mas falta um detalhe relevante no corpus do caso (ex.: acordo sem valor/prazo informado, medida protetiva sem vetor de risco descrito) — aqui a minuta de dispositivo é retida (`dispositiveBase = null`), a Laiane entrega só checklist e fundamentos, forçando o magistrado a redigir o texto operativo; `BLOQUEADOR` quando nenhum padrão de caso é reconhecido — sem minuta de dispositivo, assistência limitada ao checklist estruturante. Em nenhum dos três níveis `reviewRequired`/`publicationLocked` deixam de ser `true`: a Laiane nunca decide nem publica, isso não varia por modo. Os nomes dos três modos vêm de uma documentação de API anterior que nunca chegou a ser implementada (`D-advisory-modos-nao-implementados`); a diferenciação real hoje reaproveita um sinal de confiança que o serviço já computava e descartava, não uma heurística nova inventada para a ocasião.
 </details>
 
 <details>
@@ -763,6 +835,8 @@ A delegacia é modelada como unidade institucional de primeira linha, com lotaç
 Boletins de ocorrência produzem inquéritos rastreáveis. Cada BO tem tipificação, envolvidos, cadeia de custódia de documentos e vínculo automático ao processo penal quando há autuação. O inquérito acompanha o processo desde a fase policial até a fase judicial, sem quebra de rastreabilidade.
 
 O escopo policial é resolvido por lotação, não por papel. O que um delegado enxerga e movimenta é determinado pela delegacia onde está lotado. O DelegadoPainel materializa exatamente essa visão restrita — sem exposição de dados de outra unidade. O `WorkItemScopeGuard` aplica essa restrição como P0: qualquer acesso a item de trabalho fora do escopo de lotação é bloqueado no guard central, e o ArchUnit garante em tempo de build que não existe caminho de código que consiga contorná-lo.
+
+**Recebimento de inquérito com minuta automática.** Ao encaminhar um inquérito ao Judiciário, o sistema gera uma minuta de despacho de recebimento com número de procedimento e fundamentação real (CPP art. 28, Lei 13.964/2019) interpolados no texto — nunca um placeholder — deixando espaço reservado explícito para o magistrado complementar ou reescrever antes de assinar; a minuta nunca é publicada sozinha. O registro do inquérito bloqueia com mensagem explícita listando o que falta quando o delegado esquece número, data ou assinatura, e exige o mesmo desafio-resposta por certificado digital ICP-Brasil usado no login por certificado — sem distinção entre delegacia de plantão e regional, nem entre polícia civil e federal.
 </details>
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
@@ -803,6 +877,20 @@ O adapter (`VectorSearchServicePgVector`) usa o `EmbeddingService` existente do 
 Cobertura: `VectorSearchServicePgVectorTest` (8 testes, `JdbcTemplate` mockado — SQL, filtro JSONB, cálculo de score, truncamento de dimensão, top-K default, degradação em erro). Migration validada isoladamente na imagem `pgvector/pgvector:pg17` com `psql`: `CREATE EXTENSION`, os 4 índices, insert e query com `<=>` + `@>` funcionaram.
 
 **Ingest real (não só busca):** o mesmo modo `pgvector` também substitui o `InMemoryCosineVectorIndex` (in-memory, LRU 20k, perdido a cada restart) pelo `PgVectorPersistentIndex` — implementação de `VectorIndex` que persiste no mesmo store `pjb_ai_vector_document`. O wiring é por `@ConditionalOnMissingBean(VectorIndex.class)` no in-memory e `@ConditionalOnProperty(mode=pgvector)` no persistente: sem a flag, comportamento histórico intacto; com a flag, `SemanticPrecedentSearchService` ganha persistência real, dados compartilhados entre instâncias, e o `bootstrapIfNeeded` (que já popula o índice lazy a partir do `PrecedenteRepository`) automaticamente vira ingest pipeline. Cobertura: `PgVectorPersistentIndexTest` (8 unit, `JdbcTemplate` mockado — upsert idempotente com normalização case-insensitive de metadata, `size()`, filtro JSONB, truncamento de dimensão) + `PgVectorPersistentIndexIT` (4 IT, Postgres real via Testcontainers na imagem `pgvector/pgvector:pg17`, migration V307 aplicada — prova que `@ConditionalOnMissingBean` substitui o backend, que indexar 3 documentos com vetores ortogonais produz ranking correto na query, que filtro `metadata @> jsonb` de verdade filtra, e que upsert com o mesmo `doc_id` substitui o conteúdo em vez de duplicar).
+
+### Provedor de IA local (Ollama, sem token)
+
+O `AiModelClientFactory` escolhe o provedor por `pjb.ai.{v1,v2,v3}.provider` (com fallback em `pjb.ai.provider`, default `openai`):
+
+| Provider | Quando usar | Dependência externa |
+|----------|-------------|----------------------|
+| `openai` (default) | Produção, com `OPENAI_API_KEY` configurada | API OpenAI, cobrada por token |
+| `ollama` | Ambiente sem chave de API ou sem acesso à internet — desenvolvimento local, demonstração offline | Servidor Ollama local (`http://localhost:11434` por padrão), sem custo por token |
+| `local` (fallback) | Nenhum provider configurado | Nenhuma — heurística determinística, sem LLM real |
+
+Ativar exige só variável de ambiente, sem mudança de código: `PJB_AI_PROVIDER=ollama` (chat) e `PJB_AI_EMBEDDING_MODE=ollama` (embedding, troca o `DeterministicHashEmbeddingService` por `OllamaEmbeddingService`). `PJB_AI_OLLAMA_MODEL`/`PJB_AI_OLLAMA_EMBEDDING_MODEL` escolhem o modelo (default `qwen2.5:7b` e `nomic-embed-text`, os mesmos usados na verificação manual desta integração). `OllamaChatClient` e `OllamaEmbeddingService` implementam os mesmos contratos (`AiModelClient`, `EmbeddingService`) usados pelo provider OpenAI — nenhum consumidor (`JudexOnDemandController`, `SemanticPrecedentSearchService` etc.) precisa saber qual provider está ativo.
+
+Cobertura: `OllamaChatClientTest` e `OllamaEmbeddingServiceTest` (4 testes, `HttpServer` em processo — não dependem do Ollama estar rodando em CI).
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
@@ -860,6 +948,7 @@ O modelo de segurança é orientado por identidade, papel, lotação, órgão, u
 | **Circuit breaker auditável** | Estado de abertura/fechamento de cada circuit breaker é registrado com timestamp, causa e contagem de falhas — a história de degradação de uma integração é rastreável, não apenas o estado atual |
 | **LGPD** | Dados sigilosos nunca enviados a serviços externos; redact auditável por versão |
 | **Dual approval** | Operações críticas exigem confirmação de segundo ator autorizado |
+| **Criptografia de PII em repouso** | `Usuario.cpf`/`email` (identidade de login) e `Cliente.cpf`/`email` (módulo advocacia) cifrados via `SensitiveDataConverter`/`CryptoVaultService` — nunca em texto puro no banco |
 
 ### Cofre de segredos e a chave mestra AES-GCM
 
@@ -881,6 +970,12 @@ bash scripts/vault_dev_bootstrap.sh        # habilita KV v2 e grava credenciais 
 ```
 
 O script imprime as 4 envs que o backend precisa pra puxar credenciais do Vault. O serviço `vault` no compose roda em dev-mode (sem persistência, comando `server -dev -dev-listen-address=0.0.0.0:8200`, token via `PJB_VAULT_DEV_ROOT_TOKEN`) — **exclusivamente para dev/demo**. Em produção, apontar `VaultDbCredentialsProvider` para uma instância gerenciada externamente, com auth method próprio (AppRole/Kubernetes/etc.), não com root token estático.
+
+### Índice cego para busca em coluna criptografada
+
+`cpf`/`email` de `Usuario` são cifrados (AES-GCM, IV aleatório — o mesmo valor nunca produz o mesmo texto cifrado duas vezes), o que por definição os torna incomparáveis num `WHERE`. A busca por igualdade que login, validação de OAB e o cruzamento de parte com processo sempre precisaram continua funcionando através de um índice cego: `cpf_hash`/`email_hash` (HMAC-SHA256 com a mesma chave mestra, via `CryptoVaultService.hmacHex` + `UsuarioBlindIndexService`) — determinístico, permite `WHERE cpf_hash = ?`, mas não reversível para o CPF original. Deliberadamente **não** é SHA-256 simples: CPF tem checksum e só ~10⁹ valores válidos, um hash sem chave seria reversível por uma tabela pré-computada.
+
+Nenhum dos mais de 30 pontos do código que chamam `usuarioRepository.findByCpf(cpf)`/`findByEmail(email)` mudou — a assinatura e o comportamento visível são os mesmos; por baixo, `UsuarioRepositoryImpl` busca pelo hash. O mesmo vale para o cruzamento de parte processual: `ProcessoRepository.findAllByPartesCpf` casa o CPF informado com `Usuario.cpfHash`, mantendo `Processo.parteAutoraCpf`/`parteReuCpf` em texto puro (dado da parte no processo, escopo diferente do dado de conta do usuário). `nome` fica fora desta cifragem: `MembroEquipeRepository` faz busca parcial (`LIKE`) direto nele, que hash não suporta.
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
@@ -918,15 +1013,17 @@ Dados pessoais sensíveis — CPF e CNPJ — foram removidos de todas as camadas
 
 Todo `docker-compose*.yml` (base, HA, read-replica, n8n) tem `mem_limit`/`cpus` explícito por serviço, configurável via env (`PJB_<SERVICO>_MEM_LIMIT`/`_CPUS`, default sensato por serviço). Sem teto de memória, `pjb-runtime.sh` calcula `-XX:MaxRAMPercentage` sobre a RAM total visível ao container em vez de sobre um limite real — um container preso em retry (dependência que nunca subiu, por exemplo) reivindica até 72% da VM inteira do Docker Desktop sozinho, sem nenhum outro processo conseguir memória. `backend`/`backend-b` também trocaram `restart: unless-stopped` por `on-failure:5`: dependência externa persistentemente quebrada não deve produzir reinício infinito e silencioso. `scripts/docker_zombie_container_guard.py` detecta esse padrão especificamente (unhealthy prolongado ou contagem alta de restarts) para qualquer container que escape dessas duas redes de segurança.
 
+O limiar padrão de `autovacuum_analyze_scale_factor` do PostgreSQL (10% da tabela) é adequado para tabela pequena, mas deixa o planejador de consultas usando estatística obsoleta por tempo demais em tabela de milhões de linhas após carga em massa — medido em ambiente real: 266ms com estatística desatualizada contra 0.18ms na mesma consulta logo após `ANALYZE`, o planejador escolhendo índice errado por estimar `rows=1` onde a cardinalidade real era 60 mil. `tb_processo`, `tb_movimentacao_processual` e `tb_documento_processual` têm `autovacuum_analyze_scale_factor=0.02`/`autovacuum_analyze_threshold=200` desde a V337 — o autovacuum dispara `ANALYZE` a cada 2% de mudança nessas tabelas específicas, não 10%, sem exigir intervenção manual após carga em lote.
+
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
 
 ## Banco de dados
 
-294 migrations Flyway (numeração não contígua até V331 — 38 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
+316 migrations Flyway (numeração não contígua de V0 a V354 — 39 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
 
-Row Level Security ativo por operação para dados sigilosos. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
+Row Level Security ativo por operação, em duas dimensões: sigilo do processo (leitura de casos sigilosos recusada pelo banco antes do ORM) e ator — GUCs de conexão dedicadas (`app.pjb_actor_id`, `app.pjb_actor_roles`) escopam tabelas operacionais (chamados de suporte, exceções de deslocamento de magistrado, trilha de auditoria da IA, intimações de audiência) fiéis ao `@PreAuthorize` de leitura de cada uma, como defesa em profundidade. Nunca RLS decorativo: tabela sem coluna de tenancy não recebe política, e um teste de disciplina de migration barra `ENABLE ROW LEVEL SECURITY` sem `FORCE` e sem política — o RLS órfão que o dono da tabela ignora em runtime. `tb_usuario` e o cluster `tb_identidade_juridica_*` (registro nacional por CPF/CNPJ) são exclusões deliberadas dessa varredura, não lacunas: ambos são consultados legitimamente por papéis institucionais para dados de terceiros (advogado visto por servidor, documento de réu consultado por oficial de justiça) tanto quanto por autoatendimento — não existe fronteira de posse por linha para restringir sem quebrar essas leituras cruzadas legítimas; a proteção de `tb_usuario` é feita por controller inteiro sob `@PreAuthorize` de admin (não há endpoint de self-service por id) e a de PII em ambas por criptografia em repouso com índice cego, não por RLS. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
 
 ```sql
 -- Exemplo de política RLS para processos sigilosos
@@ -945,10 +1042,10 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 | `PJB_DB_USER` / `PJB_DB_PASS` | Superusuário inicial do Postgres (`pjb`/`pjb`) — só inicializa o container, RLS não vale para ele |
 | `PJB_DB_APP_USER` / `PJB_DB_APP_PASS` | Role restrita (`pjb_app`/`pjb_app_pass` por padrão) — é com ela que `SPRING_DATASOURCE_USERNAME`/`PASSWORD` do `backend` conectam de fato; é essa conexão que faz a RLS valer |
 
-**Pendências conhecidas, documentadas explicitamente (não implementadas nesta rodada):**
+**Pendências conhecidas, documentadas explicitamente:**
 
 - **Volume já existente**: scripts de `docker-entrypoint-initdb.d` só rodam com `PGDATA` vazio. Um volume de dev anterior a este hardening (ex.: `pjb_pjb_pg_data` já populado) nunca cria `pjb_app` sozinho — o cabeçalho de `infra/docker/postgres/init/01-app-role.sh` traz o SQL equivalente para rodar manualmente via `docker exec ... psql` num volume desses. Isso sozinho não basta se migrations `<= V313` já rodaram nesse volume como o superusuário antigo (`pjb`): `ALTER TABLE ... ALTER COLUMN ... TYPE` (caso de `V317`) exige posse da tabela, não só `GRANT` — o mesmo cabeçalho do script traz o `ALTER TABLE ... OWNER TO pjb_app` (em bloco `DO` iterando `pg_tables`) que transfere a posse das tabelas existentes; **não** resolva concedendo `pjb_app` membro de `pjb` (`GRANT pjb_app TO pjb`), isso reabre o bypass de RLS que a role restrita existe pra fechar.
-- **Volume que já aplicou a `V317` antiga**: quem rodou o stack entre a introdução original de `V317__fix_unidade_institucional_uf_type.sql` e esta correção de conteúdo vai ter o checksum antigo gravado em `flyway_schema_history` — o Flyway recusa reaplicar migrations já aplicadas com checksum divergente (`validateOnMigrate=true`). Um volume novo não sofre isso (é como a reverificação de boot desta rodada testou). Num volume que já tinha a `V317` antiga, rode `flyway repair` (recalcula o checksum gravado para o conteúdo atual do arquivo) antes do próximo boot, ou descarte o volume em ambiente de dev.
+- **Volume que já aplicou a `V317` antiga**: quem rodou o stack entre a introdução original de `V317__fix_unidade_institucional_uf_type.sql` e esta correção de conteúdo vai ter o checksum antigo gravado em `flyway_schema_history` — o Flyway recusa reaplicar migrations já aplicadas com checksum divergente (`validateOnMigrate=true`). Um volume novo não sofre isso. Num volume que já tinha a `V317` antiga, rode `flyway repair` (recalcula o checksum gravado para o conteúdo atual do arquivo) antes do próximo boot, ou descarte o volume em ambiente de dev.
 - **`docker-compose.read-replica.yml` e o caminho de leitura roteada de `docker-compose.ha.yml`**: `PJB_DB_READ_USER`/`PASS` continuam apontando para o superusuário `pjb`, não para `pjb_app`. Isso significa que **a proteção de RLS nasce desligada no caminho de leitura roteada** — não é só uma migração pendente, é uma lacuna de proteção real e conhecida. Consultas que podem ser roteadas para a réplica/HA (ex.: `SecretariaInstitucionalFilaService.consultarFila`, `@Transactional(readOnly = true)`) seguem protegidas hoje só pelas camadas 1 e 2 (checagem de aplicação + Hibernate `@Filter`), não pela camada 3 (RLS). Ver `.superpowers/sdd/2026-08-08-secretarias-institucionais/db-role-hardening-report.md` para o histórico completo da investigação.
 - **`docker-compose.ha.yml`**: os nós `backend`/`backend-b` dessa topologia usam `pjb`/`pjb` explicitamente (não `pjb_app`) porque o `pgbouncer` da topologia (`infra/docker/pgbouncer/entrypoint.sh`) só conhece `pjb` no `userlist.txt` e sempre abre a conexão real com o Postgres do lado servidor como `pjb`, fixo — a RLS ficaria inerte atrás do pgbouncer mesmo corrigindo a autenticação cliente→pgbouncer. Estado explícito, não silenciosamente quebrado; migrar essa topologia para `pjb_app` de ponta a ponta é trabalho futuro.
 - **Produção real (k8s)**: `infra/k8s/base/secret.yaml`/`configmap.yaml` continuam nas credenciais antigas — a mesma lógica de role restrita precisa ser replicada lá separadamente.
@@ -961,15 +1058,15 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **4.819 · 0 falhas · 0 erros** |
-| Testes de integração (Failsafe) | **306 · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes unitários (Surefire) | **5.370 · 0 falhas · 0 erros · 1 pulado** |
+| Testes de integração (Failsafe) | **116 classes · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
-| Guards Python | 7 scripts ativos em CI |
+| Guards Python | 26 scripts ativos em CI |
 | SBOM | CycloneDX gerado a cada build |
 | Correlation ID | Obrigatório em toda requisição |
 
-57 ADRs documentam cada decisão arquitetural com motivação, consequências e alternativas consideradas. Devem ser lidos antes de alterar qualquer estrutura de pacote, padrão de concorrência ou política de segurança.
+58 ADRs documentam cada decisão arquitetural com motivação, consequências e alternativas consideradas. Devem ser lidos antes de alterar qualquer estrutura de pacote, padrão de concorrência ou política de segurança.
 
 O pipeline gera automaticamente um SBOM CycloneDX a cada build, mantendo inventário auditável de todas as dependências com versão e licença. O evidence gate de CI rejeita merges sem cobertura de guarda estrutural completa. Correlation ID obrigatório em toda requisição — propagado via contexto e registrado em cada entrada de log, permitindo rastreamento ponta a ponta sem agregador externo.
 
@@ -1016,6 +1113,92 @@ python scripts/runtime_concurrency_guard.py
 | `hibernate_filter_definition_guard` | Todo `@Filter(name=X)` tem `@FilterDef(name=X)` correspondente; `condition` SQL com parênteses balanceados; `@ConditionalOnBean`/`@ConditionalOnMissingBean` não referencia `EntityManager`/`*Repository` numa classe `@Component` comum (avaliação prematura no component-scan — bean nunca é criado, sem erro nenhum) |
 | `anti_mock_prod_guard` | Bloqueia se mocks de integração crítica estiverem ativos em produção: Gov.br, ICP-Brasil, Kafka, Elasticsearch, IA |
 | `openapi_weakness_detector` | Detecta `Map<String,Object>` sem schema tipado, campos sem `format: date-time` e rotas sem contrato OpenAPI registrado |
+| `java_regression_signature_guard` | Assinaturas de API que já causaram regressão no projeto e não devem voltar |
+| `guard_cwd_independence_guard` | Guard que resolve caminho do repositório contra o diretório de trabalho — o CI roda de `scripts/`, onde esse caminho não existe, e a varredura sai vazia reportando sucesso |
+| `internal_type_hygiene_guard` | Tipos aninhados em arquivos acima de 900 linhas |
+
+### Limiar legal em salários mínimos
+
+Limiar expresso em salários mínimos — 40 SM do Juizado Especial, 60 SM do JEF, 150 SM do crédito
+trabalhista do art. 83 I, 40 SM da impontualidade do art. 94 I — se calcula contra o salário mínimo
+que rege o marco do processo, e nunca contra o de hoje. `SalarioMinimoNacionalService` é a fonte
+canônica, e recebe sempre uma data de domínio: data do pedido, da distribuição, do fato.
+
+`LocalDate.now()` dentro dessa chamada equivale a hardcode, porque faz o mesmo processo mudar de
+resposta conforme o dia em que for consultado, e mudar de novo na virada do ano. Sem data de domínio
+disponível, o alerta não é emitido: competência calculada contra o salário errado é pior que
+competência não sinalizada.
+
+`salario_minimo_hardcoded_guard` verifica a regra, e recusa tanto a constante monetária local quanto
+o `LocalDate.now()` inline.
+
+### Catálogo de rotas institucionais
+
+As rotas da superfície institucional vivem em `platform.api.institucional.InstitutionalApiRoutes`,
+fora de `core` e fora do pacote de superfície. Controller e domínio dependem do mesmo catálogo sem que
+o controller alcance o domínio interno — as duas regras que o projeto já tinha sobre isso são
+satisfeitas ao mesmo tempo, em vez de uma ceder para a outra.
+
+Existe exatamente um arquivo com esse nome no código de produção, e nenhuma classe interna repete o
+nome simples. A duplicata anterior era justamente assim: uma classe aninhada homônima fazia o
+`@RequestMapping` de doze controllers ler como canônico apontando para outro catálogo.
+
+### Contrato de resposta
+
+Nenhum controller devolve entidade JPA no corpo da resposta. A resposta é sempre um record em
+`model.dto`, com as associações da entidade achatadas em identificador em vez de objeto aninhado —
+com `LAZY` e `open-in-view: false`, serializar a entidade faz a serialização tocar proxies depois que
+a transação já fechou.
+
+`PjbControllerNaoDevolveEntidadeJpaTest` verifica a regra por leitura de fonte, não por ArchUnit: o
+parâmetro genérico de `ResponseEntity<Instituicao>` é apagado no bytecode e o modelo de classes só
+enxerga `ResponseEntity`.
+
+### Controller não alcança repository
+
+Nenhuma classe terminada em `Controller` depende de classe terminada em `Repository`. A regra é por
+**nome**, não por pacote: o projeto tem oito pacotes de repository, controller nem sempre mora sob
+`controller`, e a versão por pacote dava verde escondendo seis violações reais.
+
+A camada HTTP traduz — resolve o usuário autenticado, aplica limite de capacidade, converte exceção
+de domínio em status. Buscar, autorizar e decidir vivem em serviço de aplicação, que é onde o teste
+alcança sem subir contexto web.
+
+### Baseline legado afirmado por nome
+
+Regra de arquitetura com violação legada não é desligada. Ela roda e afirma o baseline por nome
+(`containsExactlyInAnyOrder`), de modo que a violação existente é uma lista fechada e qualquer nome
+novo reprova. No `PjbArchitectureTest` o formato hoje cobre as entidades sem classificação de
+titularidade de dado; quando a lista chega a zero a regra volta à verificação direta, sem lista.
+
+A diferença prática em relação a `@Disabled` é que a regra continua verificando, o tamanho da dívida
+fica visível no próprio teste, e a afirmação não pode passar por vacuidade — extrator quebrado devolve
+conjunto vazio e reprova.
+
+Verificação que depende de arquivo gerado fora do build não entra na suíte. Um teste sob
+`Assumptions.assumeTrue(Files.exists(...))` sobre artefato que nada produz nunca executa e ainda
+aparece como cobertura no relatório.
+
+### Resolução de caminho nos guards
+
+O `ci.yml` invoca os guards com `working-directory: scripts`, então nenhum deles pode resolver caminho
+do repositório contra o diretório de trabalho: o caminho não existe ali, a varredura sai vazia e o
+guard reporta sucesso sem ter olhado nada. A raiz canônica é `project_roots.ROOT`, que sobe de
+`__file__` até encontrar `pom.xml` junto de `pjb-api`.
+
+Caminhos gravados em relatório saem relativos à raiz, para que o arquivo versionado não dependa de
+onde o guard foi executado. `guard_cwd_independence_guard` verifica a regra por análise sintática dos
+scripts.
+
+### Catraca de depreciação
+
+O `default-compile` roda com `-Xlint:deprecation,removal` e `failOnWarning`. `src/main` está em zero
+avisos, então qualquer API depreciada introduzida em código de produção quebra o build na compilação,
+antes de qualquer teste. A catraca não vale para `src/test`, onde 13 avisos seguem registrados no
+`DEBT_LOG` — a maioria presa à superfície do cliente Zeebe.
+
+O portão vale para o build limpo. Compilação incremental responde `Nothing to compile` e não reavalia
+avisos, então medir depreciação exige `clean` junto.
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
@@ -1047,10 +1230,10 @@ Expõe leitura viva do estado estrutural: hotspots do core, trilhas internas de 
 | Branch | Finalidade |
 |--------|-----------|
 | `master` | Branch principal — sempre estável, reflete produção |
-| `feature/nome-da-feature` | Novas funcionalidades |
-| `fix/descricao-do-bug` | Correções de bug |
-| `refactor/escopo` | Refatorações sem mudança de comportamento |
-| `docs/escopo` | Atualizações de documentação |
+| `feature/<nome-da-feature>` | Novas funcionalidades |
+| `fix/<descricao-do-bug>` | Correções de bug |
+| `refactor/<escopo>` | Refatorações sem mudança de comportamento |
+| `docs/<escopo>` | Atualizações de documentação |
 
 ### Padrão de commits (Conventional Commits)
 
@@ -1176,7 +1359,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 57 ADRs, 5.125 testes (4.819 unitários + 306 de integração) e 294 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.370 testes unitários, 116 classes de integração e 316 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

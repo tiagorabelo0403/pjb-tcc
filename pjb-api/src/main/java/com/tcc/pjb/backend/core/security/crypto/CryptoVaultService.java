@@ -61,6 +61,37 @@ public class CryptoVaultService {
         }
     }
 
+    /**
+     * Índice cego: hash determinístico (HMAC-SHA256 com a mesma chave mestra) para permitir busca
+     * exata por igualdade em coluna cujo valor de exibição é criptografado ({@link #blindarDado}, que
+     * usa IV aleatório e por isso nunca é comparável em {@code WHERE}). Nunca usar para dados que
+     * precisem de busca parcial (LIKE) — hash não suporta isso.
+     */
+    public String hmacHex(String valor) {
+        if (valor == null) return null;
+
+        if (masterKeyBase64 == null || masterKeyBase64.isBlank()) {
+            if (allowPlaintextFallback) {
+                return com.tcc.pjb.backend.core.util.Hashes.sha256Hex(valor);
+            }
+            throw new IllegalStateException("pjb.security.master-key ausente: configure a chave mestra (Base64, >= 32 bytes)");
+        }
+
+        try {
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(getSecretKey().getEncoded(), "HmacSHA256"));
+            byte[] digest = mac.doFinal(valor.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(digest.length * 2);
+            for (byte b : digest) {
+                sb.append(String.format(java.util.Locale.ROOT, "%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            log.error("CRITICAL: falha ao calcular índice cego", e);
+            throw new SecurityException("Erro interno de índice cego");
+        }
+    }
+
     public String lerDadoBlindado(String dadoCifradoBase64) {
         if (dadoCifradoBase64 == null) return null;
 

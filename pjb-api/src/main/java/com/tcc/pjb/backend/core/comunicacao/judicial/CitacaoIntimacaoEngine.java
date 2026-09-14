@@ -36,8 +36,6 @@ import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
-import com.tcc.pjb.backend.model.repository.UsuarioRepository;
-import com.tcc.pjb.backend.platform.jusos.v2.notificacao.NotificacaoInteligentePJB;
 import com.tcc.pjb.backend.platform.jusos.v2.prazo.NationalPrazoEngine;
 import com.tcc.pjb.backend.platform.runtime.execution.PjbExecutionDescriptor;
 import com.tcc.pjb.backend.platform.runtime.execution.PjbExecutionOrchestrator;
@@ -192,62 +190,53 @@ public class CitacaoIntimacaoEngine {
 
     private final ExpedicaoJudicialRepository expedicaoRepository;
     private final ProcessoRepository processoRepository;
-    private final UsuarioRepository usuarioRepository;
     private final AuditLedgerService auditLedger;
     private final CurrentUserService currentUserService;
-    private final NotificacaoInteligentePJB notificacaoEngine;
     private final ObjectProvider<MotorInterceptacaoAtiva> motorInterceptacaoProvider;
-    private final ObjectProvider<WebhookOutboundService> webhookProvider;
-    private final ObjectProvider<PrazoRespostaPosEntregaEngine> prazoProvider;
-    private final ObjectProvider<ReveliaAutomaticaEngine> reveliaProvider;
-    private final ObjectProvider<CuradorEspecialAutomaticoService> curadorProvider;
-    private final ObjectProvider<QrCodeMandadoService> qrCodeProvider;
-    private final ObjectProvider<ComunicacaoJudicialPortalNotificationService> portalNotificationProvider;
-    private final ObjectProvider<ComunicacaoJudicialAtendimentoRelayService> atendimentoRelayProvider;
-    private final ObjectProvider<SefazNfeCadastroResolver> sefazCadastroResolverProvider;
-    private final MatrizComunicacaoJudicialResolver matrizResolver;
     private final PjbHsmProperties hsmProperties;
     private final PjbExecutionOrchestrator executionOrchestrator;
     private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
+    private final CitacaoWebhookNotifierService citacaoWebhookNotifierService;
+    private final CitacaoPortalRelayNotificationService citacaoPortalRelayNotificationService;
+    private final CitacaoJudiciaryNotificationService citacaoJudiciaryNotificationService;
+    private final CitacaoPrazoReveliaGatilhoService citacaoPrazoReveliaGatilhoService;
+    private final CitacaoEditalCuradoriaService citacaoEditalCuradoriaService;
+    private final CitacaoOficialJusticaQrMandadoService citacaoOficialJusticaQrMandadoService;
+    private final CitacaoSefazCadastroEnrichmentService citacaoSefazCadastroEnrichmentService;
+    private final CitacaoMatrizDecisionService citacaoMatrizDecisionService;
 
     public CitacaoIntimacaoEngine(ExpedicaoJudicialRepository expedicaoRepository,
                                   ProcessoRepository processoRepository,
-                                  UsuarioRepository usuarioRepository,
                                   AuditLedgerService auditLedger,
                                   CurrentUserService currentUserService,
-                                  NotificacaoInteligentePJB notificacaoEngine,
                                   ObjectProvider<MotorInterceptacaoAtiva> motorInterceptacaoProvider,
-                                  ObjectProvider<WebhookOutboundService> webhookProvider,
-                                  ObjectProvider<PrazoRespostaPosEntregaEngine> prazoProvider,
-                                  ObjectProvider<ReveliaAutomaticaEngine> reveliaProvider,
-                                  ObjectProvider<CuradorEspecialAutomaticoService> curadorProvider,
-                                  ObjectProvider<QrCodeMandadoService> qrCodeProvider,
-                                  ObjectProvider<ComunicacaoJudicialPortalNotificationService> portalNotificationProvider,
-                                  ObjectProvider<ComunicacaoJudicialAtendimentoRelayService> atendimentoRelayProvider,
-                                  ObjectProvider<SefazNfeCadastroResolver> sefazCadastroResolverProvider,
-                                  MatrizComunicacaoJudicialResolver matrizResolver,
                                   PjbHsmProperties hsmProperties,
                                   PjbExecutionOrchestrator executionOrchestrator,
-                                  MovimentacaoProcessualRegistrar movimentacaoRegistrar) {
+                                  MovimentacaoProcessualRegistrar movimentacaoRegistrar,
+                                  CitacaoWebhookNotifierService citacaoWebhookNotifierService,
+                                  CitacaoPortalRelayNotificationService citacaoPortalRelayNotificationService,
+                                  CitacaoJudiciaryNotificationService citacaoJudiciaryNotificationService,
+                                  CitacaoPrazoReveliaGatilhoService citacaoPrazoReveliaGatilhoService,
+                                  CitacaoEditalCuradoriaService citacaoEditalCuradoriaService,
+                                  CitacaoOficialJusticaQrMandadoService citacaoOficialJusticaQrMandadoService,
+                                  CitacaoSefazCadastroEnrichmentService citacaoSefazCadastroEnrichmentService,
+                                  CitacaoMatrizDecisionService citacaoMatrizDecisionService) {
         this.expedicaoRepository = Objects.requireNonNull(expedicaoRepository, "expedicaoRepository");
         this.processoRepository = Objects.requireNonNull(processoRepository, "processoRepository");
-        this.usuarioRepository = Objects.requireNonNull(usuarioRepository, "usuarioRepository");
         this.auditLedger = Objects.requireNonNull(auditLedger, "auditLedger");
         this.currentUserService = Objects.requireNonNull(currentUserService, "currentUserService");
-        this.notificacaoEngine = Objects.requireNonNull(notificacaoEngine, "notificacaoEngine");
         this.motorInterceptacaoProvider = Objects.requireNonNull(motorInterceptacaoProvider, "motorInterceptacaoProvider");
-        this.webhookProvider = Objects.requireNonNull(webhookProvider, "webhookProvider");
-        this.prazoProvider = Objects.requireNonNull(prazoProvider, "prazoProvider");
-        this.reveliaProvider = Objects.requireNonNull(reveliaProvider, "reveliaProvider");
-        this.curadorProvider = Objects.requireNonNull(curadorProvider, "curadorProvider");
-        this.qrCodeProvider = Objects.requireNonNull(qrCodeProvider, "qrCodeProvider");
-        this.portalNotificationProvider = Objects.requireNonNull(portalNotificationProvider, "portalNotificationProvider");
-        this.atendimentoRelayProvider = Objects.requireNonNull(atendimentoRelayProvider, "atendimentoRelayProvider");
-        this.sefazCadastroResolverProvider = Objects.requireNonNull(sefazCadastroResolverProvider, "sefazCadastroResolverProvider");
-        this.matrizResolver = Objects.requireNonNull(matrizResolver, "matrizResolver");
         this.hsmProperties = Objects.requireNonNull(hsmProperties, "hsmProperties");
         this.executionOrchestrator = Objects.requireNonNull(executionOrchestrator, "executionOrchestrator");
         this.movimentacaoRegistrar = Objects.requireNonNull(movimentacaoRegistrar, "movimentacaoRegistrar");
+        this.citacaoWebhookNotifierService = Objects.requireNonNull(citacaoWebhookNotifierService, "citacaoWebhookNotifierService");
+        this.citacaoPortalRelayNotificationService = Objects.requireNonNull(citacaoPortalRelayNotificationService, "citacaoPortalRelayNotificationService");
+        this.citacaoJudiciaryNotificationService = Objects.requireNonNull(citacaoJudiciaryNotificationService, "citacaoJudiciaryNotificationService");
+        this.citacaoPrazoReveliaGatilhoService = Objects.requireNonNull(citacaoPrazoReveliaGatilhoService, "citacaoPrazoReveliaGatilhoService");
+        this.citacaoEditalCuradoriaService = Objects.requireNonNull(citacaoEditalCuradoriaService, "citacaoEditalCuradoriaService");
+        this.citacaoOficialJusticaQrMandadoService = Objects.requireNonNull(citacaoOficialJusticaQrMandadoService, "citacaoOficialJusticaQrMandadoService");
+        this.citacaoSefazCadastroEnrichmentService = Objects.requireNonNull(citacaoSefazCadastroEnrichmentService, "citacaoSefazCadastroEnrichmentService");
+        this.citacaoMatrizDecisionService = Objects.requireNonNull(citacaoMatrizDecisionService, "citacaoMatrizDecisionService");
     }
 
     @Transactional
@@ -309,9 +298,9 @@ public class CitacaoIntimacaoEngine {
             antiEvasaoAtivado = true;
         }
         ExpedicaoJudicial salva = expedicaoRepository.save(expedicao);
-        notificarPortalDestinatario(salva, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.EXPEDIDA);
-        propagarAvisoAtendimento(salva, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.EXPEDIDA);
-        publicarWebhookExpedicao(salva, WebhookOutboundService.EventoWebhook.EXPEDICAO_EXPEDIDA, java.util.Map.of("fundamento", salva.getFundamentacaoLegal()));
+        citacaoPortalRelayNotificationService.notificarPortalDestinatario(salva, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.EXPEDIDA);
+        citacaoPortalRelayNotificationService.propagarAvisoAtendimento(salva, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.EXPEDIDA);
+        citacaoWebhookNotifierService.publicar(salva, WebhookOutboundService.EventoWebhook.EXPEDICAO_EXPEDIDA, java.util.Map.of("fundamento", salva.getFundamentacaoLegal()));
         agendarDespachoAposCommit(salva.getExpedicaoUuid(), request, processo.getId(), modalidade);
         auditLedger.appendSafely(
                 "EXPEDICAO_JUDICIAL_EXPEDIDA",
@@ -356,11 +345,11 @@ public class CitacaoIntimacaoEngine {
         expedicao.confirmarEntrega(acuseHash, acuse.ipOrigem(), acuse.deviceFingerprint(), acuse.govbrSessionToken());
         expedicaoRepository.save(expedicao);
         Processo processo = processoRepository.findProcessoCompletoById(expedicao.getProcessoId()).orElse(null);
-        iniciarPrazoEReveliaSeCabivel(expedicao);
+        citacaoPrazoReveliaGatilhoService.iniciarPrazoEReveliaSeCabivel(expedicao);
         registrarMovimentacaoAcuse(processo, "Ciência da expedição confirmada pelo destinatário (acuse de recebimento).");
-        notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
-        propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
-        publicarWebhookExpedicao(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_ENTREGUE_CONFIRMADA, java.util.Map.of("canal", String.valueOf(expedicao.getModalidade())));
+        citacaoPortalRelayNotificationService.notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
+        citacaoPortalRelayNotificationService.propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
+        citacaoWebhookNotifierService.publicar(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_ENTREGUE_CONFIRMADA, java.util.Map.of("canal", String.valueOf(expedicao.getModalidade())));
         auditLedger.appendSafely(
                 "EXPEDICAO_ENTREGA_CONFIRMADA",
                 RESOURCE_TYPE,
@@ -378,11 +367,11 @@ public class CitacaoIntimacaoEngine {
         expedicao.confirmarLeitura(Instant.now(), acuseHash);
         expedicaoRepository.save(expedicao);
         Processo processo = processoRepository.findProcessoCompletoById(expedicao.getProcessoId()).orElse(null);
-        iniciarPrazoEReveliaSeCabivel(expedicao);
+        citacaoPrazoReveliaGatilhoService.iniciarPrazoEReveliaSeCabivel(expedicao);
         registrarMovimentacaoAcuse(processo, "Leitura da expedição confirmada pelo destinatário.");
-        notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.LIDA_CONFIRMADA);
-        propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.LIDA_CONFIRMADA);
-        publicarWebhookExpedicao(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_LIDA_CONFIRMADA, java.util.Map.of("acuseHash", String.valueOf(acuseHash)));
+        citacaoPortalRelayNotificationService.notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.LIDA_CONFIRMADA);
+        citacaoPortalRelayNotificationService.propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.LIDA_CONFIRMADA);
+        citacaoWebhookNotifierService.publicar(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_LIDA_CONFIRMADA, java.util.Map.of("acuseHash", String.valueOf(acuseHash)));
         auditLedger.appendSafely(
                 "EXPEDICAO_LEITURA_CONFIRMADA",
                 RESOURCE_TYPE,
@@ -427,10 +416,10 @@ public class CitacaoIntimacaoEngine {
         }
         if (expedicao.isEvasaoDetectada() && !expedicao.isEscalonadoParaJuiz()) {
             expedicao.escalonarParaJuiz();
-            notificarJuizEvasao(expedicao, processo);
+            citacaoJudiciaryNotificationService.notificarJuizEvasao(expedicao, processo);
         }
         expedicaoRepository.save(expedicao);
-        publicarWebhookExpedicao(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_FRUSTRADA, java.util.Map.of("motivo", String.valueOf(motivoFrustracao), "fallback", fallback != null ? fallback.name() : "NENHUM"));
+        citacaoWebhookNotifierService.publicar(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_FRUSTRADA, java.util.Map.of("motivo", String.valueOf(motivoFrustracao), "fallback", fallback != null ? fallback.name() : "NENHUM"));
         auditLedger.appendSafely(
                 "EXPEDICAO_FRUSTRACAO_FALLBACK",
                 RESOURCE_TYPE,
@@ -456,10 +445,10 @@ public class CitacaoIntimacaoEngine {
         expedicao.confirmarEntregaAutomatica(recibo.hashPayload(), recibo.canalVencedor());
         expedicaoRepository.save(expedicao);
         Processo processo = processoRepository.findProcessoCompletoById(expedicao.getProcessoId()).orElse(null);
-        iniciarPrazoEReveliaSeCabivel(expedicao);
-        notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
-        propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
-        publicarWebhookExpedicao(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_ENTREGUE_CONFIRMADA, java.util.Map.of("canal", recibo.canalVencedor()));
+        citacaoPrazoReveliaGatilhoService.iniciarPrazoEReveliaSeCabivel(expedicao);
+        citacaoPortalRelayNotificationService.notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
+        citacaoPortalRelayNotificationService.propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
+        citacaoWebhookNotifierService.publicar(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_ENTREGUE_CONFIRMADA, java.util.Map.of("canal", recibo.canalVencedor()));
         auditLedger.appendSafely(
                 "EXPEDICAO_INTERCEPTACAO_CONFIRMADA",
                 RESOURCE_TYPE,
@@ -548,10 +537,10 @@ public class CitacaoIntimacaoEngine {
             expedicao.marcarPresumidaEntregue();
             expedicaoRepository.save(expedicao);
             Processo processo = processoRepository.findProcessoCompletoById(expedicao.getProcessoId()).orElse(null);
-            iniciarPrazoEReveliaSeCabivel(expedicao);
-            notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.PRESUMIDA_ENTREGUE);
-            propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.PRESUMIDA_ENTREGUE);
-            publicarWebhookExpedicao(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_PRESUMIDA_ENTREGUE, java.util.Map.of());
+            citacaoPrazoReveliaGatilhoService.iniciarPrazoEReveliaSeCabivel(expedicao);
+            citacaoPortalRelayNotificationService.notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.PRESUMIDA_ENTREGUE);
+            citacaoPortalRelayNotificationService.propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.PRESUMIDA_ENTREGUE);
+            citacaoWebhookNotifierService.publicar(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_PRESUMIDA_ENTREGUE, java.util.Map.of());
             atualizadas++;
         }
         if (atualizadas > 0) {
@@ -579,7 +568,7 @@ public class CitacaoIntimacaoEngine {
                 }
                 expedicao.escalonarParaJuiz();
                 expedicaoRepository.save(expedicao);
-                notificarJuizEvasao(expedicao, processo);
+                citacaoJudiciaryNotificationService.notificarJuizEvasao(expedicao, processo);
                 log.info("[CitacaoEngine] Evasão escalonada ao juízo: uuid={}", expedicao.getExpedicaoUuid());
             } catch (Exception e) {
                 log.warn("[CitacaoEngine] Falha ao escalonar evasão uuid={}: {}", expedicao.getExpedicaoUuid(), e.getMessage());
@@ -597,7 +586,7 @@ public class CitacaoIntimacaoEngine {
         }
         PerfilDestinatario dest = request.destinatario();
         TipoComunicacaoJudicial tipo = request.tipoComunicacao();
-        ProceduralCommunicationDecision decisao = matrizResolver.resolver(processo, tipo, dest);
+        ProceduralCommunicationDecision decisao = citacaoMatrizDecisionService.resolver(processo, tipo, dest);
         if (decisao.fundamentoSintetico() != null && !decisao.fundamentoSintetico().isBlank()) {
             alertas.add(decisao.fundamentoSintetico());
         }
@@ -725,7 +714,7 @@ public class CitacaoIntimacaoEngine {
             cascata.add("OFICIAL_JUSTICA_ROTA_OTIMIZADA [CNPJ inativo]");
             return ModalidadeExpedicaoJudicial.OFICIAL_JUSTICA_ROTA_OTIMIZADA;
         }
-        Optional<SefazNfeCadastroResolver.CadastroSefazNfe> cadastroSefaz = consultarCadastroSefaz(pj.cnpj(), processo);
+        Optional<SefazNfeCadastroResolver.CadastroSefazNfe> cadastroSefaz = citacaoSefazCadastroEnrichmentService.consultarCadastroSefaz(pj.cnpj(), processo);
         if (!pj.isFazendaPublica() && cadastroSefaz.map(SefazNfeCadastroResolver.CadastroSefazNfe::possuiEmailOperacional).orElse(false)) {
             cascata.add("DIGITAL_SEFAZ_NF_EMAIL [cadastro operacional NF-e/SEFAZ]");
             alertas.add("Cadastro fiscal operacional estadual localizado para o CNPJ. Canal SEFAZ NF-e priorizado.");
@@ -868,7 +857,7 @@ public class CitacaoIntimacaoEngine {
     }
 
     private void despacharSefazNfeEmail(ExpedicaoJudicial expedicao, ExpedicaoRequest request, Processo processo) {
-        enriquecerExpedicaoComCadastroSefaz(expedicao, processo);
+        citacaoSefazCadastroEnrichmentService.enriquecerExpedicaoComCadastroSefaz(expedicao, processo);
         expedicao.setCanalDigitalUtilizado("SEFAZ_NFE_EMAIL_ICP");
         expedicaoRepository.save(expedicao);
         executarInterceptacaoDigital(expedicao, request, processo);
@@ -901,9 +890,9 @@ public class CitacaoIntimacaoEngine {
     private void despacharOficialJustica(ExpedicaoJudicial expedicao, ExpedicaoRequest request, Processo processo) {
         expedicao.setStatus(ExpedicaoJudicial.StatusExpedicao.PENDENTE_OFICIAL);
         expedicaoRepository.save(expedicao);
-        gerarQrMandadoSeCabivel(expedicao);
+        citacaoOficialJusticaQrMandadoService.gerarSeCabivel(expedicao);
         if (expedicao.getServidorExpedidorId() != null) {
-            notificarServidor(expedicao.getServidorExpedidorId(), expedicao, processo, "Mandado físico gerado. Atribuir a Oficial de Justiça.");
+            citacaoJudiciaryNotificationService.notificarServidor(expedicao.getServidorExpedidorId(), expedicao, processo, "Mandado físico gerado. Atribuir a Oficial de Justiça.");
         }
         log.info("[CitacaoEngine][OficialJustica] Mandado criado uuid={}", expedicao.getExpedicaoUuid());
     }
@@ -913,7 +902,7 @@ public class CitacaoIntimacaoEngine {
         expedicao.setCodigoRastreioCorreio(codigoRastreio);
         expedicao.setStatus(ExpedicaoJudicial.StatusExpedicao.REMETIDA_CORREIO);
         expedicaoRepository.save(expedicao);
-        gerarQrMandadoSeCabivel(expedicao);
+        citacaoOficialJusticaQrMandadoService.gerarSeCabivel(expedicao);
         log.info("[CitacaoEngine][CorreioAR] uuid={} rastreio={}", expedicao.getExpedicaoUuid(), codigoRastreio);
     }
 
@@ -928,13 +917,10 @@ public class CitacaoIntimacaoEngine {
         expedicao.setNumeroEdital(numeroEdital);
         expedicao.setStatus(ExpedicaoJudicial.StatusExpedicao.PUBLICADA_EDITAL);
         expedicaoRepository.save(expedicao);
-        CuradorEspecialAutomaticoService curador = curadorProvider.getIfAvailable();
-        if (curador != null) {
-            curador.registrarNecessidadeSeAusente(expedicao.getProcessoId(), expedicao.getExpedicaoUuid(), CuradorEspecialAutomaticoService.TipoCuradoria.REU_EM_LUGAR_INCERTO);
-        }
-        notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.PUBLICADA_EDITAL);
-        propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.PUBLICADA_EDITAL);
-        notificarJuizEdital(expedicao, processo, numeroEdital);
+        citacaoEditalCuradoriaService.registrarNecessidadeSeAusente(expedicao);
+        citacaoPortalRelayNotificationService.notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.PUBLICADA_EDITAL);
+        citacaoPortalRelayNotificationService.propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.PUBLICADA_EDITAL);
+        citacaoJudiciaryNotificationService.notificarJuizEdital(expedicao, processo, numeroEdital);
         log.warn("[CitacaoEngine][Edital] Último recurso ativado uuid={} edital={}", expedicao.getExpedicaoUuid(), numeroEdital);
     }
 
@@ -950,7 +936,7 @@ public class CitacaoIntimacaoEngine {
             log.warn("[CitacaoEngine] MotorInterceptacaoAtiva indisponível para uuid={}", expedicao.getExpedicaoUuid());
             return;
         }
-        enriquecerExpedicaoComCadastroSefaz(expedicao, processo);
+        citacaoSefazCadastroEnrichmentService.enriquecerExpedicaoComCadastroSefaz(expedicao, processo);
         List<ViaInterceptacao> vias = CitacaoIntimacaoExpedicaoSupport.montarVias(request.destinatario(), processo, expedicao);
         if (vias.isEmpty()) {
             registrarFrustracaoEAcionarFallback(expedicao.getExpedicaoUuid(), "Nenhuma via segura de interceptação foi construída para o destinatário.");
@@ -967,79 +953,6 @@ public class CitacaoIntimacaoEngine {
             log.info("[CitacaoEngine] Interceptação bem-sucedida uuid={} canal={}", expedicao.getExpedicaoUuid(), recibo.canalVencedor());
         } else {
             motor.acionarFallbackFisicoSeNecessario(recibo, expedicao.getExpedicaoUuid());
-        }
-    }
-
-    private void notificarJuizEvasao(ExpedicaoJudicial expedicao, Processo processo) {
-        if (expedicao.getJuizResponsavelId() == null) {
-            return;
-        }
-        usuarioRepository.findById(expedicao.getJuizResponsavelId()).ifPresent(juiz -> {
-            NotificacaoInteligentePJB.NotificacaoPJB notif = notificacaoEngine.construir(
-                    juiz.getId(),
-                    expedicao.getProcessoId(),
-                    NotificacaoInteligentePJB.TipoAlerta.ALERTA_REGRA_CRITICA,
-                    NotificacaoInteligentePJB.UrgenciaMensagem.CRITICA,
-                    NotificacaoInteligentePJB.CanalNotificacao.PUSH_APP_PJB
-            );
-            notificacaoEngine.enviarNotificacao(notif);
-        });
-    }
-
-    private void notificarJuizEdital(ExpedicaoJudicial expedicao, Processo processo, String numeroEdital) {
-        if (expedicao.getJuizResponsavelId() == null) {
-            return;
-        }
-        usuarioRepository.findById(expedicao.getJuizResponsavelId()).ifPresent(juiz -> {
-            NotificacaoInteligentePJB.NotificacaoPJB notif = notificacaoEngine.construir(
-                    juiz.getId(),
-                    expedicao.getProcessoId(),
-                    NotificacaoInteligentePJB.TipoAlerta.MOVIMENTACAO_NOVA,
-                    NotificacaoInteligentePJB.UrgenciaMensagem.ALTA,
-                    NotificacaoInteligentePJB.CanalNotificacao.PUSH_APP_PJB
-            );
-            notificacaoEngine.enviarNotificacao(notif);
-        });
-    }
-
-    private void notificarServidor(Long servidorId, ExpedicaoJudicial expedicao, Processo processo, String mensagem) {
-        usuarioRepository.findById(servidorId).ifPresent(servidor -> {
-            NotificacaoInteligentePJB.NotificacaoPJB notif = notificacaoEngine.construir(
-                    servidor.getId(),
-                    expedicao.getProcessoId(),
-                    NotificacaoInteligentePJB.TipoAlerta.MOVIMENTACAO_NOVA,
-                    NotificacaoInteligentePJB.UrgenciaMensagem.MEDIA,
-                    NotificacaoInteligentePJB.CanalNotificacao.PUSH_APP_PJB
-            );
-            notificacaoEngine.enviarNotificacao(notif);
-        });
-    }
-
-    private void notificarPortalDestinatario(ExpedicaoJudicial expedicao,
-                                           Processo processo,
-                                           ComunicacaoJudicialPortalNotificationService.EventoPortal evento) {
-        ComunicacaoJudicialPortalNotificationService service = portalNotificationProvider.getIfAvailable();
-        if (service == null) {
-            return;
-        }
-        try {
-            service.notificar(expedicao, processo, evento);
-        } catch (Exception ex) {
-            log.warn("[CitacaoEngine] Falha ao notificar portal destinatário uuid={}: {}", expedicao.getExpedicaoUuid(), ex.getMessage());
-        }
-    }
-
-    private void propagarAvisoAtendimento(ExpedicaoJudicial expedicao,
-                                         Processo processo,
-                                         ComunicacaoJudicialPortalNotificationService.EventoPortal evento) {
-        ComunicacaoJudicialAtendimentoRelayService service = atendimentoRelayProvider.getIfAvailable();
-        if (service == null) {
-            return;
-        }
-        try {
-            service.propagarAviso(expedicao, processo, evento);
-        } catch (Exception ex) {
-            log.warn("[CitacaoEngine] Falha ao propagar aviso de atendimento uuid={}: {}", expedicao.getExpedicaoUuid(), ex.getMessage());
         }
     }
 
@@ -1090,20 +1003,6 @@ public class CitacaoIntimacaoEngine {
                 .orElse(null);
     }
 
-    private void publicarWebhookExpedicao(ExpedicaoJudicial expedicao, WebhookOutboundService.EventoWebhook evento, java.util.Map<?, ?> metadados) {
-        WebhookOutboundService webhook = webhookProvider.getIfAvailable();
-        if (webhook == null || expedicao == null || evento == null) {
-            return;
-        }
-        java.util.LinkedHashMap<String, String> payload = new java.util.LinkedHashMap<>();
-        if (metadados != null) {
-            metadados.forEach((k, v) -> {
-                if (k != null && v != null) payload.put(String.valueOf(k), String.valueOf(v));
-            });
-        }
-        webhook.publicarEventoExpedicao(expedicao, evento, payload);
-    }
-
     private void agendarDespachoAposCommit(String motivo, ExpedicaoRequest request, Long processoId, ModalidadeExpedicaoJudicial modalidade) {
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             executarDespachoGovernado(motivo, request, processoId, modalidade);
@@ -1129,64 +1028,6 @@ public class CitacaoIntimacaoEngine {
                 log.error("[CitacaoEngine] Falha governada no despacho pós-commit processo={} modalidade={}: {}", processoId, modalidade, error.getMessage(), error);
             }
         });
-    }
-
-    private void iniciarPrazoEReveliaSeCabivel(ExpedicaoJudicial expedicao) {
-        if (expedicao == null || !expedicao.isEntregueOuLida()) {
-            return;
-        }
-        PrazoRespostaPosEntregaEngine prazoEngine = prazoProvider.getIfAvailable();
-        if (prazoEngine == null) {
-            return;
-        }
-        PrazoRespostaPosEntregaEngine.PrazoResposta prazo = prazoEngine.iniciarPrazoAposEntrega(
-                expedicao.getExpedicaoUuid(),
-                CitacaoIntimacaoExpedicaoSupport.resolverTipoUsuarioPrazo(expedicao),
-                CitacaoIntimacaoExpedicaoSupport.resolverTipoPrazoPadrao(expedicao)
-        );
-        ReveliaAutomaticaEngine reveliaEngine = reveliaProvider.getIfAvailable();
-        if (reveliaEngine != null && prazo != null && prazo.vencimentoEm() != null) {
-            reveliaEngine.iniciarMonitoramento(expedicao.getExpedicaoUuid(), expedicao.getProcessoId(), prazo.vencimentoEm());
-        }
-    }
-
-    private java.util.Optional<SefazNfeCadastroResolver.CadastroSefazNfe> consultarCadastroSefaz(String cnpj, Processo processo) {
-        SefazNfeCadastroResolver resolver = sefazCadastroResolverProvider.getIfAvailable();
-        if (resolver == null || processo == null) {
-            return java.util.Optional.empty();
-        }
-        String uf = processo.getUf();
-        if ((uf == null || uf.isBlank()) && processo.getJurisdicao() != null) {
-            uf = processo.getJurisdicao().getUf();
-        }
-        return resolver.resolver(cnpj, uf, processo.getTribunalCodigoRoteado());
-    }
-
-    private void enriquecerExpedicaoComCadastroSefaz(ExpedicaoJudicial expedicao, Processo processo) {
-        if (expedicao == null || processo == null || expedicao.getDestinatarioDocumento() == null) {
-            return;
-        }
-        consultarCadastroSefaz(expedicao.getDestinatarioDocumento(), processo).ifPresent(cadastro -> {
-            if ((expedicao.getDestinatarioEmail() == null || expedicao.getDestinatarioEmail().isBlank()) && cadastro.possuiEmailOperacional()) {
-                expedicao.setDestinatarioEmail(cadastro.emailOperacional());
-            }
-            if ((expedicao.getDestinatarioTelefone() == null || expedicao.getDestinatarioTelefone().isBlank()) && cadastro.telefoneOperacional() != null && !cadastro.telefoneOperacional().isBlank()) {
-                expedicao.setDestinatarioTelefone(cadastro.telefoneOperacional());
-            }
-            if ((expedicao.getDestinatarioEnderecoEntrega() == null || expedicao.getDestinatarioEnderecoEntrega().isBlank()) && cadastro.possuiEnderecoFisico()) {
-                expedicao.setDestinatarioEnderecoEntrega(cadastro.enderecoEstabelecimento());
-            }
-        });
-    }
-
-    private void gerarQrMandadoSeCabivel(ExpedicaoJudicial expedicao) {
-        if (expedicao == null || expedicao.getModalidade() != ModalidadeExpedicaoJudicial.OFICIAL_JUSTICA_ROTA_OTIMIZADA) {
-            return;
-        }
-        QrCodeMandadoService service = qrCodeProvider.getIfAvailable();
-        if (service != null) {
-            service.gerar(expedicao.getExpedicaoUuid());
-        }
     }
 
     private Long resolverJuizResponsavelId(Long juizResponsavelId, Usuario atual) {

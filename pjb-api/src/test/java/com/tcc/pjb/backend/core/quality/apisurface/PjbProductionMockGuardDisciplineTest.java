@@ -17,6 +17,7 @@ class PjbProductionMockGuardDisciplineTest {
     void executableMocksAndDemoSeedsInMainMustBeProfileGuarded() throws Exception {
         for (Path path : List.of(
                 Path.of("src/main/java/com/tcc/pjb/backend/integration/govbr/mock/GovBrMockSignatureService.java"),
+                Path.of("src/main/java/com/tcc/pjb/backend/integration/govbr/demoidp/GovBrDemoIdentityProviderConfig.java"),
                 Path.of("src/main/java/com/tcc/pjb/backend/demo/PjbDemoDataInitializer.java"))) {
             String content = ApiSurfaceTestSupport.read(path);
 

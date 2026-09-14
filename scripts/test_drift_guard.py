@@ -26,6 +26,22 @@ def imports_of(text: str) -> set[str]:
     return {line.strip() for line in text.splitlines() if line.startswith('import ')}
 
 
+BLOCO_DE_COMENTARIO = re.compile(r'/\*.*?\*/', re.S)
+COMENTARIO_DE_LINHA = re.compile(r'//.*')
+LITERAL_DE_TEXTO = re.compile(r'"(?:\\.|[^"\\])*"', re.S)
+
+
+def sem_comentarios_nem_literais(text: str) -> str:
+    """Codigo efetivo do arquivo.
+
+    Um exemplo de uso escrito em javadoc (`* verify(auditoria)...`) nao e chamada: contar comentario
+    como codigo acusava import estatico faltando num arquivo que nunca chama o simbolo.
+    """
+    sem_bloco = BLOCO_DE_COMENTARIO.sub('', text)
+    sem_linha = '\n'.join(COMENTARIO_DE_LINHA.sub('', linha) for linha in sem_bloco.splitlines())
+    return LITERAL_DE_TEXTO.sub('""', sem_linha)
+
+
 def add_missing_import_findings(path: Path, text: str) -> list[Finding]:
     imports = imports_of(text)
     findings: list[Finding] = []
@@ -39,17 +55,24 @@ def add_missing_import_findings(path: Path, text: str) -> list[Finding]:
         ('eq', 'import static org.mockito.ArgumentMatchers.eq;'),
         ('never', 'import static org.mockito.Mockito.never;'),
     ]
-    declared_methods = set(re.findall(r'\b(?:void|int|long|boolean|String|var|[A-Z]\w*(?:<[^>]+>)?)\s+(\w+)\s*\(', text))
+    codigo = sem_comentarios_nem_literais(text)
+    declared_methods = set(re.findall(r'\b(?:void|int|long|boolean|String|var|[A-Z]\w*(?:<[^>]+>)?)\s+(\w+)\s*\(', codigo))
     for symbol, import_stmt in checks:
         if symbol in declared_methods:
             continue
-        if re.search(rf'(?<![\w.]){re.escape(symbol)}\s*\(', text):
-            if f'Mockito.{symbol}(' in text:
+        if re.search(rf'(?<![\w.]){re.escape(symbol)}\s*\(', codigo):
+            if f'Mockito.{symbol}(' in codigo:
                 continue
             if import_stmt not in imports:
                 if symbol in {'when', 'verify', 'mock', 'never'} and 'import static org.mockito.Mockito.*;' in imports:
                     continue
-                if symbol in {'any', 'eq'} and 'import static org.mockito.ArgumentMatchers.*;' in imports:
+                # org.mockito.Mockito extends org.mockito.ArgumentMatchers, entao o wildcard de
+                # Mockito tambem traz any/eq. Exigir o import de ArgumentMatchers reprovava codigo
+                # que compila e esta correto.
+                if symbol in {'any', 'eq'} and (
+                    'import static org.mockito.ArgumentMatchers.*;' in imports
+                    or 'import static org.mockito.Mockito.*;' in imports
+                ):
                     continue
                 if symbol in {'assertThat', 'assertThatThrownBy'} and 'import static org.assertj.core.api.Assertions.*;' in imports:
                     continue

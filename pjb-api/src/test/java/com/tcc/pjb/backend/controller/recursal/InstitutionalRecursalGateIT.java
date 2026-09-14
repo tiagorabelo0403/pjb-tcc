@@ -22,7 +22,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -57,7 +57,7 @@ class InstitutionalRecursalGateIT extends PjbFlowItBase {
     @Autowired
     ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     RecursalPeticionamentoPerfilRouter router;
 
     private String body() throws Exception {
@@ -108,7 +108,7 @@ class InstitutionalRecursalGateIT extends PjbFlowItBase {
                 .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou MP legitimo)")
                 .isNotIn(401, 403);
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation"))
-                .as("Gate rodou depois da auth e classificou a operacao recursal")
+                .as("Gate rodou depois da auth e classificou a operacao recursal (status HTTP recebido: %s)", response.getStatus())
                 .isEqualTo("RECURSAL_UNIFICADO");
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Allowed"))
                 .as("Gate resolveu o MP JWT via banco e liberou")

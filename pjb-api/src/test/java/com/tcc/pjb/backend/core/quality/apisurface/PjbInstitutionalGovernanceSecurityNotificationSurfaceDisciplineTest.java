@@ -24,7 +24,7 @@ class PjbInstitutionalGovernanceSecurityNotificationSurfaceDisciplineTest {
         String source = Files.readString(Path.of(path));
         assertFalse(source.contains("record "));
         assertFalse(source.contains("Map<String, Object>"));
-        assertFalse(source.contains("core.comunicacao.institucional.") && !source.contains("core.comunicacao.institucional.InstitutionalApiRoutes"));
+        assertFalse(source.contains("core.comunicacao.institucional."));
         assertFalse(source.contains("IntimacaoMulticanalService.DispatchPlanResponse"));
     }
 }

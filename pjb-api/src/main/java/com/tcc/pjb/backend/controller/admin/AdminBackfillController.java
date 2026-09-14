@@ -2,9 +2,14 @@ package com.tcc.pjb.backend.controller.admin;
 
 import com.tcc.pjb.backend.model.dto.admin.backfill.AdminBackfillCanonicalizeSensitiveRequest;
 import com.tcc.pjb.backend.model.dto.admin.backfill.AdminBackfillKickoffResponse;
+import com.tcc.pjb.backend.model.dto.admin.backfill.AdminBackfillMniMigrationRequest;
 import com.tcc.pjb.backend.model.dto.admin.backfill.AdminBackfillStatusResponse;
+import com.tcc.pjb.backend.model.dto.admin.backfill.AdminMniMigrationEnqueueRequest;
+import com.tcc.pjb.backend.model.dto.admin.backfill.AdminMniMigrationEnqueueResponse;
+import com.tcc.pjb.backend.model.dto.admin.backfill.AdminMniMigrationFailedItemDto;
 import com.tcc.pjb.backend.service.admin.surface.AdminBackfillFacadeService;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -47,5 +52,36 @@ public class AdminBackfillController {
         return facadeService.canonicalizeStatus(jobId, inboxKey)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/mni/migracao/itens")
+    public ResponseEntity<AdminMniMigrationEnqueueResponse> enqueueMniMigrationItens(
+            @Valid @RequestBody AdminMniMigrationEnqueueRequest request
+    ) {
+        return ResponseEntity.ok(facadeService.enqueueMniMigrationItens(request));
+    }
+
+    @PostMapping("/mni/migracao/kickoff")
+    public ResponseEntity<AdminBackfillKickoffResponse> kickoffMniMigration(
+            @Valid @RequestBody AdminBackfillMniMigrationRequest request,
+            @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey,
+            @RequestHeader(value = "X-Client-Request-Id", required = false) String clientRequestId
+    ) {
+        return ResponseEntity.accepted().body(facadeService.kickoffMniMigration(request, idempotencyKey, clientRequestId));
+    }
+
+    @GetMapping("/mni/migracao/status")
+    public ResponseEntity<AdminBackfillStatusResponse> mniMigrationStatus(
+            @RequestParam(value = "jobId", required = false) UUID jobId,
+            @RequestParam(value = "inboxKey", required = false) String inboxKey
+    ) {
+        return facadeService.mniMigrationStatus(jobId, inboxKey)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/mni/migracao/falhas")
+    public ResponseEntity<List<AdminMniMigrationFailedItemDto>> mniMigrationFalhas() {
+        return ResponseEntity.ok(facadeService.mniMigrationFalhas());
     }
 }

@@ -1,6 +1,6 @@
 package com.tcc.pjb.backend.core.comunicacao.institucional.panel.application.catalog;
 
-import com.tcc.pjb.backend.core.comunicacao.institucional.InstitutionalApiRoutes;
+import com.tcc.pjb.backend.platform.api.institucional.InstitutionalApiRoutes;
 import com.tcc.pjb.backend.core.operational.OperationalApiRoutes;
 import com.tcc.pjb.backend.core.comunicacao.institucional.panel.domain.InstitutionalPanelBlueprintSpec;
 import java.util.List;

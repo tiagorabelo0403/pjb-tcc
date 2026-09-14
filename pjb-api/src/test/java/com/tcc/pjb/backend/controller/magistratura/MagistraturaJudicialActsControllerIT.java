@@ -33,8 +33,6 @@ import com.tcc.pjb.backend.model.entity.security.TrustedDevice;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.security.TrustedDeviceRepository;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDecision;
 import com.tcc.pjb.backend.service.casefile.CaseContinuityDecisionGateService;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.desembargador.DesembargadorColegialdoPainelService;
@@ -90,8 +88,6 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
     @MockitoBean
     private PjbAuthorizationService authorizationService;
 
-    @MockitoBean
-    private CapabilityRateLimiter capabilityRateLimiter;
 
     @MockitoBean
     private JuizProcessoGuardRailService guardRailService;
@@ -167,7 +163,6 @@ class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
 
         when(personaService.getRequiredPersona()).thenReturn(personaJuiz());
         doNothing().when(authorizationService).requireReadProcesso(any());
-        when(capabilityRateLimiter.enforce(any(), any(), any(), any())).thenReturn(new CapabilityRateLimitDecision(true, 100L, 99L, 0L, 60, 1));
         JuizProcessoGuardRailService.GuardRailSnapshot allowSnapshot = guardAllow();
         when(guardRailService.avaliar(any(), any(), any(), any())).thenReturn(allowSnapshot);
         when(juizGabineteDecisionalService.assinarDespacho(eq(processo.getId()), eq("Intime-se."), eq("CPC")))

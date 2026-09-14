@@ -26,6 +26,19 @@ zeebe:
   client:
     enabled: false
 pjb:
+  security:
+    crypto:
+      # V344: Usuario.cpf/email passam a exigir CryptoVaultService no save/read. Sem chave mestra
+      # configurada aqui, TODA IT que salva Usuario (a esmagadora maioria da suíte) quebraria com
+      # IllegalStateException. Testes que precisam provar AES-GCM/HMAC real (não o fallback) sobrescrevem
+      # pjb.security.master-key + este flag via @TestPropertySource na própria classe.
+      allow-plaintext-fallback: true
+    capability-ratelimit:
+      # Neutraliza o rate limit por configuracao em vez de @MockitoBean nas ITs. Cada conjunto
+      # distinto de mocks entra na chave de cache do contexto Spring, entao mockar o limiter
+      # fragmentava o cache sem necessidade. Aqui o bean real roda desligado, exercitando o
+      # caminho de codigo verdadeiro. Ver D-fragmentacao-de-contexto-spring-nos-its.
+      enabled: false
   kafka:
     scale:
       listener-concurrency: 1
@@ -59,3 +72,14 @@ pjb:
     barrier:
       scheduling:
         enabled: false
+    admission:
+      # `warmingUp` e uptime do bean de pressao, e a janela padrao e de 20s. Em IT, cada contexto
+      # Spring novo reinicia essa contagem, entao a primeira requisicao "cara" de uma classe recem
+      # subida leva 429 RUNTIME_WARMING_UP antes de chegar em qualquer regra de negocio — e passa
+      # ou falha conforme o boot demore mais ou menos que 20s, o que e sorteio, nao cobertura.
+      #
+      # Medido no portao de integracao (run 34774950817): as TRES falhas de assercao da suite eram
+      # este 429, e nao o que as dividas diziam. O resto do admission control continua ligado aqui;
+      # so a protecao de aquecimento sai, e ela ganhou teste unitario proprio em
+      # PjbOperationalAdmissionServiceTest, que antes nao existia. Producao segue com o default true.
+      reject-during-warmup: false

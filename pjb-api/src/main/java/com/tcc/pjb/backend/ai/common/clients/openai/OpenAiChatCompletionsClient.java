@@ -7,12 +7,17 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.ai.common.AiModelClient;
+import com.tcc.pjb.backend.ai.common.AiProviderException;
 
 public class OpenAiChatCompletionsClient implements AiModelClient {
 
+    private static final Logger log = LoggerFactory.getLogger(OpenAiChatCompletionsClient.class);
+    private static final String PROVEDOR = "openai";
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final HttpClient http;
@@ -68,7 +73,8 @@ public class OpenAiChatCompletionsClient implements AiModelClient {
 
             HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
             if (resp.statusCode() / 100 != 2) {
-                return "[OPENAI-ERROR] status=" + resp.statusCode() + " body=" + safeTrim(resp.body());
+                log.warn("OpenAI respondeu status={} body={}", resp.statusCode(), safeTrim(resp.body()));
+                throw new AiProviderException(PROVEDOR, "HTTP " + resp.statusCode());
             }
 
             Map<String, Object> json = MAPPER.readValue(resp.body(), new TypeReference<>() {});
@@ -84,15 +90,17 @@ public class OpenAiChatCompletionsClient implements AiModelClient {
                 }
             }
 
-            return "[OPENAI-EMPTY]";
+            throw new AiProviderException(PROVEDOR, "resposta sem conteudo");
 
+        } catch (AiProviderException e) {
+            throw e;
         } catch (IOException e) {
-            return "[OPENAI-IO] " + e.getMessage();
+            throw new AiProviderException(PROVEDOR, "falha de comunicacao", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return "[OPENAI-INTERRUPTED]";
+            throw new AiProviderException(PROVEDOR, "execucao interrompida", e);
         } catch (Exception e) {
-            return "[OPENAI-ERROR] " + e.getClass().getSimpleName() + ": " + e.getMessage();
+            throw new AiProviderException(PROVEDOR, "falha inesperada (" + e.getClass().getSimpleName() + ")", e);
         }
     }
 

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.OrigemAutenticacaoSessao;
 import com.tcc.pjb.backend.model.entity.security.PasskeySession;
 import com.tcc.pjb.backend.model.repository.security.PasskeySessionRepository;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ class PasskeySessionServiceTest {
         Usuario usuario = usuario();
         when(termosAceiteService.precisaAceitar(usuario)).thenReturn(true);
 
-        PasskeySessionService.IssuedPasskeySession issued = service.issue(usuario, null, "1.2.3.4");
+        PasskeySessionService.IssuedPasskeySession issued = service.issue(usuario, null, "1.2.3.4", OrigemAutenticacaoSessao.PASSKEY);
 
         assertThat(issued.termosPendentes()).isTrue();
         verify(repo).save(argThatTermosPendentes(true));
@@ -40,7 +41,7 @@ class PasskeySessionServiceTest {
         Usuario usuario = usuario();
         when(termosAceiteService.precisaAceitar(usuario)).thenReturn(false);
 
-        PasskeySessionService.IssuedPasskeySession issued = service.issue(usuario, null, "1.2.3.4");
+        PasskeySessionService.IssuedPasskeySession issued = service.issue(usuario, null, "1.2.3.4", OrigemAutenticacaoSessao.PASSKEY);
 
         assertThat(issued.termosPendentes()).isFalse();
         verify(repo).save(argThatTermosPendentes(false));

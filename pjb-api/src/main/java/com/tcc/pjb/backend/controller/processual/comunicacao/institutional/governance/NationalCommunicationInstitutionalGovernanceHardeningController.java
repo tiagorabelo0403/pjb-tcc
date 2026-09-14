@@ -1,6 +1,6 @@
 package com.tcc.pjb.backend.controller.processual.comunicacao.institutional.governance;
 
-import com.tcc.pjb.backend.core.comunicacao.institucional.InstitutionalApiRoutes;
+import com.tcc.pjb.backend.platform.api.institucional.InstitutionalApiRoutes;
 import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.security.NationalCommunicationInstitutionalIntegrationSecurityPolicyResponse;
 import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.security.NationalCommunicationInstitutionalRecertificationRequest;
 import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.security.NationalCommunicationInstitutionalRecertificationResponse;

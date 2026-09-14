@@ -1,19 +1,25 @@
 package com.tcc.pjb.backend.service.processual.precatorio;
 
+import com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PrecatorioRadarService {
 
-    private static final BigDecimal LIMITE_RPV_FEDERAL_2026 = new BigDecimal("66").multiply(
-            new BigDecimal("1518"));
-    private static final BigDecimal LIMITE_RPV_ESTADUAL_2026 = new BigDecimal("40").multiply(
-            new BigDecimal("1518"));
+    private static final BigDecimal SALARIOS_MINIMOS_RPV_FEDERAL = new BigDecimal("60");
+    private static final BigDecimal SALARIOS_MINIMOS_RPV_SUBNACIONAL = new BigDecimal("40");
+
+    private final SalarioMinimoNacionalService salarioMinimoService;
+
+    public PrecatorioRadarService(SalarioMinimoNacionalService salarioMinimoService) {
+        this.salarioMinimoService = Objects.requireNonNull(salarioMinimoService);
+    }
 
     public enum TipoObrigacaoFazenda {
         FEDERAL, ESTADUAL, MUNICIPAL
@@ -44,10 +50,9 @@ public class PrecatorioRadarService {
                     BigDecimal.ZERO, List.of("Aguardar trânsito em julgado."),
                     "AGUARDANDO_TRANSITO", "CPC, art. 534.");
         }
-        BigDecimal limiteRpv = input.tipoFazenda() == TipoObrigacaoFazenda.FEDERAL
-                ? LIMITE_RPV_FEDERAL_2026 : LIMITE_RPV_ESTADUAL_2026;
-        boolean aptaRpv = input.valorCondenacao().compareTo(limiteRpv) <= 0
-                || input.naturezaAlimentar();
+        BigDecimal limiteRpv = limiteRpv(input.tipoFazenda(), input.dataTransitoEmJulgado());
+        boolean aptaRpv = input.valorCondenacao().compareTo(limiteRpv) <= 0;
+
         List<String> providencias = new ArrayList<>();
         if (aptaRpv) {
             providencias.add("Expedir Requisição de Pequeno Valor (RPV).");
@@ -56,9 +61,21 @@ public class PrecatorioRadarService {
             providencias.add("Expedir precatório ao TJ/TRF competente.");
             providencias.add("Observar orçamento do ente devedor para inclusão.");
         }
+        if (input.naturezaAlimentar() && !aptaRpv) {
+            providencias.add("Registrar natureza alimentar para preferência na ordem de pagamento (CF, art. 100, § 1º).");
+        }
+
         return new PrecatorioSnapshot(input.processoId(), !aptaRpv, aptaRpv,
                 limiteRpv, List.copyOf(providencias),
                 aptaRpv ? "RPV" : "PRECATORIO",
                 "CF/88, art. 100; CPC, arts. 534-535.");
+    }
+
+    private BigDecimal limiteRpv(TipoObrigacaoFazenda tipoFazenda, LocalDate dataReferencia) {
+        BigDecimal salariosMinimos = tipoFazenda == TipoObrigacaoFazenda.FEDERAL
+                ? SALARIOS_MINIMOS_RPV_FEDERAL
+                : SALARIOS_MINIMOS_RPV_SUBNACIONAL;
+        LocalDate referencia = dataReferencia != null ? dataReferencia : LocalDate.now();
+        return salarioMinimoService.multiplicar(salariosMinimos, referencia);
     }
 }

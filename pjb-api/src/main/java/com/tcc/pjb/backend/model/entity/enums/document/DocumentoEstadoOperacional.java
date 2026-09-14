@@ -11,7 +11,8 @@ public enum DocumentoEstadoOperacional {
     PROTOCOLADO,
     TORNADO_SEM_EFEITO,
     RECLASSIFICADO,
-    SIGILOSO;
+    SIGILOSO,
+    AGUARDANDO_CLASSIFICACAO;
 
     public boolean eEditavel() {
         return this == RASCUNHO || this == SALVO;

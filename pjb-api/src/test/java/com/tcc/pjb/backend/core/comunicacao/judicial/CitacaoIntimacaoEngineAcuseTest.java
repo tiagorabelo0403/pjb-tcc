@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.core.comunicacao.judicial;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -15,8 +16,6 @@ import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
-import com.tcc.pjb.backend.model.repository.UsuarioRepository;
-import com.tcc.pjb.backend.platform.jusos.v2.notificacao.NotificacaoInteligentePJB;
 import com.tcc.pjb.backend.platform.runtime.execution.PjbExecutionOrchestrator;
 import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import java.util.Optional;
@@ -35,23 +34,20 @@ class CitacaoIntimacaoEngineAcuseTest {
         return new CitacaoIntimacaoEngine(
                 expedicaoRepository,
                 processoRepository,
-                mock(UsuarioRepository.class),
                 mock(AuditLedgerService.class),
                 currentUserService,
-                mock(NotificacaoInteligentePJB.class),
                 mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(ObjectProvider.class),
-                mock(MatrizComunicacaoJudicialResolver.class),
                 mock(PjbHsmProperties.class),
                 mock(PjbExecutionOrchestrator.class),
-                movimentacaoRegistrar);
+                movimentacaoRegistrar,
+                mock(CitacaoWebhookNotifierService.class),
+                mock(CitacaoPortalRelayNotificationService.class),
+                mock(CitacaoJudiciaryNotificationService.class),
+                mock(CitacaoPrazoReveliaGatilhoService.class),
+                mock(CitacaoEditalCuradoriaService.class),
+                mock(CitacaoOficialJusticaQrMandadoService.class),
+                mock(CitacaoSefazCadastroEnrichmentService.class),
+                mock(CitacaoMatrizDecisionService.class));
     }
 
     private ExpedicaoJudicial expedicao(Long processoId) {
@@ -77,7 +73,8 @@ class CitacaoIntimacaoEngineAcuseTest {
         engine().processarAcuseRecebimento(new CitacaoIntimacaoEngine.AcuseRecebimentoRequest(
                 exp.getExpedicaoUuid(), "token", "127.0.0.1", "device-1", "govbr-1"));
 
-        verify(movimentacaoRegistrar).registrar(any(Processo.class), eq(cidadao), any(), any());
+        verify(movimentacaoRegistrar).registrar(any(Processo.class), eq(cidadao), isNull(),
+                eq("Ciência da expedição confirmada pelo destinatário (acuse de recebimento)."));
     }
 
     @Test
@@ -103,6 +100,7 @@ class CitacaoIntimacaoEngineAcuseTest {
 
         engine().processarConfirmacaoLeitura(exp.getExpedicaoUuid(), "acuse-hash");
 
-        verify(movimentacaoRegistrar).registrar(any(Processo.class), eq(cidadao), any(), any());
+        verify(movimentacaoRegistrar).registrar(any(Processo.class), eq(cidadao), isNull(),
+                eq("Leitura da expedição confirmada pelo destinatário."));
     }
 }

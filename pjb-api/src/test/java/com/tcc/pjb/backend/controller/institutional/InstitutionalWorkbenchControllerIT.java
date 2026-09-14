@@ -18,8 +18,6 @@ import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDecision;
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -56,20 +54,40 @@ class InstitutionalWorkbenchControllerIT extends PjbIntegrationTestBase {
     @MockitoBean
     private InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService;
 
-    @MockitoBean
-    private CapabilityRateLimiter capabilityRateLimiter;
+
+    private static final String EMAIL_PROCURADOR = "procurador@test.local";
+    private static final String NUMERO_PROCESSO = "INST-WB-2026-01";
 
     private Processo processo;
 
     @BeforeEach
     void setup() {
-        workItemRepository.deleteAll();
-        processoRepository.deleteAll();
-        usuarioRepository.deleteAll();
+        // Antes isto era `workItemRepository.deleteAll(); processoRepository.deleteAll();
+        // usuarioRepository.deleteAll();` — apagava a base inteira. Estourava contra a FK
+        // `fk_device_usuario` (trusted_devices -> tb_usuario), porque os Institutional*GateIT deixam
+        // passkeys para tras, e derrubava os quatro metodos desta classe no @BeforeEach. Medido no
+        // portao de integracao: 4 dos 7 problemas restantes da suite eram este setup.
+        //
+        // Mesmo sem a FK, o wipe global contraria o que PjbIntegrationTestBase documenta: as classes
+        // compartilham um Postgres so, e fixture em tabela compartilhada usa discriminador proprio em
+        // vez de apagar o que e dos outros.
+        //
+        // Escopar funciona porque a fila ja e escopada pelo ator: PainelServiceCommons.inboxHibrido
+        // consulta inboxUsuario primeiro e so cai no fallback por papel se aquela vier vazia. Com o
+        // work item atribuido a este procurador, `totalItems == 1` vale sem base limpa.
+        Usuario procurador = usuarioRepository.findAll().stream()
+                .filter(usuario -> EMAIL_PROCURADOR.equals(usuario.getEmail()))
+                .findFirst()
+                .orElseGet(() -> usuarioRepository.save(novoProcurador()));
 
-        Usuario procurador = usuarioRepository.save(novoProcurador());
+        workItemRepository.deleteAll(workItemRepository.findAll().stream()
+                .filter(item -> item.getAssignedUser() != null
+                        && procurador.getId().equals(item.getAssignedUser().getId()))
+                .toList());
+        processoRepository.findByNumeroProcesso(NUMERO_PROCESSO).ifPresent(processoRepository::delete);
+
         processo = processoRepository.save(Processo.builder()
-                .numeroProcesso("INST-WB-2026-01")
+                .numeroProcesso(NUMERO_PROCESSO)
                 .numeroUnificado("0009001-11.2026.4.05.8100")
                 .tipoJustica(TipoJustica.FEDERAL)
                 .ramoDireito(RamoDireito.CIVIL)
@@ -99,7 +117,6 @@ class InstitutionalWorkbenchControllerIT extends PjbIntegrationTestBase {
                 .comarca("Fortaleza")
                 .build());
 
-        when(capabilityRateLimiter.enforce(any(), any(), any(), any())).thenReturn(new CapabilityRateLimitDecision(true, 100L, 99L, 0L, 60, 1));
         when(institutionalMaterialActionGuardService.analyzeCatalogAction(any(), any())).thenReturn(decisionAllow());
         when(institutionalMaterialActionGuardService.analyzeProcessAction(any(), any())).thenReturn(decisionAllow());
     }
@@ -159,7 +176,7 @@ class InstitutionalWorkbenchControllerIT extends PjbIntegrationTestBase {
     private Usuario novoProcurador() {
         Usuario usuario = new Usuario();
         usuario.setNome("Procurador Federal Teste");
-        usuario.setEmail("procurador@test.local");
+        usuario.setEmail(EMAIL_PROCURADOR);
         usuario.setSenha("x");
         usuario.setCpf("12345678901");
         usuario.setTipoUsuario(TipoUsuario.PROCURADOR);

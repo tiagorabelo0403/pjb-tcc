@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.quality.apisurface;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -29,6 +30,10 @@ class PjbApiRouteGovernanceCoverageTest {
         assertTrue(content.contains("- name: security-device-sensitive"), "application.yml deve declarar policy security-device-sensitive.");
         assertTrue(content.contains("/api/v1/security/devices/**"), "application.yml deve cobrir /api/v1/security/devices/** na governanca de rota.");
         assertTrue(content.contains("- name: process-twin-sensitive"), "application.yml deve declarar policy process-twin-sensitive.");
-        assertTrue(content.contains("/api/v1/processos/**/twin"), "application.yml deve cobrir /api/v1/processos/**/twin na governanca de rota.");
+        assertTrue(content.contains("/api/v1/processos/*/twin"), "application.yml deve cobrir /api/v1/processos/*/twin na governanca de rota.");
+        assertFalse(content.contains("/api/v1/processos/**/twin"),
+                "o padrao do twin deve casar o unico segmento de {processoId} do ProcessTwinController; "
+                        + "** no meio do padrao e ilegal em PathPattern e derruba o boot quando o Spring Security "
+                        + "deixar de resolver por AntPathMatcher.");
     }
 }

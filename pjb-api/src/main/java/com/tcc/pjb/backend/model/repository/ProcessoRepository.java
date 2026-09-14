@@ -19,7 +19,7 @@ import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 
 @Repository
-public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSpecificationExecutor<Processo> {
+public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSpecificationExecutor<Processo>, ProcessoRepositoryCustom {
 
     
     Optional<Processo> findByNumeroProcesso(String numeroProcesso);
@@ -159,12 +159,6 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
     @Query("SELECT DISTINCT u.cpf FROM Processo p JOIN p.usuario u WHERE p.statusProcesso <> 'ARQUIVADO' AND u.cpf IS NOT NULL")
     List<String> findDistinctCpfByStatusNotArquivado();
 
-    
-    @EntityGraph(attributePaths = {"usuario", "jurisdicao"})
-    @Query("SELECT p FROM Processo p LEFT JOIN p.usuario u WHERE (p.parteAutoraCpf = :cpf OR p.parteReuCpf = :cpf OR u.cpf = :cpf)")
-    List<Processo> findAllByPartesCpf(@Param("cpf") String cpf);
-
-    
     @EntityGraph(attributePaths = {"jurisdicao"})
     @Query("""
             SELECT p FROM Processo p

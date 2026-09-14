@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.service.painel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -97,6 +98,9 @@ class PainelNacionalJusticaServiceTest {
 
         service.onProcessoAjuizado(processo);
 
-        verify(auditLedgerService).appendSafely(anyString(), anyString(), anyString(), any(), anyString());
+        verify(auditLedgerService).appendSafely("PAINEL_PROCESSO_AJUIZADO", "Processo", "1",
+                "0001234-56.2026.8.06.0001", "Atualizacao de painel nacional");
+        verify(outboxPublisher).enqueue(anyString(), eq(PainelNacionalJusticaService.EVT_PAINEL_ATUALIZADO),
+                any(), any(), anyString(), eq("Processo"), eq("1"));
     }
 }

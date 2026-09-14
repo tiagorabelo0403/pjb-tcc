@@ -89,7 +89,7 @@ class PjbInstitutionalNavigationRouteHardeningTest {
 
     @Test
     void routeRegistryMustEncodeQueryParametersForInstitutionalNavigation() {
-        String routes = ApiSurfaceTestSupport.read(Path.of("src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/InstitutionalApiRoutes.java"));
+        String routes = ApiSurfaceTestSupport.read(Path.of("src/main/java/com/tcc/pjb/backend/platform/api/institucional/InstitutionalApiRoutes.java"));
         assertTrue(routes.contains("URLEncoder.encode(value, StandardCharsets.UTF_8)"));
     }
 }

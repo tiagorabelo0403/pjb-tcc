@@ -55,6 +55,46 @@ class PjbOperationalAdmissionServiceTest {
         assertThat(decision.code()).isEqualTo("SCHEDULER_TRENDING_UP");
     }
 
+    /**
+     * A protecao de aquecimento nao tinha teste nenhum. Ela existe, dispara em producao e disparava
+     * nas ITs — de forma nao deterministica, porque a janela e de 20s contados do bean de pressao e
+     * o boot do contexto Spring as vezes demora mais que isso. Foi ela, e nao as causas registradas
+     * nas dividas, que produziu as tres falhas de assercao da suite de integracao (run 34774950817).
+     * Com `reject-during-warmup: false` no perfil de IT, a verificacao passa a viver aqui, onde e
+     * deterministica.
+     */
+    @Test
+    void shouldSoftRejectExpensiveRouteWhileWarmingUp() {
+        when(pressureService.snapshot()).thenReturn(snapshot(true, 10, false, false, false, false));
+
+        PjbOperationalAdmissionService.Decision decision = service.evaluate("GET", "/api/v1/juiz/painel");
+
+        assertThat(decision.allowed()).isFalse();
+        assertThat(decision.hardRejection())
+                .as("aquecimento e transitorio: rejeicao suave, para o cliente poder repetir")
+                .isFalse();
+        assertThat(decision.code()).isEqualTo("RUNTIME_WARMING_UP");
+    }
+
+    @Test
+    void shouldNotRejectWhileWarmingUpWhenProtectionIsDisabled() {
+        properties.setRejectDuringWarmup(false);
+        when(pressureService.snapshot()).thenReturn(snapshot(true, 10, false, false, false, false));
+        // Com a protecao ligada a avaliacao para antes destes dois; desligada, ela segue adiante e
+        // consulta os dois servicos com warmingUp=true, que o setUp so estuba para false.
+        when(livePressureService.snapshot(true))
+                .thenReturn(new PjbLivePressureService.Snapshot(0L, 0L, 0L, true, false, false, false, false, List.of("secretariat"), null));
+        when(kafkaPressureService.snapshot(true))
+                .thenReturn(new PjbKafkaPressureService.Snapshot(true, "", 1.0d, 0.0d, 0.0d, 0.0d, false, false));
+
+        PjbOperationalAdmissionService.Decision decision = service.evaluate("GET", "/api/v1/juiz/painel");
+
+        assertThat(decision.allowed())
+                .as("e esta chave que o perfil de integracao desliga; se ela deixar de desligar, as "
+                        + "ITs voltam a levar 429 por sorteio e ninguem vai saber por que")
+                .isTrue();
+    }
+
     @Test
     void shouldBrownoutStreamWhenMemoryRunaway() {
         when(pressureService.snapshot()).thenReturn(snapshot(false, 64, false, false, false, true));

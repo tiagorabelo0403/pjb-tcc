@@ -97,18 +97,10 @@ class DelegadoPainelServiceInstitucionalTest {
             routingService,
             mock(InstitutionalPanelBrandingService.class),
             mock(InqueritoMultimidiaWorkspaceService.class),
-            mock(PoliceInvestigationSystemLandscapeService.class),
-            mock(PjbPoliceNativeToolbeltService.class),
-            mock(PoliceTransactionalAdapterMeshService.class),
-            mock(PoliceSovereignOperationalWorkbenchService.class),
-            mock(PjbPoliceNativeExecutionService.class),
-            mock(PoliceTraceableExecutionLedgerService.class),
+            mock(DelegadoInvestigativeWorkbenchOrchestrator.class),
             mock(QualifiedDocumentSignatureEnvelopeService.class),
             mock(PainelSharedExperienceService.class),
-            mock(PainelSignalReflectionService.class),
-            mock(PainelNativeCollectionCompositionService.class),
-            mock(PainelActionSurfaceCompositionService.class),
-            mock(PainelExecutionSurfaceCompositionService.class),
+            mock(com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService.class),
             materialGuard
     );
 

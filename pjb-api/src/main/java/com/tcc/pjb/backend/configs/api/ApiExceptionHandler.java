@@ -36,6 +36,7 @@ import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitExceed
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalConstraintViolationException;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalRevisionConflictException;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalTransitionRejectedException;
+import com.tcc.pjb.backend.service.api.oauth.MarketplaceOAuthException;
 import com.tcc.pjb.backend.service.exception.ErroDeTetoException;
 import com.tcc.pjb.backend.service.exception.ErroTerritorialException;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
@@ -113,6 +114,13 @@ public class ApiExceptionHandler {
     }
 
 
+    @ExceptionHandler(com.tcc.pjb.backend.ai.common.AiProviderException.class)
+    public ResponseEntity<ProblemDetail> handleAiProvider(
+            com.tcc.pjb.backend.ai.common.AiProviderException ex, HttpServletRequest request) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, "ai-provider-unavailable",
+                "Servico de inteligencia artificial indisponivel. Nenhum conteudo foi gerado.", request, null);
+    }
+
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<ProblemDetail> handleSecurity(SecurityException ex, HttpServletRequest request) {
         return build(HttpStatus.FORBIDDEN, "forbidden", "Acesso negado.", request, null);
@@ -138,6 +146,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(AccessDeniedPjbException.class)
     public ResponseEntity<ProblemDetail> handleAccessDenied(AccessDeniedPjbException ex, HttpServletRequest request) {
         return build(HttpStatus.FORBIDDEN, "forbidden", "Acesso negado.", request, null);
+    }
+
+    @ExceptionHandler(MarketplaceOAuthException.class)
+    public ResponseEntity<ProblemDetail> handleMarketplaceOAuth(MarketplaceOAuthException ex, HttpServletRequest request) {
+        String code = ex.getStatus() == HttpStatus.FORBIDDEN ? "insufficient_scope" : "invalid_token";
+        return build(ex.getStatus(), code, ex.getMessage(), request, null);
     }
 
     @ExceptionHandler(AcessoForaDeEscopoException.class)
@@ -189,8 +203,20 @@ public class ApiExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "constraint_violation", "Dados inválidos.", request, calculoFrontendExtra(request, null));
     }
 
-    @ExceptionHandler({java.util.NoSuchElementException.class, RecursoNaoEncontradoException.class})
+    /**
+     * {@code EntityNotFoundException} entra aqui porque é assim que o projeto diz "não encontrei" na
+     * camada de serviço: são 34 lançamentos em 16 classes, todos vindos de {@code orElseThrow} sobre
+     * uma busca por id. Sem este mapeamento todos caíam no catch-all e respondiam 500 — recurso
+     * inexistente virava erro interno, e o cliente não tinha como distinguir um do outro.
+     */
+    @ExceptionHandler({java.util.NoSuchElementException.class, RecursoNaoEncontradoException.class,
+            jakarta.persistence.EntityNotFoundException.class})
     public ResponseEntity<ProblemDetail> handleNotFound(Exception ex, HttpServletRequest request) {
+        // Antes deste mapeamento, EntityNotFoundException caia no catch-all, que registra log.error com
+        // pilha. Sair de ERROR e correto — 404 nao e incidente —, mas sair para o silencio nao seria:
+        // ha causa de "nao encontrado" que e problema real de integridade (proxy lazy sobre linha
+        // ausente). Em DEBUG a pista continua existindo sem poluir o log de producao.
+        log.debug("Recurso nao encontrado em {}: {}", request.getRequestURI(), ex.getClass().getName(), ex);
         return build(HttpStatus.NOT_FOUND, "not_found", "Recurso não encontrado.", request, null);
     }
 

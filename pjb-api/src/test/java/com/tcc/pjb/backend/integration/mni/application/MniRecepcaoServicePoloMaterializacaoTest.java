@@ -22,6 +22,7 @@ import com.tcc.pjb.backend.model.entity.enums.TipoParte;
 import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.repository.MniRecepcaoRepository;
+import com.tcc.pjb.backend.model.repository.MovimentacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.util.List;
@@ -51,13 +52,13 @@ class MniRecepcaoServicePoloMaterializacaoTest {
         when(recepcaoRepository.findByMniPayloadHash(any())).thenReturn(Optional.empty());
         when(adapter.fromXml(any(), any(), any())).thenReturn(new MniAdapterResult(processo, List.of(
                 new MniParteParsed("AT", "Maria Reclamante", null, null, null),
-                new MniParteParsed("PA", "Empresa Reclamada Ltda", null, null, null))));
+                new MniParteParsed("PA", "Empresa Reclamada Ltda", null, null, null)), List.of(), List.of()));
         when(processoRepository.save(processo)).thenReturn(processo);
         when(recepcaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
                 new PoloCompositionPolicy(), poloProcessualApplicationService, new DocumentoNacionalValidator(),
-                comarcaResolutionServiceVazio());
+                comarcaResolutionServiceVazio(), mock(MovimentacaoProcessualRepository.class), mock(MniDocumentoIngestaoService.class));
 
         service.receberAutos(new MniRecepcaoCommand("TJCE", "CARTA_PRECATORIA", "<mni/>"));
 
@@ -97,13 +98,13 @@ class MniRecepcaoServicePoloMaterializacaoTest {
                 new MniParteParsed("PA", "Empresa Beta SA", "44444444000100", null, null));
 
         when(recepcaoRepository.findByMniPayloadHash(any())).thenReturn(Optional.empty());
-        when(adapter.fromXml(any(), any(), any())).thenReturn(new MniAdapterResult(processo, partesMni));
+        when(adapter.fromXml(any(), any(), any())).thenReturn(new MniAdapterResult(processo, partesMni, List.of(), List.of()));
         when(processoRepository.save(processo)).thenReturn(processo);
         when(recepcaoRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         MniRecepcaoService service = new MniRecepcaoService(processoRepository, recepcaoRepository, adapter, rawPolicy, auditLedger,
                 new PoloCompositionPolicy(), poloProcessualApplicationService, new DocumentoNacionalValidator(),
-                comarcaResolutionServiceVazio());
+                comarcaResolutionServiceVazio(), mock(MovimentacaoProcessualRepository.class), mock(MniDocumentoIngestaoService.class));
 
         service.receberAutos(new MniRecepcaoCommand("TJCE", "CARTA_PRECATORIA", "<mni/>"));
 

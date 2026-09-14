@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.OrigemAutenticacaoSessao;
 import com.tcc.pjb.backend.model.entity.security.TrustedDevice;
 import com.tcc.pjb.backend.model.entity.security.UserSecurityProfile;
 import com.tcc.pjb.backend.model.entity.security.WebAuthnSession;
@@ -228,7 +229,7 @@ public class WebAuthnService {
                 deviceId = d.getId();
             }
 
-            var issued = passkeySessionService.issue(u, deviceId, ip);
+            var issued = passkeySessionService.issue(u, deviceId, ip, OrigemAutenticacaoSessao.PASSKEY);
 
             UserSecurityProfile p = profileRepo.findByUserId(u.getId()).orElse(null);
             if (p == null) {

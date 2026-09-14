@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.modules.laiane.service;
 
 import com.tcc.pjb.backend.modules.laiane.dto.roles.judge.JudicialDecisionTemplateCode;
+import com.tcc.pjb.backend.modules.laiane.dto.roles.judge.LaianeAdvisoryMode;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.judge.LaianeJudicialDecisionAdvisoryResponse;
 import com.tcc.pjb.backend.modules.laiane.dto.roles.judge.LaianeSentencaDraftRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -65,16 +66,18 @@ public class LaianeJudicialDecisionAdvisoryService {
         metadata.put("templateFamily", "NEGOCIAL_HOMOLOGATORIA");
         metadata.put("cpcAnchorPrimary", "ART_487_III_B");
         metadata.put("publicationLocked", true);
+        List<String> pendenciasFinal = List.copyOf(pendencias);
+        LaianeAdvisoryMode mode = resolveMode(pendenciasFinal);
         return new LaianeJudicialDecisionAdvisoryResponse(
                 JudicialDecisionTemplateCode.HOMOLOGACAO_ACORDO,
-                "ADVISORY_DRAFT_ONLY",
+                mode,
                 true,
                 true,
                 "Caso com sinal forte de transação judicial, apto a minuta assistida de homologação com resolução de mérito, preservada a revisão integral do magistrado.",
                 List.of("CPC art. 487, III, b", "CPC art. 489"),
                 List.copyOf(checklist),
-                List.copyOf(pendencias),
-                "Homologo, por sentença, a transação celebrada pelas partes, com resolução de mérito, nos termos do art. 487, III, b, do CPC, observadas as cláusulas e consequências jurídicas expressamente registradas neste feito.",
+                pendenciasFinal,
+                mode == LaianeAdvisoryMode.RESTRITIVO ? null : "Homologo, por sentença, a transação celebrada pelas partes, com resolução de mérito, nos termos do art. 487, III, b, do CPC, observadas as cláusulas e consequências jurídicas expressamente registradas neste feito.",
                 Map.copyOf(fillables),
                 Map.copyOf(metadata)
         );
@@ -100,16 +103,18 @@ public class LaianeJudicialDecisionAdvisoryService {
         metadata.put("templateFamily", "EXTINTIVA_SEM_MERITO");
         metadata.put("cpcAnchorPrimary", "ART_485_VIII");
         metadata.put("publicationLocked", true);
+        List<String> pendenciasFinal = List.copyOf(pendencias);
+        LaianeAdvisoryMode mode = resolveMode(pendenciasFinal);
         return new LaianeJudicialDecisionAdvisoryResponse(
                 JudicialDecisionTemplateCode.HOMOLOGACAO_DESISTENCIA_EXTINCAO_SEM_MERITO,
-                "ADVISORY_DRAFT_ONLY",
+                mode,
                 true,
                 true,
                 "Caso com sinal forte de desistência da ação, apto a minuta assistida de homologação e extinção sem resolução de mérito, preservada a validação judicial integral.",
                 List.of("CPC art. 485, VIII", "CPC art. 485, §§ 4º e 5º", "CPC art. 489"),
                 List.copyOf(checklist),
-                List.copyOf(pendencias),
-                "Homologo a desistência da ação e extingo o processo sem resolução do mérito, nos termos do art. 485, VIII, do CPC, ressalvadas as condições processuais incidentes ao estágio em que o feito se encontra.",
+                pendenciasFinal,
+                mode == LaianeAdvisoryMode.RESTRITIVO ? null : "Homologo a desistência da ação e extingo o processo sem resolução do mérito, nos termos do art. 485, VIII, do CPC, ressalvadas as condições processuais incidentes ao estágio em que o feito se encontra.",
                 Map.copyOf(fillables),
                 Map.copyOf(metadata)
         );
@@ -136,16 +141,18 @@ public class LaianeJudicialDecisionAdvisoryService {
         metadata.put("templateFamily", "URGENTE_PROTETIVA_MARIA_DA_PENHA");
         metadata.put("cpcAnchorPrimary", "PROTECAO_URGENTE");
         metadata.put("publicationLocked", true);
+        List<String> pendenciasFinal = List.copyOf(pendencias);
+        LaianeAdvisoryMode mode = resolveMode(pendenciasFinal);
         return new LaianeJudicialDecisionAdvisoryResponse(
                 JudicialDecisionTemplateCode.MEDIDA_PROTETIVA_URGENTE_MARIA_DA_PENHA,
-                "ADVISORY_DRAFT_ONLY",
+                mode,
                 true,
                 true,
                 "Caso com forte sinal de violência doméstica e necessidade de medida protetiva urgente, apto a minuta assistida estritamente sob revisão integral da autoridade judicial competente.",
                 List.of("Lei 11.340/2006, arts. 18, 19, 22 e 23", "Lei 14.550/2023", "Lei 14.857/2024"),
                 List.copyOf(checklist),
-                List.copyOf(pendencias),
-                "Defiro, em cognição sumária e sem prejuízo de ulterior reavaliação, as medidas protetivas estritamente adequadas ao quadro de risco delineado nos autos, resguardada a identidade da ofendida e fixadas as providências executivas de imediato cumprimento.",
+                pendenciasFinal,
+                mode == LaianeAdvisoryMode.RESTRITIVO ? null : "Defiro, em cognição sumária e sem prejuízo de ulterior reavaliação, as medidas protetivas estritamente adequadas ao quadro de risco delineado nos autos, resguardada a identidade da ofendida e fixadas as providências executivas de imediato cumprimento.",
                 Map.copyOf(fillables),
                 Map.copyOf(metadata)
         );
@@ -172,16 +179,18 @@ public class LaianeJudicialDecisionAdvisoryService {
         metadata.put("templateFamily", "URGENTE_SAUDE_UTI");
         metadata.put("cpcAnchorPrimary", "ART_300");
         metadata.put("publicationLocked", true);
+        List<String> pendenciasFinal = List.copyOf(pendencias);
+        LaianeAdvisoryMode mode = resolveMode(pendenciasFinal);
         return new LaianeJudicialDecisionAdvisoryResponse(
                 JudicialDecisionTemplateCode.TUTELA_URGENTE_LEITO_UTI,
-                "ADVISORY_DRAFT_ONLY",
+                mode,
                 true,
                 true,
                 "Caso com sinal de necessidade urgente de leito intensivo, apto a minuta assistida de tutela de urgência, preservada a cognição judicial plena e a validação humana integral.",
                 List.of("CF art. 196", "Lei 8.080/1990, arts. 2º e 7º", "CPC arts. 300, 497 e 536", "CNJ Resolução 238/2016", "CNJ Provimento 84/2019"),
                 List.copyOf(checklist),
-                List.copyOf(pendencias),
-                "Defiro, em tutela de urgência e sem prejuízo de ulterior reavaliação, as providências necessárias à viabilização de leito intensivo ou suporte clínico equivalente, em prazo compatível com o risco concreto delineado nos autos.",
+                pendenciasFinal,
+                mode == LaianeAdvisoryMode.RESTRITIVO ? null : "Defiro, em tutela de urgência e sem prejuízo de ulterior reavaliação, as providências necessárias à viabilização de leito intensivo ou suporte clínico equivalente, em prazo compatível com o risco concreto delineado nos autos.",
                 Map.copyOf(fillables),
                 Map.copyOf(metadata)
         );
@@ -202,16 +211,17 @@ public class LaianeJudicialDecisionAdvisoryService {
         metadata.put("templateFamily", "URGENTE_SAUDE");
         metadata.put("cpcAnchorPrimary", "ART_300");
         metadata.put("publicationLocked", true);
+        LaianeAdvisoryMode mode = resolveMode(List.of());
         return new LaianeJudicialDecisionAdvisoryResponse(
                 JudicialDecisionTemplateCode.TUTELA_URGENTE_SAUDE,
-                "ADVISORY_DRAFT_ONLY",
+                mode,
                 true,
                 true,
                 "Caso com sinal de urgência em saúde, apto a minuta assistida de tutela provisória estritamente sujeita à revisão judicial integral.",
                 List.of("CF art. 196", "Lei 8.080/1990, arts. 2º e 7º", "CPC arts. 300, 497 e 536"),
                 List.copyOf(checklist),
                 List.of(),
-                "Defiro, em tutela de urgência e na estrita extensão do quadro clínico demonstrado, as providências necessárias para assegurar o acesso tempestivo ao tratamento ou procedimento indicado nos autos.",
+                mode == LaianeAdvisoryMode.RESTRITIVO ? null : "Defiro, em tutela de urgência e na estrita extensão do quadro clínico demonstrado, as providências necessárias para assegurar o acesso tempestivo ao tratamento ou procedimento indicado nos autos.",
                 Map.copyOf(fillables),
                 Map.copyOf(metadata)
         );
@@ -231,16 +241,17 @@ public class LaianeJudicialDecisionAdvisoryService {
         metadata.put("templateFamily", "HOMOLOGATORIA_COM_MERITO");
         metadata.put("cpcAnchorPrimary", "ART_487_III_A");
         metadata.put("publicationLocked", true);
+        LaianeAdvisoryMode mode = resolveMode(List.of());
         return new LaianeJudicialDecisionAdvisoryResponse(
                 JudicialDecisionTemplateCode.RECONHECIMENTO_PROCEDENCIA_HOMOLOGADO,
-                "ADVISORY_DRAFT_ONLY",
+                mode,
                 true,
                 true,
                 "Caso com sinal de reconhecimento da procedência, apto a minuta assistida homologatória com resolução de mérito, sempre sob revisão judicial plena.",
                 List.of("CPC art. 487, III, a", "CPC art. 489"),
                 List.copyOf(checklist),
                 List.of(),
-                "Homologo o reconhecimento da procedência do pedido, com resolução de mérito, nos termos do art. 487, III, a, do CPC, fixando os efeitos concretos conforme a extensão material reconhecida nos autos.",
+                mode == LaianeAdvisoryMode.RESTRITIVO ? null : "Homologo o reconhecimento da procedência do pedido, com resolução de mérito, nos termos do art. 487, III, a, do CPC, fixando os efeitos concretos conforme a extensão material reconhecida nos autos.",
                 Map.copyOf(fillables),
                 Map.copyOf(metadata)
         );
@@ -254,7 +265,7 @@ public class LaianeJudicialDecisionAdvisoryService {
         metadata.put("publicationLocked", true);
         return new LaianeJudicialDecisionAdvisoryResponse(
                 JudicialDecisionTemplateCode.ASSISTENCIA_DECISORIA_GENERICA,
-                "ADVISORY_DRAFT_ONLY",
+                LaianeAdvisoryMode.BLOQUEADOR,
                 true,
                 true,
                 "Caso sem enquadramento terminal padronizado imediato; a assistência permanece estruturante e não substitui a fundamentação individualizada do magistrado.",
@@ -269,6 +280,15 @@ public class LaianeJudicialDecisionAdvisoryService {
                 Map.of(),
                 Map.copyOf(metadata)
         );
+    }
+
+    /**
+     * SUGESTIVO/RESTRITIVO só se aplicam a um padrão de caso já reconhecido (chamado pelos seis
+     * métodos de template); BLOQUEADOR é reservado ao caso sem padrão ({@link #generica}), atribuído
+     * diretamente lá, nunca por esta função.
+     */
+    private LaianeAdvisoryMode resolveMode(List<String> pendencias) {
+        return pendencias.isEmpty() ? LaianeAdvisoryMode.SUGESTIVO : LaianeAdvisoryMode.RESTRITIVO;
     }
 
     private LinkedHashMap<String, Object> baseMetadata(Processo processo, LaianeSentencaDraftRequest req, String corpus) {

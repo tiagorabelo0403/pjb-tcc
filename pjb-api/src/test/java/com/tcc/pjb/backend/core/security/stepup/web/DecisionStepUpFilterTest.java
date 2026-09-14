@@ -19,10 +19,15 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletResponse;
 
+/**
+ * F5 (plano de melhoria v3): HttpServletResponse/FilterChain viram MockHttpServletResponse (fake
+ * real do Spring) e lambda com flag em vez de mock -- ver MagistraturaGeofenceFilterTest para a
+ * justificativa completa.
+ */
 class DecisionStepUpFilterTest {
 
     private final DecisionStepUpTokenService tokenService = mock(DecisionStepUpTokenService.class);
@@ -38,14 +43,15 @@ class DecisionStepUpFilterTest {
                 .when(passkeyRequirementEnforcer).exigirParaMagistratura(anyLong(), eq(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO));
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getRequestURI()).thenReturn("/api/v1/security/webauthn/enroll/options");
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        FilterChain chain = mock(FilterChain.class);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (req, resp) -> chainCalled.set(true);
 
         filter.doFilter(request, response, chain);
 
-        verify(chain).doFilter(request, response);
+        assertThat(chainCalled.get()).isTrue();
+        assertThat(response.getStatus()).isEqualTo(200);
         verify(passkeyRequirementEnforcer, never()).exigirParaMagistratura(anyLong(), eq(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO));
-        verify(response, never()).setStatus(HttpServletResponse.SC_FORBIDDEN);
     }
 
     @Test
@@ -53,12 +59,14 @@ class DecisionStepUpFilterTest {
         when(currentUserService.getOrNull()).thenReturn(usuario(TipoUsuario.DEFENSOR_PUBLICO));
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getRequestURI()).thenReturn("/api/v1/security/webauthn/enroll/finish");
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        FilterChain chain = mock(FilterChain.class);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (req, resp) -> chainCalled.set(true);
 
         filter.doFilter(request, response, chain);
 
-        verify(chain).doFilter(request, response);
+        assertThat(chainCalled.get()).isTrue();
+        assertThat(response.getStatus()).isEqualTo(200);
         verify(passkeyRequirementEnforcer, never()).exigirParaMagistratura(anyLong(), eq(TipoUsuario.DEFENSOR_PUBLICO));
     }
 
@@ -69,16 +77,15 @@ class DecisionStepUpFilterTest {
                 .when(passkeyRequirementEnforcer).exigirParaMagistratura(anyLong(), eq(TipoUsuario.MEMBRO_MINISTERIO_PUBLICO));
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getRequestURI()).thenReturn("/api/v1/recursal/processos/7/recurso");
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        StringWriter sw = new StringWriter();
-        when(response.getWriter()).thenReturn(new PrintWriter(sw));
-        FilterChain chain = mock(FilterChain.class);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (req, resp) -> chainCalled.set(true);
 
         filter.doFilter(request, response, chain);
 
-        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
-        assertThat(sw.toString()).contains("PJB_PASSKEY_REQUIRED");
-        verify(chain, never()).doFilter(request, response);
+        assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_FORBIDDEN);
+        assertThat(response.getContentAsString()).contains("PJB_PASSKEY_REQUIRED");
+        assertThat(chainCalled.get()).isFalse();
     }
 
     @Test
@@ -87,12 +94,14 @@ class DecisionStepUpFilterTest {
         doNothing().when(passkeyRequirementEnforcer).exigirParaMagistratura(anyLong(), eq(TipoUsuario.JUIZ));
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getRequestURI()).thenReturn("/api/v1/security/webauthn/enroll/options");
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        FilterChain chain = mock(FilterChain.class);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicBoolean chainCalled = new AtomicBoolean(false);
+        FilterChain chain = (req, resp) -> chainCalled.set(true);
 
         filter.doFilter(request, response, chain);
 
-        verify(chain).doFilter(request, response);
+        assertThat(chainCalled.get()).isTrue();
+        assertThat(response.getStatus()).isEqualTo(200);
         verify(passkeyRequirementEnforcer, never()).exigirParaMagistratura(anyLong(), eq(TipoUsuario.JUIZ));
     }
 

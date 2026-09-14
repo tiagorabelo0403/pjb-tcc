@@ -4,9 +4,11 @@ import json
 from collections import Counter, defaultdict
 from pathlib import Path
 
-BASE = Path('pjb-api/src/main/java/com/tcc/pjb/backend')
-REPORT_JSON = Path('docs/reports/architecture_hygiene_guard.json')
-REPORT_MD = Path('docs/reports/architecture_hygiene_guard.md')
+from project_roots import ROOT
+
+BASE = ROOT / 'pjb-api/src/main/java/com/tcc/pjb/backend'
+REPORT_JSON = ROOT / 'docs/reports/architecture_hygiene_guard.json'
+REPORT_MD = ROOT / 'docs/reports/architecture_hygiene_guard.md'
 
 CLASS_HOTSPOT_THRESHOLD = 1000
 SERVICE_HOTSPOT_THRESHOLD = 900
@@ -52,7 +54,7 @@ def main() -> None:
         lines = read_lines(path)
         kind = classify(path)
         entry = {
-            'path': str(path),
+            'path': path.relative_to(ROOT).as_posix(),
             'lines': lines,
             'kind': kind,
             'package': package_name(path),
@@ -99,7 +101,7 @@ def main() -> None:
         recommended_actions.insert(1, 'Eliminar superfícies HTTP remanescentes em `api` e concentrar controllers em `controller`.')
 
     report = {
-        'base': str(BASE),
+        'base': BASE.relative_to(ROOT).as_posix(),
         'totals': {
             'javaFiles': len(java_files),
             'rootPackages': len(root_counts),
@@ -132,7 +134,7 @@ def main() -> None:
     lines = [
         '# Architecture Hygiene Guard',
         '',
-        f"- Base analisada: `{BASE}`",
+        f"- Base analisada: `{BASE.relative_to(ROOT).as_posix()}`",
         f"- Arquivos Java: **{report['totals']['javaFiles']}**",
         f"- Raízes de pacote: **{report['totals']['rootPackages']}**",
         f"- Classes acima de {CLASS_HOTSPOT_THRESHOLD} linhas: **{report['totals']['oversizedClasses']}**",

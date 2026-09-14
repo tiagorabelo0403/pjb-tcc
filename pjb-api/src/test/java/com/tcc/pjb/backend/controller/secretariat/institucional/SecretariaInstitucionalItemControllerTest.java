@@ -13,10 +13,10 @@ import com.tcc.pjb.backend.configs.EquipeSwitchInterceptor;
 import com.tcc.pjb.backend.configs.SecurityConfig;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.dto.secretariat.SecretariaInstitucionalFilaResponse;
-import com.tcc.pjb.backend.model.entity.SecretariaInstitucionalItem;
+import com.tcc.pjb.backend.model.dto.secretariat.SecretariaInstitucionalItemResponse;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.StatusSecretariaInstitucionalItem;
-import com.tcc.pjb.backend.model.repository.SecretariaInstitucionalItemRepository;
+import com.tcc.pjb.backend.service.secretariat.institucional.SecretariaInstitucionalTriagemService;
 import com.tcc.pjb.backend.modules.support.WebMvcTestSecurityConfig;
 import com.tcc.pjb.backend.service.secretariat.institucional.SecretariaInstitucionalFilaService;
 import com.tcc.pjb.backend.service.secretariat.institucional.TomarCienciaService;
@@ -54,7 +54,7 @@ class SecretariaInstitucionalItemControllerTest {
     private CurrentUserService currentUserService;
 
     @MockitoBean
-    private SecretariaInstitucionalItemRepository itemRepository;
+    private SecretariaInstitucionalTriagemService triagemService;
 
     @Test
     @WithMockUser(authorities = "ROLE_SERVIDOR_FORUM")
@@ -150,15 +150,15 @@ class SecretariaInstitucionalItemControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_ADMINISTRADOR")
     void administradorConsultaItensSemUnidadeResolvidaERecebeOk() throws Exception {
-        SecretariaInstitucionalItem item = new SecretariaInstitucionalItem();
-        item.setProcessoId(20L);
-        item.setStatus(StatusSecretariaInstitucionalItem.SEM_UNIDADE_RESOLVIDA);
-        when(itemRepository.findByStatus(StatusSecretariaInstitucionalItem.SEM_UNIDADE_RESOLVIDA))
-                .thenReturn(List.of(item));
+        SecretariaInstitucionalItemResponse item = new SecretariaInstitucionalItemResponse(
+                7L, 20L, null, null, null, StatusSecretariaInstitucionalItem.SEM_UNIDADE_RESOLVIDA,
+                null, false, null, null, null, null);
+        when(triagemService.itensSemUnidadeResolvida()).thenReturn(List.of(item));
 
         mockMvc.perform(get("/api/v1/secretaria-institucional/sem-unidade-resolvida"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].processoId").value(20));
+                .andExpect(jsonPath("$[0].processoId").value(20))
+                .andExpect(jsonPath("$[0].status").value("SEM_UNIDADE_RESOLVIDA"));
     }
 
     @Test
@@ -167,6 +167,6 @@ class SecretariaInstitucionalItemControllerTest {
         mockMvc.perform(get("/api/v1/secretaria-institucional/sem-unidade-resolvida"))
                 .andExpect(status().isForbidden());
 
-        verify(itemRepository, never()).findByStatus(any());
+        verify(triagemService, never()).itensSemUnidadeResolvida();
     }
 }

@@ -1,2 +1,3 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
-  com.tcc.pjb.backend.core.guard.MockGuardEnvironmentValidator
+  com.tcc.pjb.backend.core.guard.MockGuardEnvironmentValidator,\
+  com.tcc.pjb.backend.core.guard.ProductionCriticalControlValidator

@@ -2,9 +2,11 @@ package com.tcc.pjb.backend.service.semantic;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
+@ConditionalOnProperty(prefix = "pjb.ai.embedding", name = "mode", havingValue = "hash", matchIfMissing = true)
 public class DeterministicHashEmbeddingService implements EmbeddingService {
 
     private static final int DIM = 2048;

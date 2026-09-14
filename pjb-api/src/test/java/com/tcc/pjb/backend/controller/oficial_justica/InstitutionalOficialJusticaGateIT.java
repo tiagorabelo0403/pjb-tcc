@@ -83,7 +83,7 @@ class InstitutionalOficialJusticaGateIT extends PjbIntegrationTestBase {
                 .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou oficial legitimo)")
                 .isNotIn(401, 403);
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation"))
-                .as("Gate rodou depois da auth e classificou a operacao de oficio")
+                .as("Gate rodou depois da auth e classificou a operacao de oficio (status HTTP recebido: %s)", response.getStatus())
                 .isEqualTo("OFICIAL_OFICIO");
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Allowed"))
                 .as("Gate resolveu o oficial JWT via banco e liberou")

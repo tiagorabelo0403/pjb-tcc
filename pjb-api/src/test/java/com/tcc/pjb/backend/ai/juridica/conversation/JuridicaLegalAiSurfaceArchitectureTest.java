@@ -65,9 +65,9 @@ class JuridicaLegalAiSurfaceArchitectureTest {
         Path resourceRoot = PjbTestPaths.pjbApiTestResourcesRoot().resolve("pacts/provider");
         Path configRoot = PjbTestPaths.pjbApiMainResourcesRoot().resolve("application.yml");
         assertTrue(Files.exists(testRoot.resolve("contracts/provider/LegalAiControllerProviderContractTest.java")));
-        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiControllerIT.java")));
-        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiConversationControllerIT.java")));
-        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiKnowledgeControllerIT.java")));
+        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiControllerTest.java")));
+        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiConversationControllerTest.java")));
+        assertTrue(Files.exists(testRoot.resolve("ai/juridica/api/LegalAiKnowledgeControllerTest.java")));
         assertTrue(Files.exists(resourceRoot.resolve("PjbLegalAiConsumer-PjbLegalAiProvider.json")));
         Path scriptsRoot = PjbTestPaths.projectRoot().resolve("scripts/legal_ai_surface_split_guard.py");
         assertTrue(Files.exists(scriptsRoot));

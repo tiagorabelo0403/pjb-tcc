@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.text.Normalizer;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,6 +73,29 @@ public class NationalRulePackEngine {
                 return Set.of("TRUE", "SIM", "YES", "Y", "1", "VERDADEIRO").contains(token);
             }
             return false;
+        }
+
+        /**
+         * Data que rege um limiar legal expresso em salários mínimos. Devolve {@code null} quando o
+         * chamador não informou: para competência por valor da causa, calcular contra o salário mínimo
+         * de hoje daria resposta diferente conforme o dia em que o processo for analisado.
+         */
+        public LocalDate extraAsLocalDate(String key) {
+            Object value = extras.get(key);
+            if (value instanceof LocalDate data) {
+                return data;
+            }
+            if (value instanceof LocalDateTime dataHora) {
+                return dataHora.toLocalDate();
+            }
+            if (value instanceof String s && !s.isBlank()) {
+                try {
+                    return LocalDate.parse(s.trim());
+                } catch (DateTimeParseException ignored) {
+                    return null;
+                }
+            }
+            return null;
         }
 
         public BigDecimal extraAsBigDecimal(String key) {
@@ -414,8 +439,30 @@ public class NationalRulePackEngine {
         RamoDireito ramo = ctx.ramo();
         BigDecimal valorCausa = ctx.extraAsBigDecimal("valorCausa");
 
-        if (ramo == RamoDireito.CIVIL || ramo == RamoDireito.CONSUMIDOR) {
-            if (valorCausa != null && valorCausa.compareTo(salarioMinimoNacionalService.multiplicar(new BigDecimal("40"), LocalDate.now())) <= 0) {
+        // A competencia por valor da causa se afere contra o salario minimo vigente no marco do
+        // processo, nao contra o de hoje: com LocalDate.now() o mesmo processo mudava de resposta
+        // conforme o dia em que fosse analisado, e virava outra na virada do ano.
+        LocalDate dataReferencia = ctx.extraAsLocalDate("dataReferencia");
+
+        // Sem a data do dominio o limiar nao pode ser calculado -- mas calar seria pior. Quem recebeu
+        // valorCausa e esperava o alerta de competencia precisa saber que ele NAO foi avaliado, e por
+        // que; do contrario a ausencia se confunde com "o valor nao cabe no rito", que e o oposto.
+        boolean avaliaCompetenciaPorValor =
+                ramo == RamoDireito.CIVIL || ramo == RamoDireito.CONSUMIDOR || ramo == RamoDireito.PREVIDENCIARIO;
+        if (dataReferencia == null && valorCausa != null && avaliaCompetenciaPorValor) {
+            regras.add(new RegraAlerta(
+                    "COMPETENCIA_POR_VALOR_NAO_AVALIADA",
+                    "Competência por valor da causa não avaliada",
+                    ramo,
+                    "Limiar em salários mínimos não pôde ser calculado: falta a data de referência do "
+                            + "processo (extra \"dataReferencia\"). O valor da causa foi informado, mas a "
+                            + "ausência de alerta de Juizado NÃO significa que o valor excede o limite.",
+                    "WARN"
+            ));
+        }
+
+        if (dataReferencia != null && (ramo == RamoDireito.CIVIL || ramo == RamoDireito.CONSUMIDOR)) {
+            if (valorCausa != null && valorCausa.compareTo(salarioMinimoNacionalService.multiplicar(new BigDecimal("40"), dataReferencia)) <= 0) {
                 regras.add(new RegraAlerta(
                         "JEC_COMPETENCIA_POTENCIAL",
                         "Competência potencial do Juizado Especial",
@@ -426,8 +473,8 @@ public class NationalRulePackEngine {
             }
         }
 
-        if (ramo == RamoDireito.PREVIDENCIARIO && valorCausa != null
-                && valorCausa.compareTo(salarioMinimoNacionalService.multiplicar(new BigDecimal("60"), LocalDate.now())) <= 0) {
+        if (dataReferencia != null && ramo == RamoDireito.PREVIDENCIARIO && valorCausa != null
+                && valorCausa.compareTo(salarioMinimoNacionalService.multiplicar(new BigDecimal("60"), dataReferencia)) <= 0) {
             regras.add(new RegraAlerta(
                     "JEF_COMPETENCIA_POTENCIAL",
                     "Competência potencial do JEF",

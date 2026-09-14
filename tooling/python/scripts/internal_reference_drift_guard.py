@@ -5,15 +5,17 @@ from pathlib import Path
 import json
 import re
 
+from project_roots import ROOT
+
 ROOTS = [
-    Path('pjb-api/src/main/java'),
-    Path('pjb-api/src/test/java'),
-    Path('pjb-core/src/main/java'),
-    Path('pjb-core/src/test/java'),
+    ROOT / 'pjb-api/src/main/java',
+    ROOT / 'pjb-api/src/test/java',
+    ROOT / 'pjb-core/src/main/java',
+    ROOT / 'pjb-core/src/test/java',
 ]
-SCAN_ROOTS = [Path('pjb-api/src/main/java'), Path('pjb-api/src/test/java')]
-REPORT_JSON = Path('docs/reports/internal_reference_drift_guard.json')
-REPORT_MD = Path('docs/reports/internal_reference_drift_guard.md')
+SCAN_ROOTS = [ROOT / 'pjb-api/src/main/java', ROOT / 'pjb-api/src/test/java']
+REPORT_JSON = ROOT / 'docs/reports/internal_reference_drift_guard.json'
+REPORT_MD = ROOT / 'docs/reports/internal_reference_drift_guard.md'
 INTERNAL_PREFIX = 'com.tcc.pjb.backend'
 PACKAGE_RE = re.compile(r'^\s*package\s+([a-zA-Z0-9_.]+)\s*;', re.M)
 TYPE_RE = re.compile(r'\b(record|enum|class|interface)\s+([A-Z][A-Za-z0-9_]*)\b')
@@ -74,14 +76,14 @@ def scan(known_types: set[str]) -> list[DriftOccurrence]:
             for match in IMPORT_RE.finditer(scrubbed):
                 reference = match.group(1)
                 if reference not in known_types:
-                    occurrences.append(DriftOccurrence(str(path), line_number_for(scrubbed, match.start()), reference, 'import'))
+                    occurrences.append(DriftOccurrence(path.relative_to(ROOT).as_posix(), line_number_for(scrubbed, match.start()), reference, 'import'))
             for match in REFERENCE_RE.finditer(scrubbed):
                 reference = match.group(0)
                 final_segment = reference.rsplit('.', 1)[-1]
                 if not final_segment or not final_segment[0].isupper() or final_segment.isupper():
                     continue
                 if reference not in known_types:
-                    occurrences.append(DriftOccurrence(str(path), line_number_for(scrubbed, match.start()), reference, 'reference'))
+                    occurrences.append(DriftOccurrence(path.relative_to(ROOT).as_posix(), line_number_for(scrubbed, match.start()), reference, 'reference'))
     # deduplicate deterministicly
     unique = {(item.file, item.line, item.reference, item.kind): item for item in occurrences}
     return sorted(unique.values(), key=lambda item: (item.file, item.line, item.kind, item.reference))
@@ -89,7 +91,7 @@ def scan(known_types: set[str]) -> list[DriftOccurrence]:
 
 def write_reports(known_types: set[str], occurrences: list[DriftOccurrence]) -> None:
     summary = {
-        'scanRoots': [str(root) for root in SCAN_ROOTS],
+        'scanRoots': [root.relative_to(ROOT).as_posix() for root in SCAN_ROOTS],
         'knownInternalTypes': len(known_types),
         'filesScanned': sum(1 for root in SCAN_ROOTS if root.exists() for _ in root.rglob('*.java')),
         'unresolvedOccurrences': len(occurrences),

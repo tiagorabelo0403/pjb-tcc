@@ -22,12 +22,17 @@ class RecuperacaoJudicialFalenciaTest {
     private final PlanoRecuperacaoJudicialService plano = new PlanoRecuperacaoJudicialService();
     private final SalarioMinimoNacionalService salarioMinimoNacionalService = mockSalarioService();
     private final FalenciaDecretacaoService falencia = new FalenciaDecretacaoService(salarioMinimoNacionalService);
-    private final QuadroGeralCredoresAssemblerService quadro = new QuadroGeralCredoresAssemblerService();
+    private final QuadroGeralCredoresAssemblerService quadro =
+            new QuadroGeralCredoresAssemblerService(salarioMinimoNacionalService);
     private final RecuperacaoExtrajudicialService crj = new RecuperacaoExtrajudicialService();
 
     private static SalarioMinimoNacionalService mockSalarioService() {
         SalarioMinimoNacionalService service = mock(SalarioMinimoNacionalService.class);
-        when(service.multiplicar(any(BigDecimal.class), any(LocalDate.class))).thenReturn(new BigDecimal("60720.00"));
+        // Responde pela quantidade de salarios minimos, e nao com um valor fixo: o mesmo mock serve ao
+        // limiar de 40 SM da impontualidade e ao de 150 SM do credito trabalhista. 1518,00 e o valor de
+        // 2025 no catalogo canonico, entao 40 SM continua dando 60.720,00.
+        when(service.multiplicar(any(BigDecimal.class), any(LocalDate.class)))
+                .thenAnswer(invocacao -> invocacao.<BigDecimal>getArgument(0).multiply(new BigDecimal("1518.00")));
         return service;
     }
 
@@ -179,10 +184,14 @@ class RecuperacaoJudicialFalenciaTest {
                 new QuadroGeralCredoresAssemblerService.Credor(
                         "Fornecedor ABC", "98.765.432/0001-10", new BigDecimal("50000"),
                         QuadroGeralCredoresAssemblerService.ClasseCredor.CLASSE_III_QUIROGRAFARIO, "Compra mercadorias", true));
-        var result = quadro.montar(credores);
+        var result = quadro.montar(credores, LocalDate.of(2025, 3, 10));
         assertThat(result.credoresOrdenados()).hasSize(3);
         assertThat(result.totalClasseI()).isEqualByComparingTo(new BigDecimal("30000"));
         assertThat(result.totalGeral()).isEqualByComparingTo(new BigDecimal("280000"));
+        assertThat(result.observacoes())
+                .as("o teto de 150 SM do art. 83 I sai do salario minimo da data do pedido, nao de "
+                        + "constante fixa no codigo: 150 x 1518,00 = 227.700,00")
+                .anyMatch(obs -> obs.contains("227700,00") || obs.contains("227700.00"));
     }
 
     @Test

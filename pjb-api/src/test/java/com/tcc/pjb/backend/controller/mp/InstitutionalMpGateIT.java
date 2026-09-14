@@ -83,7 +83,7 @@ class InstitutionalMpGateIT extends PjbIntegrationTestBase {
                 .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou MP legitimo)")
                 .isNotIn(401, 403);
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation"))
-                .as("Gate rodou depois da auth e classificou a operacao MP")
+                .as("Gate rodou depois da auth e classificou a operacao MP (status HTTP recebido: %s)", response.getStatus())
                 .isEqualTo("MP_MANIFESTACAO");
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Allowed"))
                 .as("Gate resolveu o MP JWT via banco e liberou")

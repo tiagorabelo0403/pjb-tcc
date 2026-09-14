@@ -77,7 +77,7 @@ class InstitutionalDelegadoGateIT extends PjbIntegrationTestBase {
                 .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou delegado legitimo)")
                 .isNotIn(401, 403);
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation"))
-                .as("Gate rodou depois da auth e classificou a operacao de delegado")
+                .as("Gate rodou depois da auth e classificou a operacao de delegado (status HTTP recebido: %s)", response.getStatus())
                 .isEqualTo("DELEGADO_REQUISICAO_DILIGENCIA");
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Allowed"))
                 .as("Gate resolveu o delegado JWT via banco e liberou")

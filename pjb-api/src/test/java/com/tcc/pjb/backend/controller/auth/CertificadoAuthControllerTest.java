@@ -36,6 +36,7 @@ import com.tcc.pjb.backend.model.dto.security.CertificadoAuthDtos;
 import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.OrigemAutenticacaoSessao;
 import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
 import com.tcc.pjb.backend.service.auth.surface.CertificadoAuthFacadeService;
 import java.math.BigInteger;
@@ -117,7 +118,7 @@ class CertificadoAuthControllerTest {
                 .thenReturn(new IcpBrasilChainValidationDetails(true, true, null, null));
         when(clientIpResolver.resolve(any()))
                 .thenReturn("127.0.0.1");
-        when(passkeySessionService.issue(any(Usuario.class), isNull(), any(String.class)))
+        when(passkeySessionService.issue(any(Usuario.class), isNull(), any(String.class), any(OrigemAutenticacaoSessao.class)))
                 .thenReturn(new PasskeySessionService.IssuedPasskeySession("cert-token-1", EXPIRES_AT, 41L, false));
         CertificadoAuthFacadeService facadeService = new CertificadoAuthFacadeService(
                 chainValidator,
@@ -246,7 +247,7 @@ class CertificadoAuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PENDENTE_SELECAO"))
                 .andExpect(jsonPath("$.lotacoes", hasSize(2)));
-        verify(passkeySessionService, never()).issue(any(Usuario.class), isNull(), any(String.class));
+        verify(passkeySessionService, never()).issue(any(Usuario.class), isNull(), any(String.class), any(OrigemAutenticacaoSessao.class));
     }
 
     @Test

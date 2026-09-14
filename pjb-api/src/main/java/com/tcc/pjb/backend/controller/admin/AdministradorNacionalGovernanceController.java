@@ -6,7 +6,7 @@ import com.tcc.pjb.backend.model.dto.surface.common.SurfaceSnapshotResponse;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.versioning.ApiVersion;
-import com.tcc.pjb.backend.service.admin.surface.AdminOperationalSurfaceFacadeService;
+import com.tcc.pjb.backend.service.admin.surface.AdminGovernanceSurfaceService;
 import jakarta.validation.Valid;
 import java.util.Objects;
 import org.springframework.http.HttpStatus;
@@ -28,10 +28,10 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasAnyRole('ADMINISTRADOR','ADMIN')")
 public class AdministradorNacionalGovernanceController {
 
-    private final AdminOperationalSurfaceFacadeService facadeService;
+    private final AdminGovernanceSurfaceService facadeService;
     private final CapabilityRateLimiter rateLimiter;
 
-    public AdministradorNacionalGovernanceController(AdminOperationalSurfaceFacadeService facadeService,
+    public AdministradorNacionalGovernanceController(AdminGovernanceSurfaceService facadeService,
                                                      CapabilityRateLimiter rateLimiter) {
         this.facadeService = Objects.requireNonNull(facadeService);
         this.rateLimiter = Objects.requireNonNull(rateLimiter);

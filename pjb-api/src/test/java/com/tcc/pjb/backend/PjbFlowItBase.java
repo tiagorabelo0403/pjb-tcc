@@ -16,8 +16,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * com futuras migrations.
  *
  * <p>Exceção deliberada: catálogos semeados pelo Flyway e nunca escritos pelo fluxo em
- * teste (ex.: {@code tb_jurisdicao_territorial}, {@code tb_jurisdicao_territorial_unidade})
- * ficam fora do TRUNCATE. Sem forkCount/reuseForks configurado no pom, Failsafe roda todas
+ * teste ({@code tb_jurisdicao_territorial}, {@code tb_jurisdicao_territorial_unidade},
+ * {@code tb_tribunal} e {@code tb_comarca}, os dois últimos semeados por V319 a partir do
+ * catálogo territorial) ficam fora do TRUNCATE. Sem forkCount/reuseForks configurado no pom, Failsafe roda todas
  * as ITs do lote na mesma JVM/mesmo banco ({@link PjbIntegrationTestBase}); truncar esses
  * catálogos aqui os apaga para o resto do fork sem repor via nova migration, quebrando ITs
  * que dependem deles (ex.: {@code Trt7CearaJurisdicaoCargaIT}) só quando rodadas em lote
@@ -56,7 +57,9 @@ public abstract class PjbFlowItBase extends PjbIntegrationTestBase {
                   AND t.tablename NOT IN (
                       'flyway_schema_history',
                       'tb_jurisdicao_territorial',
-                      'tb_jurisdicao_territorial_unidade'
+                      'tb_jurisdicao_territorial_unidade',
+                      'tb_tribunal',
+                      'tb_comarca'
                   )
                   AND t.tablename NOT IN (
                       SELECT c.relname FROM pg_inherits i

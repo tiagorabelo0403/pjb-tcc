@@ -9,9 +9,12 @@ import com.tcc.pjb.backend.model.entity.enums.EnteFederativo;
 import com.tcc.pjb.backend.model.entity.enums.PapelEquipe;
 import com.tcc.pjb.backend.model.entity.enums.SituacaoConta;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
+import com.tcc.pjb.backend.model.converter.SensitiveDataConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -27,6 +30,7 @@ import java.util.UUID;
 
 @PjbDataOwnership(module = PjbModuleId.IDENTIDADE_SEGURANCA, mode = PjbOwnershipMode.PUBLISHED_VIEW, publishedReadModel = true)
 @Entity
+@EntityListeners(UsuarioBlindIndexListener.class)
 @Table(name = "tb_usuario")
 public class Usuario {
 
@@ -35,8 +39,21 @@ public class Usuario {
     private Long id;
 
     private String nome;
+
+    @Convert(converter = SensitiveDataConverter.class)
+    @Column(name = "email", length = 1000)
     private String email;
+
+    @Convert(converter = SensitiveDataConverter.class)
+    @Column(name = "cpf", length = 1000)
     private String cpf;
+
+    @Column(name = "cpf_hash", length = 64)
+    private String cpfHash;
+
+    @Column(name = "email_hash", length = 64)
+    private String emailHash;
+
     private String oab;
 
     @Column(name = "oab_normalizada")
@@ -92,6 +109,14 @@ public class Usuario {
 
     public String getCpf() { return cpf; }
     public void setCpf(String cpf) { this.cpf = cpf; }
+
+    public String getCpfHash() { return cpfHash; }
+    public String getEmailHash() { return emailHash; }
+
+    void aplicarIndiceCego(String cpfHash, String emailHash) {
+        this.cpfHash = cpfHash;
+        this.emailHash = emailHash;
+    }
 
     public String getOab() { return oab; }
     public void setOab(String oab) { this.oab = oab; }

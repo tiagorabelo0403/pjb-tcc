@@ -19,7 +19,6 @@ import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.workflow.MovimentacaoProcessual;
 import com.tcc.pjb.backend.model.repository.MovimentacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
-import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.repository.document.DocumentoPaginaRepository;
 import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import java.time.Instant;
@@ -54,8 +53,6 @@ class ConsultasPublicasControllerIT extends PjbIntegrationTestBase {
     @Autowired
     private MovimentacaoProcessualRepository movimentacaoProcessualRepository;
 
-    @MockitoBean
-    private CapabilityRateLimiter capabilityRateLimiter;
 
     @Test
     void deveServirWorkspaceSearchDetailEPageResolveNaSurfaceHttpPublica() throws Exception {

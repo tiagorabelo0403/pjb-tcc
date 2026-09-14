@@ -25,11 +25,8 @@ import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopologyMeshService;
-import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
+import com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
-import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
 @Service
 public class DefensoriaPublicaOperacionalService {
 private static final EnumSet<TipoUsuario> DEFENSORIA = EnumSet.of(
@@ -43,10 +40,7 @@ private final PjbAuthorizationService authorizationService;
 private final InstitutionalActorTopologyMeshService institutionalActorTopologyMeshService;
 private final InstitutionalActorRoutingService institutionalActorRoutingService;
 private final PainelSharedExperienceService sharedExperienceService;
-private final PainelSignalReflectionService signalReflectionService;
-private final PainelNativeCollectionCompositionService collectionCompositionService;
-private final PainelActionSurfaceCompositionService actionSurfaceCompositionService;
-private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
+private final PainelCompositionPipelineService compositionPipeline;
 private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
 public DefensoriaPublicaOperacionalService(PerfilDashboardContextFactory contextFactory,
 PainelServiceCommons commons,
@@ -56,10 +50,7 @@ PjbAuthorizationService authorizationService,
 InstitutionalActorTopologyMeshService institutionalActorTopologyMeshService,
 InstitutionalActorRoutingService institutionalActorRoutingService,
 PainelSharedExperienceService sharedExperienceService,
-PainelSignalReflectionService signalReflectionService,
-PainelNativeCollectionCompositionService collectionCompositionService,
-PainelActionSurfaceCompositionService actionSurfaceCompositionService,
-                                       PainelExecutionSurfaceCompositionService executionSurfaceCompositionService,
+PainelCompositionPipelineService compositionPipeline,
                                        MovimentacaoProcessualRegistrar movimentacaoRegistrar) {
 this.contextFactory = contextFactory;
 this.commons = commons;
@@ -69,10 +60,7 @@ this.authorizationService = authorizationService;
 this.institutionalActorTopologyMeshService = institutionalActorTopologyMeshService;
 this.institutionalActorRoutingService = institutionalActorRoutingService;
 this.sharedExperienceService = sharedExperienceService;
-this.signalReflectionService = signalReflectionService;
-this.collectionCompositionService = collectionCompositionService;
-this.actionSurfaceCompositionService = actionSurfaceCompositionService;
-this.executionSurfaceCompositionService = executionSurfaceCompositionService;
+this.compositionPipeline = compositionPipeline;
 this.movimentacaoRegistrar = movimentacaoRegistrar;
 }
 public DefensoriaSnapshot bootstrapPainel() {
@@ -105,20 +93,20 @@ int presos = (int) inbox.stream()
 "FLAGRANTE", "PRISAO"))
 .count();
 Map<String, Object> sharedExperience = sharedExperienceService.snapshot("DEFENSOR_PUBLICO");
-Map<String, Object> operationalSignals = signalReflectionService.deriveSignals("DEFENSOR_PUBLICO", sharedExperience, peticoesPendentes.size() + recursosUrgentes.size(), prazosVencendo24h, "DEFENSORIA_OPERACIONAL");
-Map<String, Object> nativeComposition = signalReflectionService.buildNativeComposition("DEFENSOR_PUBLICO", operationalSignals);
-assistidosPendentes = collectionCompositionService.composeList("DEFENSOR_PUBLICO", "ASSISTIDOS_PENDENTES", assistidosPendentes, operationalSignals, nativeComposition);
-peticoesPendentes = collectionCompositionService.composeList("DEFENSOR_PUBLICO", "PETICOES_PENDENTES", peticoesPendentes, operationalSignals, nativeComposition);
-audienciasPendentes = collectionCompositionService.composeList("DEFENSOR_PUBLICO", "AUDIENCIAS_PENDENTES", audienciasPendentes, operationalSignals, nativeComposition);
-recursosUrgentes = collectionCompositionService.composeList("DEFENSOR_PUBLICO", "RECURSOS_URGENTES", recursosUrgentes, operationalSignals, nativeComposition);
-Map<String, Object> collectionComposition = collectionCompositionService.buildCollectionComposition("DEFENSOR_PUBLICO", operationalSignals, nativeComposition, Map.of(
+Map<String, Object> operationalSignals = compositionPipeline.deriveSignals("DEFENSOR_PUBLICO", sharedExperience, peticoesPendentes.size() + recursosUrgentes.size(), prazosVencendo24h, "DEFENSORIA_OPERACIONAL");
+Map<String, Object> nativeComposition = compositionPipeline.buildNativeComposition("DEFENSOR_PUBLICO", operationalSignals);
+assistidosPendentes = compositionPipeline.composeList("DEFENSOR_PUBLICO", "ASSISTIDOS_PENDENTES", assistidosPendentes, operationalSignals, nativeComposition);
+peticoesPendentes = compositionPipeline.composeList("DEFENSOR_PUBLICO", "PETICOES_PENDENTES", peticoesPendentes, operationalSignals, nativeComposition);
+audienciasPendentes = compositionPipeline.composeList("DEFENSOR_PUBLICO", "AUDIENCIAS_PENDENTES", audienciasPendentes, operationalSignals, nativeComposition);
+recursosUrgentes = compositionPipeline.composeList("DEFENSOR_PUBLICO", "RECURSOS_URGENTES", recursosUrgentes, operationalSignals, nativeComposition);
+Map<String, Object> collectionComposition = compositionPipeline.buildCollectionComposition("DEFENSOR_PUBLICO", operationalSignals, nativeComposition, Map.of(
 "assistidosPendentes", assistidosPendentes,
 "peticoesPendentes", peticoesPendentes,
 "audienciasPendentes", audienciasPendentes,
 "recursosUrgentes", recursosUrgentes
 ));
-Map<String, Object> actionSurface = actionSurfaceCompositionService.buildActionSurface("DEFENSOR_PUBLICO", operationalSignals, nativeComposition, collectionComposition);
-        Map<String, Object> executionSurface = executionSurfaceCompositionService.buildExecutionSurface("DEFENSOR_PUBLICO", operationalSignals, nativeComposition, collectionComposition, actionSurface);
+Map<String, Object> actionSurface = compositionPipeline.buildActionSurface("DEFENSOR_PUBLICO", operationalSignals, nativeComposition, collectionComposition);
+        Map<String, Object> executionSurface = compositionPipeline.buildExecutionSurface("DEFENSOR_PUBLICO", operationalSignals, nativeComposition, collectionComposition, actionSurface);
 return new DefensoriaSnapshot(
 ctx.generatedAt(),
 ctx.perfilAtivo(),

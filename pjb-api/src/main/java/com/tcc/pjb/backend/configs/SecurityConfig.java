@@ -24,8 +24,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import com.tcc.pjb.backend.configs.security.perimeter.PerimeterSecurityFilter;
 import com.tcc.pjb.backend.configs.security.perimeter.ForwardedHeaderGuardFilter;
@@ -367,6 +365,10 @@ public class SecurityConfig {
                             "/api/v1/auth/certificado/desafio",
                             "/api/v1/auth/certificado/resposta",
                             "/api/v1/magistratura/ativacao/confirmar").permitAll();
+                    authz.requestMatchers(
+                            "/api/marketplace/oauth/v1/token",
+                            "/api/marketplace/v1/processos",
+                            "/api/marketplace/v1/processos/*/documentos").permitAll();
                     authz.requestMatchers("/actuator/info", "/actuator/metrics/**", "/actuator/prometheus")
                             .hasAnyAuthority("ROLE_ADMIN", "ROLE_ADMINISTRADOR");
                     authz.requestMatchers("/api/admin/**", "/api/v1/admin/**")
@@ -380,7 +382,7 @@ public class SecurityConfig {
                             if (paths.isEmpty() || rule.getAuthorities().isEmpty()) {
                                 continue;
                             }
-                            authz.requestMatchers(antPathMatchers(paths))
+                            authz.requestMatchers(paths.toArray(String[]::new))
                                     .hasAnyAuthority(rule.getAuthorities().toArray(String[]::new));
                         }
                     }
@@ -494,12 +496,6 @@ public class SecurityConfig {
                 .map(String::trim)
                 .distinct()
                 .toList();
-    }
-
-    private static RequestMatcher[] antPathMatchers(List<String> paths) {
-        return paths.stream()
-                .map(AntPathRequestMatcher::new)
-                .toArray(RequestMatcher[]::new);
     }
 
     private static boolean isSwaggerUiPath(String path) {

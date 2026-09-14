@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MemoryCandidateReviewService {
@@ -46,6 +48,21 @@ public class MemoryCandidateReviewService {
         this.auditService = auditService;
         this.eventPublisher = eventPublisher;
         this.clock = clock;
+    }
+
+    /**
+     * Reviews ainda pendentes de decisao. Leitura vive aqui junto de aprovar e rejeitar porque e a
+     * mesma responsabilidade -- a fila de revisao de candidatos a memoria -- e porque controller que
+     * consulta a porta de dominio direto orquestra dominio sem passar pela aplicacao.
+     */
+    @Transactional(readOnly = true)
+    public List<MemoryCandidateReview> listarPendentes() {
+        return reviewRepository.listarPendentes();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<MemoryCandidateReview> buscarPorId(MemoryCandidateReviewId reviewId) {
+        return reviewRepository.buscarPorId(reviewId);
     }
 
     @Transactional

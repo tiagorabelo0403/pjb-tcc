@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerRepository;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.dto.advogado.AdvogadoAuditDto;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.service.advogado.AdvogadoAuditoriaLedgerService;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimitDomain;
 import com.tcc.pjb.backend.platform.security.ratelimit.CapabilityRateLimiter;
 import com.tcc.pjb.backend.platform.versioning.ApiVersion;
@@ -23,14 +23,14 @@ import com.tcc.pjb.backend.platform.versioning.ApiVersion;
 @PreAuthorize("hasAuthority('ROLE_ADVOGADO')")
 public class AdvogadoAuditoriaController {
 
-    private final AuditLedgerRepository auditLedgerRepository;
+    private final AdvogadoAuditoriaLedgerService ledgerService;
     private final CurrentUserService currentUserService;
     private final CapabilityRateLimiter rateLimiter;
 
-    public AdvogadoAuditoriaController(AuditLedgerRepository auditLedgerRepository,
+    public AdvogadoAuditoriaController(AdvogadoAuditoriaLedgerService ledgerService,
                                        CurrentUserService currentUserService,
                                        CapabilityRateLimiter rateLimiter) {
-        this.auditLedgerRepository = Objects.requireNonNull(auditLedgerRepository);
+        this.ledgerService = Objects.requireNonNull(ledgerService);
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.rateLimiter = rateLimiter;
     }
@@ -45,27 +45,10 @@ public class AdvogadoAuditoriaController {
     ) {
         enforce(authentication, "advogado_audit_ledger");
 
-        Usuario u = currentUserService.getRequired();
-        Long uid = u.getId();
+        Usuario solicitante = currentUserService.getRequired();
 
-        String prefix = actionPrefix != null && !actionPrefix.isBlank() ? actionPrefix.trim() : null;
-        String rType = resourceType != null && !resourceType.isBlank() ? resourceType.trim() : null;
-        String rId = resourceId != null && !resourceId.isBlank() ? resourceId.trim() : null;
-
-        Page<AdvogadoAuditDto.LedgerEventResponse> page = auditLedgerRepository
-                .search(uid, prefix, rType, rId, pageable)
-                .map(e -> new AdvogadoAuditDto.LedgerEventResponse(
-                        e.getId(),
-                        e.getCreatedAt() != null ? e.getCreatedAt().toString() : null,
-                        e.getAction(),
-                        e.getResourceType(),
-                        e.getResourceId(),
-                        e.getRequestId(),
-                        e.getPayloadHash(),
-                        e.getEntryHash()
-                ));
-
-        return ResponseEntity.ok(page);
+        return ResponseEntity.ok(ledgerService.doAdvogado(
+                solicitante.getId(), actionPrefix, resourceType, resourceId, pageable));
     }
 
     private void enforce(Authentication authentication, String key) {

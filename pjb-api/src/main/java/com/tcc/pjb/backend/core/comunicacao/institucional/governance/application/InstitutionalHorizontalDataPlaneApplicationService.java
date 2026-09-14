@@ -1,6 +1,6 @@
 package com.tcc.pjb.backend.core.comunicacao.institucional.governance.application;
 
-import com.tcc.pjb.backend.core.comunicacao.institucional.InstitutionalApiRoutes;
+import com.tcc.pjb.backend.platform.api.institucional.InstitutionalApiRoutes;
 import com.tcc.pjb.backend.core.operational.MagistraturaAccessScopeResolver;
 import com.tcc.pjb.backend.configs.datasource.PjbDataSourceRoutingProperties;
 import com.tcc.pjb.backend.core.comunicacao.institucional.affiliation.domain.InstitutionalAffiliation;

@@ -1,59 +1,35 @@
 package com.tcc.pjb.backend.service.processual.surface;
 
-import com.tcc.pjb.backend.core.processo.busca.application.ProcessoBuscaAnalyticsApplicationService;
 import com.tcc.pjb.backend.core.processo.busca.domain.ProcessoAnalyticsAggregate;
 import com.tcc.pjb.backend.core.processo.busca.domain.ProcessoBuscaAggregate;
-import com.tcc.pjb.backend.core.processo.documental.application.ProcessoDocumentoApplicationService;
 import com.tcc.pjb.backend.core.processo.documental.domain.ProcessoDocumentoAggregate;
-import com.tcc.pjb.backend.core.processo.dsl.application.ProcessoDslApplicationService;
 import com.tcc.pjb.backend.core.processo.dsl.domain.ProcessoDslAggregate;
-import com.tcc.pjb.backend.core.processo.encaixe.application.ProcessoEncaixeFinalApplicationService;
 import com.tcc.pjb.backend.core.processo.encaixe.domain.ProcessoEncaixeCarteiraAggregate;
 import com.tcc.pjb.backend.core.processo.encaixe.domain.ProcessoEncaixeFinalAggregate;
-import com.tcc.pjb.backend.core.processo.execucao.application.ProcessoExecucaoApplicationService;
 import com.tcc.pjb.backend.core.processo.execucao.domain.ProcessoExecucaoAggregate;
-import com.tcc.pjb.backend.core.processo.hardening.application.ProcessoHardeningFinalApplicationService;
 import com.tcc.pjb.backend.core.processo.hardening.domain.ProcessoHardeningAggregate;
-import com.tcc.pjb.backend.core.processo.integracao.application.ProcessoIntegracaoApplicationService;
 import com.tcc.pjb.backend.core.processo.integracao.domain.ProcessoIntegracaoAggregate;
-import com.tcc.pjb.backend.core.processo.migracao.application.ProcessoMigracaoApplicationService;
 import com.tcc.pjb.backend.core.processo.migracao.domain.ProcessoMigracaoAggregate;
-import com.tcc.pjb.backend.core.processo.operacao.application.ProcessoOperacaoApplicationService;
 import com.tcc.pjb.backend.core.processo.operacao.domain.ProcessoOperacaoAggregate;
-import com.tcc.pjb.backend.core.processo.papel.application.ProcessoPapelApplicationService;
 import com.tcc.pjb.backend.core.processo.papel.domain.ProcessoPapelAggregate;
 import com.tcc.pjb.backend.core.processo.papel.domain.ProcessoPapelPerfil;
-import com.tcc.pjb.backend.core.processo.policy.application.ProcessoPolicyVigenciaApplicationService;
 import com.tcc.pjb.backend.core.processo.policy.domain.ProcessoPolicyAggregate;
-import com.tcc.pjb.backend.core.processo.posse.application.ProcessoPosseTrabalhoApplicationService;
 import com.tcc.pjb.backend.core.processo.posse.domain.ProcessoPosseAggregate;
-import com.tcc.pjb.backend.core.processo.prazo.application.ProcessoPrazoApplicationService;
 import com.tcc.pjb.backend.core.processo.prazo.domain.ProcessoPrazoAggregate;
 import com.tcc.pjb.backend.core.processo.prazo.domain.ProcessoPrazoMarco;
-import com.tcc.pjb.backend.core.processo.pregravacao.application.ProcessoPreGravacaoApplicationService;
 import com.tcc.pjb.backend.core.processo.pregravacao.domain.ProcessoPreGravacaoAggregate;
-import com.tcc.pjb.backend.core.processo.recursal.application.ProcessoRecursalApplicationService;
 import com.tcc.pjb.backend.core.processo.recursal.application.ProcessoRecursalDecisionCarryOverAssembler;
 import com.tcc.pjb.backend.core.processo.recursal.domain.ProcessoRecursalAggregate;
-import com.tcc.pjb.backend.core.processo.sigilo.application.ProcessoSigiloApplicationService;
-import com.tcc.pjb.backend.core.processo.sigilo.application.ProcessoSigiloInteligenteApplicationService;
-import com.tcc.pjb.backend.core.processo.sigilo.application.ProcessoSigiloNotificacaoApplicationService;
 import com.tcc.pjb.backend.core.processo.sigilo.domain.ProcessoSigiloAggregate;
 import com.tcc.pjb.backend.core.processo.sigilo.domain.ProcessoSigiloInteligenteAggregate;
 import com.tcc.pjb.backend.core.processo.sigilo.domain.ProcessoSigiloNotificacaoAggregate;
-import com.tcc.pjb.backend.core.processo.timeline.application.ProcessoTimelineApplicationService;
 import com.tcc.pjb.backend.core.processo.timeline.domain.ProcessoTimelineAggregate;
-import com.tcc.pjb.backend.core.processo.trabalho.application.ProcessoTrabalhoApplicationService;
 import com.tcc.pjb.backend.core.processo.trabalho.domain.ProcessoTrabalhoAggregate;
-import com.tcc.pjb.backend.core.processo.unificado.application.ProcessoUnificadoApplicationService;
 import com.tcc.pjb.backend.core.processo.unificado.domain.ProcessoUnificadoAggregate;
 import com.tcc.pjb.backend.core.processo.unificado.domain.ProcessoUnificadoAto;
 import com.tcc.pjb.backend.core.processo.unificado.domain.ProcessoUnificadoCompetencia;
 import com.tcc.pjb.backend.core.processo.unificado.domain.ProcessoUnificadoDiagnostico;
-import com.tcc.pjb.backend.core.processo.vertical.estadual.civel.application.ProcessoVerticalCivelPrimeiroGrauApplicationService;
 import com.tcc.pjb.backend.core.processo.vertical.domain.ProcessoVerticalAggregate;
-import com.tcc.pjb.backend.core.processo.vertical.estadual.fazenda.application.ProcessoVerticalExecucaoFiscalFazendariaApplicationService;
-import com.tcc.pjb.backend.core.processo.vertical.estadual.penal.application.ProcessoVerticalPenalCustodiaApplicationService;
 import com.tcc.pjb.backend.model.dto.processual.surface.aggregate.ProcessoSurfaceAggregateResponse;
 import com.tcc.pjb.backend.model.dto.processual.surface.aggregate.ProcessoSurfaceIdentityResponse;
 import com.tcc.pjb.backend.model.dto.processual.surface.aggregate.ProcessoSurfaceValueItemResponse;
@@ -70,6 +46,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 import com.tcc.pjb.backend.core.modularity.PjbModuleId;
 import com.tcc.pjb.backend.core.modularity.PjbPublicApi;
@@ -78,144 +55,96 @@ import com.tcc.pjb.backend.core.modularity.PjbPublicApi;
 @PjbPublicApi(module = PjbModuleId.PROCESSO_LIFECYCLE)
 public class ProcessoSurfaceFacadeService {
 
-    private final ProcessoUnificadoApplicationService processoUnificadoApplicationService;
-    private final ProcessoRecursalApplicationService processoRecursalApplicationService;
-    private final ProcessoExecucaoApplicationService processoExecucaoApplicationService;
-    private final ProcessoPapelApplicationService processoPapelApplicationService;
-    private final ProcessoPrazoApplicationService processoPrazoApplicationService;
-    private final ProcessoTrabalhoApplicationService processoTrabalhoApplicationService;
-    private final ProcessoDocumentoApplicationService processoDocumentoApplicationService;
-    private final ProcessoTimelineApplicationService processoTimelineApplicationService;
-    private final ProcessoIntegracaoApplicationService processoIntegracaoApplicationService;
-    private final ProcessoMigracaoApplicationService processoMigracaoApplicationService;
-    private final ProcessoOperacaoApplicationService processoOperacaoApplicationService;
-    private final ProcessoBuscaAnalyticsApplicationService processoBuscaAnalyticsApplicationService;
-    private final ProcessoEncaixeFinalApplicationService processoEncaixeFinalApplicationService;
-    private final ProcessoDslApplicationService processoDslApplicationService;
-    private final ProcessoPolicyVigenciaApplicationService processoPolicyVigenciaApplicationService;
-    private final ProcessoPosseTrabalhoApplicationService processoPosseTrabalhoApplicationService;
-    private final ProcessoPreGravacaoApplicationService processoPreGravacaoApplicationService;
-    private final ProcessoVerticalCivelPrimeiroGrauApplicationService processoVerticalCivelPrimeiroGrauApplicationService;
-    private final ProcessoVerticalPenalCustodiaApplicationService processoVerticalPenalCustodiaApplicationService;
-    private final ProcessoVerticalExecucaoFiscalFazendariaApplicationService processoVerticalExecucaoFiscalFazendariaApplicationService;
-    private final ProcessoSigiloApplicationService processoSigiloApplicationService;
-    private final ProcessoHardeningFinalApplicationService processoHardeningFinalApplicationService;
-    private final ProcessoSigiloInteligenteApplicationService processoSigiloInteligenteApplicationService;
-    private final ProcessoSigiloNotificacaoApplicationService processoSigiloNotificacaoApplicationService;
+    private final ProcessoSurfaceUnificadoOrchestrator unificadoOrchestrator;
+    private final ProcessoSurfaceCicloJudicialOrchestrator cicloJudicialOrchestrator;
+    private final ProcessoSurfacePapelPrazoOrchestrator papelPrazoOrchestrator;
+    private final ProcessoSurfaceArtefatoOrchestrator artefatoOrchestrator;
+    private final ProcessoSurfaceInfraestruturaOrchestrator infraestruturaOrchestrator;
+    private final ProcessoSurfaceInsightGovernancaOrchestrator insightGovernancaOrchestrator;
+    private final ProcessoSurfaceVerticalOrchestrator verticalOrchestrator;
+    private final ProcessoSurfaceSigiloOrchestrator sigiloOrchestrator;
 
-    public ProcessoSurfaceFacadeService(ProcessoUnificadoApplicationService processoUnificadoApplicationService,
-                                        ProcessoRecursalApplicationService processoRecursalApplicationService,
-                                        ProcessoExecucaoApplicationService processoExecucaoApplicationService,
-                                        ProcessoPapelApplicationService processoPapelApplicationService,
-                                        ProcessoPrazoApplicationService processoPrazoApplicationService,
-                                        ProcessoTrabalhoApplicationService processoTrabalhoApplicationService,
-                                        ProcessoDocumentoApplicationService processoDocumentoApplicationService,
-                                        ProcessoTimelineApplicationService processoTimelineApplicationService,
-                                        ProcessoIntegracaoApplicationService processoIntegracaoApplicationService,
-                                        ProcessoMigracaoApplicationService processoMigracaoApplicationService,
-                                        ProcessoOperacaoApplicationService processoOperacaoApplicationService,
-                                        ProcessoBuscaAnalyticsApplicationService processoBuscaAnalyticsApplicationService,
-                                        ProcessoEncaixeFinalApplicationService processoEncaixeFinalApplicationService,
-                                        ProcessoDslApplicationService processoDslApplicationService,
-                                        ProcessoPolicyVigenciaApplicationService processoPolicyVigenciaApplicationService,
-                                        ProcessoPosseTrabalhoApplicationService processoPosseTrabalhoApplicationService,
-                                        ProcessoPreGravacaoApplicationService processoPreGravacaoApplicationService,
-                                        ProcessoVerticalCivelPrimeiroGrauApplicationService processoVerticalCivelPrimeiroGrauApplicationService,
-                                        ProcessoVerticalPenalCustodiaApplicationService processoVerticalPenalCustodiaApplicationService,
-                                        ProcessoVerticalExecucaoFiscalFazendariaApplicationService processoVerticalExecucaoFiscalFazendariaApplicationService,
-                                        ProcessoSigiloApplicationService processoSigiloApplicationService,
-                                        ProcessoHardeningFinalApplicationService processoHardeningFinalApplicationService,
-                                        ProcessoSigiloInteligenteApplicationService processoSigiloInteligenteApplicationService,
-                                        ProcessoSigiloNotificacaoApplicationService processoSigiloNotificacaoApplicationService) {
-        this.processoUnificadoApplicationService = processoUnificadoApplicationService;
-        this.processoRecursalApplicationService = processoRecursalApplicationService;
-        this.processoExecucaoApplicationService = processoExecucaoApplicationService;
-        this.processoPapelApplicationService = processoPapelApplicationService;
-        this.processoPrazoApplicationService = processoPrazoApplicationService;
-        this.processoTrabalhoApplicationService = processoTrabalhoApplicationService;
-        this.processoDocumentoApplicationService = processoDocumentoApplicationService;
-        this.processoTimelineApplicationService = processoTimelineApplicationService;
-        this.processoIntegracaoApplicationService = processoIntegracaoApplicationService;
-        this.processoMigracaoApplicationService = processoMigracaoApplicationService;
-        this.processoOperacaoApplicationService = processoOperacaoApplicationService;
-        this.processoBuscaAnalyticsApplicationService = processoBuscaAnalyticsApplicationService;
-        this.processoEncaixeFinalApplicationService = processoEncaixeFinalApplicationService;
-        this.processoDslApplicationService = processoDslApplicationService;
-        this.processoPolicyVigenciaApplicationService = processoPolicyVigenciaApplicationService;
-        this.processoPosseTrabalhoApplicationService = processoPosseTrabalhoApplicationService;
-        this.processoPreGravacaoApplicationService = processoPreGravacaoApplicationService;
-        this.processoVerticalCivelPrimeiroGrauApplicationService = processoVerticalCivelPrimeiroGrauApplicationService;
-        this.processoVerticalPenalCustodiaApplicationService = processoVerticalPenalCustodiaApplicationService;
-        this.processoVerticalExecucaoFiscalFazendariaApplicationService = processoVerticalExecucaoFiscalFazendariaApplicationService;
-        this.processoSigiloApplicationService = processoSigiloApplicationService;
-        this.processoHardeningFinalApplicationService = processoHardeningFinalApplicationService;
-        this.processoSigiloInteligenteApplicationService = processoSigiloInteligenteApplicationService;
-        this.processoSigiloNotificacaoApplicationService = processoSigiloNotificacaoApplicationService;
+    public ProcessoSurfaceFacadeService(ProcessoSurfaceUnificadoOrchestrator unificadoOrchestrator,
+                                        ProcessoSurfaceCicloJudicialOrchestrator cicloJudicialOrchestrator,
+                                        ProcessoSurfacePapelPrazoOrchestrator papelPrazoOrchestrator,
+                                        ProcessoSurfaceArtefatoOrchestrator artefatoOrchestrator,
+                                        ProcessoSurfaceInfraestruturaOrchestrator infraestruturaOrchestrator,
+                                        ProcessoSurfaceInsightGovernancaOrchestrator insightGovernancaOrchestrator,
+                                        ProcessoSurfaceVerticalOrchestrator verticalOrchestrator,
+                                        ProcessoSurfaceSigiloOrchestrator sigiloOrchestrator) {
+        this.unificadoOrchestrator = Objects.requireNonNull(unificadoOrchestrator);
+        this.cicloJudicialOrchestrator = Objects.requireNonNull(cicloJudicialOrchestrator);
+        this.papelPrazoOrchestrator = Objects.requireNonNull(papelPrazoOrchestrator);
+        this.artefatoOrchestrator = Objects.requireNonNull(artefatoOrchestrator);
+        this.infraestruturaOrchestrator = Objects.requireNonNull(infraestruturaOrchestrator);
+        this.insightGovernancaOrchestrator = Objects.requireNonNull(insightGovernancaOrchestrator);
+        this.verticalOrchestrator = Objects.requireNonNull(verticalOrchestrator);
+        this.sigiloOrchestrator = Objects.requireNonNull(sigiloOrchestrator);
     }
 
     public ProcessoUnificadoSurfaceResponse detalhar(Long processoId) {
-        return toUnificado(processoUnificadoApplicationService.detalhar(processoId));
+        return toUnificado(unificadoOrchestrator.detalhar(processoId));
     }
 
     public ProcessoSurfaceCompetenciaResponse competencia(Long processoId) {
-        return toCompetencia(processoUnificadoApplicationService.competencia(processoId));
+        return toCompetencia(unificadoOrchestrator.competencia(processoId));
     }
 
     public List<ProcessoSurfaceAtoResponse> atos(Long processoId) {
-        return processoUnificadoApplicationService.catalogoAtos(processoId).stream().map(this::toAto).toList();
+        return unificadoOrchestrator.catalogoAtos(processoId).stream().map(this::toAto).toList();
     }
 
     public ProcessoSurfaceDiagnosticoResponse diagnostico(Long processoId) {
-        return toDiagnostico(processoUnificadoApplicationService.diagnosticar(processoId));
+        return toDiagnostico(unificadoOrchestrator.diagnosticar(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse recursal(Long processoId) {
-        return toRecursal(processoRecursalApplicationService.detalhar(processoId));
+        return toRecursal(cicloJudicialOrchestrator.recursal(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse execucao(Long processoId) {
-        return toExecucao(processoExecucaoApplicationService.detalhar(processoId));
+        return toExecucao(cicloJudicialOrchestrator.execucao(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse papeis(Long processoId) {
-        return toPapeis(processoPapelApplicationService.detalhar(processoId));
+        return toPapeis(papelPrazoOrchestrator.papeis(processoId));
     }
 
     public ProcessoSurfacePerfilResponse papel(Long processoId, String profileCode) {
-        return toPerfil(processoPapelApplicationService.detalharPerfil(processoId, profileCode));
+        return toPerfil(papelPrazoOrchestrator.perfil(processoId, profileCode));
     }
 
     public ProcessoSurfaceAggregateResponse prazos(Long processoId) {
-        return toPrazos(processoPrazoApplicationService.detalhar(processoId));
+        return toPrazos(papelPrazoOrchestrator.prazos(processoId));
     }
 
     public ProcessoSurfaceValueItemResponse prazoEspecifico(Long processoId, String tipoPrazo) {
-        ProcessoPrazoMarco marco = processoPrazoApplicationService.calcular(processoId, NationalPrazoEngine.TipoPrazo.valueOf(tipoPrazo.toUpperCase()));
+        ProcessoPrazoMarco marco = papelPrazoOrchestrator.calcularPrazo(processoId, NationalPrazoEngine.TipoPrazo.valueOf(tipoPrazo.toUpperCase()));
         return new ProcessoSurfaceValueItemResponse(String.valueOf(marco));
     }
 
     public ProcessoSurfaceAggregateResponse workstream(Long processoId) {
-        return toWorkstream(processoTrabalhoApplicationService.detalhar(processoId));
+        return toWorkstream(artefatoOrchestrator.workstream(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse documentos(Long processoId) {
-        return toDocumentos(processoDocumentoApplicationService.detalhar(processoId));
+        return toDocumentos(artefatoOrchestrator.documentos(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse timeline(Long processoId) {
-        return toTimeline(processoTimelineApplicationService.detalhar(processoId));
+        return toTimeline(artefatoOrchestrator.timeline(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse integracoes(Long processoId) {
-        return toIntegracoes(processoIntegracaoApplicationService.detalhar(processoId));
+        return toIntegracoes(infraestruturaOrchestrator.integracoes(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse migracao(Long processoId) {
-        return toMigracao(processoMigracaoApplicationService.detalhar(processoId));
+        return toMigracao(infraestruturaOrchestrator.migracao(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse operacao(Long processoId) {
-        return toOperacao(processoOperacaoApplicationService.detalhar(processoId));
+        return toOperacao(infraestruturaOrchestrator.operacao(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse busca(String cpf,
@@ -228,69 +157,69 @@ public class ProcessoSurfaceFacadeService {
                                                   String tribunal,
                                                   int page,
                                                   int size) {
-        return toBusca(processoBuscaAnalyticsApplicationService.buscar(cpf, nome, numero, uf, comarca, ramo, status, tribunal, page, size));
+        return toBusca(insightGovernancaOrchestrator.buscar(cpf, nome, numero, uf, comarca, ramo, status, tribunal, page, size));
     }
 
     public ProcessoSurfaceAggregateResponse analytics(String ramo, String tribunal, String uf, String comarca) {
-        return toAnalytics(processoBuscaAnalyticsApplicationService.analytics(ramo, tribunal, uf, comarca));
+        return toAnalytics(insightGovernancaOrchestrator.analytics(ramo, tribunal, uf, comarca));
     }
 
     public ProcessoSurfaceAggregateResponse encaixeFinal(Long processoId) {
-        return toEncaixeFinal(processoEncaixeFinalApplicationService.detalhar(processoId));
+        return toEncaixeFinal(insightGovernancaOrchestrator.encaixeFinal(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse encaixeFinalCarteira(int limit) {
-        return toEncaixeCarteira(processoEncaixeFinalApplicationService.varrer(limit));
+        return toEncaixeCarteira(insightGovernancaOrchestrator.encaixeCarteira(limit));
     }
 
     public ProcessoSurfaceAggregateResponse dsl(Long processoId) {
-        return toDsl(processoDslApplicationService.detalhar(processoId));
+        return toDsl(insightGovernancaOrchestrator.dsl(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse policy(Long processoId, LocalDate em) {
         return toPolicy(em == null
-                ? processoPolicyVigenciaApplicationService.avaliar(processoId)
-                : processoPolicyVigenciaApplicationService.avaliar(processoId, em));
+                ? insightGovernancaOrchestrator.policy(processoId)
+                : insightGovernancaOrchestrator.policy(processoId, em));
     }
 
     public ProcessoSurfaceAggregateResponse posse(Long processoId) {
-        return toPosse(processoPosseTrabalhoApplicationService.detalhar(processoId));
+        return toPosse(insightGovernancaOrchestrator.posse(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse preGravacao(Long processoId, String profileCode, String actionCode) {
-        return toPreGravacao(processoPreGravacaoApplicationService.avaliar(processoId, profileCode, actionCode));
+        return toPreGravacao(insightGovernancaOrchestrator.preGravacao(processoId, profileCode, actionCode));
     }
 
     public ProcessoSurfaceAggregateResponse fatiaCivel(Long processoId) {
-        return toVertical(processoVerticalCivelPrimeiroGrauApplicationService.detalhar(processoId));
+        return toVertical(verticalOrchestrator.civel(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse fatiaPenalCustodia(Long processoId) {
-        return toVertical(processoVerticalPenalCustodiaApplicationService.detalhar(processoId));
+        return toVertical(verticalOrchestrator.penalCustodia(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse fatiaExecucaoFiscal(Long processoId) {
-        return toVertical(processoVerticalExecucaoFiscalFazendariaApplicationService.detalhar(processoId));
+        return toVertical(verticalOrchestrator.execucaoFiscal(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse sigilo(Long processoId) {
-        return toSigilo(processoSigiloApplicationService.detalhar(processoId));
+        return toSigilo(sigiloOrchestrator.sigilo(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse hardening(Long processoId) {
-        return toHardening(processoHardeningFinalApplicationService.detalhar(processoId));
+        return toHardening(sigiloOrchestrator.hardening(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse sigiloInteligente(Long processoId) {
-        return toSigiloInteligente(processoSigiloInteligenteApplicationService.avaliar(processoId));
+        return toSigiloInteligente(sigiloOrchestrator.sigiloInteligente(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse sigiloNotificacoes(Long processoId) {
-        return toSigiloNotificacoes(processoSigiloNotificacaoApplicationService.planejar(processoId));
+        return toSigiloNotificacoes(sigiloOrchestrator.planejarSigiloNotificacoes(processoId));
     }
 
     public ProcessoSurfaceAggregateResponse dispararSigiloNotificacoes(Long processoId) {
-        return toSigiloNotificacoes(processoSigiloNotificacaoApplicationService.notificar(processoId));
+        return toSigiloNotificacoes(sigiloOrchestrator.dispararSigiloNotificacoes(processoId));
     }
 
     private ProcessoUnificadoSurfaceResponse toUnificado(ProcessoUnificadoAggregate aggregate) {

@@ -8,14 +8,12 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
-import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
-import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorRoutingService;
 import com.tcc.pjb.backend.service.institutional.topology.InstitutionalActorTopologyMeshService;
 import com.tcc.pjb.backend.service.processual.peticionamento.workspace.InstitutionalMultimediaWorkspaceService;
 import com.tcc.pjb.backend.service.processual.guard.InstitutionalMaterialActionGuardService;
@@ -23,11 +21,9 @@ import com.tcc.pjb.backend.service.ui.branding.InstitutionalPanelBrandingService
 import com.tcc.pjb.backend.service.criminal.InqueritoPolicialDigitalService;
 import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import com.tcc.pjb.backend.service.processual.recursal.RecursalPeticionamentoFacadeService;
-import com.tcc.pjb.backend.service.painel.shared.PainelNativeCollectionCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelActionSurfaceCompositionService;
-import com.tcc.pjb.backend.service.painel.shared.PainelExecutionSurfaceCompositionService;
+import com.tcc.pjb.backend.service.painel.shared.PainelCompositionPipelineService;
 import com.tcc.pjb.backend.service.painel.shared.PainelSharedExperienceService;
-import com.tcc.pjb.backend.service.painel.shared.PainelSignalReflectionService;
+import com.tcc.pjb.backend.service.rito.RitoUrgenciaPriorityPolicy;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
@@ -44,56 +40,41 @@ public class MinisterioPublicoPainelService {
     private final ProcessoRepository processoRepository;
     private final WorkItemRepository workItemRepository;
     private final RecursalPeticionamentoFacadeService recursalPeticionamentoFacadeService;
-    private final InstitutionalActorTopologyMeshService institutionalActorTopologyMeshService;
     private final InstitutionalPanelBrandingService institutionalPanelBrandingService;
     private final InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService;
-    private final InstitutionalActorRoutingService institutionalActorRoutingService;
     private final PainelSharedExperienceService sharedExperienceService;
-    private final PainelSignalReflectionService signalReflectionService;
-    private final PainelNativeCollectionCompositionService collectionCompositionService;
-    private final PainelActionSurfaceCompositionService actionSurfaceCompositionService;
-    private final PainelExecutionSurfaceCompositionService executionSurfaceCompositionService;
+    private final PainelCompositionPipelineService compositionPipeline;
     private final InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService;
     private final InqueritoPolicialDigitalService inqueritoPolicialDigitalService;
     private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
-    private final PjbAuthorizationService authorizationService;
+    private final MinisterioPublicoInstitutionalRoutingService institutionalRoutingService;
 
     public MinisterioPublicoPainelService(PerfilDashboardContextFactory contextFactory,
                                           PainelServiceCommons commons,
                                           ProcessoRepository processoRepository,
                                           WorkItemRepository workItemRepository,
                                           RecursalPeticionamentoFacadeService recursalPeticionamentoFacadeService,
-                                          InstitutionalActorTopologyMeshService institutionalActorTopologyMeshService,
-                                          InstitutionalActorRoutingService institutionalActorRoutingService,
                                           InstitutionalMultimediaWorkspaceService institutionalMultimediaWorkspaceService,
                                           InstitutionalPanelBrandingService institutionalPanelBrandingService,
                                           PainelSharedExperienceService sharedExperienceService,
-                                          PainelSignalReflectionService signalReflectionService,
-                                          PainelNativeCollectionCompositionService collectionCompositionService,
-                                          PainelActionSurfaceCompositionService actionSurfaceCompositionService,
-                                          PainelExecutionSurfaceCompositionService executionSurfaceCompositionService,
+                                          PainelCompositionPipelineService compositionPipeline,
                                           InstitutionalMaterialActionGuardService institutionalMaterialActionGuardService,
                                           InqueritoPolicialDigitalService inqueritoPolicialDigitalService,
                                           MovimentacaoProcessualRegistrar movimentacaoRegistrar,
-                                          PjbAuthorizationService authorizationService) {
+                                          MinisterioPublicoInstitutionalRoutingService institutionalRoutingService) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
         this.workItemRepository = workItemRepository;
         this.recursalPeticionamentoFacadeService = recursalPeticionamentoFacadeService;
-        this.institutionalActorTopologyMeshService = institutionalActorTopologyMeshService;
-        this.institutionalActorRoutingService = institutionalActorRoutingService;
         this.institutionalMultimediaWorkspaceService = institutionalMultimediaWorkspaceService;
         this.institutionalPanelBrandingService = institutionalPanelBrandingService;
         this.sharedExperienceService = sharedExperienceService;
-        this.signalReflectionService = signalReflectionService;
-        this.collectionCompositionService = collectionCompositionService;
-        this.actionSurfaceCompositionService = actionSurfaceCompositionService;
-        this.executionSurfaceCompositionService = executionSurfaceCompositionService;
+        this.compositionPipeline = compositionPipeline;
         this.institutionalMaterialActionGuardService = institutionalMaterialActionGuardService;
         this.inqueritoPolicialDigitalService = inqueritoPolicialDigitalService;
         this.movimentacaoRegistrar = movimentacaoRegistrar;
-        this.authorizationService = authorizationService;
+        this.institutionalRoutingService = institutionalRoutingService;
     }
 
     public PerfilDashboardPayload.MinisterioPublicoPayload bootstrapPainel() {
@@ -103,25 +84,22 @@ public class MinisterioPublicoPainelService {
         int manifestacoes = (int) inbox.stream().filter(this::isManifestacao).count();
         int recursos = (int) inbox.stream().filter(this::isRecurso).count();
         int prazos48h = (int) inbox.stream().filter(item -> item.getDueAt() != null && item.getDueAt().isBefore(Instant.now().plus(48, ChronoUnit.HOURS))).count();
-        List<String> prioridadeAlta = inbox.stream().filter(item -> item.getPrioridade() != null && item.getPrioridade() <= 1).limit(8).map(commons::resumo).toList();
+        List<String> prioridadeAlta = inbox.stream().filter(item -> item.getPrioridade() != null && item.getPrioridade() <= RitoUrgenciaPriorityPolicy.PRIORIDADE_ALTA).limit(8).map(commons::resumo).toList();
         List<String> inqueritos = inbox.stream().filter(this::isInquerito).limit(8).map(commons::resumo).toList();
         String etag = commons.etag("MP", usuario.getId(), manifestacoes, recursos, prazos48h, prioridadeAlta, inqueritos, ctx.behavioralAudit());
         Map<String, Object> panelBranding = institutionalPanelBrandingService.resolve("MINISTERIO_PUBLICO", "PAINEL_MINISTERIO_PUBLICO", usuario.getTipoUsuario());
         Map<String, Object> sharedExperience = sharedExperienceService.snapshot("MINISTERIO_PUBLICO");
-        Map<String, Object> operationalSignals = signalReflectionService.deriveSignals("MINISTERIO_PUBLICO", sharedExperience, manifestacoes + recursos, prazos48h, "ATUACAO_FINALISTICA");
-        Map<String, Object> nativeComposition = signalReflectionService.buildNativeComposition("MINISTERIO_PUBLICO", operationalSignals);
-        prioridadeAlta = collectionCompositionService.composeList("MINISTERIO_PUBLICO", "PROCESSOS_PRIORIDADE_ALTA", prioridadeAlta, operationalSignals, nativeComposition);
-        inqueritos = collectionCompositionService.composeList("MINISTERIO_PUBLICO", "INQUERITOS_EM_ACOMPANHAMENTO", inqueritos, operationalSignals, nativeComposition);
-        Map<String, Object> collectionComposition = collectionCompositionService.buildCollectionComposition("MINISTERIO_PUBLICO", operationalSignals, nativeComposition, Map.of(
+        Map<String, Object> operationalSignals = compositionPipeline.deriveSignals("MINISTERIO_PUBLICO", sharedExperience, manifestacoes + recursos, prazos48h, "ATUACAO_FINALISTICA");
+        Map<String, Object> nativeComposition = compositionPipeline.buildNativeComposition("MINISTERIO_PUBLICO", operationalSignals);
+        prioridadeAlta = compositionPipeline.composeList("MINISTERIO_PUBLICO", "PROCESSOS_PRIORIDADE_ALTA", prioridadeAlta, operationalSignals, nativeComposition);
+        inqueritos = compositionPipeline.composeList("MINISTERIO_PUBLICO", "INQUERITOS_EM_ACOMPANHAMENTO", inqueritos, operationalSignals, nativeComposition);
+        Map<String, Object> collectionComposition = compositionPipeline.buildCollectionComposition("MINISTERIO_PUBLICO", operationalSignals, nativeComposition, Map.of(
                 "processosPrioridadeAlta", prioridadeAlta,
                 "inqueritosEmAcompanhamento", inqueritos
         ));
-        Map<String, Object> actionSurface = actionSurfaceCompositionService.buildActionSurface("MINISTERIO_PUBLICO", operationalSignals, nativeComposition, collectionComposition);
-        Map<String, Object> executionSurface = executionSurfaceCompositionService.buildExecutionSurface("MINISTERIO_PUBLICO", operationalSignals, nativeComposition, collectionComposition, actionSurface);
-        Map<String, Object> panelVisualIdentity = signalReflectionService.reflectInBlock("MINISTERIO_PUBLICO", "VISUAL_IDENTITY", castMap(panelBranding.get("panelVisualIdentity")), operationalSignals);
-        panelVisualIdentity = collectionCompositionService.decorateBlock("MINISTERIO_PUBLICO", "VISUAL_IDENTITY", panelVisualIdentity, operationalSignals, nativeComposition);
-        panelVisualIdentity = actionSurfaceCompositionService.decorateBlock("MINISTERIO_PUBLICO", "VISUAL_IDENTITY", panelVisualIdentity, actionSurface, nativeComposition);
-        panelVisualIdentity = executionSurfaceCompositionService.decorateBlock("MINISTERIO_PUBLICO", "VISUAL_IDENTITY", panelVisualIdentity, executionSurface, nativeComposition);
+        Map<String, Object> actionSurface = compositionPipeline.buildActionSurface("MINISTERIO_PUBLICO", operationalSignals, nativeComposition, collectionComposition);
+        Map<String, Object> executionSurface = compositionPipeline.buildExecutionSurface("MINISTERIO_PUBLICO", operationalSignals, nativeComposition, collectionComposition, actionSurface);
+        Map<String, Object> panelVisualIdentity = compositionPipeline.decorate("MINISTERIO_PUBLICO", "VISUAL_IDENTITY", castMap(panelBranding.get("panelVisualIdentity")), operationalSignals, nativeComposition, actionSurface, executionSurface);
         return new PerfilDashboardPayload.MinisterioPublicoPayload(
                 etag,
                 ctx.generatedAt(),
@@ -155,8 +133,7 @@ public class MinisterioPublicoPainelService {
     }
 
     public InstitutionalActorTopologyMeshService.InstitutionalActorTopologyMeshSnapshot malhaProcesso(Long processoId) {
-        authorizationService.requireVinculoInstitucionalComProcesso(processoId);
-        return institutionalActorTopologyMeshService.snapshot(processoId);
+        return institutionalRoutingService.malhaProcesso(processoId);
     }
 
     public List<Map<String, Object>> listarManifestacoesPendentes() {
@@ -294,38 +271,8 @@ public class MinisterioPublicoPainelService {
         return marcado;
     }
 
-    @Transactional
     public Map<String, Object> requisitarDiligencia(Long processoId, Object request) {
-        Processo processo = processoRepository.findById(processoId).orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
-        institutionalMaterialActionGuardService.requireAllowedForProcessAction(processo, InstitutionalMaterialActionGuardService.MaterialAction.MINISTERIO_PUBLICO_REQUISICAO_DILIGENCIA);
-        Usuario usuario = contextFactory.build().usuario();
-        InstitutionalActorRoutingService.InstitutionalRoute route = institutionalActorRoutingService.policeDiligence(processoId);
-        WorkItem item = WorkItem.builder()
-                .processo(processo)
-                .faseOrigem(processo.getFaseAtual())
-                .templateCode("DELEGACIA_DILIGENCIA:" + processoId + ':' + Instant.now().toEpochMilli())
-                .type(WorkItemType.DILIGENCIA)
-                .titulo("Cumprir diligência requisitada pelo Ministério Público")
-                .descricao(String.valueOf(request))
-                .queueCode(route.queueCode())
-                .inboxKey(route.inboxKey())
-                .assignedRole(route.assignedRole())
-                .status(WorkItemStatus.PENDENTE)
-                .prioridade(1)
-                .dueAt(Instant.now().plus(48, ChronoUnit.HOURS))
-                .uf(usuario.getUf())
-                .comarca(usuario.getComarca())
-                .baseLegal("Requisição de diligência do Ministério Público")
-                .build();
-        item = workItemRepository.save(item);
-        commons.publishTerritoryHistory(usuario, "DELEGADO", "MP_REQUISITOU_DILIGENCIA", "Nova diligência recebida do MP.", processo, item.getId());
-        LinkedHashMap<String, Object> out = new LinkedHashMap<>();
-        out.put("status", "REQUISITADA");
-        out.put("workItemId", item.getId());
-        out.put("dueAt", item.getDueAt());
-        out.put("encaminhadoPara", route.inboxKey());
-        out.put("routeAxis", route.routeAxis());
-        return out;
+        return institutionalRoutingService.requisitarDiligencia(processoId, request);
     }
 
     public List<Map<String, Object>> listarPrazosDentroDe48h() {

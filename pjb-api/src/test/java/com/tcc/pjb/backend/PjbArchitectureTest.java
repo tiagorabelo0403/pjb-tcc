@@ -1,19 +1,36 @@
 package com.tcc.pjb.backend;
 
 import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.domain.JavaCodeUnit;
+import com.tngtech.archunit.core.domain.TryCatchBlock;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.ArchRule;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 class PjbArchitectureTest {
+
+    /**
+     * Primeiro tipo citado numa linha de violacao do ArchUnit. Pacote em minusculas, classe comecando
+     * em maiuscula: serve tanto para {@code Class <...Instituicao>} quanto para
+     * {@code Constructor <...ProtocoloReciboController.<init>(...)>}.
+     */
+    private static final Pattern CLASSE_VIOLADORA =
+            Pattern.compile("<(com\\.tcc\\.pjb\\.backend(?:\\.[a-z][A-Za-z0-9_]*)*\\.[A-Z][A-Za-z0-9_]*)");
 
     static JavaClasses classes;
 
@@ -22,13 +39,89 @@ class PjbArchitectureTest {
         classes = new ClassFileImporter().withImportOption(new ImportOption.DoNotIncludeTests()).importPackages("com.tcc.pjb.backend");
     }
 
+    /**
+     * Avalia a regra sem lancar, para que o baseline conhecido possa ser afirmado por nome em vez de
+     * a regra ficar desligada. Uma regra desligada nao verifica nada; um baseline afirmado por nome
+     * ainda reprova qualquer violacao nova.
+     */
+    private static List<String> violacoesDe(ArchRule rule) {
+        return rule.evaluate(classes).getFailureReport().getDetails();
+    }
+
+    private static Set<String> nomesDeClasseEm(List<String> detalhes) {
+        Set<String> nomes = new TreeSet<>();
+        for (String detalhe : detalhes) {
+            Matcher matcher = CLASSE_VIOLADORA.matcher(detalhe);
+            assertThat(matcher.find())
+                    .as("linha de violacao sem tipo reconhecivel, o extrator perderia o achado: %s", detalhe)
+                    .isTrue();
+            nomes.add(matcher.group(1));
+        }
+        return nomes;
+    }
+
     @Test
-    @Disabled("Baseline legado será migrado por facades de superfície sem bloquear a esteira de correções funcionais.")
-    void controllers_nao_devem_importar_repositories() {
+    void controllers_nao_devem_alcancar_dados_por_conta_propria() {
+        // A regra e por nome de classe, e nao por pacote. Enquanto olhava apenas `..controller..`
+        // dependendo de `..model.repository..` ela dava zero violacao e escondia seis: o projeto tem
+        // pelo menos oito pacotes de repository, e controller nem sempre mora sob `controller`. Regra
+        // mais estreita que o proprio nome e pior que regra ausente, porque produz confianca falsa.
+        //
+        // A segunda ampliacao veio pelo mesmo erro, um nivel adiante: "Repository" e apenas um dos
+        // nomes que acesso a dado usa. PjbDemoStatusController falava com o banco por JdbcTemplate e
+        // atravessou a regra sem ser visto, porque JdbcTemplate nao termina em Repository.
+        //
+        // O que esta coberto e alcance a dado: repositorio, DAO, template JDBC, EntityManager,
+        // DataSource, conexao. Tipo de excecao de persistencia e vazamento de outra natureza e tem
+        // regra propria logo abaixo — esta aqui nao promete pega-lo.
         ArchRule rule = noClasses()
-                .that().resideInAPackage("..controller..").or().resideInAPackage("..controllers..")
-                .should().dependOnClassesThat().resideInAPackage("..model.repository..");
+                .that().haveSimpleNameEndingWith("Controller")
+                .should().dependOnClassesThat().haveSimpleNameEndingWith("Repository")
+                .orShould().dependOnClassesThat().haveSimpleNameEndingWith("Dao")
+                .orShould().dependOnClassesThat()
+                .resideInAnyPackage("org.springframework.jdbc..", "javax.sql..", "org.hibernate..")
+                .orShould().dependOnClassesThat().haveNameMatching(
+                        "jakarta\\.persistence\\.EntityManager(Factory)?|java\\.sql\\.(Connection|Statement"
+                                + "|PreparedStatement|CallableStatement|ResultSet|DriverManager)");
         rule.check(classes);
+    }
+
+    @Test
+    void controllers_nao_devem_capturar_excecao_de_persistencia() {
+        // Separado da regra de cima de proposito: aquela cobre alcance a dado, esta cobre traduzir
+        // excecao de persistencia dentro do controller. FuncaoServidorAdminController capturava
+        // jakarta.persistence.EntityNotFoundException para devolver 404 — tapava a mao, num controller
+        // so, um buraco que era do ApiExceptionHandler e que deixava os outros 33 lancamentos da mesma
+        // excecao responderem 500 para recurso inexistente.
+        //
+        // A checagem e explicita, e nao `noClasses().should().dependOnClassesThat()`, porque a forma
+        // declarativa NAO ve tipo capturado: escrevi a regra declarativa primeiro, restaurei o catch
+        // numa sonda, e ela passou verde com a violacao no lugar. Tipo de catch vive na tabela de
+        // excecoes do bytecode, fora do conjunto de dependencias que o ArchUnit monta.
+        List<String> capturas = new ArrayList<>();
+        int throwablesCapturadosEmControllers = 0;
+        for (JavaClass tipo : classes) {
+            if (!tipo.getSimpleName().endsWith("Controller")) {
+                continue;
+            }
+            for (JavaCodeUnit metodo : tipo.getCodeUnits()) {
+                for (TryCatchBlock bloco : metodo.getTryCatchBlocks()) {
+                    for (JavaClass capturado : bloco.getCaughtThrowables()) {
+                        throwablesCapturadosEmControllers++;
+                        if (capturado.getPackageName().startsWith("jakarta.persistence")) {
+                            capturas.add(tipo.getName() + "#" + metodo.getName() + " captura "
+                                    + capturado.getName());
+                        }
+                    }
+                }
+            }
+        }
+
+        assertThat(throwablesCapturadosEmControllers)
+                .as("nenhum catch encontrado em controller nenhum: a varredura nao esta vendo o "
+                        + "bytecode, e a lista vazia abaixo nao significaria nada")
+                .isPositive();
+        assertThat(capturas).isEmpty();
     }
 
     @Test
@@ -65,12 +158,35 @@ class PjbArchitectureTest {
     }
 
     @Test
-    @Disabled("Baseline legado será classificado por catálogo LGPD/ownership em rodada dedicada.")
     void entities_devem_ter_anotacao_ownership() {
         ArchRule rule = classes()
                 .that().resideInAPackage("..model.entity..").and().areAnnotatedWith(jakarta.persistence.Entity.class)
                 .should().beAnnotatedWith(PjbDataOwnership.class);
-        rule.check(classes);
+
+        List<String> violacoes = violacoesDe(rule);
+
+        assertThat(nomesDeClasseEm(violacoes))
+                .as("baseline conhecido: 16 entidades sem classificacao de titularidade de dado. Cada uma "
+                        + "exige decisao de dominio sobre quem e o titular e qual a base legal, entao nao se "
+                        + "fecha por anotacao mecanica. Entidade nova precisa nascer anotada: qualquer nome "
+                        + "fora desta lista e regressao.")
+                .containsExactlyInAnyOrder(
+                        "com.tcc.pjb.backend.model.entity.Instituicao",
+                        "com.tcc.pjb.backend.model.entity.LotacaoInstituicao",
+                        "com.tcc.pjb.backend.model.entity.SecretariaInstitucionalItem",
+                        "com.tcc.pjb.backend.model.entity.UnidadeInstitucionalAbrangencia",
+                        "com.tcc.pjb.backend.model.entity.UnidadeInstituicao",
+                        "com.tcc.pjb.backend.model.entity.comunicacao.CienciaProcessual",
+                        "com.tcc.pjb.backend.model.entity.processo.CargaProcesso",
+                        "com.tcc.pjb.backend.model.entity.processo.ConclusaoProcessual",
+                        "com.tcc.pjb.backend.model.entity.processo.ImpedimentoMinistro",
+                        "com.tcc.pjb.backend.model.entity.processo.PautaSTF",
+                        "com.tcc.pjb.backend.model.entity.processo.PedidoVistaSTF",
+                        "com.tcc.pjb.backend.model.entity.processo.PoloProcessual",
+                        "com.tcc.pjb.backend.model.entity.processo.ProcessoEstadoLog",
+                        "com.tcc.pjb.backend.model.entity.processo.SequencialNumeracaoCnj",
+                        "com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorJudiciarioEntity",
+                        "com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorSolicitacao");
     }
 
     @Test

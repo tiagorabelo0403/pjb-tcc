@@ -1,0 +1,115 @@
+name: PJB Integration Gate
+
+# O ci.yml roda `mvnw test`: as 116 classes *IT.java com Testcontainers nao rodam la, nem em
+# lugar nenhum automatico. A afirmacao "Falhas IT: 0" do README vinha de execucao local, sem
+# nada que a reverificasse. Este workflow existe para reverifica-la todo dia contra Postgres e
+# Kafka reais, fora do caminho critico da PR.
+on:
+  # Todo merge em master roda a suite. Sem isto havia uma janela: uma regressao de integracao
+  # mesclada as 09:00 so apareceria as 05:00 do dia seguinte, e ate la o master estaria quebrado
+  # sem ninguem saber. O agendamento continua como rede: pega quebra que nao vem de commit
+  # (imagem de container, dependencia resolvida em runtime, expiracao de dado de fixture).
+  push:
+    branches: [master]
+  schedule:
+    # 05:00 UTC = 02:00 em Brasilia. Agendamento so dispara no branch padrao (master).
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+concurrency:
+  # Por ref, e cancelando o anterior: numa sequencia de merges o que importa e o commit mais novo,
+  # e deixar as execucoes enfileirarem faria o aviso chegar cada vez mais tarde. Rodada agendada
+  # cancelada por um push nao perde nada — o push testa codigo mais novo.
+  group: integration-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: temurin
+  MAVEN_OPTS: '-Xmx1g'
+  TITULO_DA_ISSUE: 'Suite de integracao vermelha em master'
+
+jobs:
+  integration:
+    name: Integration (Testcontainers)
+    runs-on: ubuntu-latest
+    # verify completo leva ~50min na maquina do dono. O teto e folgado de proposito: job morto por
+    # timeout apertado seria indistinguivel de suite quebrada.
+    timeout-minutes: 150
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+
+      # `-am` nao e opcional: sem ele o pjb-core vem do ~/.m2 em vez do reator, e um jar velho
+      # produz `cannot find symbol` em classe que existe no fonte.
+      #
+      # O heap de 4g do pom (test.forked.jvm.xmx) nao cabe aqui. Medido na primeira execucao real
+      # (run 34772855652): 22 contextos Spring distintos numa unica JVM de Failsafe, retidos pelo
+      # cache do TestContext, e OutOfMemoryError: Java heap space em 54 pontos — dai 55 dos 63
+      # problemas relatados serem "Failed to load ApplicationContext" em cascata, e nao defeito de
+      # produto. O runner tem 15.989 MB; 8g de heap deixa folga para os containers e para o
+      # launcher. Isto NAO corrige a fragmentacao de contexto (D-fragmentacao-de-contexto-spring-
+      # nos-its), so para de esconder o resto atras de OOM.
+      - name: Verify (Surefire + Failsafe contra containers reais)
+        run: ./mvnw -B verify -pl pjb-api -am -Dtest.forked.jvm.xmx=8g
+
+      - name: Upload dos relatorios
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: integration-reports-${{ github.run_id }}
+          retention-days: 30
+          path: |
+            pjb-api/target/surefire-reports/
+            pjb-api/target/failsafe-reports/
+
+      # Rodada agendada que falha sem avisar ninguem nao e portao, e log. Abre issue na primeira
+      # quebra e comenta nas seguintes, para nao gerar uma issue por noite.
+      - name: Avisar quebra
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          numero=$(gh issue list --state open --limit 50 \
+            --json number,title --jq "[.[] | select(.title == \"${TITULO_DA_ISSUE}\")][0].number // empty")
+          corpo="Commit \`${GITHUB_SHA}\` reprovou em \`mvnw verify -pl pjb-api -am\`.
+
+          Execucao: ${RUN_URL}
+
+          Os relatorios de Surefire e Failsafe estao anexados como artefato da execucao."
+          if [ -n "${numero}" ]; then
+            gh issue comment "${numero}" --body "${corpo}"
+          else
+            gh issue create --title "${TITULO_DA_ISSUE}" --body "${corpo}"
+          fi
+
+      # Fecha sozinha quando volta ao verde: issue aberta que ninguem fecha vira ruido e, depois
+      # de algumas semanas, deixa de ser lida. `continue-on-error` para que uma falha da API do
+      # GitHub aqui nao pinte de vermelho uma suite que passou.
+      - name: Fechar aviso quando volta ao verde
+        if: success()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          numero=$(gh issue list --state open --limit 50 \
+            --json number,title --jq "[.[] | select(.title == \"${TITULO_DA_ISSUE}\")][0].number // empty")
+          if [ -n "${numero}" ]; then
+            gh issue close "${numero}" \
+              --comment "Suite de integracao verde em \`${GITHUB_SHA}\`. Execucao: ${RUN_URL}"
+          fi

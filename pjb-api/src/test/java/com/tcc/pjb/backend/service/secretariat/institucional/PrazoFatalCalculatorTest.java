@@ -77,8 +77,10 @@ class PrazoFatalCalculatorTest {
         when(calendarioForenseTribunalService.calcularPrazo(any(), eq(5), eq("TJSP"), eq("SP"), eq("Sao Paulo")))
                 .thenReturn(prazoCalculado(vencimento));
 
-        calculator.calcular(item, processo, marcoProximoDaMeiaNoiteUtc);
+        Instant resultado = calculator.calcular(item, processo, marcoProximoDaMeiaNoiteUtc);
 
+        Instant esperadoResultado = vencimento.atTime(LocalTime.MAX).atZone(FUSO_BR).toInstant();
+        assertThat(resultado).isEqualTo(esperadoResultado);
         LocalDate esperado = marcoProximoDaMeiaNoiteUtc.atZone(FUSO_BR).toLocalDate();
         verify(calendarioForenseTribunalService).calcularPrazo(eq(esperado), eq(5), eq("TJSP"), eq("SP"), eq("Sao Paulo"));
     }

@@ -11,6 +11,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.core.security.crypto.CryptoVaultService;
+import com.tcc.pjb.backend.core.security.crypto.UsuarioBlindIndexService;
 
 @Component
 @Profile({"dev", "test", "demo"})
@@ -21,10 +23,15 @@ public class PjbDemoDataInitializer {
 
     private final JdbcTemplate jdbc;
     private final PasswordEncoder passwordEncoder;
+    private final CryptoVaultService cryptoVaultService;
+    private final UsuarioBlindIndexService blindIndex;
 
-    public PjbDemoDataInitializer(JdbcTemplate jdbc, PasswordEncoder passwordEncoder) {
+    public PjbDemoDataInitializer(JdbcTemplate jdbc, PasswordEncoder passwordEncoder,
+                                  CryptoVaultService cryptoVaultService, UsuarioBlindIndexService blindIndex) {
         this.jdbc = jdbc;
         this.passwordEncoder = passwordEncoder;
+        this.cryptoVaultService = cryptoVaultService;
+        this.blindIndex = blindIndex;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -52,12 +59,17 @@ public class PjbDemoDataInitializer {
             new Object[]{"Admin Sistema PJB", e("admin"), "ADMINISTRADOR", hash, "45678901234", "ADMINISTRADOR"}
         );
         for (Object[] u : usuarios) {
+            String cpfBruto = (String) u[4];
+            String emailBruto = (String) u[1];
+            String cpfHash = blindIndex.hashCpf(cpfBruto);
             Integer exists = jdbc.queryForObject(
-                "SELECT COUNT(1) FROM tb_usuario WHERE cpf = ?", Integer.class, u[4]);
+                "SELECT COUNT(1) FROM tb_usuario WHERE cpf_hash = ?", Integer.class, cpfHash);
             if (exists != null && exists == 0) {
                 jdbc.update(
-                    "INSERT INTO tb_usuario (nome, email, perfil, senha, cpf, ativo, tipo_usuario) VALUES (?,?,?,?,?,true,?)",
-                    u);
+                    "INSERT INTO tb_usuario (nome, email, email_hash, perfil, senha, cpf, cpf_hash, ativo, tipo_usuario) "
+                        + "VALUES (?,?,?,?,?,?,?,true,?)",
+                    u[0], cryptoVaultService.blindarDado(emailBruto), blindIndex.hashEmail(emailBruto),
+                    u[2], u[3], cryptoVaultService.blindarDado(cpfBruto), cpfHash, u[5]);
             }
         }
     }

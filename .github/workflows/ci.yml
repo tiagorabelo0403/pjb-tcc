@@ -41,6 +41,13 @@ jobs:
       - name: Unit Tests
         run: ./mvnw -pl pjb-api -am test -DfailIfNoTests=false -q
 
+      # Roda aqui, e nao no job de guards, porque so aqui existe relatorio de Surefire no disco — e
+      # o checkout e novo, entao o conjunto e exatamente o desta execucao. No job separado o guard
+      # se recusaria a conferir a contagem de testes, que e justamente a alegacao que mais envelhece.
+      - name: README Numeric Truth
+        working-directory: scripts
+        run: python3 readme_numeric_truth_guard.py
+
       - name: ArchUnit Guards
         run: ./mvnw -pl pjb-api -am -Dtest="*ArchitectureTest,*ArchTest,PjbSecurityArchitectureTest" test -q
 
@@ -83,11 +90,24 @@ jobs:
       contents: read
 
     steps:
+      # fetch-depth: 0 porque o debt_evidence_guard mede "entrada nova ou alterada" contra a base
+      # da branch. Com o clone raso padrao nao existe base, e ele reprova dizendo isso em vez de
+      # passar sem verificar nada.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
+
+      - name: debt_evidence_guard
+        working-directory: scripts
+        run: python debt_evidence_guard.py
+
+      - name: guard_cwd_independence_guard
+        working-directory: scripts
+        run: python guard_cwd_independence_guard.py
 
       - name: internal_reference_drift_guard
         working-directory: scripts
@@ -130,6 +150,80 @@ jobs:
       - name: hibernate_filter_definition_guard
         working-directory: scripts
         run: python hibernate_filter_definition_guard.py
+
+      - name: integration_test_naming_guard
+        working-directory: scripts
+        run: python integration_test_naming_guard.py
+
+      - name: java_comment_discipline_guard
+        working-directory: scripts
+        run: python java_comment_discipline_guard.py
+
+      - name: debt_log_hygiene_guard
+        working-directory: scripts
+        run: python debt_log_hygiene_guard.py
+
+      - name: conditional_property_declared_guard
+        working-directory: scripts
+        run: |
+          python -m pip install --quiet pyyaml
+          python conditional_property_declared_guard.py
+
+      - name: java_regression_signature_guard
+        working-directory: scripts
+        run: python java_regression_signature_guard.py
+
+      - name: internal_type_hygiene_guard
+        working-directory: scripts
+        run: python internal_type_hygiene_guard.py
+
+      - name: canonical_institutional_route_guard
+        working-directory: scripts
+        run: python canonical_institutional_route_guard.py
+
+      - name: readme_truthfulness_guard
+        working-directory: scripts
+        run: python readme_truthfulness_guard.py
+
+      - name: test_drift_guard
+        working-directory: scripts
+        run: python test_drift_guard.py
+
+      - name: repository_layout_guard
+        working-directory: scripts
+        run: python repository_layout_guard.py
+
+      - name: repository_cleanliness_guard
+        working-directory: scripts
+        run: python repository_cleanliness_guard.py
+
+      - name: salario_minimo_hardcoded_guard
+        working-directory: scripts
+        run: python salario_minimo_hardcoded_guard.py
+
+      - name: tribunal_readiness_guard
+        working-directory: scripts
+        run: python tribunal_readiness_guard.py
+
+      - name: universal_digital_core_guard
+        working-directory: scripts
+        run: python universal_digital_core_guard.py
+
+      - name: judicial_innovation_guard
+        working-directory: scripts
+        run: python judicial_innovation_guard.py
+
+      - name: judicial_innovation_part_two_guard
+        working-directory: scripts
+        run: python judicial_innovation_part_two_guard.py
+
+      - name: judicial_innovation_part_three_guard
+        working-directory: scripts
+        run: python judicial_innovation_part_three_guard.py
+
+      - name: access_key_and_unavailability_guard
+        working-directory: scripts
+        run: python access_key_and_unavailability_guard.py
 
       - name: Upload Guard Reports
         if: always()

@@ -5,6 +5,12 @@ import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import java.io.StringReader;
+import java.util.Base64;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -44,7 +50,86 @@ public class MniXmlToProcessoAdapter {
         processo.setRito(resolveRito(tag(doc, "rito")));
         processo.setStatusProcesso(StatusProcesso.EM_ANDAMENTO);
         List<MniParteParsed> partes = resolvePartes(doc, processo);
-        return new MniAdapterResult(processo, partes);
+        List<MniMovimentoParsed> movimentos = resolveMovimentos(doc);
+        List<MniDocumentoParsed> documentos = resolveDocumentos(doc);
+        return new MniAdapterResult(processo, partes, movimentos, documentos);
+    }
+
+    /**
+     * Mesma ressalva de {@link #resolveMovimentos(Document)}: nome/atributos exatos do elemento
+     * "documento" do XSD do MNI não puderam ser confirmados contra fonte oficial. Documento sem
+     * conteúdo (base64) reconhecível é descartado — nunca materializa um documento vazio.
+     */
+    private List<MniDocumentoParsed> resolveDocumentos(Document doc) {
+        List<MniDocumentoParsed> documentos = new ArrayList<>();
+        for (Node documento : allDescendants(doc, "documento")) {
+            String base64 = firstNonBlank(attr(documento, "conteudo"), elementText(documento, "conteudo"));
+            byte[] conteudo = decodeBase64(base64);
+            if (conteudo == null || conteudo.length == 0) {
+                continue;
+            }
+            String nome = firstNonBlank(attr(documento, "nome"), attr(documento, "descricao"));
+            String descricao = attr(documento, "descricao");
+            String mimetype = attr(documento, "mimetype");
+            Instant dataHora = parseDataHoraMni(attr(documento, "dataHora"));
+            documentos.add(new MniDocumentoParsed(nome, descricao, mimetype, conteudo, dataHora));
+        }
+        return documentos;
+    }
+
+    private static byte[] decodeBase64(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return Base64.getMimeDecoder().decode(raw.trim());
+        } catch (IllegalArgumentException e) {
+            log.warn("Conteúdo de documento MNI não é base64 válido, descartando documento");
+            return null;
+        }
+    }
+
+    /**
+     * Formato literal de dataHora do movimento no XSD do MNI (intercomunicacao-2.2.2) não pôde ser
+     * confirmado contra fonte oficial nesta implementação — tenta os dois formatos observados em
+     * integrações reais (yyyyMMddHHmmss compacto e ISO local date-time) e descarta silenciosamente
+     * o movimento se nenhum dos dois for reconhecido, em vez de fabricar uma data.
+     */
+    private List<MniMovimentoParsed> resolveMovimentos(Document doc) {
+        List<MniMovimentoParsed> movimentos = new ArrayList<>();
+        for (Node movimento : allDescendants(doc, "movimento")) {
+            Instant dataHora = parseDataHoraMni(attr(movimento, "dataHora"));
+            if (dataHora == null) {
+                continue;
+            }
+            String descricao = firstNonBlank(
+                    attr(movimento, "descricao"),
+                    attr(firstDescendant(movimento, "movimentoNacional"), "descricao"),
+                    attr(firstDescendant(movimento, "movimentoLocal"), "descricao"),
+                    elementText(movimento, "complemento"));
+            movimentos.add(new MniMovimentoParsed(dataHora, descricao));
+        }
+        return movimentos;
+    }
+
+    private static Instant parseDataHoraMni(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        String digits = raw.replaceAll("[^0-9]", "");
+        if (digits.length() >= 14) {
+            try {
+                LocalDateTime ldt = LocalDateTime.parse(digits.substring(0, 14), DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+                return ldt.toInstant(ZoneOffset.UTC);
+            } catch (DateTimeParseException ignored) {
+                // tenta o próximo formato abaixo
+            }
+        }
+        try {
+            return LocalDateTime.parse(raw.trim()).toInstant(ZoneOffset.UTC);
+        } catch (DateTimeParseException ignored) {
+            return null;
+        }
     }
 
     private List<MniParteParsed> resolvePartes(Document doc, Processo processo) {

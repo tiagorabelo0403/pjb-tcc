@@ -18,6 +18,7 @@ import com.tcc.pjb.backend.integration.govbr.oidc.GovBrTokenResponse;
 import com.tcc.pjb.backend.integration.govbr.oidc.GovBrUserInfoResponse;
 import com.tcc.pjb.backend.model.dto.govbr.GovBrLoginSessionResponse;
 import com.tcc.pjb.backend.model.dto.govbr.GovBrLoginStartResponse;
+import com.tcc.pjb.backend.model.entity.enums.OrigemAutenticacaoSessao;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.identity.GovBrLoginState;
 import com.tcc.pjb.backend.model.repository.GovBrLoginStateRepository;
@@ -386,13 +387,13 @@ class GovBrLoginServiceTest {
         when(usuarioRepository.findById(99L)).thenReturn(Optional.of(usuario));
         PasskeySessionService.IssuedPasskeySession issued =
                 new PasskeySessionService.IssuedPasskeySession("bearer-real-token", LocalDateTime.now().plusHours(8), 123L, false);
-        when(passkeySessionService.issue(usuario, null, "203.0.113.5")).thenReturn(issued);
+        when(passkeySessionService.issue(usuario, null, "203.0.113.5", OrigemAutenticacaoSessao.GOVBR)).thenReturn(issued);
 
         GovBrLoginSessionResponse response = service.retrieveSession(stateId.toString(), "203.0.113.5");
 
         assertThat(response.token()).isEqualTo("bearer-real-token");
         assertThat(response.expiresAt()).isEqualTo(issued.expiresAt());
         assertThat(st.isSessionRetrieved()).isTrue();
-        verify(passkeySessionService).issue(usuario, null, "203.0.113.5");
+        verify(passkeySessionService).issue(usuario, null, "203.0.113.5", OrigemAutenticacaoSessao.GOVBR);
     }
 }

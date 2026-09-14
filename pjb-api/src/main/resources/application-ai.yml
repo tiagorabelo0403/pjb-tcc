@@ -16,6 +16,14 @@ pjb:
 
   ai:
     provider: ${PJB_AI_PROVIDER:openai}
+    ollama:
+      base-url: ${PJB_AI_OLLAMA_BASE_URL:http://localhost:11434}
+      model: "${PJB_AI_OLLAMA_MODEL:qwen2.5:7b}"
+      embedding-model: ${PJB_AI_OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
+      temperature: ${PJB_AI_OLLAMA_TEMPERATURE:0.2}
+      timeout-ms: ${PJB_AI_OLLAMA_TIMEOUT_MS:180000}
+    embedding:
+      mode: ${PJB_AI_EMBEDDING_MODE:hash}
     openai:
       api-key: ${OPENAI_API_KEY:}
       base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}

@@ -76,93 +76,39 @@ import com.tcc.pjb.backend.service.triagem.TriagemNacionalIAEngine;
 public class LaianePeticaoAssistService {
 
     private final LaianeDraftService draftService;
-    private final LaianePeticaoValidatorService validatorService;
     private final LaianeRitosCoverageService ritosCoverageService;
     private final LaianeLawyerService laianeLawyerService;
     private final LaianeProtocolService laianeProtocolService;
-    private final TriagemNacionalIAEngine triagemNacionalIAEngine;
-    private final TetoProcessualService tetoProcessualService;
-    private final TerritorialProcessualService territorialProcessualService;
-    private final MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine;
-    private final RadarPadroesService radarPadroesService;
-    private final ProntuarioNacionalService prontuarioNacionalService;
     private final ProceduralCatalogService proceduralCatalogService;
     private final ProceduralCanonicalResolver proceduralCanonicalResolver;
-    private final LegalCoherenceEngine legalCoherenceEngine;
-    private final ProtocolDryRunService protocolDryRunService;
-    private final ProcessIntegrityRadarService processIntegrityRadarService;
-    private final StrategicCopilotService strategicCopilotService;
-    private final SettlementAdvisoryService settlementAdvisoryService;
-    private final ProcessMaterialDossierService processMaterialDossierService;
-    private final ProcessMaterialStrategyService processMaterialStrategyService;
-    private final NationalProceduralRoutingService nationalProceduralRoutingService;
-    private final ProceduralSubmissionBlueprintService proceduralSubmissionBlueprintService;
-    private final ProceduralConnectorExecutionService proceduralConnectorExecutionService;
-    private final InstitutionalMemoryService institutionalMemoryService;
-    private final InstitutionalGovernanceContextService institutionalGovernanceContextService;
-    private final ContextualPrecedentAdvisoryService contextualPrecedentAdvisoryService;
-    private final ExplainableDecisionTrailService explainableDecisionTrailService;
     private final KernelOperationalGovernanceService kernelOperationalGovernanceService;
     private final LaianeSubmissionGuardrailService laianeSubmissionGuardrailService;
+    private final LaianeTriagemPipelineOrchestrator triagemPipeline;
+    private final LaianeProceduralPipelineOrchestrator proceduralPipeline;
+    private final LaianeAdvisoryPipelineOrchestrator advisoryPipeline;
 
     public LaianePeticaoAssistService(LaianeDraftService draftService,
-                                      LaianePeticaoValidatorService validatorService,
                                       LaianeRitosCoverageService ritosCoverageService,
                                       LaianeLawyerService laianeLawyerService,
                                       LaianeProtocolService laianeProtocolService,
-                                      TriagemNacionalIAEngine triagemNacionalIAEngine,
-                                      TetoProcessualService tetoProcessualService,
-                                      TerritorialProcessualService territorialProcessualService,
-                                      MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine,
-                                      RadarPadroesService radarPadroesService,
-                                      ProntuarioNacionalService prontuarioNacionalService,
                                       ProceduralCatalogService proceduralCatalogService,
                                       ProceduralCanonicalResolver proceduralCanonicalResolver,
-                                      LegalCoherenceEngine legalCoherenceEngine,
-                                      ProtocolDryRunService protocolDryRunService,
-                                      ProcessIntegrityRadarService processIntegrityRadarService,
-                                      StrategicCopilotService strategicCopilotService,
-                                      SettlementAdvisoryService settlementAdvisoryService,
-                                      ProcessMaterialDossierService processMaterialDossierService,
-                                      ProcessMaterialStrategyService processMaterialStrategyService,
-                                      NationalProceduralRoutingService nationalProceduralRoutingService,
-                                      ProceduralSubmissionBlueprintService proceduralSubmissionBlueprintService,
-                                      ProceduralConnectorExecutionService proceduralConnectorExecutionService,
-                                      InstitutionalMemoryService institutionalMemoryService,
-                                      InstitutionalGovernanceContextService institutionalGovernanceContextService,
-                                      ContextualPrecedentAdvisoryService contextualPrecedentAdvisoryService,
-                                      ExplainableDecisionTrailService explainableDecisionTrailService,
                                       KernelOperationalGovernanceService kernelOperationalGovernanceService,
-                                      LaianeSubmissionGuardrailService laianeSubmissionGuardrailService) {
+                                      LaianeSubmissionGuardrailService laianeSubmissionGuardrailService,
+                                      LaianeTriagemPipelineOrchestrator triagemPipeline,
+                                      LaianeProceduralPipelineOrchestrator proceduralPipeline,
+                                      LaianeAdvisoryPipelineOrchestrator advisoryPipeline) {
         this.draftService = Objects.requireNonNull(draftService);
-        this.validatorService = Objects.requireNonNull(validatorService);
         this.ritosCoverageService = Objects.requireNonNull(ritosCoverageService);
         this.laianeLawyerService = Objects.requireNonNull(laianeLawyerService);
         this.laianeProtocolService = Objects.requireNonNull(laianeProtocolService);
-        this.triagemNacionalIAEngine = Objects.requireNonNull(triagemNacionalIAEngine);
-        this.tetoProcessualService = Objects.requireNonNull(tetoProcessualService);
-        this.territorialProcessualService = Objects.requireNonNull(territorialProcessualService);
-        this.mapaCompetenciaDinamicoEngine = Objects.requireNonNull(mapaCompetenciaDinamicoEngine);
-        this.radarPadroesService = Objects.requireNonNull(radarPadroesService);
-        this.prontuarioNacionalService = Objects.requireNonNull(prontuarioNacionalService);
         this.proceduralCatalogService = Objects.requireNonNull(proceduralCatalogService);
         this.proceduralCanonicalResolver = Objects.requireNonNull(proceduralCanonicalResolver);
-        this.legalCoherenceEngine = Objects.requireNonNull(legalCoherenceEngine);
-        this.protocolDryRunService = Objects.requireNonNull(protocolDryRunService);
-        this.processIntegrityRadarService = Objects.requireNonNull(processIntegrityRadarService);
-        this.strategicCopilotService = Objects.requireNonNull(strategicCopilotService);
-        this.settlementAdvisoryService = Objects.requireNonNull(settlementAdvisoryService);
-        this.processMaterialDossierService = Objects.requireNonNull(processMaterialDossierService);
-        this.processMaterialStrategyService = Objects.requireNonNull(processMaterialStrategyService);
-        this.nationalProceduralRoutingService = Objects.requireNonNull(nationalProceduralRoutingService);
-        this.proceduralSubmissionBlueprintService = Objects.requireNonNull(proceduralSubmissionBlueprintService);
-        this.proceduralConnectorExecutionService = Objects.requireNonNull(proceduralConnectorExecutionService);
-        this.institutionalMemoryService = Objects.requireNonNull(institutionalMemoryService);
-        this.institutionalGovernanceContextService = Objects.requireNonNull(institutionalGovernanceContextService);
-        this.contextualPrecedentAdvisoryService = Objects.requireNonNull(contextualPrecedentAdvisoryService);
-        this.explainableDecisionTrailService = Objects.requireNonNull(explainableDecisionTrailService);
         this.kernelOperationalGovernanceService = Objects.requireNonNull(kernelOperationalGovernanceService);
         this.laianeSubmissionGuardrailService = Objects.requireNonNull(laianeSubmissionGuardrailService);
+        this.triagemPipeline = Objects.requireNonNull(triagemPipeline);
+        this.proceduralPipeline = Objects.requireNonNull(proceduralPipeline);
+        this.advisoryPipeline = Objects.requireNonNull(advisoryPipeline);
     }
 
     public LaianePeticaoAssistResponse preflight(LaianePeticaoAssistRequest request) {
@@ -199,53 +145,45 @@ public class LaianePeticaoAssistService {
         LaianePeticaoAssistRequest req = normalize(request);
         DraftBundle draftBundle = resolveDraft(req, forceDraft);
         String textoBase = firstNonBlank(draftBundle.content(), req.getDraftMarkdown(), req.getTextoFatosResumido(), "PETICAO EM ELABORACAO");
-        var triagem = triagemNacionalIAEngine.triar(buildTriagemRequest(req, textoBase));
+        var triagem = triagemPipeline.triar(buildTriagemRequest(req, textoBase));
         CanonicalContext canonical = resolveCanonicalContext(req, triagem, textoBase);
         String ritoResolvido = resolveRito(req, triagem, canonical);
         String ramoResolvido = firstNonBlank(canonical.ramoDireito(), req.getRamoDireito());
         String classeResolvida = firstNonBlank(canonical.classeTpuCodigo(), req.getClasseTpu());
         String tipoJusticaResolvida = firstNonBlank(req.getTipoJustica(), canonical.ramoJusticaNacional());
-        var validator = validatorService.validate(textoBase, ritoResolvido, classeResolvida, ramoResolvido);
-        var teto = tetoProcessualService.diagnosticar(
-                req.getValorCausa(),
-                TipoJustica.fromString(tipoJusticaResolvida),
-                RamoDireito.fromString(ramoResolvido),
-                ritoResolvido,
-                null,
-                LocalDate.now()
-        );
-        DynamicCompetenceDistributionResponse competencia = mapaCompetenciaDinamicoEngine
-                .distribuir(buildCompetenceRequest(req, canonical))
-                .orElse(null);
-        var radar = radarPadroesService.analisar(buildRadarContext(req, textoBase, canonical));
+        var validator = triagemPipeline.validate(textoBase, ritoResolvido, classeResolvida, ramoResolvido);
+        var teto = triagemPipeline.diagnosticarTeto(req.getValorCausa(), tipoJusticaResolvida, ramoResolvido, ritoResolvido);
+        DynamicCompetenceDistributionResponse competencia = triagemPipeline.distribuirCompetencia(buildCompetenceRequest(req, canonical));
+        var radar = triagemPipeline.analisarRadar(buildRadarContext(req, textoBase, canonical));
         ProntuarioNacionalService.AnaliseConflitoProcessual conflito = resolveConflito(req, canonical);
         var coverage = ritosCoverageService.coverage();
         LaianeLawyerAttachmentValidationResponse attachmentValidation = includeAttachmentValidation
                 ? laianeLawyerService.validateAttachments(buildAttachmentRequest(req, triagem, canonical))
                 : null;
-        LegalCoherenceReport coherenceReport = legalCoherenceEngine.analyzeRequest(req, canonical, ritoResolvido, validator, attachmentValidation, competencia, teto, radar, conflito);
-        ProceduralRoutingReport proceduralRouting = nationalProceduralRoutingService.analyzeRequest(req);
+        LegalCoherenceReport coherenceReport = advisoryPipeline.coherence(req, canonical, ritoResolvido, validator, attachmentValidation, competencia, teto, radar, conflito);
         Processo syntheticProcess = buildSyntheticProcess(req, canonical, ritoResolvido);
-        var territorial = territorialProcessualService.diagnosticar(syntheticProcess, proceduralRouting);
+        LaianeProceduralPipelineOrchestrator.Bundle procedural = proceduralPipeline.analyze(req, syntheticProcess);
+        ProceduralRoutingReport proceduralRouting = procedural.routing();
+        var territorial = procedural.territorial();
         double readinessScore = calculateReadiness(validator, triagem, teto, territorial, competencia, radar, attachmentValidation, conflito);
-        ProtocolDryRunReport protocolDryRun = protocolDryRunService.simulateRequest(req, canonical, ritoResolvido, validator, attachmentValidation, competencia, teto, coherenceReport, readinessScore);
-        ProcessIntegrityRadarReport integrityRadar = processIntegrityRadarService.analyzeRequest(req, canonical, ritoResolvido, coherenceReport, protocolDryRun, competencia, teto);
-        ProcessMaterialDossierReport materialDossier = processMaterialDossierService.analyzeRequest(req, canonical, ritoResolvido);
-        ProcessMaterialStrategyReport materialStrategy = processMaterialStrategyService.analyzeRequest(req, canonical, ritoResolvido, materialDossier, readinessScore, buildNegotiationSignals(req, canonical, competencia));
-        ProceduralSubmissionBlueprintReport submissionBlueprint = proceduralSubmissionBlueprintService.analyzeProcess(syntheticProcess, proceduralRouting);
-        ProceduralConnectorExecutionReport connectorExecution = proceduralConnectorExecutionService.analyzeProcess(syntheticProcess, proceduralRouting, submissionBlueprint);
-        SettlementAdvisoryReport settlementAdvisory = req.getValorCausa() == null ? null : settlementAdvisoryService.analyze(
+        ProtocolDryRunReport protocolDryRun = advisoryPipeline.dryRun(req, canonical, ritoResolvido, validator, attachmentValidation, competencia, teto, coherenceReport, readinessScore);
+        ProcessIntegrityRadarReport integrityRadar = advisoryPipeline.integrityRadar(req, canonical, ritoResolvido, coherenceReport, protocolDryRun, competencia, teto);
+        ProcessMaterialDossierReport materialDossier = advisoryPipeline.materialDossier(req, canonical, ritoResolvido);
+        ProcessMaterialStrategyReport materialStrategy = advisoryPipeline.materialStrategy(req, canonical, ritoResolvido, materialDossier, readinessScore, buildNegotiationSignals(req, canonical, competencia));
+        ProceduralSubmissionBlueprintReport submissionBlueprint = procedural.submissionBlueprint();
+        ProceduralConnectorExecutionReport connectorExecution = procedural.connectorExecution();
+        SettlementAdvisoryReport settlementAdvisory = req.getValorCausa() == null ? null : advisoryPipeline.settlement(
                 syntheticProcess,
                 ritoResolvido,
                 req.getValorCausa(),
                 mergeNegotiationSignals(req, canonical, competencia, materialDossier, materialStrategy),
                 integrityRadar
         );
-        StrategicCopilotReport strategicCopilot = strategicCopilotService.analyzeRequest(req, canonical, ritoResolvido, coherenceReport, protocolDryRun, integrityRadar, competencia);
-        InstitutionalMemoryReport institutionalMemory = institutionalMemoryService.analyzeRequest(req, canonical, ritoResolvido, competencia, coherenceReport, integrityRadar, strategicCopilot);
-        ContextualPrecedentAdvisoryReport precedentAdvisory = contextualPrecedentAdvisoryService.analyzeRequest(req, canonical, ritoResolvido, competencia, coherenceReport, strategicCopilot);
-        ExplainableDecisionTrailReport explainableDecisionTrail = explainableDecisionTrailService.composeRequest(req, canonical, ritoResolvido, competencia, coherenceReport, protocolDryRun, integrityRadar, strategicCopilot, institutionalMemory, precedentAdvisory);
-        InstitutionalGovernanceContextReport institutionalGovernanceContext = institutionalGovernanceContextService.analyzeRequest(req, canonical, ritoResolvido, coherenceReport, institutionalMemory, precedentAdvisory);
+        StrategicCopilotReport strategicCopilot = advisoryPipeline.copilot(req, canonical, ritoResolvido, coherenceReport, protocolDryRun, integrityRadar, competencia);
+        InstitutionalMemoryReport institutionalMemory = advisoryPipeline.institutionalMemory(req, canonical, ritoResolvido, competencia, coherenceReport, integrityRadar, strategicCopilot);
+        ContextualPrecedentAdvisoryReport precedentAdvisory = advisoryPipeline.precedentAdvisory(req, canonical, ritoResolvido, competencia, coherenceReport, strategicCopilot);
+        ExplainableDecisionTrailReport explainableDecisionTrail = advisoryPipeline.explainableDecisionTrail(req, canonical, ritoResolvido, competencia, coherenceReport, protocolDryRun, integrityRadar, strategicCopilot, institutionalMemory, precedentAdvisory);
+        InstitutionalGovernanceContextReport institutionalGovernanceContext = advisoryPipeline.governanceContext(req, canonical, ritoResolvido, coherenceReport, institutionalMemory, precedentAdvisory);
         KernelOperationalGovernanceReport kernelOperationalGovernance = kernelOperationalGovernanceService.analyzeRequest(req, ritoResolvido, coherenceReport, protocolDryRun, integrityRadar, institutionalGovernanceContext);
         KernelAdvisoryTelemetry advisoryTelemetry = kernelOperationalGovernanceService.buildTelemetry("PETITION_ASSIST", ritoResolvido, validator, triagem, coherenceReport, protocolDryRun, integrityRadar, materialDossier, materialStrategy, strategicCopilot, settlementAdvisory, institutionalMemory, precedentAdvisory, explainableDecisionTrail, institutionalGovernanceContext, kernelOperationalGovernance);
         List<String> orientacoes = mergeDistinct(
@@ -413,7 +351,7 @@ public class LaianePeticaoAssistService {
                 contexto.dataAjuizamento(),
                 contexto.statusProcesso(),
                 contexto.resultadoFinal(),
-                radarPadroesService.construirFingerprint(contexto)
+                triagemPipeline.construirFingerprintRadar(contexto)
         );
     }
 
@@ -426,7 +364,7 @@ public class LaianePeticaoAssistService {
             if (ramo == null) {
                 return null;
             }
-            return prontuarioNacionalService.detectarLitispendenciaOuCoisaJulgada(request.getCpfCnpjAutor(), request.getCpfCnpjReu(), ramo);
+            return triagemPipeline.detectarLitispendenciaOuCoisaJulgada(request.getCpfCnpjAutor(), request.getCpfCnpjReu(), ramo);
         } catch (Exception ignored) {
             return null;
         }

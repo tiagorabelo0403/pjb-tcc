@@ -1,13 +1,22 @@
 package com.tcc.pjb.backend.service.recuperacaojudicial;
 
+import com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 
 @Service
 public class QuadroGeralCredoresAssemblerService {
+
+    private final SalarioMinimoNacionalService salarioMinimoNacionalService;
+
+    public QuadroGeralCredoresAssemblerService(SalarioMinimoNacionalService salarioMinimoNacionalService) {
+        this.salarioMinimoNacionalService = Objects.requireNonNull(salarioMinimoNacionalService);
+    }
 
     public enum ClasseCredor {
         CLASSE_I_TRABALHISTA,
@@ -37,11 +46,17 @@ public class QuadroGeralCredoresAssemblerService {
     ) {}
 
     private static final BigDecimal LIMITE_TRABALHISTA_SM = new BigDecimal("150");
-    private static final BigDecimal SALARIO_MINIMO = new BigDecimal("1412.00");
 
-    public QuadroGeralResult montar(List<Credor> credores) {
+    /**
+     * O limite de 150 salários mínimos por credor trabalhista depende de qual salário mínimo rege o
+     * caso, e não do salário mínimo de hoje. A data de referência vem do domínio — {@code dataPedido}
+     * na mesma forma que {@link FalenciaDecretacaoService} já usa para o limiar de impontualidade.
+     */
+    public QuadroGeralResult montar(List<Credor> credores, LocalDate dataPedido) {
+        Objects.requireNonNull(dataPedido, "dataPedido");
         List<String> obs = new ArrayList<>();
-        BigDecimal limiteTrabalhistaValor = LIMITE_TRABALHISTA_SM.multiply(SALARIO_MINIMO);
+        BigDecimal limiteTrabalhistaValor =
+                salarioMinimoNacionalService.multiplicar(LIMITE_TRABALHISTA_SM, dataPedido);
 
         List<Credor> habilitados = credores.stream()
                 .filter(Credor::habilitado)

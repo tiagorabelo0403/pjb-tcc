@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.service.criminal;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -10,21 +11,27 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.security.device.policy.StrongAuthState;
 import com.tcc.pjb.backend.core.security.scope.AcaoEscopo;
 import com.tcc.pjb.backend.core.security.scope.DelegaciaInstitucionalScopeService;
 import com.tcc.pjb.backend.core.security.scope.PjbObjectScopeGuard;
 import com.tcc.pjb.backend.core.security.scope.TipoObjetoProtegido;
 import com.tcc.pjb.backend.core.util.Hashes;
+import com.tcc.pjb.backend.model.dto.processual.document.template.OfficialDocumentTemplateRenderRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.criminal.InqueritoPolicialDigital;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
+import com.tcc.pjb.backend.model.entity.enums.OrigemAutenticacaoSessao;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
+import com.tcc.pjb.backend.model.entity.enums.TemplateDocumentoOficial;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
@@ -33,9 +40,12 @@ import com.tcc.pjb.backend.model.repository.InqueritoPolicialDigitalRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
+import com.tcc.pjb.backend.service.processual.document.template.OfficialDocumentTemplateService;
 
 @Service
 public class InqueritoPolicialDigitalService {
+
+    private static final Logger log = LoggerFactory.getLogger(InqueritoPolicialDigitalService.class);
 
     private final InqueritoPolicialDigitalRepository repository;
     private final ProcessoRepository processoRepository;
@@ -43,19 +53,22 @@ public class InqueritoPolicialDigitalService {
     private final DelegaciaInstitucionalScopeService delegaciaScopeService;
     private final PjbObjectScopeGuard scopeGuard;
     private final CurrentUserService currentUserService;
+    private final OfficialDocumentTemplateService officialDocumentTemplateService;
 
     public InqueritoPolicialDigitalService(InqueritoPolicialDigitalRepository repository,
                                            ProcessoRepository processoRepository,
                                            WorkItemRepository workItemRepository,
                                            DelegaciaInstitucionalScopeService delegaciaScopeService,
                                            PjbObjectScopeGuard scopeGuard,
-                                           CurrentUserService currentUserService) {
+                                           CurrentUserService currentUserService,
+                                           OfficialDocumentTemplateService officialDocumentTemplateService) {
         this.repository = Objects.requireNonNull(repository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
         this.delegaciaScopeService = Objects.requireNonNull(delegaciaScopeService);
         this.scopeGuard = Objects.requireNonNull(scopeGuard);
         this.currentUserService = Objects.requireNonNull(currentUserService);
+        this.officialDocumentTemplateService = Objects.requireNonNull(officialDocumentTemplateService);
     }
 
     @Transactional(readOnly = true)
@@ -88,11 +101,13 @@ public class InqueritoPolicialDigitalService {
     }
 
     @Transactional
-    public InqueritoView registrar(InqueritoCadastroRequest request) {
+    public InqueritoView registrar(InqueritoCadastroRequest request, HttpServletRequest servletRequest) {
         Usuario usuario = requireInvestigativeActor();
+        requireCertificadoIcp(servletRequest);
+        validarCamposObrigatorios(request);
         UnidadeInstituicao unidadeApuracao = delegaciaScopeService.requireDelegaciaApuracaoLotada(usuario, request.unidadeApuracaoId());
         InqueritoPolicialDigital inquerito = new InqueritoPolicialDigital();
-        inquerito.setNumeroProcedimento(resolveNumeroProcedimento(request.numeroProcedimento()));
+        inquerito.setNumeroProcedimento(request.numeroProcedimento().trim());
         inquerito.setTipo(normalizeUpper(request.tipo(), "INQUERITO_POLICIAL"));
         inquerito.setStatus("INSTAURADO");
         inquerito.setFaseAtual("INVESTIGACAO");
@@ -108,7 +123,7 @@ public class InqueritoPolicialDigitalService {
         inquerito.setMunicipio(firstText(request.municipio(), unidadeApuracao.getComarca()));
         inquerito.setNivelSigilo(request.nivelSigilo() == null ? NivelSigilo.SIGILO_N2 : request.nivelSigilo());
         inquerito.setAutoridadeResponsavel(usuario);
-        inquerito.setPrazoConclusao(request.prazoConclusao() == null ? LocalDate.now().plusDays(30) : request.prazoConclusao());
+        inquerito.setPrazoConclusao(request.prazoConclusao());
         if (request.processoVinculadoId() != null) {
             Processo processo = processoRepository.findById(request.processoVinculadoId())
                     .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", request.processoVinculadoId()));
@@ -120,7 +135,40 @@ public class InqueritoPolicialDigitalService {
         criarWorkItemSeProcesso(salvo.getProcessoVinculado(), "INQ-INSTAURACAO:" + salvo.getNumeroProcedimento(),
                 "Acompanhar inquérito digital instaurado", "Procedimento " + salvo.getNumeroProcedimento() + " instaurado e conectado ao processo.",
                 TipoUsuario.MEMBRO_MINISTERIO_PUBLICO, WorkItemType.VISTA, Instant.now().plus(48, ChronoUnit.HOURS));
+        selarDocumentoInstauracaoSeProcesso(salvo, usuario);
         return toView(salvo);
+    }
+
+    private void requireCertificadoIcp(HttpServletRequest servletRequest) {
+        StrongAuthState state = StrongAuthState.from(servletRequest);
+        if (!OrigemAutenticacaoSessao.CERTIFICADO_ICP.name().equals(state.method())) {
+            throw new IllegalStateException(
+                    "Instauração de inquérito exige login por certificado digital ICP-Brasil do delegado. "
+                            + "Autentique-se em /api/v1/auth/certificado e tente novamente.");
+        }
+    }
+
+    private void selarDocumentoInstauracaoSeProcesso(InqueritoPolicialDigital inquerito, Usuario autoridade) {
+        if (inquerito.getProcessoVinculado() == null) {
+            return;
+        }
+        try {
+            officialDocumentTemplateService.renderizar(new OfficialDocumentTemplateRenderRequest(
+                    inquerito.getProcessoVinculado().getId(),
+                    TemplateDocumentoOficial.CERTIDAO,
+                    "Certidão de instauração de inquérito policial nº " + inquerito.getNumeroProcedimento(),
+                    Map.of(
+                            "fatoCertificado", "Instauração do inquérito policial nº " + inquerito.getNumeroProcedimento()
+                                    + " (" + defaultText(inquerito.getNaturezaFato(), "") + "), assinada digitalmente por certificado ICP-Brasil.",
+                            "responsavelCertificacao", autoridade.getNome() != null ? autoridade.getNome() : "Autoridade policial"
+                    ),
+                    Boolean.TRUE,
+                    Boolean.TRUE
+            ));
+        } catch (Exception ex) {
+            log.warn("Falha controlada ao selar documento de instauração do inquérito {}: {}",
+                    inquerito.getNumeroProcedimento(), ex.getClass().getSimpleName());
+        }
     }
 
     @Transactional
@@ -159,9 +207,16 @@ public class InqueritoPolicialDigitalService {
         if (request.encaminharAoJudiciario()) {
             inquerito.setStatus("ENCAMINHADO_JUDICIARIO");
             inquerito.setFaseAtual("ANALISE_JUDICIAL");
+            Optional<InqueritoJudicialDespachoDraft.Minuta> minuta = InqueritoJudicialDespachoDraft.gerar(inquerito);
+            String titulo = minuta.isPresent()
+                    ? "Despacho — recebimento de inquérito policial nº " + inquerito.getNumeroProcedimento()
+                    : "Controlar inquérito digital judicializado";
+            String descricao = minuta.map(InqueritoJudicialDespachoDraft.Minuta::conteudo)
+                    .orElse("Procedimento " + inquerito.getNumeroProcedimento() + " encaminhado ao Judiciário.");
             criarWorkItemSeProcesso(inquerito.getProcessoVinculado(), "INQ-JUD:" + inquerito.getNumeroProcedimento(),
-                    "Controlar inquérito digital judicializado", "Procedimento " + inquerito.getNumeroProcedimento() + " encaminhado ao Judiciário.",
-                    TipoUsuario.JUIZ, WorkItemType.DESPACHO, Instant.now().plus(24, ChronoUnit.HOURS));
+                    titulo, descricao,
+                    TipoUsuario.JUIZ, WorkItemType.DESPACHO, Instant.now().plus(24, ChronoUnit.HOURS),
+                    minuta.map(InqueritoJudicialDespachoDraft.Minuta::fundamentacao).orElse(null));
         }
         inquerito.setCadeiaCustodiaHash(custodyHash(inquerito));
         if (inquerito.getProcessoVinculado() != null) {
@@ -246,6 +301,17 @@ public class InqueritoPolicialDigitalService {
                                          TipoUsuario assignedRole,
                                          WorkItemType type,
                                          Instant dueAt) {
+        criarWorkItemSeProcesso(processo, templateCode, titulo, descricao, assignedRole, type, dueAt, null);
+    }
+
+    private void criarWorkItemSeProcesso(Processo processo,
+                                         String templateCode,
+                                         String titulo,
+                                         String descricao,
+                                         TipoUsuario assignedRole,
+                                         WorkItemType type,
+                                         Instant dueAt,
+                                         String baseLegal) {
         if (processo == null) {
             return;
         }
@@ -266,6 +332,7 @@ public class InqueritoPolicialDigitalService {
                 .assignedRole(assignedRole)
                 .status(WorkItemStatus.PENDENTE)
                 .prioridade(1)
+                .baseLegal(baseLegal)
                 .dueAt(dueAt)
                 .build();
         workItemRepository.save(wi);
@@ -289,12 +356,18 @@ public class InqueritoPolicialDigitalService {
         return Hashes.sha256HexBytes(base.getBytes(StandardCharsets.UTF_8));
     }
 
-    private String resolveNumeroProcedimento(String numeroProcedimento) {
-        if (numeroProcedimento != null && !numeroProcedimento.isBlank()) {
-            return numeroProcedimento.trim();
+    private void validarCamposObrigatorios(InqueritoCadastroRequest request) {
+        List<String> faltando = new ArrayList<>();
+        if (request.numeroProcedimento() == null || request.numeroProcedimento().isBlank()) {
+            faltando.add("número do procedimento");
         }
-        String prefix = "IPD-" + LocalDate.now().getYear() + "-";
-        return prefix + UUID.randomUUID().toString().substring(0, 12).toUpperCase(Locale.ROOT);
+        if (request.prazoConclusao() == null) {
+            faltando.add("data/prazo de conclusão");
+        }
+        if (!faltando.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Inquérito não pode ser instaurado — faltando: " + String.join(", ", faltando) + ".");
+        }
     }
 
     private String normalizeUpper(String value, String fallback) {

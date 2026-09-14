@@ -23,6 +23,7 @@ class NationalCommunicationFlowServiceStructuralSeparationTest {
     void mustKeepFlowServiceAsShortOrchestrator() throws Exception {
         String source = Files.readString(SERVICE, StandardCharsets.UTF_8);
         assertTrue(source.contains("private final NationalCommunicationFlowFacade facade;"));
+        assertTrue(source.contains("private final NationalCommunicationInstitutionalOperationsFacade institutionalOperationsFacade;"));
         assertFalse(source.contains("private WorkItem criarWorkItemSeguimento("));
         assertFalse(source.contains("private NationalCommunicationInstitutionalResolveResponse toInstitutionalResponse("));
         assertFalse(source.contains("private java.util.Optional<ResolucaoDestinoInstitucionalResult> preResolverInstitucional("));
@@ -31,7 +32,7 @@ class NationalCommunicationFlowServiceStructuralSeparationTest {
     @Test
     void mustKeepDispatchAndRoutingMassInsideMainFacadeButMoveInstitutionalOperationsOut() throws Exception {
         String source = Files.readString(FACADE, StandardCharsets.UTF_8);
-        assertTrue(source.contains("private final NationalCommunicationInstitutionalOperationsFacade institutionalOperationsFacade;"));
+        assertFalse(source.contains("private final NationalCommunicationInstitutionalOperationsFacade institutionalOperationsFacade;"));
         assertTrue(source.contains("private WorkItem criarWorkItemSeguimento("));
         assertTrue(source.contains("private NationalCommunicationInstitutionalResolveResponse toInstitutionalResponse("));
         assertTrue(source.contains("private java.util.Optional<ResolucaoDestinoInstitucionalResult> preResolverInstitucional("));

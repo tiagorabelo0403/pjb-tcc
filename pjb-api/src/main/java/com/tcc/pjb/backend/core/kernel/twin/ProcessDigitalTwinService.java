@@ -22,16 +22,6 @@ import com.tcc.pjb.backend.core.kernel.advisory.KernelAdvisoryTelemetry;
 import com.tcc.pjb.backend.core.kernel.advisory.KernelOperationalGovernanceReport;
 import com.tcc.pjb.backend.core.kernel.advisory.KernelOperationalGovernanceService;
 import com.tcc.pjb.backend.core.kernel.advisory.LegalCoherenceEngine;
-import com.tcc.pjb.backend.core.kernel.advisory.NegotiationApprovalMatrixReport;
-import com.tcc.pjb.backend.core.kernel.advisory.NegotiationApprovalMatrixService;
-import com.tcc.pjb.backend.core.kernel.advisory.NegotiationChannelGovernanceReport;
-import com.tcc.pjb.backend.core.kernel.advisory.NegotiationChannelGovernanceService;
-import com.tcc.pjb.backend.core.kernel.advisory.NegotiationChatDigestReport;
-import com.tcc.pjb.backend.core.kernel.advisory.NegotiationChatDigestService;
-import com.tcc.pjb.backend.core.kernel.advisory.NegotiationExplainabilityReport;
-import com.tcc.pjb.backend.core.kernel.advisory.NegotiationExplainabilityService;
-import com.tcc.pjb.backend.core.kernel.advisory.NegotiationMemoryReport;
-import com.tcc.pjb.backend.core.kernel.advisory.NegotiationMemoryService;
 import com.tcc.pjb.backend.core.kernel.advisory.ProcessIntegrityRadarService;
 import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialDossierReport;
 import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialDossierService;
@@ -40,34 +30,19 @@ import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialStrategyService;
 import com.tcc.pjb.backend.core.kernel.advisory.ProtocolDryRunService;
 import com.tcc.pjb.backend.core.kernel.advisory.SettlementAdvisoryService;
 import com.tcc.pjb.backend.core.kernel.advisory.StrategicCopilotService;
-import com.tcc.pjb.backend.core.kernel.governance.InstitutionalPolicyResolver;
-import com.tcc.pjb.backend.core.kernel.governance.InstitutionalPolicySnapshotReport;
-import com.tcc.pjb.backend.core.kernel.governance.KernelDecisionMetricsReport;
-import com.tcc.pjb.backend.core.kernel.governance.KernelDecisionMetricsService;
-import com.tcc.pjb.backend.core.kernel.governance.KernelRiskEscalationReport;
-import com.tcc.pjb.backend.core.kernel.governance.KernelRiskEscalationService;
-import com.tcc.pjb.backend.core.kernel.governance.NegotiationMessageDecision;
-import com.tcc.pjb.backend.core.kernel.governance.NegotiationReleaseGuard;
 import com.tcc.pjb.backend.core.kernel.process.ProcessEventStore;
-import com.tcc.pjb.backend.core.procedural.NationalProceduralRoutingService;
 import com.tcc.pjb.backend.core.procedural.ProceduralRitoNames;
 import com.tcc.pjb.backend.core.procedural.ProceduralRoutingReport;
 import com.tcc.pjb.backend.core.procedural.ProceduralSubmissionBlueprintReport;
-import com.tcc.pjb.backend.core.procedural.ProceduralSubmissionBlueprintService;
 import com.tcc.pjb.backend.core.procedural.ProceduralConnectorExecutionReport;
-import com.tcc.pjb.backend.core.procedural.ProceduralConnectorExecutionService;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.dto.twin.PrecedenteEvidenceDto;
 import com.tcc.pjb.backend.model.dto.twin.ProcessTwinDto;
 import com.tcc.pjb.backend.model.dto.twin.TwinRecommendationDto;
-import com.tcc.pjb.backend.model.entity.ChatMensagem;
 import com.tcc.pjb.backend.model.entity.Processo;
-import com.tcc.pjb.backend.model.entity.PropostaAcordo;
 import com.tcc.pjb.backend.model.entity.jurisprudencia.Precedente;
-import com.tcc.pjb.backend.model.repository.ChatMensagemRepository;
 import com.tcc.pjb.backend.model.repository.PrecedenteRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
-import com.tcc.pjb.backend.model.repository.PropostaAcordoRepository;
 import com.tcc.pjb.backend.service.rito.ProcessoRitoSnapshotService;
 import com.tcc.pjb.backend.service.rito.RitoWorkflowService;
 import com.tcc.pjb.backend.service.rito.dto.RitoPlanDto;
@@ -92,25 +67,14 @@ public class ProcessDigitalTwinService {
     private final SettlementAdvisoryService settlementAdvisoryService;
     private final ProcessMaterialDossierService processMaterialDossierService;
     private final ProcessMaterialStrategyService processMaterialStrategyService;
-    private final NationalProceduralRoutingService nationalProceduralRoutingService;
-    private final ProceduralSubmissionBlueprintService proceduralSubmissionBlueprintService;
-    private final ProceduralConnectorExecutionService proceduralConnectorExecutionService;
     private final InstitutionalMemoryService institutionalMemoryService;
     private final InstitutionalGovernanceContextService institutionalGovernanceContextService;
     private final ContextualPrecedentAdvisoryService contextualPrecedentAdvisoryService;
     private final ExplainableDecisionTrailService explainableDecisionTrailService;
-    private final NegotiationMemoryService negotiationMemoryService;
-    private final NegotiationExplainabilityService negotiationExplainabilityService;
-    private final NegotiationChatDigestService negotiationChatDigestService;
-    private final NegotiationApprovalMatrixService negotiationApprovalMatrixService;
-    private final NegotiationChannelGovernanceService negotiationChannelGovernanceService;
     private final KernelOperationalGovernanceService kernelOperationalGovernanceService;
-    private final InstitutionalPolicyResolver institutionalPolicyResolver;
-    private final KernelDecisionMetricsService kernelDecisionMetricsService;
-    private final KernelRiskEscalationService kernelRiskEscalationService;
-    private final NegotiationReleaseGuard negotiationReleaseGuard;
-    private final ChatMensagemRepository chatMensagemRepository;
-    private final PropostaAcordoRepository propostaAcordoRepository;
+    private final ProcessTwinProceduralOrchestrator proceduralOrchestrator;
+    private final ProcessTwinNegotiationOrchestrator negotiationOrchestrator;
+    private final ProcessTwinPolicyGovernanceOrchestrator policyGovernanceOrchestrator;
 
     public ProcessDigitalTwinService(ProcessoRepository processoRepository,
                                      PrecedenteRepository precedenteRepository,
@@ -126,25 +90,14 @@ public class ProcessDigitalTwinService {
                                      SettlementAdvisoryService settlementAdvisoryService,
                                      ProcessMaterialDossierService processMaterialDossierService,
                                      ProcessMaterialStrategyService processMaterialStrategyService,
-                                     NationalProceduralRoutingService nationalProceduralRoutingService,
-                                     ProceduralSubmissionBlueprintService proceduralSubmissionBlueprintService,
-                                     ProceduralConnectorExecutionService proceduralConnectorExecutionService,
                                      InstitutionalMemoryService institutionalMemoryService,
                                      InstitutionalGovernanceContextService institutionalGovernanceContextService,
                                      ContextualPrecedentAdvisoryService contextualPrecedentAdvisoryService,
                                      ExplainableDecisionTrailService explainableDecisionTrailService,
-                                     NegotiationMemoryService negotiationMemoryService,
-                                     NegotiationExplainabilityService negotiationExplainabilityService,
-                                     NegotiationChatDigestService negotiationChatDigestService,
-                                     NegotiationApprovalMatrixService negotiationApprovalMatrixService,
-                                     NegotiationChannelGovernanceService negotiationChannelGovernanceService,
                                      KernelOperationalGovernanceService kernelOperationalGovernanceService,
-                                     InstitutionalPolicyResolver institutionalPolicyResolver,
-                                     KernelDecisionMetricsService kernelDecisionMetricsService,
-                                     KernelRiskEscalationService kernelRiskEscalationService,
-                                     NegotiationReleaseGuard negotiationReleaseGuard,
-                                     ChatMensagemRepository chatMensagemRepository,
-                                     PropostaAcordoRepository propostaAcordoRepository) {
+                                     ProcessTwinProceduralOrchestrator proceduralOrchestrator,
+                                     ProcessTwinNegotiationOrchestrator negotiationOrchestrator,
+                                     ProcessTwinPolicyGovernanceOrchestrator policyGovernanceOrchestrator) {
         this.processoRepository = processoRepository;
         this.precedenteRepository = precedenteRepository;
         this.processEventStore = processEventStore;
@@ -159,25 +112,14 @@ public class ProcessDigitalTwinService {
         this.settlementAdvisoryService = settlementAdvisoryService;
         this.processMaterialDossierService = processMaterialDossierService;
         this.processMaterialStrategyService = processMaterialStrategyService;
-        this.nationalProceduralRoutingService = nationalProceduralRoutingService;
-        this.proceduralSubmissionBlueprintService = proceduralSubmissionBlueprintService;
-        this.proceduralConnectorExecutionService = proceduralConnectorExecutionService;
         this.institutionalMemoryService = institutionalMemoryService;
         this.institutionalGovernanceContextService = institutionalGovernanceContextService;
         this.contextualPrecedentAdvisoryService = contextualPrecedentAdvisoryService;
         this.explainableDecisionTrailService = explainableDecisionTrailService;
-        this.negotiationMemoryService = negotiationMemoryService;
-        this.negotiationExplainabilityService = negotiationExplainabilityService;
-        this.negotiationChatDigestService = negotiationChatDigestService;
-        this.negotiationApprovalMatrixService = negotiationApprovalMatrixService;
-        this.negotiationChannelGovernanceService = negotiationChannelGovernanceService;
         this.kernelOperationalGovernanceService = kernelOperationalGovernanceService;
-        this.institutionalPolicyResolver = institutionalPolicyResolver;
-        this.kernelDecisionMetricsService = kernelDecisionMetricsService;
-        this.kernelRiskEscalationService = kernelRiskEscalationService;
-        this.negotiationReleaseGuard = negotiationReleaseGuard;
-        this.chatMensagemRepository = chatMensagemRepository;
-        this.propostaAcordoRepository = propostaAcordoRepository;
+        this.proceduralOrchestrator = proceduralOrchestrator;
+        this.negotiationOrchestrator = negotiationOrchestrator;
+        this.policyGovernanceOrchestrator = policyGovernanceOrchestrator;
     }
 
     @Transactional(readOnly = true)
@@ -208,9 +150,10 @@ public class ProcessDigitalTwinService {
         var integrityRadar = processIntegrityRadarService.analyzeProcess(p, ritoSnapshot.ritoCode(), ritoPlan, coherenceReport, protocolDryRun, riskSignals);
         ProcessMaterialDossierReport materialDossier = processMaterialDossierService.analyzeProcess(p, riskSignals);
         ProcessMaterialStrategyReport materialStrategy = processMaterialStrategyService.analyzeProcess(p, materialDossier, riskSignals);
-        ProceduralRoutingReport proceduralRouting = nationalProceduralRoutingService.analyzeProcess(p);
-        ProceduralSubmissionBlueprintReport submissionBlueprint = proceduralSubmissionBlueprintService.analyzeProcess(p, proceduralRouting);
-        ProceduralConnectorExecutionReport connectorExecution = proceduralConnectorExecutionService.analyzeProcess(p, proceduralRouting, submissionBlueprint);
+        ProcessTwinProceduralOrchestrator.Bundle proceduralBundle = proceduralOrchestrator.analyzeProcess(p);
+        ProceduralRoutingReport proceduralRouting = proceduralBundle.routing();
+        ProceduralSubmissionBlueprintReport submissionBlueprint = proceduralBundle.submissionBlueprint();
+        ProceduralConnectorExecutionReport connectorExecution = proceduralBundle.connectorExecution();
         riskSignals = mergeRiskSignals(riskSignals, proceduralRouting, submissionBlueprint);
         riskSignals = mergeRiskSignals(riskSignals, connectorExecution);
         var settlementAdvisory = settlementAdvisoryService.analyze(p, ritoSnapshot.ritoCode(), p.getValorCausa(), mergeRiskSignals(riskSignals, materialDossier, materialStrategy), integrityRadar);
@@ -219,27 +162,21 @@ public class ProcessDigitalTwinService {
         ContextualPrecedentAdvisoryReport precedentAdvisory = contextualPrecedentAdvisoryService.analyzeProcess(p, ritoSnapshot.ritoCode(), ritoPlan, evidence, settlementAdvisory, integrityRadar);
         ExplainableDecisionTrailReport explainableDecisionTrail = explainableDecisionTrailService.composeProcess(p, ritoSnapshot.ritoCode(), ritoPlan, coherenceReport, protocolDryRun, integrityRadar, strategicCopilot, institutionalMemory, precedentAdvisory, settlementAdvisory);
         InstitutionalGovernanceContextReport institutionalGovernanceContext = institutionalGovernanceContextService.analyzeProcess(p, ritoSnapshot.ritoCode(), settlementAdvisory, institutionalMemory, precedentAdvisory);
-        Optional<PropostaAcordo> latestProposalOpt = propostaAcordoRepository.findTopByProcesso_IdOrderByDataAtualizacaoDesc(processoId);
-        PropostaAcordo latestProposal = latestProposalOpt.orElse(null);
-        List<ChatMensagem> recentChat = recentChat(processoId);
-        NegotiationMemoryReport negotiationMemory = negotiationMemoryService.analyzeProcess(p, latestProposal, recentChat, settlementAdvisory, institutionalGovernanceContext);
-        NegotiationExplainabilityReport negotiationExplainability = negotiationExplainabilityService.compose(p, latestProposal, recentChat, settlementAdvisory, negotiationMemory, institutionalGovernanceContext);
-        KernelOperationalGovernanceReport kernelOperationalGovernance = kernelOperationalGovernanceService.analyzeProcess(p, ritoSnapshot.ritoCode(), integrityRadar, explainableDecisionTrail, institutionalGovernanceContext, negotiationMemory, negotiationExplainability, strategicCopilot, institutionalMemory);
-        NegotiationChatDigestReport negotiationChatDigest = negotiationChatDigestService.analyzeProcess(p, latestProposal, recentChat, settlementAdvisory, negotiationMemory, negotiationExplainability, institutionalGovernanceContext, kernelOperationalGovernance);
-        NegotiationApprovalMatrixReport negotiationApprovalMatrix = negotiationApprovalMatrixService.analyzeProcess(p, latestProposal, recentChat, institutionalGovernanceContext, kernelOperationalGovernance, negotiationMemory, negotiationExplainability, negotiationChatDigest);
-        NegotiationChannelGovernanceReport negotiationChannelGovernance = negotiationChannelGovernanceService.analyzeProcess(p, latestProposal, recentChat, institutionalGovernanceContext, kernelOperationalGovernance, negotiationMemory, negotiationExplainability, negotiationChatDigest, negotiationApprovalMatrix);
-        InstitutionalPolicySnapshotReport institutionalPolicySnapshot = institutionalPolicyResolver.resolve(p, latestProposal, recentChat, institutionalGovernanceContext, negotiationChatDigest, negotiationApprovalMatrix, negotiationChannelGovernance, ritoSnapshot.ritoCode());
-        KernelDecisionMetricsReport kernelDecisionMetrics = kernelDecisionMetricsService.analyzeProcess(p);
-        KernelRiskEscalationReport kernelRiskEscalation = kernelRiskEscalationService.analyzeProcess(p, institutionalPolicySnapshot, kernelDecisionMetrics, negotiationChatDigest, negotiationApprovalMatrix, negotiationChannelGovernance);
-        NegotiationMessageDecision governedMessageDecision = negotiationReleaseGuard.decide(
-                negotiationChatDigest != null ? negotiationChatDigest.suggestedNextMessage() : null,
-                institutionalPolicySnapshot,
-                kernelDecisionMetrics,
-                kernelRiskEscalation,
-                negotiationChatDigest,
-                negotiationApprovalMatrix,
-                negotiationChannelGovernance
-        );
+        ProcessTwinNegotiationOrchestrator.PreBundle negotiationPre = negotiationOrchestrator.prepareContext(p, settlementAdvisory, institutionalGovernanceContext);
+        KernelOperationalGovernanceReport kernelOperationalGovernance = kernelOperationalGovernanceService.analyzeProcess(p, ritoSnapshot.ritoCode(), integrityRadar, explainableDecisionTrail, institutionalGovernanceContext, negotiationPre.memory(), negotiationPre.explainability(), strategicCopilot, institutionalMemory);
+        ProcessTwinNegotiationOrchestrator.Bundle negotiationBundle = negotiationOrchestrator.finalizeAnalysis(p, negotiationPre, settlementAdvisory, institutionalGovernanceContext, kernelOperationalGovernance);
+        var latestProposal = negotiationBundle.latestProposal();
+        var recentChat = negotiationBundle.recentChat();
+        var negotiationMemory = negotiationBundle.memory();
+        var negotiationExplainability = negotiationBundle.explainability();
+        var negotiationChatDigest = negotiationBundle.chatDigest();
+        var negotiationApprovalMatrix = negotiationBundle.approvalMatrix();
+        var negotiationChannelGovernance = negotiationBundle.channelGovernance();
+        ProcessTwinPolicyGovernanceOrchestrator.Bundle policyBundle = policyGovernanceOrchestrator.analyzeProcess(p, ritoSnapshot.ritoCode(), latestProposal, recentChat, institutionalGovernanceContext, negotiationChatDigest, negotiationApprovalMatrix, negotiationChannelGovernance);
+        var institutionalPolicySnapshot = policyBundle.policySnapshot();
+        var kernelDecisionMetrics = policyBundle.decisionMetrics();
+        var kernelRiskEscalation = policyBundle.riskEscalation();
+        var governedMessageDecision = policyBundle.governedMessageDecision();
         KernelAdvisoryTelemetry advisoryTelemetry = kernelOperationalGovernanceService.buildTelemetry(
                 "PROCESS_TWIN",
                 ritoSnapshot.ritoCode(),
@@ -413,13 +350,6 @@ public class ProcessDigitalTwinService {
         }
         merged.removeIf(s -> s == null || s.isBlank());
         return List.copyOf(merged);
-    }
-
-    private List<ChatMensagem> recentChat(Long processoId) {
-        return chatMensagemRepository.findTop80ByProcesso_IdOrderByDataEnvioDesc(processoId).stream()
-                .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(ChatMensagem::getDataEnvio, Comparator.nullsLast(Comparator.naturalOrder())))
-                .toList();
     }
 
     private List<PrecedenteEvidenceDto> loadEvidence(Processo p, String ritoName) {

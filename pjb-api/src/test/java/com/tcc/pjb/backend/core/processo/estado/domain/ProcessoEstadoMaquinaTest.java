@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class ProcessoEstadoMaquinaTest {
 
@@ -137,7 +138,14 @@ class ProcessoEstadoMaquinaTest {
 
         appService.transitar(1L, StatusProcesso.AUTUADO, 99L, "autuação");
 
-        verify(logRepository).save(any(ProcessoEstadoLog.class));
+        ArgumentCaptor<ProcessoEstadoLog> captor = ArgumentCaptor.forClass(ProcessoEstadoLog.class);
+        verify(logRepository).save(captor.capture());
+        ProcessoEstadoLog log = captor.getValue();
+        assertEquals(1L, log.getProcessoId());
+        assertEquals(StatusProcesso.PETICIONADO, log.getEstadoAnterior());
+        assertEquals(StatusProcesso.AUTUADO, log.getEstadoNovo());
+        assertEquals(99L, log.getOperadorId());
+        assertEquals("autuação", log.getMotivo());
     }
 
     @Test

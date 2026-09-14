@@ -43,8 +43,10 @@ public class PjbAiDocumentIntelligenceConfiguration {
 
     @Bean
     @ConditionalOnProperty(name = "pjb.ai.spring-ai.enabled", havingValue = "true")
-    public PjbAiTriageSuggestionPort springAiTriageSuggestionPort(ChatClient.Builder chatClientBuilder) {
-        return new PjbSpringAiTriageAdapter(chatClientBuilder);
+    public PjbAiTriageSuggestionPort springAiTriageSuggestionPort(
+            ChatClient.Builder chatClientBuilder,
+            com.tcc.pjb.backend.core.security.audit.PjbSecurityEventLogger securityEventLogger) {
+        return new PjbSpringAiTriageAdapter(chatClientBuilder, securityEventLogger);
     }
 
     @Bean

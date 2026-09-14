@@ -9,9 +9,8 @@ import java.util.Map;
 public record LaianeJudicialDecisionAdvisoryResponse(
         @Schema(description = "Código do template de decisão judicial aplicável",
                 example = "SENTENCA_PENAL_CONDENATORIA") JudicialDecisionTemplateCode templateCode,
-        @Schema(description = "Modo de consultoria. Nesta versão, sempre \"ADVISORY_DRAFT_ONLY\" — a Laiane produz apenas minuta assistida sujeita a revisão humana integral, sem modos alternativos de consultoria implementados.",
-                example = "ADVISORY_DRAFT_ONLY",
-                allowableValues = {"ADVISORY_DRAFT_ONLY"}) String advisoryMode,
+        @Schema(description = "Nível de consultoria, derivado do sinal de confiança do próprio caso: SUGESTIVO (padrão reconhecido, sem pendência — minuta de dispositivo completa), RESTRITIVO (padrão reconhecido, mas com pendência de fato — sem minuta de dispositivo, só checklist e fundamentos) ou BLOQUEADOR (nenhum padrão reconhecido — sem minuta de dispositivo). Em nenhum nível a Laiane decide ou publica.",
+                example = "SUGESTIVO") LaianeAdvisoryMode advisoryMode,
         @Schema(description = "Sempre true, por política de segurança: toda consultoria de decisão judicial exige revisão humana antes da publicação, independente do template ou do caso", example = "true") boolean reviewRequired,
         @Schema(description = "Sempre true, por política de segurança: a Laiane nunca publica decisão automaticamente — apenas gera minuta assistida sob revisão judicial integral", example = "true") boolean publicationLocked,
         @Size(max = 5000)
@@ -40,7 +39,7 @@ public record LaianeJudicialDecisionAdvisoryResponse(
     public Map<String, Object> toMap() {
         java.util.LinkedHashMap<String, Object> out = new java.util.LinkedHashMap<>();
         out.put("templateCode", templateCode != null ? templateCode.name() : null);
-        out.put("advisoryMode", advisoryMode);
+        out.put("advisoryMode", advisoryMode != null ? advisoryMode.name() : null);
         out.put("reviewRequired", reviewRequired);
         out.put("publicationLocked", publicationLocked);
         out.put("rationaleSummary", rationaleSummary);
