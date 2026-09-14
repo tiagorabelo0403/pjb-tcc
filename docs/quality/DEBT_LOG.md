@@ -18,8 +18,26 @@ O projeto tem **44 scripts em `scripts/`** e **26 estão no `ci.yml`**. Parte do
 Executados todos os que têm forma de guarda, a partir de `scripts/`, que é o `working-directory` que o
 `ci.yml` usa:
 
-- **15 passam** e poderiam ser ligados sem nenhum trabalho: `config_taxonomy_guard`,
-  `docker_compose_guard`, `drain_quiet_period_argline_guard`, `flyway_migration_version_guard`,
+**Baixa de 2026-09-14:** `flyway_migration_version_guard` saiu desta lista — foi ligado no job
+`guards-enforce` e passou a cobrir mais duas checagens além da duplicata de versão. O gatilho foi um
+defeito real, encontrado à mão na PR #21: ela trazia uma `V335` correta em 21/08 que virou buraco no
+meio da sequência depois que o `master` chegou a V354.
+
+```
+FLYWAY MIGRATION VERSION GUARD: FAIL
+ - migration nova com versao que regride: V335__sonda_regressao.sql (V335)
+   <= maior ja commitada (V355). Com out-of-order=false, banco que ja aplicou
+   ate V355 recusa esta e nao sobe. Renumere para V356 ou maior.
+ - migration ja commitada teve o conteudo alterado: V355__...varchar64.sql.
+   Com validate-on-migrate=true, todo banco que ja a aplicou passa a recusar o
+   boot por checksum divergente e exige flyway repair.
+```
+
+As três checagens são invisíveis para o resto do CI pela mesma razão: Testcontainers sempre parte de
+banco vazio e aplica tudo em ordem crescente. O estrago só existe onde já há dado.
+
+- **14 passam** e poderiam ser ligados sem nenhum trabalho: `config_taxonomy_guard`,
+  `docker_compose_guard`, `drain_quiet_period_argline_guard`,
   `git_secret_guard`, `java_string_literal_sanity_guard`, `legal_ai_policy_catalog_guard`,
   `legal_ai_surface_split_guard`, `legal_knowledge_catalog_guard`, `legal_mcp_catalog_guard`,
   `pjb_runtime_memory_recipe_guard`, `powershell_test_collector_guard`, `replacement_matrix_guard`,

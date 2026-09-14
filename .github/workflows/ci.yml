@@ -105,6 +105,14 @@ jobs:
         working-directory: scripts
         run: python debt_evidence_guard.py
 
+      # Existia e nao rodava em lugar nenhum — checava so duplicata de versao. Passou a cobrir
+      # tambem versao que regride e conteudo de migration ja commitada alterado. As tres sao
+      # invisiveis para o resto do CI pela mesma razao: Testcontainers sempre parte de banco vazio,
+      # entao aplica tudo em ordem e nada disso aparece. Quebra so onde ja existe dado.
+      - name: flyway_migration_version_guard
+        working-directory: scripts
+        run: python flyway_migration_version_guard.py
+
       - name: guard_cwd_independence_guard
         working-directory: scripts
         run: python guard_cwd_independence_guard.py
