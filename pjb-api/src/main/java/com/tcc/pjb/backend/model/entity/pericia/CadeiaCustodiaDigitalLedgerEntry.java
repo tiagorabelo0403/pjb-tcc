@@ -63,7 +63,7 @@ public class CadeiaCustodiaDigitalLedgerEntry {
     @Column(name = "digest_sha256", nullable = false, length = 64)
     private String digestSha256;
 
-    @Column(name = "evidence_chave_custodia", nullable = false, length = 32)
+    @Column(name = "evidence_chave_custodia", nullable = false, length = 64)
     private String evidenceChaveCustodia;
 
     @Column(name = "metadata_digest_sha256", nullable = false, length = 64)

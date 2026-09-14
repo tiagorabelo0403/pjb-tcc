@@ -253,7 +253,7 @@ public class DigitalCustodyChainSyncService {
                 entry.evidenceId(),
                 entry.evidenceNome(),
                 normalizeHex(entry.digestSha256(), 64),
-                truncate(entry.evidenceChaveCustodia(), 32),
+                truncate(entry.evidenceChaveCustodia(), 64),
                 normalizeHex(entry.metadataDigestSha256(), 64),
                 entry.metadadosCanonicos() == null ? List.of() : entry.metadadosCanonicos().stream().filter(java.util.Objects::nonNull).map(String::trim).filter(v -> !v.isBlank()).toList(),
                 truncate(entry.prevHash(), 64),

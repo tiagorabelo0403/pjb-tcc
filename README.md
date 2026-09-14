@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-5.370%20unit%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-5.379%20unit%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -257,7 +257,7 @@ Abra o `.env` e preencha as variáveis obrigatórias:
 docker compose up -d
 ```
 
-Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V354) são aplicadas automaticamente na primeira conexão do backend.
+Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V355) são aplicadas automaticamente na primeira conexão do backend.
 
 ### 4. Verificar os profiles Spring
 
@@ -368,7 +368,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 5.370 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 5.379 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 116 classes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 A convenção de nome é verificada no CI pelo guard `integration_test_naming_guard.py`: uma classe com sufixo `IT` precisa exibir marcador real de integração — Testcontainers, contexto Spring ou base de integração herdada. Sem esse marcador a classe não seria executada por nenhuma das duas fases (o Surefire a ignora pelo nome, e o Failsafe só roda sob `verify`), e o build falha em vez de deixar o teste invisível.
@@ -387,7 +387,7 @@ Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api -am
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 5.370 unitários (Surefire) e depois as 116 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 5.379 unitários (Surefire) e depois as 117 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 O `-am` não é cosmético: sem ele o `pjb-core` é resolvido a partir do `~/.m2` em vez do reator, e um artefato desatualizado ali produz `cannot find symbol` apontando para classes que existem no código-fonte.
 
@@ -397,7 +397,7 @@ Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring
 
 ### O portão de integração no CI
 
-O `ci.yml` executa apenas os unitários: as 116 classes de integração não cabem no caminho crítico de uma pull request. Elas rodam em workflow próprio — `PJB Integration Gate` (`.github/workflows/it.yml`) —, disparado em **todo merge para o `master`**, mais uma execução agendada às 05:00 UTC e disparo sob demanda por `workflow_dispatch`.
+O `ci.yml` executa apenas os unitários: as 117 classes de integração não cabem no caminho crítico de uma pull request. Elas rodam em workflow próprio — `PJB Integration Gate` (`.github/workflows/it.yml`) —, disparado em **todo merge para o `master`**, mais uma execução agendada às 05:00 UTC e disparo sob demanda por `workflow_dispatch`.
 
 O gatilho por merge é o que fecha a janela: uma regressão de integração mesclada de manhã apareceria só na madrugada seguinte se o agendamento fosse o único caminho. O agendamento permanece como rede para a quebra que não vem de commit — imagem de container, dependência resolvida em runtime, dado de fixture que expira.
 
@@ -437,11 +437,11 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **5.370** |
+| Total de testes unitários | Surefire | **5.379** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~14 min** |
-| Classes de teste de integração | Failsafe | **116** ¹ |
+| Classes de teste de integração | Failsafe | **117** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
 | Testes de integração executados | Failsafe | **292** (medido no CI, 2026-09-13) |
 | Falhas IT | Failsafe | **0** (0E + 0F) ² |
@@ -634,7 +634,7 @@ graph TD
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Banco | PostgreSQL 17 com Row Level Security por operação |
 | Banco de testes | H2 em memória + Testcontainers |
-| Migrations | Flyway — numeração até V354, com particionamento mensal em tabelas de evento |
+| Migrations | Flyway — numeração até V355, com particionamento mensal em tabelas de evento |
 | Persistência | JPA / Hibernate com `ddl-auto: validate` em produção |
 | Mensageria | Apache Kafka 3.8 — eventos judiciais e outbox |
 | Orquestração de workflow | Camunda 8 / Zeebe — BPMN aplicado ao fluxo de ajuizamento |
@@ -664,6 +664,8 @@ O backend está organizado em 15 módulos funcionais. Clique em qualquer um para
 Gerencia papel, lotação, localização, competência e visibilidade de cada ator no processo. A matriz de visibilidade produz uma explicação auditável para cada decisão de acesso — quem pode ver o quê, por qual motivo, com registro imutável.
 
 Inclui gestão de afiliações, credenciais institucionais, atestação de fonte oficial e delegações formais entre unidades.
+
+Atos ordinatórios (CPC art. 203, §4º) — juntada, vista à(s) parte(s), aguarde de prazo, remessa a órgão auxiliar e expedição em cumprimento de decisão já proferida — são praticados pelo próprio servidor via `POST /api/v1/processo/ato-ordinatorio`, sem passar pelo aparato decisório do juiz: nenhum `WorkItem`, nenhuma transição de fase, nenhum gate de segurança de decisão, porque por definição legal o ato ordinatório não decide nada. O documento é assinado com papel `UNIDADE_JUDICIAL` (não `MAGISTRATURA`), selado na cadeia de confiança e registrado como movimentação na mesma fase de origem e destino. A autorização exige `podeProferir()` na função do servidor autenticado, verificado pelo mesmo motor ABAC que já protege conclusão, intimação, distribuição e arquivamento.
 </details>
 
 <details>
@@ -1019,7 +1021,7 @@ O limiar padrão de `autovacuum_analyze_scale_factor` do PostgreSQL (10% da tabe
 
 ## Banco de dados
 
-316 migrations Flyway (numeração não contígua de V0 a V354 — 39 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
+317 migrations Flyway (numeração não contígua de V0 a V355 — 39 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
 
 Row Level Security ativo por operação, em duas dimensões: sigilo do processo (leitura de casos sigilosos recusada pelo banco antes do ORM) e ator — GUCs de conexão dedicadas (`app.pjb_actor_id`, `app.pjb_actor_roles`) escopam tabelas operacionais (chamados de suporte, exceções de deslocamento de magistrado, trilha de auditoria da IA, intimações de audiência) fiéis ao `@PreAuthorize` de leitura de cada uma, como defesa em profundidade. Nunca RLS decorativo: tabela sem coluna de tenancy não recebe política, e um teste de disciplina de migration barra `ENABLE ROW LEVEL SECURITY` sem `FORCE` e sem política — o RLS órfão que o dono da tabela ignora em runtime. `tb_usuario` e o cluster `tb_identidade_juridica_*` (registro nacional por CPF/CNPJ) são exclusões deliberadas dessa varredura, não lacunas: ambos são consultados legitimamente por papéis institucionais para dados de terceiros (advogado visto por servidor, documento de réu consultado por oficial de justiça) tanto quanto por autoatendimento — não existe fronteira de posse por linha para restringir sem quebrar essas leituras cruzadas legítimas; a proteção de `tb_usuario` é feita por controller inteiro sob `@PreAuthorize` de admin (não há endpoint de self-service por id) e a de PII em ambas por criptografia em repouso com índice cego, não por RLS. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
 
@@ -1056,7 +1058,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **5.370 · 0 falhas · 0 erros · 1 pulado** |
+| Testes unitários (Surefire) | **5.379 · 0 falhas · 0 erros · 1 pulado** |
 | Testes de integração (Failsafe) | **116 classes · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1357,7 +1359,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.370 testes unitários, 116 classes de integração e 316 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.379 testes unitários, 117 classes de integração e 317 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
