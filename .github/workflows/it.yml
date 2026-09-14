@@ -5,14 +5,23 @@ name: PJB Integration Gate
 # nada que a reverificasse. Este workflow existe para reverifica-la todo dia contra Postgres e
 # Kafka reais, fora do caminho critico da PR.
 on:
+  # Todo merge em master roda a suite. Sem isto havia uma janela: uma regressao de integracao
+  # mesclada as 09:00 so apareceria as 05:00 do dia seguinte, e ate la o master estaria quebrado
+  # sem ninguem saber. O agendamento continua como rede: pega quebra que nao vem de commit
+  # (imagem de container, dependencia resolvida em runtime, expiracao de dado de fixture).
+  push:
+    branches: [master]
   schedule:
     # 05:00 UTC = 02:00 em Brasilia. Agendamento so dispara no branch padrao (master).
     - cron: '0 5 * * *'
   workflow_dispatch:
 
 concurrency:
-  group: integration-gate
-  cancel-in-progress: false
+  # Por ref, e cancelando o anterior: numa sequencia de merges o que importa e o commit mais novo,
+  # e deixar as execucoes enfileirarem faria o aviso chegar cada vez mais tarde. Rodada agendada
+  # cancelada por um push nao perde nada — o push testa codigo mais novo.
+  group: integration-gate-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
