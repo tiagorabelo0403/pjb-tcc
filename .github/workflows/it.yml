@@ -61,8 +61,16 @@ jobs:
       # produto. O runner tem 15.989 MB; 8g de heap deixa folga para os containers e para o
       # launcher. Isto NAO corrige a fragmentacao de contexto (D-fragmentacao-de-contexto-spring-
       # nos-its), so para de esconder o resto atras de OOM.
+      #
+      # 8g -> 10g em 2026-09-14, com causa medida: `ddl-auto: validate` no perfil de integracao faz
+      # o Hibernate construir e conferir o modelo inteiro a cada um dos 22 contextos. A 8g isso
+      # levou a JVM a contencao critica de memoria, e a admissao operacional passou a derrubar rota
+      # cara com 503 CRITICAL_MEMORY_RUNAWAY — tres ITs de gate institucional caindo por isso, nao
+      # por defeito de produto. O runner tem 15.989 MB; 10g deixa folga para containers e launcher.
+      # A validacao de schema vale o custo: ela pega drift entidade<->banco que antes so aparecia
+      # no deploy.
       - name: Verify (Surefire + Failsafe contra containers reais)
-        run: ./mvnw -B verify -pl pjb-api -am -Dtest.forked.jvm.xmx=8g
+        run: ./mvnw -B verify -pl pjb-api -am -Dtest.forked.jvm.xmx=10g
 
       - name: Upload dos relatorios
         if: always()
