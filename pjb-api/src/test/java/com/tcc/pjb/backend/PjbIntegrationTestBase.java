@@ -53,7 +53,12 @@ public abstract class PjbIntegrationTestBase {
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
-        registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
+        // NAO fixar ddl-auto aqui. @DynamicPropertySource tem precedencia sobre YAML de perfil,
+        // entao esta linha com "none" tornava inerte o ajuste em
+        // application-integration-test.yml — e o portao passava verde sem validar schema
+        // nenhum. Provado com sonda: com o override removido, uma coluna inexistente numa
+        // entidade derruba o portao com "Schema-validation: missing column". O valor vive no
+        // perfil, que e onde alguem vai procurar.
         registry.add("spring.flyway.enabled", () -> "true");
         registry.add("spring.datasource.hikari.register-mbeans", () -> "false");
         registry.add("spring.kafka.bootstrap-servers", KAFKA::getBootstrapServers);
