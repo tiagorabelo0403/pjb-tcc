@@ -90,11 +90,20 @@ jobs:
       contents: read
 
     steps:
+      # fetch-depth: 0 porque o debt_evidence_guard mede "entrada nova ou alterada" contra a base
+      # da branch. Com o clone raso padrao nao existe base, e ele reprova dizendo isso em vez de
+      # passar sem verificar nada.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
+
+      - name: debt_evidence_guard
+        working-directory: scripts
+        run: python debt_evidence_guard.py
 
       - name: guard_cwd_independence_guard
         working-directory: scripts
