@@ -129,7 +129,14 @@ def _relatorios_coerentes() -> list[Path]:
 
 
 def total_de_testes_unitarios() -> int | None:
-    """`None` quando o `target` não permite medir; o motivo fica em `_motivo_sem_medicao`."""
+    """Soma os DOIS módulos. `None` quando o `target` não permite medir.
+
+    A primeira execução em CI achou o motivo de este guard existir: o README dizia 5.344, que é o
+    total do `pjb-api` sozinho — o número que o Maven imprime no fim do módulo. Num reator
+    multi-módulo não existe linha agregada; cada módulo imprime a sua, e ler a última como se fosse
+    o total do projeto omite os 26 testes do `pjb-core`. O número tinha sido propagado assim por
+    várias PRs sem que nada o conferisse.
+    """
     global _motivo_sem_medicao
     try:
         arquivos = _relatorios_coerentes()
