@@ -106,7 +106,7 @@ public class DiligenciaOperadorCertidao {
     @Column(name = "tentativa_sequencia")
     private Integer tentativaSequencia;
 
-    @Column(name = "sonda_coluna_que_nao_existe", length = 64)
+    @Column(name = "evidence_chave_custodia", length = 64)
     private String evidenceChaveCustodia;
 
     @Column(name = "attempt_trail_digest_sha256", length = 64)

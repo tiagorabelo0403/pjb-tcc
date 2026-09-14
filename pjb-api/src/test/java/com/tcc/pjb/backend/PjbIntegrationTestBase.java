@@ -53,10 +53,7 @@ public abstract class PjbIntegrationTestBase {
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
-        // NAO fixar ddl-auto aqui. @DynamicPropertySource tem precedencia sobre YAML de perfil,
-        // entao esta linha com "none" tornava inerte qualquer ajuste em
-        // application-integration-test.yml — e o portao passava verde sem validar schema
-        // nenhum. O valor vive no perfil, que e onde alguem vai procurar.
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
         registry.add("spring.flyway.enabled", () -> "true");
         registry.add("spring.datasource.hikari.register-mbeans", () -> "false");
         registry.add("spring.kafka.bootstrap-servers", KAFKA::getBootstrapServers);
