@@ -39,7 +39,7 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <pdfbox.version>3.0.8</pdfbox.version>
         <springdoc.version>2.8.15</springdoc.version>
-        <resilience4j.version>2.2.0</resilience4j.version>
+        <resilience4j.version>2.4.0</resilience4j.version>
         <testcontainers.version>1.19.8</testcontainers.version>
         <nimbus-jose-jwt.version>10.0.2</nimbus-jose-jwt.version>
         <webauthn.version>2.8.1</webauthn.version>
@@ -112,6 +112,18 @@
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers-bom</artifactId>
                 <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- O projeto fixava versao artefato a artefato em resilience4j-spring-boot3 e
+                 resilience4j-micrometer, e deixava os outros dez entrarem transitivos. Sem o BOM, uma
+                 troca de versao pode alinhar uns e nao outros, e o sintoma e contexto Spring que nao
+                 sobe por classe ausente — dificil de ler como problema de versao. Mesma convencao ja
+                 usada aqui para testcontainers e spring-ai. -->
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-bom</artifactId>
+                <version>${resilience4j.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -325,12 +337,10 @@
         <dependency>
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-spring-boot3</artifactId>
-            <version>${resilience4j.version}</version>
         </dependency>
         <dependency>
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-micrometer</artifactId>
-            <version>${resilience4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
