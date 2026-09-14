@@ -113,6 +113,13 @@ jobs:
         working-directory: scripts
         run: python flyway_migration_version_guard.py
 
+      # Coluna que afirma guardar hash precisa caber num SHA-256 (64 hex). 193 declaracoes hoje,
+      # nenhuma abaixo disso — entra sem baseline. Nao cobre o caso que a motivou
+      # (evidence_chave_custodia nao tem "hash" no nome); esse foi corrigido por migration.
+      - name: hash_column_width_guard
+        working-directory: scripts
+        run: python hash_column_width_guard.py
+
       - name: guard_cwd_independence_guard
         working-directory: scripts
         run: python guard_cwd_independence_guard.py
