@@ -396,7 +396,9 @@ Expected time: **~50 min** on local hardware. Most of this time is the Spring co
 
 ### The Integration Gate in CI
 
-`ci.yml` runs unit tests only: the 116 integration test classes do not fit in a pull request's critical path. They run in their own workflow — `PJB Integration Gate` (`.github/workflows/it.yml`) — scheduled daily at 05:00 UTC against `master`, and triggerable on demand via `workflow_dispatch`.
+`ci.yml` runs unit tests only: the 116 integration test classes do not fit in a pull request's critical path. They run in their own workflow — `PJB Integration Gate` (`.github/workflows/it.yml`) — triggered on **every merge to `master`**, plus a scheduled run at 05:00 UTC and on-demand dispatch via `workflow_dispatch`.
+
+The merge trigger is what closes the window: an integration regression merged in the morning would only surface the following night if the schedule were the only path. The schedule stays as a net for breakage that does not come from a commit — a container image, a dependency resolved at runtime, fixture data that expires.
 
 When the integration suite breaks, the workflow opens an issue carrying the commit and the run link, and comments on it for subsequent breaks instead of creating one issue per night. When the suite goes green again, it closes the issue itself. Surefire and Failsafe reports are attached as a run artifact for 30 days.
 

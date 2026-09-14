@@ -397,7 +397,9 @@ Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring
 
 ### O portão de integração no CI
 
-O `ci.yml` executa apenas os unitários: as 116 classes de integração não cabem no caminho crítico de uma pull request. Elas rodam em workflow próprio — `PJB Integration Gate` (`.github/workflows/it.yml`) —, agendado diariamente às 05:00 UTC contra o `master` e disparável sob demanda por `workflow_dispatch`.
+O `ci.yml` executa apenas os unitários: as 116 classes de integração não cabem no caminho crítico de uma pull request. Elas rodam em workflow próprio — `PJB Integration Gate` (`.github/workflows/it.yml`) —, disparado em **todo merge para o `master`**, mais uma execução agendada às 05:00 UTC e disparo sob demanda por `workflow_dispatch`.
+
+O gatilho por merge é o que fecha a janela: uma regressão de integração mesclada de manhã apareceria só na madrugada seguinte se o agendamento fosse o único caminho. O agendamento permanece como rede para a quebra que não vem de commit — imagem de container, dependência resolvida em runtime, dado de fixture que expira.
 
 Quando a suíte de integração quebra, o workflow abre uma issue com o commit e o link da execução, e comenta nela nas quebras seguintes em vez de criar uma issue por noite. Quando volta ao verde, fecha a issue sozinho. Os relatórios de Surefire e Failsafe ficam anexados como artefato de cada execução por 30 dias.
 
