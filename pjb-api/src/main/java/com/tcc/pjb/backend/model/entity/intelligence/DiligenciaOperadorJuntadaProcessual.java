@@ -102,7 +102,7 @@ public class DiligenciaOperadorJuntadaProcessual {
     @Column(name = "formalization_digest_sha256", length = 64)
     private String formalizationDigestSha256;
 
-    @Column(name = "evidence_chave_custodia", length = 32)
+    @Column(name = "evidence_chave_custodia", length = 64)
     private String evidenceChaveCustodia;
 
     @Column(name = "evidence_integrity_ok")

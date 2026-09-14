@@ -3,6 +3,17 @@ logging:
     org.apache.kafka: ERROR
 
 spring:
+  # As ITs rodam contra Postgres real com as 318 migrations aplicadas, mas herdavam `ddl-auto: none`
+  # do application.yml — o Hibernate NAO conferia o schema contra as entidades. Divergencia entre
+  # @Column e a coluna real so aparecia em docker/prod, que usam `validate`: ou seja, no deploy. O
+  # portao de integracao ficava verde por cima de drift.
+  #
+  # Com `validate`, o mesmo portao que roda as 294 ITs passa a reprovar entidade que nao corresponde
+  # ao schema — e e o que torna verificavel a correcao de evidence_chave_custodia desta fatia. Sem
+  # isto, alargar a coluna e o @Column juntos seria mudanca que nada confere.
+  jpa:
+    hibernate:
+      ddl-auto: validate
   data:
     redis:
       repositories:
