@@ -1036,11 +1036,12 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 | ADRs | 57 architectural decisions documented |
 | Python Guards | 7 scripts active in CI |
 | SBOM | CycloneDX generated on every build |
+| CVE audit | Trivy scans the SBOM on every PR; blocks merge on CRITICAL CVEs |
 | Correlation ID | Mandatory on every request |
 
 58 ADRs document each architectural decision with motivation, consequences, and alternatives considered. They must be read before altering any package structure, concurrency pattern, or security policy.
 
-The pipeline automatically generates a CycloneDX SBOM on every build, maintaining an auditable inventory of all dependencies with version and license. The CI evidence gate rejects merges without full structural guard coverage. Correlation ID mandatory on every request — propagated via context and recorded in every log entry, enabling end-to-end tracing without an external aggregator.
+The pipeline automatically generates a CycloneDX SBOM on every build, maintaining an auditable inventory of all dependencies with version and license. That SBOM is scanned by Trivy on every PR: CRITICAL CVEs block the merge, HIGH CVEs are measured and reported without blocking (see `docs/quality/DEBT_LOG.md` for the HIGH findings still open and why). The CI evidence gate rejects merges without full structural guard coverage. Correlation ID mandatory on every request — propagated via context and recorded in every log entry, enabling end-to-end tracing without an external aggregator.
 
 ### Kubernetes Manifest Validation
 

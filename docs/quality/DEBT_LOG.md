@@ -1309,3 +1309,92 @@ judicial, transforma resposta de negócio em incidente operacional aparente.
 de a transição ser recusada por regra processual ou por estado concorrente. Não é varredura
 mecânica: mapear em lote pelo nome repetiria o erro de tratar categoria semântica como sintaxe.
 
+
+## D-cve-high-nao-triadas-pos-auditoria
+
+**Status:** aberta — 18 CVE HIGH medidas, nenhuma triada individualmente
+
+**Contexto:** a auditoria de CVE sobre o SBOM (Trivy, `ci.yml`, job Evidence Gate) fechou as 7
+CRITICAL encontradas na primeira medição via pin de `tomcat.version`/`netty.version` no `pom.xml`
+raiz. O gate de bloqueio (`exit-code: '1'`) ficou restrito a `severity: CRITICAL` de propósito — as
+18 HIGH abaixo continuam só medidas e reportadas (`exit-code: '0'`), porque nenhuma foi olhada
+individualmente para saber se o bump é trivial ou se carrega risco de compatibilidade.
+
+Saída real do passo "Dependency CVE Scan (SBOM) — relatorio CRITICAL+HIGH" (run
+34974148861, job 104397501417, 2026-09-15):
+
+```
+Total: 18 (HIGH: 18, CRITICAL: 0)
+
+┌──────────────────────────────────────────────┬─────────────────────┬──────────┬────────┬───────────────────┬────────────────────────┬──────────────────────────────────────────────────────────────┐
+│                   Library                    │    Vulnerability    │ Severity │ Status │ Installed Version │     Fixed Version      │                            Title                             │
+├──────────────────────────────────────────────┼─────────────────────┼──────────┼────────┼───────────────────┼────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ com.fasterxml.jackson.core:jackson-core      │ GHSA-r7wm-3cxj-wff9 │ HIGH     │ fixed  │ 2.21.2            │ 2.18.8, 2.21.4         │ jackson-core: Async parser maxNumberLength bypass (incomplete│
+│ com.fasterxml.jackson.core:jackson-databind  │ CVE-2026-54512      │ HIGH     │ fixed  │ 2.21.2            │ 2.18.8, 3.1.4, 2.21.4  │ jackson-databind: Arbitrary code execution via PolymorphicTypeValidator bypass │
+│                                              │ CVE-2026-54513      │ HIGH     │ fixed  │ 2.21.2            │ 2.18.8, 2.21.4, 3.1.4  │ jackson-databind: Security bypass allows arbitrary code execution │
+│ io.micrometer:micrometer-core                │ CVE-2026-40983      │ HIGH     │ fixed  │ 1.15.11           │ 1.16.6, 1.15.12        │ micrometer-core: DoS via specially crafted gRPC requests     │
+│                                              │ CVE-2026-40984      │ HIGH     │ fixed  │ 1.15.11           │ 1.16.6, 1.15.12        │ micrometer-core/jetty11/jetty12: DoS via crafted HTTP requests │
+│ org.apache.httpcomponents.core5:httpcore5    │ CVE-2026-54399      │ HIGH     │ fixed  │ 5.3.6             │ 5.4.3, 5.5-beta2       │ httpcore5: DoS via excessive HTTP headers                    │
+│ org.apache.httpcomponents.core5:httpcore5-h2 │ CVE-2026-54428      │ HIGH     │ fixed  │ 5.3.6             │ 5.4.3, 5.5-beta2       │ httpcore5-h2: DoS via oversized HTTP/2 HPACK header           │
+│ org.postgresql:postgresql                    │ CVE-2026-54291      │ HIGH     │ fixed  │ 42.7.11           │ 42.7.12                │ pgjdbc: Man-in-the-middle protection bypass via SCRAM-SHA-256-PLUS downgrade │
+│ org.springframework.ai:spring-ai-client-chat │ CVE-2026-41712      │ HIGH     │ fixed  │ 1.0.0             │ 1.0.7, 1.1.6, 2.0.0-M6 │ Spring AI: ChatMemory DEFAULT_CONVERSATION_ID causes unintended cross-user data leakage │
+│                                              │ CVE-2026-41713      │ HIGH     │ fixed  │ 1.0.0             │ 1.0.7, 1.1.6           │ Spring AI: Prompt Injection via Memory Poisoning in PromptChatMemoryAdvisor │
+│ org.springframework.ai:spring-ai-model       │ CVE-2026-41712      │ HIGH     │ fixed  │ 1.0.0             │ 1.0.7, 1.1.6, 2.0.0-M6 │ (mesma CVE acima, artefato irmao)                            │
+│ org.springframework.data:spring-data-commons │ CVE-2026-41695      │ HIGH     │ fixed  │ 3.5.11            │ 4.0.6, 3.5.12          │ Spring Data Commons: DoS via crafted property                │
+│                                              │ CVE-2026-41716      │ HIGH     │ fixed  │ 3.5.11            │ 4.0.6, 3.5.12          │ Spring Data Commons: DoS via cache                            │
+│ org.springframework.kafka:spring-kafka       │ CVE-2026-41731      │ HIGH     │ fixed  │ 3.3.15            │ 4.0.6, 3.3.16          │ spring-kafka: Arbitrary code execution via insecure deserialization │
+│ org.springframework:spring-expression        │ CVE-2026-41850      │ HIGH     │ fixed  │ 6.2.18            │ 7.0.8, 6.2.19          │ Spring Framework: DoS via crafted SpEL expressions            │
+│ org.springframework:spring-webflux           │ CVE-2026-41842      │ HIGH     │ fixed  │ 6.2.18            │ 7.0.8, 6.2.19          │ Spring Framework: DoS when resolving static resources         │
+│ org.springframework:spring-webmvc            │ CVE-2026-41842      │ HIGH     │ fixed  │ 6.2.18            │ 7.0.8, 6.2.19          │ (mesma CVE acima, artefato irmao)                             │
+│                                              │ CVE-2026-41845      │ HIGH     │ fixed  │ 6.2.18            │ 7.0.8, 6.2.19          │ Spring Framework: XSS via incorrect JavaScript escaping       │
+└──────────────────────────────────────────────┴─────────────────────┴──────────┴────────┴───────────────────┴────────────────────────┴──────────────────────────────────────────────────────────────┘
+```
+
+**Risco:** varia por linha e é exatamente por isso que não foi resolvido em lote. `postgresql`
+42.7.11→42.7.12 e `micrometer-core` 1.15.11→1.15.12 são patch puro, provavelmente sem risco.
+Já `spring-data-commons`, `spring-kafka` e o núcleo do `spring-framework`
+(`spring-expression`/`spring-webflux`/`spring-webmvc`) só têm fix listado em versão major nova
+(4.0.6 / 7.0.8) que o Spring Boot 3.5.x não gerencia — bump direto, fora do BOM do Boot, arrisca
+combinação nunca testada junto (mesmo problema estrutural do `D-boot-3-5-eol-tomcat-netty-pin-manual`,
+só que sem o Tomcat/Netty já terem garantia de compatibilidade binária dentro da mesma minor).
+
+**Não revisitar sem decisão:** cada biblioteca exige decidir separado se o bump é seguro dentro do
+que o Boot 3.5.x gerencia (postgresql, micrometer — provável sim) ou se depende de esperar/forçar
+uma versão que o Boot não testa junto (spring-data-commons, spring-kafka, spring-framework — decisão
+de risco, não mecânica). Fechar isso em lote, sem essa triagem individual, repetiria o erro que este
+próprio guard existe para prevenir.
+
+## D-boot-3-5-eol-tomcat-netty-pin-manual
+
+**Status:** aberta
+
+**Contexto:** o projeto está na `spring-boot-starter-parent` 3.5.14. A série 3.5.x do Spring Boot
+encerrou o suporte OSS em 2026-06-30 — 3.5.16 (2026-06-25) foi a última release, e nenhuma versão da
+série chegou a levantar Tomcat além de 10.1.54 nem Netty além de 4.1.132.Final. Antes do pin, o
+`pom.xml` raiz não tinha nenhum override para essas duas dependências — vinham puras do BOM do Boot:
+
+```
+154:    <netty.version>4.1.131.Final</netty.version>
+210:    <tomcat.version>10.1.52</tomcat.version>
+```
+(grep em `spring-boot-dependencies-3.5.12.pom`, cache local `.m2`, antes do bump para 3.5.14)
+
+Isso foi insuficiente para fechar 7 CVE CRITICAL medidas pelo Trivy (6 em `tomcat-embed-core`,
+piso real 10.1.58; 1 em `netty-handler`, piso real 4.1.137.Final — nenhum patch OSS da série 3.5.x
+chega lá). A correção aplicada foi um override manual e direto dessas duas properties no `pom.xml`
+raiz, por fora do que o Boot gerencia.
+
+**Risco:** o projeto agora é responsável por acompanhar CVE de Tomcat e Netty por conta própria —
+o Boot não vai mais fazer isso "de graça" via patch de série, porque não vai mais lançar patch de
+série. Se uma CRITICAL nova aparecer numa dessas duas bibliotecas, o gate (`exit-code: '1'` só em
+CRITICAL) ainda pega — mas só porque alguém vai ter que notar a falha, entender que o Boot não
+resolve mais isso sozinho, e subir o pin manualmente nesse mesmo arquivo. Não há alarme separado
+para "o pin ficou desatualizado" além do próprio gate de CRITICAL disparar de novo.
+
+**Não revisitar sem decisão de produto:** a correção de fundo é migrar para Spring Boot 4.0.x
+(linha ainda com suporte OSS ativo), que provavelmente também fecha várias das 18 HIGH em
+`D-cve-high-nao-triadas-pos-auditoria` ligadas ao Spring Framework (a versão fix delas, 7.0.8, é a
+que acompanha o Boot 4.0.x). É troca de major — risco e escopo maiores que uma fatia de patch,
+avaliação de compatibilidade em cascata pelo projeto inteiro. Até essa decisão, o regime é pin
+manual: qualquer CVE nova em Tomcat/Netty exige repetir este mesmo processo.
+
