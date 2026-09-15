@@ -39,7 +39,9 @@ jobs:
         run: ./mvnw -pl pjb-api -am test-compile -q
 
       - name: DIAGNOSTICO TEMPORARIO swagger-annotations
-        run: ./mvnw -pl pjb-api -am dependency:tree -Dincludes=io.swagger
+        run: |
+          ./mvnw -pl pjb-api -am dependency:tree -Dverbose -Dincludes='io.swagger*' -DoutputType=text
+          ./mvnw -pl pjb-api dependency:tree -Dverbose | grep -i swagger || true
 
       - name: Unit Tests
         run: ./mvnw -pl pjb-api -am test -DfailIfNoTests=false -q
