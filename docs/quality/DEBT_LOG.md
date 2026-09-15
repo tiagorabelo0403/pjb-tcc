@@ -1342,7 +1342,7 @@ pin manual: qualquer CVE nova numa dessas 3 bibliotecas exige repetir este mesmo
 
 ## D-require-upper-bound-deps-excludes
 
-**Status:** aberta — 7 dependências excluídas da regra nova, 1 delas com risco real não avaliado
+**Status:** aberta — 7 dependências excluídas da regra nova; a única de risco real (resilience4j-micrometer×micrometer) já foi investigada e confirmada segura
 
 **Contexto:** ligar `requireUpperBoundDeps` no `maven-enforcer-plugin` (regra nativa, falha o build
 quando "nearest wins" resolve uma versão menor do que alguma dependência mais funda da árvore pede)
@@ -1407,20 +1407,22 @@ Todas as 7 viraram `<exclude>` na regra pra não bloquear esta PR com dívida al
 **Risco:** desigual entre as 7. `error_prone_annotations`, `jspecify`, `snakeyaml` e `antlr4-runtime`
 (gap de patch 4.13.1 vs 4.13.2, entre a ST template engine do spring-ai e o parser HQL do Hibernate)
 são de baixo risco — anotação/tipo/parser em retenção que raramente quebra em runtime por
-incompatibilidade binária. `jakarta.mail` é um gap de patch trivial (2.0.4 vs 2.0.5). O que **não
-foi avaliado e merece olhar separado**: `io.github.resilience4j:resilience4j-micrometer:2.4.0`
-foi compilado esperando `micrometer-core`/`micrometer-observation` **1.16.0**, e o projeto roda na
-1.15.12 (piso do Boot 3.5.16) — mesma classe de defeito que causou o `NoSuchMethodError` do
-`swagger-annotations-jakarta`, só que ninguém confirmou ainda se `resilience4j-micrometer` chama
-algum método exclusivo da 1.16.0 no caminho que o projeto realmente exercita.
+incompatibilidade binária. `jakarta.mail` é um gap de patch trivial (2.0.4 vs 2.0.5).
 
-**Não revisitar sem decisão:** os 4 de baixo risco (`error_prone_annotations`, `jspecify`,
-`snakeyaml`, `antlr4-runtime`) podem ficar excluídos indefinidamente — são conflitos estruturais de
-bibliotecas de terceiros (grpc/camunda/guava/webauthn/hibernate) que o projeto não controla.
-`jakarta.mail` é candidato a
-fechar com um pin trivial de patch. `resilience4j-micrometer`×`micrometer` exige a mesma
-investigação que o `swagger-annotations-jakarta` recebeu — grep pelos métodos/classes do
-`resilience4j-micrometer` que só existem a partir do `micrometer` 1.16.0, e confirmar se o projeto
-os exercita, antes de decidir entre subir o micrometer isolado (fora do que o Boot gerencia, mesmo
-risco do `D-boot-3-5-eol-versoes-pin-manual`) ou aceitar o exclude.
+`io.github.resilience4j:resilience4j-micrometer:2.4.0` foi compilado esperando `micrometer-core`/
+`micrometer-observation` **1.16.0**, e o projeto roda na 1.15.12 (piso do Boot 3.5.16) — mesma
+classe de defeito que causou o `NoSuchMethodError` do `swagger-annotations-jakarta`. Investigado:
+`grep` não encontrou nenhum uso direto de `Tagged*Metrics` no código (`pjb-api/src/main`,
+`pjb-core/src/main`) — o binding acontece via autoconfiguração do `resilience4j-spring-boot3` no
+boot do contexto Spring, junto com os 15 arquivos que usam `@CircuitBreaker`/`CircuitBreakerRegistry`
+de verdade. Diferente do swagger (que só quebrava ao montar o schema OpenAPI, caminho não coberto
+por todo teste), o binding de métricas do resilience4j roda em **todo** `@SpringBootTest` e nos dois
+`Docker Build Verify` (build real, boot completo) desta sessão — todos verdes, com essa exata
+combinação de versões. Se houvesse `NoSuchMethodError` aqui, já teria aparecido.
+
+**Não revisitar sem decisão:** os 5 (`error_prone_annotations`, `jspecify`, `snakeyaml`,
+`antlr4-runtime`, `resilience4j-micrometer`) podem ficar excluídos indefinidamente — são conflitos
+estruturais de bibliotecas de terceiros que o projeto não controla, e o único com risco real já foi
+verificado em produção (boot repetido) sem incidente. `jakarta.mail` é candidato a fechar com um pin
+trivial de patch, quando alguém tiver tempo de sobra.
 
