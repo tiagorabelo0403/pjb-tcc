@@ -782,6 +782,7 @@
                                         <exclude>org.eclipse.angus:jakarta.mail</exclude>
                                         <exclude>org.yaml:snakeyaml</exclude>
                                         <exclude>org.jspecify:jspecify</exclude>
+                                        <exclude>org.antlr:antlr4-runtime</exclude>
                                     </excludes>
                                 </requireUpperBoundDeps>
                             </rules>

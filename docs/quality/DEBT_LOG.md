@@ -1342,14 +1342,16 @@ pin manual: qualquer CVE nova numa dessas 3 bibliotecas exige repetir este mesmo
 
 ## D-require-upper-bound-deps-excludes
 
-**Status:** aberta — 6 dependências excluídas da regra nova, 1 delas com risco real não avaliado
+**Status:** aberta — 7 dependências excluídas da regra nova, 1 delas com risco real não avaliado
 
 **Contexto:** ligar `requireUpperBoundDeps` no `maven-enforcer-plugin` (regra nativa, falha o build
 quando "nearest wins" resolve uma versão menor do que alguma dependência mais funda da árvore pede)
 foi motivado por um `NoSuchMethodError` real que aconteceu nesta mesma sessão — bump do `spring-ai`
 1.0.0→1.0.7 trouxe `swagger-annotations-jakarta:2.2.30` mais perto na árvore do que a 2.2.41 que o
-`springdoc` precisa, e só quebrou em runtime, 10 minutos dentro do build. Ligar a regra sem exclude
-nenhum falhou imediatamente com 6 conflitos pré-existentes, nenhum introduzido por esta sessão:
+`springdoc` precisa, e só quebrou em runtime, 10 minutos dentro do build. A regra roda por módulo do
+reator: ligar sem exclude nenhum falhou com 6 conflitos pré-existentes no módulo raiz
+(`pjb-backend-core`) e mais 1 no `pjb-api` (que tem dependências próprias, como `spring-ai-openai`,
+que o módulo raiz não enxerga) — nenhum dos 7 introduzido por esta sessão:
 
 ```
 [ERROR] Require upper bound dependencies error for com.google.errorprone:error_prone_annotations:2.49.0 paths to dependency are:
@@ -1381,24 +1383,41 @@ nenhum falhou imediatamente com 6 conflitos pré-existentes, nenhum introduzido 
 [ERROR]   +-io.github.resilience4j:resilience4j-micrometer:2.4.0
 [ERROR]     +-io.micrometer:micrometer-observation:1.15.12 (managed) <-- io.micrometer:micrometer-observation:1.16.0
 ```
-(run 35000189674, job 104486378233, 2026-09-15, saída completa do `mvn enforcer:enforce` — trechos
-repetidos de múltiplos caminhos por dependência omitidos aqui, mantido 1 caminho representativo
-de cada uma das 6)
+(run 35000189674, job 104486378233, 2026-09-15, saída do `pjb-backend-core`; trechos repetidos de
+múltiplos caminhos por dependência omitidos, mantido 1 caminho representativo de cada uma das 6)
 
-Todas as 6 viraram `<exclude>` na regra pra não bloquear esta PR com dívida alheia a ela.
+O sétimo apareceu só ao rodar contra o `pjb-api`, no push seguinte:
 
-**Risco:** desigual entre as 6. `error_prone_annotations`, `jspecify` e `snakeyaml` (via
-jackson-dataformat-yaml/camunda) são de baixo risco — anotação/tipo em retenção que raramente
-quebra em runtime por incompatibilidade binária. `jakarta.mail` é um gap de patch trivial (2.0.4 vs
-2.0.5). O que **não foi avaliado e merece olhar separado**: `io.github.resilience4j:resilience4j-micrometer:2.4.0`
+```
+[ERROR] Require upper bound dependencies error for org.antlr:antlr4-runtime:4.13.1 paths to dependency are:
+[ERROR] +-com.tcc.pjb:pjb-api:1.0.0-RELEASE
+[ERROR]   +-org.springframework.ai:spring-ai-openai:1.0.7
+[ERROR]     +-org.springframework.ai:spring-ai-model:1.0.7 (managed) <-- org.springframework.ai:spring-ai-model:1.0.7
+[ERROR]       +-org.antlr:antlr4-runtime:4.13.1
+[ERROR] and
+[ERROR] +-com.tcc.pjb:pjb-api:1.0.0-RELEASE
+[ERROR]   +-org.springframework.boot:spring-boot-starter-data-jpa:3.5.16
+[ERROR]     +-org.hibernate.orm:hibernate-core:6.6.53.Final (managed) <-- org.hibernate.orm:hibernate-core:6.6.53.Final
+[ERROR]       +-org.antlr:antlr4-runtime:4.13.2 [runtime]
+```
+(run 35001108251, job 104489430446, 2026-09-15)
+
+Todas as 7 viraram `<exclude>` na regra pra não bloquear esta PR com dívida alheia a ela.
+
+**Risco:** desigual entre as 7. `error_prone_annotations`, `jspecify`, `snakeyaml` e `antlr4-runtime`
+(gap de patch 4.13.1 vs 4.13.2, entre a ST template engine do spring-ai e o parser HQL do Hibernate)
+são de baixo risco — anotação/tipo/parser em retenção que raramente quebra em runtime por
+incompatibilidade binária. `jakarta.mail` é um gap de patch trivial (2.0.4 vs 2.0.5). O que **não
+foi avaliado e merece olhar separado**: `io.github.resilience4j:resilience4j-micrometer:2.4.0`
 foi compilado esperando `micrometer-core`/`micrometer-observation` **1.16.0**, e o projeto roda na
 1.15.12 (piso do Boot 3.5.16) — mesma classe de defeito que causou o `NoSuchMethodError` do
 `swagger-annotations-jakarta`, só que ninguém confirmou ainda se `resilience4j-micrometer` chama
 algum método exclusivo da 1.16.0 no caminho que o projeto realmente exercita.
 
-**Não revisitar sem decisão:** os 3 de baixo risco (`error_prone_annotations`, `jspecify`,
-`snakeyaml`) podem ficar excluídos indefinidamente — são conflitos estruturais de bibliotecas de
-terceiros (grpc/camunda/guava/webauthn) que o projeto não controla. `jakarta.mail` é candidato a
+**Não revisitar sem decisão:** os 4 de baixo risco (`error_prone_annotations`, `jspecify`,
+`snakeyaml`, `antlr4-runtime`) podem ficar excluídos indefinidamente — são conflitos estruturais de
+bibliotecas de terceiros (grpc/camunda/guava/webauthn/hibernate) que o projeto não controla.
+`jakarta.mail` é candidato a
 fechar com um pin trivial de patch. `resilience4j-micrometer`×`micrometer` exige a mesma
 investigação que o `swagger-annotations-jakarta` recebeu — grep pelos métodos/classes do
 `resilience4j-micrometer` que só existem a partir do `micrometer` 1.16.0, e confirmar se o projeto
