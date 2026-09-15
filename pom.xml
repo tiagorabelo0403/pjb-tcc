@@ -63,6 +63,7 @@
         <camunda.version>8.8.16</camunda.version>
         <spring-cloud.version>2025.0.1</spring-cloud.version>
         <maven.enforcer.version>3.5.0</maven.enforcer.version>
+        <extra-enforcer-rules.version>1.12.1</extra-enforcer-rules.version>
         <maven.surefire.version>3.5.5</maven.surefire.version>
         <maven.failsafe.version>3.5.5</maven.failsafe.version>
         <maven.checkstyle.version>3.6.0</maven.checkstyle.version>
@@ -771,6 +772,19 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>${maven.enforcer.version}</version>
+                <!-- requireUpperBoundDependencies nao vem no core do enforcer — mensagem real
+                     recebida sem esta dependencia: "Failed to create enforcer rules with name:
+                     requireUpperBoundDependencies or for class:
+                     org.apache.maven.plugins.enforcer.RequireUpperBoundDependencies". A regra
+                     vive em org.codehaus.mojo:extra-enforcer-rules; precisa estar no classpath
+                     do proprio plugin, nao do projeto. -->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>extra-enforcer-rules</artifactId>
+                        <version>${extra-enforcer-rules.version}</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <id>enforce-java</id>
