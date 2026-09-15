@@ -57,6 +57,12 @@ jobs:
       - name: SBOM CycloneDX
         # `-am` tambem aqui: sem ele o reator e so o pjb-api, e o bom.json descreve metade do
         # aplicativo. SBOM incompleto faz o escaneamento seguinte olhar para o lado errado.
+        #
+        # makeAggregateBom escreve sempre no target do projeto RAIZ do reator (doc oficial do
+        # plugin: "creates a CycloneDX aggregate BOM at build root"), nao no target do modulo
+        # passado em `-pl`. Foi por isso que o passo seguinte falhava com "no such file or
+        # directory" em pjb-api/target/bom.json: o arquivo sempre saiu em target/bom.json, na
+        # raiz do repo. O scan-ref abaixo aponta para onde o BOM realmente cai.
         run: ./mvnw -pl pjb-api -am org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -q
 
       # O dependency-check da OWASP saiu daqui. Corrigido o `-am`, ele COMECA a rodar e trava
@@ -76,7 +82,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: sbom
-          scan-ref: pjb-api/target/bom.json
+          scan-ref: target/bom.json
           severity: CRITICAL,HIGH
           format: table
           exit-code: '0'
@@ -92,7 +98,7 @@ jobs:
           path: |
             pjb-api/target/surefire-reports/
             pjb-api/target/site/jacoco/
-            pjb-api/target/bom.json
+            target/bom.json
 
       - name: Coverage Gate (laiane minimo 70%)
         run: |
