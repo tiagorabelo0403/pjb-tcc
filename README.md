@@ -1062,13 +1062,14 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 | Testes de integração (Failsafe) | **116 classes · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
-| Guards Python | 26 scripts ativos em CI |
+| Guards Python | 31 scripts ativos em CI |
 | SBOM | CycloneDX gerado a cada build |
+| Auditoria de CVE | Trivy escaneia o SBOM a cada PR; bloqueia merge em CVE CRITICAL |
 | Correlation ID | Obrigatório em toda requisição |
 
 58 ADRs documentam cada decisão arquitetural com motivação, consequências e alternativas consideradas. Devem ser lidos antes de alterar qualquer estrutura de pacote, padrão de concorrência ou política de segurança.
 
-O pipeline gera automaticamente um SBOM CycloneDX a cada build, mantendo inventário auditável de todas as dependências com versão e licença. O evidence gate de CI rejeita merges sem cobertura de guarda estrutural completa. Correlation ID obrigatório em toda requisição — propagado via contexto e registrado em cada entrada de log, permitindo rastreamento ponta a ponta sem agregador externo.
+O pipeline gera automaticamente um SBOM CycloneDX a cada build, mantendo inventário auditável de todas as dependências com versão e licença. Esse SBOM é escaneado pelo Trivy em toda PR: CVE CRITICAL bloqueia o merge, CVE HIGH é medida e reportada sem bloquear (ver `docs/quality/DEBT_LOG.md` para as HIGH ainda abertas e por quê). O evidence gate de CI rejeita merges sem cobertura de guarda estrutural completa. Correlation ID obrigatório em toda requisição — propagado via contexto e registrado em cada entrada de log, permitindo rastreamento ponta a ponta sem agregador externo.
 
 ### Validação de manifestos Kubernetes
 

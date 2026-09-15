@@ -55,10 +55,54 @@ jobs:
         run: ./mvnw -pl pjb-api -am -Dtest="LaianeMpOpenApiSchemaTest" test -q
 
       - name: SBOM CycloneDX
-        run: ./mvnw -pl pjb-api org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -q
+        # `-am` tambem aqui: sem ele o reator e so o pjb-api, e o bom.json descreve metade do
+        # aplicativo. SBOM incompleto faz o escaneamento seguinte olhar para o lado errado.
+        #
+        # makeAggregateBom escreve sempre no target do projeto RAIZ do reator (doc oficial do
+        # plugin: "creates a CycloneDX aggregate BOM at build root"), nao no target do modulo
+        # passado em `-pl`. Foi por isso que o passo seguinte falhava com "no such file or
+        # directory" em pjb-api/target/bom.json: o arquivo sempre saiu em target/bom.json, na
+        # raiz do repo. O scan-ref abaixo aponta para onde o BOM realmente cai.
+        run: ./mvnw -pl pjb-api -am org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -q
 
-      - name: Dependency Audit (CVE check)
-        run: ./mvnw -pl pjb-api org.owasp:dependency-check-maven:12.1.0:check -DfailBuildOnCVSS=9 -q || true
+      # O dependency-check da OWASP saiu daqui. Corrigido o `-am`, ele COMECA a rodar e trava
+      # baixando a base da NVD: "NVD API has 391,581 records" + "An NVD API Key was not provided -
+      # the update can take a VERY long time". A execucao de medicao foi cancelada no limite de
+      # tempo do job. Sem chave da NVD, aquele caminho nao fecha em CI.
+      #
+      # As duas metades da solucao ja existiam no projeto e nunca tinham sido ligadas: o SBOM
+      # CycloneDX e gerado logo acima, e o Trivy ja bloqueia de verdade no cd.yml. Escanear o
+      # proprio SBOM com o Trivy cobre as dependencias Java no tempo da PR, com base de
+      # vulnerabilidade propria, sem chave e sem os limites de taxa da NVD.
+      #
+      # Rodou como medicao (exit-code '0') ate aqui: resultado foi 46 CVE (7 CRITICAL, 39 HIGH).
+      # As 7 CRITICAL eram todas Tomcat/Netty presos ao teto da serie 3.5.x do Boot (ja EOL),
+      # corrigido acima via tomcat.version/netty.version — o scan real ja confirma 0 CRITICAL.
+      # As 18 HIGH restantes (postgresql, spring-ai, jackson, micrometer, httpcore5, spring-data,
+      # spring-kafka, spring-framework) ficam de fora do bloqueio por ora — nao sao CRITICAL e
+      # bloquear a PR inteira por elas agora e trocar "instrumento que nao age" por "instrumento
+      # que reprova por motivo que ainda nao foi triado", o mesmo erro que a medicao evitou.
+      #
+      # Por isso dois passos: o primeiro so mede e reporta CRITICAL+HIGH (exit-code '0', mantem a
+      # visibilidade das 18 HIGH em aberto em todo PR); o segundo bloqueia de verdade, mas so por
+      # CRITICAL (exit-code '1'). Achou CRITICAL de novo, a PR para.
+      - name: Dependency CVE Scan (SBOM) — relatorio CRITICAL+HIGH
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: sbom
+          scan-ref: target/bom.json
+          severity: CRITICAL,HIGH
+          format: table
+          exit-code: '0'
+
+      - name: Dependency CVE Scan (SBOM) — bloqueio CRITICAL
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: sbom
+          scan-ref: target/bom.json
+          severity: CRITICAL
+          format: table
+          exit-code: '1'
 
       - name: JaCoCo Coverage Report
         run: ./mvnw -pl pjb-api jacoco:report -q || true
@@ -71,8 +115,7 @@ jobs:
           path: |
             pjb-api/target/surefire-reports/
             pjb-api/target/site/jacoco/
-            pjb-api/target/bom.json
-            pjb-api/target/dependency-check-report.html
+            target/bom.json
 
       - name: Coverage Gate (laiane minimo 70%)
         run: |
