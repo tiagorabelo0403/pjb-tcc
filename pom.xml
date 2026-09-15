@@ -35,19 +35,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.run.jvmArguments>-Dfile.encoding=UTF-8</spring-boot.run.jvmArguments>
 
-        <!-- A serie 3.5.x do Boot chegou ao fim do suporte OSS em 2026-06-30 (3.5.16, usado aqui,
-             foi a ultima release) sem nunca ter levantado o Tomcat/Netty gerenciados ate o patamar
-             que fecha as CVEs CRITICAL apontadas pelo Trivy: mesmo na 3.5.16 o teto e Tomcat
-             10.1.55 e Netty 4.1.135.Final, abaixo dos 10.1.58/4.1.137.Final exigidos. Overrides
-             diretos abaixo, porque o proprio Boot nao vai mais mexer nisso nesta serie. -->
+        <!-- pins fora do que o Boot 3.5.x (EOL) ainda gerencia -- ver DEBT_LOG -->
         <tomcat.version>10.1.59</tomcat.version>
         <netty.version>4.1.137.Final</netty.version>
-
-        <!-- httpcore5 e outra que trava no teto da serie (5.3.6 do inicio ao fim da 3.5.x) —
-             mesmo motivo do Tomcat/Netty acima. So chega em transitiva (nenhum import direto no
-             projeto), provavelmente via cliente do Elasticsearch; a versao instalada batia exato
-             com o default do Boot antes deste override, confirmando que nada mais na arvore fixava
-             um valor proprio. -->
         <httpcore5.version>5.4.3</httpcore5.version>
 
         <lombok.version>1.18.36</lombok.version>
@@ -81,11 +71,6 @@
         <postgresql.version>42.7.12</postgresql.version>
         <angus-mail.version>2.0.4</angus-mail.version>
         <lz4-java.version>1.10.3</lz4-java.version>
-        <!-- 1.0.7 tem breaking change real (ChatMemory advisor passa a exigir conversationId
-             explicito, setters removidos de ChatOptions/PostgresMlEmbeddingOptions/
-             StabilityAiImageOptions) — mas o projeto so usa ChatClient/Document/
-             PagePdfDocumentReader (confirmado por grep, zero uso de ChatMemory ou dos setters
-             removidos). Bump seguro apesar da nota de release parecer arriscada. -->
         <spring-ai.version>1.0.7</spring-ai.version>
         <maven.clean.version>3.4.1</maven.clean.version>
         <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
@@ -188,15 +173,7 @@
                 <version>${postgresql.version}</version>
             </dependency>
 
-            <!-- spring-ai-model e spring-ai-client-chat (via spring-ai-bom, bump 1.0.0 -> 1.0.7)
-                 trazem io.swagger.core.v3:swagger-annotations-jakarta:2.2.30 direto, mais perto na
-                 arvore do que o swagger-core-jakarta:2.2.41 que o springdoc usa (via
-                 springdoc-openapi-starter-common). "Nearest wins" do Maven escolhia a 2.2.30, mas
-                 o swagger-core-jakarta:2.2.41 chama Schema.$dynamicRef(), metodo que so existe a
-                 partir da 2.2.41 — NoSuchMethodError toda vez que o springdoc monta o schema em
-                 runtime (pego pelo LaianeMpOpenApiContractTest). Pin explicito na versao que o
-                 springdoc realmente usa, valendo pra arvore inteira, nao so pra quem ja tinha
-                 exclusion manual. -->
+            <!-- versao que o springdoc realmente precisa -- ver commit e DEBT_LOG -->
             <dependency>
                 <groupId>io.swagger.core.v3</groupId>
                 <artifactId>swagger-annotations-jakarta</artifactId>
@@ -796,21 +773,17 @@
                                 <requirePluginVersions>
                                     <banSnapshots>true</banSnapshots>
                                 </requirePluginVersions>
-                                <!-- Existe por causa de um NoSuchMethodError real: spring-ai-model/
-                                     spring-ai-client-chat (bump 1.0.0 -> 1.0.7) passaram a trazer
-                                     swagger-annotations-jakarta:2.2.30 mais perto na arvore do que
-                                     o swagger-core-jakarta:2.2.41 que o springdoc usa. "Nearest
-                                     wins" escolhia a 2.2.30 pra arvore inteira, e o springdoc
-                                     quebrava em runtime chamando um metodo que so existe a partir
-                                     da 2.2.41 — silencioso ate um teste de contrato OpenAPI cair, 10
-                                     minutos dentro do build. Essa regra falha o build imediatamente,
-                                     na validacao, toda vez que "nearest wins" resolver uma versao
-                                     MENOR do que alguma dependencia mais funda da arvore pede — e
-                                     dizendo qual par de versoes conflitou, nao um NoSuchMethodError
-                                     sem contexto. Nome da tag e requireUpperBoundDeps (abreviado),
-                                     nao requireUpperBoundDependencies por extenso — regra nativa do
-                                     enforcer, sem dependencia extra. -->
-                                <requireUpperBoundDeps/>
+                                <!-- ver commit e DEBT_LOG para o porque de cada exclude -->
+                                <requireUpperBoundDeps>
+                                    <excludes>
+                                        <exclude>com.google.errorprone:error_prone_annotations</exclude>
+                                        <exclude>io.micrometer:micrometer-core</exclude>
+                                        <exclude>io.micrometer:micrometer-observation</exclude>
+                                        <exclude>org.eclipse.angus:jakarta.mail</exclude>
+                                        <exclude>org.yaml:snakeyaml</exclude>
+                                        <exclude>org.jspecify:jspecify</exclude>
+                                    </excludes>
+                                </requireUpperBoundDeps>
                             </rules>
                         </configuration>
                     </execution>

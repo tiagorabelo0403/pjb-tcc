@@ -1069,7 +1069,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 58 ADRs documentam cada decisão arquitetural com motivação, consequências e alternativas consideradas. Devem ser lidos antes de alterar qualquer estrutura de pacote, padrão de concorrência ou política de segurança.
 
-O pipeline gera automaticamente um SBOM CycloneDX a cada build, mantendo inventário auditável de todas as dependências com versão e licença. Esse SBOM é escaneado pelo Trivy em toda PR: CVE CRITICAL bloqueia o merge, CVE HIGH é medida e reportada sem bloquear (ver `docs/quality/DEBT_LOG.md` para as HIGH ainda abertas e por quê). O evidence gate de CI rejeita merges sem cobertura de guarda estrutural completa. Correlation ID obrigatório em toda requisição — propagado via contexto e registrado em cada entrada de log, permitindo rastreamento ponta a ponta sem agregador externo.
+O pipeline gera automaticamente um SBOM CycloneDX a cada build, mantendo inventário auditável de todas as dependências com versão e licença. Esse SBOM é escaneado pelo Trivy em toda PR: CVE CRITICAL bloqueia o merge, CVE HIGH é medida e reportada sem bloquear. O `maven-enforcer-plugin` roda `requireUpperBoundDeps`, travando o build sempre que a resolução de dependências convergir para uma versão mais baixa do que alguma dependência transitiva exige (ver `docs/quality/DEBT_LOG.md` para os pontos hoje excluídos dessa regra e por quê). O evidence gate de CI rejeita merges sem cobertura de guarda estrutural completa. Correlation ID obrigatório em toda requisição — propagado via contexto e registrado em cada entrada de log, permitindo rastreamento ponta a ponta sem agregador externo.
 
 ### Validação de manifestos Kubernetes
 
