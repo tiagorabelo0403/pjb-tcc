@@ -55,17 +55,31 @@ jobs:
         run: ./mvnw -pl pjb-api -am -Dtest="LaianeMpOpenApiSchemaTest" test -q
 
       - name: SBOM CycloneDX
-        run: ./mvnw -pl pjb-api org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -q
+        # `-am` tambem aqui: sem ele o reator e so o pjb-api, e o bom.json descreve metade do
+        # aplicativo. SBOM incompleto faz o escaneamento seguinte olhar para o lado errado.
+        run: ./mvnw -pl pjb-api -am org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -q
 
-      # MEDICAO. Este passo nunca rodou: sem `-am` o pjb-core nao entra no reator e a resolucao
-      # de dependencia falha antes de qualquer analise. O `|| true` engolia o erro, entao o CI
-      # ficava verde com auditoria de CVE nenhuma — e o dependency-check-report.html subia no
-      # "Evidence Pack" sem ter sido gerado.
+      # O dependency-check da OWASP saiu daqui. Corrigido o `-am`, ele COMECA a rodar e trava
+      # baixando a base da NVD: "NVD API has 391,581 records" + "An NVD API Key was not provided -
+      # the update can take a VERY long time". A execucao de medicao foi cancelada no limite de
+      # tempo do job. Sem chave da NVD, aquele caminho nao fecha em CI.
       #
-      # `-am` corrigido e `-q` removido para ver o que ele acusa. O `|| true` fica SO nesta
-      # medicao: se eu o tirasse agora, estaria bloqueando sem saber contra o que.
-      - name: Dependency Audit (CVE check)
-        run: ./mvnw -pl pjb-api -am org.owasp:dependency-check-maven:12.1.0:check -DfailBuildOnCVSS=9 || true
+      # As duas metades da solucao ja existiam no projeto e nunca tinham sido ligadas: o SBOM
+      # CycloneDX e gerado logo acima, e o Trivy ja bloqueia de verdade no cd.yml. Escanear o
+      # proprio SBOM com o Trivy cobre as dependencias Java no tempo da PR, com base de
+      # vulnerabilidade propria, sem chave e sem os limites de taxa da NVD.
+      #
+      # exit-code: '0' aqui e MEDICAO — quero ver o que ele acusa antes de deixar bloquear.
+      # Bloquear sem saber contra o que troca um instrumento que nao age por um que reprova por
+      # motivo desconhecido. Vira '1' no commit seguinte, com o resultado na mao.
+      - name: Dependency CVE Scan (SBOM)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: sbom
+          scan-ref: pjb-api/target/bom.json
+          severity: CRITICAL,HIGH
+          format: table
+          exit-code: '0'
 
       - name: JaCoCo Coverage Report
         run: ./mvnw -pl pjb-api jacoco:report -q || true
@@ -79,7 +93,6 @@ jobs:
             pjb-api/target/surefire-reports/
             pjb-api/target/site/jacoco/
             pjb-api/target/bom.json
-            pjb-api/target/dependency-check-report.html
 
       - name: Coverage Gate (laiane minimo 70%)
         run: |
