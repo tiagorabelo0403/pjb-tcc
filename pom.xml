@@ -188,6 +188,21 @@
                 <version>${postgresql.version}</version>
             </dependency>
 
+            <!-- spring-ai-model e spring-ai-client-chat (via spring-ai-bom, bump 1.0.0 -> 1.0.7)
+                 trazem io.swagger.core.v3:swagger-annotations-jakarta:2.2.30 direto, mais perto na
+                 arvore do que o swagger-core-jakarta:2.2.41 que o springdoc usa (via
+                 springdoc-openapi-starter-common). "Nearest wins" do Maven escolhia a 2.2.30, mas
+                 o swagger-core-jakarta:2.2.41 chama Schema.$dynamicRef(), metodo que so existe a
+                 partir da 2.2.41 — NoSuchMethodError toda vez que o springdoc monta o schema em
+                 runtime (pego pelo LaianeMpOpenApiContractTest). Pin explicito na versao que o
+                 springdoc realmente usa, valendo pra arvore inteira, nao so pra quem ja tinha
+                 exclusion manual. -->
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-annotations-jakarta</artifactId>
+                <version>2.2.41</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.eclipse.angus</groupId>
                 <artifactId>jakarta.mail</artifactId>
