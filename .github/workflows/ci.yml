@@ -57,8 +57,15 @@ jobs:
       - name: SBOM CycloneDX
         run: ./mvnw -pl pjb-api org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -q
 
+      # MEDICAO. Este passo nunca rodou: sem `-am` o pjb-core nao entra no reator e a resolucao
+      # de dependencia falha antes de qualquer analise. O `|| true` engolia o erro, entao o CI
+      # ficava verde com auditoria de CVE nenhuma — e o dependency-check-report.html subia no
+      # "Evidence Pack" sem ter sido gerado.
+      #
+      # `-am` corrigido e `-q` removido para ver o que ele acusa. O `|| true` fica SO nesta
+      # medicao: se eu o tirasse agora, estaria bloqueando sem saber contra o que.
       - name: Dependency Audit (CVE check)
-        run: ./mvnw -pl pjb-api org.owasp:dependency-check-maven:12.1.0:check -DfailBuildOnCVSS=9 -q || true
+        run: ./mvnw -pl pjb-api -am org.owasp:dependency-check-maven:12.1.0:check -DfailBuildOnCVSS=9 || true
 
       - name: JaCoCo Coverage Report
         run: ./mvnw -pl pjb-api jacoco:report -q || true
