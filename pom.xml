@@ -796,6 +796,19 @@
                                 <requirePluginVersions>
                                     <banSnapshots>true</banSnapshots>
                                 </requirePluginVersions>
+                                <!-- Existe por causa de um NoSuchMethodError real: spring-ai-model/
+                                     spring-ai-client-chat (bump 1.0.0 -> 1.0.7) passaram a trazer
+                                     swagger-annotations-jakarta:2.2.30 mais perto na arvore do que
+                                     o swagger-core-jakarta:2.2.41 que o springdoc usa. "Nearest
+                                     wins" escolhia a 2.2.30 pra arvore inteira, e o springdoc
+                                     quebrava em runtime chamando um metodo que so existe a partir
+                                     da 2.2.41 — silencioso ate um teste de contrato OpenAPI cair, 10
+                                     minutos dentro do build. Essa regra falha o build imediatamente,
+                                     na validacao, toda vez que "nearest wins" resolver uma versao
+                                     MENOR do que alguma dependencia mais funda da arvore pede — e
+                                     dizendo qual par de versoes conflitou, nao um NoSuchMethodError
+                                     sem contexto. -->
+                                <requireUpperBoundDependencies/>
                             </rules>
                         </configuration>
                     </execution>
