@@ -75,10 +75,18 @@ jobs:
       # proprio SBOM com o Trivy cobre as dependencias Java no tempo da PR, com base de
       # vulnerabilidade propria, sem chave e sem os limites de taxa da NVD.
       #
-      # exit-code: '0' aqui e MEDICAO — quero ver o que ele acusa antes de deixar bloquear.
-      # Bloquear sem saber contra o que troca um instrumento que nao age por um que reprova por
-      # motivo desconhecido. Vira '1' no commit seguinte, com o resultado na mao.
-      - name: Dependency CVE Scan (SBOM)
+      # Rodou como medicao (exit-code '0') ate aqui: resultado foi 46 CVE (7 CRITICAL, 39 HIGH).
+      # As 7 CRITICAL eram todas Tomcat/Netty presos ao teto da serie 3.5.x do Boot (ja EOL),
+      # corrigido acima via tomcat.version/netty.version — o scan real ja confirma 0 CRITICAL.
+      # As 18 HIGH restantes (postgresql, spring-ai, jackson, micrometer, httpcore5, spring-data,
+      # spring-kafka, spring-framework) ficam de fora do bloqueio por ora — nao sao CRITICAL e
+      # bloquear a PR inteira por elas agora e trocar "instrumento que nao age" por "instrumento
+      # que reprova por motivo que ainda nao foi triado", o mesmo erro que a medicao evitou.
+      #
+      # Por isso dois passos: o primeiro so mede e reporta CRITICAL+HIGH (exit-code '0', mantem a
+      # visibilidade das 18 HIGH em aberto em todo PR); o segundo bloqueia de verdade, mas so por
+      # CRITICAL (exit-code '1'). Achou CRITICAL de novo, a PR para.
+      - name: Dependency CVE Scan (SBOM) — relatorio CRITICAL+HIGH
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: sbom
@@ -86,6 +94,15 @@ jobs:
           severity: CRITICAL,HIGH
           format: table
           exit-code: '0'
+
+      - name: Dependency CVE Scan (SBOM) — bloqueio CRITICAL
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: sbom
+          scan-ref: target/bom.json
+          severity: CRITICAL
+          format: table
+          exit-code: '1'
 
       - name: JaCoCo Coverage Report
         run: ./mvnw -pl pjb-api jacoco:report -q || true
