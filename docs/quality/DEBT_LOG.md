@@ -1104,7 +1104,8 @@ mecânica: mapear em lote pelo nome repetiria o erro de tratar categoria semânt
 
 ## D-boot-3-5-eol-versoes-pin-manual
 
-**Status:** aberta — agora 3 dependências (tomcat, netty, httpcore5), não mais 2
+**Status:** aberta — 3 dependências pinadas (tomcat, netty, httpcore5); migração pra Boot 4.0.x
+decidida como fatia própria futura, não nesta sessão (ver investigação abaixo)
 
 **Contexto:** o projeto está na `spring-boot-starter-parent` 3.5.16 — a última release OSS da série
 3.5.x (suporte OSS encerrado em 2026-06-30). Mesmo nessa última release, três dependências que o
@@ -1127,10 +1128,42 @@ delas, o gate (`exit-code: '1'` só em CRITICAL) ainda pega — mas só porque a
 falha, entender que o Boot não resolve mais isso sozinho, e subir o pin manualmente. Não há alarme
 separado para "o pin ficou desatualizado" além do próprio gate de CRITICAL disparar de novo.
 
-**Não revisitar sem decisão de produto:** a correção de fundo é migrar para Spring Boot 4.0.x
-(linha ainda com suporte OSS ativo). É troca de major — risco e escopo maiores que uma fatia de
-patch, avaliação de compatibilidade em cascata pelo projeto inteiro. Até essa decisão, o regime é
-pin manual: qualquer CVE nova numa dessas 3 bibliotecas exige repetir este mesmo processo.
+**Investigado em 2026-09-16 (pesquisa web, Context7 MCP não estava conectado nesta sessão):
+migração para Boot 4.0.x já é tecnicamente viável, mas não nesta sessão.** Spring Boot 4.0 saiu em
+GA em 2025-11-30 (~10 meses de maturidade, 4.1 já lançado) — deixou de ser "linha nova demais para
+confiar". Mas o projeto tem 3 dependências de terceiros que a própria régua do Boot não cobre, e as
+três exigem troca de major própria, não só bump de patch:
+
+```
+camunda-spring-boot-starter 8.8.16 -> precisa do artefato camunda-spring-boot-4-starter
+  (disponivel desde o patch 8.7.24; Boot 4 vira default só na 8.9, abr/2026)
+org.springframework.ai (spring-ai-bom) 1.0.7 -> precisa da linha 2.0.x
+  (spring-ai 2.0.0 lancado 2026-05-28; a serie 1.1.x segue presa ao Boot 3.5.x)
+springdoc-openapi-starter-webmvc-ui 2.8.15 -> precisa da linha 3.x
+  (major do springdoc anda em lockstep com major do Boot; 2.x e so Boot 3)
+```
+(via WebSearch em 2026-09-16: OpenLogic/HeroDevs/GitHub release notes do Spring Boot 4.0; issues
+#42077 e #41279 do repo `camunda/camunda`; issue #3379 e discussion #5149 do repo
+`spring-projects/spring-ai`; issues #3062/#3095 do repo `springdoc/springdoc-openapi`; versões
+cruzadas contra `pom.xml` raiz deste projeto — `camunda.version`, `spring-ai.version`,
+`springdoc.version`)
+
+Boot 4 em si carrega ~115 breaking changes documentadas (Hibernate 7, Jackson 3 — major breaking
+por si só —, Undertow removido, JUnit 4 removido, defaults do Spring Security mudam de um jeito que
+quebra API REST silenciosamente se não for revisado). Três trocas de major de dependência mais a
+própria régua do Boot é volume real de trabalho, não uma tarde.
+
+**Decisão (Tiago pediu para eu decidir olhando o projeto como um todo): não migrar nesta sessão.**
+O motivo não é falta de viabilidade técnica — é o resto: sessão já longa, muitas PRs mescladas hoje,
+e uma migração de major com 3 dependências trocando de major junto é exatamente o tipo de mudança
+que merece uma fatia própria, com tempo para rodar a suíte de integração completa (117 classes,
+~1h38 medido) e não ser espremida no fim de uma sessão já cheia. Pin manual continua sendo o regime
+até lá — nada muda no curto prazo, só o mapa de dependências fica documentado e pronto para quando a
+fatia acontecer.
+
+**Quando revisitar:** fatia própria dedicada, com os 3 bumps de dependência (`camunda-spring-boot-4-starter`,
+`spring-ai` 2.0.x, `springdoc-openapi` 3.x) e o bump do `spring-boot-starter-parent` na mesma fatia —
+não faz sentido subir o Boot sem já ter as 3 dependências na versão que o suporta.
 
 ## D-require-upper-bound-deps-excludes
 
