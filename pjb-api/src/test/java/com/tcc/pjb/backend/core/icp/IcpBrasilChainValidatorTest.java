@@ -74,8 +74,10 @@ class IcpBrasilChainValidatorTest {
         @Override public void checkValidity(Date date) {}
         @Override public int getVersion() { return 3; }
         @Override public BigInteger getSerialNumber() { return BigInteger.valueOf(123456789L); }
-        @Override public Principal getIssuerDN() { return getIssuerX500Principal(); }
-        @Override public Principal getSubjectDN() { return getSubjectX500Principal(); }
+        // getIssuerDN()/getSubjectDN() sao abstratos em X509Certificate mesmo deprecated -- override
+        // obrigatorio pra compilar, sem substituto possivel; nada aqui consome o valor retornado.
+        @Override @SuppressWarnings("deprecation") public Principal getIssuerDN() { return getIssuerX500Principal(); }
+        @Override @SuppressWarnings("deprecation") public Principal getSubjectDN() { return getSubjectX500Principal(); }
         @Override public Date getNotBefore() { return new Date(System.currentTimeMillis() - 1000L); }
         @Override public Date getNotAfter() { return new Date(System.currentTimeMillis() + 86400000L); }
         @Override public byte[] getTBSCertificate() { return new byte[0]; }

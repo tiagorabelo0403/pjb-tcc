@@ -32,7 +32,7 @@ refatoração de domínio, não higiene de ferramenta.
 
 ## D-apis-depreciadas-em-codigo-de-teste
 
-**Status:** aberta — produção em zero e travada por catraca; 10 avisos restam em `src/test`
+**Status:** aberta — produção em zero e travada por catraca; 8 avisos restam em `src/test`
 
 A varredura que fechou `java_regression_signature_guard` não foi feita por catálogo de assinaturas, e
 sim perguntando ao compilador (`-Dmaven.compiler.showDeprecation=true` sobre build limpo, porque a
@@ -40,12 +40,10 @@ compilação incremental responde "Nothing to compile" e produz medição fantas
 **32 usos de API depreciada**, dos quais o guard catalogava **um**.
 
 `src/main` foi zerado nesta fatia e o `default-compile` passou a rodar com `-Xlint:deprecation,removal`
-e `failOnWarning`, então uma API depreciada nova em produção derruba o build. Restam **10 avisos, todos
-em `src/test`**, onde a catraca não se aplica — confirmado por recompilação forçada (2026-09-16):
+e `failOnWarning`, então uma API depreciada nova em produção derruba o build. Restam **8 avisos, todos
+em `src/test`**, onde a catraca não se aplica:
 
 ```
-[WARNING] .../IcpBrasilChainValidatorTest.java:[78,35] [deprecation] getSubjectDN() in X509Certificate has been deprecated
-[WARNING] .../IcpBrasilChainValidatorTest.java:[77,35] [deprecation] getIssuerDN() in X509Certificate has been deprecated
 [WARNING] .../PeticionamentoSagaWorkerStringIdTest.java:[21,8] [deprecation] ActivatedJob in io.camunda.zeebe.client.api.response has been deprecated
 [WARNING] .../PeticionamentoSagaWorkerStringIdTest.java:[21,32] [deprecation] ActivatedJob ...
 [WARNING] .../PeticionamentoSagaWorkerTest.java:[28,8] [deprecation] ActivatedJob ...
@@ -55,14 +53,12 @@ em `src/test`**, onde a catraca não se aplica — confirmado por recompilação
 [WARNING] .../PeticionamentoSagaWorkerTest.java:[60,8] [deprecation] ActivatedJob ...
 [WARNING] .../PeticionamentoSagaWorkerTest.java:[60,32] [deprecation] ActivatedJob ...
 ```
-(2026-09-16, contagem total no log: exatamente 10 — `Provider(String,double,String)` não aparece mais)
+(2026-09-16, contagem total no log: exatamente 8 — `X509Certificate.getSubjectDN()`/`getIssuerDN()`
+fechados no mesmo dia, `Provider(String,double,String)` não aparece mais)
 
 - **8** — `io.camunda.zeebe.client.api.response.ActivatedJob` em `PeticionamentoSagaWorkerTest` e
   `PeticionamentoSagaWorkerStringIdTest`. Migrar exige trocar a superfície do cliente Zeebe; é fatia
   própria, não higiene.
-- **2** — `X509Certificate.getSubjectDN()` / `getIssuerDN()` em `IcpBrasilChainValidatorTest`. O
-  substituto (`getSubjectX500Principal()`) devolve o DN em formato RFC 2253, diferente do formato
-  legado; como o teste é de cadeia ICP-Brasil, a troca precisa conferir a asserção, não só o método.
 
 **Fechado nesta etapa:**
 - Os 2 avisos de `AbstractAssert.asList()` (AssertJ) em `AdvogadoCockpitServiceProrrogacaoPrazoLoteTest`
@@ -72,10 +68,21 @@ em `src/test`**, onde a catraca não se aplica — confirmado por recompilação
   pelo substituto moderno `Provider(String,String,String)` (versão como `String` em vez de `double`),
   mesmo valor semântico ("1.0"). 2/2 testes da classe continuam verdes.
 
-**Por que os 11 restantes não foram fechados junto:** nenhum deles é `[removal]`, então não há prazo
-do compilador; o lote do Zeebe muda superfície de integração (fatia própria); os 2 de X509 exigem
-conferir o formato da asserção, não só trocar o método; o de `Provider` precisa de investigação do
-substituto correto antes de trocar.
+**Fechado em 2026-09-16:** `X509Certificate.getSubjectDN()`/`getIssuerDN()` em
+`IcpBrasilChainValidatorTest`. A entrada anterior deste registro supunha que a troca exigia conferir
+o formato RFC 2253 do substituto contra alguma asserção — releitura completa do arquivo mostrou que
+isso estava errado: as duas assinaturas são métodos **abstratos** de `X509Certificate` (a classe do
+JDK, deprecated desde o Java 16 mas sem corpo default), então `FakeCertificate` é obrigado a
+sobrescrevê-las para compilar, e nenhum teste consome o valor retornado — o `Principal` devolvido não
+aparece em nenhuma asserção do arquivo. Não havia "método substituto" para trocar; era override
+mandatório de contrato deprecated sem alternativa. Corrigido com
+`@SuppressWarnings("deprecation")` escopado aos dois métodos (não à classe), com comentário
+explicando o porquê. 2/2 testes da classe continuam verdes, recompilação forçada confirma zero
+avisos no arquivo.
+
+**Por que os 8 restantes não foram fechados junto:** nenhum é `[removal]`, então não há prazo do
+compilador; o lote do Zeebe muda superfície de integração (fatia própria — troca o tipo de retorno
+que 4 métodos de teste consomem, não uma anotação isolada).
 
 ## D-classes-restauradas-sem-teste-e-sem-conexao
 
