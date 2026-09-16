@@ -291,6 +291,64 @@ jobs:
         working-directory: scripts
         run: python access_key_and_unavailability_guard.py
 
+      - name: config_taxonomy_guard
+        working-directory: scripts
+        run: python config_taxonomy_guard.py
+
+      - name: docker_compose_guard
+        working-directory: scripts
+        run: |
+          python -m pip install --quiet pyyaml
+          python docker_compose_guard.py
+
+      - name: drain_quiet_period_argline_guard
+        working-directory: scripts
+        run: python drain_quiet_period_argline_guard.py
+
+      - name: git_secret_guard
+        working-directory: scripts
+        run: python git_secret_guard.py
+
+      - name: java_string_literal_sanity_guard
+        working-directory: scripts
+        run: python java_string_literal_sanity_guard.py
+
+      - name: legal_ai_policy_catalog_guard
+        working-directory: scripts
+        run: python legal_ai_policy_catalog_guard.py
+
+      - name: legal_ai_surface_split_guard
+        working-directory: scripts
+        run: python legal_ai_surface_split_guard.py
+
+      - name: legal_knowledge_catalog_guard
+        working-directory: scripts
+        run: python legal_knowledge_catalog_guard.py
+
+      - name: legal_mcp_catalog_guard
+        working-directory: scripts
+        run: python legal_mcp_catalog_guard.py
+
+      - name: pjb_runtime_memory_recipe_guard
+        working-directory: scripts
+        run: python pjb_runtime_memory_recipe_guard.py
+
+      - name: powershell_test_collector_guard
+        working-directory: scripts
+        run: python powershell_test_collector_guard.py
+
+      - name: replacement_matrix_guard
+        working-directory: scripts
+        run: python replacement_matrix_guard.py
+
+      - name: spring_ambiguous_constructor_guard
+        working-directory: scripts
+        run: python spring_ambiguous_constructor_guard.py
+
+      - name: spring_surface_guard
+        working-directory: scripts
+        run: python spring_surface_guard.py
+
       - name: Upload Guard Reports
         if: always()
         uses: actions/upload-artifact@v7
