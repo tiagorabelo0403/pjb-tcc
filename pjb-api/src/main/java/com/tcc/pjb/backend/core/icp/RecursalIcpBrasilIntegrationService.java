@@ -10,7 +10,7 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.Objects;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 @Service

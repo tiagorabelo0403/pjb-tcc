@@ -19,7 +19,10 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import com.tcc.pjb.backend.platform.runtime.execution.PjbExecutionDescriptor;
 import com.tcc.pjb.backend.platform.runtime.execution.PjbTransactionalExecutionSupport;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -40,7 +43,15 @@ class SobrestamentoTemaServiceTest {
         when(temaRepository.findByCodigoIgnoreCase("Tema 9")).thenReturn(Optional.of(tema));
         SobrestamentoTemaRepository sobrestamentoRepository = mock(SobrestamentoTemaRepository.class);
         when(sobrestamentoRepository.existsByProcessoIdAndTemaId(1L, 9L)).thenReturn(false);
-        SobrestamentoTemaService service = new SobrestamentoTemaService(processoRepository, temaRepository, sobrestamentoRepository, mock(AuditLedgerService.class), new SimpleMeterRegistry(), new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5)), mock(PjbTransactionalExecutionSupport.class));
+        PjbTransactionalExecutionSupport transactionalExecutionSupport = mock(PjbTransactionalExecutionSupport.class);
+        when(transactionalExecutionSupport.runInTransaction(
+                ArgumentMatchers.any(PjbExecutionDescriptor.class), ArgumentMatchers.any(Runnable.class)))
+                .thenAnswer(invocation -> {
+                    Runnable task = invocation.getArgument(1);
+                    task.run();
+                    return CompletableFuture.completedFuture(null);
+                });
+        SobrestamentoTemaService service = new SobrestamentoTemaService(processoRepository, temaRepository, sobrestamentoRepository, mock(AuditLedgerService.class), new SimpleMeterRegistry(), new ReadAfterWriteConsistencyPolicy(Clock.fixed(Instant.now(), ZoneOffset.UTC), Duration.ofSeconds(5)), transactionalExecutionSupport);
         service.sobrestamentoBatch("Tema 9");
         assertThat(processo.getStatusProcesso()).isEqualTo(StatusProcesso.SUSPENSO_TEMA_REPERCUSSAO);
         assertThat(tema.getProcessosSobrestados()).isEqualTo(1);

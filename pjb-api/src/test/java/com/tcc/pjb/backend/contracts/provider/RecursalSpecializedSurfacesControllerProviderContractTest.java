@@ -5,7 +5,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 import au.com.dius.pact.provider.junit5.PactVerificationContext;
-import au.com.dius.pact.provider.spring.spring6.PactVerificationSpring6Provider;
+import au.com.dius.pact.provider.spring.spring7.PactVerificationSpring7Provider;
 import au.com.dius.pact.provider.junitsupport.Provider;
 import au.com.dius.pact.provider.junitsupport.State;
 import au.com.dius.pact.provider.junitsupport.loader.PactFolder;
@@ -46,7 +46,7 @@ class RecursalSpecializedSurfacesControllerProviderContractTest {
     }
 
     @TestTemplate
-    @ExtendWith(PactVerificationSpring6Provider.class)
+    @ExtendWith(PactVerificationSpring7Provider.class)
     void verify(PactVerificationContext context, MockHttpServletRequestBuilder request) {
         PactProviderSpring6Support.applyJsonBody(context, request);
         context.verifyInteraction();

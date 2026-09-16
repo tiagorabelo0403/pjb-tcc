@@ -17,7 +17,7 @@ class JudicialConnectorReadinessServiceTest {
         cfg.setAuthRequired(true);
         cfg.setRequiresCertificate(true);
         properties.setPje(cfg);
-        JudicialConnectorReadinessService service = new JudicialConnectorReadinessService(properties, JudicialConnectorHomologationService.withoutPolicy(properties), new JudicialOAuthTokenService(new org.springframework.boot.web.client.RestTemplateBuilder(), new com.fasterxml.jackson.databind.ObjectMapper()));
+        JudicialConnectorReadinessService service = new JudicialConnectorReadinessService(properties, JudicialConnectorHomologationService.withoutPolicy(properties), new JudicialOAuthTokenService(new org.springframework.boot.restclient.RestTemplateBuilder(), new com.fasterxml.jackson.databind.ObjectMapper()));
 
         JudicialSubmissionCapability capability = new JudicialSubmissionCapability(
                 JudicialSystem.PJE,
@@ -73,7 +73,7 @@ class JudicialConnectorReadinessServiceTest {
         cfg.setProductionReady(true);
         cfg.setHomologatedTribunals(java.util.List.of("TJSP"));
         properties.setEsaj(cfg);
-        JudicialConnectorReadinessService service = new JudicialConnectorReadinessService(properties, JudicialConnectorHomologationService.withoutPolicy(properties), new JudicialOAuthTokenService(new org.springframework.boot.web.client.RestTemplateBuilder(), new com.fasterxml.jackson.databind.ObjectMapper()));
+        JudicialConnectorReadinessService service = new JudicialConnectorReadinessService(properties, JudicialConnectorHomologationService.withoutPolicy(properties), new JudicialOAuthTokenService(new org.springframework.boot.restclient.RestTemplateBuilder(), new com.fasterxml.jackson.databind.ObjectMapper()));
 
         JudicialSubmissionCapability capability = new JudicialSubmissionCapability(
                 JudicialSystem.ESAJ,

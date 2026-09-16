@@ -119,10 +119,10 @@ public class PjbQualityGateReadinessApplicationService {
         String workflow = read(PjbProjectPathResolver.workspaceRoot(projectRoot).resolve(".github/workflows/quality-gates.yml"));
         boolean pactConsumerDependencyPresent = pom.contains("au.com.dius.pact.consumer") && pom.contains("junit5");
         boolean pactProviderDependencyPresent = pom.contains("au.com.dius.pact.provider")
-                && (pom.contains("spring6") || pom.contains("junit5"));
+                && (pom.contains("spring7") || pom.contains("junit5"));
         boolean consumerContractTestsPresent = exists("src/test/java/com/tcc/pjb/backend/core/procedural/NationalProceduralRoutingCompetenceContractTest.java")
                 || countTestFilesContaining("@Pact", "PactTestFor") > 0;
-        boolean providerContractTestsPresent = countTestFilesContaining("@Provider", "PactVerificationSpring6Provider") > 0
+        boolean providerContractTestsPresent = countTestFilesContaining("@Provider", "PactVerificationSpring7Provider") > 0
                 || countTestFilesContaining("@Provider", "PactVerificationInvocationContextProvider") > 0;
         boolean contractTestsPresent = consumerContractTestsPresent && providerContractTestsPresent;
         boolean pactOutputConfigured = pom.contains("target/pacts")
@@ -131,7 +131,7 @@ public class PjbQualityGateReadinessApplicationService {
         boolean qualityWorkflowPresent = workflow.contains("pact")
                 && workflow.contains("ProviderContractTest");
         int matchingTests = countTestFilesContaining("@Pact", "PactTestFor")
-                + countTestFilesContaining("@Provider", "PactVerificationSpring6Provider")
+                + countTestFilesContaining("@Provider", "PactVerificationSpring7Provider")
                 + countTestFilesContaining("@Provider", "PactVerificationInvocationContextProvider");
         LinkedHashSet<String> details = new LinkedHashSet<>();
         if (!pactConsumerDependencyPresent) {

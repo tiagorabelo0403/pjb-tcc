@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.configs.datasource;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
 
 class PjbReadWriteDataSourceConfigTest {
 

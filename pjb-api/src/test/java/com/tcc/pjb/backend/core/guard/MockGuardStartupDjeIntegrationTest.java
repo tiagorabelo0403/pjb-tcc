@@ -21,10 +21,10 @@ import org.springframework.core.env.Environment;
 class MockGuardStartupDjeIntegrationTest {
 
     private static final String INFRA_EXCLUSIONS =
-            "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration," +
-            "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration," +
-            "org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration," +
-            "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration";
+            "org.springframework.boot.kafka.autoconfigure.KafkaAutoConfiguration," +
+            "org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration," +
+            "org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchRestClientAutoConfiguration," +
+            "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration";
 
     /**
      * Cenário A: mock-enabled=true em prod → EPP dispara MockGuardViolationException antes de

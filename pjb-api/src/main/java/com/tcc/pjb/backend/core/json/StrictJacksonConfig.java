@@ -1,6 +1,6 @@
 package com.tcc.pjb.backend.core.json;
 
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -13,7 +13,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 @Configuration
 public class StrictJacksonConfig {
 
+  // Jackson2ObjectMapperBuilderCustomizer esta deprecated e marcada pra remocao (Jackson 3 e o
+  // novo padrao). Projeto inteiro usa com.fasterxml.jackson (Jackson 2); modulo de compat oficial
+  // (spring-boot-jackson2), deprecated mas suportado. Ver DEBT_LOG.
   @Bean
+  @SuppressWarnings("removal")
   public Jackson2ObjectMapperBuilderCustomizer strictJacksonCustomizer() {
     return builder -> builder.postConfigurer(this::configure);
   }

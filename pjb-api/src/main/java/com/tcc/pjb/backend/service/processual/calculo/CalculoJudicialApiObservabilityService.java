@@ -177,13 +177,13 @@ public class CalculoJudicialApiObservabilityService {
         if (context.domain() != null) {
             values.add("X-PJB-Calculation-Domain");
         }
-        if (headers.containsKey("X-PJB-Calculation-File-Name")) {
+        if (headers.containsHeader("X-PJB-Calculation-File-Name")) {
             values.add("X-PJB-Calculation-File-Name");
         }
-        if (headers.containsKey(HttpHeaders.CONTENT_DISPOSITION)) {
+        if (headers.containsHeader(HttpHeaders.CONTENT_DISPOSITION)) {
             values.add(HttpHeaders.CONTENT_DISPOSITION);
         }
-        if (headers.containsKey(HttpHeaders.RETRY_AFTER)) {
+        if (headers.containsHeader(HttpHeaders.RETRY_AFTER)) {
             values.add(HttpHeaders.RETRY_AFTER);
         }
         if (context.legacy()) {

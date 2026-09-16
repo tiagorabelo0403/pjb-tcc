@@ -60,7 +60,7 @@ public class IntimacaoAudienciaController {
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
         } catch (IllegalStateException e) {
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.unprocessableContent().build();
         }
     }
 }

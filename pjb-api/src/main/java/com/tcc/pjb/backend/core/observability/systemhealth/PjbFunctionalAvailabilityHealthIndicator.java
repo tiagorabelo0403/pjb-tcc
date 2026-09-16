@@ -1,8 +1,8 @@
 package com.tcc.pjb.backend.core.observability.systemhealth;
 
 import java.util.Map;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -17,6 +17,13 @@ spring:
       - classpath:application-resilience.yml
       - classpath:application-api-governance.yml
       - classpath:application-runtime.yml
+  # tools.jackson (Jackson 3): projeto inteiro usa com.fasterxml.jackson (Jackson 2), ver
+  # StrictJacksonConfig. Precisa ser aqui (perfil-base, nao application-test.yml) porque fatias
+  # de teste como @WebMvcTest nao ativam o profile "test" e nao herdam o exclude de
+  # @SpringBootApplication (lista propria de auto-configuracao da fatia).
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration
   data:
     redis:
       repositories:
