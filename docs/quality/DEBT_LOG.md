@@ -258,20 +258,6 @@ literal.
 cálculo com consumidores reais, e o valor entra neles como *default* de request opcional. Unificar
 muda a superfície desses serviços. É fatia própria, com verificação própria.
 
-## D-rpv-municipal-sem-limite-proprio
-
-**Status:** aberta — sem evidência no projeto, não inventada
-
-`PrecatorioRadarService.limiteRpv` trata `MUNICIPAL` com o mesmo teto de `ESTADUAL` (40 salários
-mínimos), porque a busca no projeto não encontrou nenhuma fonte definindo limite municipal próprio.
-
-O ADCT art. 87 estabelece pisos distintos por ente enquanto não houver lei local, e a constante foi
-nomeada `SALARIOS_MINIMOS_RPV_SUBNACIONAL` para deixar explícito que hoje os dois entes compartilham
-o mesmo valor por ausência de fonte, não por decisão.
-
-**O que falta:** confirmar com o Tiago qual valor o PJB deve adotar para município, e se o teto deve
-ser configurável por ente federado (ver `D-teto-rpv-duplicado-como-literal-em-seis-pontos`).
-
 ## D-fragmentacao-de-contexto-spring-nos-its
 
 **Status:** aberta — medida, com alavanca identificada; exige julgamento por teste
