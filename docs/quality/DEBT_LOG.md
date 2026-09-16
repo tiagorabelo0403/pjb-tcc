@@ -7,63 +7,6 @@ nenhuma entrega em andamento — para que não fiquem só na memória de quem in
 Cada entrada sai daqui quando a dívida é fechada; o fechamento é então narrado no `README.md`, seguindo
 o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
-## D-guards-fora-do-ci-residual
-
-**Status:** aberta — só 2 de 47 guards seguem fora do CI, ambos com razão legítima
-
-**Contexto:** esta entrada documentava 17 guards fora do CI. Recontado agora (`scripts/` tem 58
-scripts, 47 são `*_guard.py`): **45 já estão no `ci.yml`**. Os 5 que "acusavam por defeito próprio"
-(catálogo de assinaturas escrito à mão, proibição por substring, varredura de comentário como se
-fosse código, dois que varriam o sistema de arquivos em vez do que o git versiona) foram corrigidos e
-ligados em sessão anterior a esta — sem que o registro fosse atualizado, o próprio padrão de defeito
-que esta entrada existia para nomear (`project_padrao_instrumento_que_nao_age` na memória). Mais 14
-(`config_taxonomy_guard`, `docker_compose_guard`, `drain_quiet_period_argline_guard`,
-`git_secret_guard`, `java_string_literal_sanity_guard`, `legal_ai_policy_catalog_guard`,
-`legal_ai_surface_split_guard`, `legal_knowledge_catalog_guard`, `legal_mcp_catalog_guard`,
-`pjb_runtime_memory_recipe_guard`, `powershell_test_collector_guard`, `replacement_matrix_guard`,
-`spring_ambiguous_constructor_guard`, `spring_surface_guard`) foram re-executados agora, confirmados
-verdes, e ligados ao job `guards-report`.
-
-**Restam 2, ambos fora por razão já documentada, não por omissão:**
-- `docker_zombie_container_guard` — ferramenta local, sai com código ≠ 0 ao encontrar container
-  órfão; comportamento esperado fora do CI, nunca foi candidato a entrar.
-- `modular_monolith_guard` — catraca com baseline estourado, não pode entrar no CI antes da
-  triagem. Ver `D-modular-monolith-baseline-estourado`, que segue aberta.
-
-Recontagem real (2026-09-15):
-
-```
-$ find scripts -maxdepth 1 -iname "*.py" ! -iname "_bridge.py" | wc -l
-58
-$ find scripts -maxdepth 1 -iname "*_guard.py" | xargs -n1 basename | sort > all_guards.txt
-$ wc -l all_guards.txt
-47
-$ grep -oE "[a-z_]+_guard\.py" .github/workflows/ci.yml | sort -u | wc -l
-45
-$ comm -23 all_guards.txt wired.txt
-docker_zombie_container_guard.py
-modular_monolith_guard.py
-```
-
-Os 14 recém-ligados, rodados localmente antes de entrar no `ci.yml`, todos `exit 0`:
-
-```
-config_taxonomy_guard -> exit 0
-docker_compose_guard -> exit 0 (com pyyaml instalado, mesma dependencia que conditional_property_declared_guard ja usa em CI)
-drain_quiet_period_argline_guard -> exit 0
-git_secret_guard -> exit 0
-java_string_literal_sanity_guard -> exit 0
-legal_ai_policy_catalog_guard -> exit 0
-legal_ai_surface_split_guard -> exit 0
-legal_knowledge_catalog_guard -> exit 0
-legal_mcp_catalog_guard -> exit 0
-pjb_runtime_memory_recipe_guard -> exit 0
-powershell_test_collector_guard -> exit 0
-replacement_matrix_guard -> exit 0
-spring_ambiguous_constructor_guard -> exit 0
-spring_surface_guard -> exit 0
-```
-
 ## D-hotspots-de-tamanho-ocultos-por-guard-cego
 
 **Status:** aberta — 18 classes e 27 services acima do limiar, mais 2 pacotes espalhados
@@ -158,28 +101,6 @@ roda em lugar nenhum.
 
 Conectar cada uma é decisão de produto, uma por uma. Enquanto não for, o valor da restauração é
 preservar o desenho e tornar a próxima remoção impossível de passar despercebida.
-
-## D-modular-monolith-baseline-estourado
-
-**Status:** aberta — catraca já ultrapassada; guard não pode entrar no CI antes da triagem
-
-`modular_monolith_guard` é catraca com baseline versionado, e o baseline está estourado:
-
-| regra | atual | baseline |
-|---|---|---|
-| total de avisos | 449 | 418 |
-| `module-package-shape` | 332 | 304 |
-| `module-imports-legacy-repository` | 40 | 36 |
-| `controller-imports-repository` | 6 | 5 |
-
-`errors` continua em 0 — o que estourou é a faixa de aviso. `module-package-shape` é a maior fatia e
-aponta módulos em layout legado dentro de `modules.*` (`controller/`, `dto/`, `entity/` em vez de
-`domain/application`), migração de onda que nunca foi feita.
-
-Verificado que a deriva **não** veio das fatias recentes: nenhum arquivo criado a partir de
-2026-09-12 aparece entre os 449 achados. Fechar exige decidir entre migrar o layout dos módulos ou
-reconhecer o baseline atual como o novo piso — e reconhecer sem migrar transforma a catraca em
-carimbo.
 
 ## D-accept-ranges-declarado-e-sobrescrito-no-download-de-pdf
 
@@ -1048,45 +969,6 @@ deve receber enum discriminador (`TipoProcesso.FALENCIA` / `TipoProcesso.RECUPER
 resolver marco diferente por caminho, ou se são dois services distintos. O guard
 `salario_minimo_hardcoded_guard.py` continua reportando as 2 ocorrências (constante literal +
 declaração de constante) até fechamento.
-
-## D-scheduler-salario-minimo-nunca-ativado
-
-**Status:** aberta — decisão de ativação pendente; defasagem agora observável
-
-**Contexto:** `SalarioMinimoNacionalSyncScheduler` existe com cron diário e consumiria a série 1619
-do Banco Central, mas está atrás de `@ConditionalOnProperty(pjb.sync.salario-minimo.enabled)` sem
-`matchIfMissing`, e a propriedade não é definida em nenhum `application*.yml`. Nenhuma migration
-semeia `salario_minimo_nacional`. Consequência: toda consulta cai no `FALLBACK_OFICIAL` estático.
-
-**Corrigido nesta etapa:**
-
-- O fallback para ano além da tabela usava `reduce((a, b) -> b)` sobre `FALLBACK_OFICIAL`, que é um
-  `Map.copyOf` — cuja ordem de iteração o javadoc declara **indefinida e sujeita a mudança**. Não era
-  bug ativo (probe confirmou que hoje a ordem sai ascendente e o resultado é correto), mas era
-  fragilidade latente: acrescentar um ano ou trocar de JDK poderia alterar o valor em silêncio.
-  Passou a usar `max(Map.Entry.comparingByKey())`, que é o mesmo critério que
-  `anoMaisRecenteConhecido()` já usava na mesma classe.
-- `SalarioMinimoStalenessWatchdogService` só registrava `log.warn`. Ganhou o gauge
-  `pjb.salario_minimo.defasagem_anos`, que expõe a defasagem corrente mesmo quando ela está **abaixo**
-  do limiar de alerta. Inicia em `-1` para distinguir "watchdog ainda não rodou" de "defasagem zero".
-
-**Achado do revisor — interação entre duas dívidas que nenhuma descreve sozinha:**
-
-O limiar `defasagemAnos > 1` do watchdog é decisão documentada e correta em sua premissa: em janeiro
-o valor do ano novo pode legitimamente ainda não estar cadastrado enquanto o decreto sai, e alertar
-em `defasagem == 1` produziria falso positivo todo início de ano.
-
-Mas essa premissa supõe que **alguém cadastra o valor durante o ano**. Como o sync nunca é ativado e
-não há seed, o que seria um transitório de janeiro vira permanente — e a tolerância desenhada para o
-transitório passa a cobrir a condição permanente por um ano inteiro sem alerta.
-
-Não alterei o limiar: a decisão está fundamentada e a instrução registrada é não revisitá-la sem
-mudança no padrão de publicação do decreto. O gauge resolve o sintoma (a defasagem tolerada agora é
-visível); a causa é a ativação da fonte.
-
-**Decisão pendente do Tiago:** ativar o sync contra o Banco Central (exige rede de saída em produção)
-ou semear `salario_minimo_nacional` por migration com os valores oficiais. A segunda opção é
-determinística e não depende de rede, mas exige atualização manual por decreto.
 
 ## D-frontend-delivery-routes-nao-sinaliza-depreciacao
 

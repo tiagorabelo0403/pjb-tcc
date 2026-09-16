@@ -257,7 +257,7 @@ Abra o `.env` e preencha as variáveis obrigatórias:
 docker compose up -d
 ```
 
-Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V356) são aplicadas automaticamente na primeira conexão do backend.
+Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V357) são aplicadas automaticamente na primeira conexão do backend.
 
 ### 4. Verificar os profiles Spring
 
@@ -634,7 +634,7 @@ graph TD
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Banco | PostgreSQL 17 com Row Level Security por operação |
 | Banco de testes | H2 em memória + Testcontainers |
-| Migrations | Flyway — numeração até V356, com particionamento mensal em tabelas de evento |
+| Migrations | Flyway — numeração até V357, com particionamento mensal em tabelas de evento |
 | Persistência | JPA / Hibernate com `ddl-auto: validate` em produção |
 | Mensageria | Apache Kafka 3.8 — eventos judiciais e outbox |
 | Orquestração de workflow | Camunda 8 / Zeebe — BPMN aplicado ao fluxo de ajuizamento |
@@ -991,7 +991,7 @@ Bounded concurrency via `PjbBoundedExecutorService` previne explosão de conexõ
 
 Zero `CompletableFuture` solto no código de produção. O ADR-0051 define o modelo unificado de execução e é aplicado por guard Python e ArchUnit a cada build.
 
-`SalarioMinimoNacionalSyncScheduler` (sincronização diária com a série 1619 do Banco Central) segue desligado por default (`pjb.sync.salario-minimo.enabled`, ausente em todos os profiles) — mesma convenção de `IbgeSyncService`, decisão operacional registrada no commit que introduziu o scheduler, não esquecimento. `SalarioMinimoStalenessWatchdogService` roda independente dessa flag e alerta se o valor servido ficar defasado do ano corrente além do limiar configurado, sem depender da sincronização automática estar ativa.
+`SalarioMinimoNacionalSyncScheduler` (sincronização diária com a série 1619 do Banco Central) segue desligado por default (`pjb.sync.salario-minimo.enabled`, ausente em todos os profiles) — mesma convenção de `IbgeSyncService`, decisão operacional registrada no commit que introduziu o scheduler, não esquecimento. Em vez de sincronização automática, `salario_minimo_nacional` é semeada por migration (V115 já trazia 2024–2026; V357 completou 2023) com os valores oficiais — decisão explícita por ser determinística e não depender de rede de saída em produção. `SalarioMinimoStalenessWatchdogService` roda independente da flag de sincronização e alerta se o valor servido ficar defasado do ano corrente além do limiar configurado; a partir de 2027, a tabela exige uma nova linha por migration quando o decreto do ano sair.
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
@@ -1021,7 +1021,7 @@ O limiar padrão de `autovacuum_analyze_scale_factor` do PostgreSQL (10% da tabe
 
 ## Banco de dados
 
-318 migrations Flyway (numeração não contígua de V0 a V356 — 39 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
+319 migrations Flyway (numeração não contígua de V0 a V357 — 39 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
 
 Row Level Security ativo por operação, em duas dimensões: sigilo do processo (leitura de casos sigilosos recusada pelo banco antes do ORM) e ator — GUCs de conexão dedicadas (`app.pjb_actor_id`, `app.pjb_actor_roles`) escopam tabelas operacionais (chamados de suporte, exceções de deslocamento de magistrado, trilha de auditoria da IA, intimações de audiência) fiéis ao `@PreAuthorize` de leitura de cada uma, como defesa em profundidade. Nunca RLS decorativo: tabela sem coluna de tenancy não recebe política, e um teste de disciplina de migration barra `ENABLE ROW LEVEL SECURITY` sem `FORCE` e sem política — o RLS órfão que o dono da tabela ignora em runtime. `tb_usuario` e o cluster `tb_identidade_juridica_*` (registro nacional por CPF/CNPJ) são exclusões deliberadas dessa varredura, não lacunas: ambos são consultados legitimamente por papéis institucionais para dados de terceiros (advogado visto por servidor, documento de réu consultado por oficial de justiça) tanto quanto por autoatendimento — não existe fronteira de posse por linha para restringir sem quebrar essas leituras cruzadas legítimas; a proteção de `tb_usuario` é feita por controller inteiro sob `@PreAuthorize` de admin (não há endpoint de self-service por id) e a de PII em ambas por criptografia em repouso com índice cego, não por RLS. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
 
@@ -1064,7 +1064,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 | Testes de integração (Failsafe) | **116 classes · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
-| Guards Python | 45 scripts ativos em CI |
+| Guards Python | 46 scripts ativos em CI |
 | SBOM | CycloneDX gerado a cada build |
 | Auditoria de CVE | Trivy escaneia o SBOM a cada PR; bloqueia merge em CVE CRITICAL |
 | Correlation ID | Obrigatório em toda requisição |
@@ -1362,7 +1362,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.379 testes unitários, 117 classes de integração e 318 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.379 testes unitários, 117 classes de integração e 319 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

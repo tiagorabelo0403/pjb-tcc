@@ -275,6 +275,10 @@ jobs:
         working-directory: scripts
         run: python universal_digital_core_guard.py
 
+      - name: modular_monolith_guard
+        working-directory: scripts
+        run: python modular_monolith_guard.py
+
       - name: judicial_innovation_guard
         working-directory: scripts
         run: python judicial_innovation_guard.py
