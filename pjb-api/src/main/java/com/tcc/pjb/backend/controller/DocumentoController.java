@@ -36,10 +36,6 @@ public class DocumentoController {
         headers.set("X-Content-Type-Options", "nosniff");
         headers.set("X-Frame-Options", "DENY");
         headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
-        // Sem efeito hoje: o ResourceHttpMessageConverter sobrescreve com "bytes". Mantido porque a
-        // decisao entre tornar efetivo e assumir a faixa esta registrada em
-        // D-accept-ranges-declarado-e-sobrescrito-no-download-de-pdf, e nao cabe nesta fatia.
-        headers.set("Accept-Ranges", "none");
 
         if (resolved.contentLength() > 0 && resolved.contentLength() < Integer.MAX_VALUE) {
             headers.setContentLength(resolved.contentLength());

@@ -109,33 +109,6 @@ roda em lugar nenhum.
 Conectar cada uma é decisão de produto, uma por uma. Enquanto não for, o valor da restauração é
 preservar o desenho e tornar a próxima remoção impossível de passar despercebida.
 
-## D-accept-ranges-declarado-e-sobrescrito-no-download-de-pdf
-
-**Status:** aberta — intenção declarada no código, efeito nenhum na resposta
-
-`DocumentoController` monta o download de PDF com `headers.set("Accept-Ranges", "none")`, ao lado dos
-demais cabeçalhos defensivos (`no-store`, `nosniff`, `DENY`, `noindex`). A resposta sai com
-**`Accept-Ranges: bytes`**: o `ResourceHttpMessageConverter` do Spring sobrescreve o valor ao escrever
-um `Resource`.
-
-Medido por teste com `@WebMvcTest`, que usa os conversores reais — não é artefato de harness.
-
-**Não é vulnerabilidade.** A autorização por sigilo efetivo já aconteceu antes de o conteúdo ser
-resolvido, e requisição por faixa sobre resposta autorizada não contorna nada. O que existe é
-intenção declarada sem efeito: quem lê o controller conclui que requisição por faixa está desabilitada
-num documento sob segredo de justiça, e não está.
-
-Fechar exige decidir entre duas saídas, e nenhuma é trivial o bastante para entrar de carona numa
-fatia de layering:
-
-1. **Tornar efetivo** — devolver `ResponseEntity<byte[]>` em vez de `Resource` faz o cabeçalho valer,
-   ao custo de carregar o documento inteiro em memória, o que num PDF grande de processo não é neutro.
-2. **Remover a linha** e assumir que requisição por faixa é permitida, deixando o código honesto sobre
-   o que de fato acontece.
-
-O teste `pdfAutorizadoSaiComOsCabecalhosQueImpedemCacheEIndexacao` afirma o valor **real** (`bytes`),
-com o motivo em comentário, para que a divergência não volte a passar despercebida.
-
 ## D-entidades-sem-classificacao-de-titularidade
 
 **Status:** aberta — 16 entidades no baseline, afirmado por nome no `PjbArchitectureTest`

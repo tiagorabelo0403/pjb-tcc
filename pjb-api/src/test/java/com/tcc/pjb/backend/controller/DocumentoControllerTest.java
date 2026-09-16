@@ -173,9 +173,9 @@ class DocumentoControllerTest {
                 .andExpect(header().string("X-Content-Type-Options", "nosniff"))
                 .andExpect(header().string("X-Frame-Options", "DENY"))
                 .andExpect(header().string("X-Robots-Tag", "noindex, nofollow, noarchive"))
-                // O controller pede "none", mas o ResourceHttpMessageConverter do Spring sobrescreve com
-                // "bytes" ao escrever um Resource. O teste afirma o que a resposta REALMENTE leva, e a
-                // divergencia entre intencao e efeito fica registrada no DEBT_LOG.
+                // "bytes" vem do ResourceHttpMessageConverter do Spring ao escrever um Resource
+                // (streaming) -- nao ha declaracao propria no controller, decisao explicita de manter
+                // range habilitado em vez de bufferizar o PDF inteiro em memoria (D-accept-ranges).
                 .andExpect(header().string("Accept-Ranges", "bytes"))
                 .andExpect(header().string("Content-Disposition",
                         "inline; filename=\"documento_" + DOCUMENTO_ID + ".pdf\""));
