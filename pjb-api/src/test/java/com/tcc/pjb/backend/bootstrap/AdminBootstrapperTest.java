@@ -67,6 +67,7 @@ class AdminBootstrapperTest {
         assertThat(admin.getEmail()).isEqualTo("admin@pjb.local");
         assertThat(admin.getCpf()).isEqualTo("00000000000");
         assertThat(admin.getTipoUsuario()).isEqualTo(TipoUsuario.ADMINISTRADOR);
+        assertThat(admin.getPerfil()).isEqualTo("ADMINISTRADOR");
         assertThat(admin.isAtivo()).isTrue();
         assertThat(admin.getSenha()).isEqualTo("{bcrypt}$2a$10$teste");
         verify(auditLedgerService, never()).appendSafely(eq("ADMIN_BOOTSTRAP_BLOQUEADO_PROD"), any(String.class));
@@ -98,6 +99,7 @@ class AdminBootstrapperTest {
         assertThat(admin.getEmail()).isEqualTo("admin@pjb.local");
         assertThat(admin.getCpf()).isEqualTo("00000000000");
         assertThat(admin.getTipoUsuario()).isEqualTo(TipoUsuario.ADMINISTRADOR);
+        assertThat(admin.getPerfil()).isEqualTo("ADMINISTRADOR");
         assertThat(admin.isAtivo()).isTrue();
         assertThat(admin.getSenha()).isEqualTo("{bcrypt}$2a$10$teste");
     }
