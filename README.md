@@ -1062,7 +1062,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 | Testes de integração (Failsafe) | **116 classes · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
-| Guards Python | 31 scripts ativos em CI |
+| Guards Python | 45 scripts ativos em CI |
 | SBOM | CycloneDX gerado a cada build |
 | Auditoria de CVE | Trivy escaneia o SBOM a cada PR; bloqueia merge em CVE CRITICAL |
 | Correlation ID | Obrigatório em toda requisição |

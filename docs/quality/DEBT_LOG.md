@@ -7,71 +7,62 @@ nenhuma entrega em andamento — para que não fiquem só na memória de quem in
 Cada entrada sai daqui quando a dívida é fechada; o fechamento é então narrado no `README.md`, seguindo
 o padrão já em uso (ex.: D-routing-preprotocolo, D-d25-testes-anexo).
 
-## D-guards-existentes-fora-do-ci
+## D-guards-fora-do-ci-residual
 
-**Status:** aberta — 17 guards fora do CI; 15 passam e poderiam entrar hoje, 2 acusam algo
+**Status:** aberta — só 2 de 47 guards seguem fora do CI, ambos com razão legítima
 
-O projeto tem **44 scripts em `scripts/`** e **26 estão no `ci.yml`**. Parte dos 17 restantes
-é ferramenta local legítima (`docker_zombie_container_guard`, `reap_orphan_test_jvms`) ou gerador
-(`frontend_integration_pack`, `migration_alignment_report`), mas a maioria é guarda de verdade.
+**Contexto:** esta entrada documentava 17 guards fora do CI. Recontado agora (`scripts/` tem 58
+scripts, 47 são `*_guard.py`): **45 já estão no `ci.yml`**. Os 5 que "acusavam por defeito próprio"
+(catálogo de assinaturas escrito à mão, proibição por substring, varredura de comentário como se
+fosse código, dois que varriam o sistema de arquivos em vez do que o git versiona) foram corrigidos e
+ligados em sessão anterior a esta — sem que o registro fosse atualizado, o próprio padrão de defeito
+que esta entrada existia para nomear (`project_padrao_instrumento_que_nao_age` na memória). Mais 14
+(`config_taxonomy_guard`, `docker_compose_guard`, `drain_quiet_period_argline_guard`,
+`git_secret_guard`, `java_string_literal_sanity_guard`, `legal_ai_policy_catalog_guard`,
+`legal_ai_surface_split_guard`, `legal_knowledge_catalog_guard`, `legal_mcp_catalog_guard`,
+`pjb_runtime_memory_recipe_guard`, `powershell_test_collector_guard`, `replacement_matrix_guard`,
+`spring_ambiguous_constructor_guard`, `spring_surface_guard`) foram re-executados agora, confirmados
+verdes, e ligados ao job `guards-report`.
 
-Executados todos os que têm forma de guarda, a partir de `scripts/`, que é o `working-directory` que o
-`ci.yml` usa:
+**Restam 2, ambos fora por razão já documentada, não por omissão:**
+- `docker_zombie_container_guard` — ferramenta local, sai com código ≠ 0 ao encontrar container
+  órfão; comportamento esperado fora do CI, nunca foi candidato a entrar.
+- `modular_monolith_guard` — catraca com baseline estourado, não pode entrar no CI antes da
+  triagem. Ver `D-modular-monolith-baseline-estourado`, que segue aberta.
 
-**Baixa de 2026-09-14:** `flyway_migration_version_guard` saiu desta lista — foi ligado no job
-`guards-enforce` e passou a cobrir mais duas checagens além da duplicata de versão. O gatilho foi um
-defeito real, encontrado à mão na PR #21: ela trazia uma `V335` correta em 21/08 que virou buraco no
-meio da sequência depois que o `master` chegou a V354.
+Recontagem real (2026-09-15):
 
 ```
-FLYWAY MIGRATION VERSION GUARD: FAIL
- - migration nova com versao que regride: V335__sonda_regressao.sql (V335)
-   <= maior ja commitada (V355). Com out-of-order=false, banco que ja aplicou
-   ate V355 recusa esta e nao sobe. Renumere para V356 ou maior.
- - migration ja commitada teve o conteudo alterado: V355__...varchar64.sql.
-   Com validate-on-migrate=true, todo banco que ja a aplicou passa a recusar o
-   boot por checksum divergente e exige flyway repair.
+$ find scripts -maxdepth 1 -iname "*.py" ! -iname "_bridge.py" | wc -l
+58
+$ find scripts -maxdepth 1 -iname "*_guard.py" | xargs -n1 basename | sort > all_guards.txt
+$ wc -l all_guards.txt
+47
+$ grep -oE "[a-z_]+_guard\.py" .github/workflows/ci.yml | sort -u | wc -l
+45
+$ comm -23 all_guards.txt wired.txt
+docker_zombie_container_guard.py
+modular_monolith_guard.py
 ```
 
-As três checagens são invisíveis para o resto do CI pela mesma razão: Testcontainers sempre parte de
-banco vazio e aplica tudo em ordem crescente. O estrago só existe onde já há dado.
+Os 14 recém-ligados, rodados localmente antes de entrar no `ci.yml`, todos `exit 0`:
 
-- **14 passam** e poderiam ser ligados sem nenhum trabalho: `config_taxonomy_guard`,
-  `docker_compose_guard`, `drain_quiet_period_argline_guard`,
-  `git_secret_guard`, `java_string_literal_sanity_guard`, `legal_ai_policy_catalog_guard`,
-  `legal_ai_surface_split_guard`, `legal_knowledge_catalog_guard`, `legal_mcp_catalog_guard`,
-  `pjb_runtime_memory_recipe_guard`, `powershell_test_collector_guard`, `replacement_matrix_guard`,
-  `spring_ambiguous_constructor_guard`, `spring_surface_guard`.
-- **7 acusam algo e não foram examinados**: `judicial_innovation_guard`,
-  `judicial_innovation_part_two_guard`, `judicial_innovation_part_three_guard`,
-  `modular_monolith_guard`, `tribunal_readiness_guard`, `universal_digital_core_guard` e
-  `docker_zombie_container_guard` — este último é ferramenta local e sai com código ≠ 0 ao encontrar
-  container órfão, comportamento esperado fora do CI.
-
-  A triagem dos doze foi concluída. **Cinco acusavam por defeito próprio** — catálogo de assinaturas
-  escrito à mão, proibição por substring que pegava português legítimo, varredura de comentário como
-  se fosse código, e dois que varriam o sistema de arquivos em vez do que o git versiona. "Guard
-  vermelho" não é sinônimo de "código errado".
-
-  **Sete acusavam achado real**: `salario_minimo_hardcoded_guard` (limiar legal contra salário mínimo
-  errado), `modular_monolith_guard` (catraca com baseline estourado, ver
-  `D-modular-monolith-baseline-estourado`) e os cinco que apontam as 24 classes apagadas pelo F1, em
-  `D-vinte-e-quatro-classes-com-guarda-apagadas-pelo-f1`.
-
-  Os que seguem fora do CI estão fora porque **acusam algo aberto**, não porque foram ignorados.
-  `docker_zombie_container_guard` é ferramenta local e sai com código ≠ 0 ao encontrar container
-  órfão, comportamento esperado fora do CI.
-
-- **6 passaram a passar em fatias recentes** e já estão ligados ao CI:
-  `access_key_and_unavailability_guard`, `java_regression_signature_guard`,
-  `internal_type_hygiene_guard` (destravado quando os guards deixaram de resolver caminho contra o
-  cwd), `guard_cwd_independence_guard` (novo), `canonical_institutional_route_guard` e
-  `readme_truthfulness_guard` + `test_drift_guard`, estes dois depois de corrigidos os falsos positivos.
-
-**Por que importa:** um guard que existe e não roda é o padrão dominante de defeito deste projeto
-(ver `project_padrao_instrumento_que_nao_age` na memória). Foi assim que o
-`legal_ai_surface_split_guard` ficou quebrado sem ninguém ver, e foi assim que três classes de regra
-jurídica foram apagadas apesar de existir guarda proibindo.
+```
+config_taxonomy_guard -> exit 0
+docker_compose_guard -> exit 0 (com pyyaml instalado, mesma dependencia que conditional_property_declared_guard ja usa em CI)
+drain_quiet_period_argline_guard -> exit 0
+git_secret_guard -> exit 0
+java_string_literal_sanity_guard -> exit 0
+legal_ai_policy_catalog_guard -> exit 0
+legal_ai_surface_split_guard -> exit 0
+legal_knowledge_catalog_guard -> exit 0
+legal_mcp_catalog_guard -> exit 0
+pjb_runtime_memory_recipe_guard -> exit 0
+powershell_test_collector_guard -> exit 0
+replacement_matrix_guard -> exit 0
+spring_ambiguous_constructor_guard -> exit 0
+spring_surface_guard -> exit 0
+```
 
 ## D-hotspots-de-tamanho-ocultos-por-guard-cego
 
