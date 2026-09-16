@@ -1129,18 +1129,6 @@ Achado na revisão final de branch inteiro do `D-marketplace-sem-completude-docu
 
 Achado na revisão da correção do finding B (checagem de posse). A migração `V309__processo_connector_client_id.sql` adiciona a coluna `connector_client_id` sem backfill. Isso é seguro para dados anteriores ao commit `c5203968` (que introduziu o endpoint `/documentos` inteiro), mas esse mesmo commit já persistia `connectorProtocolReference` no formato `clientId:referencia` — teoricamente, qualquer `Processo` protocolado entre `c5203968` e a correção (`5b1551c9`) fica com `connector_client_id = null` e nunca mais alcança `complementar()` (404 permanente, sem caminho de remediação operacional). Não corrigido porque não há dado real nessa janela: a branch nunca foi implantada em produção entre esses dois commits — ambas as migrações chegam juntas no primeiro deploy real da fatia. Revisitar apenas se algum dia esses dois commits forem implantados separadamente (não é o plano atual).
 
-## D-ha-replica-topology-verifier-sem-replica-real
-
-**Status:** aberta
-
-**Contexto:** achada durante a verificação de boot completo de `D-ha-pgbouncer-prepared-statements` (mesma investigação, causa diferente). `PjbReplicaTopologyVerifier` valida no startup que o datasource de leitura é uma réplica física real (`select pg_is_in_recovery()` deve retornar `true`), gate controlado por `pjb.datasource.routing.verify-topology-on-startup` (default `true`, não sobrescrito em `docker-compose.ha.yml`). Nessa topologia local, `pgbouncer-ro` aponta pro mesmo Postgres single-node que `pgbouncer-rw` (`PJB_PGBOUNCER_RO_DB_HOST:-postgres`, mesmo host) — não existe réplica física de streaming configurada em `docker-compose.ha.yml`. `pg_is_in_recovery()` portanto sempre retorna `false`, e o verifier derruba a aplicação (`IllegalStateException`) poucos segundos depois de `Started BackendApplication`, entrando em loop de restart (`restart: on-failure:5`) até esgotar as tentativas.
-
-**Risco:** alto pra rodar a topologia HA localmente de ponta a ponta (impede estabilidade indefinida do `backend`), mas não afeta produção real se lá houver uma réplica física de verdade — o verifier está fazendo exatamente o que deveria fazer dado o desenho atual do compose local.
-
-**Cobertura de teste:** nenhuma — só descoberto rodando a topologia real, não há IT que suba `docker-compose.ha.yml` de ponta a ponta.
-
-**Quando revisitar:** ao decidir como o dev local vai simular um read-replica de verdade (ex.: segundo Postgres com `pg_basebackup`/streaming replication, ou desabilitar o verifier via `PJB_DB_READ_VERIFY_TOPOLOGY_ON_STARTUP=false` explicitamente só em `docker-compose.ha.yml` como uma escolha deliberada e documentada, não um bug).
-
 ## D-duas-tabelas-verdade-capacidade-servidor
 
 **Status:** aberta
