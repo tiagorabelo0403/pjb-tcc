@@ -209,7 +209,7 @@ instrumento que não mede o que afirma medir.
 
 ## D-schedulers-processuais-desligados-por-decisao-nao-tomada
 
-**Status:** aberta — flags agora visíveis; decisão de ativação pendente
+**Status:** aberta — 2 das 6 flags já decididas; 4 seguem pendentes de decisão de produto
 
 Varredura por `@ConditionalOnProperty` sem `matchIfMissing` cuja propriedade não existe em nenhum
 `application*.yml` encontrou **16 beans desligados em todo ambiente**, por flags que não apareciam em
@@ -220,20 +220,54 @@ As flags foram declaradas em `application.yml` seguindo a convenção do projeto
 mudou a possibilidade de decidir. Verificado antes: nenhuma delas é usada com `matchIfMissing = true`
 em outro ponto, então declarar `false` é neutro.
 
-**O que fica pendente de decisão de produto, agora que é visível:**
+**Decididas em 2026-09-16:**
+
+- **`pjb.outbox.relay.enabled`** (`OutboxRelayWorker`) — Tiago decidiu ativar. Investigação mostrou
+  que o risco era maior do que a entrada original registrava: a tabela `tb_outbox_event` é
+  particionada mensalmente e a partição inteira é descartada via `DROP TABLE` quando o mês vira
+  (README), então evento nunca drenado não fica só "preso" — é apagado no fim do mês sem nunca
+  chegar ao Kafka. `pjb.kafka.enabled` já é `true` em produção
+  (`infra/k8s/base/configmap.yaml:14`) e já existem consumidores reais esperando esses eventos
+  (`ProcessoMaterializadoConsumer`, `ProntuarioNacionalConsumer`). A separação api/worker já isola o
+  efeito corretamente: `worker-deployment.yaml` tem `PJB_KAFKA_ENABLED=true` e
+  `PJB_SCHEDULING_ENABLED=true` (onde o relay de fato roda), enquanto `api-deployment.yaml` sobrescreve
+  `PJB_KAFKA_ENABLED=false` explicitamente no seu próprio `env:` — o bean não é criado ali mesmo com a
+  flag ligada no configmap compartilhado. Ativado via `PJB_OUTBOX_RELAY_ENABLED: "true"` em
+  `infra/k8s/base/configmap.yaml`, ao lado do `PJB_KAFKA_ENABLED: "true"` já existente ali:
+
+```yaml
+# infra/k8s/base/api-deployment.yaml (env: explicito vence envFrom: configMapRef)
+- name: PJB_SCHEDULING_ENABLED
+  value: "false"
+- name: PJB_KAFKA_ENABLED
+  value: "false"
+
+# infra/k8s/base/worker-deployment.yaml
+- name: PJB_SCHEDULING_ENABLED
+  value: "true"
+- name: PJB_KAFKA_ENABLED
+  value: "true"
+- name: SPRING_KAFKA_LISTENER_AUTO_STARTUP
+  value: "true"
+```
+- **`pjb.sync.salario-minimo.enabled`** (`SalarioMinimoNacionalSyncScheduler`) — Tiago decidiu manter
+  desligado por ora; fechado por seed via migration em vez de sync automático contra o Banco Central
+  (ver `V357__seed_salario_minimo_nacional.sql`, closure de `D-scheduler-salario-minimo-nunca-ativado`
+  nesta mesma sessão).
+
+**O que segue pendente de decisão de produto:**
 
 | Flag | Bean | Consequência de seguir desligado |
 |---|---|---|
-| `pjb.outbox.relay.enabled` | `OutboxRelayWorker` | `pjb.outbox.ingress.enabled` é `true` por padrão, então eventos entram no outbox e **nada os drena**. O README promete "zero perda de evento em falha de commit" |
 | `pjb.jobs.ciencia-ficta.enabled` | `CienciaFictaScheduler` | ciência ficta é marco de prazo processual; sem o scheduler, não é aplicada automaticamente |
 | `pjb.jobs.conclusao-expirada.enabled` | `ConclusaoExpiradaScheduler` | conclusão vencida não é detectada |
 | `pjb.jobs.protocolo-completude.enabled` | 2 schedulers de expiração e notificação | prazo de completude documental não expira nem notifica |
-| `pjb.sync.salario-minimo.enabled` | `SalarioMinimoNacionalSyncScheduler` | ver `D-scheduler-salario-minimo-nunca-ativado` |
 | `pjb.secretariat.enabled` | `SecretariadoCommandCenter`, `SecretariatDossieController` | superfície de secretaria indisponível |
 
-**Por que não liguei nada:** schedulers processuais **mutam estado de processo em background**. Ligar
-por conta própria, sem ambiente para observar o efeito, é o oposto de "não quebrar o projeto". A
-decisão de quais devem rodar em produção é de produto e de operação.
+**Por que não liguei o resto:** schedulers processuais **mutam estado de processo em background**.
+Ligar por conta própria, sem ambiente para observar o efeito, é o oposto de "não quebrar o projeto".
+A decisão de quais devem rodar em produção é de produto e de operação — diferente do outbox relay,
+que só move dado já persistido para um tópico Kafka já existente, sem mutar estado de processo.
 
 **Guarda criada:** `conditional_property_declared_guard.py`, no job *Guards (enforce)*, falha o build
 quando um bean exige propriedade que não está declarada em nenhum config. Impede que a próxima flag
