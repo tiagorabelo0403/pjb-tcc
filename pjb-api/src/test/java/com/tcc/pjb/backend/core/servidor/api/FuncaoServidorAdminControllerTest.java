@@ -15,8 +15,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.tcc.pjb.backend.configs.api.ApiExceptionHandler;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
-import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorApplicationService;
 import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorDesignacaoService;
+import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorEncerramentoService;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.FuncaoServidorJudiciario;
 import com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorJudiciarioEntity;
@@ -34,7 +34,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class FuncaoServidorAdminControllerTest {
 
     private final FuncaoServidorDesignacaoService designacaoService = mock(FuncaoServidorDesignacaoService.class);
-    private final FuncaoServidorApplicationService funcaoServidorApplicationService = mock(FuncaoServidorApplicationService.class);
+    private final FuncaoServidorEncerramentoService encerramentoService = mock(FuncaoServidorEncerramentoService.class);
     private final UnidadesCandidatasParaDesignacaoService unidadesCandidatasService =
             mock(UnidadesCandidatasParaDesignacaoService.class);
     private final CurrentUserService currentUserService = mock(CurrentUserService.class);
@@ -54,7 +54,7 @@ class FuncaoServidorAdminControllerTest {
     }
 
     private final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(
-            new FuncaoServidorAdminController(designacaoService, funcaoServidorApplicationService, unidadesCandidatasService, currentUserService)
+            new FuncaoServidorAdminController(designacaoService, encerramentoService, unidadesCandidatasService, currentUserService)
     ).setControllerAdvice(adviceReal()).build();
 
     @Test
@@ -92,7 +92,7 @@ class FuncaoServidorAdminControllerTest {
                         .content("{\"dataFim\":\"" + fim + "\"}"))
                 .andExpect(status().isOk());
 
-        verify(funcaoServidorApplicationService).encerrar(77L, fim, 1L);
+        verify(encerramentoService).encerrarComLotacao(77L, fim, 1L);
     }
 
     @Test
@@ -102,7 +102,7 @@ class FuncaoServidorAdminControllerTest {
         when(currentUserService.getRequired()).thenReturn(admin);
         LocalDate fim = LocalDate.now();
         doThrow(new EntityNotFoundException("Função não encontrada: 999"))
-                .when(funcaoServidorApplicationService).encerrar(999L, fim, 1L);
+                .when(encerramentoService).encerrarComLotacao(999L, fim, 1L);
 
         mockMvc.perform(post("/api/v1/admin/servidores/designacoes/{funcaoId}/encerrar", 999L)
                         .contentType(MediaType.APPLICATION_JSON)

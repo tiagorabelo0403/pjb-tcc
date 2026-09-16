@@ -52,4 +52,22 @@ public class LotacaoInstituicaoMaterializationService {
         lotacao.setPapelNaUnidade(funcao.label());
         lotacaoInstituicaoRepository.save(lotacao);
     }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void encerrarLotacaoSeAtiva(Long usuarioId, Long unidadeId, LocalDate dataFim) {
+        UnidadeJudiciariaCompetencia unidadeCompetencia = unidadeJudiciariaCompetenciaRepository.findById(unidadeId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("UnidadeJudiciariaCompetencia", unidadeId));
+        UnidadeInstituicao unidadeInstituicao = unidadeCompetencia.getUnidadeInstituicao();
+        if (unidadeInstituicao == null) {
+            return;
+        }
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuario", usuarioId));
+        lotacaoInstituicaoRepository.findFirstByUsuarioAndUnidadeOrderByInicioDesc(usuario, unidadeInstituicao)
+                .filter(lotacao -> lotacao.getFim() == null)
+                .ifPresent(lotacao -> {
+                    lotacao.setFim(dataFim);
+                    lotacaoInstituicaoRepository.save(lotacao);
+                });
+    }
 }
