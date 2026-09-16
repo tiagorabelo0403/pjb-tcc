@@ -79,6 +79,7 @@ public class AdminBootstrapper implements ApplicationRunner {
                 .senha(passwordEncoder.encode(rawPassword))
                 .ativo(true)
                 .tipoUsuario(TipoUsuario.ADMINISTRADOR)
+                .perfil(TipoUsuario.ADMINISTRADOR.name())
                 .build();
 
         usuarioRepository.save(admin);
