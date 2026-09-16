@@ -122,6 +122,24 @@ class UnidadeInstitucionalAdminControllerTest {
         verify(service, never()).reprocessarBacklogAposCriacaoDeUnidade(any());
     }
 
+    @Test
+    @WithMockUser(authorities = "ROLE_ADMINISTRADOR")
+    void administradorVinculaUnidadeJudiciariaERecebeOk() throws Exception {
+        mockMvc.perform(post("/api/v1/secretaria-institucional/unidades/20/vincular-unidade-judiciaria/7"))
+                .andExpect(status().isOk());
+
+        verify(service).vincularUnidadeJudiciaria(20L, 7L);
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_SERVIDOR_FORUM")
+    void naoAdministradorNaoVinculaUnidadeJudiciariaERecebeForbidden() throws Exception {
+        mockMvc.perform(post("/api/v1/secretaria-institucional/unidades/20/vincular-unidade-judiciaria/7"))
+                .andExpect(status().isForbidden());
+
+        verify(service, never()).vincularUnidadeJudiciaria(any(), any());
+    }
+
     private record CriarInstituicaoRequestJson(String tipo, String nome, String sigla) {
     }
 

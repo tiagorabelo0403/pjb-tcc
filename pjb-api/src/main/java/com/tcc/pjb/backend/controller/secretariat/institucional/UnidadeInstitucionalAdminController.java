@@ -53,4 +53,11 @@ public class UnidadeInstitucionalAdminController {
         service.desativarUnidade(unidadeId);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/api/v1/secretaria-institucional/unidades/{unidadeId}/vincular-unidade-judiciaria/{unidadeJudiciariaCompetenciaId}")
+    public ResponseEntity<Void> vincularUnidadeJudiciaria(@PathVariable Long unidadeId,
+                                                           @PathVariable Long unidadeJudiciariaCompetenciaId) {
+        service.vincularUnidadeJudiciaria(unidadeId, unidadeJudiciariaCompetenciaId);
+        return ResponseEntity.ok().build();
+    }
 }

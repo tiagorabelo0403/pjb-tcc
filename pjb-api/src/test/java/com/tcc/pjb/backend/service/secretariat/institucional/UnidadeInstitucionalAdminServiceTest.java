@@ -12,10 +12,12 @@ import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstitucionalAbrangencia;
 import com.tcc.pjb.backend.model.entity.enums.StatusUnidadeInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.TipoInstituicao;
+import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia;
 import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
 import com.tcc.pjb.backend.model.repository.InstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstitucionalAbrangenciaRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
+import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -26,10 +28,12 @@ class UnidadeInstitucionalAdminServiceTest {
     private final InstituicaoRepository instituicaoRepository = mock(InstituicaoRepository.class);
     private final UnidadeInstituicaoRepository unidadeRepository = mock(UnidadeInstituicaoRepository.class);
     private final UnidadeInstitucionalAbrangenciaRepository abrangenciaRepository = mock(UnidadeInstitucionalAbrangenciaRepository.class);
+    private final UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
     private final SecretariaInstitucionalEnfileiramentoService enfileiramentoService = mock(SecretariaInstitucionalEnfileiramentoService.class);
     private final AuditLedgerService auditService = mock(AuditLedgerService.class);
     private final UnidadeInstitucionalAdminService service = new UnidadeInstitucionalAdminService(
-            instituicaoRepository, unidadeRepository, abrangenciaRepository, enfileiramentoService, auditService);
+            instituicaoRepository, unidadeRepository, abrangenciaRepository, unidadeJudiciariaCompetenciaRepository,
+            enfileiramentoService, auditService);
 
     @Test
     void criarInstituicaoSalvaEAudita() {
@@ -117,6 +121,42 @@ class UnidadeInstitucionalAdminServiceTest {
 
         assertThat(criada.getComarcaAtendida()).isEqualTo("Aquiraz");
         verify(enfileiramentoService).reprocessarSemUnidade(TipoUnidadeInstitucional.NUCLEO_DEFENSORIA);
+    }
+
+    @Test
+    void vincularUnidadeJudiciariaSalvaEAudita() {
+        UnidadeInstituicao unidadeInstituicao = new UnidadeInstituicao();
+        ReflectionTestUtils.setField(unidadeInstituicao, "id", 20L);
+        when(unidadeRepository.findById(20L)).thenReturn(Optional.of(unidadeInstituicao));
+        UnidadeJudiciariaCompetencia unidadeJudiciaria = mock(UnidadeJudiciariaCompetencia.class);
+        when(unidadeJudiciariaCompetenciaRepository.findById(7L)).thenReturn(Optional.of(unidadeJudiciaria));
+        when(unidadeJudiciariaCompetenciaRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        UnidadeJudiciariaCompetencia resultado = service.vincularUnidadeJudiciaria(20L, 7L);
+
+        assertThat(resultado).isSameAs(unidadeJudiciaria);
+        verify(unidadeJudiciaria).setUnidadeInstituicao(unidadeInstituicao);
+        verify(auditService).appendSafely(
+                org.mockito.ArgumentMatchers.eq("UNIDADE_JUDICIARIA_VINCULADA_A_UNIDADE_INSTITUICAO"), any());
+    }
+
+    @Test
+    void vincularUnidadeJudiciariaComUnidadeInstituicaoInexistenteLancaIllegalArgumentException() {
+        when(unidadeRepository.findById(99L)).thenReturn(Optional.empty());
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.vincularUnidadeJudiciaria(99L, 7L))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void vincularUnidadeJudiciariaComUnidadeJudiciariaInexistenteLancaIllegalArgumentException() {
+        UnidadeInstituicao unidadeInstituicao = new UnidadeInstituicao();
+        ReflectionTestUtils.setField(unidadeInstituicao, "id", 20L);
+        when(unidadeRepository.findById(20L)).thenReturn(Optional.of(unidadeInstituicao));
+        when(unidadeJudiciariaCompetenciaRepository.findById(999L)).thenReturn(Optional.empty());
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.vincularUnidadeJudiciaria(20L, 999L))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
