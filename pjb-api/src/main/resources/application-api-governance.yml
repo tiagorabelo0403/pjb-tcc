@@ -481,10 +481,11 @@ pjb:
           allowed-content-types: ["application/json"]
           max-page-size: 20
           # DocumentContentValidator.LIMITE_BYTES permite ate 5MB por documento; em JSON o
-          # conteudo vai em base64 (~1.33x) mais overhead de estrutura — 8MB cobre um anexo
-          # no limite documentado com folga. Multiplos anexos grandes na mesma chamada podem
-          # ainda assim estourar isso; ver DEBT_LOG (D-marketplace-payload-multiplo-anexo).
-          max-request-bytes: 8388608
+          # conteudo vai em base64 (~1.33x) mais overhead de estrutura. MarketplaceProtocoloRequest/
+          # MarketplaceComplementoDocumentalRequest limitam documentos a @Size(max = 5) -- 5 anexos no
+          # teto (5MB * 1.33 = 6.65MB cada, 33.25MB combinados) com a mesma folga proporcional do
+          # limite anterior (~20%) fecham em 40MB. Decisao registrada em D-marketplace-payload-multiplo-anexo.
+          max-request-bytes: 41943040
           max-path-segments: 18
           max-offset: 100
           max-requests-per-window: 120

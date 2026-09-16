@@ -945,12 +945,6 @@ não de infraestrutura.
 **Verificado nesta correção:** varredura em `pjb-api/src/main` não encontrou nenhum outro `Counter`
 declarado e nunca incrementado. O problema era isolado, não sistêmico.
 
-## D-marketplace-payload-multiplo-anexo
-
-**Status:** aberta — achado da revisão final da Fase 2 de completude documental
-
-Achado na revisão final de branch inteiro do `D-marketplace-sem-completude-documental` Fase 2. O limite de payload da rota `marketplace-institutional` (`application-api-governance.yml`) foi elevado de 2MB para 8MB — cobre com folga UM anexo no limite documentado de `DocumentContentValidator` (5MB, inflado ~1.33x pelo base64 do JSON). Mas `MarketplaceComplementoDocumentalRequest.documentos` e `MarketplaceProtocoloRequest.documentos` aceitam `List<Attachment>` sem limite de quantidade — um cliente que envie vários anexos grandes na mesma chamada ainda pode estourar o limite de payload antes mesmo de qualquer anexo individual ser validado, recebendo um erro de transporte genérico em vez do `TAMANHO_EXCEDIDO` documentado. Decisão de produto em aberto: limitar quantidade de anexos por chamada, ou elevar o limite de payload proporcionalmente (custo: janela maior para abuso de banda). Não corrigido nesta fatia — corrigir exigiria decidir o número real de anexos esperado por chamada, que não está especificado em nenhum lugar do contrato atual.
-
 ## D-marketplace-connectorclientid-sem-backfill-para-janela-entre-commits
 
 **Status:** aberta — janela entre commits sem backfill em V309
