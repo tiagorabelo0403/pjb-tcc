@@ -89,7 +89,7 @@ refatoração de domínio, não higiene de ferramenta.
 
 ## D-apis-depreciadas-em-codigo-de-teste
 
-**Status:** aberta — produção em zero e travada por catraca; 13 avisos restam em `src/test`
+**Status:** aberta — produção em zero e travada por catraca; 10 avisos restam em `src/test`
 
 A varredura que fechou `java_regression_signature_guard` não foi feita por catálogo de assinaturas, e
 sim perguntando ao compilador (`-Dmaven.compiler.showDeprecation=true` sobre build limpo, porque a
@@ -97,21 +97,42 @@ compilação incremental responde "Nothing to compile" e produz medição fantas
 **32 usos de API depreciada**, dos quais o guard catalogava **um**.
 
 `src/main` foi zerado nesta fatia e o `default-compile` passou a rodar com `-Xlint:deprecation,removal`
-e `failOnWarning`, então uma API depreciada nova em produção derruba o build. Sobram **13 avisos, todos
-em `src/test`**, onde a catraca não se aplica:
+e `failOnWarning`, então uma API depreciada nova em produção derruba o build. Restam **10 avisos, todos
+em `src/test`**, onde a catraca não se aplica — confirmado por recompilação forçada (2026-09-16):
+
+```
+[WARNING] .../IcpBrasilChainValidatorTest.java:[78,35] [deprecation] getSubjectDN() in X509Certificate has been deprecated
+[WARNING] .../IcpBrasilChainValidatorTest.java:[77,35] [deprecation] getIssuerDN() in X509Certificate has been deprecated
+[WARNING] .../PeticionamentoSagaWorkerStringIdTest.java:[21,8] [deprecation] ActivatedJob in io.camunda.zeebe.client.api.response has been deprecated
+[WARNING] .../PeticionamentoSagaWorkerStringIdTest.java:[21,32] [deprecation] ActivatedJob ...
+[WARNING] .../PeticionamentoSagaWorkerTest.java:[28,8] [deprecation] ActivatedJob ...
+[WARNING] .../PeticionamentoSagaWorkerTest.java:[28,32] [deprecation] ActivatedJob ...
+[WARNING] .../PeticionamentoSagaWorkerTest.java:[42,8] [deprecation] ActivatedJob ...
+[WARNING] .../PeticionamentoSagaWorkerTest.java:[42,32] [deprecation] ActivatedJob ...
+[WARNING] .../PeticionamentoSagaWorkerTest.java:[60,8] [deprecation] ActivatedJob ...
+[WARNING] .../PeticionamentoSagaWorkerTest.java:[60,32] [deprecation] ActivatedJob ...
+```
+(2026-09-16, contagem total no log: exatamente 10 — `Provider(String,double,String)` não aparece mais)
 
 - **8** — `io.camunda.zeebe.client.api.response.ActivatedJob` em `PeticionamentoSagaWorkerTest` e
   `PeticionamentoSagaWorkerStringIdTest`. Migrar exige trocar a superfície do cliente Zeebe; é fatia
   própria, não higiene.
-- **2** — `AbstractAssert.asList()` (AssertJ) em `AdvogadoCockpitServiceProrrogacaoPrazoLoteTest`.
-  Troca direta por `asInstanceOf(InstanceOfAssertFactories.LIST)`.
 - **2** — `X509Certificate.getSubjectDN()` / `getIssuerDN()` em `IcpBrasilChainValidatorTest`. O
   substituto (`getSubjectX500Principal()`) devolve o DN em formato RFC 2253, diferente do formato
   legado; como o teste é de cadeia ICP-Brasil, a troca precisa conferir a asserção, não só o método.
-- **1** — construtor `Provider(String,double,String)` em `JudicialPkcs11ProviderRegistryTest`.
 
-**Por que não foi fechado junto:** nenhum deles é `[removal]`, então não há prazo do compilador; e o
-lote do Zeebe muda superfície de integração, que não cabe na mesma fatia de configuração de segurança.
+**Fechado nesta etapa:**
+- Os 2 avisos de `AbstractAssert.asList()` (AssertJ) em `AdvogadoCockpitServiceProrrogacaoPrazoLoteTest`
+  — troca direta por `asInstanceOf(InstanceOfAssertFactories.LIST)`, sem mudança de comportamento do
+  teste (mesma asserção, mesmo resultado).
+- O construtor `Provider(String,double,String)` em `JudicialPkcs11ProviderRegistryTest` — troca direta
+  pelo substituto moderno `Provider(String,String,String)` (versão como `String` em vez de `double`),
+  mesmo valor semântico ("1.0"). 2/2 testes da classe continuam verdes.
+
+**Por que os 11 restantes não foram fechados junto:** nenhum deles é `[removal]`, então não há prazo
+do compilador; o lote do Zeebe muda superfície de integração (fatia própria); os 2 de X509 exigem
+conferir o formato da asserção, não só trocar o método; o de `Provider` precisa de investigação do
+substituto correto antes de trocar.
 
 ## D-classes-restauradas-sem-teste-e-sem-conexao
 

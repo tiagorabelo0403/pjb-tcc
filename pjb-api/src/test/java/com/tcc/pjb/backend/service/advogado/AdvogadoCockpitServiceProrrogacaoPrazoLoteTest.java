@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.advogado;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -51,7 +52,7 @@ class AdvogadoCockpitServiceProrrogacaoPrazoLoteTest {
 
         assertThat(resultado.get("total")).isEqualTo(2);
         assertThat(resultado.get("processados")).isEqualTo(2);
-        assertThat(resultado.get("ids")).asList().containsExactly(10L, 20L);
+        assertThat(resultado.get("ids")).asInstanceOf(LIST).containsExactly(10L, 20L);
         assertThat((List<?>) resultado.get("falhas")).isEmpty();
     }
 
@@ -66,7 +67,7 @@ class AdvogadoCockpitServiceProrrogacaoPrazoLoteTest {
 
         assertThat(resultado.get("total")).isEqualTo(2);
         assertThat(resultado.get("processados")).isEqualTo(1);
-        assertThat(resultado.get("ids")).asList().containsExactly(10L);
+        assertThat(resultado.get("ids")).asInstanceOf(LIST).containsExactly(10L);
         List<?> falhas = (List<?>) resultado.get("falhas");
         assertThat(falhas).hasSize(1);
         @SuppressWarnings("unchecked")
