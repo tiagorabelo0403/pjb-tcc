@@ -108,6 +108,12 @@ services:
       # prepared statements do lado servidor via prepareThreshold=0. Nao mexe no pool_mode (mantem o
       # throughput que a topologia HA foi desenhada pra ter) nem exige trocar a imagem do pgbouncer.
       PJB_DB_PREPARE_THRESHOLD: "0"
+      # db-edge:6433 (leitura) aponta pro mesmo Postgres single-node de db-edge:6432 (escrita) --
+      # esta topologia local nao tem replica fisica de streaming. pg_is_in_recovery() portanto
+      # sempre retorna false, e o verificador de topologia (default true) derruba o boot com
+      # IllegalStateException poucos segundos depois de subir, em loop de restart. Desabilitado
+      # aqui de proposito: continua ligado em qualquer ambiente com replica fisica real.
+      PJB_DB_READ_VERIFY_TOPOLOGY_ON_STARTUP: "false"
     depends_on:
       db-edge:
         condition: service_healthy
@@ -143,6 +149,8 @@ services:
       PJB_LIVE_CLUSTER_ENABLED: ${PJB_LIVE_CLUSTER_ENABLED:-false}
       # Mesma armadilha pool_mode=transaction + prepared statements do backend-a — ver comentario lá.
       PJB_DB_PREPARE_THRESHOLD: "0"
+      # Mesma ausencia de replica fisica real do backend-a — ver comentario la.
+      PJB_DB_READ_VERIFY_TOPOLOGY_ON_STARTUP: "false"
       JAVA_OPTS: ${PJB_JAVA_OPTS:--Dfile.encoding=UTF-8 -XX:+UseG1GC -XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=40 -Djava.security.egd=file:/dev/urandom}
     depends_on:
       db-edge:

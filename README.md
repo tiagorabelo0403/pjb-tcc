@@ -1050,6 +1050,8 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 - **`docker-compose.ha.yml`**: os nós `backend`/`backend-b` dessa topologia usam `pjb`/`pjb` explicitamente (não `pjb_app`) porque o `pgbouncer` da topologia (`infra/docker/pgbouncer/entrypoint.sh`) só conhece `pjb` no `userlist.txt` e sempre abre a conexão real com o Postgres do lado servidor como `pjb`, fixo — a RLS ficaria inerte atrás do pgbouncer mesmo corrigindo a autenticação cliente→pgbouncer. Estado explícito, não silenciosamente quebrado; migrar essa topologia para `pjb_app` de ponta a ponta é trabalho futuro.
 - **Produção real (k8s)**: `infra/k8s/base/secret.yaml`/`configmap.yaml` continuam nas credenciais antigas — a mesma lógica de role restrita precisa ser replicada lá separadamente.
 
+`docker-compose.ha.yml` também desliga `PJB_DB_READ_VERIFY_TOPOLOGY_ON_STARTUP` nos dois nós: essa topologia local não tem réplica física de streaming (`db-edge:6433` aponta pro mesmo Postgres single-node de `db-edge:6432`), então `PjbReplicaTopologyVerifier` sempre encontraria `pg_is_in_recovery() = false` e derrubaria o boot em loop de restart. Continua ligado (default `true`) em qualquer ambiente com réplica física real.
+
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
