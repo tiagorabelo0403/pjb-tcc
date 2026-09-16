@@ -6,10 +6,12 @@ import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstitucionalAbrangencia;
 import com.tcc.pjb.backend.model.entity.enums.StatusUnidadeInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.TipoInstituicao;
+import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia;
 import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
 import com.tcc.pjb.backend.model.repository.InstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstitucionalAbrangenciaRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
+import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,17 +22,20 @@ public class UnidadeInstitucionalAdminService {
     private final InstituicaoRepository instituicaoRepository;
     private final UnidadeInstituicaoRepository unidadeRepository;
     private final UnidadeInstitucionalAbrangenciaRepository abrangenciaRepository;
+    private final UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository;
     private final SecretariaInstitucionalEnfileiramentoService enfileiramentoService;
     private final AuditLedgerService auditService;
 
     public UnidadeInstitucionalAdminService(InstituicaoRepository instituicaoRepository,
                                             UnidadeInstituicaoRepository unidadeRepository,
                                             UnidadeInstitucionalAbrangenciaRepository abrangenciaRepository,
+                                            UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository,
                                             SecretariaInstitucionalEnfileiramentoService enfileiramentoService,
                                             AuditLedgerService auditService) {
         this.instituicaoRepository = Objects.requireNonNull(instituicaoRepository);
         this.unidadeRepository = Objects.requireNonNull(unidadeRepository);
         this.abrangenciaRepository = Objects.requireNonNull(abrangenciaRepository);
+        this.unidadeJudiciariaCompetenciaRepository = Objects.requireNonNull(unidadeJudiciariaCompetenciaRepository);
         this.enfileiramentoService = Objects.requireNonNull(enfileiramentoService);
         this.auditService = Objects.requireNonNull(auditService);
     }
@@ -58,6 +63,20 @@ public class UnidadeInstitucionalAdminService {
         unidade.setUf(uf);
         UnidadeInstituicao salva = unidadeRepository.save(unidade);
         auditService.appendSafely("UNIDADE_INSTITUICAO_CRIADA", "UNIDADE_INSTITUICAO " + salva.getId() + " tipo=" + tipo);
+        return salva;
+    }
+
+    @Transactional
+    public UnidadeJudiciariaCompetencia vincularUnidadeJudiciaria(Long unidadeInstituicaoId,
+                                                                    Long unidadeJudiciariaCompetenciaId) {
+        UnidadeInstituicao unidadeInstituicao = unidadeRepository.findById(unidadeInstituicaoId)
+                .orElseThrow(() -> new IllegalArgumentException("Unidade institucional não encontrada: " + unidadeInstituicaoId));
+        UnidadeJudiciariaCompetencia unidadeJudiciaria = unidadeJudiciariaCompetenciaRepository.findById(unidadeJudiciariaCompetenciaId)
+                .orElseThrow(() -> new IllegalArgumentException("Unidade judiciária de competência não encontrada: " + unidadeJudiciariaCompetenciaId));
+        unidadeJudiciaria.setUnidadeInstituicao(unidadeInstituicao);
+        UnidadeJudiciariaCompetencia salva = unidadeJudiciariaCompetenciaRepository.save(unidadeJudiciaria);
+        auditService.appendSafely("UNIDADE_JUDICIARIA_VINCULADA_A_UNIDADE_INSTITUICAO",
+                "UNIDADE_JUDICIARIA_COMPETENCIA " + unidadeJudiciariaCompetenciaId + " -> UNIDADE_INSTITUICAO " + unidadeInstituicaoId);
         return salva;
     }
 

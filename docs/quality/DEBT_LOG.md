@@ -951,25 +951,6 @@ declarado e nunca incrementado. O problema era isolado, não sistêmico.
 
 Achado na revisão da correção do finding B (checagem de posse). A migração `V309__processo_connector_client_id.sql` adiciona a coluna `connector_client_id` sem backfill. Isso é seguro para dados anteriores ao commit `c5203968` (que introduziu o endpoint `/documentos` inteiro), mas esse mesmo commit já persistia `connectorProtocolReference` no formato `clientId:referencia` — teoricamente, qualquer `Processo` protocolado entre `c5203968` e a correção (`5b1551c9`) fica com `connector_client_id = null` e nunca mais alcança `complementar()` (404 permanente, sem caminho de remediação operacional). Não corrigido porque não há dado real nessa janela: a branch nunca foi implantada em produção entre esses dois commits — ambas as migrações chegam juntas no primeiro deploy real da fatia. Revisitar apenas se algum dia esses dois commits forem implantados separadamente (não é o plano atual).
 
-## D-ponte-unidade-instituicao-sem-backfill
-
-**Status:** aberta
-
-**Contexto:** a fatia de designação institucional (`docs/superpowers/plans/2026-08-14-designacao-institucional-servidor.md`)
-adicionou `unidade_instituicao_id` (nullable) em `tb_unidade_judiciaria_competencia`, mas nenhuma
-`UnidadeJudiciariaCompetencia` existente teve a coluna preenchida — foi decisão explícita de escopo
-(problema de dados, não desta fatia). Enquanto a ponte não for preenchida linha a linha, toda
-designação feita numa unidade existente materializa `FuncaoServidorJudiciarioEntity` normalmente (os
-gates ABAC funcionam) mas não materializa `LotacaoInstituicao` — a lacuna é aceita por design, não é
-bug, mas significa que `ContextoInstitucionalResolver`/`LotacaoVisibilityPolicy` seguem sem dado real
-pra essas unidades até alguém rodar o backfill.
-
-**Risco:** nenhum gate quebra; a visibilidade institucional baseada em `LotacaoInstituicao` fica
-incompleta silenciosamente até o backfill acontecer.
-
-**Não revisitar sem decisão de produto:** decidir se o backfill é automático (matching por
-nome/comarca, com risco de erro) ou manual (mais lento, mais seguro) é escopo de outra fatia.
-
 ## D-secretariat-visibility-scope-nunca-populado
 
 **Status:** aberta
