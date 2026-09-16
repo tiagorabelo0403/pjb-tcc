@@ -64,7 +64,7 @@ class JudicialPkcs11ProviderRegistryTest {
 
     private static final class FakeProvider extends Provider {
         private FakeProvider(String name) {
-            super(name, 1.0, "fake");
+            super(name, "1.0", "fake");
         }
     }
 }
