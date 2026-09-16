@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.servidor.application;
 
+import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
 import com.tcc.pjb.backend.model.entity.enums.FuncaoServidorJudiciario;
 import com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorJudiciarioEntity;
 import com.tcc.pjb.backend.model.repository.FuncaoServidorJudiciarioRepository;
@@ -69,13 +70,10 @@ public class FuncaoServidorApplicationService {
     }
 
     private boolean verificarPermissao(FuncaoServidorJudiciario funcao, String acao) {
-        return switch (acao.toLowerCase()) {
-            case "proferir" -> funcao.podeProferir();
-            case "concluir" -> funcao.podeConcluir();
-            case "intimar" -> funcao.podeIntimar();
-            case "distribuir" -> funcao.podeDistribuir();
-            case "arquivar" -> funcao.podeArquivar();
-            default -> false;
-        };
+        try {
+            return AcaoProcessualServidor.valueOf(acao.toUpperCase()).permiteExecutarPor(funcao);
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            return false;
+        }
     }
 }

@@ -5,5 +5,15 @@ public enum AcaoProcessualServidor {
     CONCLUIR,
     INTIMAR,
     DISTRIBUIR,
-    ARQUIVAR
+    ARQUIVAR;
+
+    public boolean permiteExecutarPor(FuncaoServidorJudiciario funcao) {
+        return switch (this) {
+            case PROFERIR -> funcao.podeProferir();
+            case CONCLUIR -> funcao.podeConcluir();
+            case INTIMAR -> funcao.podeIntimar();
+            case DISTRIBUIR -> funcao.podeDistribuir();
+            case ARQUIVAR -> funcao.podeArquivar();
+        };
+    }
 }
