@@ -1210,7 +1210,9 @@ pin manual: qualquer CVE nova numa dessas 3 bibliotecas exige repetir este mesmo
 
 ## D-require-upper-bound-deps-excludes
 
-**Status:** aberta — 7 dependências excluídas da regra nova; a única de risco real (resilience4j-micrometer×micrometer) já foi investigada e confirmada segura
+**Status:** aberta — 6 dependências excluídas da regra nova (era 7; `jakarta.mail` fechado em
+2026-09-16 com o patch trivial já previsto nesta entrada); a única de risco real
+(resilience4j-micrometer×micrometer) já foi investigada e confirmada segura
 
 **Contexto:** ligar `requireUpperBoundDeps` no `maven-enforcer-plugin` (regra nativa, falha o build
 quando "nearest wins" resolve uma versão menor do que alguma dependência mais funda da árvore pede)
@@ -1272,10 +1274,15 @@ O sétimo apareceu só ao rodar contra o `pjb-api`, no push seguinte:
 
 Todas as 7 viraram `<exclude>` na regra pra não bloquear esta PR com dívida alheia a ela.
 
-**Risco:** desigual entre as 7. `error_prone_annotations`, `jspecify`, `snakeyaml` e `antlr4-runtime`
-(gap de patch 4.13.1 vs 4.13.2, entre a ST template engine do spring-ai e o parser HQL do Hibernate)
-são de baixo risco — anotação/tipo/parser em retenção que raramente quebra em runtime por
-incompatibilidade binária. `jakarta.mail` é um gap de patch trivial (2.0.4 vs 2.0.5).
+**Fechado em 2026-09-16:** `jakarta.mail` — `angus-mail.version` subiu de `2.0.4` para `2.0.5`
+(exatamente o piso que o próprio erro acima já apontava) e o `<exclude>` saiu da regra.
+`./mvnw validate` (aciona o enforcer, fase `validate`) roda limpo nos dois módulos
+(`pjb-backend-core` raiz e `pjb-api -am`) sem o exclude — confirmado localmente antes do commit.
+
+**Risco:** desigual entre as 6 restantes. `error_prone_annotations`, `jspecify`, `snakeyaml` e
+`antlr4-runtime` (gap de patch 4.13.1 vs 4.13.2, entre a ST template engine do spring-ai e o parser
+HQL do Hibernate) são de baixo risco — anotação/tipo/parser em retenção que raramente quebra em
+runtime por incompatibilidade binária.
 
 `io.github.resilience4j:resilience4j-micrometer:2.4.0` foi compilado esperando `micrometer-core`/
 `micrometer-observation` **1.16.0**, e o projeto roda na 1.15.12 (piso do Boot 3.5.16) — mesma
@@ -1288,9 +1295,8 @@ por todo teste), o binding de métricas do resilience4j roda em **todo** `@Sprin
 `Docker Build Verify` (build real, boot completo) desta sessão — todos verdes, com essa exata
 combinação de versões. Se houvesse `NoSuchMethodError` aqui, já teria aparecido.
 
-**Não revisitar sem decisão:** os 5 (`error_prone_annotations`, `jspecify`, `snakeyaml`,
+**Não revisitar sem decisão:** os 5 restantes (`error_prone_annotations`, `jspecify`, `snakeyaml`,
 `antlr4-runtime`, `resilience4j-micrometer`) podem ficar excluídos indefinidamente — são conflitos
 estruturais de bibliotecas de terceiros que o projeto não controla, e o único com risco real já foi
-verificado em produção (boot repetido) sem incidente. `jakarta.mail` é candidato a fechar com um pin
-trivial de patch, quando alguém tiver tempo de sobra.
+verificado em produção (boot repetido) sem incidente.
 
