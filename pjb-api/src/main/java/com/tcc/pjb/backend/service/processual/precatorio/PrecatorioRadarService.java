@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 public class PrecatorioRadarService {
 
     private static final BigDecimal SALARIOS_MINIMOS_RPV_FEDERAL = new BigDecimal("60");
+    // ESTADUAL e MUNICIPAL compartilham este valor por decisao explicita (Tiago, 2026-09-16), nao
+    // por ausencia de fonte municipal propria -- fecha D-rpv-municipal-sem-limite-proprio.
     private static final BigDecimal SALARIOS_MINIMOS_RPV_SUBNACIONAL = new BigDecimal("40");
 
     private final SalarioMinimoNacionalService salarioMinimoService;
