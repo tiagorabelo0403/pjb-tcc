@@ -1002,24 +1002,6 @@ incompleta silenciosamente até o backfill acontecer.
 **Não revisitar sem decisão de produto:** decidir se o backfill é automático (matching por
 nome/comarca, com risco de erro) ou manual (mais lento, mais seguro) é escopo de outra fatia.
 
-## D-encerrar-designacao-nao-sincroniza-lotacao
-
-**Status:** aberta
-
-**Contexto:** `FuncaoServidorAdminController.encerrar` delega direto pra
-`FuncaoServidorApplicationService.encerrar(...)` (existente, sem mudança), que encerra só a
-`FuncaoServidorJudiciarioEntity`. `FuncaoServidorDesignacaoService.designarComLotacao` materializa
-`LotacaoInstituicao` na designação, mas não existe caminho simétrico que a encerre — se um servidor
-tiver a função encerrada, `LotacaoInstituicao.fim` permanece `null` (lotação continua "ativa" pra
-`ContextoInstitucionalResolver`/`LotacaoVisibilityPolicy` mesmo sem função real na unidade).
-
-**Risco:** visibilidade institucional pode conceder acesso baseado numa lotação que já deveria ter
-terminado.
-
-**Não revisitar sem decisão de produto:** exige decidir se `encerrar()` deve sempre encerrar a
-`LotacaoInstituicao` correspondente (pode ser incorreto se o servidor tiver outra função ativa na
-mesma unidade) ou se precisa de uma consulta adicional antes de decidir.
-
 ## D-secretariat-visibility-scope-nunca-populado
 
 **Status:** aberta

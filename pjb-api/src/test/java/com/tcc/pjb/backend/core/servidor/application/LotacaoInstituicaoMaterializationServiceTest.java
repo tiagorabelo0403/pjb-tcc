@@ -91,6 +91,72 @@ class LotacaoInstituicaoMaterializationServiceTest {
         assertThat(captor.getValue().getPapelNaUnidade()).isEqualTo(FuncaoServidorJudiciario.OFICIAL_MAIOR.label());
     }
 
+    @Test
+    void semPonteNaoTentaEncerrarLotacao() {
+        var unidade = unidadeSemPonte(5L);
+        when(unidadeJudiciariaCompetenciaRepository.findById(5L)).thenReturn(Optional.of(unidade));
+
+        service.encerrarLotacaoSeAtiva(10L, 5L, LocalDate.now());
+
+        verify(lotacaoInstituicaoRepository, never()).save(any());
+    }
+
+    @Test
+    void comPonteELotacaoAtivaEncerraDefinindoFim() {
+        UnidadeInstituicao unidadeInstituicao = new UnidadeInstituicao();
+        var unidade = unidadeComPonte(5L, unidadeInstituicao);
+        when(unidadeJudiciariaCompetenciaRepository.findById(5L)).thenReturn(Optional.of(unidade));
+        Usuario usuario = new Usuario();
+        usuario.setId(10L);
+        when(usuarioRepository.findById(10L)).thenReturn(Optional.of(usuario));
+        LotacaoInstituicao ativa = new LotacaoInstituicao();
+        ativa.setFim(null);
+        when(lotacaoInstituicaoRepository.findFirstByUsuarioAndUnidadeOrderByInicioDesc(usuario, unidadeInstituicao))
+                .thenReturn(Optional.of(ativa));
+
+        LocalDate dataFim = LocalDate.now();
+        service.encerrarLotacaoSeAtiva(10L, 5L, dataFim);
+
+        var captor = org.mockito.ArgumentCaptor.forClass(LotacaoInstituicao.class);
+        verify(lotacaoInstituicaoRepository).save(captor.capture());
+        assertThat(captor.getValue()).isSameAs(ativa);
+        assertThat(captor.getValue().getFim()).isEqualTo(dataFim);
+    }
+
+    @Test
+    void comPonteMasLotacaoJaEncerradaNaoSalvaDeNovo() {
+        UnidadeInstituicao unidadeInstituicao = new UnidadeInstituicao();
+        var unidade = unidadeComPonte(5L, unidadeInstituicao);
+        when(unidadeJudiciariaCompetenciaRepository.findById(5L)).thenReturn(Optional.of(unidade));
+        Usuario usuario = new Usuario();
+        usuario.setId(10L);
+        when(usuarioRepository.findById(10L)).thenReturn(Optional.of(usuario));
+        LotacaoInstituicao jaEncerrada = new LotacaoInstituicao();
+        jaEncerrada.setFim(LocalDate.now().minusDays(5));
+        when(lotacaoInstituicaoRepository.findFirstByUsuarioAndUnidadeOrderByInicioDesc(usuario, unidadeInstituicao))
+                .thenReturn(Optional.of(jaEncerrada));
+
+        service.encerrarLotacaoSeAtiva(10L, 5L, LocalDate.now());
+
+        verify(lotacaoInstituicaoRepository, never()).save(any());
+    }
+
+    @Test
+    void comPonteMasSemLotacaoExistenteNaoLancaEmSilencio() {
+        UnidadeInstituicao unidadeInstituicao = new UnidadeInstituicao();
+        var unidade = unidadeComPonte(5L, unidadeInstituicao);
+        when(unidadeJudiciariaCompetenciaRepository.findById(5L)).thenReturn(Optional.of(unidade));
+        Usuario usuario = new Usuario();
+        usuario.setId(10L);
+        when(usuarioRepository.findById(10L)).thenReturn(Optional.of(usuario));
+        when(lotacaoInstituicaoRepository.findFirstByUsuarioAndUnidadeOrderByInicioDesc(usuario, unidadeInstituicao))
+                .thenReturn(Optional.empty());
+
+        service.encerrarLotacaoSeAtiva(10L, 5L, LocalDate.now());
+
+        verify(lotacaoInstituicaoRepository, never()).save(any());
+    }
+
     private UnidadeJudiciariaCompetencia unidadeSemPonte(Long id) {
         var unidade = mock(UnidadeJudiciariaCompetencia.class);
         when(unidade.getUnidadeInstituicao()).thenReturn(null);

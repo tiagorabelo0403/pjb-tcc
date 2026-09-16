@@ -38,11 +38,16 @@ public class FuncaoServidorApplicationService {
     }
 
     @Transactional
-    public void encerrar(Long funcaoId, LocalDate dataFim, Long operadorId) {
+    public FuncaoServidorJudiciarioEntity encerrar(Long funcaoId, LocalDate dataFim, Long operadorId) {
         FuncaoServidorJudiciarioEntity entity = funcaoRepository.findById(funcaoId)
                 .orElseThrow(() -> new EntityNotFoundException("Função não encontrada: " + funcaoId));
         entity.encerrar(dataFim);
-        funcaoRepository.save(entity);
+        return funcaoRepository.save(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public List<FuncaoServidorJudiciarioEntity> funcoesAtivas(Long usuarioId, Long unidadeId) {
+        return funcaoRepository.findByUsuarioIdAndUnidadeIdAndAtivo(usuarioId, unidadeId, true);
     }
 
     @Transactional(readOnly = true)

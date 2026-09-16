@@ -5,8 +5,8 @@ import com.tcc.pjb.backend.core.servidor.api.dto.DesignarServidorRequest;
 import com.tcc.pjb.backend.core.servidor.api.dto.EncerrarDesignacaoRequest;
 import com.tcc.pjb.backend.core.servidor.api.dto.FuncaoServidorDesignacaoResponse;
 import com.tcc.pjb.backend.core.servidor.api.dto.UnidadeCandidataResponse;
-import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorApplicationService;
 import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorDesignacaoService;
+import com.tcc.pjb.backend.core.servidor.application.FuncaoServidorEncerramentoService;
 import com.tcc.pjb.backend.core.servidor.application.UnidadesCandidatasParaDesignacaoService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -26,16 +26,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class FuncaoServidorAdminController {
 
     private final FuncaoServidorDesignacaoService designacaoService;
-    private final FuncaoServidorApplicationService funcaoServidorApplicationService;
+    private final FuncaoServidorEncerramentoService encerramentoService;
     private final UnidadesCandidatasParaDesignacaoService unidadesCandidatasService;
     private final CurrentUserService currentUserService;
 
     public FuncaoServidorAdminController(FuncaoServidorDesignacaoService designacaoService,
-                                          FuncaoServidorApplicationService funcaoServidorApplicationService,
+                                          FuncaoServidorEncerramentoService encerramentoService,
                                           UnidadesCandidatasParaDesignacaoService unidadesCandidatasService,
                                           CurrentUserService currentUserService) {
         this.designacaoService = Objects.requireNonNull(designacaoService);
-        this.funcaoServidorApplicationService = Objects.requireNonNull(funcaoServidorApplicationService);
+        this.encerramentoService = Objects.requireNonNull(encerramentoService);
         this.unidadesCandidatasService = Objects.requireNonNull(unidadesCandidatasService);
         this.currentUserService = Objects.requireNonNull(currentUserService);
     }
@@ -51,7 +51,7 @@ public class FuncaoServidorAdminController {
     @PostMapping("/{funcaoId}/encerrar")
     public void encerrar(@PathVariable Long funcaoId, @Valid @RequestBody EncerrarDesignacaoRequest request) {
         Long operadorId = currentUserService.getRequired().getId();
-        funcaoServidorApplicationService.encerrar(funcaoId, request.dataFim(), operadorId);
+        encerramentoService.encerrarComLotacao(funcaoId, request.dataFim(), operadorId);
     }
 
     @GetMapping("/unidades-candidatas")
