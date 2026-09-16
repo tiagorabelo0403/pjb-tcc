@@ -35,6 +35,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.run.jvmArguments>-Dfile.encoding=UTF-8</spring-boot.run.jvmArguments>
 
+        <!-- Boot 4.1.1 traz tomcat-embed-core 11.0.24; CVE-2026-65182/65905/68525 (CRITICAL) so
+             fecham na 11.0.25. Ver DEBT_LOG se aparecer outra depois desta. -->
+        <tomcat.version>11.0.25</tomcat.version>
         <lombok.version>1.18.48</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <pdfbox.version>3.0.8</pdfbox.version>
