@@ -939,6 +939,26 @@ nenhum fluxo que grave isso. Só depois de existir esse fluxo faz sentido decidi
 deve negar por padrão quando o escopo do ator não resolve, ou se deve continuar comparando só o que
 existe.
 
+**Observabilidade adicionada em 2026-09-17 (sem mudar quem passa):** `requireRoutingAccess`/`compareAxis`
+agora incrementam o counter `pjb.secretariat_routing_access.scope_gap` (tags `axis`, `tipoUsuario`) e
+logam em DEBUG toda vez que um eixo (uf, comarca, unidade institucional, instância/ramo/tribunal/secretaria
+especializada da secretaria) é pulado porque o lado do ator estava vazio, não porque o alvo também estava
+— exatamente a lacuna descrita acima, que até então era silenciosa (nenhuma métrica ou log provava que o
+no-op estava de fato acontecendo em produção). Nenhum resultado de autorização mudou: o mesmo `if
+(actorValue == null || targetValue == null) return` de antes continua controlando o fluxo, só passou a
+registrar antes de retornar. Cobertura: `SecretariatInstitutionalVisibilityServiceTest.
+registraGapDeEscopoQuandoUfEComarcaDoAtorNaoEstaoPopuladasSemMudarAutorizacao` — servidor sem `uf`/`comarca`
+populados (o cenário real hoje) acessando processo com UF/comarca reais, prova que a chamada continua
+permitida (`assertDoesNotThrow`) e que os dois counters (`axis=uf`, `axis=comarca`) incrementam. Com essa
+métrica em produção, dá para medir o tamanho real da lacuna antes de decidir a política de produto.
+
+```
+[INFO] Running com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.425 s -- in com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+```
+
 ## D-fracionary-organ-routing-catalogo-inexistente
 
 **Status:** aberta

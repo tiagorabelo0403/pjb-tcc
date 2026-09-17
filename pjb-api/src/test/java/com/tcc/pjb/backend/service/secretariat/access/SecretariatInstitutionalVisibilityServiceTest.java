@@ -6,13 +6,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.EnteFederativo;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
@@ -39,7 +42,8 @@ class SecretariatInstitutionalVisibilityServiceTest {
                 mock(WorkItemRepository.class),
                 mock(SecretariatOperationalRoutingResolver.class),
                 mock(SecretariatInboxAccessService.class),
-                new SecretariatSpecializationResolver()
+                new SecretariatSpecializationResolver(),
+                new SimpleMeterRegistry()
         );
 
         SecretariatSpecializationResolver.SecretariatSpecializationProfile specialization = new SecretariatSpecializationResolver.SecretariatSpecializationProfile(
@@ -109,7 +113,8 @@ class SecretariatInstitutionalVisibilityServiceTest {
                 mock(WorkItemRepository.class),
                 mock(SecretariatOperationalRoutingResolver.class),
                 mock(SecretariatInboxAccessService.class),
-                new SecretariatSpecializationResolver()
+                new SecretariatSpecializationResolver(),
+                new SimpleMeterRegistry()
         );
 
         SecretariatSpecializationResolver.SecretariatSpecializationProfile specialization = new SecretariatSpecializationResolver.SecretariatSpecializationProfile(
@@ -179,7 +184,8 @@ class SecretariatInstitutionalVisibilityServiceTest {
                 mock(WorkItemRepository.class),
                 mock(SecretariatOperationalRoutingResolver.class),
                 inboxAccessService,
-                new SecretariatSpecializationResolver()
+                new SecretariatSpecializationResolver(),
+                new SimpleMeterRegistry()
         );
 
         var profile = service.describeAuthorizedInbox("sec:tre-ce:2g:eleitoral:ce:fortaleza");
@@ -190,6 +196,51 @@ class SecretariatInstitutionalVisibilityServiceTest {
         assertEquals("INSTITUICAO_JUDICIARIA_RAIZ", profile.specialization().metadata().get("institutionBirthMode"));
     }
 
+
+    @Test
+    void registraGapDeEscopoQuandoUfEComarcaDoAtorNaoEstaoPopuladasSemMudarAutorizacao() {
+        CurrentUserService currentUserService = mock(CurrentUserService.class);
+        Usuario servidorSemEscopoTerritorial = new Usuario();
+        servidorSemEscopoTerritorial.setId(9L);
+        servidorSemEscopoTerritorial.setTipoUsuario(TipoUsuario.SERVIDOR_FORUM);
+        servidorSemEscopoTerritorial.setEnteFederativo(EnteFederativo.ESTADO);
+        servidorSemEscopoTerritorial.setPerfil("TRIBUNAL:TJCE");
+        servidorSemEscopoTerritorial.setEspecialidades(List.of());
+        when(currentUserService.getRequired()).thenReturn(servidorSemEscopoTerritorial);
+
+        ProcessoRepository processoRepository = mock(ProcessoRepository.class);
+        SecretariatOperationalRoutingResolver routingResolver = mock(SecretariatOperationalRoutingResolver.class);
+        Processo processo = mock(Processo.class);
+        when(processo.getUf()).thenReturn("CE");
+        when(processo.getComarca()).thenReturn("Fortaleza");
+        when(processoRepository.findById(1L)).thenReturn(Optional.of(processo));
+
+        SecretariatOperationalRoutingProfile routing = new SecretariatOperationalRoutingProfile(
+                "ROUTE", "JUSTICA_ESTADUAL", null, "PRIMEIRA_INSTANCIA", "COMUM", "ESTADUAL",
+                "SECRETARIA", null, "REC", null, "SAN", null, "AUD", null, "EXEC", null, "HR",
+                "ESTADUAL>TJCE>PRIMEIRA", Duration.ofHours(4), Duration.ofHours(8), Duration.ofHours(12),
+                30, true, true, false, false, List.of(), List.of(), null,
+                JudicialScaleProfile.VARA_1G, Map.of());
+        when(routingResolver.resolve(processo)).thenReturn(routing);
+
+        SimpleMeterRegistry registry = new SimpleMeterRegistry();
+        SecretariatInstitutionalVisibilityService service = new SecretariatInstitutionalVisibilityService(
+                currentUserService,
+                processoRepository,
+                mock(WorkItemRepository.class),
+                routingResolver,
+                mock(SecretariatInboxAccessService.class),
+                new SecretariatSpecializationResolver(),
+                registry
+        );
+
+        assertDoesNotThrow(() -> service.requireProcessAccess(1L));
+
+        assertEquals(1.0, registry.counter("pjb.secretariat_routing_access.scope_gap",
+                "axis", "uf", "tipoUsuario", "SERVIDOR_FORUM").count());
+        assertEquals(1.0, registry.counter("pjb.secretariat_routing_access.scope_gap",
+                "axis", "comarca", "tipoUsuario", "SERVIDOR_FORUM").count());
+    }
 
     private Usuario user(String perfil, String registro) {
         Usuario usuario = new Usuario();
