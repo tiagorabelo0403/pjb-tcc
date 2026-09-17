@@ -84,6 +84,7 @@ public class JudgeAgreementApprovalService {
                         .prioridade(0)
                         .uf(processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : processo.getUf())
                         .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : processo.getComarca())
+                        .comarcaEntidade(processo.getJurisdicao() != null ? processo.getJurisdicao().getComarcaEntidade() : processo.getComarcaEntidade())
                         .dueAt(Instant.now().plus(48, ChronoUnit.HOURS))
                         .build()));
         item.setDescricao(buildDescription(processo, proposta, settlementAdvisory, outcomePrediction, resumoExecutivo));

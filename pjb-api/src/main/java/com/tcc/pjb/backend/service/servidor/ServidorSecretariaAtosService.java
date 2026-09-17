@@ -95,6 +95,7 @@ public class ServidorSecretariaAtosService {
                 .prioridade(2)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .dueAt(Instant.now().plus(1, ChronoUnit.HOURS))
                 .build();
         workItemRepository.save(juntada);

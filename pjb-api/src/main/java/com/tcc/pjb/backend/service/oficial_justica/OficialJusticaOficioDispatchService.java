@@ -151,6 +151,7 @@ public class OficialJusticaOficioDispatchService {
                 .dueAt(Instant.now())
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(OficialJusticaOficioWorkflowSupport.normalizeFundamento(safe.fundamento()))
                 .build();
         oficio = workItemRepository.save(oficio);
@@ -244,6 +245,7 @@ public class OficialJusticaOficioDispatchService {
                 .dueAt(Instant.now())
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(OficialJusticaOficioWorkflowSupport.normalizeFundamento(safe.fundamento()))
                 .build();
         resposta = workItemRepository.save(resposta);

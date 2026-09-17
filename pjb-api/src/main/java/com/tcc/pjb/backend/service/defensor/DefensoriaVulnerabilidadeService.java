@@ -189,6 +189,7 @@ public class DefensoriaVulnerabilidadeService {
                 .prioridade("CRITICA".equals(analise.faixa()) ? 0 : 1)
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .dueAt(Instant.now().plus("CRITICA".equals(analise.faixa()) ? 6 : 24, ChronoUnit.HOURS))
                 .build();
         workItemRepository.save(workItem);

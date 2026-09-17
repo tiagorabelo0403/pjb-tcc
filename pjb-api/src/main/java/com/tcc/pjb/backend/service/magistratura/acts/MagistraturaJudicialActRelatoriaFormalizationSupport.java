@@ -73,6 +73,7 @@ public class MagistraturaJudicialActRelatoriaFormalizationSupport {
                 .prioridade(0)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(fundamentacao)
                 .dueAt(Instant.now().plus(4, ChronoUnit.HOURS))
                 .build();
@@ -122,6 +123,7 @@ public class MagistraturaJudicialActRelatoriaFormalizationSupport {
                 .prioridade(0)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(fundamentacao)
                 .dueAt(Instant.now().plus(6, ChronoUnit.HOURS))
                 .build();

@@ -100,6 +100,7 @@ public class EscrituraExtrajudicialService {
                     .prioridade(1)
                     .uf(usuario.getUf())
                     .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                     .dueAt(Instant.now().plus(24, ChronoUnit.HOURS))
                     .baseLegal("Vinculo extrajudicial-jurisdicional controlado pelo PJB")
                     .build();

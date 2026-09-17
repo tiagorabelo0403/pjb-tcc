@@ -171,6 +171,7 @@ public class ProcessoDistribuicaoMalhaOrquestracaoApplicationService {
                         .blocking(true)
                         .uf(processo.getUf())
                         .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                         .baseLegal(baseLegal(distribuicaoMalha))
                         .dueAt(Instant.now().plus(governanca.exigiuPersistencia() ? 2 : 6, ChronoUnit.HOURS))
                         .build()));

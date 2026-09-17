@@ -82,6 +82,7 @@ public class PsicossocialJudicialPainelService {
                 .prioridade(1)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(safe.recomendacoes())
                 .dueAt(Instant.now().plus(24, ChronoUnit.HOURS))
                 .build();
@@ -124,6 +125,7 @@ public class PsicossocialJudicialPainelService {
                 .prioridade(1)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(safe.conclusao())
                 .dueAt(Instant.now().plus(24, ChronoUnit.HOURS))
                 .build();

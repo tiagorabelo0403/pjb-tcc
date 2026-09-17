@@ -134,6 +134,7 @@ WorkItem mono = WorkItem.builder()
 .prioridade(0)
 .uf(usuario.getUf())
 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
 .baseLegal(fundamentacao)
 .dueAt(Instant.now().plus(4, ChronoUnit.HOURS))
 .build();
@@ -185,6 +186,7 @@ WorkItem pauta = WorkItem.builder()
 .prioridade(0)
 .uf(usuario.getUf())
 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
 .dueAt(dataSessao)
 .build();
 workItemRepository.save(pauta);
@@ -234,6 +236,7 @@ WorkItem acordao = WorkItem.builder()
 .prioridade(0)
 .uf(usuario.getUf())
 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
 .dueAt(Instant.now().plus(24, ChronoUnit.HOURS))
 .build();
 workItemRepository.save(acordao);

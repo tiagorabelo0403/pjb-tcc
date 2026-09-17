@@ -294,6 +294,7 @@ public class TemaRecursoRepetitivoService {
                 .prioridade(prioridade)
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .dueAt(dueAt)
                 .build();
         workItemRepository.save(workItem);

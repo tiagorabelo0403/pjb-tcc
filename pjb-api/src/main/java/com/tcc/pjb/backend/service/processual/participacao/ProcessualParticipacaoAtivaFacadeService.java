@@ -289,6 +289,7 @@ public class ProcessualParticipacaoAtivaFacadeService {
                 .dueAt(ProcessualParticipacaoAtivaSupportUtils.resolveDueAt(Boolean.TRUE.equals(request.urgente()), processo.getFaseAtual()))
                 .uf(ProcessualParticipacaoAtivaSupportUtils.normalizeUf(processo.getUf()))
                 .comarca(ProcessualParticipacaoAtivaSupportUtils.trimToNull(processo.getComarca()))
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(buildBaseLegal(action, persona, processo))
                 .build();
         return workItemRepository.save(item);

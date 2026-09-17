@@ -86,6 +86,7 @@ public class TransitoJulgadoExpropriationWorkflowSupport {
                 .blocking(profile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(profile.baseLegal())
                 .dueAt(profile.dueAtFrom(Instant.now()))
                 .build();
@@ -155,6 +156,7 @@ public class TransitoJulgadoExpropriationWorkflowSupport {
                 .blocking(profile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(profile.baseLegal())
                 .dueAt(profile.dueAtFrom(Instant.now()))
                 .build();
@@ -224,6 +226,7 @@ public class TransitoJulgadoExpropriationWorkflowSupport {
                 .blocking(profile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(profile.baseLegal())
                 .dueAt(profile.dueAtFrom(Instant.now()))
                 .build();
@@ -289,6 +292,7 @@ public class TransitoJulgadoExpropriationWorkflowSupport {
                 .blocking(profile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(profile.baseLegal())
                 .dueAt(profile.dueAtFrom(Instant.now()))
                 .build();
