@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.service.competencia;
 
 import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.repository.ComarcaRepository;
+import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -26,16 +27,22 @@ public class ComarcaResolutionService {
         if (nomeNormalizado == null) {
             return Optional.empty();
         }
+        String chaveNome = chaveComparacao(nomeNormalizado);
         String ufNormalizada = trimToNull(uf);
         if (ufNormalizada != null) {
-            Optional<Comarca> encontrada =
-                    comarcaRepository.findByNomeAccentInsensitiveAndUf(nomeNormalizado, ufNormalizada.toUpperCase(Locale.ROOT));
+            Optional<Comarca> encontrada = comarcaRepository.findAllByUfIgnoreCase(ufNormalizada)
+                    .stream()
+                    .filter(c -> chaveNome.equals(chaveComparacao(c.getNome())))
+                    .findFirst();
             if (encontrada.isEmpty()) {
                 log.warn("Comarca não encontrada no catálogo para nome={} uf={}; FK não resolvida", nomeNormalizado, ufNormalizada);
             }
             return encontrada;
         }
-        List<Comarca> candidatas = comarcaRepository.findAllByNomeAccentInsensitive(nomeNormalizado);
+        List<Comarca> candidatas = comarcaRepository.findAll()
+                .stream()
+                .filter(c -> chaveNome.equals(chaveComparacao(c.getNome())))
+                .toList();
         if (candidatas.size() == 1) {
             return Optional.of(candidatas.get(0));
         }
@@ -46,6 +53,24 @@ public class ComarcaResolutionService {
                     nomeNormalizado, candidatas.size());
         }
         return Optional.empty();
+    }
+
+    /**
+     * Equivalente Java de {@code upper(unaccent(...))}: o casamento roda aqui, nao em SQL, porque
+     * {@code unaccent} e extensao do PostgreSQL e este servico e chamado tambem em contexto de boot
+     * (ex.: InstitutionalCatalogPersistenceSyncService no ApplicationReadyEvent), que sobe sobre H2
+     * nos testes — uma query nativa com unaccent derruba o ApplicationContext inteiro nesse cenario.
+     * Mantem UMA semantica de casamento nos dois bancos, em vez de emular unaccent no H2 (o que
+     * reintroduziria divergencia teste/producao). O backfill das migrations segue usando o unaccent
+     * nativo do Postgres, que concorda com esta normalizacao para nomes de lugar do portugues.
+     */
+    private static String chaveComparacao(String value) {
+        if (value == null) {
+            return "";
+        }
+        return Normalizer.normalize(value.trim(), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "")
+                .toUpperCase(Locale.ROOT);
     }
 
     private static String trimToNull(String value) {

@@ -379,6 +379,26 @@ não no real) — corrigido separadamente, ver `debt_inject_construtor_errado_fe
 depois desse fix elas passam a ser candidatas válidas para a mesma migração `comarcaEntidade`;
 nenhuma das duas foi migrada ainda nesta sessão.
 
+**Segundo achado colateral, fechado na mesma fatia:** o CI da PR desta migração quebrou 9 testes
+(`ApplicationContext failure` em `BackendApplicationTests` e em 3 `*FluxoTest` de controller) porque
+`ComarcaResolutionService.resolver` usava duas queries JPA nativas com `unaccent(...)` — função de
+extensão do PostgreSQL, inexistente no H2 usado pelos testes. As 5 migrações `comarcaEntidade`
+anteriores (`OrgaoJudiciario`, `UnidadeInstituicao`, `EscrituraExtrajudicialRegistro`,
+`OperationalFunctionCredential`, `ProfessionalInstitutionalAccessGrant`) nunca expuseram o problema
+porque seus call sites só rodam dentro de um request HTTP real. Esta migração foi a primeira a chamar
+o resolver a partir de um `@EventListener(ApplicationReadyEvent.class)` — ou seja, em **todo boot**,
+inclusive o boot dos testes de contexto Spring sobre H2. Corrigido movendo o casamento
+acento-insensível para Java (`Normalizer.normalize(..., NFD)` + strip de marcas + `toUpperCase`, a
+mesma técnica já usada em `UnidadeInstitucional.normalizeKey`) — `ComarcaRepository` perdeu as duas
+`@Query(nativeQuery = true)` e ganhou só `findAllByUfIgnoreCase`. Deliberadamente **não** foi emulado
+`unaccent` no H2 via alias, para não reintroduzir divergência teste/produção com uma semântica de
+casamento diferente em cada banco. Cobertura: `ComarcaResolutionServiceTest` (novo — o serviço não
+tinha teste direto antes desta correção; 5 casos incl. "São Gonçalo do Amarante" ≡ "sao goncalo do
+amarante" e ambiguidade entre UFs distintas) e reexecução verde dos 68 testes de todo chamador de
+`ComarcaResolutionService` no projeto (MNI, Marketplace, Jurisdicao, Usuario, e as 6 migrações
+`comarcaEntidade` anteriores) confirmando que a troca de query nativa por filtro em Java preserva o
+comportamento observável.
+
 `PeritoSorteioAudit`/`PeritoDisponibilidade` saíram da allowlist juntas numa migração própria
 (`V330__perito_disponibilidade_sorteio_fk_comarca.sql`), mesmo padrão de `comarcaEntidade` nullable ao lado do
 `comarca` String. Diferença em relação às outras: nenhuma das duas tem campo UF próprio (só `comarca`), então
