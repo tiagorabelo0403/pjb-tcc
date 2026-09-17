@@ -25,7 +25,6 @@ public class InstitutionalCompetenceRuleStateRepository {
     private final InstitutionalCompetenceRuleSnapshotRepository jpaRepository;
     private final Map<String, InstitutionalCompetenceRule> inMemoryStore;
 
-    @Inject
     public InstitutionalCompetenceRuleStateRepository() {
         this.stateStore = null;
         this.codec = null;
@@ -33,6 +32,7 @@ public class InstitutionalCompetenceRuleStateRepository {
         this.inMemoryStore = new ConcurrentHashMap<>();
     }
 
+    @Inject
     public InstitutionalCompetenceRuleStateRepository(ComunicacaoJudicialStateStore stateStore,
                                                       InstitutionalSnapshotJsonCodec codec,
                                                       ObjectProvider<InstitutionalCompetenceRuleSnapshotRepository> repositoryProvider) {

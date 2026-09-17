@@ -19,11 +19,11 @@ public class PeticionamentoMediaPublicationGateService {
     private final ObjectStorageProperties.Upload uploadProperties;
     private final UploadContentPolicyService uploadContentPolicyService;
 
-    @Inject
     public PeticionamentoMediaPublicationGateService() {
         this(new ObjectStorageProperties(), new UploadContentPolicyService());
     }
 
+    @Inject
     public PeticionamentoMediaPublicationGateService(ObjectStorageProperties props,
                                                      UploadContentPolicyService uploadContentPolicyService) {
         ObjectStorageProperties properties = props == null ? new ObjectStorageProperties() : props;

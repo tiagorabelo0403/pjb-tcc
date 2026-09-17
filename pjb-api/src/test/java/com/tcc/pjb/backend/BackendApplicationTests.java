@@ -1,11 +1,21 @@
 package com.tcc.pjb.backend;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.tcc.pjb.backend.configs.live.LiveClusterStateStore;
 import com.tcc.pjb.backend.configs.live.NoOpLiveClusterStateStore;
+import com.tcc.pjb.backend.core.comunicacao.institucional.governance.infrastructure.InstitutionalCatalogGovernanceStateRepository;
+import com.tcc.pjb.backend.core.comunicacao.institucional.governance.infrastructure.InstitutionalCompetenceRuleStateRepository;
+import com.tcc.pjb.backend.core.storage.ObjectStorageProperties;
+import com.tcc.pjb.backend.service.processual.peticionamento.PeticionamentoPericiaEvidenceIntelligenceService;
+import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaPublicationGateService;
+import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaSecurityPipelineService;
+import com.tcc.pjb.backend.service.processual.peticionamento.media.PeticionamentoMediaStorageShieldService;
+import com.tcc.pjb.backend.service.upload.UploadContentPolicyService;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +26,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.AopTestUtils;
 
 @ActiveProfiles("test")
 @SpringBootTest(
@@ -72,7 +83,8 @@ import org.springframework.test.context.ActiveProfiles;
         "pjb.security.perimeter.origin-governance.enabled=false",
         "pjb.security.perimeter.blocklist.store=memory",
         "pjb.security.perimeter.ratelimit.store=memory",
-        "pjb.sync.ibge.enabled=false"
+        "pjb.sync.ibge.enabled=false",
+        "pjb.storage.upload.max-document-bytes=12345678"
     }
 )
 class BackendApplicationTests {
@@ -86,6 +98,27 @@ class BackendApplicationTests {
     @Autowired
     private LiveClusterStateStore liveClusterStateStore;
 
+    @Autowired
+    private InstitutionalCompetenceRuleStateRepository institutionalCompetenceRuleStateRepository;
+
+    @Autowired
+    private InstitutionalCatalogGovernanceStateRepository institutionalCatalogGovernanceStateRepository;
+
+    @Autowired
+    private UploadContentPolicyService uploadContentPolicyService;
+
+    @Autowired
+    private PeticionamentoPericiaEvidenceIntelligenceService peticionamentoPericiaEvidenceIntelligenceService;
+
+    @Autowired
+    private PeticionamentoMediaPublicationGateService peticionamentoMediaPublicationGateService;
+
+    @Autowired
+    private PeticionamentoMediaSecurityPipelineService peticionamentoMediaSecurityPipelineService;
+
+    @Autowired
+    private PeticionamentoMediaStorageShieldService peticionamentoMediaStorageShieldService;
+
     @Test
     void contextLoads() {
         assertNotNull(applicationContext);
@@ -96,6 +129,59 @@ class BackendApplicationTests {
         assertFalse(environment.getProperty("pjb.kafka.enabled", Boolean.class, true));
         assertFalse(environment.getProperty("pjb.search.enabled", Boolean.class, true));
         assertFalse(environment.getProperty("pjb.secretariat.ingest.enabled", Boolean.class, true));
+    }
+
+    /**
+     * D-inject-anotacao-no-construtor-errado: um commit anterior (0c7e926a) anotou @Inject no
+     * construtor DEGRADADO (sem args, zerando dependencias reais) em vez do construtor real destas
+     * 2 classes — o Spring escolhia sempre o degradado, deixando a persistencia JPA de
+     * InstitutionalCompetenceRuleSnapshot/InstitutionalCatalogGovernanceSnapshot inatingivel em
+     * producao (tudo caia no fallback ConcurrentHashMap, que nao sobrevive a restart). Corrigido
+     * movendo @Inject para o construtor com stateStore/codec/jpaRepository reais. Este teste prova
+     * com reflection que o contexto real do Spring instancia via o construtor completo (jpaRepository
+     * != null), nao mais via o degradado.
+     */
+    @Test
+    void institutionalStateRepositoriesUsamConstrutorRealComJpaRepositoryWireado() throws Exception {
+        assertNotNull(readPrivateField(institutionalCompetenceRuleStateRepository, "jpaRepository"),
+                "InstitutionalCompetenceRuleStateRepository.jpaRepository deveria vir do construtor real (Spring), nao do degradado");
+        assertNotNull(readPrivateField(institutionalCompetenceRuleStateRepository, "stateStore"),
+                "InstitutionalCompetenceRuleStateRepository.stateStore deveria vir do construtor real (Spring), nao do degradado");
+        assertNotNull(readPrivateField(institutionalCatalogGovernanceStateRepository, "jpaRepository"),
+                "InstitutionalCatalogGovernanceStateRepository.jpaRepository deveria vir do construtor real (Spring), nao do degradado");
+        assertNotNull(readPrivateField(institutionalCatalogGovernanceStateRepository, "stateStore"),
+                "InstitutionalCatalogGovernanceStateRepository.stateStore deveria vir do construtor real (Spring), nao do degradado");
+    }
+
+    /**
+     * Mesma classe de bug (0c7e926a) nestes 4 servicos: @Inject no construtor sem args, que criava
+     * um ObjectStorageProperties() em branco em vez do bean real @ConfigurationProperties(prefix =
+     * "pjb.storage"). Em producao os valores coincidiam com os defaults do Java, o que escondeu o
+     * bug — qualquer operador que tentasse configurar um limite via env var (ex.:
+     * PJB_STORAGE_UPLOAD_MAX_DOCUMENT_BYTES) teria a config silenciosamente ignorada. Este teste
+     * sobrescreve pjb.storage.upload.max-document-bytes para um valor que NAO existe como default
+     * em nenhuma classe (12345678, default real e 26214400) e prova, via reflection no campo
+     * uploadProperties, que os 4 servicos leem o bean real configurado pelo Spring.
+     */
+    @Test
+    void servicosDeObjectStorageUsamPropertiesRealDoSpringNaoDefaultEmBranco() throws Exception {
+        assertEquals(12345678L, uploadMaxDocumentBytes(uploadContentPolicyService));
+        assertEquals(12345678L, uploadMaxDocumentBytes(peticionamentoPericiaEvidenceIntelligenceService));
+        assertEquals(12345678L, uploadMaxDocumentBytes(peticionamentoMediaPublicationGateService));
+        assertEquals(12345678L, uploadMaxDocumentBytes(peticionamentoMediaSecurityPipelineService));
+        assertEquals(12345678L, uploadMaxDocumentBytes(peticionamentoMediaStorageShieldService));
+    }
+
+    private long uploadMaxDocumentBytes(Object service) throws Exception {
+        ObjectStorageProperties.Upload upload = (ObjectStorageProperties.Upload) readPrivateField(service, "uploadProperties");
+        return upload.getMaxDocumentBytes();
+    }
+
+    private Object readPrivateField(Object target, String fieldName) throws Exception {
+        Object real = AopTestUtils.getUltimateTargetObject(target);
+        Field field = real.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(real);
     }
 
     @TestConfiguration(proxyBeanMethods = false)
