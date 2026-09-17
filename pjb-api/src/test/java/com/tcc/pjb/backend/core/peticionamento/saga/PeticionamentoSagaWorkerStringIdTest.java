@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.peticionamento.saga.domain.NotificarPartesSagaResult;
-import io.camunda.zeebe.client.api.response.ActivatedJob;
+import io.camunda.client.api.response.ActivatedJob;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
