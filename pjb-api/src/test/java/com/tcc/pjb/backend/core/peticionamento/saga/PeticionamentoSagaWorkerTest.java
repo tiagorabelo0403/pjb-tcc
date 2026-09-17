@@ -12,7 +12,7 @@ import com.tcc.pjb.backend.core.peticionamento.saga.domain.NotificarPartesSagaRe
 import com.tcc.pjb.backend.core.peticionamento.saga.domain.ProtocoloSagaPeticionamentoResult;
 import com.tcc.pjb.backend.core.peticionamento.saga.domain.RegistrarNoProcessoSagaResult;
 import com.tcc.pjb.backend.core.peticionamento.saga.domain.ValidacaoSagaPeticionamentoResult;
-import io.camunda.zeebe.client.api.response.ActivatedJob;
+import io.camunda.client.api.response.ActivatedJob;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;

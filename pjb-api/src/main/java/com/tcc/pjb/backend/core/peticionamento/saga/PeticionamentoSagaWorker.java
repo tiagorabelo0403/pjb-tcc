@@ -7,14 +7,13 @@ import com.tcc.pjb.backend.core.peticionamento.saga.domain.NotificarPartesSagaCo
 import com.tcc.pjb.backend.core.peticionamento.saga.domain.DispararTriagemSagaCommand;
 import com.tcc.pjb.backend.core.peticionamento.saga.domain.GerarProtocoloSagaCommand;
 import com.tcc.pjb.backend.core.peticionamento.saga.domain.ValidarSagaPeticionamentoCommand;
-import io.camunda.zeebe.client.api.response.ActivatedJob;
-import io.camunda.zeebe.spring.client.annotation.JobWorker;
+import io.camunda.client.annotation.JobWorker;
+import io.camunda.client.api.response.ActivatedJob;
 import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 @Component
-@SuppressWarnings({"removal", "deprecation"})
 public class PeticionamentoSagaWorker {
 
     private final PeticionamentoSagaOrchestrator orchestrator;
@@ -26,7 +25,6 @@ public class PeticionamentoSagaWorker {
         this.auditLedger = Objects.requireNonNull(auditLedger);
     }
 
-    @SuppressWarnings({"removal", "deprecation"})
     @JobWorker(type = "pjb-validar-peticao")
     public Map<String, Object> validarPeticao(ActivatedJob job) {
         Long rascunhoId = longValue(job.getVariablesAsMap().get("rascunhoId"));
@@ -35,7 +33,6 @@ public class PeticionamentoSagaWorker {
         return Map.of("validacaoOk", result.ok(), "erros", result.erros());
     }
 
-    @SuppressWarnings({"removal", "deprecation"})
     @JobWorker(type = "pjb-gerar-protocolo")
     public Map<String, Object> gerarProtocolo(ActivatedJob job) {
         Long rascunhoId = longValue(job.getVariablesAsMap().get("rascunhoId"));
@@ -50,7 +47,6 @@ public class PeticionamentoSagaWorker {
     }
 
 
-    @SuppressWarnings({"removal", "deprecation"})
     @JobWorker(type = "pjb-registrar-no-processo")
     public Map<String, Object> registrarNoProcesso(ActivatedJob job) {
         Long rascunhoId = longValue(job.getVariablesAsMap().get("rascunhoId"));
@@ -59,7 +55,6 @@ public class PeticionamentoSagaWorker {
         return Map.of("registrado", result.registrado(), "statusRegistro", result.status());
     }
 
-    @SuppressWarnings({"removal", "deprecation"})
     @JobWorker(type = "pjb-disparar-triagem")
     public Map<String, Object> dispararTriagem(ActivatedJob job) {
         Long rascunhoId = longValue(job.getVariablesAsMap().get("rascunhoId"));
@@ -68,7 +63,6 @@ public class PeticionamentoSagaWorker {
         return Map.of("triagemDisparada", result.disparada(), "statusTriagem", result.status());
     }
 
-    @SuppressWarnings({"removal", "deprecation"})
     @JobWorker(type = "pjb-notificar-partes")
     public Map<String, Object> notificarPartes(ActivatedJob job) {
         Long rascunhoId = longValue(job.getVariablesAsMap().get("rascunhoId"));
@@ -77,7 +71,6 @@ public class PeticionamentoSagaWorker {
         return Map.of("partesNotificadas", result.notificadas(), "statusNotificacao", result.status());
     }
 
-    @SuppressWarnings({"removal", "deprecation"})
     @JobWorker(type = "pjb-compensar-peticao")
     public void compensarPeticao(ActivatedJob job) {
         Long rascunhoId = longValue(job.getVariablesAsMap().get("rascunhoId"));
