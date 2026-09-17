@@ -20,6 +20,7 @@ import com.tcc.pjb.backend.model.entity.security.OperationalFunctionCredential;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.security.OperationalFunctionCredentialRepository;
 import com.tcc.pjb.backend.model.repository.security.OperationalFunctionUnlockSessionRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
@@ -37,6 +38,8 @@ class OperationalFunctionCredentialServiceTest {
         @SuppressWarnings("unchecked")
         ObjectProvider<jakarta.servlet.http.HttpServletRequest> requestProvider = mock(ObjectProvider.class);
         ClientIpResolver ipResolver = mock(ClientIpResolver.class);
+        ComarcaResolutionService comarcaResolutionService = mock(ComarcaResolutionService.class);
+        when(comarcaResolutionService.resolver(any(), any())).thenReturn(Optional.empty());
 
         Usuario director = usuario(1L, "Diretoria Fórum TJCE", TipoUsuario.SERVIDOR_FORUM, "TJCE", "CE", "Fortaleza");
         Usuario target = usuario(2L, "Secretaria Vara 1", TipoUsuario.SERVIDOR, "TJCE", "CE", "Fortaleza");
@@ -63,7 +66,8 @@ class OperationalFunctionCredentialServiceTest {
                 challengeService,
                 new ObjectMapper(),
                 requestProvider,
-                ipResolver
+                ipResolver,
+                comarcaResolutionService
         );
 
         OperationalCredentialSnapshotResponse response = service.directorProvision(new OperationalCredentialDirectorProvisionRequest(
@@ -99,6 +103,8 @@ class OperationalFunctionCredentialServiceTest {
         @SuppressWarnings("unchecked")
         ObjectProvider<jakarta.servlet.http.HttpServletRequest> requestProvider = mock(ObjectProvider.class);
         ClientIpResolver ipResolver = mock(ClientIpResolver.class);
+        ComarcaResolutionService comarcaResolutionService = mock(ComarcaResolutionService.class);
+        when(comarcaResolutionService.resolver(any(), any())).thenReturn(Optional.empty());
 
         Usuario director = usuario(10L, "Diretoria Fórum TJCE", TipoUsuario.SERVIDOR_FORUM, "TJCE", "CE", "Fortaleza");
         Usuario target = usuario(11L, "Oficial de Justiça Estadual", TipoUsuario.OFICIAL_JUSTICA, "TJCE", "CE", "Fortaleza");
@@ -125,7 +131,8 @@ class OperationalFunctionCredentialServiceTest {
                 challengeService,
                 new ObjectMapper(),
                 requestProvider,
-                ipResolver
+                ipResolver,
+                comarcaResolutionService
         );
 
         service.directorProvision(new OperationalCredentialDirectorProvisionRequest(

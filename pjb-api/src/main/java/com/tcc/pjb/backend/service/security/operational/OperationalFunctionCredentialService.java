@@ -18,6 +18,7 @@ import com.tcc.pjb.backend.model.entity.security.OperationalFunctionUnlockSessio
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.security.OperationalFunctionCredentialRepository;
 import com.tcc.pjb.backend.model.repository.security.OperationalFunctionUnlockSessionRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -58,6 +59,7 @@ public class OperationalFunctionCredentialService {
     private final ObjectMapper objectMapper;
     private final ObjectProvider<HttpServletRequest> requestProvider;
     private final ClientIpResolver ipResolver;
+    private final ComarcaResolutionService comarcaResolutionService;
     private final Argon2PasswordEncoder encoder;
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -69,7 +71,8 @@ public class OperationalFunctionCredentialService {
                                                 SecurityChallengeService challengeService,
                                                 ObjectMapper objectMapper,
                                                 ObjectProvider<HttpServletRequest> requestProvider,
-                                                ClientIpResolver ipResolver) {
+                                                ClientIpResolver ipResolver,
+                                                ComarcaResolutionService comarcaResolutionService) {
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.usuarioRepository = Objects.requireNonNull(usuarioRepository);
         this.credentialRepository = Objects.requireNonNull(credentialRepository);
@@ -79,6 +82,7 @@ public class OperationalFunctionCredentialService {
         this.objectMapper = Objects.requireNonNull(objectMapper);
         this.requestProvider = Objects.requireNonNull(requestProvider);
         this.ipResolver = Objects.requireNonNull(ipResolver);
+        this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService);
         this.encoder = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     }
 
@@ -163,6 +167,7 @@ public class OperationalFunctionCredentialService {
         credential.setVaraLabel(trimToNull(request.varaLabel()));
         credential.setUf(firstNonBlank(trimToNull(target.getUf()), credential.getUf()));
         credential.setComarca(firstNonBlank(trimToNull(target.getComarca()), credential.getComarca()));
+        aplicarComarcaDoCatalogo(credential);
         if (!existingActive || request.forceReset()) {
             credential.setStatus("PENDING_SETUP");
             credential.setSecretHash(null);
@@ -335,6 +340,15 @@ public class OperationalFunctionCredentialService {
                 "unlockSessionId", session.getId()
         ))));
         credentialRepository.save(credential);
+    }
+
+    private void aplicarComarcaDoCatalogo(OperationalFunctionCredential credential) {
+        if (credential.getComarca() == null || credential.getComarca().isBlank()) {
+            credential.setComarcaEntidade(null);
+            return;
+        }
+        credential.setComarcaEntidade(comarcaResolutionService.resolver(credential.getComarca(), credential.getUf())
+                .orElse(null));
     }
 
     private OperationalFunctionCredential requireCredential(Long userId, String functionCode) {
