@@ -50,7 +50,7 @@ public class DreamingController {
             return ResponseEntity.accepted()
                     .body(new DreamingSessionResponse(dreamId.value().toString(), "PENDING"));
         } catch (PromptInjectionException e) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).build();
         } catch (DreamingNaoPermitidoException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } catch (IllegalArgumentException e) {

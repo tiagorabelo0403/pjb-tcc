@@ -45,9 +45,14 @@ spring:
     enabled: false
   autoconfigure:
     exclude:
-      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.data.elasticsearch.autoconfigure.DataElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.data.elasticsearch.autoconfigure.DataElasticsearchReactiveRepositoriesAutoConfiguration
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration
+      # tools.jackson (Jackson 3): projeto inteiro usa com.fasterxml.jackson (Jackson 2), ver
+      # StrictJacksonConfig e BackendApplication. @WebMvcTest importa essa auto-configuracao por
+      # fora do exclude do @SpringBootApplication (lista propria da fatia de teste), por isso
+      # precisa do exclude global aqui tambem.
+      - org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration
 
 management:
   defaults:

@@ -40,7 +40,7 @@ import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.ExternalSigningSupport;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -512,7 +512,7 @@ public class RecursalPdfLongTermValidationService {
 
     private String resolveProfile(Map<String, Object> metadata,
                                   @Nullable JudicialCertificateValidationReport certificateValidation,
-                                  @Nullable RecursalTimestampAuthorityService.RecursalTimeStampToken archiveToken,
+                                  RecursalTimestampAuthorityService.@Nullable RecursalTimeStampToken archiveToken,
                                   List<String> warnings) {
         boolean nativeSignature = bool(metadata, "nativePdfSignatureEmbedded");
         boolean documentTimestamp = bool(metadata, "documentTimestampEmbedded");

@@ -5,8 +5,8 @@ import com.tcc.pjb.backend.integration.govbr.oidc.GovBrOidcProperties;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 @Component("govbr-mock")

@@ -10,7 +10,7 @@ import com.tcc.pjb.backend.service.exception.enums.TipoViolacaoTerritorial;
 import lombok.Getter;
 
 @Getter
-@ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+@ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
 public class ErroTerritorialException extends RuntimeException {
 
     @Serial

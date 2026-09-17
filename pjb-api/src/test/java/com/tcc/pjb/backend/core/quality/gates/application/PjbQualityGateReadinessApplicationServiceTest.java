@@ -33,15 +33,15 @@ class PjbQualityGateReadinessApplicationServiceTest {
         Files.createDirectories(apiModule.resolve("src/test/java/com/tcc/pjb/backend/governance/layout"));
         Files.createDirectories(apiModule.resolve("src/test/java/com/tcc/pjb/backend/governance/source"));
         Files.writeString(tempDir.resolve("pom.xml"),
-                "<project>archunit-junit5 au.com.dius.pact.consumer junit5 au.com.dius.pact.provider spring6 pitest-maven mutationThreshold coverageThreshold <targetClasses> target/pacts</project>",
+                "<project>archunit-junit5 au.com.dius.pact.consumer junit5 au.com.dius.pact.provider spring7 pitest-maven mutationThreshold coverageThreshold <targetClasses> target/pacts</project>",
                 StandardCharsets.UTF_8);
         Files.writeString(apiModule.resolve("pom.xml"),
-                "<project>archunit-junit5 au.com.dius.pact.consumer junit5 au.com.dius.pact.provider spring6 pitest-maven mutationThreshold coverageThreshold <targetClasses> target/pacts</project>",
+                "<project>archunit-junit5 au.com.dius.pact.consumer junit5 au.com.dius.pact.provider spring7 pitest-maven mutationThreshold coverageThreshold <targetClasses> target/pacts</project>",
                 StandardCharsets.UTF_8);
         Files.writeString(apiModule.resolve("src/test/java/com/tcc/pjb/backend/PjbArchitectureTest.java"), "class PjbArchitectureTest {}", StandardCharsets.UTF_8);
         Files.writeString(apiModule.resolve("src/test/java/com/tcc/pjb/backend/PjbIntegrationTestBase.java"), "class PjbIntegrationTestBase {}", StandardCharsets.UTF_8);
         Files.writeString(apiModule.resolve("src/test/java/com/tcc/pjb/backend/core/procedural/NationalProceduralRoutingCompetenceContractTest.java"), "@Pact @PactTestFor class NationalProceduralRoutingCompetenceContractTest {}", StandardCharsets.UTF_8);
-        Files.writeString(apiModule.resolve("src/test/java/com/tcc/pjb/backend/PasskeyAuthControllerProviderContractTest.java"), "@Provider @ExtendWith(PactVerificationSpring6Provider.class) class PasskeyAuthControllerProviderContractTest {}", StandardCharsets.UTF_8);
+        Files.writeString(apiModule.resolve("src/test/java/com/tcc/pjb/backend/PasskeyAuthControllerProviderContractTest.java"), "@Provider @ExtendWith(PactVerificationSpring7Provider.class) class PasskeyAuthControllerProviderContractTest {}", StandardCharsets.UTF_8);
         Files.writeString(apiModule.resolve("src/test/java/com/tcc/pjb/backend/SampleIT.java"), "class SampleIT {}", StandardCharsets.UTF_8);
         Files.writeString(apiModule.resolve("src/test/resources/pacts/provider/PjbAuthenticationConsumer-PjbAuthenticationProvider.json"), "{\"provider\":{\"name\":\"PjbAuthenticationProvider\"}}", StandardCharsets.UTF_8);
         Files.writeString(apiModule.resolve("src/test/resources/application-integration-test.yml"), """

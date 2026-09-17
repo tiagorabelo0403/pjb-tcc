@@ -1,7 +1,7 @@
 package com.tcc.pjb.backend.contracts.provider;
 
 import au.com.dius.pact.provider.junit5.PactVerificationContext;
-import au.com.dius.pact.provider.spring.spring6.Spring6MockMvcTestTarget;
+import au.com.dius.pact.provider.spring.spring7.Spring7MockMvcTestTarget;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -28,7 +28,7 @@ final class PactProviderSpring6Support {
     }
 
     static void configure(PactVerificationContext context, MockMvc mockMvc) {
-        context.setTarget(new Spring6MockMvcTestTarget(mockMvc));
+        context.setTarget(new Spring7MockMvcTestTarget(mockMvc));
     }
 
     static void applyJsonBody(PactVerificationContext context, MockHttpServletRequestBuilder request) {

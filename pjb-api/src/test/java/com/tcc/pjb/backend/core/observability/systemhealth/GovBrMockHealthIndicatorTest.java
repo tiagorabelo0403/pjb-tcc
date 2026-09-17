@@ -9,8 +9,8 @@ import com.tcc.pjb.backend.core.guard.MockGuardProfile;
 import com.tcc.pjb.backend.integration.govbr.oidc.GovBrOidcProperties;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.Status;
 
 class GovBrMockHealthIndicatorTest {
 

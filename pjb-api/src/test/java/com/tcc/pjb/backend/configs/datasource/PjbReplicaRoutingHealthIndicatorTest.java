@@ -8,7 +8,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 
 class PjbReplicaRoutingHealthIndicatorTest {
 

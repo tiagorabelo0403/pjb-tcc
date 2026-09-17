@@ -50,7 +50,7 @@ class JudicialConnectorLifecycleServiceTest {
 
         JudicialIntegrationProperties properties = new JudicialIntegrationProperties();
         JudicialConnectorHomologationService homologationService = JudicialConnectorHomologationService.withoutPolicy(properties);
-        JudicialConnectorReadinessService readinessService = new JudicialConnectorReadinessService(properties, homologationService, new JudicialOAuthTokenService(new org.springframework.boot.web.client.RestTemplateBuilder(), new ObjectMapper()));
+        JudicialConnectorReadinessService readinessService = new JudicialConnectorReadinessService(properties, homologationService, new JudicialOAuthTokenService(new org.springframework.boot.restclient.RestTemplateBuilder(), new ObjectMapper()));
         JudicialConnectorOperationalProfileService operationalProfileService = new JudicialConnectorOperationalProfileService(registry, homologationService, readinessService);
         JudicialProtocolSubmissionService submissionService = new JudicialProtocolSubmissionService(registry, new ObjectMapper(), telemetryService, readinessService, homologationService, operationalProfileService);
         ProcessSyncService processSyncService = new ProcessSyncService(registry, normalizer, outbox, telemetryService);

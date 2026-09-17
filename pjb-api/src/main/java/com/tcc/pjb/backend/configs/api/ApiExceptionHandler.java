@@ -176,7 +176,7 @@ public class ApiExceptionHandler {
                 extra.put("profileCapabilities", frontendContractService.profileCapabilities(null));
             }
         }
-        return build(HttpStatus.UNPROCESSABLE_ENTITY, "unsupported_domain", "Domínio de cálculo não suportado para esta operação.", request, calculoFrontendExtra(request, extra, ex.getSuggestedDomain()));
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, "unsupported_domain", "Domínio de cálculo não suportado para esta operação.", request, calculoFrontendExtra(request, extra, ex.getSuggestedDomain()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -245,7 +245,7 @@ public class ApiExceptionHandler {
         extra.put("calculoDetalhado", ex.getCalculoDetalhado());
         extra.put("sugestaoCorrecao", ex.getSugestaoCorrecao());
         extra.put("proof", ex.getProvaIntegridade());
-        return build(HttpStatus.UNPROCESSABLE_ENTITY, "processual_teto_violation", safeMessage(ex), request, extra);
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, "processual_teto_violation", safeMessage(ex), request, extra);
     }
 
 
@@ -273,7 +273,7 @@ public class ApiExceptionHandler {
         extra.put("reviewChecklist", ex.getChecklist());
         extra.put("sugestaoCorrecao", ex.getSugestaoCorrecao());
         extra.put("proof", ex.getProvaIntegridade());
-        return build(HttpStatus.UNPROCESSABLE_ENTITY, "processual_territorial_violation", safeMessage(ex), request, extra);
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, "processual_territorial_violation", safeMessage(ex), request, extra);
     }
 
     @ExceptionHandler(com.tcc.pjb.backend.configs.security.PasskeyRequiredException.class)
@@ -287,13 +287,13 @@ public class ApiExceptionHandler {
     public ResponseEntity<ProblemDetail> handleCpfBloqueado(com.tcc.pjb.backend.integration.serpro.datavalid.CpfSituacaoBloqueadaException ex, HttpServletRequest request) {
         Map<String, Object> extra = new LinkedHashMap<>();
         extra.put("errorCode", ex.getCodigoPjb());
-        return build(HttpStatus.UNPROCESSABLE_ENTITY, "cpf_situacao_bloqueada",
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, "cpf_situacao_bloqueada",
                 "Peticionamento não permitido para o CPF informado.", request, extra);
     }
 
     @ExceptionHandler(RegraNegocioException.class)
     public ResponseEntity<ProblemDetail> handleBusiness(RegraNegocioException ex, HttpServletRequest request) {
-        return build(HttpStatus.UNPROCESSABLE_ENTITY, "business_rule", safeMessage(ex), request, null);
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, "business_rule", safeMessage(ex), request, null);
     }
 
     @ExceptionHandler(PJeAdapterNotFoundException.class)
@@ -381,7 +381,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(RecursalTransitionRejectedException.class)
     public ResponseEntity<ProblemDetail> handleRecursalTransitionRejected(RecursalTransitionRejectedException ex, HttpServletRequest request) {
-        return build(HttpStatus.UNPROCESSABLE_ENTITY, "recursal_transition_rejected", safeMessage(ex), request, null);
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, "recursal_transition_rejected", safeMessage(ex), request, null);
     }
 
     @ExceptionHandler(RecursalRevisionConflictException.class)
@@ -421,7 +421,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(ProtocoloPendenteException.class)
     public ResponseEntity<ProblemDetail> handleProtocoloPendente(ProtocoloPendenteException ex, HttpServletRequest request) {
-        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY,
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT,
                 "Protocolo pendente de documentação obrigatória. Regularize a documentação e reenvie.");
         pd.setTitle("Completude Documental Insuficiente");
         pd.setType(URI.create("https://pjb.local/problems/protocolo_pendente_documentacao"));
@@ -453,7 +453,7 @@ public class ApiExceptionHandler {
             return m;
         }).toList();
         pd.setProperty("violacoes", violacoes);
-        return problemResponse(HttpStatus.UNPROCESSABLE_ENTITY, pd, request, null);
+        return problemResponse(HttpStatus.UNPROCESSABLE_CONTENT, pd, request, null);
     }
 
     @ExceptionHandler(Exception.class)
@@ -554,7 +554,7 @@ public class ApiExceptionHandler {
         if (status == HttpStatus.PRECONDITION_REQUIRED) {
             return "precondition_required";
         }
-        if (status == HttpStatus.UNPROCESSABLE_ENTITY) {
+        if (status == HttpStatus.UNPROCESSABLE_CONTENT) {
             return "business_rule";
         }
         if (status.is5xxServerError()) {

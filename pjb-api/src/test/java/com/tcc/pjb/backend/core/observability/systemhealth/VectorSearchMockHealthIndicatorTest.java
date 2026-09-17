@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 import com.tcc.pjb.backend.core.guard.MockGuardEnvironmentQuery;
 import com.tcc.pjb.backend.core.guard.MockGuardProfile;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.core.env.Environment;
 
 class VectorSearchMockHealthIndicatorTest {

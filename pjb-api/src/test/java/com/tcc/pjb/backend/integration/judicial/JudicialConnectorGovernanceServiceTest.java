@@ -7,7 +7,7 @@ import com.tcc.pjb.backend.integration.judicial.impl.NoopJudicialConnector;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 
 class JudicialConnectorGovernanceServiceTest {
 

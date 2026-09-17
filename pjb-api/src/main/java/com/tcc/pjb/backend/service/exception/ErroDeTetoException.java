@@ -16,7 +16,7 @@ import com.tcc.pjb.backend.service.exception.enums.TipoViolacaoTeto;
 import lombok.Getter;
 
 @Getter
-@ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+@ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
 public class ErroDeTetoException extends RuntimeException {
 
     @Serial

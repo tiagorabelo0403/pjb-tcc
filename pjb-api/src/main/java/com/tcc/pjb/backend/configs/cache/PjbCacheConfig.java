@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -16,6 +17,7 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
+@EnableCaching
 @EnableConfigurationProperties(PjbCacheProperties.class)
 public class PjbCacheConfig {
 
@@ -31,6 +33,12 @@ public class PjbCacheConfig {
                 ? properties.getRedis().getDefaultTtl()
                 : Duration.ofMinutes(15);
 
+        // GenericJackson2JsonRedisSerializer esta deprecated e marcada pra remocao (Jackson 3 e o
+        // novo padrao). O substituto (GenericJacksonJsonRedisSerializer) exige tools.jackson.databind
+        // .ObjectMapper (Jackson 3), nao o com.fasterxml.jackson.databind.ObjectMapper injetado aqui
+        // -- trocar exigiria recriar em Jackson 3 as mesmas restricoes de seguranca de
+        // StrictJacksonConfig (StreamReadConstraints), nao e drop-in. Ver DEBT_LOG.
+        @SuppressWarnings("removal")
         RedisCacheConfiguration base = RedisCacheConfiguration.defaultCacheConfig()
                 .disableCachingNullValues()
                 .entryTtl(defaultTtl)

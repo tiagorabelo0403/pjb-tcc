@@ -620,13 +620,13 @@ graph TD
 | Component | Technology |
 |-----------|-----------|
 | Language | Java 21 — Virtual Threads, Records, Sealed Interfaces, Pattern Matching |
-| Framework | Spring Boot 3.5, Spring Framework 6 |
+| Framework | Spring Boot 4.1, Spring Framework 7 |
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Database | PostgreSQL 17 with Row Level Security per operation |
 | Test Database | In-memory H2 + Testcontainers |
 | Migrations | Flyway — numbered up to V357, with monthly partitioning on event tables |
 | Persistence | JPA / Hibernate with `ddl-auto: validate` in production |
-| Messaging | Apache Kafka 3.8 — judicial events and outbox |
+| Messaging | Apache Kafka 4.2 — judicial events and outbox |
 | Workflow orchestration | Camunda 8 / Zeebe — BPMN applied to the filing workflow |
 | Cache | Redis 7.4 |
 | Search | Elasticsearch 8.15 |

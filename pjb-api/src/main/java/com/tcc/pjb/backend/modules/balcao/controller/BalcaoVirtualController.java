@@ -67,7 +67,7 @@ public class BalcaoVirtualController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.unprocessableContent().build();
         }
     }
 
@@ -79,7 +79,7 @@ public class BalcaoVirtualController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.unprocessableContent().build();
         }
     }
 
@@ -92,7 +92,7 @@ public class BalcaoVirtualController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.unprocessableContent().build();
         }
     }
 
@@ -104,7 +104,7 @@ public class BalcaoVirtualController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.unprocessableContent().build();
         }
     }
 
@@ -116,7 +116,7 @@ public class BalcaoVirtualController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.unprocessableContent().build();
         }
     }
 }

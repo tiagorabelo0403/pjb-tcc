@@ -35,7 +35,7 @@ class JudicialProtocolSubmissionServiceTest {
         cfg.setHomologatedTribunals(java.util.List.of("TJCE"));
         properties.setPje(cfg);
         JudicialConnectorHomologationService homologationService = JudicialConnectorHomologationService.withoutPolicy(properties);
-        JudicialConnectorReadinessService readinessService = new JudicialConnectorReadinessService(properties, homologationService, new JudicialOAuthTokenService(new org.springframework.boot.web.client.RestTemplateBuilder(), new ObjectMapper()));
+        JudicialConnectorReadinessService readinessService = new JudicialConnectorReadinessService(properties, homologationService, new JudicialOAuthTokenService(new org.springframework.boot.restclient.RestTemplateBuilder(), new ObjectMapper()));
         JudicialConnectorOperationalProfileService operationalProfileService = new JudicialConnectorOperationalProfileService(registry, homologationService, readinessService);
         JudicialProtocolSubmissionService service = new JudicialProtocolSubmissionService(registry, new ObjectMapper(), telemetryService, readinessService, homologationService, operationalProfileService);
 

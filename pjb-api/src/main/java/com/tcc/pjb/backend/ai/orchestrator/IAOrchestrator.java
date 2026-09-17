@@ -208,7 +208,7 @@ public final class IAOrchestrator {
         }
         if (partial.getAlertas() != null && !partial.getAlertas().isEmpty()) {
             for (String alerta : partial.getAlertas()) {
-                builder.adicionarAlerta(alerta);
+                builder.alerta(alerta);
             }
         }
         if (partial.getMetadados() != null && !partial.getMetadados().isEmpty()) {

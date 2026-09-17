@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 
 public final class PjbBoundedExecutorService extends AbstractExecutorService implements AutoCloseable {
 

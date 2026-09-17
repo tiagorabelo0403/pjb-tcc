@@ -23,7 +23,7 @@ class PactProviderSpring6TargetArchitectureTest {
                     .sorted()
                     .forEach(path -> inspect(path, offenders));
         }
-        assertTrue(offenders.isEmpty(), "Pact providers com Spring6MockMvcTestTarget devem usar PactVerificationSpring6Provider: " + offenders);
+        assertTrue(offenders.isEmpty(), "Pact providers com Spring7MockMvcTestTarget devem usar PactVerificationSpring7Provider: " + offenders);
     }
 
     private static void inspect(Path path, List<String> offenders) {
@@ -33,7 +33,7 @@ class PactProviderSpring6TargetArchitectureTest {
         } catch (IOException ex) {
             throw new IllegalStateException("Falha ao ler provider contract: " + path, ex);
         }
-        if (source.contains("Spring6MockMvcTestTarget") && !source.contains("PactVerificationSpring6Provider")) {
+        if (source.contains("Spring7MockMvcTestTarget") && !source.contains("PactVerificationSpring7Provider")) {
             offenders.add(path.toString());
         }
         if (source.contains("PactVerificationInvocationContextProvider")) {

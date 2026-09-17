@@ -33,7 +33,7 @@ import org.springframework.test.context.ActiveProfiles;
         "spring.data.jpa.repositories.bootstrap-mode=deferred",
         "spring.data.elasticsearch.repositories.enabled=false",
         "spring.data.redis.repositories.enabled=false",
-        "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration,org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration",
+        "spring.autoconfigure.exclude=org.springframework.boot.data.elasticsearch.autoconfigure.DataElasticsearchRepositoriesAutoConfiguration,org.springframework.boot.data.elasticsearch.autoconfigure.DataElasticsearchReactiveRepositoriesAutoConfiguration,org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration,org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration",
         "management.defaults.metrics.export.enabled=false",
         "management.simple.metrics.export.enabled=false",
         "management.health.defaults.enabled=false",
