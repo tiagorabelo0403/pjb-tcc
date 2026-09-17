@@ -20,6 +20,7 @@ import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.EscrituraExtrajudicialRegistroRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 
 @Service
@@ -29,15 +30,18 @@ public class EscrituraExtrajudicialService {
     private final ProcessoRepository processoRepository;
     private final WorkItemRepository workItemRepository;
     private final CurrentUserService currentUserService;
+    private final ComarcaResolutionService comarcaResolutionService;
 
     public EscrituraExtrajudicialService(EscrituraExtrajudicialRegistroRepository repository,
                                          ProcessoRepository processoRepository,
                                          WorkItemRepository workItemRepository,
-                                         CurrentUserService currentUserService) {
+                                         CurrentUserService currentUserService,
+                                         ComarcaResolutionService comarcaResolutionService) {
         this.repository = Objects.requireNonNull(repository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
         this.currentUserService = Objects.requireNonNull(currentUserService);
+        this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService);
     }
 
     @Transactional(readOnly = true)
@@ -65,6 +69,7 @@ public class EscrituraExtrajudicialService {
         registro.setValorDeclarado(request.valorDeclarado());
         registro.setComarca(usuario.getComarca());
         registro.setUf(usuario.getUf());
+        aplicarComarcaDoCatalogo(registro);
         registro.setCartorioResponsavel(usuario);
         registro.setAssinaturaHash(Hashes.sha256Hex(request.tipo() + "|" + request.atoResumo() + "|" + request.partesResumo() + "|" + Instant.now()));
         registro.setLavradaEm(Instant.now());
@@ -107,6 +112,15 @@ public class EscrituraExtrajudicialService {
             workItemRepository.save(item);
         }
         return toView(registro);
+    }
+
+    private void aplicarComarcaDoCatalogo(EscrituraExtrajudicialRegistro registro) {
+        if (registro.getComarca() == null || registro.getComarca().isBlank()) {
+            registro.setComarcaEntidade(null);
+            return;
+        }
+        registro.setComarcaEntidade(comarcaResolutionService.resolver(registro.getComarca(), registro.getUf())
+                .orElse(null));
     }
 
     private Usuario requireCartorio() {
