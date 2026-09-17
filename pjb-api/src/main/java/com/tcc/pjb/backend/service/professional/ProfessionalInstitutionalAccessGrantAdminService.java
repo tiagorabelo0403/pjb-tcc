@@ -40,6 +40,7 @@ import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.professional.ProfessionalAccessGrantTemplateRepository;
 import com.tcc.pjb.backend.model.repository.professional.ProfessionalInstitutionalAccessGrantEventRepository;
 import com.tcc.pjb.backend.model.repository.professional.ProfessionalInstitutionalAccessGrantRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -62,6 +63,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
     private final ProfessionalAccessGrantTemplateRepository templateRepository;
     private final ProfessionalProcessAccessVectorService accessVectorService;
     private final AuditLedgerService auditLedgerService;
+    private final ComarcaResolutionService comarcaResolutionService;
 
     public ProfessionalInstitutionalAccessGrantAdminService(CurrentUserService currentUserService,
                                                             UsuarioRepository usuarioRepository,
@@ -70,7 +72,8 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
                                                             ProfessionalInstitutionalAccessGrantEventRepository eventRepository,
                                                             ProfessionalAccessGrantTemplateRepository templateRepository,
                                                             ProfessionalProcessAccessVectorService accessVectorService,
-                                                            AuditLedgerService auditLedgerService) {
+                                                            AuditLedgerService auditLedgerService,
+                                                            ComarcaResolutionService comarcaResolutionService) {
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.usuarioRepository = Objects.requireNonNull(usuarioRepository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
@@ -79,6 +82,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         this.templateRepository = Objects.requireNonNull(templateRepository);
         this.accessVectorService = Objects.requireNonNull(accessVectorService);
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
+        this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService);
     }
 
     @Transactional(readOnly = true)
@@ -148,6 +152,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         grant.setAccessBasis(request.accessBasis());
         grant.setUf(normalizeToken(request.uf()));
         grant.setComarca(normalizeText(request.comarca()));
+        aplicarComarcaDoCatalogo(grant);
         grant.setTribunal(normalizeToken(request.tribunal()));
         grant.setUnidadeJudiciariaCodigo(normalizeToken(request.unidadeJudiciariaCodigo()));
         grant.setOrgaoColegiadoCodigo(normalizeToken(request.orgaoColegiadoCodigo()));
@@ -1142,6 +1147,15 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
             }
         }
         return null;
+    }
+
+    private void aplicarComarcaDoCatalogo(ProfessionalInstitutionalAccessGrant grant) {
+        if (grant.getComarca() == null || grant.getComarca().isBlank()) {
+            grant.setComarcaEntidade(null);
+            return;
+        }
+        grant.setComarcaEntidade(comarcaResolutionService.resolver(grant.getComarca(), grant.getUf())
+                .orElse(null));
     }
 
     private String normalizeToken(String value) {
