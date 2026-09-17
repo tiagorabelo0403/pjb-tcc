@@ -16,11 +16,11 @@ public class PeticionamentoPericiaEvidenceIntelligenceService {
 
     private final ObjectStorageProperties.Upload uploadProperties;
 
-    @Inject
     public PeticionamentoPericiaEvidenceIntelligenceService() {
         this(new ObjectStorageProperties());
     }
 
+    @Inject
     public PeticionamentoPericiaEvidenceIntelligenceService(ObjectStorageProperties props) {
         ObjectStorageProperties properties = props == null ? new ObjectStorageProperties() : props;
         this.uploadProperties = properties.getUpload() == null ? new ObjectStorageProperties.Upload() : properties.getUpload();

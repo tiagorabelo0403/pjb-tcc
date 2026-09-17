@@ -25,7 +25,6 @@ public class InstitutionalCatalogGovernanceStateRepository {
     private final InstitutionalCatalogGovernanceSnapshotRepository jpaRepository;
     private final Map<String, InstitutionalCatalogGovernanceEntry> inMemoryStore;
 
-    @Inject
     public InstitutionalCatalogGovernanceStateRepository() {
         this.stateStore = null;
         this.codec = null;
@@ -33,6 +32,7 @@ public class InstitutionalCatalogGovernanceStateRepository {
         this.inMemoryStore = new ConcurrentHashMap<>();
     }
 
+    @Inject
     public InstitutionalCatalogGovernanceStateRepository(ComunicacaoJudicialStateStore stateStore,
                                                          InstitutionalSnapshotJsonCodec codec,
                                                          ObjectProvider<InstitutionalCatalogGovernanceSnapshotRepository> repositoryProvider) {

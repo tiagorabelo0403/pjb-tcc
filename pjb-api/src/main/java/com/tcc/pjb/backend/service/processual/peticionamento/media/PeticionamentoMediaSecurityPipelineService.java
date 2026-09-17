@@ -25,11 +25,11 @@ public class PeticionamentoMediaSecurityPipelineService {
     private final ObjectStorageProperties.Upload uploadProperties;
     private final UploadContentPolicyService uploadContentPolicyService;
 
-    @Inject
     public PeticionamentoMediaSecurityPipelineService() {
         this(new ObjectStorageProperties(), new UploadContentPolicyService());
     }
 
+    @Inject
     public PeticionamentoMediaSecurityPipelineService(ObjectStorageProperties props,
                                                       UploadContentPolicyService uploadContentPolicyService) {
         ObjectStorageProperties properties = props == null ? new ObjectStorageProperties() : props;

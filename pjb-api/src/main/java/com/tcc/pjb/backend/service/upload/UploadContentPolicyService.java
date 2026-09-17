@@ -24,11 +24,11 @@ public class UploadContentPolicyService {
     private final Map<String, Policy> byContentType;
     private final Map<String, String> byExtension;
 
-    @Inject
     public UploadContentPolicyService() {
         this(new ObjectStorageProperties());
     }
 
+    @Inject
     public UploadContentPolicyService(ObjectStorageProperties props) {
         ObjectStorageProperties properties = props == null ? new ObjectStorageProperties() : props;
         this.uploadProperties = properties.getUpload() == null ? new ObjectStorageProperties.Upload() : properties.getUpload();

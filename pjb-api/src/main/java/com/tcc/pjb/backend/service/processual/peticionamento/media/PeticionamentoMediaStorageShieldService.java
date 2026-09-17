@@ -20,11 +20,11 @@ public class PeticionamentoMediaStorageShieldService {
     private final UploadContentPolicyService uploadContentPolicyService;
     private final UploadCapacityGovernanceService uploadCapacityGovernanceService;
 
-    @Inject
     public PeticionamentoMediaStorageShieldService() {
         this(new ObjectStorageProperties(), new UploadContentPolicyService(), new UploadCapacityGovernanceService(new ObjectStorageProperties(), new UploadContentPolicyService()));
     }
 
+    @Inject
     public PeticionamentoMediaStorageShieldService(ObjectStorageProperties props,
                                                    UploadContentPolicyService uploadContentPolicyService,
                                                    UploadCapacityGovernanceService uploadCapacityGovernanceService) {
