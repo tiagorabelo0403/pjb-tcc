@@ -19,6 +19,7 @@ import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class TransitoJulgadoArquivamentoEngineTest {
 
@@ -90,6 +92,7 @@ class TransitoJulgadoArquivamentoEngineTest {
                 .numeroProcesso("0001234-56.2026.8.06.0001")
                 .uf("CE")
                 .comarca("Fortaleza")
+                .comarcaEntidade(new Comarca("Fortaleza", "CE", "2304400", null))
                 .faseAtual(FaseProcessual.CUMPRIMENTO_SENTENCA)
                 .statusProcesso(StatusProcesso.CUMPRIMENTO_SENTENCA)
                 .unidadeJudiciariaCodigo("UNIDADE-1")
@@ -156,6 +159,10 @@ class TransitoJulgadoArquivamentoEngineTest {
         assertThat(resultado.get("status")).isEqualTo("PROCESSO_ARQUIVADO");
         verify(authorizationService).requireFuncaoServidorCapability(eq(processo), eq(AcaoProcessualServidor.ARQUIVAR));
         verify(processoRepository).save(processo);
+
+        ArgumentCaptor<WorkItem> workItemCaptor = ArgumentCaptor.forClass(WorkItem.class);
+        verify(workItemRepository).save(workItemCaptor.capture());
+        assertThat(workItemCaptor.getValue().getComarcaEntidade()).isSameAs(processo.getComarcaEntidade());
     }
 
     @Test

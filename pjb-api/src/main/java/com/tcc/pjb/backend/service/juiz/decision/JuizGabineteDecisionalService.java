@@ -339,6 +339,7 @@ public class JuizGabineteDecisionalService {
                 .prioridade(0)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(fundamentacao)
                 .dueAt(Instant.now().plus(2, ChronoUnit.HOURS))
                 .build();
@@ -442,6 +443,7 @@ public class JuizGabineteDecisionalService {
                 .prioridade(0)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(fundamentacao)
                 .dueAt(Instant.now().plus(1, ChronoUnit.HOURS))
                 .build();
@@ -508,6 +510,7 @@ public class JuizGabineteDecisionalService {
                 .prioridade(0)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(fundamentacao)
                 .dueAt(Instant.now().plus(1, ChronoUnit.HOURS))
                 .build();
@@ -591,6 +594,7 @@ public class JuizGabineteDecisionalService {
                 .prioridade(1)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .dueAt(effectiveDateTime)
                 .build();
         workItemRepository.save(audienciaItem);

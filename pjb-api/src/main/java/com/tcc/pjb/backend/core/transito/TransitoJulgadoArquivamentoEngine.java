@@ -105,6 +105,7 @@ public class TransitoJulgadoArquivamentoEngine {
                 .blocking(profile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(profile.baseLegal())
                 .dueAt(profile.dueAtFrom(Instant.now()))
                 .build();
@@ -148,6 +149,7 @@ public class TransitoJulgadoArquivamentoEngine {
                 .blocking(profile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(profile.baseLegal())
                 .dueAt(profile.dueAtFrom(Instant.now()))
                 .build();
@@ -210,6 +212,7 @@ public class TransitoJulgadoArquivamentoEngine {
                 .blocking(incidentProfile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(incidentProfile.baseLegal())
                 .dueAt(incidentProfile.dueAtFrom(Instant.now()))
                 .build();
@@ -280,6 +283,7 @@ public class TransitoJulgadoArquivamentoEngine {
                 .blocking(enforcementProfile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(enforcementProfile.baseLegal())
                 .dueAt(enforcementProfile.dueAtFrom(Instant.now()))
                 .build();
@@ -600,6 +604,7 @@ public class TransitoJulgadoArquivamentoEngine {
                 .blocking(profile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(profile.baseLegal())
                 .dueAt(profile.dueAtFrom(Instant.now()))
                 .build();
@@ -657,6 +662,7 @@ public class TransitoJulgadoArquivamentoEngine {
                 .blocking(profile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(profile.baseLegal())
                 .dueAt(profile.dueAtFrom(Instant.now()))
                 .build();

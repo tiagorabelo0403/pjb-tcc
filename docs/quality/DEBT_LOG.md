@@ -297,7 +297,7 @@ migração fecha reduzindo a allowlist em `OrganizacaoJudiciariaArchitectureTest
 
 ## D-workitem-fk-comarca-propagacao-parcial
 
-**Status:** aberta
+**Status:** aberta — lote 1 fechado (5 arquivos), ~39 restantes
 
 **Contexto:** a revisão final da fatia "Organização Judiciária" achou que nenhum caminho de produção
 escrevia a FK `comarcaEntidade` de `Usuario`/`Processo`/`WorkItem` — todo dado novo ficava com `comarca_id`
@@ -311,20 +311,43 @@ via `ComarcaResolutionService`).
 Uma varredura de `WorkItem.builder()` no restante do projeto (não feita durante a rodada de correção — o
 implementador relatou "~12 outros pontos" de memória; a contagem real, feita na re-revisão, é **44 arquivos**
 em `pjb-api/src/main` que constroem `WorkItem` setando `.comarca(...)` textual sem `.comarcaEntidade(...)`)
-mostra que `RitoWorkflowService` é o único ponto de criação de `WorkItem` com FK — exemplos confirmados:
-`RecursalWorkItemMaterializerService`, `TransitoJulgadoArquivamentoEngine`, `DesembargadorColegialdoPainelService`,
-`NationalCommunicationFlowFacade`, `OficialJusticaPainelService`, `JuizGabineteDecisionalService`, entre outros,
-em domínios de recursal, colegiado, comunicação processual, secretariado e gabinete.
+mostra que `RitoWorkflowService` é o único ponto de criação de `WorkItem` com FK.
+
+**Lote 1 fechado (2026-09-17):** 5 dos 6 exemplos citados na investigação original —
+`RecursalWorkItemMaterializerService` (herda de `Processo.getJurisdicao().getComarcaEntidade()`, mesmo
+padrão do `RitoWorkflowService`), `TransitoJulgadoArquivamentoEngine` (6 sites, herda de
+`Processo.getComarcaEntidade()` direto — a entidade tem FK própria, não só via `Jurisdicao`),
+`DesembargadorColegialdoPainelService` (7 sites), `JuizGabineteDecisionalService` (4 sites) e
+`NationalCommunicationFlowFacade` (1 site) — os últimos três herdam de `Usuario.getComarcaEntidade()`
+(mesmo padrão de `.comarca(usuario.getComarca())` já usado nesses arquivos; ainda sem efeito prático
+hoje porque nenhum fluxo de cadastro popula esse campo em `Usuario` — ver
+`D-secretariat-visibility-scope-nunca-populado` —, mas passa a existir assim que popular). O sexto
+exemplo, `OficialJusticaPainelService`, não constrói `WorkItem` (é um painel de leitura) — não fazia
+parte real do escopo. Cobertura: teste novo (`RecursalWorkItemMaterializerServiceTest`, inexistente
+antes) e uma asserção nova no teste já existente de `TransitoJulgadoArquivamentoEngine`, ambos
+capturando o `WorkItem` salvo e confirmando `comarcaEntidade` propagado:
+
+```java
+ArgumentCaptor<WorkItem> workItemCaptor = ArgumentCaptor.forClass(WorkItem.class);
+verify(workItemRepository).save(workItemCaptor.capture());
+assertThat(workItemCaptor.getValue().getComarcaEntidade()).isSameAs(processo.getComarcaEntidade());
+```
+(`TransitoJulgadoArquivamentoEngineTest.servidorComFuncaoArquivarAtivaArquivaComSucesso`, verde)
+
+Os outros 3 arquivos ficaram sem teste novo dedicado — mudança puramente aditiva (um campo a mais no
+mesmo builder), compilação + suíte existente sem alteração de comportamento já são a evidência de
+não-regressão.
 
 **Risco:** baixo, não é regressão — confirmado por leitura de código e teste (`territoryMatches` após o fix
 do achado I2 da mesma revisão final): um `WorkItem` sem `comarcaEntidade` mas com `comarca` textual própria
 cai inteiro no caminho de comparação textual normalizada (o comportamento anterior à fatia inteira), nunca
-tenta usar a FK do `Processo` no lugar. Os 44 sites simplesmente não ganham o benefício da comparação por
-identidade real — não produzem nenhum match incorreto.
+tenta usar a FK do `Processo` no lugar. Os sites restantes simplesmente não ganham o benefício da comparação
+por identidade real — não produzem nenhum match incorreto.
 
-**Quando revisitar:** ao planejar a próxima fatia que toque roteamento de `WorkItem` por gabinete/assessoria —
-extrair um método `WorkItem.herdarTerritorioDe(Processo)` (ou equivalente) que copie `uf`/`comarca` E
-`comarcaEntidade` juntos, e aplicar nos 44 sites incrementalmente, priorizando os que já são usados pelo
+**Quando revisitar:** próximo lote — extrair um método `WorkItem.herdarTerritorioDe(Processo)` (ou
+equivalente) só se um padrão comum se confirmar em mais arquivos (o lote 1 já mostrou 2 padrões
+distintos — via `Processo` e via `Usuario` —, então a extração pode precisar de duas variantes, não
+uma). Continuar incrementalmente pelos ~39 arquivos restantes, priorizando os que já são usados pelo
 guard-rail de território (`AssessorGabineteGuardRailService`) com mais frequência em produção.
 
 ## D-classificacao-contextual-default-permissivo

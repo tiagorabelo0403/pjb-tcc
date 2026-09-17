@@ -430,6 +430,7 @@ final class NationalCommunicationFlowFacade {
                 .blocking(tipoComunicacao.isCitacao())
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(response.fundamentacaoLegal())
                 .dueAt(response.presuncaoEntregaEm() == null ? Instant.now().plus(72, ChronoUnit.HOURS) : response.presuncaoEntregaEm())
                 .build();
