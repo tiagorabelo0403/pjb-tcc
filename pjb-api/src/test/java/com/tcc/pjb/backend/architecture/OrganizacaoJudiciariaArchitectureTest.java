@@ -23,7 +23,6 @@ class OrganizacaoJudiciariaArchitectureTest {
             "com.tcc.pjb.backend.core.prazos.calendario.CalendarioForenseEntry",
             "com.tcc.pjb.backend.model.entity.atlas.AtlasAcessoMunicipio",
             "com.tcc.pjb.backend.model.entity.federalismo.NoFederacaoJudicial",
-            "com.tcc.pjb.backend.model.entity.extrajudicial.EscrituraExtrajudicialRegistro",
             "com.tcc.pjb.backend.model.entity.criminal.InqueritoPolicialDigital",
             "com.tcc.pjb.backend.model.entity.EventoInstitucional",
             "com.tcc.pjb.backend.model.entity.Estados",

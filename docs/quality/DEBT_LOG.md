@@ -244,9 +244,10 @@ String sem a FK `Comarca` correspondente na mesma classe — mas, ao rodar essa 
 pela primeira vez, apareceram 23 entidades pré-existentes, fora do escopo original, que já declaravam
 `uf`/`comarca` String sem nenhuma FK `Comarca`. Cinco saíram da allowlist depois — `JurisdicaoTerritorial`
 logo em seguida, `OrgaoJudiciario`/`PeritoSorteioAudit`/`PeritoDisponibilidade` mais tarde,
-`UnidadeInstituicao` em 2026-09-17 — ver notas abaixo —, restando **18 entidades pré-existentes**:
+`UnidadeInstituicao` e `EscrituraExtrajudicialRegistro` em 2026-09-17 — ver notas abaixo —, restando
+**17 entidades pré-existentes**:
 
-`CalendarioForenseEntry`, `AtlasAcessoMunicipio`, `NoFederacaoJudicial`, `EscrituraExtrajudicialRegistro`,
+`CalendarioForenseEntry`, `AtlasAcessoMunicipio`, `NoFederacaoJudicial`,
 `InqueritoPolicialDigital`, `EventoInstitucional`, `Estados`, `CidadaoProcessoNacionalProjection`, `Municipios`,
 `ProcessoZonaEleitoral`, `CalendarioEleitoral`, `OperationalFunctionCredential`,
 `GovServiceRegistry`, `InstitutionalCompetenceRuleSnapshot`, `InstitutionalCatalogUnitSnapshot`,
@@ -290,6 +291,23 @@ do zero contra Postgres 17 (`pgvector/pgvector:pg17`, mesma imagem do dev) via F
 ```
 Migrating schema "public" to version "358 - unidade institucional fk comarca"
 Successfully applied 320 migrations to schema "public", now at version v358 (execution time 00:07.079s)
+```
+
+`EscrituraExtrajudicialRegistro` saiu da allowlist em 2026-09-17 com migração própria
+(`V359__escritura_extrajudicial_registro_fk_comarca.sql`), mesmo padrão de `OrgaoJudiciario`/`UnidadeInstituicao`:
+ganhou `comarcaEntidade` (`@ManyToOne Comarca`, nullable, ao lado de `comarca`/`uf` String que continuam como
+fallback), `EscrituraExtrajudicialService.aplicarComarcaDoCatalogo` resolve via
+`ComarcaResolutionService.resolver(comarca, uf)` em `lavrar` (único ponto de construção em produção — `grep`
+de `new EscrituraExtrajudicialRegistro()` em `pjb-api/src/main` confirma zero outros call sites), e o backfill
+da migration aplica o mesmo match aos registros já existentes. Cobertura: 3 testes novos em
+`EscrituraExtrajudicialServiceComarcaTest` (resolve/aplica, comarca em branco não resolve, resolver sem
+candidata não lança — mesmo trio de `OrgaoJudiciarioServiceComarcaTest`) e `OrganizacaoJudiciariaArchitectureTest`
+(a regra em si). Cadeia completa de migrations (V1→V359) validada do zero contra Postgres 17
+(`pgvector/pgvector:pg17`) via Flyway CLI (`flyway/flyway:10`) antes do fechamento:
+
+```
+Migrating schema "public" to version "359 - escritura extrajudicial registro fk comarca"
+Successfully applied 321 migrations to schema "public", now at version v359 (execution time 00:07.762s)
 ```
 
 `PeritoSorteioAudit`/`PeritoDisponibilidade` saíram da allowlist juntas numa migração própria
