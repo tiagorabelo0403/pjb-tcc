@@ -10,6 +10,7 @@ import com.tcc.pjb.backend.core.security.professional.ProfessionalActorClass;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalGrantApprovalStatus;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -74,6 +75,10 @@ public class ProfessionalInstitutionalAccessGrant {
 
     @Column(name = "comarca", length = 160)
     private String comarca;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
 
     @Column(name = "tribunal", length = 80)
     private String tribunal;

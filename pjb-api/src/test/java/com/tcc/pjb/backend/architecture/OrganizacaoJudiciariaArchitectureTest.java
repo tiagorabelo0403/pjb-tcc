@@ -35,7 +35,6 @@ class OrganizacaoJudiciariaArchitectureTest {
             "com.tcc.pjb.backend.model.entity.institucional.InstitutionalCompetenceRuleSnapshot",
             "com.tcc.pjb.backend.model.entity.institucional.InstitutionalCatalogUnitSnapshot",
             "com.tcc.pjb.backend.model.entity.institucional.InstitutionalCatalogGovernanceSnapshot",
-            "com.tcc.pjb.backend.model.entity.professional.ProfessionalInstitutionalAccessGrant",
             "com.tcc.pjb.backend.model.entity.painel.PainelTribunalMetrica");
 
     @ArchTest
