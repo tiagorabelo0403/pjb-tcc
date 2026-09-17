@@ -218,6 +218,7 @@ public class DesembargadorColegialdoPainelService {
                 .prioridade(0)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(fundamentacao)
                 .dueAt(Instant.now().plus(2, ChronoUnit.HOURS))
                 .build();
@@ -270,6 +271,7 @@ public class DesembargadorColegialdoPainelService {
                 .prioridade(0)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(fundamentacao)
                 .dueAt(Instant.now().plus(24, ChronoUnit.HOURS))
                 .build();
@@ -320,6 +322,7 @@ public class DesembargadorColegialdoPainelService {
                 .prioridade(1)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .dueAt(prazoVista)
                 .build();
         workItemRepository.save(vistaItem);
@@ -374,6 +377,7 @@ public class DesembargadorColegialdoPainelService {
                 .prioridade(0)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .dueAt(Instant.now())
                 .build();
         workItemRepository.save(item);
@@ -397,6 +401,7 @@ public class DesembargadorColegialdoPainelService {
                 .prioridade(0)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .dueAt(Instant.now())
                 .build();
         workItemRepository.save(item);
@@ -424,6 +429,7 @@ public class DesembargadorColegialdoPainelService {
                 .prioridade(0)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .dueAt(Instant.now().plus(12, ChronoUnit.HOURS))
                 .build();
         workItemRepository.save(item);
@@ -454,6 +460,7 @@ public class DesembargadorColegialdoPainelService {
                 .prioridade(0)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .dueAt(Instant.now().plus(6, ChronoUnit.HOURS))
                 .build();
         workItemRepository.save(item);

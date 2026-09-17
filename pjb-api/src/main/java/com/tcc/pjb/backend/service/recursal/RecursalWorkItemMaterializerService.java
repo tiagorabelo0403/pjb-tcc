@@ -12,6 +12,7 @@ import com.tcc.pjb.backend.core.kernel.recursal.plan.RecursalPlan;
 import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.model.entity.Jurisdicao;
 import com.tcc.pjb.backend.model.entity.Processo;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
@@ -54,6 +55,7 @@ public class RecursalWorkItemMaterializerService {
         Jurisdicao j = processo.getJurisdicao();
         String uf = j != null ? safeTrim(j.getUf()) : null;
         String comarca = j != null ? safeTrim(j.getCidade()) : null;
+        Comarca comarcaEntidade = j != null ? j.getComarcaEntidade() : null;
 
         for (WorkItemSpec s : specs) {
             if (s == null) continue;
@@ -87,6 +89,7 @@ public class RecursalWorkItemMaterializerService {
                     .dueAt(time.endOfDayLegal(s.dueDate()))
                     .uf(uf)
                     .comarca(comarca)
+                    .comarcaEntidade(comarcaEntidade)
                     .baseLegal(null)
                     .build();
 
