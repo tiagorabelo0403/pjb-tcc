@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,6 +30,7 @@ import com.tcc.pjb.backend.service.secretariat.routing.SecretariatOperationalRou
 import com.tcc.pjb.backend.service.secretariat.topology.SecretariatSpecializationResolver;
 import com.tcc.pjb.backend.service.secretariat.topology.SecretariatSpecializationResolver.SecretariatSpecializationProfile;
 
+@Slf4j
 @Service
 public class SecretariatInstitutionalVisibilityService {
 
@@ -41,19 +44,22 @@ public class SecretariatInstitutionalVisibilityService {
     private final SecretariatOperationalRoutingResolver routingResolver;
     private final SecretariatInboxAccessService inboxAccessService;
     private final SecretariatSpecializationResolver specializationResolver;
+    private final MeterRegistry registry;
 
     public SecretariatInstitutionalVisibilityService(CurrentUserService currentUserService,
                                                      ProcessoRepository processoRepository,
                                                      WorkItemRepository workItemRepository,
                                                      SecretariatOperationalRoutingResolver routingResolver,
                                                      SecretariatInboxAccessService inboxAccessService,
-                                                     SecretariatSpecializationResolver specializationResolver) {
+                                                     SecretariatSpecializationResolver specializationResolver,
+                                                     MeterRegistry registry) {
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
         this.routingResolver = Objects.requireNonNull(routingResolver);
         this.inboxAccessService = Objects.requireNonNull(inboxAccessService);
         this.specializationResolver = Objects.requireNonNull(specializationResolver);
+        this.registry = Objects.requireNonNull(registry);
     }
 
     public SecretariatOperationalRoutingProfile requireProcessAccess(Long processoId) {
@@ -153,23 +159,32 @@ public class SecretariatInstitutionalVisibilityService {
         ensureInstitutionBorn(scope);
         SecretariatSpecializationProfile specialization = routing == null ? null : routing.specialization();
         if (specialization != null) {
-            compareAxis(scope.instanceClass(), specialization.secretariatInstanceClass(), "instância da secretaria");
-            compareAxis(scope.branchClass(), specialization.secretariatBranchClass(), "ramo da secretaria");
-            compareAxis(scope.tribunalCodigo(), routing.tribunalCodigo(), "tribunal da secretaria");
-            compareAxis(scope.specializedSecretariatCode(), specialization.specializedSecretariatCode(), "secretaria especializada");
+            compareAxis(scope.instanceClass(), specialization.secretariatInstanceClass(), "instância da secretaria", actor);
+            compareAxis(scope.branchClass(), specialization.secretariatBranchClass(), "ramo da secretaria", actor);
+            compareAxis(scope.tribunalCodigo(), routing.tribunalCodigo(), "tribunal da secretaria", actor);
+            compareAxis(scope.specializedSecretariatCode(), specialization.specializedSecretariatCode(), "secretaria especializada", actor);
+        }
+        if (scope.uf() == null && processo != null && processo.getUf() != null) {
+            recordScopeGap("uf", actor);
         }
         if (scope.uf() != null && processo != null && processo.getUf() != null && !equalsToken(scope.uf(), processo.getUf())) {
             throw forbidden("processo fora da UF institucional da secretaria");
         }
-        if (scope.comarca() != null && processo != null && processo.getComarca() != null
-                && scope.instanceClass() != null && "PRIMEIRA_INSTANCIA".equals(scope.instanceClass())
-                && !equalsSlug(scope.comarca(), processo.getComarca())) {
+        boolean comarcaAxisAplicavel = processo != null && processo.getComarca() != null
+                && scope.instanceClass() != null && "PRIMEIRA_INSTANCIA".equals(scope.instanceClass());
+        if (scope.comarca() == null && comarcaAxisAplicavel) {
+            recordScopeGap("comarca", actor);
+        }
+        if (scope.comarca() != null && comarcaAxisAplicavel && !equalsSlug(scope.comarca(), processo.getComarca())) {
             throw forbidden("processo fora da comarca institucional da secretaria");
         }
         String targetUnit = firstNonBlank(
                 routing == null || routing.metadata() == null ? null : asString(routing.metadata().get("unidadeJudiciariaCodigo")),
                 specialization == null ? null : asString(specialization.metadata().get("unitCode")),
                 routing == null ? null : routing.secretariatCode());
+        if (scope.unitAnchor() == null && targetUnit != null) {
+            recordScopeGap("unidade institucional", actor);
+        }
         if (scope.unitAnchor() != null && targetUnit != null && !normalizeToken(targetUnit).contains(normalizeToken(scope.unitAnchor()))) {
             throw forbidden("processo fora da unidade institucional da secretaria");
         }
@@ -190,8 +205,11 @@ public class SecretariatInstitutionalVisibilityService {
         }
     }
 
-    private void compareAxis(String actorValue, String targetValue, String label) {
+    private void compareAxis(String actorValue, String targetValue, String label, Usuario actor) {
         if (actorValue == null || targetValue == null) {
+            if (actorValue == null && targetValue != null) {
+                recordScopeGap(label, actor);
+            }
             return;
         }
         if ("tribunal da secretaria".equals(label) && compatibleTribunal(actorValue, targetValue)) {
@@ -203,6 +221,19 @@ public class SecretariatInstitutionalVisibilityService {
         if (!equalsToken(actorValue, targetValue)) {
             throw forbidden("secretaria fora do recorte institucional de " + label);
         }
+    }
+
+    /**
+     * Registra (sem alterar o resultado da autorização) que um eixo de {@code requireRoutingAccess}
+     * foi pulado por falta de dado no escopo do ator, não porque o alvo também estava vazio.
+     * D-secretariat-visibility-scope-nunca-populado: hoje nenhum fluxo de cadastro preenche
+     * uf/comarca/perfil/registroProfissional/especialidades do Usuario, então essa lacuna é
+     * silenciosa em produção — este contador e log a tornam observável sem mudar quem passa.
+     */
+    private void recordScopeGap(String axis, Usuario actor) {
+        String tipoUsuario = actor.getTipoUsuario() == null ? "DESCONHECIDO" : actor.getTipoUsuario().name();
+        registry.counter("pjb.secretariat_routing_access.scope_gap", "axis", axis, "tipoUsuario", tipoUsuario).increment();
+        log.debug("SECRETARIAT_ROUTING_ACCESS_SCOPE_GAP axis={} tipoUsuario={}", axis, tipoUsuario);
     }
 
     private ActorSecretariatScope resolveActorScope(Usuario actor) {
