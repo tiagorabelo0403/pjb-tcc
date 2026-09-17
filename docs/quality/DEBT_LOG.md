@@ -244,9 +244,9 @@ String sem a FK `Comarca` correspondente na mesma classe — mas, ao rodar essa 
 pela primeira vez, apareceram 23 entidades pré-existentes, fora do escopo original, que já declaravam
 `uf`/`comarca` String sem nenhuma FK `Comarca`. Cinco saíram da allowlist depois — `JurisdicaoTerritorial`
 logo em seguida, `OrgaoJudiciario`/`PeritoSorteioAudit`/`PeritoDisponibilidade` mais tarde,
-`UnidadeInstituicao`, `EscrituraExtrajudicialRegistro` e `ProfessionalInstitutionalAccessGrant` em
-2026-09-17 — ver notas abaixo —, restando **15 entidades pré-existentes** (mais `OperationalFunctionCredential`,
-fechada em paralelo por outra fatia da mesma sessão — ver nota própria):
+`UnidadeInstituicao`, `EscrituraExtrajudicialRegistro`, `OperationalFunctionCredential` e
+`ProfessionalInstitutionalAccessGrant` em 2026-09-17 — ver notas abaixo —, restando
+**15 entidades pré-existentes**:
 
 `CalendarioForenseEntry`, `AtlasAcessoMunicipio`, `NoFederacaoJudicial`,
 `InqueritoPolicialDigital`, `EventoInstitucional`, `Estados`, `CidadaoProcessoNacionalProjection`, `Municipios`,
@@ -311,6 +311,30 @@ Migrating schema "public" to version "359 - escritura extrajudicial registro fk 
 Successfully applied 321 migrations to schema "public", now at version v359 (execution time 00:07.762s)
 ```
 
+`OperationalFunctionCredential` saiu da allowlist em 2026-09-17 com migração própria
+(`V360__operational_function_credential_fk_comarca.sql`), mesmo padrão de `OrgaoJudiciario`/`UnidadeInstituicao`/
+`EscrituraExtrajudicialRegistro`: ganhou `comarcaEntidade` (`@ManyToOne Comarca`, nullable, ao lado de
+`comarca`/`uf` String que continuam como fallback). Única diferença estrutural em relação às demais: o único
+construtor (`OperationalFunctionCredentialService.newCredential`, chamado só quando não existe credencial
+travada) grava `uf`/`comarca` iniciais, mas `directorProvision` — o único método que persiste a entidade —
+sempre **redefine** os dois campos a partir de `target` logo em seguida (`credential.setUf(firstNonBlank(...))`),
+tanto para credencial nova quanto para credencial já existente sendo reprovisionada. Por isso
+`aplicarComarcaDoCatalogo` foi colocado em `directorProvision`, depois dessas duas linhas, e não em
+`newCredential` — é o ponto onde `uf`/`comarca` atingem seu valor final antes do `save`, cobrindo os dois
+casos (criação e atualização de escopo) com uma única chamada. Resolve via
+`ComarcaResolutionService.resolver(comarca, uf)`, e o backfill da migration aplica o mesmo match aos registros
+já existentes. Cobertura: 3 testes novos em `OperationalFunctionCredentialServiceComarcaTest` (resolve/aplica,
+comarca em branco não resolve, resolver sem candidata não lança — mesmo trio de
+`OrgaoJudiciarioServiceComarcaTest`), `OperationalFunctionCredentialServiceTest` (2 testes existentes ajustados
+para injetar o novo colaborador) e `OrganizacaoJudiciariaArchitectureTest` (a regra em si). Cadeia completa de
+migrations (V1→V360) validada do zero contra Postgres 17 (`pgvector/pgvector:pg17`) via Flyway CLI
+(`flyway/flyway:10`) antes do fechamento:
+
+```
+Migrating schema "public" to version "360 - operational function credential fk comarca"
+Successfully applied 322 migrations to schema "public", now at version v360 (execution time 00:07.982s)
+```
+
 `ProfessionalInstitutionalAccessGrant` saiu da allowlist em 2026-09-17 com migração própria
 (`V361__professional_access_grant_fk_comarca.sql`), mesmo padrão de `OrgaoJudiciario`/`UnidadeInstituicao`/
 `EscrituraExtrajudicialRegistro`: ganhou `comarcaEntidade` (`@ManyToOne Comarca`, nullable, ao lado de
@@ -321,12 +345,12 @@ ponto de construção em produção — `grep` de `new ProfessionalInstitutional
 registros já existentes. Cobertura: 3 testes novos em `ProfessionalInstitutionalAccessGrantAdminServiceComarcaTest`
 (resolve/aplica, comarca em branco não resolve, resolver sem candidata não lança — mesmo trio de
 `OrgaoJudiciarioServiceComarcaTest`, exercitado através de `issue()` de ponta a ponta) e
-`OrganizacaoJudiciariaArchitectureTest` (a regra em si). Cadeia completa de migrations validada do zero
-contra Postgres 17 (`pgvector/pgvector:pg17`) via Flyway CLI (`flyway/flyway:10`) antes do fechamento:
+`OrganizacaoJudiciariaArchitectureTest` (a regra em si). Cadeia completa de migrations (V1→V361) validada
+do zero contra Postgres 17 (`pgvector/pgvector:pg17`) via Flyway CLI (`flyway/flyway:10`) antes do fechamento:
 
 ```
 Migrating schema "public" to version "361 - professional access grant fk comarca"
-Successfully applied 322 migrations to schema "public", now at version v361 (execution time 00:07.579s)
+Successfully applied 323 migrations to schema "public", now at version v361 (execution time 00:07.579s)
 ```
 
 `PeritoSorteioAudit`/`PeritoDisponibilidade` saíram da allowlist juntas numa migração própria

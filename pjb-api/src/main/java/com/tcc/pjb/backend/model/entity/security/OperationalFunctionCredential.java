@@ -5,6 +5,7 @@ import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
 import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
 
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -51,6 +52,10 @@ public class OperationalFunctionCredential {
 
     @Column(name = "comarca", length = 160)
     private String comarca;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "managed_by_user_id")
@@ -138,6 +143,8 @@ public class OperationalFunctionCredential {
     public void setUf(String uf) { this.uf = uf; }
     public String getComarca() { return comarca; }
     public void setComarca(String comarca) { this.comarca = comarca; }
+    public Comarca getComarcaEntidade() { return comarcaEntidade; }
+    public void setComarcaEntidade(Comarca comarcaEntidade) { this.comarcaEntidade = comarcaEntidade; }
     public Usuario getManagedByUser() { return managedByUser; }
     public void setManagedByUser(Usuario managedByUser) { this.managedByUser = managedByUser; }
     public Usuario getProvisionedByUser() { return provisionedByUser; }
