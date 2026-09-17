@@ -154,6 +154,7 @@ public class OficialJusticaPanelEgressService {
                 .dueAt(dueAt)
                 .uf(decision.processo().getUf())
                 .comarca(firstNonBlank(decision.processo().getComarca(), usuario.getComarca()))
+                .comarcaEntidade(decision.processo().getComarcaEntidade() != null ? decision.processo().getComarcaEntidade() : usuario.getComarcaEntidade())
                 .baseLegal(decision.reason().baseLegal(decision.processo(), decision.route()))
                 .build();
         WorkItem saved = workItemRepository.save(deskItem);

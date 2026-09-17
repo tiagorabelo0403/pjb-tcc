@@ -262,6 +262,7 @@ public class PeritoNomeacaoService {
                 .dueAt(Instant.now().plus(5, ChronoUnit.DAYS))
                 .uf(perito.getUf())
                 .comarca(perito.getComarca())
+                .comarcaEntidade(perito.getComarcaEntidade())
                 .baseLegal("CPC art. 465")
                 .build();
         workItemRepository.save(workItem);

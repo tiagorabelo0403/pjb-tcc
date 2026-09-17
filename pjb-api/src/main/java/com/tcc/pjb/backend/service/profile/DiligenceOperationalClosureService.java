@@ -287,6 +287,7 @@ public class DiligenceOperationalClosureService {
                 .dueAt(Instant.now().plus(outcome == DiligenciaEncerramentoTipo.CUMPRIMENTO_POSITIVO ? 12 : 6, ChronoUnit.HOURS))
                 .uf(actor.getUf())
                 .comarca(actor.getComarca())
+                .comarcaEntidade(actor.getComarcaEntidade())
                 .baseLegal(canal == TelemetriaOperacionalCanal.OFICIAL_JUSTICA ? "Certidão operacional georreferenciada e gestão de cumprimento" : "Formalização investigativa e trilha operacional auditável")
                 .build();
     }

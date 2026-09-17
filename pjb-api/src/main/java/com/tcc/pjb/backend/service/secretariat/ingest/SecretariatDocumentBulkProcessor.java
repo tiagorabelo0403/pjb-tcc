@@ -321,6 +321,7 @@ public class SecretariatDocumentBulkProcessor {
       if (j.getCidade() != null) {
         b.comarca(j.getCidade());
       }
+      b.comarcaEntidade(j.getComarcaEntidade());
     }
     return b.build();
   }

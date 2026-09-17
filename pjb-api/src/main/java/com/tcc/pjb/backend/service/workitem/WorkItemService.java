@@ -147,6 +147,7 @@ public class WorkItemService {
             .dueAt(wi.getDueAt())
             .uf(wi.getUf())
             .comarca(wi.getComarca())
+            .comarcaEntidade(wi.getComarcaEntidade())
             .inboxKey(wi.getInboxKey())
             .build();
     }

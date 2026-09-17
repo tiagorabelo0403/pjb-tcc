@@ -297,7 +297,7 @@ migração fecha reduzindo a allowlist em `OrganizacaoJudiciariaArchitectureTest
 
 ## D-workitem-fk-comarca-propagacao-parcial
 
-**Status:** aberta — lotes 1+2 fechados (34 arquivos, 71 sites), 12 arquivos restantes
+**Status:** aberta — lotes 1+2+3 fechados (43 dos 44 arquivos), 1 bloqueado por pré-requisito
 
 **Contexto:** a revisão final da fatia "Organização Judiciária" achou que nenhum caminho de produção
 escrevia a FK `comarcaEntidade` de `Usuario`/`Processo`/`WorkItem` — todo dado novo ficava com `comarca_id`
@@ -381,17 +381,63 @@ cai inteiro no caminho de comparação textual normalizada (o comportamento ante
 tenta usar a FK do `Processo` no lugar. Os sites restantes simplesmente não ganham o benefício da comparação
 por identidade real — não produzem nenhum match incorreto.
 
-**Quando revisitar:** os 12 arquivos restantes têm fonte **mista ou ambígua** (`firstNonBlank(processo,
-usuario)`, entidades diferentes como `perito`/`actor`/`unidadeApuracao`, ou cópia entre dois `WorkItem`)
-e exigem decidir qual fonte prevalece antes de propagar `comarcaEntidade`, não é mais mecânico:
-`DelegadoPainelService`, `ForumOfficialReturnOperationalService`,
-`MagistraturaJudicialProvidenceDispatchSupport`, `OficialJusticaAgendaAssemblySupport`,
-`OficialJusticaOficioWorkflowSupport`, `OficialJusticaPanelEgressService`, `PeritoNomeacaoService`,
-`DiligenceOperationalClosureService`, `SecretariatDocumentBulkProcessor`,
-`SecretariatOfficialActsDrawerService`, `SecretariatQueueOperationalActionService`, `WorkItemService`.
-Extrair um método `WorkItem.herdarTerritorioDe(Processo)`/`herdarTerritorioDe(Usuario)` só faz sentido
-depois desses 12, quando o padrão de fallback ficar claro — os lotes 1+2 confirmaram fonte única
-(`Processo` ou `Usuario`, nunca os dois), então uma extração agora acertaria só uma variante.
+**Lote 3 fechado (2026-09-17):** dos 12 arquivos com fonte mista/ambígua, 11 tinham as duas fontes
+disponíveis (ambas com `comarcaEntidade` de verdade) — resolvido com precedência explícita
+(`a.getComarcaEntidade() != null ? a.getComarcaEntidade() : b.getComarcaEntidade()`), replicando a
+mesma ordem que o `.comarca(...)`/`firstNonBlank(...)` já usava para o campo textual:
+
+- **`Processo` + `Usuario` (fallback)** (4 arquivos): `ForumOfficialReturnOperationalService`,
+  `MagistraturaJudicialProvidenceDispatchSupport`, `OficialJusticaOficioWorkflowSupport`,
+  `OficialJusticaPanelEgressService`.
+- **`Processo` + string solta sem entidade** (1 arquivo): `SecretariatQueueOperationalActionService`
+  — o fallback (`route.metadata().get("forumSeat")`) não tem FK, então `comarcaEntidade` usa só
+  `processo.getComarcaEntidade()` (degrada para `null` exatamente quando o `.comarca()` textual já
+  teria vindo do fallback sem FK).
+- **`Usuario` isolado, nome de variável diferente** (2 arquivos): `PeritoNomeacaoService` (`perito`),
+  `DiligenceOperationalClosureService` (`actor`).
+- **`Jurisdicao` isolada** (1 arquivo): `SecretariatDocumentBulkProcessor` (`j.getComarcaEntidade()`,
+  dentro do mesmo `if (j != null)` que já guarda `j.getCidade()`).
+- **`Processo` + `WorkItem` já existente (fallback)** (1 arquivo, estilo setter não builder):
+  `SecretariatOfficialActsDrawerService` — usa `archive.setComarcaEntidade(...)` porque o site monta
+  o `WorkItem` por setters (`orElseGet` + `set*`), não pelo builder fluente.
+- **Cópia `WorkItem` → `WorkItem`** (1 arquivo, 1 de 2 sites): `WorkItemService.snapshotForHistory`
+  ganhou `.comarcaEntidade(wi.getComarcaEntidade())`; o segundo site do mesmo arquivo
+  (`toDto`) monta um `WorkItemDto` de apresentação, não uma entidade `WorkItem` — expor a FK aí é
+  decisão de contrato de API, fora do escopo desta dívida, não tocado.
+
+**Achados que não eram gap de verdade:**
+- `OficialJusticaAgendaAssemblySupport` — o único `WorkItem.builder()` do arquivo não seta
+  `.comarca(...)` (é um objeto efêmero de preview com só `id`/`processo`/`titulo`/`descricao`/
+  `baseLegal`); o `.comarca(...)` que apareceu na varredura pertence a um `Processo` construído à
+  parte (`processo.setComarca(row.comarca())`), não ao `WorkItem`. Falso positivo, sem fix.
+
+**Ainda bloqueado — `DelegadoPainelService`:** a única fonte disponível no site é
+`UnidadeInstituicao unidadeApuracao` (`unidadeApuracao.getComarca()`), e essa entidade não tem
+nenhum campo `comarcaEntidade` — é uma das 19 entidades legadas de
+`D-territorio-string-solta-entidades-legadas`. Propagar aqui depende de `UnidadeInstituicao` ganhar
+a FK primeiro; não é decisão de precedência como os outros 11, é pré-requisito ausente.
+
+Cobertura: assinatura nova em `OficialJusticaOficioWorkflowSupportTest`
+(`criarJuntadaDiretaNoProcessoMaterializaCanalDiretoComFundamentoPadrao`) prova a precedência real —
+`processo` e `usuario` recebem `Comarca` **diferentes**, e o `WorkItem` resultante carrega a do
+`processo`:
+
+```java
+assertThat(juntada.getComarcaEntidade()).isSameAs(processo.getComarcaEntidade());
+assertThat(juntada.getComarcaEntidade().getNome()).isEqualTo("Morada Nova");
+```
+
+Os outros 3 arquivos do lote com teste pré-existente (`PeritoNomeacaoServiceTest`,
+`DiligenceOperationalClosureServiceTest`, `SecretariatQueueOperationalActionServiceTest`) continuam
+verdes sem alteração de comportamento.
+
+**Quando revisitar:** só resta `DelegadoPainelService`, bloqueado por
+`D-territorio-string-solta-entidades-legadas` (precisa `UnidadeInstituicao` ganhar FK `Comarca`
+primeiro). Extrair um método `WorkItem.herdarTerritorioDe(...)` deixou de fazer sentido como
+generalização única: os 3 lotes confirmaram pelo menos 5 formas distintas de resolver a fonte
+(`Processo` direto, `Processo` via `Jurisdicao`, `Usuario`, `Usuario` com fallback textual/nulo,
+`Processo`+`Usuario` com precedência, `Jurisdicao` isolada, cópia `WorkItem`→`WorkItem`) — uma
+extração agora precisaria de várias sobrecargas, sem reduzir duplicação real.
 
 ## D-classificacao-contextual-default-permissivo
 

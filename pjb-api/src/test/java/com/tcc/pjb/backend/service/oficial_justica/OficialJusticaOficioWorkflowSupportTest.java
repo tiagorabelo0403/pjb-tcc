@@ -10,6 +10,7 @@ import com.tcc.pjb.backend.core.comunicacao.processual.destinatario.domain.Resol
 import com.tcc.pjb.backend.model.dto.profile.operational.OficialJusticaOficioRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.enums.DestinatarioInstitucionalKind;
 import com.tcc.pjb.backend.model.entity.enums.DestinatarioProcessualKind;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
@@ -36,10 +37,12 @@ class OficialJusticaOficioWorkflowSupportTest {
                 .faseAtual(FaseProcessual.CONHECIMENTO)
                 .uf("CE")
                 .comarca("Morada Nova")
+                .comarcaEntidade(new Comarca("Morada Nova", "CE", "2308708", null))
                 .build();
         Usuario usuario = new Usuario();
         usuario.setUf("CE");
         usuario.setComarca("Morada Nova");
+        usuario.setComarcaEntidade(new Comarca("Outra Comarca", "CE", "0000000", null));
         WorkItem principal = WorkItem.builder()
                 .id(99L)
                 .type(WorkItemType.EXPEDICAO)
@@ -83,6 +86,8 @@ class OficialJusticaOficioWorkflowSupportTest {
         assertThat(juntada.getDescricao()).contains("OFICIO_ORIGINAL_GOVERNADO");
         assertThat(juntada.getDescricao()).contains("abc123");
         assertThat(juntada.getDueAt()).isBeforeOrEqualTo(Instant.now());
+        assertThat(juntada.getComarcaEntidade()).isSameAs(processo.getComarcaEntidade());
+        assertThat(juntada.getComarcaEntidade().getNome()).isEqualTo("Morada Nova");
     }
 
     @Test

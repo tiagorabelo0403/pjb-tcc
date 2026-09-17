@@ -357,6 +357,7 @@ public class SecretariatQueueOperationalActionService {
             .dueAt(resolveReentryDueAt(item.getDueAt(), now))
             .uf(trimToNull(processo.getUf()))
             .comarca(firstNonBlank(processo.getComarca(), route == null ? null : stringValue(route.metadata().get("forumSeat"))))
+            .comarcaEntidade(processo.getComarcaEntidade())
             .baseLegal(route == null ? "retorno operacional sem rota institucional materializada" : route.rationale())
             .build();
         return workItemRepository.save(workItem);
