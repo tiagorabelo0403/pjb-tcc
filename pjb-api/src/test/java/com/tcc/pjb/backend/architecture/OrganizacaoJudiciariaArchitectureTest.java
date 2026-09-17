@@ -30,7 +30,6 @@ class OrganizacaoJudiciariaArchitectureTest {
             "com.tcc.pjb.backend.model.entity.cidadao.CidadaoProcessoNacionalProjection",
             "com.tcc.pjb.backend.model.entity.Municipios",
             "com.tcc.pjb.backend.model.entity.eleitoral.ProcessoZonaEleitoral",
-            "com.tcc.pjb.backend.model.entity.UnidadeInstituicao",
             "com.tcc.pjb.backend.model.entity.eleitoral.CalendarioEleitoral",
             "com.tcc.pjb.backend.model.entity.security.OperationalFunctionCredential",
             "com.tcc.pjb.backend.model.entity.gov.GovServiceRegistry",

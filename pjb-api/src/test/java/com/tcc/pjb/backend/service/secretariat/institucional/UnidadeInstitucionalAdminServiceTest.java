@@ -18,6 +18,8 @@ import com.tcc.pjb.backend.model.repository.InstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstitucionalAbrangenciaRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -31,9 +33,10 @@ class UnidadeInstitucionalAdminServiceTest {
     private final UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
     private final SecretariaInstitucionalEnfileiramentoService enfileiramentoService = mock(SecretariaInstitucionalEnfileiramentoService.class);
     private final AuditLedgerService auditService = mock(AuditLedgerService.class);
+    private final ComarcaResolutionService comarcaResolutionService = mock(ComarcaResolutionService.class);
     private final UnidadeInstitucionalAdminService service = new UnidadeInstitucionalAdminService(
             instituicaoRepository, unidadeRepository, abrangenciaRepository, unidadeJudiciariaCompetenciaRepository,
-            enfileiramentoService, auditService);
+            enfileiramentoService, auditService, comarcaResolutionService);
 
     @Test
     void criarInstituicaoSalvaEAudita() {
@@ -157,6 +160,45 @@ class UnidadeInstitucionalAdminServiceTest {
 
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.vincularUnidadeJudiciaria(20L, 999L))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void criarUnidadeResolveEAplicaComarcaDoCatalogo() {
+        Instituicao instituicao = new Instituicao();
+        instituicao.setTipo(TipoInstituicao.MINISTERIO_PUBLICO);
+        when(instituicaoRepository.findById(1L)).thenReturn(Optional.of(instituicao));
+        when(unidadeRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        Comarca comarcaEsperada = mock(Comarca.class);
+        when(comarcaResolutionService.resolver("Fortaleza", "CE")).thenReturn(Optional.of(comarcaEsperada));
+
+        UnidadeInstituicao criada = service.criarUnidade(1L, "1a Promotoria Criminal", TipoUnidadeInstitucional.PROMOTORIA, "Fortaleza", "CE");
+
+        assertThat(criada.getComarcaEntidade()).isSameAs(comarcaEsperada);
+    }
+
+    @Test
+    void criarUnidadeComComarcaEmBrancoNaoResolveENaoLanca() {
+        Instituicao instituicao = new Instituicao();
+        instituicao.setTipo(TipoInstituicao.MINISTERIO_PUBLICO);
+        when(instituicaoRepository.findById(1L)).thenReturn(Optional.of(instituicao));
+        when(unidadeRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        UnidadeInstituicao criada = service.criarUnidade(1L, "Tribunal Superior X", TipoUnidadeInstitucional.PROMOTORIA, null, null);
+
+        assertThat(criada.getComarcaEntidade()).isNull();
+    }
+
+    @Test
+    void criarUnidadeMantemComarcaEntidadeNulaQuandoResolverNaoAchaCandidata() {
+        Instituicao instituicao = new Instituicao();
+        instituicao.setTipo(TipoInstituicao.MINISTERIO_PUBLICO);
+        when(instituicaoRepository.findById(1L)).thenReturn(Optional.of(instituicao));
+        when(unidadeRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(comarcaResolutionService.resolver("Comarca Inexistente", "CE")).thenReturn(Optional.empty());
+
+        UnidadeInstituicao criada = service.criarUnidade(1L, "Forum Desconhecido", TipoUnidadeInstitucional.PROMOTORIA, "Comarca Inexistente", "CE");
+
+        assertThat(criada.getComarcaEntidade()).isNull();
     }
 
     @Test

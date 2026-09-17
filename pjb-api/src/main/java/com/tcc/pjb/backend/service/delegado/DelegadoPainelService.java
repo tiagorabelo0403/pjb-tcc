@@ -234,6 +234,7 @@ public class DelegadoPainelService {
                 .dueAt(Instant.now().plus(48, ChronoUnit.HOURS))
                 .uf(unidadeApuracao.getUf())
                 .comarca(unidadeApuracao.getComarca())
+                .comarcaEntidade(unidadeApuracao.getComarcaEntidade())
                 .baseLegal("CPP e diligências investigativas")
                 .build();
         workItem = workItemRepository.save(workItem);

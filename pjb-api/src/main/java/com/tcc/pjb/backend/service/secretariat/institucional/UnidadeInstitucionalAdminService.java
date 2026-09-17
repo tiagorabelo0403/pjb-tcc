@@ -12,6 +12,7 @@ import com.tcc.pjb.backend.model.repository.InstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstitucionalAbrangenciaRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,19 +26,22 @@ public class UnidadeInstitucionalAdminService {
     private final UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository;
     private final SecretariaInstitucionalEnfileiramentoService enfileiramentoService;
     private final AuditLedgerService auditService;
+    private final ComarcaResolutionService comarcaResolutionService;
 
     public UnidadeInstitucionalAdminService(InstituicaoRepository instituicaoRepository,
                                             UnidadeInstituicaoRepository unidadeRepository,
                                             UnidadeInstitucionalAbrangenciaRepository abrangenciaRepository,
                                             UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository,
                                             SecretariaInstitucionalEnfileiramentoService enfileiramentoService,
-                                            AuditLedgerService auditService) {
+                                            AuditLedgerService auditService,
+                                            ComarcaResolutionService comarcaResolutionService) {
         this.instituicaoRepository = Objects.requireNonNull(instituicaoRepository);
         this.unidadeRepository = Objects.requireNonNull(unidadeRepository);
         this.abrangenciaRepository = Objects.requireNonNull(abrangenciaRepository);
         this.unidadeJudiciariaCompetenciaRepository = Objects.requireNonNull(unidadeJudiciariaCompetenciaRepository);
         this.enfileiramentoService = Objects.requireNonNull(enfileiramentoService);
         this.auditService = Objects.requireNonNull(auditService);
+        this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService);
     }
 
     @Transactional
@@ -61,9 +65,19 @@ public class UnidadeInstitucionalAdminService {
         unidade.setTipo(tipo);
         unidade.setComarca(comarca);
         unidade.setUf(uf);
+        aplicarComarcaDoCatalogo(unidade);
         UnidadeInstituicao salva = unidadeRepository.save(unidade);
         auditService.appendSafely("UNIDADE_INSTITUICAO_CRIADA", "UNIDADE_INSTITUICAO " + salva.getId() + " tipo=" + tipo);
         return salva;
+    }
+
+    private void aplicarComarcaDoCatalogo(UnidadeInstituicao unidade) {
+        if (unidade.getComarca() == null || unidade.getComarca().isBlank()) {
+            unidade.setComarcaEntidade(null);
+            return;
+        }
+        unidade.setComarcaEntidade(comarcaResolutionService.resolver(unidade.getComarca(), unidade.getUf())
+                .orElse(null));
     }
 
     @Transactional
