@@ -952,6 +952,13 @@ populados (o cenário real hoje) acessando processo com UF/comarca reais, prova 
 permitida (`assertDoesNotThrow`) e que os dois counters (`axis=uf`, `axis=comarca`) incrementam. Com essa
 métrica em produção, dá para medir o tamanho real da lacuna antes de decidir a política de produto.
 
+```
+[INFO] Running com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.425 s -- in com.tcc.pjb.backend.service.secretariat.access.SecretariatInstitutionalVisibilityServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+```
+
 ## D-fracionary-organ-routing-catalogo-inexistente
 
 **Status:** aberta
