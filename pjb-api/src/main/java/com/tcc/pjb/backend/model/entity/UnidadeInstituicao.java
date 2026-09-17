@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.model.entity;
 
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.enums.StatusUnidadeInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
 import jakarta.persistence.Column;
@@ -53,6 +54,10 @@ public class UnidadeInstituicao {
     @Column(length = 2)
     private String uf;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
+
     @Column(name = "criado_em", nullable = false, updatable = false)
     private OffsetDateTime criadoEm;
 
@@ -72,6 +77,8 @@ public class UnidadeInstituicao {
     public void setComarca(String comarca) { this.comarca = comarca; }
     public String getUf() { return uf; }
     public void setUf(String uf) { this.uf = uf; }
+    public Comarca getComarcaEntidade() { return comarcaEntidade; }
+    public void setComarcaEntidade(Comarca comarcaEntidade) { this.comarcaEntidade = comarcaEntidade; }
     public OffsetDateTime getCriadoEm() { return criadoEm; }
 
     @PrePersist

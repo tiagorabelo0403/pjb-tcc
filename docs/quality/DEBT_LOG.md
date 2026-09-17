@@ -242,35 +242,55 @@ da FK, porque o catálogo `tb_comarca` (Task 1) só cobre 3 dos 27 estados (CE/M
 novo (`OrganizacaoJudiciariaArchitectureTest`, Task 6) trava qualquer entidade NOVA que reintroduza `uf`/`comarca`
 String sem a FK `Comarca` correspondente na mesma classe — mas, ao rodar essa regra contra o projeto inteiro
 pela primeira vez, apareceram 23 entidades pré-existentes, fora do escopo original, que já declaravam
-`uf`/`comarca` String sem nenhuma FK `Comarca`. Quatro saíram da allowlist depois — `JurisdicaoTerritorial`
-logo em seguida, `OrgaoJudiciario`/`PeritoSorteioAudit`/`PeritoDisponibilidade` mais tarde —
-ver notas abaixo —, restando **19 entidades pré-existentes**:
+`uf`/`comarca` String sem nenhuma FK `Comarca`. Cinco saíram da allowlist depois — `JurisdicaoTerritorial`
+logo em seguida, `OrgaoJudiciario`/`PeritoSorteioAudit`/`PeritoDisponibilidade` mais tarde,
+`UnidadeInstituicao` em 2026-09-17 — ver notas abaixo —, restando **18 entidades pré-existentes**:
 
 `CalendarioForenseEntry`, `AtlasAcessoMunicipio`, `NoFederacaoJudicial`, `EscrituraExtrajudicialRegistro`,
 `InqueritoPolicialDigital`, `EventoInstitucional`, `Estados`, `CidadaoProcessoNacionalProjection`, `Municipios`,
-`ProcessoZonaEleitoral`, `UnidadeInstituicao`, `CalendarioEleitoral`, `OperationalFunctionCredential`,
+`ProcessoZonaEleitoral`, `CalendarioEleitoral`, `OperationalFunctionCredential`,
 `GovServiceRegistry`, `InstitutionalCompetenceRuleSnapshot`, `InstitutionalCatalogUnitSnapshot`,
 `InstitutionalCatalogGovernanceSnapshot`, `ProfessionalInstitutionalAccessGrant`, `PainelTribunalMetrica`.
 
-Essas 19 classes foram registradas numa allowlist nomeada (`ENTIDADES_LEGADAS_TERRITORIO_STRING_SEM_FK_COMARCA`)
+Essas classes foram registradas numa allowlist nomeada (`ENTIDADES_LEGADAS_TERRITORIO_STRING_SEM_FK_COMARCA`)
 dentro do próprio teste de arquitetura — a regra continua ativa e bloqueia qualquer entidade nova fora dessa
-lista, mas não força a migração retroativa das 19 de uma vez (cada uma pertence a um domínio
+lista, mas não força a migração retroativa das 18 de uma vez (cada uma pertence a um domínio
 diferente — eleitoral, criminal, atlas, extrajudicial, gov, federalismo, snapshots institucionais —
-e migrar todas exigiria repetir a mesma investigação e migração individualmente 19 vezes).
+e migrar todas exigiria repetir a mesma investigação e migração individualmente 18 vezes).
 
 `JurisdicaoTerritorial` saiu da allowlist na correção da revisão final: é a tabela de onde `tb_comarca`
 é semeada (`V319` lê `municipio_ibge`/`municipio_nome`/`uf`), então a FK `Comarca` resolve por código IBGE com
 match exato, sem a ambiguidade de nome que motivou o adiamento das demais.
 
-`OrgaoJudiciario` saiu da allowlist com migração própria (`V329__orgao_judiciario_fk_comarca.sql`): ganhou
+`OrgaoJudiciario` saiu da allowlist com migração própria (`V331__orgao_judiciario_fk_comarca.sql`): ganhou
 `comarcaEntidade` (`@ManyToOne Comarca`, nullable, ao lado dos campos `comarca`/`estado` String que continuam
 como fallback), `OrgaoJudiciarioService.aplicarComarcaDoCatalogo` resolve via `ComarcaResolutionService.resolver`
 (mesmo padrão nome+UF acento-insensível já usado por `UsuarioService`) em `criar`/`atualizar`, e o backfill da
 migration aplica o mesmo match aos registros já existentes. Cobertura:
 `OrgaoJudiciarioServiceComarcaTest` (3, resolve/aplica, comarca em branco não resolve, resolver sem candidata
 não lança) e `OrganizacaoJudiciariaArchitectureTest` (a regra em si, confirmando que a classe não precisa mais
-da allowlist). Cadeia completa de migrations (V1→V329) validada do zero contra Postgres 17 descartável via
+da allowlist). Cadeia completa de migrations validada do zero contra Postgres 17 descartável via
 Flyway CLI antes do fechamento.
+
+`UnidadeInstituicao` saiu da allowlist em 2026-09-17 com migração própria
+(`V358__unidade_institucional_fk_comarca.sql`), mesmo padrão de `OrgaoJudiciario`: ganhou `comarcaEntidade`
+(`@ManyToOne Comarca`, nullable, ao lado de `comarca`/`uf` String que continuam como fallback),
+`UnidadeInstitucionalAdminService.aplicarComarcaDoCatalogo` resolve via
+`ComarcaResolutionService.resolver(comarca, uf)` em `criarUnidade` (único ponto de construção em produção —
+`grep` de `new UnidadeInstituicao()` em `pjb-api/src/main` confirma zero outros call sites), e o backfill da
+migration aplica o mesmo match aos registros já existentes. Motivado por
+`D-workitem-fk-comarca-propagacao-parcial`: era o único dos 44 sites de `WorkItem.builder()` bloqueado por
+falta de FK na entidade-fonte (`DelegadoPainelService.unidadeApuracao`), agora também fechado. Cobertura:
+3 testes novos em `UnidadeInstitucionalAdminServiceTest` (resolve/aplica, comarca em branco não resolve,
+resolver sem candidata não lança — mesmo trio de `OrgaoJudiciarioServiceComarcaTest`) e
+`OrganizacaoJudiciariaArchitectureTest` (a regra em si). Cadeia completa de migrations (V1→V358) validada
+do zero contra Postgres 17 (`pgvector/pgvector:pg17`, mesma imagem do dev) via Flyway CLI (imagem Docker
+`flyway/flyway:10`) antes do fechamento:
+
+```
+Migrating schema "public" to version "358 - unidade institucional fk comarca"
+Successfully applied 320 migrations to schema "public", now at version v358 (execution time 00:07.079s)
+```
 
 `PeritoSorteioAudit`/`PeritoDisponibilidade` saíram da allowlist juntas numa migração própria
 (`V330__perito_disponibilidade_sorteio_fk_comarca.sql`), mesmo padrão de `comarcaEntidade` nullable ao lado do
@@ -289,155 +309,11 @@ identidade, são a própria fonte primária. Não são migráveis pelo mesmo pad
 sugestão de próximo alvo.
 
 **Risco:** as mesmas classes de bug que motivaram este trabalho (grafia divergente entre UF/comarca cadastrados
-em textos diferentes) continuam presentes nas 19 entidades restantes — nenhuma delas ganhou o benefício da
+em textos diferentes) continuam presentes nas 18 entidades restantes — nenhuma delas ganhou o benefício da
 comparação por identidade real via FK.
 
 **Quando revisitar:** ao planejar o próximo trabalho de território — priorizar por volume de uso real. Cada
 migração fecha reduzindo a allowlist em `OrganizacaoJudiciariaArchitectureTest`, nunca alargando.
-
-## D-workitem-fk-comarca-propagacao-parcial
-
-**Status:** aberta — lotes 1+2+3 fechados (43 dos 44 arquivos), 1 bloqueado por pré-requisito
-
-**Contexto:** a revisão final da fatia "Organização Judiciária" achou que nenhum caminho de produção
-escrevia a FK `comarcaEntidade` de `Usuario`/`Processo`/`WorkItem` — todo dado novo ficava com `comarca_id`
-permanentemente nulo, e a comparação territorial por identidade real (`AssessorGabineteGuardRailService.territoryMatches`)
-nunca disparava para dado novo. A rodada de correção ligou a FK nos pontos que efetivamente alimentam essa
-comparação: os dois `WorkItem.builder()` de `RitoWorkflowService` (que herdam a FK já resolvida da `Jurisdicao`
-do processo), o snapshot de distribuição em `MapaCompetenciaDinamicoEngine`, e os três pontos de resolução
-por texto (`UsuarioService.criar/atualizar`, `ApiMarketplaceService.protocolar`, `MniRecepcaoService.receberAutos`,
-via `ComarcaResolutionService`).
-
-Uma varredura de `WorkItem.builder()` no restante do projeto (não feita durante a rodada de correção — o
-implementador relatou "~12 outros pontos" de memória; a contagem real, feita na re-revisão, é **44 arquivos**
-em `pjb-api/src/main` que constroem `WorkItem` setando `.comarca(...)` textual sem `.comarcaEntidade(...)`)
-mostra que `RitoWorkflowService` é o único ponto de criação de `WorkItem` com FK.
-
-**Lote 1 fechado (2026-09-17):** 5 dos 6 exemplos citados na investigação original —
-`RecursalWorkItemMaterializerService` (herda de `Processo.getJurisdicao().getComarcaEntidade()`, mesmo
-padrão do `RitoWorkflowService`), `TransitoJulgadoArquivamentoEngine` (6 sites, herda de
-`Processo.getComarcaEntidade()` direto — a entidade tem FK própria, não só via `Jurisdicao`),
-`DesembargadorColegialdoPainelService` (7 sites), `JuizGabineteDecisionalService` (4 sites) e
-`NationalCommunicationFlowFacade` (1 site) — os últimos três herdam de `Usuario.getComarcaEntidade()`
-(mesmo padrão de `.comarca(usuario.getComarca())` já usado nesses arquivos; ainda sem efeito prático
-hoje porque nenhum fluxo de cadastro popula esse campo em `Usuario` — ver
-`D-secretariat-visibility-scope-nunca-populado` —, mas passa a existir assim que popular). O sexto
-exemplo, `OficialJusticaPainelService`, não constrói `WorkItem` (é um painel de leitura) — não fazia
-parte real do escopo. Cobertura: teste novo (`RecursalWorkItemMaterializerServiceTest`, inexistente
-antes) e uma asserção nova no teste já existente de `TransitoJulgadoArquivamentoEngine`, ambos
-capturando o `WorkItem` salvo e confirmando `comarcaEntidade` propagado:
-
-```java
-ArgumentCaptor<WorkItem> workItemCaptor = ArgumentCaptor.forClass(WorkItem.class);
-verify(workItemRepository).save(workItemCaptor.capture());
-assertThat(workItemCaptor.getValue().getComarcaEntidade()).isSameAs(processo.getComarcaEntidade());
-```
-(`TransitoJulgadoArquivamentoEngineTest.servidorComFuncaoArquivarAtivaArquivaComSucesso`, verde)
-
-Os outros 3 arquivos ficaram sem teste novo dedicado — mudança puramente aditiva (um campo a mais no
-mesmo builder), compilação + suíte existente sem alteração de comportamento já são a evidência de
-não-regressão.
-
-**Lote 2 fechado (2026-09-17):** os 29 arquivos restantes cujo `.comarca(...)` tinha fonte única e
-direta (sem `firstNonBlank`/fallback entre duas entidades) — 3 padrões, todos espelhando os já
-provados no lote 1:
-
-- **`processo.getComarca()` direto** (7 arquivos, 15 sites): `ProcessoDistribuicaoMalhaOrquestracaoApplicationService`,
-  `TransitoJulgadoExpropriationWorkflowSupport` (4), `TransitoJulgadoPatrimonialWorkflowSupport` (4),
-  `TransitoJulgadoTerminalWorkflowSupport` (3), `DefensoriaVulnerabilidadeService`,
-  `TemaRecursoRepetitivoService`, `ProcessualParticipacaoAtivaFacadeService`.
-- **`processo.getJurisdicao().getCidade()`** (4 arquivos, 4 sites): `JudgeAgreementApprovalService`
-  (com fallback para `processo.getComarca()` quando jurisdição é nula — `comarcaEntidade` replica o
-  mesmo ternário), `RepercussaoGeralService`, `TemaPrecedenteVinculanteService`, `PsicossocialRiskService`.
-- **`usuario.getComarca()`** (18 arquivos, 33 sites): `OfficeGovernedPetitionExecutionService`,
-  `ConciliadorMediadorEnhancedService` (3), `ConciliadorMediadorPainelService`,
-  `DefensoriaPublicaOperacionalService` (3), `EscrituraExtrajudicialService`, `JudicialVoiceService`,
-  `DecisionSafetyService`, `MagistraturaJudicialActRelatoriaFormalizationSupport` (2),
-  `MinistroPlenarioService` (3), `MinisterioPublicoInstitutionalRoutingService`,
-  `MinisterioPublicoPainelService`, `OficialJusticaDesfechoDiligenciaService` (2),
-  `OficialJusticaOficioDispatchService` (2), `PeritoOperacionalEnhancedService` (4),
-  `PsicossocialJudicialPainelService` (2), `ServidorSecretariaAtosService`,
-  `ProcuradoriaOperacionalService` (2 dos 3 sites — o terceiro, linha 217, recebe `String comarca`
-  como parâmetro solto sem entidade associada, fica de fora), `RecursalPeticionamentoFacadeService`
-  (2, com `usuario == null ? null : ...` replicado no `comarcaEntidade`).
-
-Cobertura: assinatura nova em `ServidorSecretariaAtosServiceTest` (`realizarJuntadaCriaWorkItemConcluidoEAplicaLifecycle`)
-capturando o `WorkItem` salvo com um `Comarca` real no `Usuario` de teste:
-
-```java
-assertThat(workItemCaptor.getValue().getComarcaEntidade()).isNotNull();
-assertThat(workItemCaptor.getValue().getComarcaEntidade().getNome()).isEqualTo("Fortaleza");
-```
-
-Os 6 arquivos do lote com teste pré-existente (`ProcessualParticipacaoAtivaFacadeServiceTest`,
-`ConciliadorMediadorEnhancedServiceTest`, `ConciliadorMediadorPainelServiceTest`,
-`MagistraturaJudicialActRelatoriaFormalizationSupportTest`,
-`MinisterioPublicoInstitutionalRoutingServiceTest`, mais o próprio `ServidorSecretariaAtosServiceTest`)
-continuam verdes sem alteração de comportamento.
-
-**Risco:** baixo, não é regressão — confirmado por leitura de código e teste (`territoryMatches` após o fix
-do achado I2 da mesma revisão final): um `WorkItem` sem `comarcaEntidade` mas com `comarca` textual própria
-cai inteiro no caminho de comparação textual normalizada (o comportamento anterior à fatia inteira), nunca
-tenta usar a FK do `Processo` no lugar. Os sites restantes simplesmente não ganham o benefício da comparação
-por identidade real — não produzem nenhum match incorreto.
-
-**Lote 3 fechado (2026-09-17):** dos 12 arquivos com fonte mista/ambígua, 11 tinham as duas fontes
-disponíveis (ambas com `comarcaEntidade` de verdade) — resolvido com precedência explícita
-(`a.getComarcaEntidade() != null ? a.getComarcaEntidade() : b.getComarcaEntidade()`), replicando a
-mesma ordem que o `.comarca(...)`/`firstNonBlank(...)` já usava para o campo textual:
-
-- **`Processo` + `Usuario` (fallback)** (4 arquivos): `ForumOfficialReturnOperationalService`,
-  `MagistraturaJudicialProvidenceDispatchSupport`, `OficialJusticaOficioWorkflowSupport`,
-  `OficialJusticaPanelEgressService`.
-- **`Processo` + string solta sem entidade** (1 arquivo): `SecretariatQueueOperationalActionService`
-  — o fallback (`route.metadata().get("forumSeat")`) não tem FK, então `comarcaEntidade` usa só
-  `processo.getComarcaEntidade()` (degrada para `null` exatamente quando o `.comarca()` textual já
-  teria vindo do fallback sem FK).
-- **`Usuario` isolado, nome de variável diferente** (2 arquivos): `PeritoNomeacaoService` (`perito`),
-  `DiligenceOperationalClosureService` (`actor`).
-- **`Jurisdicao` isolada** (1 arquivo): `SecretariatDocumentBulkProcessor` (`j.getComarcaEntidade()`,
-  dentro do mesmo `if (j != null)` que já guarda `j.getCidade()`).
-- **`Processo` + `WorkItem` já existente (fallback)** (1 arquivo, estilo setter não builder):
-  `SecretariatOfficialActsDrawerService` — usa `archive.setComarcaEntidade(...)` porque o site monta
-  o `WorkItem` por setters (`orElseGet` + `set*`), não pelo builder fluente.
-- **Cópia `WorkItem` → `WorkItem`** (1 arquivo, 1 de 2 sites): `WorkItemService.snapshotForHistory`
-  ganhou `.comarcaEntidade(wi.getComarcaEntidade())`; o segundo site do mesmo arquivo
-  (`toDto`) monta um `WorkItemDto` de apresentação, não uma entidade `WorkItem` — expor a FK aí é
-  decisão de contrato de API, fora do escopo desta dívida, não tocado.
-
-**Achados que não eram gap de verdade:**
-- `OficialJusticaAgendaAssemblySupport` — o único `WorkItem.builder()` do arquivo não seta
-  `.comarca(...)` (é um objeto efêmero de preview com só `id`/`processo`/`titulo`/`descricao`/
-  `baseLegal`); o `.comarca(...)` que apareceu na varredura pertence a um `Processo` construído à
-  parte (`processo.setComarca(row.comarca())`), não ao `WorkItem`. Falso positivo, sem fix.
-
-**Ainda bloqueado — `DelegadoPainelService`:** a única fonte disponível no site é
-`UnidadeInstituicao unidadeApuracao` (`unidadeApuracao.getComarca()`), e essa entidade não tem
-nenhum campo `comarcaEntidade` — é uma das 19 entidades legadas de
-`D-territorio-string-solta-entidades-legadas`. Propagar aqui depende de `UnidadeInstituicao` ganhar
-a FK primeiro; não é decisão de precedência como os outros 11, é pré-requisito ausente.
-
-Cobertura: assinatura nova em `OficialJusticaOficioWorkflowSupportTest`
-(`criarJuntadaDiretaNoProcessoMaterializaCanalDiretoComFundamentoPadrao`) prova a precedência real —
-`processo` e `usuario` recebem `Comarca` **diferentes**, e o `WorkItem` resultante carrega a do
-`processo`:
-
-```java
-assertThat(juntada.getComarcaEntidade()).isSameAs(processo.getComarcaEntidade());
-assertThat(juntada.getComarcaEntidade().getNome()).isEqualTo("Morada Nova");
-```
-
-Os outros 3 arquivos do lote com teste pré-existente (`PeritoNomeacaoServiceTest`,
-`DiligenceOperationalClosureServiceTest`, `SecretariatQueueOperationalActionServiceTest`) continuam
-verdes sem alteração de comportamento.
-
-**Quando revisitar:** só resta `DelegadoPainelService`, bloqueado por
-`D-territorio-string-solta-entidades-legadas` (precisa `UnidadeInstituicao` ganhar FK `Comarca`
-primeiro). Extrair um método `WorkItem.herdarTerritorioDe(...)` deixou de fazer sentido como
-generalização única: os 3 lotes confirmaram pelo menos 5 formas distintas de resolver a fonte
-(`Processo` direto, `Processo` via `Jurisdicao`, `Usuario`, `Usuario` com fallback textual/nulo,
-`Processo`+`Usuario` com precedência, `Jurisdicao` isolada, cópia `WorkItem`→`WorkItem`) — uma
-extração agora precisaria de várias sobrecargas, sem reduzir duplicação real.
 
 ## D-classificacao-contextual-default-permissivo
 
