@@ -175,6 +175,7 @@ public class RecursalPeticionamentoFacadeService {
                 .prioridade(peticionamentoSupport.priorityFor(appealType, pedidoEfeitoSuspensivo))
                 .uf(usuario == null ? null : usuario.getUf())
                 .comarca(usuario == null ? null : usuario.getComarca())
+                .comarcaEntidade(usuario == null ? null : usuario.getComarcaEntidade())
                 .baseLegal(peticionamentoSupport.buildFundamentacao(fundamentacaoNormalizada, pedidoEfeitoSuspensivo, preparoDispensado))
                 .dueAt(dueAt)
                 .build();
@@ -194,6 +195,7 @@ public class RecursalPeticionamentoFacadeService {
                 .prioridade(peticionamentoSupport.priorityFor(appealType, pedidoEfeitoSuspensivo))
                 .uf(usuario == null ? null : usuario.getUf())
                 .comarca(usuario == null ? null : usuario.getComarca())
+                .comarcaEntidade(usuario == null ? null : usuario.getComarcaEntidade())
                 .baseLegal(peticionamentoSupport.buildFundamentacao(fundamentacaoNormalizada, pedidoEfeitoSuspensivo, preparoDispensado))
                 .dueAt(dueAt)
                 .build();

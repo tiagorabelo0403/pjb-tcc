@@ -85,6 +85,7 @@ public class TransitoJulgadoPatrimonialWorkflowSupport {
                 .blocking(patrimonialProfile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(patrimonialProfile.baseLegal())
                 .dueAt(patrimonialProfile.dueAtFrom(Instant.now()))
                 .build();
@@ -154,6 +155,7 @@ public class TransitoJulgadoPatrimonialWorkflowSupport {
                 .blocking(profile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(firstNonBlank(profile.metadata().get("baseLegal") != null ? String.valueOf(profile.metadata().get("baseLegal")) : null, profile.fundamentos().isEmpty() ? null : profile.fundamentos().getFirst()))
                 .dueAt(profile.dueAtFrom(Instant.now()))
                 .build();
@@ -222,6 +224,7 @@ public class TransitoJulgadoPatrimonialWorkflowSupport {
                 .blocking(profile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(profile.baseLegal())
                 .dueAt(profile.dueAtFrom(Instant.now()))
                 .build();
@@ -287,6 +290,7 @@ public class TransitoJulgadoPatrimonialWorkflowSupport {
                 .blocking(profile.blocking())
                 .uf(processo.getUf())
                 .comarca(processo.getComarca())
+                .comarcaEntidade(processo.getComarcaEntidade())
                 .baseLegal(profile.baseLegal())
                 .dueAt(profile.dueAtFrom(Instant.now()))
                 .build();

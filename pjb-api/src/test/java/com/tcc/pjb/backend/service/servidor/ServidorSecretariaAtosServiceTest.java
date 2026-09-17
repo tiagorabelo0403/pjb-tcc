@@ -13,6 +13,7 @@ import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.dto.processual.document.template.OfficialDocumentTemplateRenderResponse;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.enums.TemplateDocumentoOficial;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
@@ -61,6 +62,7 @@ class ServidorSecretariaAtosServiceTest {
     private void stubServidorContext() {
         Usuario servidor = new Usuario();
         servidor.setId(1L);
+        servidor.setComarcaEntidade(new Comarca("Fortaleza", "CE", "2304400", null));
         PerfilDashboardContext ctx = new PerfilDashboardContext(
                 servidor, null, LocalDateTime.now(), null, null,
                 List.of(), List.of(), null, null, null, null, List.of(), null);
@@ -83,7 +85,8 @@ class ServidorSecretariaAtosServiceTest {
         when(processoRepository.findById(40L)).thenReturn(Optional.of(processo));
         var route = new InstitutionalActorRoutingService.InstitutionalRoute("FILA_GABINETE", "INBOX_GABINETE", null, "JUNTADA", null, "motivo", Map.of());
         when(institutionalActorRoutingService.gabineteReview(40L, "CIENCIA_JUNTADA")).thenReturn(route);
-        when(workItemRepository.save(any(WorkItem.class))).thenAnswer(i -> {
+        org.mockito.ArgumentCaptor<WorkItem> workItemCaptor = org.mockito.ArgumentCaptor.forClass(WorkItem.class);
+        when(workItemRepository.save(workItemCaptor.capture())).thenAnswer(i -> {
             WorkItem item = i.getArgument(0);
             item.setId(500L);
             return item;
@@ -95,6 +98,8 @@ class ServidorSecretariaAtosServiceTest {
         assertThat(resultado.get("tipo")).isEqualTo("PETICAO");
         verify(lifecycleMachine).apply(processo, ProcessoLifecycleAction.REALIZAR_JUNTADA);
         verify(commons).publishUserHistory(any(Usuario.class), org.mockito.ArgumentMatchers.eq("SERVIDOR"), org.mockito.ArgumentMatchers.eq("JUNTADA_REALIZADA"), any(), org.mockito.ArgumentMatchers.eq(processo), org.mockito.ArgumentMatchers.eq(40L));
+        assertThat(workItemCaptor.getValue().getComarcaEntidade()).isNotNull();
+        assertThat(workItemCaptor.getValue().getComarcaEntidade().getNome()).isEqualTo("Fortaleza");
     }
 
     @Test

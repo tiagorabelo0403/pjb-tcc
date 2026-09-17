@@ -156,6 +156,7 @@ public class ProcuradoriaOperacionalService {
                 .prioridade(1)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(safe.fundamentacao())
                 .dueAt(Instant.now().plus(2, ChronoUnit.HOURS))
                 .build();
@@ -252,6 +253,7 @@ public class ProcuradoriaOperacionalService {
                 .prioridade(2)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(safe.fundamentacao())
                 .dueAt(Instant.now().plus(4, ChronoUnit.HOURS))
                 .build();

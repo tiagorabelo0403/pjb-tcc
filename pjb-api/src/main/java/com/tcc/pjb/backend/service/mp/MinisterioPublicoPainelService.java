@@ -206,6 +206,7 @@ public class MinisterioPublicoPainelService {
                 .prioridade(1)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal(safe.fundamentacao())
                 .dueAt(Instant.now().plus(24, ChronoUnit.HOURS))
                 .build();

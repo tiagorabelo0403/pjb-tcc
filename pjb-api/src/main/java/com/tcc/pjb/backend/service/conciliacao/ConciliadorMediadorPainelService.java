@@ -115,6 +115,7 @@ public class ConciliadorMediadorPainelService {
                 .dueAt(Instant.now().plus(3, ChronoUnit.DAYS))
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .build();
         homologar = workItemRepository.save(homologar);
         if (processo != null) {

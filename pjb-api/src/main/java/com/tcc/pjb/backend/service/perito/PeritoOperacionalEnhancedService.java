@@ -111,6 +111,7 @@ WorkItem aceite = WorkItem.builder()
 .prioridade(1)
 .uf(usuario.getUf())
 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
 .dueAt(Instant.now().plus(2, ChronoUnit.HOURS))
 .build();
 workItemRepository.save(aceite);
@@ -143,6 +144,7 @@ WorkItem laudo = WorkItem.builder()
 .prioridade(1)
 .uf(usuario.getUf())
 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
 .dueAt(Instant.now().plus(2, ChronoUnit.HOURS))
 .build();
 workItemRepository.save(laudo);
@@ -193,6 +195,7 @@ WorkItem quesito = WorkItem.builder()
 .prioridade(2)
 .uf(usuario.getUf())
 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
 .dueAt(Instant.now().plus(4, ChronoUnit.HOURS))
 .build();
 workItemRepository.save(quesito);
@@ -222,6 +225,7 @@ WorkItem honorario = WorkItem.builder()
 .prioridade(3)
 .uf(usuario.getUf())
 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
 .baseLegal("Art. 465, §3º CPC — Honorários Periciais")
 .dueAt(Instant.now().plus(5, ChronoUnit.DAYS))
 .build();

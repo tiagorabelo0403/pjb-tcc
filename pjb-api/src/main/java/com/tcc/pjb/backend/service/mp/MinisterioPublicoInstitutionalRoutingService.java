@@ -78,6 +78,7 @@ public class MinisterioPublicoInstitutionalRoutingService {
                 .dueAt(Instant.now().plus(48, ChronoUnit.HOURS))
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal("Requisição de diligência do Ministério Público")
                 .build();
         item = workItemRepository.save(item);

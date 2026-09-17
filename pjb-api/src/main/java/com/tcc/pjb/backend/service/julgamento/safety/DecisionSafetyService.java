@@ -267,6 +267,7 @@ public class DecisionSafetyService {
                 .prioridade(0)
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal("Fingerprint=" + buildFingerprint(processo) + " | Autor=" + safe(processo.getParteAutoraNome()) + " | Réu=" + safe(processo.getParteReuNome()) + " | Fundamento=" + safe(descriptor.fundamentoPadrao()))
                 .dueAt(Instant.now().plus(30, ChronoUnit.MINUTES))
                 .build();

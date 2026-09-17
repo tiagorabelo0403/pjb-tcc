@@ -297,7 +297,7 @@ migração fecha reduzindo a allowlist em `OrganizacaoJudiciariaArchitectureTest
 
 ## D-workitem-fk-comarca-propagacao-parcial
 
-**Status:** aberta — lote 1 fechado (5 arquivos), ~39 restantes
+**Status:** aberta — lotes 1+2 fechados (34 arquivos, 71 sites), 12 arquivos restantes
 
 **Contexto:** a revisão final da fatia "Organização Judiciária" achou que nenhum caminho de produção
 escrevia a FK `comarcaEntidade` de `Usuario`/`Processo`/`WorkItem` — todo dado novo ficava com `comarca_id`
@@ -338,17 +338,60 @@ Os outros 3 arquivos ficaram sem teste novo dedicado — mudança puramente adit
 mesmo builder), compilação + suíte existente sem alteração de comportamento já são a evidência de
 não-regressão.
 
+**Lote 2 fechado (2026-09-17):** os 29 arquivos restantes cujo `.comarca(...)` tinha fonte única e
+direta (sem `firstNonBlank`/fallback entre duas entidades) — 3 padrões, todos espelhando os já
+provados no lote 1:
+
+- **`processo.getComarca()` direto** (7 arquivos, 15 sites): `ProcessoDistribuicaoMalhaOrquestracaoApplicationService`,
+  `TransitoJulgadoExpropriationWorkflowSupport` (4), `TransitoJulgadoPatrimonialWorkflowSupport` (4),
+  `TransitoJulgadoTerminalWorkflowSupport` (3), `DefensoriaVulnerabilidadeService`,
+  `TemaRecursoRepetitivoService`, `ProcessualParticipacaoAtivaFacadeService`.
+- **`processo.getJurisdicao().getCidade()`** (4 arquivos, 4 sites): `JudgeAgreementApprovalService`
+  (com fallback para `processo.getComarca()` quando jurisdição é nula — `comarcaEntidade` replica o
+  mesmo ternário), `RepercussaoGeralService`, `TemaPrecedenteVinculanteService`, `PsicossocialRiskService`.
+- **`usuario.getComarca()`** (18 arquivos, 33 sites): `OfficeGovernedPetitionExecutionService`,
+  `ConciliadorMediadorEnhancedService` (3), `ConciliadorMediadorPainelService`,
+  `DefensoriaPublicaOperacionalService` (3), `EscrituraExtrajudicialService`, `JudicialVoiceService`,
+  `DecisionSafetyService`, `MagistraturaJudicialActRelatoriaFormalizationSupport` (2),
+  `MinistroPlenarioService` (3), `MinisterioPublicoInstitutionalRoutingService`,
+  `MinisterioPublicoPainelService`, `OficialJusticaDesfechoDiligenciaService` (2),
+  `OficialJusticaOficioDispatchService` (2), `PeritoOperacionalEnhancedService` (4),
+  `PsicossocialJudicialPainelService` (2), `ServidorSecretariaAtosService`,
+  `ProcuradoriaOperacionalService` (2 dos 3 sites — o terceiro, linha 217, recebe `String comarca`
+  como parâmetro solto sem entidade associada, fica de fora), `RecursalPeticionamentoFacadeService`
+  (2, com `usuario == null ? null : ...` replicado no `comarcaEntidade`).
+
+Cobertura: assinatura nova em `ServidorSecretariaAtosServiceTest` (`realizarJuntadaCriaWorkItemConcluidoEAplicaLifecycle`)
+capturando o `WorkItem` salvo com um `Comarca` real no `Usuario` de teste:
+
+```java
+assertThat(workItemCaptor.getValue().getComarcaEntidade()).isNotNull();
+assertThat(workItemCaptor.getValue().getComarcaEntidade().getNome()).isEqualTo("Fortaleza");
+```
+
+Os 6 arquivos do lote com teste pré-existente (`ProcessualParticipacaoAtivaFacadeServiceTest`,
+`ConciliadorMediadorEnhancedServiceTest`, `ConciliadorMediadorPainelServiceTest`,
+`MagistraturaJudicialActRelatoriaFormalizationSupportTest`,
+`MinisterioPublicoInstitutionalRoutingServiceTest`, mais o próprio `ServidorSecretariaAtosServiceTest`)
+continuam verdes sem alteração de comportamento.
+
 **Risco:** baixo, não é regressão — confirmado por leitura de código e teste (`territoryMatches` após o fix
 do achado I2 da mesma revisão final): um `WorkItem` sem `comarcaEntidade` mas com `comarca` textual própria
 cai inteiro no caminho de comparação textual normalizada (o comportamento anterior à fatia inteira), nunca
 tenta usar a FK do `Processo` no lugar. Os sites restantes simplesmente não ganham o benefício da comparação
 por identidade real — não produzem nenhum match incorreto.
 
-**Quando revisitar:** próximo lote — extrair um método `WorkItem.herdarTerritorioDe(Processo)` (ou
-equivalente) só se um padrão comum se confirmar em mais arquivos (o lote 1 já mostrou 2 padrões
-distintos — via `Processo` e via `Usuario` —, então a extração pode precisar de duas variantes, não
-uma). Continuar incrementalmente pelos ~39 arquivos restantes, priorizando os que já são usados pelo
-guard-rail de território (`AssessorGabineteGuardRailService`) com mais frequência em produção.
+**Quando revisitar:** os 12 arquivos restantes têm fonte **mista ou ambígua** (`firstNonBlank(processo,
+usuario)`, entidades diferentes como `perito`/`actor`/`unidadeApuracao`, ou cópia entre dois `WorkItem`)
+e exigem decidir qual fonte prevalece antes de propagar `comarcaEntidade`, não é mais mecânico:
+`DelegadoPainelService`, `ForumOfficialReturnOperationalService`,
+`MagistraturaJudicialProvidenceDispatchSupport`, `OficialJusticaAgendaAssemblySupport`,
+`OficialJusticaOficioWorkflowSupport`, `OficialJusticaPanelEgressService`, `PeritoNomeacaoService`,
+`DiligenceOperationalClosureService`, `SecretariatDocumentBulkProcessor`,
+`SecretariatOfficialActsDrawerService`, `SecretariatQueueOperationalActionService`, `WorkItemService`.
+Extrair um método `WorkItem.herdarTerritorioDe(Processo)`/`herdarTerritorioDe(Usuario)` só faz sentido
+depois desses 12, quando o padrão de fallback ficar claro — os lotes 1+2 confirmaram fonte única
+(`Processo` ou `Usuario`, nunca os dois), então uma extração agora acertaria só uma variante.
 
 ## D-classificacao-contextual-default-permissivo
 

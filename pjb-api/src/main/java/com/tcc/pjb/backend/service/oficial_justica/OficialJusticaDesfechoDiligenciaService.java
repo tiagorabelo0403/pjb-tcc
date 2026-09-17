@@ -103,6 +103,7 @@ public class OficialJusticaDesfechoDiligenciaService {
                 .dueAt(Instant.now().plus(1, ChronoUnit.DAYS))
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .baseLegal("Certidão negativa e nova ordem judicial")
                 .build();
         followup = workItemRepository.save(followup);
@@ -147,6 +148,7 @@ public class OficialJusticaDesfechoDiligenciaService {
                 .dueAt(Instant.now())
                 .uf(usuario.getUf())
                 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                 .build();
         item = workItemRepository.save(item);
         commons.publishUserHistory(usuario, "OFICIAL", "AVALIACAO_REGISTRADA", "Avaliação patrimonial registrada.", item.getProcesso(), item.getId());

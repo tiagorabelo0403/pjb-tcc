@@ -117,6 +117,7 @@ WorkItem resultadoItem = WorkItem.builder()
 .prioridade(acordoFirmado ? 1 : 3)
 .uf(usuario.getUf())
 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
 .dueAt(Instant.now().plus(acordoFirmado ? 24 : 48, ChronoUnit.HOURS))
 .build();
 workItemRepository.save(resultadoItem);
@@ -162,6 +163,7 @@ WorkItem sessao = WorkItem.builder()
 .prioridade(1)
 .uf(usuario.getUf())
 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
 .dueAt(dataHora)
 .build();
 workItemRepository.save(sessao);
@@ -197,6 +199,7 @@ WorkItem termo = WorkItem.builder()
 .prioridade(1)
 .uf(usuario.getUf())
 .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
 .baseLegal("Art. 334 §11 CPC — Homologação de Acordo")
 .dueAt(Instant.now().plus(48, ChronoUnit.HOURS))
 .build();

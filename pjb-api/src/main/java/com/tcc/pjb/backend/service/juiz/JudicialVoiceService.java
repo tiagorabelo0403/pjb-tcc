@@ -154,6 +154,7 @@ public class JudicialVoiceService {
                     .prioridade(1)
                     .uf(usuario.getUf())
                     .comarca(usuario.getComarca())
+                .comarcaEntidade(usuario.getComarcaEntidade())
                     .dueAt(Instant.now().plus(6, ChronoUnit.HOURS))
                     .build());
         }

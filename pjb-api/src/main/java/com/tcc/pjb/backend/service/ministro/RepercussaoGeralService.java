@@ -252,6 +252,7 @@ public class RepercussaoGeralService {
                 .prioridade(1)
                 .uf(processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : null)
                 .comarca(processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : null)
+                .comarcaEntidade(processo.getJurisdicao() != null ? processo.getJurisdicao().getComarcaEntidade() : null)
                 .dueAt(dueAt)
                 .build();
         workItemRepository.save(item);
