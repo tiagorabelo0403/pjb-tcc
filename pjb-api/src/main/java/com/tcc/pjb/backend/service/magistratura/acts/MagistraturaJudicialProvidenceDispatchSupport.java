@@ -123,6 +123,7 @@ public class MagistraturaJudicialProvidenceDispatchSupport {
                 .dueAt(plan.dueAt())
                 .uf(firstNonBlank(processo.getUf(), usuario.getUf()))
                 .comarca(firstNonBlank(processo.getComarca(), usuario.getComarca()))
+                .comarcaEntidade(processo.getComarcaEntidade() != null ? processo.getComarcaEntidade() : usuario.getComarcaEntidade())
                 .baseLegal(summarizeReasons(plan.reasons()))
                 .build();
     }

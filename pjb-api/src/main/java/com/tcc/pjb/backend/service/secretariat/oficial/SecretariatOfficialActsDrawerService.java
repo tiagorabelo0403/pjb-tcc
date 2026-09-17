@@ -90,6 +90,7 @@ public class SecretariatOfficialActsDrawerService {
         archive.setDueAt(null);
         archive.setUf(firstNonBlank(processo.getUf(), safeDesk.getUf()));
         archive.setComarca(firstNonBlank(processo.getComarca(), safeDesk.getComarca()));
+        archive.setComarcaEntidade(processo.getComarcaEntidade() != null ? processo.getComarcaEntidade() : safeDesk.getComarcaEntidade());
         archive.setBaseLegal(buildArchiveBaseLegal(reservation, actName, operation, observation));
         archive.setSemInteresse(false);
         WorkItem saved = workItemRepository.save(archive);

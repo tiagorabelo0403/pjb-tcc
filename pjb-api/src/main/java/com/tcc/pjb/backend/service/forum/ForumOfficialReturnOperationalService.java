@@ -288,6 +288,7 @@ public class ForumOfficialReturnOperationalService {
                 .dueAt(resolveDueAt(deskItem, request, deskItem.getDueAt()))
                 .uf(firstNonBlank(processo.getUf(), oficial.getUf()))
                 .comarca(firstNonBlank(processo.getComarca(), oficial.getComarca()))
+                .comarcaEntidade(processo.getComarcaEntidade() != null ? processo.getComarcaEntidade() : oficial.getComarcaEntidade())
                 .baseLegal(buildBaseLegal(processo, route, request))
                 .semInteresse(false)
                 .build();
