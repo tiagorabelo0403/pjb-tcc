@@ -244,14 +244,14 @@ String sem a FK `Comarca` correspondente na mesma classe — mas, ao rodar essa 
 pela primeira vez, apareceram 23 entidades pré-existentes, fora do escopo original, que já declaravam
 `uf`/`comarca` String sem nenhuma FK `Comarca`. Cinco saíram da allowlist depois — `JurisdicaoTerritorial`
 logo em seguida, `OrgaoJudiciario`/`PeritoSorteioAudit`/`PeritoDisponibilidade` mais tarde,
-`UnidadeInstituicao`, `EscrituraExtrajudicialRegistro`, `OperationalFunctionCredential` e
-`ProfessionalInstitutionalAccessGrant` em 2026-09-17 — ver notas abaixo —, restando
-**15 entidades pré-existentes**:
+`UnidadeInstituicao`, `EscrituraExtrajudicialRegistro`, `OperationalFunctionCredential`,
+`ProfessionalInstitutionalAccessGrant` e `InstitutionalCatalogUnitSnapshot` em 2026-09-17 — ver notas
+abaixo —, restando **14 entidades pré-existentes**:
 
 `CalendarioForenseEntry`, `AtlasAcessoMunicipio`, `NoFederacaoJudicial`,
 `InqueritoPolicialDigital`, `EventoInstitucional`, `Estados`, `CidadaoProcessoNacionalProjection`, `Municipios`,
 `ProcessoZonaEleitoral`, `CalendarioEleitoral`,
-`GovServiceRegistry`, `InstitutionalCompetenceRuleSnapshot`, `InstitutionalCatalogUnitSnapshot`,
+`GovServiceRegistry`, `InstitutionalCompetenceRuleSnapshot`,
 `InstitutionalCatalogGovernanceSnapshot`, `PainelTribunalMetrica`.
 
 Essas classes foram registradas numa allowlist nomeada (`ENTIDADES_LEGADAS_TERRITORIO_STRING_SEM_FK_COMARCA`)
@@ -352,6 +352,52 @@ do zero contra Postgres 17 (`pgvector/pgvector:pg17`) via Flyway CLI (`flyway/fl
 Migrating schema "public" to version "361 - professional access grant fk comarca"
 Successfully applied 323 migrations to schema "public", now at version v361 (execution time 00:07.579s)
 ```
+
+`InstitutionalCatalogUnitSnapshot` saiu da allowlist em 2026-09-17 com migração própria
+(`V362__institutional_catalog_unit_snapshot_fk_comarca.sql`), mesmo padrão das demais: ganhou
+`comarcaEntidade` (`@ManyToOne Comarca`, nullable, ao lado de `comarca`/`uf` String que continuam como
+fallback), `InstitutionalCatalogPersistenceSyncService.resolveComarca` resolve via
+`ComarcaResolutionService.resolver(comarca, uf)` no único ponto de construção/atualização em produção
+(`synchronize()`, disparado por `@EventListener(ApplicationReadyEvent.class)` — método com JPA
+genuinamente vivo, diferente de `InstitutionalCompetenceRuleSnapshot`/`InstitutionalCatalogGovernanceSnapshot`
+logo abaixo). O backfill da migration aplica o mesmo match aos registros já existentes. Cobertura: 3
+testes novos em `InstitutionalCatalogPersistenceSyncServiceComarcaTest` (resolve/aplica, comarca em
+branco não resolve, resolver sem candidata não lança — mesmo trio de `OrgaoJudiciarioServiceComarcaTest`)
+e `OrganizacaoJudiciariaArchitectureTest` (a regra em si). Cadeia completa de migrations validada do
+zero contra Postgres 17 (`pgvector/pgvector:pg17`) via Flyway CLI (`flyway/flyway:10`) antes do
+fechamento:
+
+```
+Migrating schema "public" to version "362 - institutional catalog unit snapshot fk comarca"
+Successfully applied 324 migrations to schema "public", now at version v362 (execution time 00:07.825s)
+```
+
+**Achado colateral fechado antes desta migração:** `InstitutionalCompetenceRuleSnapshot` e
+`InstitutionalCatalogGovernanceSnapshot` (ambas ainda na allowlist, ver acima) tinham a persistência
+JPA morta em produção por um bug de seleção de construtor Spring (`@Inject` no construtor degradado,
+não no real) — corrigido separadamente, ver `debt_inject_construtor_errado_fechada` na memória. Só
+depois desse fix elas passam a ser candidatas válidas para a mesma migração `comarcaEntidade`;
+nenhuma das duas foi migrada ainda nesta sessão.
+
+**Segundo achado colateral, fechado na mesma fatia:** o CI da PR desta migração quebrou 9 testes
+(`ApplicationContext failure` em `BackendApplicationTests` e em 3 `*FluxoTest` de controller) porque
+`ComarcaResolutionService.resolver` usava duas queries JPA nativas com `unaccent(...)` — função de
+extensão do PostgreSQL, inexistente no H2 usado pelos testes. As 5 migrações `comarcaEntidade`
+anteriores (`OrgaoJudiciario`, `UnidadeInstituicao`, `EscrituraExtrajudicialRegistro`,
+`OperationalFunctionCredential`, `ProfessionalInstitutionalAccessGrant`) nunca expuseram o problema
+porque seus call sites só rodam dentro de um request HTTP real. Esta migração foi a primeira a chamar
+o resolver a partir de um `@EventListener(ApplicationReadyEvent.class)` — ou seja, em **todo boot**,
+inclusive o boot dos testes de contexto Spring sobre H2. Corrigido movendo o casamento
+acento-insensível para Java (`Normalizer.normalize(..., NFD)` + strip de marcas + `toUpperCase`, a
+mesma técnica já usada em `UnidadeInstitucional.normalizeKey`) — `ComarcaRepository` perdeu as duas
+`@Query(nativeQuery = true)` e ganhou só `findAllByUfIgnoreCase`. Deliberadamente **não** foi emulado
+`unaccent` no H2 via alias, para não reintroduzir divergência teste/produção com uma semântica de
+casamento diferente em cada banco. Cobertura: `ComarcaResolutionServiceTest` (novo — o serviço não
+tinha teste direto antes desta correção; 5 casos incl. "São Gonçalo do Amarante" ≡ "sao goncalo do
+amarante" e ambiguidade entre UFs distintas) e reexecução verde dos 68 testes de todo chamador de
+`ComarcaResolutionService` no projeto (MNI, Marketplace, Jurisdicao, Usuario, e as 6 migrações
+`comarcaEntidade` anteriores) confirmando que a troca de query nativa por filtro em Java preserva o
+comportamento observável.
 
 `PeritoSorteioAudit`/`PeritoDisponibilidade` saíram da allowlist juntas numa migração própria
 (`V330__perito_disponibilidade_sorteio_fk_comarca.sql`), mesmo padrão de `comarcaEntidade` nullable ao lado do
