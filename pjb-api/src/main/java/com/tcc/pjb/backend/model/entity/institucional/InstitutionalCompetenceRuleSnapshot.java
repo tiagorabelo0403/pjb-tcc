@@ -4,14 +4,18 @@ import com.tcc.pjb.backend.core.modularity.PjbModuleId;
 import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
 import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
 
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import java.time.Instant;
 import java.util.Objects;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
@@ -50,6 +54,10 @@ public class InstitutionalCompetenceRuleSnapshot {
 
     @Column(name = "comarca", length = 160)
     private String comarca;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comarca_id")
+    private Comarca comarcaEntidade;
 
     @Column(name = "foro", length = 160)
     private String foro;
@@ -123,6 +131,10 @@ public class InstitutionalCompetenceRuleSnapshot {
 
     public String getRuleId() { return ruleId; }
     public String getSnapshotJson() { return snapshotJson; }
+    public String getUf() { return uf; }
+    public String getComarca() { return comarca; }
+    public Comarca getComarcaEntidade() { return comarcaEntidade; }
+    public void setComarcaEntidade(Comarca comarcaEntidade) { this.comarcaEntidade = comarcaEntidade; }
 
     public void refresh(String uf,
                         String comarca,
