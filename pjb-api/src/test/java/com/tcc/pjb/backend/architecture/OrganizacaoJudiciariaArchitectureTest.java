@@ -31,7 +31,6 @@ class OrganizacaoJudiciariaArchitectureTest {
             "com.tcc.pjb.backend.model.entity.eleitoral.ProcessoZonaEleitoral",
             "com.tcc.pjb.backend.model.entity.eleitoral.CalendarioEleitoral",
             "com.tcc.pjb.backend.model.entity.gov.GovServiceRegistry",
-            "com.tcc.pjb.backend.model.entity.institucional.InstitutionalCatalogGovernanceSnapshot",
             "com.tcc.pjb.backend.model.entity.painel.PainelTribunalMetrica");
 
     @ArchTest

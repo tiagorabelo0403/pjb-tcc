@@ -245,15 +245,14 @@ pela primeira vez, apareceram 23 entidades pré-existentes, fora do escopo origi
 `uf`/`comarca` String sem nenhuma FK `Comarca`. Cinco saíram da allowlist depois — `JurisdicaoTerritorial`
 logo em seguida, `OrgaoJudiciario`/`PeritoSorteioAudit`/`PeritoDisponibilidade` mais tarde,
 `UnidadeInstituicao`, `EscrituraExtrajudicialRegistro`, `OperationalFunctionCredential`,
-`ProfessionalInstitutionalAccessGrant`, `InstitutionalCatalogUnitSnapshot` e
-`InstitutionalCompetenceRuleSnapshot` em 2026-09-17/18 — ver notas abaixo —, restando
-**13 entidades pré-existentes**:
+`ProfessionalInstitutionalAccessGrant`, `InstitutionalCatalogUnitSnapshot`,
+`InstitutionalCompetenceRuleSnapshot` e `InstitutionalCatalogGovernanceSnapshot` em 2026-09-17/18 —
+ver notas abaixo —, restando **12 entidades pré-existentes**:
 
 `CalendarioForenseEntry`, `AtlasAcessoMunicipio`, `NoFederacaoJudicial`,
 `InqueritoPolicialDigital`, `EventoInstitucional`, `Estados`, `CidadaoProcessoNacionalProjection`, `Municipios`,
 `ProcessoZonaEleitoral`, `CalendarioEleitoral`,
-`GovServiceRegistry`,
-`InstitutionalCatalogGovernanceSnapshot`, `PainelTribunalMetrica`.
+`GovServiceRegistry`, `PainelTribunalMetrica`.
 
 Essas classes foram registradas numa allowlist nomeada (`ENTIDADES_LEGADAS_TERRITORIO_STRING_SEM_FK_COMARCA`)
 dentro do próprio teste de arquitetura — a regra continua ativa e bloqueia qualquer entidade nova fora dessa
@@ -374,11 +373,11 @@ Successfully applied 324 migrations to schema "public", now at version v362 (exe
 ```
 
 **Achado colateral fechado antes desta migração:** `InstitutionalCompetenceRuleSnapshot` e
-`InstitutionalCatalogGovernanceSnapshot` (ambas ainda na allowlist, ver acima) tinham a persistência
-JPA morta em produção por um bug de seleção de construtor Spring (`@Inject` no construtor degradado,
-não no real) — corrigido separadamente, ver `debt_inject_construtor_errado_fechada` na memória. Só
-depois desse fix elas passam a ser candidatas válidas para a mesma migração `comarcaEntidade`;
-nenhuma das duas foi migrada ainda nesta sessão.
+`InstitutionalCatalogGovernanceSnapshot` tinham a persistência JPA morta em produção por um bug de
+seleção de construtor Spring (`@Inject` no construtor degradado, não no real) — corrigido
+separadamente, ver `debt_inject_construtor_errado_fechada` na memória. Só depois desse fix elas
+passaram a ser candidatas válidas para a mesma migração `comarcaEntidade`; ambas fechadas em
+2026-09-18, ver notas próprias mais abaixo.
 
 **Segundo achado colateral, fechado na mesma fatia:** o CI da PR desta migração quebrou 9 testes
 (`ApplicationContext failure` em `BackendApplicationTests` e em 3 `*FluxoTest` de controller) porque
@@ -418,6 +417,23 @@ completa de migrations validada do zero contra Postgres 17 (`pgvector/pgvector:p
 ```
 Migrating schema "public" to version "363 - institutional competence rule snapshot fk comarca"
 Successfully applied 325 migrations to schema "public", now at version v363 (execution time 00:06.419s)
+```
+
+`InstitutionalCatalogGovernanceSnapshot` saiu da allowlist em 2026-09-18 com migração própria
+(`V364__institutional_catalog_governance_snapshot_fk_comarca.sql`), fechando o par que ficou aberto
+junto com `InstitutionalCompetenceRuleSnapshot`: mesmo padrão das demais (`comarcaEntidade` nullable
+ao lado do fallback String), `InstitutionalCatalogGovernanceStateRepository.resolveComarca` resolve
+via `ComarcaResolutionService.resolver(comarca, uf)` no único método que persiste a entidade (`save`,
+criação e `refresh`), e só foi possível fechar depois do mesmo fix de `@Inject` (PR #187). Cobertura:
+3 testes novos em `InstitutionalCatalogGovernanceStateRepositoryComarcaTest` (resolve/aplica, comarca
+em branco não resolve, resolver sem candidata não lança) e `OrganizacaoJudiciariaArchitectureTest` (a
+regra em si). `modular_monolith_guard` sem novo warning (444, mesmo teto da PR anterior). Cadeia
+completa de migrations validada do zero contra Postgres 17 (`pgvector/pgvector:pg17`) via Flyway CLI
+(`flyway/flyway:10`) antes do fechamento:
+
+```
+Migrating schema "public" to version "364 - institutional catalog governance snapshot fk comarca"
+Successfully applied 326 migrations to schema "public", now at version v364 (execution time 00:06.971s)
 ```
 
 `PeritoSorteioAudit`/`PeritoDisponibilidade` saíram da allowlist juntas numa migração própria

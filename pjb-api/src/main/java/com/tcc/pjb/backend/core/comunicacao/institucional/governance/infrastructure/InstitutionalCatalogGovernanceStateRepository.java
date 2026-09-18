@@ -11,8 +11,10 @@ import org.springframework.stereotype.Repository;
 import com.tcc.pjb.backend.core.comunicacao.institucional.governance.domain.InstitutionalCatalogGovernanceEntry;
 import com.tcc.pjb.backend.core.comunicacao.institucional.persistence.InstitutionalSnapshotJsonCodec;
 import com.tcc.pjb.backend.core.comunicacao.judicial.state.ComunicacaoJudicialStateStore;
+import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.model.entity.institucional.InstitutionalCatalogGovernanceSnapshot;
 import com.tcc.pjb.backend.model.repository.institucional.InstitutionalCatalogGovernanceSnapshotRepository;
+import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import jakarta.inject.Inject;
 
 @Repository
@@ -23,28 +25,33 @@ public class InstitutionalCatalogGovernanceStateRepository {
     private final ComunicacaoJudicialStateStore stateStore;
     private final InstitutionalSnapshotJsonCodec codec;
     private final InstitutionalCatalogGovernanceSnapshotRepository jpaRepository;
+    private final ComarcaResolutionService comarcaResolutionService;
     private final Map<String, InstitutionalCatalogGovernanceEntry> inMemoryStore;
 
     public InstitutionalCatalogGovernanceStateRepository() {
         this.stateStore = null;
         this.codec = null;
         this.jpaRepository = null;
+        this.comarcaResolutionService = null;
         this.inMemoryStore = new ConcurrentHashMap<>();
     }
 
     @Inject
     public InstitutionalCatalogGovernanceStateRepository(ComunicacaoJudicialStateStore stateStore,
                                                          InstitutionalSnapshotJsonCodec codec,
-                                                         ObjectProvider<InstitutionalCatalogGovernanceSnapshotRepository> repositoryProvider) {
+                                                         ObjectProvider<InstitutionalCatalogGovernanceSnapshotRepository> repositoryProvider,
+                                                         ComarcaResolutionService comarcaResolutionService) {
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore");
         this.codec = Objects.requireNonNull(codec, "codec");
         this.jpaRepository = repositoryProvider.getIfAvailable();
+        this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService, "comarcaResolutionService");
         this.inMemoryStore = new ConcurrentHashMap<>();
     }
 
     public InstitutionalCatalogGovernanceEntry save(InstitutionalCatalogGovernanceEntry entry) {
         if (jpaRepository != null) {
             String snapshotJson = codec.write(entry);
+            Comarca comarcaEntidade = resolveComarca(entry.comarca(), entry.uf());
             jpaRepository.findByGovernanceId(entry.governanceId())
                     .ifPresentOrElse(existing -> {
                                 existing.refresh(
@@ -64,27 +71,32 @@ public class InstitutionalCatalogGovernanceStateRepository {
                                         entry.vigenciaFim(),
                                         entry.updatedAt(),
                                         snapshotJson);
+                                existing.setComarcaEntidade(comarcaEntidade);
                                 jpaRepository.save(existing);
                             },
-                            () -> jpaRepository.save(new InstitutionalCatalogGovernanceSnapshot(
-                                    entry.governanceId(),
-                                    entry.unidadeCodigo(),
-                                    entry.destinatarioKind().name(),
-                                    entry.uf(),
-                                    entry.comarca(),
-                                    entry.foro(),
-                                    entry.ramoDireito() == null ? null : entry.ramoDireito().name(),
-                                    entry.grauJurisdicao() == null ? null : entry.grauJurisdicao().name(),
-                                    entry.abrangencia().name(),
-                                    entry.ativa(),
-                                    entry.suspendeEntregaExterna(),
-                                    entry.exigeHomologacaoAdministrativa(),
-                                    entry.unidadeSubstitutaCodigo(),
-                                    entry.vigenciaInicio(),
-                                    entry.vigenciaFim(),
-                                    snapshotJson,
-                                    entry.createdAt(),
-                                    entry.updatedAt())));
+                            () -> {
+                                InstitutionalCatalogGovernanceSnapshot novo = new InstitutionalCatalogGovernanceSnapshot(
+                                        entry.governanceId(),
+                                        entry.unidadeCodigo(),
+                                        entry.destinatarioKind().name(),
+                                        entry.uf(),
+                                        entry.comarca(),
+                                        entry.foro(),
+                                        entry.ramoDireito() == null ? null : entry.ramoDireito().name(),
+                                        entry.grauJurisdicao() == null ? null : entry.grauJurisdicao().name(),
+                                        entry.abrangencia().name(),
+                                        entry.ativa(),
+                                        entry.suspendeEntregaExterna(),
+                                        entry.exigeHomologacaoAdministrativa(),
+                                        entry.unidadeSubstitutaCodigo(),
+                                        entry.vigenciaInicio(),
+                                        entry.vigenciaFim(),
+                                        snapshotJson,
+                                        entry.createdAt(),
+                                        entry.updatedAt());
+                                novo.setComarcaEntidade(comarcaEntidade);
+                                jpaRepository.save(novo);
+                            });
         }
         if (stateStore == null) {
             inMemoryStore.put(entry.governanceId(), entry);
@@ -134,5 +146,12 @@ public class InstitutionalCatalogGovernanceStateRepository {
 
     public List<InstitutionalCatalogGovernanceEntry> findEffectiveAt(Instant reference) {
         return findAll().stream().filter(entry -> entry.isEffectiveAt(reference)).toList();
+    }
+
+    private Comarca resolveComarca(String comarca, String uf) {
+        if (comarca == null || comarca.isBlank()) {
+            return null;
+        }
+        return comarcaResolutionService.resolver(comarca, uf).orElse(null);
     }
 }
