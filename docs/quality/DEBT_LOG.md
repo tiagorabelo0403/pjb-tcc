@@ -245,13 +245,14 @@ pela primeira vez, apareceram 23 entidades pré-existentes, fora do escopo origi
 `uf`/`comarca` String sem nenhuma FK `Comarca`. Cinco saíram da allowlist depois — `JurisdicaoTerritorial`
 logo em seguida, `OrgaoJudiciario`/`PeritoSorteioAudit`/`PeritoDisponibilidade` mais tarde,
 `UnidadeInstituicao`, `EscrituraExtrajudicialRegistro`, `OperationalFunctionCredential`,
-`ProfessionalInstitutionalAccessGrant` e `InstitutionalCatalogUnitSnapshot` em 2026-09-17 — ver notas
-abaixo —, restando **14 entidades pré-existentes**:
+`ProfessionalInstitutionalAccessGrant`, `InstitutionalCatalogUnitSnapshot` e
+`InstitutionalCompetenceRuleSnapshot` em 2026-09-17/18 — ver notas abaixo —, restando
+**13 entidades pré-existentes**:
 
 `CalendarioForenseEntry`, `AtlasAcessoMunicipio`, `NoFederacaoJudicial`,
 `InqueritoPolicialDigital`, `EventoInstitucional`, `Estados`, `CidadaoProcessoNacionalProjection`, `Municipios`,
 `ProcessoZonaEleitoral`, `CalendarioEleitoral`,
-`GovServiceRegistry`, `InstitutionalCompetenceRuleSnapshot`,
+`GovServiceRegistry`,
 `InstitutionalCatalogGovernanceSnapshot`, `PainelTribunalMetrica`.
 
 Essas classes foram registradas numa allowlist nomeada (`ENTIDADES_LEGADAS_TERRITORIO_STRING_SEM_FK_COMARCA`)
@@ -398,6 +399,26 @@ amarante" e ambiguidade entre UFs distintas) e reexecução verde dos 68 testes 
 `ComarcaResolutionService` no projeto (MNI, Marketplace, Jurisdicao, Usuario, e as 6 migrações
 `comarcaEntidade` anteriores) confirmando que a troca de query nativa por filtro em Java preserva o
 comportamento observável.
+
+`InstitutionalCompetenceRuleSnapshot` saiu da allowlist em 2026-09-18 com migração própria
+(`V363__institutional_competence_rule_snapshot_fk_comarca.sql`), mesmo padrão das demais: ganhou
+`comarcaEntidade` (`@ManyToOne Comarca`, nullable, ao lado de `comarca`/`uf` String que continuam
+como fallback), `InstitutionalCompetenceRuleStateRepository.resolveComarca` resolve via
+`ComarcaResolutionService.resolver(comarca, uf)` no único método que persiste a entidade (`save`,
+tanto no ramo de criação quanto no de `refresh` de uma regra já existente). Só foi possível fechar
+depois do fix de `@Inject` documentado acima — antes, `jpaRepository` era sempre `null` em produção
+e nenhum registro real chegava a ser gravado nesta tabela. Cobertura: 3 testes novos em
+`InstitutionalCompetenceRuleStateRepositoryComarcaTest` (resolve/aplica, comarca em branco não
+resolve, resolver sem candidata não lança — mesmo trio de `OrgaoJudiciarioServiceComarcaTest`) e
+`OrganizacaoJudiciariaArchitectureTest` (a regra em si). `modular_monolith_guard_baseline.json` não
+precisou de ajuste desta vez (444 warnings, dentro do teto já revisado em 2026-09-17). Cadeia
+completa de migrations validada do zero contra Postgres 17 (`pgvector/pgvector:pg17`) via Flyway CLI
+(`flyway/flyway:10`) antes do fechamento:
+
+```
+Migrating schema "public" to version "363 - institutional competence rule snapshot fk comarca"
+Successfully applied 325 migrations to schema "public", now at version v363 (execution time 00:06.419s)
+```
 
 `PeritoSorteioAudit`/`PeritoDisponibilidade` saíram da allowlist juntas numa migração própria
 (`V330__perito_disponibilidade_sorteio_fk_comarca.sql`), mesmo padrão de `comarcaEntidade` nullable ao lado do
