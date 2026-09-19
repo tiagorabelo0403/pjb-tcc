@@ -367,7 +367,7 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 5,464 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 5,465 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 116 classes against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 The naming convention is enforced in CI by the `integration_test_naming_guard.py` guard: a class suffixed `IT` must carry a real integration marker — Testcontainers, a Spring context, or an inherited integration base. Without that marker the class would run in neither phase (Surefire skips it by name, and Failsafe only runs under `verify`), so the build fails instead of leaving the test invisible.
@@ -386,7 +386,7 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api -am
 ```
 
-This is the official project gate. It runs the 5,464 unit tests (Surefire) and then the 117 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 5,465 unit tests (Surefire) and then the 117 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 The `-am` is not cosmetic: without it `pjb-core` is resolved from `~/.m2` instead of the reactor, and a stale artifact there produces `cannot find symbol` pointing at classes that exist in the source tree.
 
@@ -427,7 +427,7 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **5,464** |
+| Total unit tests | Surefire | **5,465** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~14 min** |
@@ -1032,7 +1032,7 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **5,464 · 0 failures · 0 errors · 1 skipped** |
+| Unit tests (Surefire) | **5,465 · 0 failures · 0 errors · 1 skipped** |
 | Integration tests (Failsafe) | **116 classes · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
@@ -1079,7 +1079,7 @@ python scripts\config_taxonomy_guard.py
 | Guard | What It Verifies |
 |-------|-----------------|
 | `architecture_hygiene_guard` | Class names, packages, prohibited cross-dependencies |
-| `constructor_injection_guard` | Blocks field `@Autowired` and any Spring bean with more than 8 constructor dependencies; beans already above the ceiling have a frozen budget in `config/constructor-dependency-budget.json` that can only go down (`--tighten`) |
+| `constructor_injection_guard` | Ceiling of 8 dependencies per injection point — written constructors, Lombok-generated constructors, `record` components, annotated nested types and `@Bean` methods. The 178 points currently above the ceiling carry a frozen budget in `config/constructor-dependency-budget.json` that can only go down (`--tighten`); field injection is blocked by `PjbArchitectureTest` |
 | `runtime_concurrency_guard` | Zero executor created outside `PjbVirtualThreadSpine` governance |
 | `transactional_hotspot_guard` | Zero unreviewed heavy-I/O finding inside `@Transactional` — a reviewed hotspot requires `@PjbTransactionalBudget` |
 | `python_syntax_warning_guard` | Zero `SyntaxWarning` or `SyntaxError` across automation scripts — an invalid string escape becomes an error in a future Python release |
@@ -1244,7 +1244,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,464 unit tests and 117 integration test classes, and 326 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,465 unit tests and 117 integration test classes, and 326 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

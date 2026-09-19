@@ -191,6 +191,14 @@ jobs:
         working-directory: scripts
         run: python constructor_injection_guard.py
 
+      - name: Upload Enforce Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: guard-enforce-reports-${{ github.run_id }}
+          path: docs/reports/
+          retention-days: 30
+
   guards-report:
     name: Guards (report)
     runs-on: ubuntu-latest
