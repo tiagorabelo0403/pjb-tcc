@@ -52,7 +52,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class RecursalTimestampAuthorityService {
 
-
     private final PjbHardwareSecurityModule hsm;
     private final AuditLedgerService auditLedgerService;
     private final JudicialKeyStoreLoader judicialKeyStoreLoader;

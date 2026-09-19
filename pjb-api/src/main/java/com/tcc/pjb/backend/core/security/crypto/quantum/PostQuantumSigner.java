@@ -11,8 +11,12 @@ import java.security.Signature;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class PostQuantumSigner {
+
+    private static final Logger log = LoggerFactory.getLogger(PostQuantumSigner.class);
 
     private static final String KEY_FACTORY_FAMILY = "ML-DSA";
 
@@ -55,14 +59,12 @@ public final class PostQuantumSigner {
             BouncyCastleProviders.ensureRegistered();
             PublicKey publicKey = KeyFactory.getInstance(KEY_FACTORY_FAMILY, BouncyCastleProviders.NAME)
                     .generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(evidence.publicKeyB64())));
-            if (!declared.get().jcaName().equals(publicKey.getAlgorithm())) {
-                return false;
-            }
             Signature signature = Signature.getInstance(declared.get().jcaName(), BouncyCastleProviders.NAME);
             signature.initVerify(publicKey);
             signature.update(payload);
             return signature.verify(Base64.getDecoder().decode(evidence.signatureB64()));
         } catch (GeneralSecurityException | IllegalArgumentException e) {
+            log.warn("PQC_VERIFICACAO_FALHOU alg={} causa={}", evidence.algorithm(), e.toString());
             return false;
         }
     }

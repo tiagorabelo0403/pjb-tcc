@@ -61,10 +61,12 @@ public class LaianeSentencaDraftResponse {
     private StructuredProcessSummaryResponse resumoProcessualEstruturado;
     @Schema(description = "Alertas de temas qualificados")
     private QualifiedThemeAlertResponse temasQualificados;
-    @Schema(description = "Algoritmo PQC aplicado na assinatura", example = "ML-DSA-87")
+    @Schema(description = "Algoritmo PQC da evidência experimental de agilidade criptográfica", example = "ML-DSA-87")
     private String pqcAlgorithm;
-    @Schema(description = "Assinatura PQC em Base64")
+    @Schema(description = "Evidência PQC em Base64, gerada com chave efêmera do ato, sem cadeia de "
+            + "certificação e sem valor probatório na forma do art. 1º da MP 2.200-2/2001; a assinatura "
+            + "com validade jurídica é a ICP-Brasil")
     private String pqcSignatureB64;
-    @Schema(description = "Chave pública PQC em Base64")
+    @Schema(description = "Chave pública efêmera que acompanha a evidência PQC, descartada após o ato")
     private String pqcPublicKeyB64;
 }

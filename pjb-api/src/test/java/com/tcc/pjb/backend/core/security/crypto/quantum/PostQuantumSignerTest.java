@@ -57,7 +57,7 @@ class PostQuantumSignerTest {
     }
 
     @Test
-    void conjuntoDeParametrosDeclaradoPrecisaBaterComAChave() {
+    void evidenciaComConjuntoDeParametrosTrocadoNaoVerifica() {
         PostQuantumSigner signer = new PostQuantumSigner(PqcSignatureAlgorithm.ML_DSA_87);
         PqcEvidence evidence = signer.sign(SENTENCA);
 
