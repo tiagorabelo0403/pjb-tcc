@@ -152,6 +152,49 @@ literal.
 cálculo com consumidores reais, e o valor entra neles como *default* de request opcional. Unificar
 muda a superfície desses serviços. É fatia própria, com verificação própria.
 
+## D-pqc-chave-efemera-sem-ancora-de-confianca
+
+**Status:** aberta — achado do revisor ao migrar o PQC de DILITHIUM para ML-DSA
+
+`PostQuantumSigner` gera um par de chaves novo a cada instância, e os dois chamadores instanciam por
+chamada: `QuantumDecisionSignerService` (publicação de sentença da Laiane) e
+`CertidaoTransitoJulgadoService` (certidão de trânsito em julgado). A chave privada morre com o
+objeto; a chave pública viaja junto da assinatura em `LaianeSentencaDraftResponse.pqcPublicKeyB64` e
+`CertidaoTJResponse.pqcPublicKeyB64`.
+
+**Por que importa:** não há âncora de confiança, certificado, custódia nem HSM nesse caminho.
+Qualquer pessoa gera um par ML-DSA-87 e assina qualquer texto produzindo evidência indistinguível
+desta. O autocheck confere a assinatura contra a chave que o próprio objeto acabou de criar — prova
+que a biblioteca é autoconsistente, não que um magistrado assinou. A evidência também não é
+persistida em nenhuma das 326 migrations, então nunca é reverificada depois.
+
+**Evidência medida** — duas partes quaisquer produzem, para o mesmo texto de sentença, evidências
+que passam na mesma verificação, porque cada uma traz a própria chave pública (sonda contra o
+`bcprov-jdk18on` 1.85, o mesmo caminho JCA que o `PostQuantumSigner` usa):
+
+```
+juizo: alg=ML-DSA-87 verify=true pub=MIIKMjALBglghkgB...
+terceiro qualquer: alg=ML-DSA-87 verify=true pub=MIIKMjALBglghkgB...
+```
+
+O contraste é com o caminho que o projeto já tem pronto ao lado: `core/icp` traz
+`IcpBrasilTrustAnchorLoader`, `IcpBrasilChainValidator` e `IcpBrasilPkixOcspVerifier` — âncora,
+cadeia PKIX e OCSP. A assinatura com validade jurídica é essa, na forma do art. 1º da MP 2.200-2/2001.
+
+**Contenção aplicada:** as descrições de OpenAPI dos três campos dizem explicitamente que a evidência
+é experimental, de chave efêmera, sem cadeia de certificação e sem valor probatório. O risco que
+sobra é de leitura, não de promessa silenciosa.
+
+**Correção pendente, que é decisão de infra e produto:** custodiar a chave PQC com certificado
+associado ao signatário, no período de dupla assinatura (clássica + pós-quântica) que o
+`ADR-0060` já prevê. Enquanto não houver isso, ligar `PJB_CRYPTO_PQC_ENABLED` só produz evidência
+decorativa.
+
+**A conferir contra a norma:** leitura secundária da IN ITI nº 35/2026 indica que a ICP-Brasil
+admite ML-DSA-44 para assinante final e ML-DSA-65/87 para Autoridade Certificadora. O default do
+projeto é ML-DSA-87 para ato de magistrado. O texto oficial do DOC-ICP-01.01 v6.0 não estava
+acessível na revisão; conferir antes de afirmar alinhamento normativo no TCC.
+
 ## D-fragmentacao-de-contexto-spring-nos-its
 
 **Status:** aberta — medida, com alavanca identificada; exige julgamento por teste
