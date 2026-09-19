@@ -345,7 +345,13 @@ public class OperationalNotificationProofService {
         if ("OFICIAL_JUSTICA".equalsIgnoreCase(actorScope)) {
             return "OFICIAL_JUSTICA";
         }
-        return usuario.getTipoUsuario() == null ? "SECRETARIA_JUDICIARIA" : usuario.getTipoUsuario().name();
+        if (usuario.getTipoUsuario() == null) {
+            return "SECRETARIA_JUDICIARIA";
+        }
+        if (usuario.getTipoUsuario().isMagistratura()) {
+            return "MAGISTRATURA";
+        }
+        return usuario.getTipoUsuario().name();
     }
 
     private String resolveIp() {
