@@ -5,12 +5,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "pjb.crypto.pqc")
 public record PjbQuantumProperties(
         boolean enabled,
-        
-        String signatureAlgorithm
+        PqcSignatureAlgorithm signatureAlgorithm
 ) {
     public PjbQuantumProperties {
-        if (signatureAlgorithm == null || signatureAlgorithm.isBlank()) {
-            signatureAlgorithm = "DILITHIUM"; 
+        if (signatureAlgorithm == null) {
+            signatureAlgorithm = PqcSignatureAlgorithm.ML_DSA_87;
         }
     }
 }

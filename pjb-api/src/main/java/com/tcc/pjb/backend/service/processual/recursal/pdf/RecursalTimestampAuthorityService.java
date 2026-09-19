@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.service.processual.recursal.pdf;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHardwareSecurityModule;
+import com.tcc.pjb.backend.core.security.crypto.BouncyCastleProviders;
 import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.integration.judicial.security.JudicialKeyStoreLoader;
 import com.tcc.pjb.backend.integration.judicial.security.JudicialKeyStoreMaterial;
@@ -11,7 +12,6 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
@@ -38,7 +38,6 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.SignerInfoGenerator;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.DigestCalculator;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -53,7 +52,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class RecursalTimestampAuthorityService {
 
-    private static final String BC_PROVIDER = "BC";
 
     private final PjbHardwareSecurityModule hsm;
     private final AuditLedgerService auditLedgerService;
@@ -68,7 +66,7 @@ public class RecursalTimestampAuthorityService {
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService, "auditLedgerService");
         this.judicialKeyStoreLoader = Objects.requireNonNull(judicialKeyStoreLoader, "judicialKeyStoreLoader");
         this.properties = Objects.requireNonNull(properties, "properties");
-        ensureBouncyCastleProvider();
+        BouncyCastleProviders.ensureRegistered();
     }
 
     @Nullable
@@ -97,7 +95,7 @@ public class RecursalTimestampAuthorityService {
                     .setProvider(material.providerName())
                     .build(material.signatureAlgorithm(), material.privateKey(), material.certificateChain().getFirst());
             DigestCalculator sha1Calculator = new JcaDigestCalculatorProviderBuilder()
-                    .setProvider(BC_PROVIDER)
+                    .setProvider(BouncyCastleProviders.NAME)
                     .build()
                     .get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1));
             TimeStampTokenGenerator tokenGenerator = new TimeStampTokenGenerator(signerInfoGenerator, sha1Calculator, policyOid, true);
@@ -162,7 +160,7 @@ public class RecursalTimestampAuthorityService {
                 keyPair.getPrivate(),
                 List.of(certificate),
                 "SHA256withRSA",
-                BC_PROVIDER,
+                BouncyCastleProviders.NAME,
                 authorityName,
                 true,
                 firstNonBlank(properties.profile(), "RFC3161_INTERNAL")
@@ -204,7 +202,7 @@ public class RecursalTimestampAuthorityService {
                     privateKey,
                     List.copyOf(certs),
                     defaultSignatureAlgorithm(privateKey.getAlgorithm()),
-                    firstNonBlank(material.providerName(), BC_PROVIDER),
+                    firstNonBlank(material.providerName(), BouncyCastleProviders.NAME),
                     firstNonBlank(authorityName, certs.getFirst().getSubjectX500Principal().getName()),
                     false,
                     firstNonBlank(properties.profile(), "RFC3161_EXTERNAL")
@@ -228,11 +226,11 @@ public class RecursalTimestampAuthorityService {
                 keyPair.getPublic()
         );
         org.bouncycastle.operator.ContentSigner signer = new JcaContentSignerBuilder("SHA256withRSA")
-                .setProvider(BC_PROVIDER)
+                .setProvider(BouncyCastleProviders.NAME)
                 .build(keyPair.getPrivate());
         builder.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping));
         X509CertificateHolder holder = builder.build(signer);
-        return new JcaX509CertificateConverter().setProvider(BC_PROVIDER).getCertificate(holder);
+        return new JcaX509CertificateConverter().setProvider(BouncyCastleProviders.NAME).getCertificate(holder);
     }
 
     private String defaultSignatureAlgorithm(String keyAlgorithm) {
@@ -245,12 +243,6 @@ public class RecursalTimestampAuthorityService {
             case "RSASSA-PSS" -> "RSASSA-PSS";
             default -> "SHA256withRSA";
         };
-    }
-
-    private static void ensureBouncyCastleProvider() {
-        if (Security.getProvider(BC_PROVIDER) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
     }
 
     private static String firstNonBlank(String... values) {

@@ -61,7 +61,7 @@ public class LaianeSentencaDraftResponse {
     private StructuredProcessSummaryResponse resumoProcessualEstruturado;
     @Schema(description = "Alertas de temas qualificados")
     private QualifiedThemeAlertResponse temasQualificados;
-    @Schema(description = "Algoritmo PQC aplicado na assinatura", example = "CRYSTALS-Dilithium")
+    @Schema(description = "Algoritmo PQC aplicado na assinatura", example = "ML-DSA-87")
     private String pqcAlgorithm;
     @Schema(description = "Assinatura PQC em Base64")
     private String pqcSignatureB64;

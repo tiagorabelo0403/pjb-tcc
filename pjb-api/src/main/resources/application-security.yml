@@ -126,7 +126,7 @@ pjb:
   crypto:
     pqc:
       enabled: ${PJB_CRYPTO_PQC_ENABLED:false}
-      signature-algorithm: ${PJB_CRYPTO_PQC_SIGNATURE_ALGORITHM:DILITHIUM}
+      signature-algorithm: ${PJB_CRYPTO_PQC_SIGNATURE_ALGORITHM:ML-DSA-87}
 
   hsm:
     enabled: ${PJB_HSM_ENABLED:false}

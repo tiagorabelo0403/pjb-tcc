@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.service.processual.recursal.pdf;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHardwareSecurityModule;
 import com.tcc.pjb.backend.core.kernel.recursal.LegalAppealType;
+import com.tcc.pjb.backend.core.security.crypto.BouncyCastleProviders;
 import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.integration.judicial.security.JudicialKeyStoreLoader;
 import com.tcc.pjb.backend.integration.judicial.security.JudicialKeyStoreMaterial;
@@ -17,7 +18,6 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
@@ -47,7 +47,6 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSTypedData;
 import org.bouncycastle.cms.SignerInfoGenerator;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -58,7 +57,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class RecursalPdfNativeSignatureService {
 
-    private static final String BC_PROVIDER = "BC";
 
     private final PjbHardwareSecurityModule hsm;
     private final AuditLedgerService auditLedgerService;
@@ -73,7 +71,7 @@ public class RecursalPdfNativeSignatureService {
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService, "auditLedgerService");
         this.judicialKeyStoreLoader = Objects.requireNonNull(judicialKeyStoreLoader, "judicialKeyStoreLoader");
         this.properties = Objects.requireNonNull(properties, "properties");
-        ensureBouncyCastleProvider();
+        BouncyCastleProviders.ensureRegistered();
     }
 
     public RecursalPdfArtifact applyNativeSignature(Processo processo,
@@ -164,7 +162,7 @@ public class RecursalPdfNativeSignatureService {
                 keyPair.getPrivate(),
                 List.of(certificate),
                 "SHA256withRSA",
-                BC_PROVIDER,
+                BouncyCastleProviders.NAME,
                 signerName,
                 true,
                 "EPHEMERAL_MOCK_CERTIFICATE"
@@ -272,7 +270,7 @@ public class RecursalPdfNativeSignatureService {
         }
         ContentSigner contentSigner = signerBuilder.build(material.privateKey());
         DigestCalculatorProvider digestProvider = new JcaDigestCalculatorProviderBuilder()
-                .setProvider(BC_PROVIDER)
+                .setProvider(BouncyCastleProviders.NAME)
                 .build();
         SignerInfoGenerator signerInfoGenerator = new JcaSignerInfoGeneratorBuilder(digestProvider)
                 .build(contentSigner, chain.getFirst());
@@ -297,11 +295,11 @@ public class RecursalPdfNativeSignatureService {
                 keyPair.getPublic()
         );
         ContentSigner signer = new JcaContentSignerBuilder("SHA256withRSA")
-                .setProvider(BC_PROVIDER)
+                .setProvider(BouncyCastleProviders.NAME)
                 .build(keyPair.getPrivate());
         X509CertificateHolder holder = builder.build(signer);
         return new JcaX509CertificateConverter()
-                .setProvider(BC_PROVIDER)
+                .setProvider(BouncyCastleProviders.NAME)
                 .getCertificate(holder);
     }
 
@@ -326,12 +324,6 @@ public class RecursalPdfNativeSignatureService {
             case "RSASSA-PSS" -> "RSASSA-PSS";
             default -> "SHA256withRSA";
         };
-    }
-
-    private static void ensureBouncyCastleProvider() {
-        if (Security.getProvider(BC_PROVIDER) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
     }
 
     private static String stringValue(Map<String, Object> map, String key) {
