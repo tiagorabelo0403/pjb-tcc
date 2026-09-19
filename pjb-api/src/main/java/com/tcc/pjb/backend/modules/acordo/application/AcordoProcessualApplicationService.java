@@ -73,15 +73,15 @@ public class AcordoProcessualApplicationService {
         Long abertaPorId = requireId(command.abertaPorId(), "abertaPorId");
         requireUsuarioExistente(abertaPorId);
         if (!processoPort.existeProcesso(processoId)) {
-            throw new AcordoApplicationException("Processo nao encontrado.");
+            throw new AcordoNotFoundException("Processo nao encontrado.");
         }
         if (!usuarioPort.usuarioPodeParticipar(processoId, abertaPorId)) {
-            throw new AcordoApplicationException("Usuario nao autorizado a abrir sala para o processo.");
+            throw new AcordoForbiddenException("Usuario nao autorizado a abrir sala para o processo.");
         }
         ProcessoAcordoContexto contexto = processoPort.obterContextoProcessual(processoId);
         AcordoProcessualWindowDecision decision = windowPolicy.avaliar(toWindowInput(contexto, command));
         if (!decision.permitido()) {
-            throw new AcordoApplicationException(decision.motivo());
+            throw new AcordoConflictException(decision.motivo());
         }
         Instant now = Instant.now(clock);
         Instant expiraEm = normalizarExpiracao(command.expiraEm(), now);
@@ -140,10 +140,10 @@ public class AcordoProcessualApplicationService {
         requireGestorOuParticipanteAceito(sessao, convidanteId);
         requireUsuarioExistente(convidadoId);
         if (!usuarioPort.usuarioPodeParticipar(sessao.processoId(), convidadoId)) {
-            throw new AcordoApplicationException("Usuario convidado nao autorizado para o processo.");
+            throw new AcordoForbiddenException("Usuario convidado nao autorizado para o processo.");
         }
         if (store.findParticipante(sessao.id(), convidadoId).isPresent()) {
-            throw new AcordoApplicationException("Usuario ja consta como participante da sala.");
+            throw new AcordoConflictException("Usuario ja consta como participante da sala.");
         }
         AcordoParticipanteSnapshot participante = store.saveParticipante(new AcordoParticipanteSnapshot(
                 null,
@@ -174,7 +174,7 @@ public class AcordoProcessualApplicationService {
         Long usuarioId = requireId(command.usuarioId(), "usuarioId");
         AcordoParticipanteSnapshot participante = requireParticipante(sessao.id(), usuarioId);
         if (participante.status() == AcordoParticipanteStatus.REMOVIDO) {
-            throw new AcordoApplicationException("Participante removido nao pode aceitar a sala.");
+            throw new AcordoForbiddenException("Participante removido nao pode aceitar a sala.");
         }
         AcordoParticipanteSnapshot aceito = store.saveParticipante(participante.withAceite(now));
         AcordoSessaoStatus novoStatus = store.countParticipantesAceitos(sessao.id()) >= 2
@@ -212,10 +212,10 @@ public class AcordoProcessualApplicationService {
         stateMachine.requireMensagemPermitida(sessao.status(), expirada, participante.aceito());
         AcordoMensagemVisibilidade visibilidade = command.visibilidade() != null ? command.visibilidade() : AcordoMensagemVisibilidade.PARTICIPANTES;
         if (sessao.segredoJustica() && visibilidade == AcordoMensagemVisibilidade.PUBLICA_PROCESSUAL) {
-            throw new AcordoApplicationException("Sala sigilosa nao permite mensagem de visibilidade publica processual.");
+            throw new AcordoConflictException("Sala sigilosa nao permite mensagem de visibilidade publica processual.");
         }
         if (command.confidencial() && visibilidade == AcordoMensagemVisibilidade.PUBLICA_PROCESSUAL) {
-            throw new AcordoApplicationException("Mensagem confidencial nao pode ser publica processual.");
+            throw new AcordoConflictException("Mensagem confidencial nao pode ser publica processual.");
         }
         AcordoMensagemSnapshot mensagem = store.saveMensagem(new AcordoMensagemSnapshot(
                 null,
@@ -255,7 +255,7 @@ public class AcordoProcessualApplicationService {
         Long revisorId = requireId(command.revisorId(), "revisorId");
         requireUsuarioExistente(revisorId);
         if (!proposta.criadaPorIa()) {
-            throw new AcordoApplicationException("Apenas proposta criada por IA exige marcacao de revisao humana.");
+            throw new AcordoConflictException("Apenas proposta criada por IA exige marcacao de revisao humana.");
         }
         if (!usuarioPort.usuarioPodeHomologar(revisorId)) {
             AcordoParticipanteSnapshot participante = requireParticipante(sessao.id(), revisorId);
@@ -286,7 +286,7 @@ public class AcordoProcessualApplicationService {
                 proposta.revisadaPorHumano()
         );
         if (store.findTermoByProposta(proposta.id()).isPresent()) {
-            throw new AcordoApplicationException("Proposta ja possui termo gerado.");
+            throw new AcordoConflictException("Proposta ja possui termo gerado.");
         }
         String conteudo = requireText(command.conteudoTermo(), "conteudoTermo", MAX_TERMO);
         AcordoTermoSnapshot termo = store.saveTermo(new AcordoTermoSnapshot(
@@ -318,7 +318,7 @@ public class AcordoProcessualApplicationService {
         stateMachine.requireAssinatura(sessao.status(), sessao.expiradaEm(now), participante.aceito(), true, participante.papel().podeAssinarTermo());
         String hashAssinatura = requireText(command.hashAssinatura(), "hashAssinatura", 512);
         if (hashAssinatura.length() < 16) {
-            throw new AcordoApplicationException("Assinatura logica exige hash minimo.");
+            throw new AcordoConflictException("Assinatura logica exige hash minimo.");
         }
         AcordoTermoSnapshot assinado = store.saveTermo(termo.withStatus(AcordoTermoStatus.ASSINADO));
         store.saveSessao(sessao.withStatus(AcordoSessaoStatus.SIGNED));
@@ -361,10 +361,10 @@ public class AcordoProcessualApplicationService {
         AcordoSessaoSnapshot sessao = requireSessaoForUpdate(command.sessaoId());
         Long magistradoId = requireId(command.magistradoId(), "magistradoId");
         if (!usuarioPort.usuarioPodeHomologar(magistradoId)) {
-            throw new AcordoApplicationException("Homologacao exige perfil autorizado de magistratura.");
+            throw new AcordoForbiddenException("Homologacao exige perfil autorizado de magistratura.");
         }
         AcordoTermoSnapshot termo = store.findTermoBySessao(sessao.id())
-                .orElseThrow(() -> new AcordoApplicationException("Sessao sem termo para homologacao."));
+                .orElseThrow(() -> new AcordoConflictException("Sessao sem termo para homologacao."));
         stateMachine.requireHomologacao(sessao.status(), termo.status());
         store.saveTermo(termo.withStatus(AcordoTermoStatus.HOMOLOGADO));
         AcordoSessaoSnapshot homologada = store.saveSessao(sessao.withHomologacao(AcordoSessaoStatus.HOMOLOGATED, now, magistradoId));
@@ -389,10 +389,10 @@ public class AcordoProcessualApplicationService {
         AcordoSessaoSnapshot sessao = requireSessaoForUpdate(command.sessaoId());
         Long magistradoId = requireId(command.magistradoId(), "magistradoId");
         if (!usuarioPort.usuarioPodeHomologar(magistradoId)) {
-            throw new AcordoApplicationException("Rejeicao de homologacao exige perfil autorizado de magistratura.");
+            throw new AcordoForbiddenException("Rejeicao de homologacao exige perfil autorizado de magistratura.");
         }
         AcordoTermoSnapshot termo = store.findTermoBySessao(sessao.id())
-                .orElseThrow(() -> new AcordoApplicationException("Sessao sem termo para rejeicao."));
+                .orElseThrow(() -> new AcordoConflictException("Sessao sem termo para rejeicao."));
         String motivo = requireText(command.motivo(), "motivo", 4000);
         stateMachine.requireRejeicao(sessao.status(), termo.status(), motivo);
         store.saveTermo(termo.withStatus(AcordoTermoStatus.REJEITADO));
@@ -421,7 +421,7 @@ public class AcordoProcessualApplicationService {
             stateMachine.requireInteracaoParticipanteAceito(participante.aceito());
         }
         if (sessao.status().terminal()) {
-            throw new AcordoApplicationException("Sala terminal nao pode ser encerrada novamente.");
+            throw new AcordoConflictException("Sala terminal nao pode ser encerrada novamente.");
         }
         String motivo = requireText(command.motivo(), "motivo", 2000);
         AcordoSessaoSnapshot encerrada = store.saveSessao(sessao.withStatus(AcordoSessaoStatus.CLOSED));
@@ -458,7 +458,7 @@ public class AcordoProcessualApplicationService {
     @Transactional(readOnly = true)
     public AcordoSessaoSnapshot obterSala(Long sessaoId) {
         return store.findSessao(requireId(sessaoId, "sessaoId"))
-                .orElseThrow(() -> new AcordoApplicationException("Sala de acordo nao encontrada."));
+                .orElseThrow(() -> new AcordoNotFoundException("Sala de acordo nao encontrada."));
     }
 
     private AcordoPropostaSnapshot registrarPropostaInterna(RegistrarPropostaCommand command,
@@ -471,7 +471,7 @@ public class AcordoProcessualApplicationService {
         AcordoParticipanteSnapshot participante = requireParticipante(sessao.id(), requireId(command.autorId(), "autorId"));
         stateMachine.requirePropostaPermitida(sessao.status(), sessao.expiradaEm(now), participante.aceito(), command.validadeAte(), now);
         if (command.valor() != null && command.valor().compareTo(BigDecimal.ZERO) < 0) {
-            throw new AcordoApplicationException("Valor de proposta nao pode ser negativo.");
+            throw new AcordoConflictException("Valor de proposta nao pode ser negativo.");
         }
         String termosJson = requireJson(command.termosJson(), "termosJson");
         AcordoPropostaSnapshot proposta = store.saveProposta(new AcordoPropostaSnapshot(
@@ -523,22 +523,22 @@ public class AcordoProcessualApplicationService {
 
     private AcordoSessaoSnapshot requireSessaoForUpdate(Long sessaoId) {
         return store.findSessaoForUpdate(requireId(sessaoId, "sessaoId"))
-                .orElseThrow(() -> new AcordoApplicationException("Sala de acordo nao encontrada."));
+                .orElseThrow(() -> new AcordoNotFoundException("Sala de acordo nao encontrada."));
     }
 
     private AcordoPropostaSnapshot requirePropostaForUpdate(Long propostaId) {
         return store.findPropostaForUpdate(requireId(propostaId, "propostaId"))
-                .orElseThrow(() -> new AcordoApplicationException("Proposta de acordo nao encontrada."));
+                .orElseThrow(() -> new AcordoNotFoundException("Proposta de acordo nao encontrada."));
     }
 
     private AcordoTermoSnapshot requireTermoForUpdate(Long termoId) {
         return store.findTermoForUpdate(requireId(termoId, "termoId"))
-                .orElseThrow(() -> new AcordoApplicationException("Termo de acordo nao encontrado."));
+                .orElseThrow(() -> new AcordoNotFoundException("Termo de acordo nao encontrado."));
     }
 
     private AcordoParticipanteSnapshot requireParticipante(Long sessaoId, Long usuarioId) {
         return store.findParticipante(sessaoId, usuarioId)
-                .orElseThrow(() -> new AcordoApplicationException("Usuario nao participa da sala de acordo."));
+                .orElseThrow(() -> new AcordoForbiddenException("Usuario nao participa da sala de acordo."));
     }
 
     private void requireGestorOuParticipanteAceito(AcordoSessaoSnapshot sessao, Long usuarioId) {
@@ -548,28 +548,28 @@ public class AcordoProcessualApplicationService {
         AcordoParticipanteSnapshot participante = requireParticipante(sessao.id(), usuarioId);
         stateMachine.requireInteracaoParticipanteAceito(participante.aceito());
         if (!participante.papel().gestorDaSala()) {
-            throw new AcordoApplicationException("Convite exige gestor da sala ou servidor autorizado.");
+            throw new AcordoForbiddenException("Convite exige gestor da sala ou servidor autorizado.");
         }
     }
 
     private void requireSalaNaoExpirada(AcordoSessaoSnapshot sessao, Instant now) {
         if (sessao.status().terminal()) {
-            throw new AcordoApplicationException("Sala em estado terminal nao aceita operacao.");
+            throw new AcordoConflictException("Sala em estado terminal nao aceita operacao.");
         }
         if (sessao.expiradaEm(now)) {
-            throw new AcordoApplicationException("Sala expirada nao aceita operacao.");
+            throw new AcordoConflictException("Sala expirada nao aceita operacao.");
         }
     }
 
     private void requireUsuarioExistente(Long usuarioId) {
         if (!usuarioPort.existeUsuario(usuarioId)) {
-            throw new AcordoApplicationException("Usuario nao encontrado.");
+            throw new AcordoNotFoundException("Usuario nao encontrado.");
         }
     }
 
     private Long requireId(Long id, String field) {
         if (id == null || id <= 0) {
-            throw new AcordoApplicationException(field + " invalido.");
+            throw new AcordoConflictException(field + " invalido.");
         }
         return id;
     }
@@ -577,10 +577,10 @@ public class AcordoProcessualApplicationService {
     private Instant normalizarExpiracao(Instant requested, Instant now) {
         Instant value = requested != null ? requested : now.plus(DEFAULT_EXPIRACAO);
         if (!value.isAfter(now.plus(Duration.ofMinutes(5)))) {
-            throw new AcordoApplicationException("Expiracao da sala deve ser futura.");
+            throw new AcordoConflictException("Expiracao da sala deve ser futura.");
         }
         if (value.isAfter(now.plus(MAX_EXPIRACAO))) {
-            throw new AcordoApplicationException("Sala de acordo nao pode ficar aberta por mais de 60 dias.");
+            throw new AcordoConflictException("Sala de acordo nao pode ficar aberta por mais de 60 dias.");
         }
         return value;
     }
@@ -588,10 +588,10 @@ public class AcordoProcessualApplicationService {
     private String requireText(String value, String field, int max) {
         String normalized = value == null ? "" : value.trim();
         if (normalized.isBlank()) {
-            throw new AcordoApplicationException(field + " obrigatorio.");
+            throw new AcordoConflictException(field + " obrigatorio.");
         }
         if (normalized.length() > max) {
-            throw new AcordoApplicationException(field + " excede tamanho maximo.");
+            throw new AcordoConflictException(field + " excede tamanho maximo.");
         }
         return normalized;
     }
@@ -599,7 +599,7 @@ public class AcordoProcessualApplicationService {
     private String requireJson(String value, String field) {
         String normalized = requireText(value, field, 20000);
         if (!normalized.startsWith("{") && !normalized.startsWith("[")) {
-            throw new AcordoApplicationException(field + " deve ser JSON estruturado.");
+            throw new AcordoConflictException(field + " deve ser JSON estruturado.");
         }
         return normalized;
     }

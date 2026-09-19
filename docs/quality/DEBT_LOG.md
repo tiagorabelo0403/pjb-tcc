@@ -1117,34 +1117,3 @@ roteamento recursal e catálogo de câmaras/turmas seguem desconectados.
 o papel desses três continua sendo só rotulagem informativa, com uma camada de distribuição recursal
 real construída à parte, análoga ao `MapaCompetenciaDinamicoEngine`. Qualquer uma das duas rotas é maior
 que uma correção pontual.
-
-## D-taxonomia-de-erro-http-incompleta
-
-**Status:** aberta
-
-**Contexto:** `ApiExceptionHandler` mapeia 40 tipos de exceção e, pelo tamanho, aparenta ser a
-taxonomia de erro da API. Varredura cruzando todo `new *Exception(` em `src/main` contra os tipos
-listados em `@ExceptionHandler(...)` das cinco advices e contra `@ResponseStatus` nas declarações
-encontrou **41 tipos lançados sem handler e sem `@ResponseStatus`**, todos caindo no
-`@ExceptionHandler(Exception.class)` e respondendo `500 "Erro interno."`.
-
-A maioria é 500 legítimo — `IOException` (24), `RejectedExecutionException` (5), `HsmBusyException`,
-`NullPointerException`. `jakarta.persistence.EntityNotFoundException` (34 lançamentos em 16 classes)
-foi corrigida: passou a mapear para 404. Os candidatos restantes, em que a categoria semântica é do
-cliente e o 500 é provavelmente errado: `AcordoApplicationException` (39),
-`AcordoDomainException` (16), `PrazoProcessualDomainException` (9),
-`NotificacaoPrazoDomainException` (8), `TransicaoInvalidaException` (1).
-
-Precedente no próprio repositório: o javadoc de `ApiExceptionHandlerMarketplaceOAuthTest` registra a
-mesma forma de defeito já corrigida uma vez — falha de OAuth usava `IllegalStateException` genérica,
-sem handler, e respondia 500 em vez de 401/403.
-
-**Risco:** cliente não distingue "o recurso não existe" / "a transição é inválida" de "o servidor
-quebrou". Impede retry inteligente, polui log de erro com ocorrência esperada e, num sistema
-judicial, transforma resposta de negócio em incidente operacional aparente.
-
-**Não revisitar sem decisão:** cada tipo restante exige decidir o status correto olhando o domínio —
-`AcordoDomainException` pode ser 409 ou 422 conforme o caso, e `TransicaoInvalidaException` depende
-de a transição ser recusada por regra processual ou por estado concorrente. Não é varredura
-mecânica: mapear em lote pelo nome repetiria o erro de tratar categoria semântica como sintaxe.
-
