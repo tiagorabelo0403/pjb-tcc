@@ -385,8 +385,12 @@ public class QualifiedDocumentSignatureEnvelopeService {
             case "DELEGADO_POLICIA", "DELEGADO_POLICIA_FEDERAL", "AGENTE_POLICIAL",
                  "ESCRIVAO_POLICIAL" -> "POLICIA_JUDICIARIA".equals(segmento);
             case "ADVOGADO", "ADVOGADO_PATRONO" -> "ADVOCACIA".equals(segmento);
-            case "OFICIAL_JUSTICA" -> "OFICIAL_JUSTICA".equals(segmento);
+            case "OFICIAL_JUSTICA", "OFICIAL_JUSTICA_AVALIADOR" -> "OFICIAL_JUSTICA".equals(segmento);
             case "UNIDADE_JUDICIAL" -> "UNIDADE_JUDICIAL".equals(segmento);
+            case "MAGISTRATURA" -> "MAGISTRATURA".equals(segmento);
+            case "DEFENSOR_PUBLICO", "DEFENSOR_PUBLICO_FEDERAL" -> "DEFENSORIA_PUBLICA".equals(segmento);
+            case "PROCURADOR", "PROCURADORIA_MUNICIPAL", "PROCURADORIA_ESTADUAL",
+                 "PROCURADORIA_FEDERAL" -> "PROCURADORIA".equals(segmento);
             default -> true;
         };
     }
