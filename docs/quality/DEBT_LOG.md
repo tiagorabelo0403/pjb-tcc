@@ -944,8 +944,13 @@ literal em entry de Map com chave `salarioMinimo*`, declaração de `static fina
 SALARIO_MINIMO*`, chamada `valorPorAno(literal)`, e `LocalDate.now()` inline em chamada ao service
 canônico. Whitelist explícita do `SalarioMinimoNacionalService.java` (fonte canônica com
 `FALLBACK_OFICIAL` legítimo). Sem mecanismo de allowlist inline — nenhuma convenção prévia no
-projeto e a etapa optou por não inventar. Exit 1 documentado enquanto as duas dívidas próprias
-não forem resolvidas.
+projeto e a etapa optou por não inventar. Hoje o guard passa: as duas ocorrências que sobravam
+foram fechadas em `f627ea2d`, e o que resta de `D-quadro-credores` é pergunta de domínio, não
+literal em código.
+
+```
+SALARIO MINIMO HARDCODED GUARD: OK (7971 arquivos varridos)
+```
 
 **Risco original:** valores monetários congelados em pontos de cálculo relevantes (falência,
 recuperação judicial, catálogo de frontend, painel comparativo), com correção requerendo
@@ -954,76 +959,33 @@ atualização manual arquivo-a-arquivo todo ano em vez de sincronização autom�
 casos limite, exibir catálogo desatualizado, ou aplicar teto trabalhista/impontualidade com valor
 de anos anteriores.
 
-## D-national-rule-pack-engine-sem-data-referencia
+## D-quadro-credores-marco-temporal-em-recuperacao-judicial
 
-**Status:** aberta — dívida arquitetural, não bug ativo (achado transversal de etapa de
-`D-salario-minimo-hardcoded-fora-de-gratuidade`, extraído para tratamento próprio)
+**Status:** aberta — pergunta jurídica, não hardcode; o hardcode foi fechado em `f627ea2d`
 
-**Contexto:** `NationalRulePackEngine.inferDynamicRules(ContextoRegra ctx)` chama
-`salarioMinimoNacionalService.multiplicar(new BigDecimal("40"), LocalDate.now())` (linha 418, teto
-JEC) e `salarioMinimoNacionalService.multiplicar(new BigDecimal("60"), LocalDate.now())` (linha 430,
-teto JEF). A regra jurídica pede **data do ajuizamento** (Lei 9.099/95 art. 3º I; Lei 10.259/2001
-art. 3º) — o valor da causa deve ser aferido no momento da propositura, não no momento em que a
-regra é avaliada. O `record ContextoRegra` (linhas 34-40) carrega `classeTPU`, `assuntoTPU`,
-`ramo`, `grau`, `tribunalCodigo`, `extras`, mas **nenhum campo de data**. O `Map<String, Object>
-extras` já transporta `valorCausa`; poderia transportar `dataAjuizamento` também, mas hoje não
-transporta e o engine cai no `LocalDate.now()` por falta de alternativa disponível.
+`QuadroGeralCredoresAssemblerService.montar(List<Credor>, LocalDate dataPedido)` calcula o limite
+trabalhista de 150 salários mínimos por credor (Lei 11.101/2005, art. 83, I) com o salário mínimo da
+data que o chamador entrega, e `dataPedido` é obrigatória (`Objects.requireNonNull`), sem cair em
+`LocalDate.now()`:
 
-**Risco:** ao virar de ano, causas ajuizadas em dezembro do ano anterior podem ser reclassificadas
-como JEC/JEF por chamada da regra em janeiro do ano corrente com valor de causa que era limítrofe.
-Baixa probabilidade, mas mancha o motor com uma decisão temporal errada por construção. Também
-mascara o fato de que o SM da data do ajuizamento seria diferente — regra jurídica correta viraria
-"foi JEC no momento do ajuizamento" e não "é JEC agora".
+```
+59:                salarioMinimoNacionalService.multiplicar(LIMITE_TRABALHISTA_SM, dataPedido);
+```
 
-**Quando revisitar:** etapa arquitetural própria. Alteração exige adicionar `LocalDate
-dataReferencia` ao `record ContextoRegra`, o que cascateia por 28 arquivos consumidores
-(`JurimetriaEngine`, `NationalColegiadoEngine`, `CejuscEngine`, `CooperacaoJuridicaEngine`,
-`ImpedimentoSuspeicaoEngine`, `NotificacaoInteligentePJB`, `TransparenciaCnjEngine`, `LoadPlan`,
-`PluginSnapshot`, `PluginResolucaoTribunalService`, `TribunalRuleEngine`,
-`TribunalRulePackSynchronizationSupport`, `TribunalRuleResolutionSupport`, além dos testes). O
-guard `salario_minimo_hardcoded_guard.py` detecta as duas ocorrências e permanecerá reportando-as
-com `exit=1` documentado até o fechamento desta dívida.
+```
+SALARIO MINIMO HARDCODED GUARD: OK (7971 arquivos varridos)
+```
 
-## D-quadro-credores-recuperacao-marco-nao-pesquisado
+**O que continua aberto é o domínio, não o código.** O service não distingue falência de recuperação
+judicial: aceita qualquer `List<Credor>` e não recebe o tipo de processo. Em falência o marco aceito
+é a data da decretação; em recuperação judicial não existe "decretação", e o marco pode ser o
+deferimento do processamento, a concessão da recuperação ou outra decisão — não pesquisado. Enquanto
+o chamador escolher a data sem que o service saiba de que processo se trata, os dois regimes podem
+receber o mesmo critério sem que nada reprove.
 
-**Status:** aberta — bloqueio de segurança sobre `QuadroGeralCredoresAssemblerService`, gate
-levantado pela Fase 0 da etapa de `D-salario-minimo-hardcoded-fora-de-gratuidade`.
-
-**Contexto:** o service `QuadroGeralCredoresAssemblerService` foi analisado como candidato a
-receber `LocalDate dataDecretacao` e passar a consultar o `SalarioMinimoNacionalService` para o
-limite trabalhista de 150 SM por credor (Lei 11.101/2005 art. 83 I). **Se o service fosse
-exclusivo de falência**, o critério "data da decretação da falência" seria o majoritariamente
-aceito pela jurisprudência estadual (ausente precedente do STJ especificamente sobre o marco),
-com fundamento na consolidação do quadro geral pelo administrador judicial e no princípio da
-par conditio creditorum — essa é a base doutrinária que orientaria a implementação. **Mas o
-service não é declaradamente exclusivo de falência**, e a investigação leu o arquivo completo do
-assembler e confirmou:
-
-- nenhum parâmetro, campo ou enum distingue falência × recuperação judicial;
-- o observation gerado cita apenas "Lei 11.101/2005 arts. 83 e 149" (art. 149 é ordem de pagamento
-  pós-realização do ativo, específico de falência);
-- o único teste (`quadroGeralOrdenadoPorClasse` em `RecuperacaoJudicialFalenciaTest`) cobre apenas
-  ordenação, sem cenário RJ vs falência;
-- **zero call sites em produção** (mesmo perfil de `JusticaGratuidaVerificadorService`).
-
-O art. 83 rege falência; em recuperação judicial as classes de credores são reaproveitadas por
-remissão via art. 41, mas o evento-marco temporal em RJ **não é "decretação"** (que só existe em
-falência) — pode ser deferimento do processamento, concessão da recuperação, ou outra decisão
-específica. **Marco temporal para RJ não foi pesquisado nesta etapa.**
-
-**Risco:** como o service não impõe barreira arquitetural contra reuso em RJ (aceita qualquer
-`List<Credor>` sem verificar tipo de processo), qualquer implementação futura da Fase 3 com
-"data da decretação" hardcoded como semântica única pode ser silenciosamente incorreta em cenário
-de RJ. Aplicar critério de falência em RJ, ou vice-versa, reintroduz a mesma ambiguidade que a
-etapa atual resolveu para o outro service.
-
-**Quando revisitar:** etapa própria com pesquisa jurídica prévia sobre o marco temporal do SM em
-recuperação judicial. Antes de escrever código: (a) pesquisar art. 54 c/c 83 da Lei 11.101/2005 no
-contexto de RJ; (b) confirmar precedente ou doutrina sobre marco em RJ; (c) decidir se o service
-deve receber enum discriminador (`TipoProcesso.FALENCIA` / `TipoProcesso.RECUPERACAO`) para
-resolver marco diferente por caminho, ou se são dois services distintos. O guard
-`salario_minimo_hardcoded_guard.py` continua reportando as 2 ocorrências (constante literal +
-declaração de constante) até fechamento.
+**Quando revisitar:** etapa com pesquisa jurídica prévia (art. 41 c/c art. 83 da Lei 11.101/2005 em
+recuperação judicial) e, só então, decidir entre um discriminador de tipo de processo no service ou
+dois services distintos. Hoje o service não tem chamador em produção.
 
 ## D-frontend-delivery-routes-nao-sinaliza-depreciacao
 
