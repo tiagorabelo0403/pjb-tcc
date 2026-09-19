@@ -58,18 +58,18 @@ public class AcordoProcessualChatBridgeService {
         var sessaoOptional = store.findSessaoAtivaByProcesso(processoId, now);
         if (sessaoOptional.isEmpty()) {
             if (command.exigirSala()) {
-                throw new AcordoApplicationException("Canal de acordo exige sala de acordo processual ativa.");
+                throw new AcordoConflictException("Canal de acordo exige sala de acordo processual ativa.");
             }
             return AcordoProcessualChatMessageResult.ignorada("Processo sem sala de acordo ativa.");
         }
         AcordoSessaoSnapshot sessao = sessaoOptional.get();
         if (!usuarioPort.usuarioPodeParticipar(processoId, autorId)) {
-            throw new AcordoApplicationException("Usuario nao autorizado a participar da sala de acordo.");
+            throw new AcordoForbiddenException("Usuario nao autorizado a participar da sala de acordo.");
         }
         AcordoParticipanteSnapshot participante = store.findParticipante(sessao.id(), autorId)
-                .orElseThrow(() -> new AcordoApplicationException("Usuario precisa ser convidado para a sala de acordo antes de usar o canal negocial."));
+                .orElseThrow(() -> new AcordoForbiddenException("Usuario precisa ser convidado para a sala de acordo antes de usar o canal negocial."));
         if (!participante.aceito()) {
-            throw new AcordoApplicationException("Usuario precisa aceitar a participacao na sala de acordo antes de enviar mensagem negocial.");
+            throw new AcordoForbiddenException("Usuario precisa aceitar a participacao na sala de acordo antes de enviar mensagem negocial.");
         }
         AcordoMensagemSnapshot mensagem = applicationService.registrarMensagem(new AcordoProcessualApplicationService.RegistrarMensagemCommand(
                 sessao.id(),
@@ -93,7 +93,7 @@ public class AcordoProcessualChatBridgeService {
 
     private Long requireId(Long value, String field) {
         if (value == null || value <= 0) {
-            throw new AcordoApplicationException(field + " invalido.");
+            throw new AcordoConflictException(field + " invalido.");
         }
         return value;
     }
@@ -101,10 +101,10 @@ public class AcordoProcessualChatBridgeService {
     private String requireText(String value, String field, int max) {
         String normalized = value == null ? "" : value.trim();
         if (normalized.isBlank()) {
-            throw new AcordoApplicationException(field + " obrigatorio.");
+            throw new AcordoConflictException(field + " obrigatorio.");
         }
         if (normalized.length() > max) {
-            throw new AcordoApplicationException(field + " excede tamanho maximo.");
+            throw new AcordoConflictException(field + " excede tamanho maximo.");
         }
         return normalized;
     }

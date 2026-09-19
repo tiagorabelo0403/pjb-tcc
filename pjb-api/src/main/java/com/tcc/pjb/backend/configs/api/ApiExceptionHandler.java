@@ -7,6 +7,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Locale;
 import com.tcc.pjb.backend.core.moderation.ContentBlockedException;
+import com.tcc.pjb.backend.core.protocolo.completude.ProtocoloCompletudeStateMachine.TransicaoInvalidaException;
+import com.tcc.pjb.backend.modules.acordo.application.AcordoConflictException;
+import com.tcc.pjb.backend.modules.acordo.application.AcordoForbiddenException;
+import com.tcc.pjb.backend.modules.acordo.application.AcordoNotFoundException;
+import com.tcc.pjb.backend.modules.acordo.domain.AcordoDomainException;
+import com.tcc.pjb.backend.modules.notificacoes.domain.NotificacaoPrazoDomainException;
+import com.tcc.pjb.backend.modules.prazos.domain.PrazoProcessualDomainException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
@@ -454,6 +461,55 @@ public class ApiExceptionHandler {
         }).toList();
         pd.setProperty("violacoes", violacoes);
         return problemResponse(HttpStatus.UNPROCESSABLE_CONTENT, pd, request, null);
+    }
+
+    /**
+     * D-taxonomia-de-erro-http-incompleta: as 5 exceções abaixo caíam no catch-all e respondiam
+     * sempre 500, mesmo sendo erro de cliente na maioria dos casos. Categorizadas por leitura de
+     * cada lançamento (não por nome da classe):
+     * - Acordo* tinha uma única classe (AcordoApplicationException) misturando 4 categorias HTTP
+     *   distintas nos seus 39 lançamentos — dividida em 3 subclasses concretas
+     *   (AcordoNotFoundException/AcordoForbiddenException/AcordoConflictException), a base agora
+     *   é abstrata para impedir um novo call site voltar a lançar sem categoria.
+     * - AcordoDomainException (16 lançamentos, todos na máquina de estados do módulo de acordo) e
+     *   TransicaoInvalidaException (1, ProtocoloCompletudeStateMachine) são uniformemente erros de
+     *   transição de estado — mesma semântica de RecursalTransitionRejectedException, que já usa 422.
+     * - PrazoProcessualDomainException (9) e NotificacaoPrazoDomainException (8) são uniformemente
+     *   validação de domínio — 422 também, por consistência com o mesmo padrão.
+     */
+    @ExceptionHandler(AcordoNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleAcordoNotFound(AcordoNotFoundException ex, HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, "acordo_not_found", safeMessage(ex), request, null);
+    }
+
+    @ExceptionHandler(AcordoForbiddenException.class)
+    public ResponseEntity<ProblemDetail> handleAcordoForbidden(AcordoForbiddenException ex, HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, "acordo_forbidden", safeMessage(ex), request, null);
+    }
+
+    @ExceptionHandler(AcordoConflictException.class)
+    public ResponseEntity<ProblemDetail> handleAcordoConflict(AcordoConflictException ex, HttpServletRequest request) {
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, "acordo_conflict", safeMessage(ex), request, null);
+    }
+
+    @ExceptionHandler(AcordoDomainException.class)
+    public ResponseEntity<ProblemDetail> handleAcordoDomain(AcordoDomainException ex, HttpServletRequest request) {
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, "acordo_domain_conflict", safeMessage(ex), request, null);
+    }
+
+    @ExceptionHandler(TransicaoInvalidaException.class)
+    public ResponseEntity<ProblemDetail> handleTransicaoInvalida(TransicaoInvalidaException ex, HttpServletRequest request) {
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, "transicao_invalida", safeMessage(ex), request, null);
+    }
+
+    @ExceptionHandler(PrazoProcessualDomainException.class)
+    public ResponseEntity<ProblemDetail> handlePrazoProcessualDomain(PrazoProcessualDomainException ex, HttpServletRequest request) {
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, "prazo_processual_invalido", safeMessage(ex), request, null);
+    }
+
+    @ExceptionHandler(NotificacaoPrazoDomainException.class)
+    public ResponseEntity<ProblemDetail> handleNotificacaoPrazoDomain(NotificacaoPrazoDomainException ex, HttpServletRequest request) {
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, "notificacao_prazo_invalida", safeMessage(ex), request, null);
     }
 
     @ExceptionHandler(Exception.class)
