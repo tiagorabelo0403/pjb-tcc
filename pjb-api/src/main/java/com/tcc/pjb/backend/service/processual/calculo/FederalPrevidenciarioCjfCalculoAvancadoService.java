@@ -3,6 +3,8 @@ package com.tcc.pjb.backend.service.processual.calculo;
 import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoIndiceMensalRequest;
 import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialSolicitantePerfil;
 import com.tcc.pjb.backend.model.dto.processual.calculo.FederalPrevidenciarioCjfCalculoAvancadoRequest;
+import com.tcc.pjb.backend.model.dto.procuradoria.surface.PrecatorioRpvEnteDevedorTipo;
+import com.tcc.pjb.backend.service.financeiro.TetoRpvNacionalService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -20,9 +22,12 @@ import org.springframework.stereotype.Service;
 public class FederalPrevidenciarioCjfCalculoAvancadoService {
 
     private final CalculoJudicialAssistenciaService assistenciaService;
+    private final TetoRpvNacionalService tetoRpvNacionalService;
 
-    public FederalPrevidenciarioCjfCalculoAvancadoService(CalculoJudicialAssistenciaService assistenciaService) {
+    public FederalPrevidenciarioCjfCalculoAvancadoService(CalculoJudicialAssistenciaService assistenciaService,
+                                                          TetoRpvNacionalService tetoRpvNacionalService) {
         this.assistenciaService = Objects.requireNonNull(assistenciaService);
+        this.tetoRpvNacionalService = Objects.requireNonNull(tetoRpvNacionalService);
     }
 
     public CalculoJudicialRelatorio calcular(FederalPrevidenciarioCjfCalculoAvancadoRequest request, CalculoJudicialSolicitantePerfil perfil) {
@@ -141,7 +146,7 @@ public class FederalPrevidenciarioCjfCalculoAvancadoService {
         BigDecimal total = subtotalPrincipal.add(subtotalAtualizacao).add(subtotalAcessorios).setScale(2, RoundingMode.HALF_UP);
 
         BigDecimal salarioMinimo = CalculoJudicialMath.positive(request.salarioMinimoReferencia());
-        BigDecimal tetoRpvSm = positiveOrDefault(request.tetoRpvEmSalariosMinimos(), new BigDecimal("60"));
+        BigDecimal tetoRpvSm = positiveOrDefault(request.tetoRpvEmSalariosMinimos(), tetoRpvNacionalService.salariosMinimos(PrecatorioRpvEnteDevedorTipo.UNIAO));
         BigDecimal tetoRpvValor = salarioMinimo.signum() > 0 ? CalculoJudicialMath.money(salarioMinimo.multiply(tetoRpvSm)) : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         String classificacaoPagamento = tetoRpvValor.signum() > 0 ? (total.compareTo(tetoRpvValor) <= 0 ? "RPV" : "PRECATORIO") : "CLASSIFICACAO_PARAMETRIZADA";
         if (tetoRpvValor.signum() > 0) {

@@ -11,6 +11,8 @@ import com.tcc.pjb.backend.model.dto.processual.calculo.CustasProcessuaisCalculo
 import com.tcc.pjb.backend.model.dto.processual.calculo.FazendaTributarioCalculoAvancadoRequest;
 import com.tcc.pjb.backend.model.dto.processual.calculo.FederalPrevidenciarioCjfCalculoAvancadoRequest;
 import com.tcc.pjb.backend.model.dto.processual.calculo.TrabalhistaCalculoAvancadoRequest;
+import com.tcc.pjb.backend.model.dto.procuradoria.surface.PrecatorioRpvEnteDevedorTipo;
+import com.tcc.pjb.backend.service.financeiro.TetoRpvNacionalService;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -35,19 +37,22 @@ public class CalculoJudicialIaFinanceiraService {
     private final CalculoJudicialEconomicReferenceService economicReferenceService;
     private final ObjectMapper objectMapper;
     private final Validator validator;
+    private final TetoRpvNacionalService tetoRpvNacionalService;
 
     public CalculoJudicialIaFinanceiraService(CalculoJudicialAssistenciaService assistenciaService,
                                                CalculoJudicialFacadeService facadeService,
                                                CalculoJudicialFrontendContractService frontendContractService,
                                                CalculoJudicialEconomicReferenceService economicReferenceService,
                                                ObjectMapper objectMapper,
-                                               Validator validator) {
+                                               Validator validator,
+                                               TetoRpvNacionalService tetoRpvNacionalService) {
         this.assistenciaService = Objects.requireNonNull(assistenciaService);
         this.facadeService = Objects.requireNonNull(facadeService);
         this.frontendContractService = Objects.requireNonNull(frontendContractService);
         this.economicReferenceService = Objects.requireNonNull(economicReferenceService);
         this.objectMapper = Objects.requireNonNull(objectMapper).copy().findAndRegisterModules();
         this.validator = Objects.requireNonNull(validator);
+        this.tetoRpvNacionalService = Objects.requireNonNull(tetoRpvNacionalService);
     }
 
     public CalculoJudicialIaFinanceiraResponse executar(CalculoJudicialIaFinanceiraCommandRequest command, Authentication authentication) {
@@ -551,7 +556,7 @@ public class CalculoJudicialIaFinanceiraService {
         BigDecimal fatorCorrecao = zeroDecimal(request.fatorCorrecaoMonetaria(), autopreenchimento, "fatorCorrecaoMonetaria");
         BigDecimal juros = defaultDecimal(request.percentualJurosMoraMensal(), new BigDecimal("0.005000"), autopreenchimento, ajustes, "percentualJurosMoraMensal", "A IA financeira aplicou juros mensais prudenciais de 0,5% até confirmação do critério do caso.");
         BigDecimal honorarios = zeroDecimal(request.percentualHonorarios(), autopreenchimento, "percentualHonorarios");
-        BigDecimal tetoRpv = defaultDecimal(request.tetoRpvEmSalariosMinimos(), new BigDecimal("60"), autopreenchimento, ajustes, "tetoRpvEmSalariosMinimos", "A IA financeira aplicou 60 salários mínimos como teto prudencial de RPV.");
+        BigDecimal tetoRpv = defaultDecimal(request.tetoRpvEmSalariosMinimos(), tetoRpvNacionalService.salariosMinimos(PrecatorioRpvEnteDevedorTipo.UNIAO), autopreenchimento, ajustes, "tetoRpvEmSalariosMinimos", "A IA financeira aplicou 60 salários mínimos como teto prudencial de RPV.");
         BigDecimal salarioMinimoReferencia = request.salarioMinimoReferencia();
         if (salarioMinimoReferencia == null) {
             salarioMinimoReferencia = toBigDecimal(economicReferenceService.panelSnapshot().get("salarioMinimoVigente"));

@@ -126,32 +126,6 @@ verificação que não executa. Gerar por `ModelConverters` é barato e roda na 
 reproduz os customizadores do springdoc, e um gerador que diverge do contrato real é mais um
 instrumento que não mede o que afirma medir.
 
-## D-teto-rpv-duplicado-como-literal-em-seis-pontos
-
-**Status:** aberta — achado do revisor ao fechar `PrecatorioRadarService`
-
-O teto de RPV é parâmetro legal e está duplicado como literal `new BigDecimal("60")` /
-`new BigDecimal("40")` em seis pontos:
-
-| Valor | Onde |
-|---|---|
-| 60 SM (RPV federal / competência JEF) | `CalculoJudicialAssistenciaService:259`, `CalculoJudicialIaFinanceiraService:554`, `FederalPrevidenciarioCjfCalculoAvancadoService:144`, `PrecatorioRadarService` |
-| 40 SM (competência JEC / ente subnacional) | `NationalRulePackEngine:418`, `PrecatorioRadarService` |
-
-**Por que importa:** teto de RPV muda por lei, e cada ente federado pode fixar o seu (ADCT art. 87
-estabelece pisos até que estados e municípios legislem). Com o valor espalhado, uma mudança
-normativa exige encontrar os seis pontos, e esquecer um produz classificação RPV/precatório
-divergente entre telas do mesmo sistema.
-
-**Correção sugerida:** fonte canônica de parâmetros monetários processuais, no mesmo espírito de
-`SalarioMinimoNacionalService` — que já é a fonte única do salário mínimo e é consultada por data.
-O teto em salários mínimos deveria ser resolvido por ente e por data de referência, não por
-literal.
-
-**Por que não foi feito na mesma fatia:** três dos quatro pontos de 60 SM estão em serviços de
-cálculo com consumidores reais, e o valor entra neles como *default* de request opcional. Unificar
-muda a superfície desses serviços. É fatia própria, com verificação própria.
-
 ## D-pqc-chave-efemera-sem-ancora-de-confianca
 
 **Status:** aberta — achado do revisor ao migrar o PQC de DILITHIUM para ML-DSA
@@ -240,6 +214,61 @@ pos-commit da classe.
 execucao, e a regra do projeto impede rodar `verify` em investigacao. O instrumento correto e o
 proprio portao (`it.yml`, despachavel por branch), com um ciclo de 25 minutos por medicao — cada
 grupo vira fatia propria com uma medicao dedicada.
+## D-alcada-de-juizado-como-literal-em-cinco-pontos
+
+**Status:** aberta — separada de `D-teto-rpv-duplicado`, que fechou
+
+A alçada dos juizados é outra família legal que o teto de RPV, e continua como literal:
+
+```
+NationalRulePackEngine.java:465   new BigDecimal("40")   JEC, Lei 9.099/95, art. 3º, I
+NationalRulePackEngine.java:477   new BigDecimal("60")   JEF, Lei 10.259/2001, art. 3º
+TetoProcessualService.java:299    new BigDecimal("60")   alçada de JEF e Juizado da Fazenda Pública
+TetoProcessualService.java:300    new BigDecimal("40")   alçada de Juizado Especial
+TribunalRuleEngine.java:646       new BigDecimal("40")   já rotulado "Lei 9.099/95 art. 3º, I"
+```
+
+**Por que não entrou na fatia do RPV:** competência do juizado (valor da causa na propositura) e
+regime de pagamento do art. 100 da Constituição (valor da condenação após o trânsito) são coisas
+diferentes, com marco temporal e norma diferentes. Unificar pelo número, porque 60 e 40 aparecem
+nas duas, criaria acoplamento falso: mudar o teto de RPV de um ente passaria a mexer em competência.
+
+**Correção sugerida:** fonte canônica própria de alçada, resolvida por rito e por tribunal, já que o
+`TribunalRuleEngine` tem a chave `DIST_LIMITE_JEC_SALARIOS` para valor por tribunal e hoje repete o
+40 como default literal em dois lugares.
+
+## D-rpv-sem-lei-propria-do-ente-devedor
+
+**Status:** aberta — decisão de produto, com o default legal já aplicado
+
+`TetoRpvNacionalService` resolve o teto por **esfera** (federal, estadual/distrital, municipal), que
+é o que o ADCT art. 87 fixa enquanto o ente não legisla. O ente concreto chega aos serviços como
+`entidadeDevedoraCodigo` (por exemplo `ESTADO_CE`, `MUNICIPIO_MORADA_NOVA`) e é ignorado no cálculo
+do teto.
+
+**O que isso significa na prática:** ente que já tenha lei própria fixando teto diferente — o STF
+admite isso no Tema 1.231, observada a capacidade econômica e o piso do maior benefício do RGPS
+(CF art. 100, § 4º) — é classificado pelo piso do ADCT, e não pela sua lei.
+
+**Mudança de comportamento registrada:** até 2026-09-19 o sistema aplicava 40 salários mínimos aos
+Municípios, equiparando-os aos Estados. O ADCT art. 87, II fixa 30. Com salário mínimo de
+R$ 1.518,00, a diferença é de R$ 45.540,00 para R$ 60.720,00 — a faixa entre os dois era
+classificada como RPV, com pagamento em 60 dias, quando a lei manda precatório, na fila cronológica
+do art. 100. O default passou a ser o legal.
+
+**Evidência do default legal em vigor** — asserções da fonte canônica, verdes com salário mínimo de
+R$ 1.518,00 (`TetoRpvNacionalServiceTest`, 14 testes, 0 falhas):
+
+```
+enteMunicipalSegueOsTrintaSalariosDoAdct(MUNICIPIO)            salariosMinimos = 30
+enteMunicipalSegueOsTrintaSalariosDoAdct(AUTARQUIA_MUNICIPAL)  salariosMinimos = 30
+limiteEmDinheiroMultiplicaPeloSalarioMinimoDaDataDeReferencia  MUNICIPIO -> 45540.00
+limiteEmDinheiroMultiplicaPeloSalarioMinimoDaDataDeReferencia  ESTADO    -> 60720.00
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
+```
+
+**Correção pendente:** catálogo de leis próprias por ente, alimentado por `entidadeDevedoraCodigo`,
+com o piso do ADCT como fallback.
 
 ## D-fragmentacao-de-contexto-spring-nos-its
 

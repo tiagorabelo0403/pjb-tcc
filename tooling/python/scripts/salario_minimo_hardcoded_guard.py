@@ -20,7 +20,8 @@ CONSTANT_DECLARATION = re.compile(
 )
 VALOR_POR_ANO_LITERAL = re.compile(r'\.valorPorAno\s*\(\s*([0-9]{4})\s*\)')
 NOW_INLINE_ARG = re.compile(
-    r'salarioMinimoNacionalService\s*\.\s*(multiplicar|valorEm)\s*\(.*?LocalDate\.now\(\)'
+    r'(?:salarioMinimoNacionalService\s*\.\s*(multiplicar|valorEm)'
+    r'|tetoRpvNacionalService\s*\.\s*(limite))\s*\(.*?LocalDate\.now\(\)'
 )
 
 
@@ -52,7 +53,7 @@ def scan_file(path: Path, raw: str) -> list[dict[str, object]]:
                 hits.append({
                     'pattern': 'bigdecimal_literal_near_identifier',
                     'line': line_no,
-                    'match': match.group(1),
+                    'match': match.group(1) or match.group(2),
                     'snippet': snippet,
                     'recommendedAction': 'Substituir literal por chamada ao SalarioMinimoNacionalService com data de referencia explicita.',
                 })
@@ -70,7 +71,7 @@ def scan_file(path: Path, raw: str) -> list[dict[str, object]]:
             hits.append({
                 'pattern': 'constant_declaration_salario_minimo',
                 'line': line_no,
-                'match': match.group(1),
+                'match': match.group(1) or match.group(2),
                 'snippet': snippet,
                 'recommendedAction': 'Remover a constante local; injetar SalarioMinimoNacionalService e usar valorEm/multiplicar com data de referencia.',
             })
@@ -79,7 +80,7 @@ def scan_file(path: Path, raw: str) -> list[dict[str, object]]:
             hits.append({
                 'pattern': 'valor_por_ano_literal',
                 'line': line_no,
-                'match': match.group(1),
+                'match': match.group(1) or match.group(2),
                 'snippet': snippet,
                 'recommendedAction': 'Derivar o ano de LocalDate (ex.: hoje.getYear() - 1 ou getYear()) em vez de literal.',
             })
@@ -88,7 +89,7 @@ def scan_file(path: Path, raw: str) -> list[dict[str, object]]:
             hits.append({
                 'pattern': 'localdate_now_inline_in_service_call',
                 'line': line_no,
-                'match': match.group(1),
+                'match': match.group(1) or match.group(2),
                 'snippet': snippet,
                 'recommendedAction': 'Passar data de referencia do dominio (data do pedido, data do ajuizamento, etc.), nao LocalDate.now() inline.',
             })
