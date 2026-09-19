@@ -1079,7 +1079,7 @@ python scripts\config_taxonomy_guard.py
 | Guard | What It Verifies |
 |-------|-----------------|
 | `architecture_hygiene_guard` | Class names, packages, prohibited cross-dependencies |
-| `constructor_injection_guard` | Zero `@Autowired` on fields — constructor injection only |
+| `constructor_injection_guard` | Blocks field `@Autowired` and any Spring bean with more than 8 constructor dependencies; beans already above the ceiling have a frozen budget in `config/constructor-dependency-budget.json` that can only go down (`--tighten`) |
 | `runtime_concurrency_guard` | Zero executor created outside `PjbVirtualThreadSpine` governance |
 | `transactional_hotspot_guard` | Zero unreviewed heavy-I/O finding inside `@Transactional` — a reviewed hotspot requires `@PjbTransactionalBudget` |
 | `config_taxonomy_guard` | Configuration properties within the defined taxonomy |

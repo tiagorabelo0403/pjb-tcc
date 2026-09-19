@@ -1109,7 +1109,7 @@ python scripts/runtime_concurrency_guard.py
 | Guard | O que verifica |
 |-------|---------------|
 | `architecture_hygiene_guard` | Nomes de classe, pacotes, dependências cruzadas proibidas |
-| `constructor_injection_guard` | Zero `@Autowired` em fields — apenas injeção por construtor |
+| `constructor_injection_guard` | Bloqueia `@Autowired` em field e bean Spring com mais de 8 dependências no construtor; bean que já passa do teto tem orçamento congelado em `config/constructor-dependency-budget.json`, que só pode diminuir (`--tighten`) |
 | `runtime_concurrency_guard` | Zero executor criado fora da governança `PjbVirtualThreadSpine` |
 | `transactional_hotspot_guard` | Zero achado de I/O pesado sem revisão dentro de `@Transactional` — hotspot revisado exige `@PjbTransactionalBudget` |
 | `config_taxonomy_guard` | Propriedades de configuração dentro da taxonomia definida |
