@@ -175,6 +175,10 @@ jobs:
         working-directory: scripts
         run: python guard_cwd_independence_guard.py
 
+      - name: python_syntax_warning_guard
+        working-directory: scripts
+        run: python python_syntax_warning_guard.py
+
       - name: internal_reference_drift_guard
         working-directory: scripts
         run: python internal_reference_drift_guard.py

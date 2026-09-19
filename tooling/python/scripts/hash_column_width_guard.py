@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reprova coluna que afirma guardar hash e não cabe num SHA-256.
+r"""Reprova coluna que afirma guardar hash e não cabe num SHA-256.
 
 Um SHA-256 em hexadecimal tem 64 caracteres. Uma coluna `varchar(32)` que recebe um aceita a
 inserção até o dia em que recebe, e aí o Postgres devolve `value too long for type character
