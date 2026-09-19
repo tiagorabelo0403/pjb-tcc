@@ -1112,6 +1112,7 @@ python scripts/runtime_concurrency_guard.py
 | `constructor_injection_guard` | Zero `@Autowired` em fields — apenas injeção por construtor |
 | `runtime_concurrency_guard` | Zero executor criado fora da governança `PjbVirtualThreadSpine` |
 | `transactional_hotspot_guard` | Zero achado de I/O pesado sem revisão dentro de `@Transactional` — hotspot revisado exige `@PjbTransactionalBudget` |
+| `python_syntax_warning_guard` | Zero `SyntaxWarning` ou `SyntaxError` nos scripts de automação — escape inválido em string vira erro em versão futura do Python |
 | `config_taxonomy_guard` | Propriedades de configuração dentro da taxonomia definida |
 | `hibernate_filter_definition_guard` | Todo `@Filter(name=X)` tem `@FilterDef(name=X)` correspondente; `condition` SQL com parênteses balanceados; `@ConditionalOnBean`/`@ConditionalOnMissingBean` não referencia `EntityManager`/`*Repository` numa classe `@Component` comum (avaliação prematura no component-scan — bean nunca é criado, sem erro nenhum) |
 | `anti_mock_prod_guard` | Bloqueia se mocks de integração crítica estiverem ativos em produção: Gov.br, ICP-Brasil, Kafka, Elasticsearch, IA |
