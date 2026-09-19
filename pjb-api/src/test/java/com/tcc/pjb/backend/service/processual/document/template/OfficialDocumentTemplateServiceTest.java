@@ -1,11 +1,18 @@
 package com.tcc.pjb.backend.service.processual.document.template;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.tcc.pjb.backend.core.comunicacao.institucional.affiliation.infrastructure.InstitutionalSessionSecuritySignalService;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
+import com.tcc.pjb.backend.model.entity.identity.IdentidadeJuridicaNacional;
+import com.tcc.pjb.backend.modules.advocacia.office.service.OfficeProcessWorkspaceScopeService;
+import com.tcc.pjb.backend.service.processual.document.identity.QualifiedSignatureIdentityContextService;
+import org.springframework.beans.factory.ObjectProvider;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.dto.processual.document.template.OfficialDocumentTemplateRenderRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -85,5 +92,53 @@ class OfficialDocumentTemplateServiceTest {
         assertTrue(response.conteudoRenderizado().contains("Rubrica eletrônica"));
         assertTrue(response.assinaturaQualificada().containsKey("rubricaEletronica"));
         assertTrue(response.validacaoSoberana().containsKey("status"));
+    }
+
+    private Map<String, Object> renderizarTermoAcordoComEnvelopeReal(TipoUsuario tipo) {
+        ProcessoRepository processoRepository = Mockito.mock(ProcessoRepository.class);
+        DocumentoProcessualRepository documentoRepository = Mockito.mock(DocumentoProcessualRepository.class);
+        CurrentUserService currentUserService = Mockito.mock(CurrentUserService.class);
+        PjbAuthorizationService authorizationService = Mockito.mock(PjbAuthorizationService.class);
+        DocumentTrustChainService trustChainService = Mockito.mock(DocumentTrustChainService.class);
+        InstitutionalSessionSecuritySignalService signalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        @SuppressWarnings("unchecked")
+        ObjectProvider<OfficeProcessWorkspaceScopeService> officeScopeProvider = Mockito.mock(ObjectProvider.class);
+        when(signalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO, true, true, true, true, true, true, List.of("govbr=OURO")));
+        Processo processo = new Processo();
+        processo.setId(2L);
+        processo.setNumeroProcesso("0002");
+        Usuario usuario = new Usuario();
+        usuario.setId(7L);
+        usuario.setNome("Signatário");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(tipo);
+        when(processoRepository.findById(2L)).thenReturn(Optional.of(processo));
+        when(currentUserService.getRequired()).thenReturn(usuario);
+        OfficialDocumentTemplateService service = new OfficialDocumentTemplateService(
+                processoRepository,
+                documentoRepository,
+                currentUserService,
+                authorizationService,
+                trustChainService,
+                new QualifiedDocumentSignatureEnvelopeService(signalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider),
+                new ObjectMapper().registerModule(new JavaTimeModule())
+        );
+        return service.renderizar(new OfficialDocumentTemplateRenderRequest(
+                2L, TemplateDocumentoOficial.TERMO_ACORDO, null, Map.of(), false, false)).validacaoSoberana();
+    }
+
+    @Test
+    void termoAcordoAssinadoPorDefensorPublicoPropagaClassificacaoCoerenteDoEnvelopeReal() {
+        Map<String, Object> validacao = renderizarTermoAcordoComEnvelopeReal(TipoUsuario.DEFENSOR_PUBLICO);
+
+        assertEquals(true, validacao.get("classificacaoContextualCoerente"));
+    }
+
+    @Test
+    void termoAcordoAssinadoPorMagistradoPropagaClassificacaoCoerenteDoEnvelopeReal() {
+        Map<String, Object> validacao = renderizarTermoAcordoComEnvelopeReal(TipoUsuario.JUIZ_FEDERAL);
+
+        assertEquals(true, validacao.get("classificacaoContextualCoerente"));
     }
 }
