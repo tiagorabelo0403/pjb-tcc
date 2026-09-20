@@ -1082,6 +1082,7 @@ python scripts\config_taxonomy_guard.py
 | `constructor_injection_guard` | Zero `@Autowired` on fields — constructor injection only |
 | `runtime_concurrency_guard` | Zero executor created outside `PjbVirtualThreadSpine` governance |
 | `transactional_hotspot_guard` | Zero unreviewed heavy-I/O finding inside `@Transactional` — a reviewed hotspot requires `@PjbTransactionalBudget` |
+| `python_syntax_warning_guard` | Zero `SyntaxWarning` or `SyntaxError` across automation scripts — an invalid string escape becomes an error in a future Python release |
 | `config_taxonomy_guard` | Configuration properties within the defined taxonomy |
 | `anti_mock_prod_guard` | Blocks if critical integration mocks are active in production: Gov.br, ICP-Brasil, Kafka, Elasticsearch, AI |
 | `openapi_weakness_detector` | Detects `Map<String,Object>` without typed schema, fields without `format: date-time`, routes without registered OpenAPI contract |
