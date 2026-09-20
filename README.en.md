@@ -5,7 +5,7 @@
 ### A next-generation electronic judicial system, designed to fully replace PJe, e-SAJ, eProc, Creta, and Projudi across every segment of the Brazilian justice system
 
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
 ![Tests](https://img.shields.io/badge/Tests-5%2C409%20unit%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
