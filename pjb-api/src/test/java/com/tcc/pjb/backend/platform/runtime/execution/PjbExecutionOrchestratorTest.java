@@ -50,6 +50,36 @@ class PjbExecutionOrchestratorTest {
     }
 
     @Test
+    void agendadorDeTimeoutEncerradoDevolveFuturoFalhoEmVezDeEstourarNoChamador() {
+        PjbBoundedExecutorService io = new PjbBoundedExecutorService("test-io-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        PjbBoundedExecutorService burst = new PjbBoundedExecutorService("test-burst-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        PjbBoundedExecutorService externalIo = new PjbBoundedExecutorService("test-ext-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        PjbBoundedExecutorService live = new PjbBoundedExecutorService("test-live-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        PjbBoundedExecutorService job = new PjbBoundedExecutorService("test-job-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.shutdownNow();
+        try {
+            PjbExecutionOrchestrator orchestrator = new PjbExecutionOrchestrator(
+                    new PjbBoundedExecutorProvider(io, burst, externalIo, live, job), scheduler, new PjbProcessoSigiloRlsContext());
+
+            CompletableFuture<String> future =
+                    orchestrator.supply(PjbExecutionDescriptor.io("pos-commit-op", Duration.ofSeconds(1)), () -> "OK");
+
+            assertTrue(future.isCompletedExceptionally(),
+                    "com o agendador encerrado o futuro precisa vir falho; listener AFTER_COMMIT nao pode receber excecao na chamada");
+            ExecutionException erro = assertThrows(ExecutionException.class, () -> future.get(2, TimeUnit.SECONDS));
+            assertTrue(erro.getCause() instanceof PjbExecutionRejectedException,
+                    "a rejeicao precisa chegar como PjbExecutionRejectedException, igual a do executor: " + erro.getCause());
+        } finally {
+            io.close();
+            burst.close();
+            externalIo.close();
+            live.close();
+            job.close();
+        }
+    }
+
+    @Test
     void deveMarcarTimeoutQuandoOperacaoExcederBudget() throws Exception {
         PjbBoundedExecutorService io = new PjbBoundedExecutorService("test-io-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
         PjbBoundedExecutorService burst = new PjbBoundedExecutorService("test-burst-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));

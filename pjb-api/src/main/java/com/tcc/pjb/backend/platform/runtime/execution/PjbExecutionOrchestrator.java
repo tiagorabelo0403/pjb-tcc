@@ -50,7 +50,15 @@ public class PjbExecutionOrchestrator {
         CompletableFuture<T> future = new CompletableFuture<>();
         AtomicReference<Thread> runningThread = new AtomicReference<>();
         PjbProcessoSigiloRlsContext.SessionSettings capturedSessionSettings = processoSigiloRlsContext.current();
-        ScheduledFuture<?> timeoutTask = scheduleTimeout(descriptor, future, tracker, runningThread);
+        ScheduledFuture<?> timeoutTask;
+        try {
+            timeoutTask = scheduleTimeout(descriptor, future, tracker, runningThread);
+        } catch (RejectedExecutionException ex) {
+            tracker.markRejected();
+            future.completeExceptionally(new PjbExecutionRejectedException(
+                    "timeout scheduling rejected for operation " + descriptor.operationName(), ex));
+            return future;
+        }
         try {
             executor.execute(() -> executeTracked(descriptor, supplier, future, tracker, runningThread, capturedSessionSettings));
         } catch (RejectedExecutionException ex) {
