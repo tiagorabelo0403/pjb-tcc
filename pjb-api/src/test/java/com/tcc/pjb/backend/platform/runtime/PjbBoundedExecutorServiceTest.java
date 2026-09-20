@@ -7,7 +7,6 @@ import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
 
 class PjbBoundedExecutorServiceTest {
@@ -18,7 +17,7 @@ class PjbBoundedExecutorServiceTest {
         CountDownLatch firstStarted = new CountDownLatch(1);
         CountDownLatch releaseFirst = new CountDownLatch(1);
         CountDownLatch secondFinished = new CountDownLatch(1);
-        AtomicLong waitedMillis = new AtomicLong();
+        CountDownLatch submitterAtExecute = new CountDownLatch(1);
         executor.execute(() -> {
             firstStarted.countDown();
             try {
@@ -29,18 +28,20 @@ class PjbBoundedExecutorServiceTest {
         });
         assertThat(firstStarted.await(1, TimeUnit.SECONDS)).isTrue();
         Thread submitter = Thread.ofPlatform().start(() -> {
-            long startedAt = System.nanoTime();
-            executor.execute(() -> {
-                waitedMillis.set(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt));
-                secondFinished.countDown();
-            });
+            submitterAtExecute.countDown();
+            executor.execute(secondFinished::countDown);
         });
-        Thread.sleep(100L);
+
+        assertThat(submitterAtExecute.await(1, TimeUnit.SECONDS)).isTrue();
+        assertThat(aguardarBloqueio(submitter))
+                .as("submissora precisa ficar bloqueada dentro de execute enquanto a unica faixa esta "
+                        + "ocupada; sem isso o teste nao distingue contrapressao de tarefa que passou direto")
+                .isTrue();
         assertThat(secondFinished.getCount()).isEqualTo(1L);
+
         releaseFirst.countDown();
         submitter.join(1500L);
         assertThat(secondFinished.await(1, TimeUnit.SECONDS)).isTrue();
-        assertThat(waitedMillis.get()).isGreaterThanOrEqualTo(50L);
         executor.close();
     }
 
@@ -52,5 +53,20 @@ class PjbBoundedExecutorServiceTest {
         assertThatThrownBy(() -> executor.execute(() -> {
         })).isInstanceOf(RejectedExecutionException.class);
         executor.close();
+    }
+
+    private static boolean aguardarBloqueio(Thread submitter) throws InterruptedException {
+        long limite = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);
+        while (System.nanoTime() < limite) {
+            Thread.State estado = submitter.getState();
+            if (estado == Thread.State.WAITING || estado == Thread.State.TIMED_WAITING) {
+                return true;
+            }
+            if (estado == Thread.State.TERMINATED) {
+                return false;
+            }
+            Thread.sleep(5L);
+        }
+        return false;
     }
 }
