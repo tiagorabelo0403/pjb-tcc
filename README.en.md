@@ -367,7 +367,7 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 5,451 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 5,464 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 116 classes against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 The naming convention is enforced in CI by the `integration_test_naming_guard.py` guard: a class suffixed `IT` must carry a real integration marker — Testcontainers, a Spring context, or an inherited integration base. Without that marker the class would run in neither phase (Surefire skips it by name, and Failsafe only runs under `verify`), so the build fails instead of leaving the test invisible.
@@ -386,7 +386,7 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api -am
 ```
 
-This is the official project gate. It runs the 5,451 unit tests (Surefire) and then the 117 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 5,464 unit tests (Surefire) and then the 117 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 The `-am` is not cosmetic: without it `pjb-core` is resolved from `~/.m2` instead of the reactor, and a stale artifact there produces `cannot find symbol` pointing at classes that exist in the source tree.
 
@@ -427,7 +427,7 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **5,451** |
+| Total unit tests | Surefire | **5,464** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~14 min** |
@@ -720,7 +720,7 @@ Each document has origin, operational state, integrity hash, and a verifiable ch
 
 **Qualified signature envelope** (`QualifiedDocumentSignatureEnvelopeService`):
 - Computes three checks from the input certificate and the already-materialized envelope: `cadeiaCustodiaElegivel`, `assinaturaCompletaMaterializada`, `rubricaDataHoraLocalPresentes` — all three were hardcoded `true`, with no real verification, until they were fixed.
-- `classificacaoContextualCoerente` compares the signer's role against the actual institutional segment in 12 of 14 callers (police clerks now recognized via `isSegurancaPublica()`); the 2 remaining callers still fall back to the permissive `true` default for lack of a mapping — a registered debt (`D-classificacao-contextual-default-permissivo`), not a silent regression.
+- `classificacaoContextualCoerente` compares the signer's role against the actual institutional segment in every qualified-signature caller (police clerks recognized via `isSegurancaPublica()`; magistrates, public defenders, attorneys-general and appraiser bailiffs also have their own comparison); the `true` default only applies to roles with no institutional segment, such as parties or experts.
 
 **Document vocabulary** — canonical and sealed:
 - `TipoDocumento` (~105 values) carries a `CategoriaDocumento` (`PECA_INAUGURAL`, `PECA_RECURSAL`, `DOC_INSTRUCAO`, `DOC_QUALIFICACAO`).
@@ -1032,7 +1032,7 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **5,451 · 0 failures · 0 errors · 1 skipped** |
+| Unit tests (Surefire) | **5,464 · 0 failures · 0 errors · 1 skipped** |
 | Integration tests (Failsafe) | **116 classes · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
@@ -1244,7 +1244,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,451 unit tests and 117 integration test classes, and 326 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,464 unit tests and 117 integration test classes, and 326 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

@@ -527,6 +527,205 @@ class QualifiedDocumentSignatureEnvelopeServiceTest {
         assertTrue(signed.validacaoSoberana().classificacaoContextualCoerente());
     }
 
+    @Test
+    void signFreeContent_papelMagistraturaComTipoUsuarioReal_classificacaoContextualCoerenteTrue() {
+        InstitutionalSessionSecuritySignalService securitySignalService = signalServiceOuro();
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Juíza");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.JUIZ_ESTADUAL);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Sentença",
+                "Conteúdo oficial",
+                "MAGISTRATURA",
+                "MAGISTRATURA_QUALIFICADA_SOBERANA",
+                true,
+                List.of("sentenca")
+        );
+
+        assertTrue(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
+    @Test
+    void signFreeContent_papelMagistraturaComTipoUsuarioDivergente_classificacaoContextualCoerenteFalse() {
+        InstitutionalSessionSecuritySignalService securitySignalService = signalServiceOuro();
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Cidadão Qualquer");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.CIDADAO);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Sentença",
+                "Conteúdo",
+                "MAGISTRATURA",
+                "MAGISTRATURA_QUALIFICADA_SOBERANA",
+                true,
+                List.of("sentenca")
+        );
+
+        assertFalse(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
+    @Test
+    void signFreeContent_papelDefensorPublicoComTipoUsuarioReal_classificacaoContextualCoerenteTrue() {
+        InstitutionalSessionSecuritySignalService securitySignalService = signalServiceOuro();
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Defensor");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.DEFENSOR_PUBLICO_FEDERAL);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Manifestação",
+                "Conteúdo oficial",
+                "DEFENSOR_PUBLICO_FEDERAL",
+                "DEFENSORIA_QUALIFICADA_SOBERANA",
+                true,
+                List.of("manifestacao")
+        );
+
+        assertTrue(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
+    @Test
+    void signFreeContent_papelDefensorPublicoComTipoUsuarioDivergente_classificacaoContextualCoerenteFalse() {
+        InstitutionalSessionSecuritySignalService securitySignalService = signalServiceOuro();
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Cidadão Qualquer");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.CIDADAO);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Manifestação",
+                "Conteúdo",
+                "DEFENSOR_PUBLICO",
+                "DEFENSORIA_QUALIFICADA_SOBERANA",
+                true,
+                List.of("manifestacao")
+        );
+
+        assertFalse(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
+    @Test
+    void signFreeContent_papelProcuradorComTipoUsuarioReal_classificacaoContextualCoerenteTrue() {
+        InstitutionalSessionSecuritySignalService securitySignalService = signalServiceOuro();
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Procurador");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.PROCURADORIA_FEDERAL);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Parecer",
+                "Conteúdo oficial",
+                "PROCURADORIA_FEDERAL",
+                "PROCURADORIA_QUALIFICADA_SOBERANA",
+                true,
+                List.of("parecer")
+        );
+
+        assertTrue(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
+    @Test
+    void signFreeContent_papelProcuradorComTipoUsuarioDivergente_classificacaoContextualCoerenteFalse() {
+        InstitutionalSessionSecuritySignalService securitySignalService = signalServiceOuro();
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Cidadão Qualquer");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.CIDADAO);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Parecer",
+                "Conteúdo",
+                "PROCURADOR",
+                "PROCURADORIA_QUALIFICADA_SOBERANA",
+                true,
+                List.of("parecer")
+        );
+
+        assertFalse(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
+    @Test
+    void signFreeContent_papelOficialJusticaAvaliadorComTipoUsuarioReal_classificacaoContextualCoerenteTrue() {
+        InstitutionalSessionSecuritySignalService securitySignalService = signalServiceOuro();
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Oficial Avaliador");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.OFICIAL_JUSTICA_AVALIADOR);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Auto de avaliação",
+                "Conteúdo oficial",
+                "OFICIAL_JUSTICA_AVALIADOR",
+                "OFICIAL_JUSTICA_QUALIFICADA_SOBERANA",
+                true,
+                List.of("auto_avaliacao")
+        );
+
+        assertTrue(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
+    @Test
+    void signFreeContent_papelOficialJusticaAvaliadorComTipoUsuarioDivergente_classificacaoContextualCoerenteFalse() {
+        InstitutionalSessionSecuritySignalService securitySignalService = signalServiceOuro();
+        QualifiedDocumentSignatureEnvelopeService service = new QualifiedDocumentSignatureEnvelopeService(securitySignalService, new QualifiedSignatureIdentityContextService(), officeScopeProvider(null));
+        Usuario usuario = new Usuario();
+        usuario.setNome("Cidadão Qualquer");
+        usuario.setCpf("12345678901");
+        usuario.setTipoUsuario(TipoUsuario.CIDADAO);
+
+        SignedDocumentEnvelope signed = service.signFreeContent(
+                null,
+                usuario,
+                "Auto de avaliação",
+                "Conteúdo",
+                "OFICIAL_JUSTICA_AVALIADOR",
+                "OFICIAL_JUSTICA_QUALIFICADA_SOBERANA",
+                true,
+                List.of("auto_avaliacao")
+        );
+
+        assertFalse(signed.validacaoSoberana().classificacaoContextualCoerente());
+    }
+
+    private static InstitutionalSessionSecuritySignalService signalServiceOuro() {
+        InstitutionalSessionSecuritySignalService securitySignalService = Mockito.mock(InstitutionalSessionSecuritySignalService.class);
+        when(securitySignalService.collect(Mockito.any())).thenReturn(new InstitutionalSessionSecuritySignalService.InstitutionalSessionSecuritySignal(
+                IdentidadeJuridicaNacional.GovBrNivel.OURO,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                List.of("govbr=OURO")
+        ));
+        return securitySignalService;
+    }
+
     private static ObjectProvider<OfficeProcessWorkspaceScopeService> officeScopeProvider(OfficeProcessWorkspaceScopeService service) {
         if (service == null) {
             return new StaticListableBeanFactory().getBeanProvider(OfficeProcessWorkspaceScopeService.class);
