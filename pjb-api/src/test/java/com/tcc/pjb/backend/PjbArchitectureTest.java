@@ -217,6 +217,18 @@ class PjbArchitectureTest {
     }
 
     @Test
+    void classes_de_producao_nao_devem_usar_field_injection_por_inject_ou_resource() {
+        ArchRule rule = fields()
+                .that().areDeclaredInClassesThat().resideOutsideOfPackage("..test..")
+                .and().areDeclaredInClassesThat().haveSimpleNameNotEndingWith("Test")
+                .and().areDeclaredInClassesThat().haveSimpleNameNotEndingWith("Tests")
+                .and().areDeclaredInClassesThat().haveSimpleNameNotEndingWith("IT")
+                .should().notBeAnnotatedWith(jakarta.inject.Inject.class)
+                .andShould().notBeAnnotatedWith(jakarta.annotation.Resource.class);
+        rule.check(classes);
+    }
+
+    @Test
     void producao_nao_deve_depender_da_anotacao_autowired() {
         ArchRule rule = noClasses()
                 .that().resideOutsideOfPackage("..test..")
