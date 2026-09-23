@@ -10,16 +10,16 @@ import java.sql.Statement;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @Testcontainers
 class OrganizacaoJudiciariaBackfillGuardIT {
 
     @Container
-    private final PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>(PjbIntegrationTestBase.POSTGRES_IMAGE)
+    private final PostgreSQLContainer postgres =
+            new PostgreSQLContainer(PjbIntegrationTestBase.POSTGRES_IMAGE)
                     .withDatabaseName("pjb_guard_teste")
                     .withUsername("pjb")
                     .withPassword("pjb_guard_teste");
