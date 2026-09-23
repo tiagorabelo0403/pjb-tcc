@@ -197,8 +197,8 @@ acessível na revisão; conferir antes de afirmar alinhamento normativo no TCC.
 
 ## D-seis-falhas-restantes-no-portao-de-integracao
 
-**Status:** aberta — grupo 1 com causa medida e corrigida; grupo 3 com causa inferida e corrigida,
-sem medicao na ordem do portao; grupo 2 sem causa, nao reproduz localmente
+**Status:** aberta — grupos 2 e 3 fechados e medidos no portao (run 35932081080); grupo 1 trocou de
+causa: a drenagem foi corrigida e os tres gates agora recebem `CRITICAL_MEMORY_RUNAWAY`
 
 Com `spring-boot-starter-flyway`, `resilience4j-spring-boot4` e o release train 2025.1.3 do
 spring-cloud aplicados juntos, a suite de integracao saiu de 292 testes com 277 erros para:
@@ -242,24 +242,33 @@ tarefas, preservando drenagem pedida por operador, antes ou durante a pausa.
 fechamento de contexto filho com contexto Spring real; 5 dos 6 casos originais falhavam antes da
 correção. Os 13 ITs de gate passaram contra Postgres e Kafka reais na mesma ordem que falhava.
 
-**Grupo 2 — dois testes de CPF do cidadao. Nao reproduz localmente.** Ambos comparam CPF do
-autenticado com o da parte. Nas tres execucoes locais de 2026-09-23 (duas antes da correção do grupo
-1, uma depois) os dois passaram, sempre como primeira classe do fork, em contexto novo. No portao
-rodam no meio da suite, depois de outros contextos, entao a ordem ainda e a diferenca nao medida.
-CPF e coluna cifrada por `SensitiveDataConverter`; a chave de cifra do contexto segue como hipotese,
-agora ao lado da pausa de contexto do grupo 1. Ver o historico de
-`D-springcontext-estatico-no-conversor-de-pii`.
+No portao completo da branch da correção (run 35932081080, 294 testes, 3 falhas), os tres gates
+continuam em 503, com outro codigo:
 
-**Grupo 3 — auditoria pos-commit rejeitada por executor terminado. Causa inferida: a mesma do
-grupo 1.** O `PjbExecutionOrchestrator` agenda o timeout no `pjbTimeoutScheduler`, que e um
-`ScheduledThreadPoolExecutor` e era o agendador que a pausa de contexto desligava; a mensagem do
-portao casa com esse estado, mas a falha nao foi reproduzida localmente — na execucao local a
-classe subiu contexto proprio. Com o coordenador corrigido, o agendador sobrevive a pausa e reinicio
-(provado em `PjbRuntimeDrainCoordinatorTest`). A confirmacao depende da proxima execucao completa
-do portao.
+```
+HTTP 503, corpo: {"type":"https://pjb.local/problems/critical_memory_runaway", ..., "code":"CRITICAL_MEMORY_RUNAWAY",
+"bucket":"write-expensive", "pressureScore":35, "headroomScore":35, ...}
+```
 
-**O que falta para fechar:** os grupos 2 e 3 so se medem na ordem real da suite. O instrumento e o
-proprio portao (`it.yml`, despachavel por branch), com um ciclo de cerca de 30 minutos por medicao.
+`PjbRuntimePressureService` mede o heap da JVM inteira (usado sobre maximo). Na JVM do Failsafe esse
+heap e dividido pelos contextos Spring que o spring-test 7 mantem em cache, pausados em vez de
+fechados: ate 32 (limite padrao, sem sobrescrita no projeto) das 44 configuracoes distintas medidas em
+`D-fragmentacao-de-contexto-spring-nos-its`. A razao so sobe ao longo da suite e a protecao de memoria passa a recusar operacoes
+caras. A protecao esta correta; o que falta tratar e a memoria retida pelo cache de contextos de
+teste, a mesma frente do `OutOfMemoryError` intermitente da suite unitaria no CI.
+
+**Grupo 2 — dois testes de CPF do cidadao. Fechado pela correção do grupo 1.** Localmente passavam
+como primeira classe do fork, em contexto novo; no portao rodam depois de troca de contexto. No run
+35932081080, com o coordenador corrigido, os dois passaram na ordem do portao. A hipotese da chave de
+cifra nao se confirmou.
+
+**Grupo 3 — auditoria pos-commit rejeitada por executor terminado. Fechado pela correção do grupo
+1.** O `PjbExecutionOrchestrator` agenda o timeout no `pjbTimeoutScheduler`, o agendador que a pausa
+de contexto desligava. No run 35932081080 o `LaianeOficioAuditPostCommitServiceIT` passou na ordem do
+portao.
+
+**O que falta para fechar:** a memoria retida pelos contextos de teste em cache, medida no portao
+(`it.yml`, despachavel por branch).
 
 ## D-fragmentacao-de-contexto-spring-nos-its
 

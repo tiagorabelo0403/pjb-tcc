@@ -443,13 +443,13 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 | Tempo unitários | Surefire | **~14 min** |
 | Classes de teste de integração | Failsafe | **117** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
-| Testes de integração executados | Failsafe | **292** (medido no CI, 2026-09-13) |
-| Falhas IT | Failsafe | **0** (0E + 0F) ² |
+| Testes de integração executados | Failsafe | **294** (medido no CI, 2026-09-23) |
+| Falhas IT | Failsafe | **3** (0E + 3F) ² |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** local · **~27 min** no CI |
 
 A suíte de integração passou por uma etapa de estabilização estrutural: falhas por variável de ambiente incorreta, contaminação de dados entre testes e IDs hardcoded sem seed foram eliminadas por completo.
 
-² Este número passou a ser verificado. Até 2026-09-13 a linha dizia `0 (0E + 0F)` por herança de uma execução local antiga que nada reverificava; a primeira execução do `PJB Integration Gate` mediu **273 testes, 8 falhas e 55 erros**. Os 55 erros eram uma causa só (heap insuficiente para 22 contextos Spring numa JVM), e as 3 falhas eram outra (`429 RUNTIME_WARMING_UP` da admissão operacional durante os primeiros 20s de cada contexto). Os 4 erros restantes vinham de uma limpeza de teste que apagava `tb_usuario` sem respeitar chave estrangeira. As três causas estão corrigidas e o zero acima é medido a cada execução do portão, não herdado.
+² Este número passou a ser verificado. Até 2026-09-13 a linha dizia `0 (0E + 0F)` por herança de uma execução local antiga que nada reverificava; a primeira execução do `PJB Integration Gate` mediu **273 testes, 8 falhas e 55 erros**. Os 55 erros eram uma causa só (heap insuficiente para 22 contextos Spring numa JVM), e as 3 falhas eram outra (`429 RUNTIME_WARMING_UP` da admissão operacional durante os primeiros 20s de cada contexto). Os 4 erros restantes vinham de uma limpeza de teste que apagava `tb_usuario` sem respeitar chave estrangeira. As três causas estão corrigidas e o número acima é medido a cada execução do portão, não herdado. A execução de 2026-09-23 mediu **294 testes e 3 falhas**: três gates institucionais recebem `503 CRITICAL_MEMORY_RUNAWAY` porque a proteção de memória da admissão operacional enxerga o heap da JVM de teste inteira, compartilhado pelos contextos Spring que o cache de teste mantém vivos (até 32, de 44 configurações distintas). A causa e o que falta estão em `D-seis-falhas-restantes-no-portao-de-integracao`, no DEBT_LOG.
 
 O `verify` padrão (Failsafe) não alcança 13 métodos de teste distribuídos em 6 classes¹ que combinam a convenção `*Test.java` com `@Tag("integration")` — o Surefire exclui essas classes por tag e o Failsafe não as reconhece pelo padrão de nome de arquivo. Todas as 13 já foram confirmadas verdes individualmente via `-Dit.test=`, mas ficam fora da contagem de rotina do `verify`.
 
@@ -1061,7 +1061,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 | Métrica | Estado |
 |---------|--------|
 | Testes unitários (Surefire) | **5.472 · 0 falhas · 0 erros · 1 pulado** |
-| Testes de integração (Failsafe) | **116 classes · 0 falhas conhecidas** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes de integração (Failsafe) | **116 classes · 3 falhas conhecidas (ver nota ² na seção Testes)** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 46 scripts ativos em CI |

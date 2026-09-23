@@ -433,11 +433,11 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 | Unit test execution time | Surefire | **~14 min** |
 | Integration test classes | Failsafe | **117** ¹ |
 | Polo-composition-engine tests | Failsafe | **+10 green** (role by procedural type: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
-| Integration tests executed | Failsafe | **292** (measured in CI, 2026-09-13) |
-| IT failures | Failsafe | **0** (0E + 0F) ² |
+| Integration tests executed | Failsafe | **294** (measured in CI, 2026-09-23) |
+| IT failures | Failsafe | **3** (0E + 3F) ² |
 | Full verify execution time | Surefire + Failsafe | **~50 min** locally · **~27 min** in CI |
 
-² This number is now verified. Until 2026-09-13 the row read `0 (0E + 0F)`, inherited from an old local run that nothing re-verified; the first `PJB Integration Gate` execution measured **273 tests, 8 failures and 55 errors**. The 55 errors had a single cause (heap too small for 22 Spring contexts in one JVM), and the 3 failures had another (`429 RUNTIME_WARMING_UP` from operational admission control during the first 20s of every context). The remaining 4 errors came from a test cleanup that deleted `tb_usuario` without respecting a foreign key. All three causes are fixed, and the zero above is measured on every gate run rather than inherited.
+² This number is now verified. Until 2026-09-13 the row read `0 (0E + 0F)`, inherited from an old local run that nothing re-verified; the first `PJB Integration Gate` execution measured **273 tests, 8 failures and 55 errors**. The 55 errors had a single cause (heap too small for 22 Spring contexts in one JVM), and the 3 failures had another (`429 RUNTIME_WARMING_UP` from operational admission control during the first 20s of every context). The remaining 4 errors came from a test cleanup that deleted `tb_usuario` without respecting a foreign key. All three causes are fixed, and the number above is measured on every gate run rather than inherited. The 2026-09-23 run measured **294 tests and 3 failures**: three institutional gates get `503 CRITICAL_MEMORY_RUNAWAY` because the operational admission memory guard sees the heap of the whole test JVM, shared by the Spring contexts the test cache keeps alive (up to 32, out of 44 distinct configurations). Cause and remaining work are in `D-seis-falhas-restantes-no-portao-de-integracao`, in the DEBT_LOG.
 
 The integration suite went through a structural stabilization process: failures caused by incorrect environment variables, cross-test data contamination, and hardcoded IDs without seeding were eliminated down to zero. Two of those fixes exposed real production bugs, not just test issues: `AuditLedgerService` recorded audit events only in memory, without persisting to the repository the audit endpoints actually query; and root-proceeding resolution in `CaseContinuityOrchestratorService` used a mutable field during the case lifecycle, causing ambiguity between the root proceeding and its branches (e.g., judgment enforcement) after archiving.
 
@@ -1033,7 +1033,7 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 | Metric | Status |
 |--------|--------|
 | Unit tests (Surefire) | **5,472 · 0 failures · 0 errors · 1 skipped** |
-| Integration tests (Failsafe) | **116 classes · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
+| Integration tests (Failsafe) | **116 classes · 3 known failures (see note ² in the Tests section)** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
 | Python Guards | 46 scripts active in CI |
