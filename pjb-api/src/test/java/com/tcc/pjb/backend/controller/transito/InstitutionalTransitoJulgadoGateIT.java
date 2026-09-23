@@ -77,10 +77,12 @@ class InstitutionalTransitoJulgadoGateIT extends PjbIntegrationTestBase {
                 .getResponse();
 
         assertThat(response.getStatus())
-                .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou juiz legitimo)")
+                .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou juiz legitimo) (corpo: %s)",
+                        response.getContentAsString())
                 .isNotIn(401, 403);
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation"))
-                .as("Gate rodou depois da auth e classificou a operacao de transito em julgado (status HTTP recebido: %s)", response.getStatus())
+                .as("Gate rodou depois da auth e classificou a operacao de transito em julgado (HTTP %s, corpo: %s)",
+                        response.getStatus(), response.getContentAsString())
                 .isEqualTo("TRANSITO_CERTIDAO");
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Allowed"))
                 .as("Gate resolveu o juiz JWT via banco e liberou")
