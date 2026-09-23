@@ -197,7 +197,8 @@ acessível na revisão; conferir antes de afirmar alinhamento normativo no TCC.
 
 ## D-seis-falhas-restantes-no-portao-de-integracao
 
-**Status:** aberta — medida no run 35476588817, com os tres residuos de Boot 4 ja corrigidos
+**Status:** aberta — grupo 1 com causa medida e corrigida; grupo 3 com causa inferida e corrigida,
+sem medicao na ordem do portao; grupo 2 sem causa, nao reproduz localmente
 
 Com `spring-boot-starter-flyway`, `resilience4j-spring-boot4` e o release train 2025.1.3 do
 spring-cloud aplicados juntos, a suite de integracao saiu de 292 testes com 277 erros para:
@@ -218,28 +219,47 @@ CidadaoInstanciasControllerCpfMismatchIT.cidadaoComCpfDivergenteDaParteRecebe403
 LaianeOficioAuditPostCommitServiceIT.on_eventoValido_persisteEventoDeAuditoriaComOsDadosDoEvento:48 » RejectedExecution ... rejected from java.util.concurrent.ScheduledThreadPoolExecutor[Terminated, pool size = 0, ...]
 ```
 
-**Grupo 1 — tres gates institucionais com 503.** O teste exige o cabecalho
-`X-PJB-Institutional-Gate-Operation`, e a resposta chega sem ele, em 0,03 s. Rejeicao imediata por
-filtro de borda, antes do gate. As fontes de 503 na borda sao `ApiLoadSheddingFilter`,
-`ApiDatabasePressureShield` e `PjbFunctionalAvailability`. O `ApiLoadSheddingFilter` foi lido e
-libera os permits em `finally`, entao nao ha vazamento de contador; o modo de crise vem de
-configuracao, nao de estado mutavel em runtime. Falta identificar qual das tres barreiras responde e
-por que, o que exige o corpo da resposta — nao esta no log do portao.
+**Grupo 1 — tres gates institucionais com 503. Causa medida e corrigida.** Com o corpo da resposta
+impresso na asserção, o 503 se identificou:
 
-**Grupo 2 — dois testes de CPF do cidadao.** Ambos comparam CPF do autenticado com o da parte. CPF e
-coluna cifrada por `SensitiveDataConverter`, entao a hipotese a verificar primeiro e a chave de
-cifra do contexto, nao a regra de negocio. Ver o historico de
+```
+HTTP 503, corpo: {"type":"https://pjb.local/problems/runtime_draining", ..., "code":"RUNTIME_DRAINING",
+"bucket":"write-expensive", "pressureScore":15, "headroomScore":73, ...}
+```
+
+Headroom 73 e pressure 15: a instancia nao estava sob carga, estava em drenagem. O spring-test 7
+pausa o contexto em cache quando a classe seguinte usa outro contexto
+(`spring.test.context.cache.pause`, padrao `ON_CONTEXT_SWITCH`), e a pausa chama `stop()` nos
+`SmartLifecycle`. O `PjbRuntimeDrainCoordinator` tratava todo `stop()` como desligamento: drenava,
+desligava o `pjbTimeoutScheduler` e os executores, e o `start()` do reinicio nao desfazia nada.
+Reproduzido localmente na ordem real: `InstitutionalSecretariaGateIT` roda no contexto compartilhado
+logo depois de `InstitutionalRecursalGateIT` (outro contexto) e recebia o 503.
+
+O coordenador agora so faz o desligamento irreversivel quando recebe o `ContextClosedEvent` do proprio
+contexto; `stop()` sem fechamento drena de forma reversivel e `start()` volta a aceitar trafego e
+tarefas, preservando drenagem pedida por operador, antes ou durante a pausa.
+`PjbRuntimeDrainCoordinatorTest` cobre pausa, stop/start, fechamento, drenagem de operador e
+fechamento de contexto filho com contexto Spring real; 5 dos 6 casos originais falhavam antes da
+correção. Os 13 ITs de gate passaram contra Postgres e Kafka reais na mesma ordem que falhava.
+
+**Grupo 2 — dois testes de CPF do cidadao. Nao reproduz localmente.** Ambos comparam CPF do
+autenticado com o da parte. Nas tres execucoes locais de 2026-09-23 (duas antes da correção do grupo
+1, uma depois) os dois passaram, sempre como primeira classe do fork, em contexto novo. No portao
+rodam no meio da suite, depois de outros contextos, entao a ordem ainda e a diferenca nao medida.
+CPF e coluna cifrada por `SensitiveDataConverter`; a chave de cifra do contexto segue como hipotese,
+agora ao lado da pausa de contexto do grupo 1. Ver o historico de
 `D-springcontext-estatico-no-conversor-de-pii`.
 
-**Grupo 3 — auditoria pos-commit rejeitada por executor terminado.** O listener `AFTER_COMMIT`
-agenda no `PjbExecutionOrchestrator` depois que o pool ja foi encerrado. Mesma familia de
-`D-drain-coordinator-fork-exit`: o ciclo de vida do executor termina antes do ultimo trabalho
-pos-commit da classe.
+**Grupo 3 — auditoria pos-commit rejeitada por executor terminado. Causa inferida: a mesma do
+grupo 1.** O `PjbExecutionOrchestrator` agenda o timeout no `pjbTimeoutScheduler`, que e um
+`ScheduledThreadPoolExecutor` e era o agendador que a pausa de contexto desligava; a mensagem do
+portao casa com esse estado, mas a falha nao foi reproduzida localmente — na execucao local a
+classe subiu contexto proprio. Com o coordenador corrigido, o agendador sobrevive a pausa e reinicio
+(provado em `PjbRuntimeDrainCoordinatorTest`). A confirmacao depende da proxima execucao completa
+do portao.
 
-**Por que nao foi fechado junto:** cada grupo precisa do corpo da resposta ou da ordem real de
-execucao, e a regra do projeto impede rodar `verify` em investigacao. O instrumento correto e o
-proprio portao (`it.yml`, despachavel por branch), com um ciclo de 25 minutos por medicao — cada
-grupo vira fatia propria com uma medicao dedicada.
+**O que falta para fechar:** os grupos 2 e 3 so se medem na ordem real da suite. O instrumento e o
+proprio portao (`it.yml`, despachavel por branch), com um ciclo de cerca de 30 minutos por medicao.
 
 ## D-fragmentacao-de-contexto-spring-nos-its
 
