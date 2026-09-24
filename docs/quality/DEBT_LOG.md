@@ -227,25 +227,61 @@ do teto.
 admite isso no Tema 1.231, observada a capacidade econômica e o piso do maior benefício do RGPS
 (CF art. 100, § 4º) — é classificado pelo piso do ADCT, e não pela sua lei.
 
-**Mudança de comportamento registrada:** até 2026-09-19 o sistema aplicava 40 salários mínimos aos
-Municípios, equiparando-os aos Estados. O ADCT art. 87, II fixa 30. Com salário mínimo de
-R$ 1.518,00, a diferença é de R$ 45.540,00 para R$ 60.720,00 — a faixa entre os dois era
-classificada como RPV, com pagamento em 60 dias, quando a lei manda precatório, na fila cronológica
-do art. 100. O default passou a ser o legal.
+**Decisões do dono em 2026-09-24:**
 
-**Evidência do default legal em vigor** — asserções da fonte canônica, verdes com salário mínimo de
-R$ 1.518,00 (`TetoRpvNacionalServiceTest`, 14 testes, 0 falhas):
+- Município passa a 30 salários mínimos (ADCT art. 87, II). Substitui a decisão de 2026-09-16
+  (commit 06d3f305, #164), que mantinha o Município no teto estadual de 40.
+- O salário mínimo que converte o teto em reais é o da data do trânsito em julgado, em todos os
+  serviços. `PrecatorioRpvService` usava a data-base do cálculo, e o cálculo de IA financeira da
+  CJF usava o salário mínimo vigente no dia da consulta.
+
+**Mudanças visíveis para quem consome a API:**
+
+- `PrecatorioRpvCalculoRequest` e `FederalPrevidenciarioCjfCalculoAvancadoRequest` ganham
+  `dataTransitoEmJulgado`, opcional.
+- Em `PrecatorioRpvService`, sem `limiteRpv` informado, o teto sai do ente e do trânsito: com os
+  dois, o crédito pode ser classificado como RPV, quando antes ficava sempre em precatório. Sem um
+  deles, o limite é zero e o crédito fica no regime geral do precatório.
+- Nos cálculos da CJF, com trânsito informado o teto usa o salário mínimo do trânsito, mesmo que
+  outro valor venha no pedido — nesse caso o relatório avisa a divergência. Sem trânsito vale o
+  salário mínimo informado; sem nenhum dos dois, a classificação não é projetada. O formulário do catálogo deixa de vir preenchido com
+  o salário mínimo de hoje e passa a pedir a data do trânsito.
+
+`PrecatorioRadarService` não tem chamador no código de produção; a troca de 40 para 30 no
+Município só alcança fluxo real pelo `PrecatorioRpvService`.
+
+**Presunção que resta:** `PrecatorioRpvService.resolveEnteDevedorTipo` ainda assume `ESTADO` para a
+política monetária (correção e juros) quando o ente não vem. O teto não presume ente; a correção
+sim. Anterior a esta fatia.
+
+**Evidência** — saída do Surefire em 2026-09-24:
 
 ```
-enteMunicipalSegueOsTrintaSalariosDoAdct(MUNICIPIO)            salariosMinimos = 30
-enteMunicipalSegueOsTrintaSalariosDoAdct(AUTARQUIA_MUNICIPAL)  salariosMinimos = 30
-limiteEmDinheiroMultiplicaPeloSalarioMinimoDaDataDeReferencia  MUNICIPIO -> 45540.00
-limiteEmDinheiroMultiplicaPeloSalarioMinimoDaDataDeReferencia  ESTADO    -> 60720.00
-[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0 -- in com.tcc.pjb.backend.service.financeiro.TetoRpvNacionalServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0 -- in com.tcc.pjb.backend.service.processual.calculo.FederalPrevidenciarioCjfCalculoAvancadoServiceTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0 -- in com.tcc.pjb.backend.service.processual.precatorio.PrecatorioRadarServiceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0 -- in com.tcc.pjb.backend.service.procuradoria.PrecatorioRpvServiceTest
 ```
+
+`TetoRpvNacionalServiceTest` prova 30 salários mínimos para Município e autarquia municipal e
+verifica que o salário mínimo multiplicado é o do trânsito.
 
 **Correção pendente:** catálogo de leis próprias por ente, alimentado por `entidadeDevedoraCodigo`,
 com o piso do ADCT como fallback.
+
+## D-catalogo-cjf-sem-definicao-de-campos
+
+**Status:** aberta — medida
+
+`CalculoJudicialFrontendCatalogService.fields()` define tipo, rótulo, obrigatoriedade e exemplo de
+cada campo para `TRABALHISTA_CLT`, `FAZENDA_TRIBUTARIO` e `CUSTAS_PROCESSUAIS`, e cai no `default ->
+List.of()` para `FEDERAL_PREVIDENCIARIO_CJF`. O formulário da CJF só é descrito pelas seções, que
+listam nomes de campo sem tipo nem rótulo; um cliente que monte o formulário por `campos` não
+renderiza nenhum campo da CJF, incluindo `dataTransitoEmJulgado`, que decide a classificação
+RPV/precatório.
+
+**Correção sugerida:** o caso `FEDERAL_PREVIDENCIARIO_CJF` em `fields()`, com um teste que exija que
+todo nome listado nas seções tenha definição.
 
 ## D-fragmentacao-de-contexto-spring-nos-its
 

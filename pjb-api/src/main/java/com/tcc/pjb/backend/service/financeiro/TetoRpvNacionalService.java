@@ -42,8 +42,8 @@ public class TetoRpvNacionalService {
         };
     }
 
-    public BigDecimal limite(PrecatorioRpvEnteDevedorTipo enteDevedor, LocalDate dataReferencia) {
-        Objects.requireNonNull(dataReferencia, "dataReferencia");
-        return salarioMinimoNacionalService.multiplicar(salariosMinimos(enteDevedor), dataReferencia);
+    public BigDecimal limite(PrecatorioRpvEnteDevedorTipo enteDevedor, LocalDate dataTransitoEmJulgado) {
+        Objects.requireNonNull(dataTransitoEmJulgado, "dataTransitoEmJulgado");
+        return salarioMinimoNacionalService.multiplicar(salariosMinimos(enteDevedor), dataTransitoEmJulgado);
     }
 }

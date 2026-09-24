@@ -47,7 +47,7 @@ public class PrecatorioRpvService {
         PrecatorioRpvEnteDevedorTipo enteDevedorTipo = resolveEnteDevedorTipo(request);
         BigDecimal principal = resolvePrincipal(request, processo);
         MonetaryComputation monetaryComputation = computeMonetary(principal, request, naturezaCredito, enteDevedorTipo, calculadoEm);
-        BigDecimal limiteRpv = resolveLimiteRpv(request, calculadoEm);
+        BigDecimal limiteRpv = resolveLimiteRpv(request);
         String modalidade = limiteRpv.signum() > 0 && monetaryComputation.totalAtualizado().compareTo(limiteRpv) <= 0 ? "RPV" : "PRECATORIO";
         boolean superpreferencia = isSuperpreferencia(request, naturezaCredito, modalidade, calculadoEm);
         Integer idadeBeneficiario = idadeBeneficiario(request.dataNascimentoBeneficiario(), calculadoEm);
@@ -203,15 +203,15 @@ public class PrecatorioRpvService {
         return request.naturezaCredito() == null ? PrecatorioRpvNaturezaCredito.COMUM : request.naturezaCredito();
     }
 
-    private BigDecimal resolveLimiteRpv(PrecatorioRpvRequest request, LocalDate calculadoEm) {
+    private BigDecimal resolveLimiteRpv(PrecatorioRpvRequest request) {
         BigDecimal informado = safe(request.limiteRpv());
         if (informado.signum() > 0) {
             return informado;
         }
-        if (request.enteDevedorTipo() == null || request.dataBaseCalculo() == null) {
+        if (request.enteDevedorTipo() == null || request.dataTransitoEmJulgado() == null) {
             return BigDecimal.ZERO;
         }
-        return tetoRpvNacionalService.limite(request.enteDevedorTipo(), calculadoEm);
+        return tetoRpvNacionalService.limite(request.enteDevedorTipo(), request.dataTransitoEmJulgado());
     }
 
     private PrecatorioRpvEnteDevedorTipo resolveEnteDevedorTipo(PrecatorioRpvRequest request) {
@@ -289,14 +289,15 @@ public class PrecatorioRpvService {
             boolean doencaGrave,
             boolean pessoaComDeficiencia,
             boolean regimeEspecial,
-            boolean acordoDiretoHabilitado
+            boolean acordoDiretoHabilitado,
+            LocalDate dataTransitoEmJulgado
     ) {
         public PrecatorioRpvRequest(Long processoId,
                                     BigDecimal valorPrincipal,
                                     BigDecimal indiceCorrecao,
                                     BigDecimal indiceJuros,
                                     BigDecimal limiteRpv) {
-            this(processoId, valorPrincipal, indiceCorrecao, indiceJuros, null, limiteRpv, null, null, null, null, null, null, false, false, false, false);
+            this(processoId, valorPrincipal, indiceCorrecao, indiceJuros, null, limiteRpv, null, null, null, null, null, null, false, false, false, false, null);
         }
     }
 

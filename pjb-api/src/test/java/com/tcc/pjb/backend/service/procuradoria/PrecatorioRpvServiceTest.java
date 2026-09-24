@@ -2,7 +2,10 @@ package com.tcc.pjb.backend.service.procuradoria;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.model.dto.procuradoria.surface.PrecatorioRpvEnteDevedorTipo;
@@ -22,6 +25,7 @@ class PrecatorioRpvServiceTest {
 
     private final ProcessoRepository processoRepository = mock(ProcessoRepository.class);
     private static final BigDecimal SALARIO_MINIMO = new BigDecimal("1518.00");
+    private static final LocalDate TRANSITO = LocalDate.of(2026, 3, 10);
 
     private final SalarioMinimoNacionalService salarioMinimoNacionalService = salarioMinimoFixo();
     private final PrecatorioRpvService service = new PrecatorioRpvService(processoRepository,
@@ -36,7 +40,7 @@ class PrecatorioRpvServiceTest {
     }
 
     @Test
-    void semLimiteESemEnteInformadoNaoClassificaPorTetoLegalPresumido() {
+    void semEnteInformadoNaoHaTetoLegalEOCreditoFicaNoRegimeGeralDePrecatorio() {
         Processo processo = Processo.builder()
                 .id(79L)
                 .numeroProcesso("0000079-12.2026.8.06.0001")
@@ -62,7 +66,8 @@ class PrecatorioRpvServiceTest {
                 false,
                 false,
                 false,
-                false
+                false,
+                TRANSITO
         ));
 
         assertThat(response.limiteRpv()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -96,11 +101,49 @@ class PrecatorioRpvServiceTest {
                 false,
                 false,
                 false,
-                false
+                false,
+                TRANSITO
         ));
 
         assertThat(response.limiteRpv()).isEqualByComparingTo(SALARIO_MINIMO.multiply(new BigDecimal("30")));
         assertThat(response.modalidade()).isEqualTo("PRECATORIO");
+        verify(salarioMinimoNacionalService).multiplicar(any(), eq(TRANSITO));
+    }
+
+    @Test
+    void enteInformadoSemTransitoEmJulgadoNaoConsultaSalarioMinimoEFicaNoPrecatorio() {
+        Processo processo = Processo.builder()
+                .id(81L)
+                .numeroProcesso("0000081-12.2026.8.06.0001")
+                .tribunal("TJCE")
+                .uf("CE")
+                .valorCausa(new BigDecimal("1000.00"))
+                .build();
+        when(processoRepository.findById(81L)).thenReturn(Optional.of(processo));
+
+        PrecatorioRpvService.PrecatorioRpvResponse response = service.calcular(new PrecatorioRpvService.PrecatorioRpvRequest(
+                81L,
+                new BigDecimal("1000.00"),
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                null,
+                null,
+                PrecatorioRpvNaturezaCredito.COMUM,
+                PrecatorioRpvEnteDevedorTipo.ESTADO,
+                "ESTADO_CE",
+                LocalDate.of(2026, 4, 4),
+                LocalDate.of(2026, 4, 4),
+                null,
+                false,
+                false,
+                false,
+                false,
+                null
+        ));
+
+        assertThat(response.limiteRpv()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(response.modalidade()).isEqualTo("PRECATORIO");
+        verifyNoInteractions(salarioMinimoNacionalService);
     }
 
     @Test
@@ -130,7 +173,8 @@ class PrecatorioRpvServiceTest {
                 false,
                 false,
                 false,
-                false
+                false,
+                TRANSITO
         ));
 
         assertThat(response.limiteRpv()).isEqualByComparingTo(SALARIO_MINIMO.multiply(new BigDecimal("40")));
@@ -164,7 +208,8 @@ class PrecatorioRpvServiceTest {
                 false,
                 false,
                 false,
-                false
+                false,
+                TRANSITO
         ));
 
         assertThat(response.limiteRpv()).isEqualByComparingTo("10000.00");
@@ -198,7 +243,8 @@ class PrecatorioRpvServiceTest {
                 false,
                 false,
                 true,
-                true
+                true,
+                TRANSITO
         ));
 
         assertThat(response.modalidade()).isEqualTo("PRECATORIO");
@@ -240,7 +286,8 @@ class PrecatorioRpvServiceTest {
                 false,
                 false,
                 false,
-                false
+                false,
+                TRANSITO
         ));
 
         assertThat(response.politicaMonetaria().regraCalculo()).isEqualTo("SELIC_EXCLUSIVA");
@@ -279,7 +326,8 @@ class PrecatorioRpvServiceTest {
                 false,
                 false,
                 false,
-                false
+                false,
+                TRANSITO
         ));
 
         assertThat(response.modalidade()).isEqualTo("RPV");

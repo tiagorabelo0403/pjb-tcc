@@ -53,7 +53,7 @@ def scan_file(path: Path, raw: str) -> list[dict[str, object]]:
                 hits.append({
                     'pattern': 'bigdecimal_literal_near_identifier',
                     'line': line_no,
-                    'match': match.group(1) or match.group(2),
+                    'match': match.group(1),
                     'snippet': snippet,
                     'recommendedAction': 'Substituir literal por chamada ao SalarioMinimoNacionalService com data de referencia explicita.',
                 })
@@ -71,7 +71,7 @@ def scan_file(path: Path, raw: str) -> list[dict[str, object]]:
             hits.append({
                 'pattern': 'constant_declaration_salario_minimo',
                 'line': line_no,
-                'match': match.group(1) or match.group(2),
+                'match': match.group(1),
                 'snippet': snippet,
                 'recommendedAction': 'Remover a constante local; injetar SalarioMinimoNacionalService e usar valorEm/multiplicar com data de referencia.',
             })
@@ -80,7 +80,7 @@ def scan_file(path: Path, raw: str) -> list[dict[str, object]]:
             hits.append({
                 'pattern': 'valor_por_ano_literal',
                 'line': line_no,
-                'match': match.group(1) or match.group(2),
+                'match': match.group(1),
                 'snippet': snippet,
                 'recommendedAction': 'Derivar o ano de LocalDate (ex.: hoje.getYear() - 1 ou getYear()) em vez de literal.',
             })

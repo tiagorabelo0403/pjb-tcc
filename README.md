@@ -1137,8 +1137,10 @@ O teto de Requisição de Pequeno Valor tem fonte canônica própria, `TetoRpvNa
 parâmetro varia por ente devedor: 60 salários mínimos na Fazenda federal (CF art. 100, § 3º, c/c Lei
 10.259/2001, art. 17, § 1º e art. 3º), 40 nos Estados e no Distrito Federal (ADCT art. 87, I) e 30
 nos Municípios (ADCT art. 87, II), enquanto o ente não fixar o seu por lei própria. Ele resolve
-quantidade, fundamento e valor em dinheiro a partir do ente e da data de referência, e nenhum
-serviço classifica RPV ou precatório sem essas duas informações.
+quantidade, fundamento e valor em dinheiro a partir do ente e da data do trânsito em julgado, que é
+a data cujo salário mínimo converte o teto em reais em todos os serviços. Sem ente ou sem trânsito
+não há teto calculado: o crédito fica no regime geral do precatório (CF art. 100), e os cálculos
+previdenciários da CJF deixam de projetar a classificação em vez de usar o salário mínimo de hoje.
 
 `salario_minimo_hardcoded_guard` verifica a regra, e recusa tanto a constante monetária local quanto
 o `LocalDate.now()` inline.

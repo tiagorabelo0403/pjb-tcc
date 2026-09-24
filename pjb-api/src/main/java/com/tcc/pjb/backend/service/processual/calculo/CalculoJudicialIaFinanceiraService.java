@@ -556,15 +556,13 @@ public class CalculoJudicialIaFinanceiraService {
         BigDecimal fatorCorrecao = zeroDecimal(request.fatorCorrecaoMonetaria(), autopreenchimento, "fatorCorrecaoMonetaria");
         BigDecimal juros = defaultDecimal(request.percentualJurosMoraMensal(), new BigDecimal("0.005000"), autopreenchimento, ajustes, "percentualJurosMoraMensal", "A IA financeira aplicou juros mensais prudenciais de 0,5% até confirmação do critério do caso.");
         BigDecimal honorarios = zeroDecimal(request.percentualHonorarios(), autopreenchimento, "percentualHonorarios");
-        BigDecimal tetoRpv = defaultDecimal(request.tetoRpvEmSalariosMinimos(), tetoRpvNacionalService.salariosMinimos(PrecatorioRpvEnteDevedorTipo.UNIAO), autopreenchimento, ajustes, "tetoRpvEmSalariosMinimos", "A IA financeira aplicou 60 salários mínimos como teto prudencial de RPV.");
+        BigDecimal tetoFederal = tetoRpvNacionalService.salariosMinimos(PrecatorioRpvEnteDevedorTipo.UNIAO);
+        BigDecimal tetoRpv = defaultDecimal(request.tetoRpvEmSalariosMinimos(), tetoFederal, autopreenchimento, ajustes, "tetoRpvEmSalariosMinimos", "A IA financeira aplicou o teto federal de RPV da fonte canônica: " + tetoFederal.toPlainString() + " salários mínimos.");
         BigDecimal salarioMinimoReferencia = request.salarioMinimoReferencia();
-        if (salarioMinimoReferencia == null) {
-            salarioMinimoReferencia = toBigDecimal(economicReferenceService.panelSnapshot().get("salarioMinimoVigente"));
-            if (salarioMinimoReferencia != null && salarioMinimoReferencia.signum() > 0) {
-                autopreenchimento.put("salarioMinimoReferencia", salarioMinimoReferencia);
-                ajustes.add("A IA financeira aplicou o salário mínimo nacional vigente do PJB como referência previdenciária inicial.");
-            }
-            confirmacoes.add("Confirmar o salário mínimo de referência antes de tratar a classificação do pagamento como RPV ou precatório em memória final.");
+        if (request.dataTransitoEmJulgado() != null) {
+            ajustes.add("O teto de RPV será convertido pelo salário mínimo vigente no trânsito em julgado (" + request.dataTransitoEmJulgado() + ").");
+        } else if (salarioMinimoReferencia == null) {
+            confirmacoes.add("Informar a data do trânsito em julgado ou o salário mínimo de referência para classificar o pagamento como RPV ou precatório.");
         }
         FederalPrevidenciarioCjfCalculoAvancadoRequest normalized = new FederalPrevidenciarioCjfCalculoAvancadoRequest(
                 request.tituloCalculo(),
@@ -594,7 +592,8 @@ public class CalculoJudicialIaFinanceiraService {
                 tetoRpv,
                 defaultString(request.criterioAtualizacaoNome(), "Tabela institucional federal parametrizada", autopreenchimento, "criterioAtualizacaoNome"),
                 defaultString(request.criterioJurosNome(), "Juros mensais parametrizados", autopreenchimento, "criterioJurosNome"),
-                request.observacoesTecnicas()
+                request.observacoesTecnicas(),
+                request.dataTransitoEmJulgado()
         );
         return new AutomationEnvelope<>(normalized, autopreenchimento, pendencias, bloqueios, ajustes, confirmacoes);
     }

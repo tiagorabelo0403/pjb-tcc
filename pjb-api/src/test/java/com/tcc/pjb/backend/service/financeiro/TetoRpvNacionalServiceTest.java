@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.model.dto.procuradoria.surface.PrecatorioRpvEnteDevedorTipo;
@@ -54,13 +55,16 @@ class TetoRpvNacionalServiceTest {
     }
 
     @Test
-    void limiteEmDinheiroMultiplicaPeloSalarioMinimoDaDataDeReferencia() {
+    void limiteEmDinheiroMultiplicaPeloSalarioMinimoDoTransitoEmJulgado() {
         assertThat(service.limite(PrecatorioRpvEnteDevedorTipo.UNIAO, TRANSITO))
                 .isEqualByComparingTo(SALARIO_MINIMO.multiply(new BigDecimal("60")));
         assertThat(service.limite(PrecatorioRpvEnteDevedorTipo.ESTADO, TRANSITO))
                 .isEqualByComparingTo(SALARIO_MINIMO.multiply(new BigDecimal("40")));
         assertThat(service.limite(PrecatorioRpvEnteDevedorTipo.MUNICIPIO, TRANSITO))
                 .isEqualByComparingTo(SALARIO_MINIMO.multiply(new BigDecimal("30")));
+        verify(salarioMinimoNacionalService).multiplicar(new BigDecimal("60"), TRANSITO);
+        verify(salarioMinimoNacionalService).multiplicar(new BigDecimal("40"), TRANSITO);
+        verify(salarioMinimoNacionalService).multiplicar(new BigDecimal("30"), TRANSITO);
     }
 
     @Test

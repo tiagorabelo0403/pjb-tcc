@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.processual.precatorio;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -125,5 +126,16 @@ class PrecatorioRadarServiceTest {
         assertThat(snapshot.aptaRpv()).isFalse();
         assertThat(snapshot.requerPrecatorio()).isFalse();
         assertThat(snapshot.valorLimiteRpv()).isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    void transitadoSemDataDoTransitoFalhaEmVezDeUsarOSalarioDeHoje() {
+        var input = new PrecatorioRadarService.PrecatorioInput(
+                UUID.randomUUID(), new BigDecimal("1000"),
+                PrecatorioRadarService.TipoObrigacaoFazenda.FEDERAL, true, true, null);
+
+        assertThatThrownBy(() -> service.avaliar(input))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("dataTransitoEmJulgado");
     }
 }

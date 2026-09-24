@@ -4,6 +4,7 @@ import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoIndiceMensalReque
 import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialSolicitantePerfil;
 import com.tcc.pjb.backend.model.dto.processual.calculo.FederalPrevidenciarioCjfCalculoAvancadoRequest;
 import com.tcc.pjb.backend.model.dto.procuradoria.surface.PrecatorioRpvEnteDevedorTipo;
+import com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService;
 import com.tcc.pjb.backend.service.financeiro.TetoRpvNacionalService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -23,11 +24,14 @@ public class FederalPrevidenciarioCjfCalculoAvancadoService {
 
     private final CalculoJudicialAssistenciaService assistenciaService;
     private final TetoRpvNacionalService tetoRpvNacionalService;
+    private final SalarioMinimoNacionalService salarioMinimoNacionalService;
 
     public FederalPrevidenciarioCjfCalculoAvancadoService(CalculoJudicialAssistenciaService assistenciaService,
-                                                          TetoRpvNacionalService tetoRpvNacionalService) {
+                                                          TetoRpvNacionalService tetoRpvNacionalService,
+                                                          SalarioMinimoNacionalService salarioMinimoNacionalService) {
         this.assistenciaService = Objects.requireNonNull(assistenciaService);
         this.tetoRpvNacionalService = Objects.requireNonNull(tetoRpvNacionalService);
+        this.salarioMinimoNacionalService = Objects.requireNonNull(salarioMinimoNacionalService);
     }
 
     public CalculoJudicialRelatorio calcular(FederalPrevidenciarioCjfCalculoAvancadoRequest request, CalculoJudicialSolicitantePerfil perfil) {
@@ -145,7 +149,7 @@ public class FederalPrevidenciarioCjfCalculoAvancadoService {
         BigDecimal subtotalAcessorios = abatimentos.add(honorarios).setScale(2, RoundingMode.HALF_UP);
         BigDecimal total = subtotalPrincipal.add(subtotalAtualizacao).add(subtotalAcessorios).setScale(2, RoundingMode.HALF_UP);
 
-        BigDecimal salarioMinimo = CalculoJudicialMath.positive(request.salarioMinimoReferencia());
+        BigDecimal salarioMinimo = salarioMinimoDoTeto(request, alertas);
         BigDecimal tetoRpvSm = positiveOrDefault(request.tetoRpvEmSalariosMinimos(), tetoRpvNacionalService.salariosMinimos(PrecatorioRpvEnteDevedorTipo.UNIAO));
         BigDecimal tetoRpvValor = salarioMinimo.signum() > 0 ? CalculoJudicialMath.money(salarioMinimo.multiply(tetoRpvSm)) : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         String classificacaoPagamento = tetoRpvValor.signum() > 0 ? (total.compareTo(tetoRpvValor) <= 0 ? "RPV" : "PRECATORIO") : "CLASSIFICACAO_PARAMETRIZADA";
@@ -256,6 +260,19 @@ public class FederalPrevidenciarioCjfCalculoAvancadoService {
             }
         }
         return total.setScale(6, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal salarioMinimoDoTeto(FederalPrevidenciarioCjfCalculoAvancadoRequest request, List<String> alertas) {
+        BigDecimal informado = CalculoJudicialMath.positive(request.salarioMinimoReferencia());
+        if (request.dataTransitoEmJulgado() == null) {
+            return informado;
+        }
+        BigDecimal doTransito = salarioMinimoNacionalService.valorEm(request.dataTransitoEmJulgado());
+        if (informado.signum() > 0 && informado.compareTo(doTransito) != 0) {
+            alertas.add("Salário mínimo informado (" + informado.toPlainString() + ") difere do vigente no trânsito em julgado ("
+                    + doTransito.toPlainString() + "); o teto de RPV usa o do trânsito.");
+        }
+        return doTransito;
     }
 
     private BigDecimal positiveOrDefault(BigDecimal value, BigDecimal fallback) {
