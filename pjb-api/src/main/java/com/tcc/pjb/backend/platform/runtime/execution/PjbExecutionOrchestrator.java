@@ -22,11 +22,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PjbExecutionOrchestrator {
+
+    private static final Logger log = LoggerFactory.getLogger(PjbExecutionOrchestrator.class);
 
     private final PjbBoundedExecutorProvider boundedExecutorProvider;
     private final ScheduledExecutorService timeoutScheduler;
@@ -54,17 +58,14 @@ public class PjbExecutionOrchestrator {
         try {
             timeoutTask = scheduleTimeout(descriptor, future, tracker, runningThread);
         } catch (RejectedExecutionException ex) {
-            tracker.markRejected();
-            future.completeExceptionally(new PjbExecutionRejectedException(
-                    "timeout scheduling rejected for operation " + descriptor.operationName(), ex));
+            reject(tracker, future, "timeout scheduling rejected for operation " + descriptor.operationName(), ex);
             return future;
         }
         try {
             executor.execute(() -> executeTracked(descriptor, supplier, future, tracker, runningThread, capturedSessionSettings));
         } catch (RejectedExecutionException ex) {
             cancelTimeout(timeoutTask);
-            tracker.markRejected();
-            future.completeExceptionally(new PjbExecutionRejectedException("execution rejected for operation " + descriptor.operationName(), ex));
+            reject(tracker, future, "execution rejected for operation " + descriptor.operationName(), ex);
         } catch (RuntimeException ex) {
             cancelTimeout(timeoutTask);
             tracker.markFailed(0L);
@@ -103,6 +104,15 @@ public class PjbExecutionOrchestrator {
                         .thenComparing(PjbRuntimeExecutionOperationView::operationName))
                 .toList();
         return new PjbRuntimeExecutionGovernanceView(Instant.now(), lanes, operations);
+    }
+
+    private static void reject(OperationTracker tracker,
+                               CompletableFuture<?> future,
+                               String message,
+                               RejectedExecutionException cause) {
+        tracker.markRejected();
+        log.warn("[PJB-EXECUTION] {}: {}", message, cause.getMessage());
+        future.completeExceptionally(new PjbExecutionRejectedException(message, cause));
     }
 
     private ScheduledFuture<?> scheduleTimeout(PjbExecutionDescriptor descriptor,
