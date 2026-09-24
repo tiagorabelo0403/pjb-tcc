@@ -197,8 +197,8 @@ acessível na revisão; conferir antes de afirmar alinhamento normativo no TCC.
 
 ## D-seis-falhas-restantes-no-portao-de-integracao
 
-**Status:** aberta — grupos 2 e 3 fechados e medidos no portao (run 35932081080); grupo 1 trocou de
-causa: a drenagem foi corrigida e os tres gates agora recebem `CRITICAL_MEMORY_RUNAWAY`
+**Status:** FECHADA em 2026-09-24 — portao completo verde no run 35998133932 (294 testes, 0 falhas,
+0 erros)
 
 Com `spring-boot-starter-flyway`, `resilience4j-spring-boot4` e o release train 2025.1.3 do
 spring-cloud aplicados juntos, a suite de integracao saiu de 292 testes com 277 erros para:
@@ -250,12 +250,24 @@ HTTP 503, corpo: {"type":"https://pjb.local/problems/critical_memory_runaway", .
 "bucket":"write-expensive", "pressureScore":35, "headroomScore":35, ...}
 ```
 
-`PjbRuntimePressureService` mede o heap da JVM inteira (usado sobre maximo). Na JVM do Failsafe esse
-heap e dividido pelos contextos Spring que o spring-test 7 mantem em cache, pausados em vez de
-fechados: ate 32 (limite padrao, sem sobrescrita no projeto) das 44 configuracoes distintas medidas em
-`D-fragmentacao-de-contexto-spring-nos-its`. A razao so sobe ao longo da suite e a protecao de memoria passa a recusar operacoes
-caras. A protecao esta correta; o que falta tratar e a memoria retida pelo cache de contextos de
-teste, a mesma frente do `OutOfMemoryError` intermitente da suite unitaria no CI.
+A primeira leitura, registrada aqui antes da medição, culpava o heap retido pelos contextos Spring
+em cache. Estava errada: foi tirada do nome do codigo de erro, sem os valores. A causa medida e o
+metaspace. Sem `-XX:MaxMetaspaceSize` o `MemoryPoolMXBean` devolve max `-1`, e
+`PjbRuntimePressureService` dividia o usado pelo committed, que cresce junto com o uso. Sonda com heap,
+buffers diretos e GC isolados e o metaspace no limite padrao:
+
+```
+heapRatio=0.008 metaspace ratio=1.0 degraded=true runaway=true ready=false
+```
+
+A memoria ficava degradada o tempo todo; passada a janela sustentada de 2 minutos, qualquer rota
+`write-expensive` recebia 503 e a prontidao reprovava. Os forks do Surefire e do Failsafe sobem sem o
+flag; o container nao, porque `pjb-runtime.sh` sempre passa `MaxMetaspaceSize`. Localmente os gates
+rodavam ~105 s depois da primeira requisicao ao contexto e passavam; no portao, mais de 2 minutos.
+
+Sem teto configurado a razao do metaspace passa a zero. `PjbRuntimePressureServiceTest` perdeu o
+ajuste de 0,999 que escondia o caso e ganhou o teste que falhava com razao 1,0. No run 35998133932 os
+tres gates passaram.
 
 **Grupo 2 — dois testes de CPF do cidadao. Fechado pela correção do grupo 1.** Localmente passavam
 como primeira classe do fork, em contexto novo; no portao rodam depois de troca de contexto. No run
@@ -267,8 +279,27 @@ cifra nao se confirmou.
 de contexto desligava. No run 35932081080 o `LaianeOficioAuditPostCommitServiceIT` passou na ordem do
 portao.
 
-**O que falta para fechar:** a memoria retida pelos contextos de teste em cache, medida no portao
-(`it.yml`, despachavel por branch).
+## D-grupo-intermitente-de-onze-no-portao
+
+**Status:** aberta — medida, sem causa
+
+Onze testes quebram juntos (10 erros e 1 falha) em parte das execucoes do portao e passam nas outras:
+presentes nos runs 35821249418 (master, 2026-09-23, Testcontainers 1.19.8) e 35940986060 (branch da
+#210, Testcontainers 2.0.5); ausentes nos runs 35563577654 e 35689627352 (master, 21 e 22/09),
+35932081080 e 35998133932. A versao do Testcontainers nao decide. Os runs 35563577654, 35689627352 e
+35821249418 rodaram o mesmo commit, 2471b4ea: mesmo codigo, resultado diferente.
+
+```
+[ERROR]   AdminAdvocaciaOpsSummaryControllerIT>PjbH2ItBase.cleanH2Context:36 » InvalidDataAccessResourceUsage Could not prepare statement [Table "ADV_CLIENTES" not found (this database is empty); SQL statement:
+[ERROR]   MagistraturaJudicialActsControllerIT.setup:138 » DataIntegrityViolation could not execute batch [Batch entry 2 delete from tb_usuario where id=('3'::int8) was aborted: ERROR: update or delete on table "tb_usuario" violates foreign key constraint "fk
+[ERROR]   SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT.duasChamadasConcorrentesParaOMesmoProcessoETipoNuncaCriamDoisItensAtivos:78
+```
+
+Oito erros no `setup` de `MagistraturaJudicialActsControllerIT` (residuo em
+`tb_escritura_extrajudicial_registro` bloqueando o delete de `tb_usuario`), dois no
+`PjbH2ItBase.cleanH2Context` de `AdminAdvocaciaOpsSummaryControllerIT` e uma falha de concorrencia.
+O padrao aponta para ordem de execucao e estado deixado por outra classe, nao para as tres classes em
+si: falta identificar quem grava a escritura sem limpar e quando o H2 da base chega vazio.
 
 ## D-fragmentacao-de-contexto-spring-nos-its
 
