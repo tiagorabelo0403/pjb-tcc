@@ -26,7 +26,7 @@ spring:
       repositories:
         enabled: false
   datasource:
-    url: 'jdbc:h2:mem:pjbtest;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE DOMAIN IF NOT EXISTS JSONB AS JSON\;CREATE DOMAIN IF NOT EXISTS OID AS CLOB'
+    url: 'jdbc:h2:mem:pjbtest-${random.uuid};MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE DOMAIN IF NOT EXISTS JSONB AS JSON\;CREATE DOMAIN IF NOT EXISTS OID AS CLOB'
     username: sa
     password: ""
     driver-class-name: org.h2.Driver

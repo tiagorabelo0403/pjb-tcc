@@ -10,9 +10,11 @@ import com.tcc.pjb.backend.model.dto.extrajudicial.EscrituraLavraturaRequest;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.security.TrustedDevice;
+import com.tcc.pjb.backend.model.repository.EscrituraExtrajudicialRegistroRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.security.TrustedDeviceRepository;
 import java.math.BigDecimal;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -38,7 +40,25 @@ class InstitutionalExtrajudicialGateIT extends PjbIntegrationTestBase {
     TrustedDeviceRepository trustedDeviceRepository;
 
     @Autowired
+    EscrituraExtrajudicialRegistroRepository escrituraRepository;
+
+    @Autowired
     ObjectMapper objectMapper;
+
+    private Long tabeliaoId;
+    private Long passkeyId;
+
+    @AfterEach
+    void removerOQueOTesteCriou() {
+        if (tabeliaoId == null) {
+            return;
+        }
+        escrituraRepository.deleteAll(escrituraRepository.findTop50ByCartorioResponsavel_IdOrderByLavradaEmDesc(tabeliaoId));
+        if (passkeyId != null) {
+            trustedDeviceRepository.deleteById(passkeyId);
+        }
+        usuarioRepository.deleteById(tabeliaoId);
+    }
 
     @Test
     void lavraturaEscritura_comTabeliaoAutenticado_passaPeloGateInstitucional() throws Exception {
@@ -50,7 +70,7 @@ class InstitutionalExtrajudicialGateIT extends PjbIntegrationTestBase {
         tabeliao.setTipoUsuario(TipoUsuario.TABELIAO);
         tabeliao.setPerfil(TipoUsuario.TABELIAO.name());
         tabeliao = usuarioRepository.save(tabeliao);
-        long tabeliaoId = tabeliao.getId();
+        tabeliaoId = tabeliao.getId();
         TrustedDevice passkey = new TrustedDevice();
         passkey.setUsuario(tabeliao);
         passkey.setCredentialId("extrajudicial-gate-probe-passkey");
@@ -61,7 +81,7 @@ class InstitutionalExtrajudicialGateIT extends PjbIntegrationTestBase {
         passkey.setAttestationTrusted(true);
         passkey.setEnrollSuspectNetwork(false);
         passkey.setRiskScoreEnroll(0);
-        trustedDeviceRepository.save(passkey);
+        passkeyId = trustedDeviceRepository.save(passkey).getId();
 
         String body = objectMapper.writeValueAsString(new EscrituraLavraturaRequest(
                 "COMPRA_VENDA", "resumo do ato", "partes resumo", "bens resumo", BigDecimal.TEN));
