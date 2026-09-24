@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.procuradoria;
 
 import com.tcc.pjb.backend.model.dto.procuradoria.surface.PrecatorioRpvEnteDevedorTipo;
+import com.tcc.pjb.backend.service.financeiro.TetoRpvNacionalService;
 import com.tcc.pjb.backend.model.dto.procuradoria.surface.PrecatorioRpvNaturezaCredito;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
@@ -25,13 +26,16 @@ public class PrecatorioRpvService {
     private final ProcessoRepository processoRepository;
     private final PrecatorioRpvQueuePlanner queuePlanner;
     private final PrecatorioRpvCalendarPlanner calendarPlanner;
+    private final TetoRpvNacionalService tetoRpvNacionalService;
 
     public PrecatorioRpvService(ProcessoRepository processoRepository,
                                 PrecatorioRpvQueuePlanner queuePlanner,
-                                PrecatorioRpvCalendarPlanner calendarPlanner) {
+                                PrecatorioRpvCalendarPlanner calendarPlanner,
+                                TetoRpvNacionalService tetoRpvNacionalService) {
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.queuePlanner = Objects.requireNonNull(queuePlanner);
         this.calendarPlanner = Objects.requireNonNull(calendarPlanner);
+        this.tetoRpvNacionalService = Objects.requireNonNull(tetoRpvNacionalService);
     }
 
     @Transactional(readOnly = true)
@@ -43,7 +47,7 @@ public class PrecatorioRpvService {
         PrecatorioRpvEnteDevedorTipo enteDevedorTipo = resolveEnteDevedorTipo(request);
         BigDecimal principal = resolvePrincipal(request, processo);
         MonetaryComputation monetaryComputation = computeMonetary(principal, request, naturezaCredito, enteDevedorTipo, calculadoEm);
-        BigDecimal limiteRpv = safe(request.limiteRpv());
+        BigDecimal limiteRpv = resolveLimiteRpv(request);
         String modalidade = limiteRpv.signum() > 0 && monetaryComputation.totalAtualizado().compareTo(limiteRpv) <= 0 ? "RPV" : "PRECATORIO";
         boolean superpreferencia = isSuperpreferencia(request, naturezaCredito, modalidade, calculadoEm);
         Integer idadeBeneficiario = idadeBeneficiario(request.dataNascimentoBeneficiario(), calculadoEm);
@@ -199,6 +203,17 @@ public class PrecatorioRpvService {
         return request.naturezaCredito() == null ? PrecatorioRpvNaturezaCredito.COMUM : request.naturezaCredito();
     }
 
+    private BigDecimal resolveLimiteRpv(PrecatorioRpvRequest request) {
+        BigDecimal informado = safe(request.limiteRpv());
+        if (informado.signum() > 0) {
+            return informado;
+        }
+        if (request.enteDevedorTipo() == null || request.dataTransitoEmJulgado() == null) {
+            return BigDecimal.ZERO;
+        }
+        return tetoRpvNacionalService.limite(request.enteDevedorTipo(), request.dataTransitoEmJulgado());
+    }
+
     private PrecatorioRpvEnteDevedorTipo resolveEnteDevedorTipo(PrecatorioRpvRequest request) {
         return request.enteDevedorTipo() == null ? PrecatorioRpvEnteDevedorTipo.ESTADO : request.enteDevedorTipo();
     }
@@ -274,14 +289,15 @@ public class PrecatorioRpvService {
             boolean doencaGrave,
             boolean pessoaComDeficiencia,
             boolean regimeEspecial,
-            boolean acordoDiretoHabilitado
+            boolean acordoDiretoHabilitado,
+            LocalDate dataTransitoEmJulgado
     ) {
         public PrecatorioRpvRequest(Long processoId,
                                     BigDecimal valorPrincipal,
                                     BigDecimal indiceCorrecao,
                                     BigDecimal indiceJuros,
                                     BigDecimal limiteRpv) {
-            this(processoId, valorPrincipal, indiceCorrecao, indiceJuros, null, limiteRpv, null, null, null, null, null, null, false, false, false, false);
+            this(processoId, valorPrincipal, indiceCorrecao, indiceJuros, null, limiteRpv, null, null, null, null, null, null, false, false, false, false, null);
         }
     }
 

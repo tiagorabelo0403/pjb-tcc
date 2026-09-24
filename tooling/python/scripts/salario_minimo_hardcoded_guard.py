@@ -20,7 +20,8 @@ CONSTANT_DECLARATION = re.compile(
 )
 VALOR_POR_ANO_LITERAL = re.compile(r'\.valorPorAno\s*\(\s*([0-9]{4})\s*\)')
 NOW_INLINE_ARG = re.compile(
-    r'salarioMinimoNacionalService\s*\.\s*(multiplicar|valorEm)\s*\(.*?LocalDate\.now\(\)'
+    r'(?:salarioMinimoNacionalService\s*\.\s*(multiplicar|valorEm)'
+    r'|tetoRpvNacionalService\s*\.\s*(limite))\s*\(.*?LocalDate\.now\(\)'
 )
 
 
@@ -88,7 +89,7 @@ def scan_file(path: Path, raw: str) -> list[dict[str, object]]:
             hits.append({
                 'pattern': 'localdate_now_inline_in_service_call',
                 'line': line_no,
-                'match': match.group(1),
+                'match': match.group(1) or match.group(2),
                 'snippet': snippet,
                 'recommendedAction': 'Passar data de referencia do dominio (data do pedido, data do ajuizamento, etc.), nao LocalDate.now() inline.',
             })

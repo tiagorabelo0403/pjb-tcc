@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.processual.precatorio;
 
-import com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService;
+import com.tcc.pjb.backend.model.dto.procuradoria.surface.PrecatorioRpvEnteDevedorTipo;
+import com.tcc.pjb.backend.service.financeiro.TetoRpvNacionalService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -12,15 +13,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class PrecatorioRadarService {
 
-    private static final BigDecimal SALARIOS_MINIMOS_RPV_FEDERAL = new BigDecimal("60");
-    // ESTADUAL e MUNICIPAL compartilham este valor por decisao explicita (Tiago, 2026-09-16), nao
-    // por ausencia de fonte municipal propria -- fecha D-rpv-municipal-sem-limite-proprio.
-    private static final BigDecimal SALARIOS_MINIMOS_RPV_SUBNACIONAL = new BigDecimal("40");
+    private final TetoRpvNacionalService tetoRpvNacionalService;
 
-    private final SalarioMinimoNacionalService salarioMinimoService;
-
-    public PrecatorioRadarService(SalarioMinimoNacionalService salarioMinimoService) {
-        this.salarioMinimoService = Objects.requireNonNull(salarioMinimoService);
+    public PrecatorioRadarService(TetoRpvNacionalService tetoRpvNacionalService) {
+        this.tetoRpvNacionalService = Objects.requireNonNull(tetoRpvNacionalService);
     }
 
     public enum TipoObrigacaoFazenda {
@@ -74,10 +70,15 @@ public class PrecatorioRadarService {
     }
 
     private BigDecimal limiteRpv(TipoObrigacaoFazenda tipoFazenda, LocalDate dataReferencia) {
-        BigDecimal salariosMinimos = tipoFazenda == TipoObrigacaoFazenda.FEDERAL
-                ? SALARIOS_MINIMOS_RPV_FEDERAL
-                : SALARIOS_MINIMOS_RPV_SUBNACIONAL;
-        LocalDate referencia = dataReferencia != null ? dataReferencia : LocalDate.now();
-        return salarioMinimoService.multiplicar(salariosMinimos, referencia);
+        Objects.requireNonNull(dataReferencia, "dataTransitoEmJulgado");
+        return tetoRpvNacionalService.limite(enteDevedor(tipoFazenda), dataReferencia);
+    }
+
+    private static PrecatorioRpvEnteDevedorTipo enteDevedor(TipoObrigacaoFazenda tipoFazenda) {
+        return switch (tipoFazenda) {
+            case FEDERAL -> PrecatorioRpvEnteDevedorTipo.UNIAO;
+            case ESTADUAL -> PrecatorioRpvEnteDevedorTipo.ESTADO;
+            case MUNICIPAL -> PrecatorioRpvEnteDevedorTipo.MUNICIPIO;
+        };
     }
 }

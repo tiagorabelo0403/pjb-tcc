@@ -20,6 +20,7 @@ public record PrecatorioRpvCalculoRequest(
         boolean doencaGrave,
         boolean pessoaComDeficiencia,
         boolean regimeEspecial,
-        boolean acordoDiretoHabilitado
+        boolean acordoDiretoHabilitado,
+        LocalDate dataTransitoEmJulgado
 ) {
 }

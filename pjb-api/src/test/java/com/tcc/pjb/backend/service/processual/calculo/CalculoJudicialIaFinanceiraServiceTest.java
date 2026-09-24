@@ -25,7 +25,7 @@ class CalculoJudicialIaFinanceiraServiceTest {
     private final CalculoJudicialAssistenciaService assistenciaService = mock(CalculoJudicialAssistenciaService.class);
     private final CalculoJudicialFacadeService facadeService = mock(CalculoJudicialFacadeService.class);
     private final CalculoJudicialFrontendContractService contractService = new CalculoJudicialFrontendContractService(new CalculoJudicialTabelaOficialService(), TestEconomicReferenceSupport.economicReferenceService());
-    private final CalculoJudicialIaFinanceiraService service = new CalculoJudicialIaFinanceiraService(assistenciaService, facadeService, contractService, TestEconomicReferenceSupport.economicReferenceService(), new ObjectMapper(), Validation.buildDefaultValidatorFactory().getValidator());
+    private final CalculoJudicialIaFinanceiraService service = new CalculoJudicialIaFinanceiraService(assistenciaService, facadeService, contractService, TestEconomicReferenceSupport.economicReferenceService(), new ObjectMapper(), Validation.buildDefaultValidatorFactory().getValidator(), TestEconomicReferenceSupport.tetoRpvNacionalService());
 
     @Test
     void deveExecutarCalculadoraRealQuandoNaoHouverPendenciasNemBloqueios() {
