@@ -13,6 +13,7 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +25,11 @@ class PjbBoundedContextPublicApiIsolationArchitectureTest {
     @BeforeAll
     static void load() {
         classes = new ClassFileImporter().importPackages(BASE_PACKAGE);
+    }
+
+    @AfterAll
+    static void liberarGrafoDeClasses() {
+        classes = null;
     }
 
     @Test

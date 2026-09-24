@@ -12,6 +12,7 @@ import com.tcc.pjb.backend.model.dto.workitem.WorkItemDto;
 import com.tcc.pjb.backend.model.repository.BoletimOcorrenciaDigitalRepository;
 import com.tcc.pjb.backend.model.repository.InqueritoPolicialDigitalRepository;
 import com.tcc.pjb.backend.service.workitem.WorkItemService;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -51,6 +52,11 @@ class PjbBolaRegressionGuardTest {
         classes = new ClassFileImporter()
                 .withImportOption(new ImportOption.DoNotIncludeTests())
                 .importPackages("com.tcc.pjb.backend");
+    }
+
+    @AfterAll
+    static void liberarGrafoDeClasses() {
+        classes = null;
     }
 
     @Test
