@@ -11,7 +11,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.kernel.recursal.InstanceLevel;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.NationalRecursalMeshEngine;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalLifecycleState;
@@ -128,6 +128,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -139,7 +142,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
         "pjb.outbox.ingress.enabled=false",
         "pjb.integrations.oab.warn-on-indeterminate-allowed=false"
 })
-class PjbFluxoJudicialCompletoE2ETest extends PjbIntegrationTestBase {
+class PjbFluxoJudicialCompletoE2ETest extends PjbFlowItBase {
+
+    @Autowired
+    private JdbcTemplate unidadeJdbcTemplate;
 
     @Autowired
     private LaianePeticaoInicialDraftService peticaoInicialDraftService;
@@ -218,6 +224,8 @@ class PjbFluxoJudicialCompletoE2ETest extends PjbIntegrationTestBase {
 
     @BeforeEach
     void setUp() {
+        new ResourceDatabasePopulator(new ClassPathResource("sql/unidade-civel-fortaleza.sql"))
+                .execute(unidadeJdbcTemplate.getDataSource());
         configurarDespacho();
         configurarRecursal();
     }

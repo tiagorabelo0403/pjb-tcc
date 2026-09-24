@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.core.processo.polo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.enums.TipoParte;
 import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.processo.PoloProcessual;
@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
-class PoloProcessualRepositoryIT extends PjbIntegrationTestBase {
+class PoloProcessualRepositoryIT extends PjbFlowItBase {
 
     @Autowired private PoloProcessualRepository repository;
     @Autowired private JdbcTemplate jdbcTemplate;

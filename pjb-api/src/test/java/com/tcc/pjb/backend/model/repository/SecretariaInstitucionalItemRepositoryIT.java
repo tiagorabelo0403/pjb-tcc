@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.model.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.SecretariaInstitucionalItem;
 import com.tcc.pjb.backend.model.entity.enums.MotivoEnfileiramentoInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.StatusSecretariaInstitucionalItem;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-class SecretariaInstitucionalItemRepositoryIT extends PjbIntegrationTestBase {
+class SecretariaInstitucionalItemRepositoryIT extends PjbFlowItBase {
 
     @Autowired
     SecretariaInstitucionalItemRepository repository;

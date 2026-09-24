@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.TipoParte;
 import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
@@ -27,7 +27,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
         "pjb.workflow.enabled=false",
         "pjb.outbox.ingress.enabled=false"
 })
-class ApiMarketplaceServicePoloMaterializacaoTest extends PjbIntegrationTestBase {
+class ApiMarketplaceServicePoloMaterializacaoTest extends PjbFlowItBase {
 
     @Autowired
     private ApiMarketplaceService service;

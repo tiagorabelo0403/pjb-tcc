@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.core.security.abac;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.observability.RequestContext;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.AcaoProcessualServidor;
@@ -31,7 +31,7 @@ import org.springframework.test.context.TestPropertySource;
         "spring.cache.type=none",
         "pjb.workflow.enabled=false"
 })
-class PjbAuthorizationFuncaoServidorCapabilityIT extends PjbIntegrationTestBase {
+class PjbAuthorizationFuncaoServidorCapabilityIT extends PjbFlowItBase {
 
     @Autowired
     private PjbAuthorizationService authorizationService;

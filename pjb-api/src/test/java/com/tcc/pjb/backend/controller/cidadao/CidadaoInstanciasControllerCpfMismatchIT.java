@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -43,7 +43,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * auditoria ({@code AUTHZ_CIDADAO_PARTE_DENY}) em vez de uma negacao silenciosa.
  */
 @AutoConfigureMockMvc
-class CidadaoInstanciasControllerCpfMismatchIT extends PjbIntegrationTestBase {
+class CidadaoInstanciasControllerCpfMismatchIT extends PjbFlowItBase {
 
     @Autowired
     MockMvc mockMvc;

@@ -169,45 +169,6 @@ admite ML-DSA-44 para assinante final e ML-DSA-65/87 para Autoridade Certificado
 projeto é ML-DSA-87 para ato de magistrado. O texto oficial do DOC-ICP-01.01 v6.0 não estava
 acessível na revisão; conferir antes de afirmar alinhamento normativo no TCC.
 
-## D-its-gravam-sem-limpar
-
-**Status:** aberta — medida em 2026-09-24
-
-O Failsafe roda as classes na ordem do sistema de arquivos, e no runner do CI essa ordem muda a
-cada checkout: os runs 35563577654 e 35821249418 rodaram o mesmo commit (2471b4ea) com ordens
-diferentes. Estado que uma classe deixa no banco vira, então, falha intermitente de outra.
-
-Das 87 classes `*IT.java` que estendem diretamente `PjbIntegrationTestBase` (que não limpa nada), 46
-chamam `save` ou `saveAndFlush` sem `@AfterEach`, `@AfterAll`, `deleteAll`, `TRUNCATE`,
-`@Transactional` ou `@Sql`. Contagem por grep, em 2026-09-24, depois das correções abaixo:
-
-```
-$ for f in $(git grep -l -E "extends PjbIntegrationTestBase" -- 'pjb-api/src/test/**/*IT.java'); do
-    if ! grep -q -E "@AfterEach|@AfterAll|deleteAll|TRUNCATE|@Transactional|@Sql" $f \
-       && grep -q -E "\.save\(|saveAndFlush\(" $f; then echo x; fi; done | wc -l
-46
-$ git grep -l -E "extends PjbIntegrationTestBase" -- 'pjb-api/src/test/**/*IT.java' | wc -l
-87
-```
-
-Ficam fora da conta as 19 que estendem `PjbFlowItBase`, que faz `TRUNCATE` antes de cada teste, as
-que estendem `PjbTransactionalRepositoryItBase`, que desfazem a transação, e as 6 `*Test.java`
-marcadas como integração.
-
-Duas dessas classes já tinham derrubado outras e foram corrigidas, cada uma com a falha
-reproduzida localmente na ordem que a expunha e verde depois:
-
-| Quem vazava | Quem quebrava | Estado deixado |
-|---|---|---|
-| `InstitutionalExtrajudicialGateIT` | `MagistraturaJudicialActsControllerIT` (8 erros) | escritura presa ao usuário tabelião por `fk_escritura_cartorio` |
-| `UnidadeInstituicaoAbrangenciaResolutionIT` | `SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT` (1 falha) | segunda unidade `NUCLEO_DEFENSORIA` em Fortaleza, que torna a resolução ambígua |
-
-`SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT` também passou a remover o que cria: sua
-unidade em Fortaleza tinha o mesmo potencial. As 46 da contagem já excluem as três.
-
-**Correção sugerida:** levar as restantes para `PjbFlowItBase` ou dar a cada uma a remoção do que cria,
-com um guard que reprove IT nova que grave sem nenhum dos dois.
-
 ## D-alcada-de-juizado-como-literal-em-cinco-pontos
 
 **Status:** aberta — separada de `D-teto-rpv-duplicado`, que fechou

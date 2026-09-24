@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.kernel.recursal.InstanceLevel;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalAuthority;
 import com.tcc.pjb.backend.core.kernel.recursal.mesh.RecursalLifecycleState;
@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-class RecursalMeshProjectionFlowIT extends PjbIntegrationTestBase {
+class RecursalMeshProjectionFlowIT extends PjbFlowItBase {
 
     @Autowired
     private ProcessoRepository processoRepository;

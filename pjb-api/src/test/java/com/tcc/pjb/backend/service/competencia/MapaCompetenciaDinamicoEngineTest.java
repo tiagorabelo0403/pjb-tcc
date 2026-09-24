@@ -48,6 +48,28 @@ class MapaCompetenciaDinamicoEngineTest {
     }
 
     @Test
+    void alteracaoDeUnidadesDescartaOSnapshotEmCache() {
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        when(unidadeRepository.findAll()).thenReturn(List.of(unidade("VARA-01")));
+        MapaCompetenciaDinamicoEngine engine = new MapaCompetenciaDinamicoEngine(
+                unidadeRepository,
+                mock(ProcessoDistribuicaoCompetenciaRepository.class),
+                mock(ProcessoRepository.class),
+                mock(AuditLedgerService.class),
+                mock(OutboxPublisher.class),
+                mock(CompetenceResolverService.class),
+                mock(ConfiguracaoDistribuicaoVaraService.class),
+                mock(ProceduralCanonicalResolver.class)
+        );
+
+        engine.analisarRedistribuicao(0.95d);
+        engine.invalidarSnapshotDeUnidades(new UnidadesJudiciariasAlteradasEvent());
+        engine.analisarRedistribuicao(0.95d);
+
+        verify(unidadeRepository, times(2)).findAll();
+    }
+
+    @Test
     void aderenciaTerritorialMinima_ufIgualDaUnidadeEDoProcesso_pontuaDoisQuandoComarcaNaoCoincide() {
         MapaCompetenciaDinamicoEngine engine = criarEngine();
         UnidadeJudiciariaCompetencia unidade = unidadeComUf("VARA-CE", "CE");

@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.service.consultapublica;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.document.DocumentoPagina;
@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = "spring.cache.type=none")
-class ConsultaPublicaSearchFlowIT extends PjbIntegrationTestBase {
+class ConsultaPublicaSearchFlowIT extends PjbFlowItBase {
 
     @Autowired
     private ProcessoRepository processoRepository;

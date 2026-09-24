@@ -9,7 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento;
@@ -33,7 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
         "pjb.workflow.enabled=false",
         "pjb.outbox.ingress.enabled=false"
 })
-class ApiMarketplaceServiceCompletudeDocumentalTest extends PjbIntegrationTestBase {
+class ApiMarketplaceServiceCompletudeDocumentalTest extends PjbFlowItBase {
 
     @Autowired
     private ApiMarketplaceService service;

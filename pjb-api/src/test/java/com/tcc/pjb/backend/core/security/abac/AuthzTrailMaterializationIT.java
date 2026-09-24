@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.core.security.abac;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -20,7 +20,7 @@ import org.springframework.test.context.TestPropertySource;
         "spring.cache.type=none",
         "pjb.workflow.enabled=false"
 })
-class AuthzTrailMaterializationIT extends PjbIntegrationTestBase {
+class AuthzTrailMaterializationIT extends PjbFlowItBase {
 
     @Autowired
     private PjbAuthorizationTrailReadModelService trailReadModelService;

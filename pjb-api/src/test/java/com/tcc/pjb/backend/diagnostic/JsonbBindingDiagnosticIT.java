@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.diagnostic;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.ai.legalai.dreaming.infra.DreamOutboxJpaEntity;
 import com.tcc.pjb.backend.ai.legalai.dreaming.infra.DreamOutboxJpaRepository;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.ProtocoloCompletudeEventoTipo;
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 
-class JsonbBindingDiagnosticIT extends PjbIntegrationTestBase {
+class JsonbBindingDiagnosticIT extends PjbFlowItBase {
 
     @Autowired
     private ProtocoloCompletudeOutboxRepository outboxRepo;

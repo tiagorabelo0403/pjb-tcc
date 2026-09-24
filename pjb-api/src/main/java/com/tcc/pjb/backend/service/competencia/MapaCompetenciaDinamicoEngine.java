@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,9 @@ import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaReposito
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import com.tcc.pjb.backend.tribunal.distribuicao.ConfiguracaoDistribuicaoVaraService;
 import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 public class MapaCompetenciaDinamicoEngine {
@@ -65,6 +69,7 @@ public class MapaCompetenciaDinamicoEngine {
     private final ConfiguracaoDistribuicaoVaraService configuracaoDistribuicaoVaraService;
     private final ProceduralCanonicalResolver proceduralCanonicalResolver;
     private final AtomicReference<CachedUnits> unitsCache = new AtomicReference<>();
+    private final AtomicLong geracaoDasUnidades = new AtomicLong();
 
     public MapaCompetenciaDinamicoEngine(UnidadeJudiciariaCompetenciaRepository unidadeRepository,
                                          ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository,
@@ -170,6 +175,29 @@ public class MapaCompetenciaDinamicoEngine {
         return new DynamicCompetenceRedistributionResponse(List.copyOf(propostas));
     }
 
+    @TransactionalEventListener(fallbackExecution = true)
+    public void invalidarSnapshotDeUnidades(UnidadesJudiciariasAlteradasEvent evento) {
+        descartarSnapshotDeUnidades();
+    }
+
+    private void descartarSnapshotDeUnidades() {
+        geracaoDasUnidades.incrementAndGet();
+        unitsCache.set(null);
+    }
+
+    private void descartarSnapshotDeUnidadesAposCommit() {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            descartarSnapshotDeUnidades();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                descartarSnapshotDeUnidades();
+            }
+        });
+    }
+
     private List<UnidadeJudiciariaCompetencia> carregarSnapshotUnidades() {
         CachedUnits cache = unitsCache.get();
         Instant now = Instant.now();
@@ -182,6 +210,7 @@ public class MapaCompetenciaDinamicoEngine {
             if (cache != null && !cache.units().isEmpty() && cache.expiresAt() != null && cache.expiresAt().isAfter(now)) {
                 return cache.units();
             }
+            long geracao = geracaoDasUnidades.get();
             List<UnidadeJudiciariaCompetencia> loaded = List.copyOf(unidadeRepository.findAll());
             // As entidades sobrevivem no cache além da transação/sessão que as carregou. As três
             // @ElementCollection(EAGER) precisam ser inicializadas aqui, dentro da sessão de carga —
@@ -192,7 +221,9 @@ public class MapaCompetenciaDinamicoEngine {
                 org.hibernate.Hibernate.initialize(unidade.getClassesTpu());
                 org.hibernate.Hibernate.initialize(unidade.getAssuntosTpu());
             });
-            unitsCache.set(loaded.isEmpty() ? null : new CachedUnits(loaded, now.plus(UNIT_CACHE_TTL)));
+            if (geracaoDasUnidades.get() == geracao) {
+                unitsCache.set(loaded.isEmpty() ? null : new CachedUnits(loaded, now.plus(UNIT_CACHE_TTL)));
+            }
             return loaded;
         }
     }
@@ -502,7 +533,7 @@ public class MapaCompetenciaDinamicoEngine {
             Long unidadeId = melhor.unidade().getId();
             if (unidadeId != null) {
                 if (unidadeRepository.registrarDistribuicaoAplicada(unidadeId, Instant.now()) > 0) {
-                    unitsCache.set(null);
+                    descartarSnapshotDeUnidadesAposCommit();
                 }
             }
         }

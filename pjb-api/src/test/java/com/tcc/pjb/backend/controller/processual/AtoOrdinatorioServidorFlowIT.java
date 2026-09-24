@@ -5,7 +5,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.dto.atoordinatorio.AtoOrdinatorioRequest;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -44,7 +44,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * existente que ja prova esse gate contra Postgres — nao inventar um novo padrao de seeding.
  */
 @AutoConfigureMockMvc
-class AtoOrdinatorioServidorFlowIT extends PjbIntegrationTestBase {
+class AtoOrdinatorioServidorFlowIT extends PjbFlowItBase {
 
     @Autowired
     MockMvc mockMvc;

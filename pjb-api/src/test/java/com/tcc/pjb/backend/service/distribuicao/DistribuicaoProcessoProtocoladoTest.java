@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.when;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.integration.oab.OabValidationClient;
 import com.tcc.pjb.backend.integration.oab.OabValidationResult;
@@ -24,9 +24,13 @@ import com.tcc.pjb.backend.service.advogado.LaianePeticaoInicialDraftService;
 import com.tcc.pjb.backend.service.triagem.TriagemNacionalIAEngine;
 import java.math.BigDecimal;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -38,7 +42,16 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
         "pjb.outbox.ingress.enabled=false",
         "pjb.integrations.oab.warn-on-indeterminate-allowed=false"
 })
-class DistribuicaoProcessoProtocoladoTest extends PjbIntegrationTestBase {
+class DistribuicaoProcessoProtocoladoTest extends PjbFlowItBase {
+
+    @Autowired
+    private JdbcTemplate unidadeJdbcTemplate;
+
+    @BeforeEach
+    void semearUnidadeCivelDeFortaleza() {
+        new ResourceDatabasePopulator(new ClassPathResource("sql/unidade-civel-fortaleza.sql"))
+                .execute(unidadeJdbcTemplate.getDataSource());
+    }
 
     @Autowired
     private LaianePeticaoInicialDraftService peticaoInicialDraftService;

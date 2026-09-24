@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.service.processual.observability.business;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-class ProcessBusinessObservabilityIT extends PjbIntegrationTestBase {
+class ProcessBusinessObservabilityIT extends PjbFlowItBase {
 
     @Autowired private ProcessoRepository processoRepository;
     @Autowired private JdbcTemplate jdbcTemplate;

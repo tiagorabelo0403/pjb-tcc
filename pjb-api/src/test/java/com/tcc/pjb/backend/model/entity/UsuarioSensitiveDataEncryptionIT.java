@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.model.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
@@ -29,7 +29,7 @@ import org.springframework.test.context.TestPropertySource;
         "pjb.security.master-key=" + UsuarioSensitiveDataEncryptionIT.CHAVE_TESTE_BASE64,
         "pjb.security.crypto.allow-plaintext-fallback=false"
 })
-class UsuarioSensitiveDataEncryptionIT extends PjbIntegrationTestBase {
+class UsuarioSensitiveDataEncryptionIT extends PjbFlowItBase {
 
     static final String CHAVE_TESTE_BASE64 = "MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=";
 

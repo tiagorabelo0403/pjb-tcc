@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.core.processo.lifecycle;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.kernel.casefile.CaseFileEventStore;
 import com.tcc.pjb.backend.core.kernel.recursal.RecursalRelationType;
@@ -28,7 +28,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = "spring.cache.type=none")
-class ProcessoLifecycleCaseContinuityFlowIT extends PjbIntegrationTestBase {
+class ProcessoLifecycleCaseContinuityFlowIT extends PjbFlowItBase {
 
     @Autowired
     private ProcessoRepository processoRepository;

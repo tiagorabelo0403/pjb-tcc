@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-class FirstTenRoadmapSchemaIT extends PjbIntegrationTestBase {
+class FirstTenRoadmapSchemaIT extends PjbFlowItBase {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

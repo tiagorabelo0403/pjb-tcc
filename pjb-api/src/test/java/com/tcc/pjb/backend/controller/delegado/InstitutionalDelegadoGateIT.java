@@ -5,7 +5,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.dto.profile.operational.DelegadoDiligenciaRequest;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * familia Delegado (requisicao de diligencia). Ver {@code D-institutional-gate-filter-roda-antes-da-auth}.
  */
 @AutoConfigureMockMvc
-class InstitutionalDelegadoGateIT extends PjbIntegrationTestBase {
+class InstitutionalDelegadoGateIT extends PjbFlowItBase {
 
     @Autowired
     MockMvc mockMvc;

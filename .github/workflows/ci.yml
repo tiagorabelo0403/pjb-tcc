@@ -148,6 +148,10 @@ jobs:
         working-directory: scripts
         run: python debt_evidence_guard.py
 
+      - name: test_isolation_guard
+        working-directory: scripts
+        run: python test_isolation_guard.py
+
       # Existia e nao rodava em lugar nenhum — checava so duplicata de versao. Passou a cobrir
       # tambem versao que regride e conteudo de migration ja commitada alterado. As tres sao
       # invisiveis para o resto do CI pela mesma razao: Testcontainers sempre parte de banco vazio,
@@ -220,10 +224,6 @@ jobs:
       - name: architecture_hygiene_guard
         working-directory: scripts
         run: python architecture_hygiene_guard.py
-
-      - name: test_isolation_guard
-        working-directory: scripts
-        run: python test_isolation_guard.py
 
       - name: hibernate_filter_definition_guard
         working-directory: scripts

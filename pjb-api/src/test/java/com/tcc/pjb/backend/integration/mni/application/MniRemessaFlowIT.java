@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.integration.mni.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.integration.mni.domain.MniRemessaRequest;
 import com.tcc.pjb.backend.integration.mni.infra.MniHttpClient;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -17,7 +17,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = "pjb.mni.enabled=true")
-class MniRemessaFlowIT extends PjbIntegrationTestBase {
+class MniRemessaFlowIT extends PjbFlowItBase {
 
     @Autowired
     private ProcessoRepository processoRepository;

@@ -10,7 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest(classes = BackendApplication.class)
 @ActiveProfiles("integration-test")
-class FirstTenRoadmapSchemaForeignKeysIT extends PjbIntegrationTestBase {
+class FirstTenRoadmapSchemaForeignKeysIT extends PjbFlowItBase {
 
     @Autowired
     JdbcTemplate jdbcTemplate;

@@ -7,13 +7,14 @@ import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.competencia.Tribunal;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.repository.TribunalRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-class JurisdicaoTerritorialCatalogoConstraintIT extends PjbIntegrationTestBase {
+class JurisdicaoTerritorialCatalogoConstraintIT extends PjbFlowItBase {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -24,6 +25,13 @@ class JurisdicaoTerritorialCatalogoConstraintIT extends PjbIntegrationTestBase {
     @BeforeEach
     void limparCatalogo() {
         jdbcTemplate.update("DELETE FROM tb_jurisdicao_territorial WHERE municipio_ibge = ?", "0000001");
+    }
+
+    @AfterEach
+    void removerCatalogoDeTeste() {
+        limparCatalogo();
+        jdbcTemplate.update("DELETE FROM tb_tribunal WHERE sigla = ? AND NOT EXISTS "
+                + "(SELECT 1 FROM tb_jurisdicao_territorial j WHERE j.tribunal_id = tb_tribunal.id)", "TESTE");
     }
 
     @Test

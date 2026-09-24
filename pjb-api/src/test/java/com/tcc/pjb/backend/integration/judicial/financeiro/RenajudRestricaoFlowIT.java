@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.integration.judicial.financeiro;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-class RenajudRestricaoFlowIT extends PjbIntegrationTestBase {
+class RenajudRestricaoFlowIT extends PjbFlowItBase {
 
     @Autowired
     private ProcessoRepository processoRepository;

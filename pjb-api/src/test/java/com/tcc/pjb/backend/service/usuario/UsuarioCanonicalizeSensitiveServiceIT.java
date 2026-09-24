@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.service.usuario;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import org.springframework.test.context.TestPropertySource;
         "pjb.security.master-key=MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=",
         "pjb.security.crypto.allow-plaintext-fallback=false"
 })
-class UsuarioCanonicalizeSensitiveServiceIT extends PjbIntegrationTestBase {
+class UsuarioCanonicalizeSensitiveServiceIT extends PjbFlowItBase {
 
     @Autowired
     private UsuarioCanonicalizeSensitiveService service;

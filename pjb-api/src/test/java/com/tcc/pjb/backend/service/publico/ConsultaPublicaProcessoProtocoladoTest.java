@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.when;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.integration.oab.OabValidationClient;
 import com.tcc.pjb.backend.integration.oab.OabValidationResult;
@@ -40,7 +40,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
         "pjb.outbox.ingress.enabled=false",
         "pjb.integrations.oab.warn-on-indeterminate-allowed=false"
 })
-class ConsultaPublicaProcessoProtocoladoTest extends PjbIntegrationTestBase {
+class ConsultaPublicaProcessoProtocoladoTest extends PjbFlowItBase {
 
     @Autowired
     private LaianePeticaoInicialDraftService peticaoInicialDraftService;

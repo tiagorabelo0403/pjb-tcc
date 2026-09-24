@@ -3,13 +3,13 @@ package com.tcc.pjb.backend.core.audit.ledger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Tag("integration")
-class AuditLedgerServicePayloadHashNuloIT extends PjbIntegrationTestBase {
+class AuditLedgerServicePayloadHashNuloIT extends PjbFlowItBase {
 
     @Autowired
     private AuditLedgerService auditLedgerService;

@@ -1,8 +1,14 @@
 package com.tcc.pjb.backend;
 
+import com.tcc.pjb.backend.platform.runtime.PjbBoundedExecutorService;
+import com.tcc.pjb.backend.service.competencia.UnidadesJudiciariasAlteradasEvent;
+import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -10,10 +16,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * Não usa @Transactional — a requisição HTTP roda em thread/conexão separada,
  * fora de qualquer TX do teste. Rollback transacional não isola o que a app comita.
  *
- * <p>Isolamento garantido por TRUNCATE CASCADE autodescoberto no @BeforeEach:
- * cada teste entra com banco limpo. A descoberta usa pg_tables filtrando filhas
- * de partição via pg_inherits — zero lista manual de tabelas, zero divergência
- * com futuras migrations.
+ * <p>Isolamento por TRUNCATE CASCADE autodescoberto no @BeforeEach e no @AfterEach: cada teste
+ * entra com banco limpo, e o que ele gravou de forma síncrona é apagado ao sair. A descoberta usa
+ * pg_tables filtrando filhas de partição via pg_inherits — zero lista manual de tabelas, zero
+ * divergência com futuras migrations.
  *
  * <p>Exceção deliberada: catálogos semeados pelo Flyway e nunca escritos pelo fluxo em
  * teste ({@code tb_jurisdicao_territorial}, {@code tb_jurisdicao_territorial_unidade},
@@ -22,7 +28,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * as ITs do lote na mesma JVM/mesmo banco ({@link PjbIntegrationTestBase}); truncar esses
  * catálogos aqui os apaga para o resto do fork sem repor via nova migration, quebrando ITs
  * que dependem deles (ex.: {@code Trt7CearaJurisdicaoCargaIT}) só quando rodadas em lote
- * amplo — nunca isoladas. Nenhuma classe que herda esta base grava nessas tabelas.
+ * amplo — nunca isoladas. As classes desta base que gravam nesses catálogos apagam o que gravaram
+ * em @AfterEach; o {@code test_isolation_guard} reprova a que não apaga.
  *
  * <p>Premissa de segurança do TRUNCATE (ACCESS EXCLUSIVE):
  * O perfil integration-test desabilita schedulers ({@code spring.task.scheduling.enabled=false}),
@@ -30,25 +37,46 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * ({@code pjb.jobs.dispatcher.enabled=false}). Entre testes, nenhum TX de background
  * fica aberto — o TRUNCATE não encontra bloqueio. Se algum IT habilitar job de background
  * no perfil integration-test, o TRUNCATE pode travar aguardando o lock ACCESS EXCLUSIVE.
- * Manter os jobs desabilitados é pré-requisito para herdar esta base.
+ * Manter os jobs desabilitados é pré-requisito para herdar esta base. Gravações assíncronas
+ * disparadas pela própria requisição, como a auditoria em {@code runInNewTransaction}, rodam nos
+ * executores limitados da plataforma: antes de truncar, a base espera esses executores ficarem sem
+ * tarefa ativa.
  */
 public abstract class PjbFlowItBase extends PjbIntegrationTestBase {
 
+    private static final Duration ESPERA_DE_TAREFAS_ASSINCRONAS = Duration.ofSeconds(30);
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private Map<String, PjbBoundedExecutorService> executoresDaPlataforma;
 
     @BeforeEach
     void truncateDatabaseBeforeEach() {
         truncateAllTrackedTables();
     }
 
+    @AfterEach
+    void truncateDatabaseAfterEach() {
+        executoresDaPlataforma.forEach((nome, executor) -> {
+            if (!executor.awaitQuiescence(ESPERA_DE_TAREFAS_ASSINCRONAS)) {
+                throw new IllegalStateException("Executor " + nome + " ainda tem tarefa ativa depois de "
+                        + ESPERA_DE_TAREFAS_ASSINCRONAS + "; truncar agora apagaria o banco sob uma gravacao em curso.");
+            }
+        });
+        truncateAllTrackedTables();
+    }
+
     /**
-     * Reutilizável por subclasses que precisem de um TRUNCATE adicional fora do @BeforeEach
-     * (ex.: @AfterAll com @TestInstance(PER_CLASS)) — nunca duplicar esta query: a exclusão
-     * dos catálogos Flyway acima é o próprio fix de {@code D-testes-it-contaminacao-em-lote-amplo-service-package},
-     * uma cópia divergente reintroduz o vazamento.
+     * Nunca duplicar esta query: a exclusão dos catálogos Flyway acima é o próprio fix de
+     * {@code D-testes-it-contaminacao-em-lote-amplo-service-package}, e uma cópia divergente
+     * reintroduz o vazamento.
      */
-    protected final void truncateAllTrackedTables() {
+    private void truncateAllTrackedTables() {
         List<String> tables = jdbcTemplate.queryForList(
                 """
                 SELECT t.tablename
@@ -73,5 +101,6 @@ public abstract class PjbFlowItBase extends PjbIntegrationTestBase {
             String tableList = String.join(", ", tables.stream().map(t -> "\"" + t + "\"").toList());
             jdbcTemplate.execute("TRUNCATE " + tableList + " RESTART IDENTITY CASCADE");
         }
+        eventPublisher.publishEvent(new UnidadesJudiciariasAlteradasEvent());
     }
 }

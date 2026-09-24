@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.core.processo.conclusao;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.processo.ConclusaoProcessual;
 import com.tcc.pjb.backend.model.repository.ConclusaoProcessualRepository;
 import java.time.Instant;
@@ -16,7 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
-class ConclusaoProcessualRepositoryIT extends PjbIntegrationTestBase {
+class ConclusaoProcessualRepositoryIT extends PjbFlowItBase {
 
     @Autowired private ConclusaoProcessualRepository repository;
     @Autowired private JdbcTemplate jdbcTemplate;
