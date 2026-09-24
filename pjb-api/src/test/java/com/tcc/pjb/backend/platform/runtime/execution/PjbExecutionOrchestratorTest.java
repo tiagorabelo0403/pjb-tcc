@@ -127,7 +127,7 @@ class PjbExecutionOrchestratorTest {
     }
 
     @Test
-    void deveMarcarTimeoutQuandoOperacaoExcederBudget() throws Exception {
+    void deveMarcarERegistrarTimeoutQuandoOperacaoExcederBudget(CapturedOutput output) throws Exception {
         PjbBoundedExecutorService io = new PjbBoundedExecutorService("test-io-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
         PjbBoundedExecutorService burst = new PjbBoundedExecutorService("test-burst-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
         PjbBoundedExecutorService externalIo = new PjbBoundedExecutorService("test-ext-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
@@ -149,6 +149,8 @@ class PjbExecutionOrchestratorTest {
             drainScheduler(scheduler);
             var snapshot = orchestrator.snapshot();
             assertTrue(snapshot.operations().stream().anyMatch(operation -> operation.operationName().equals("timeout-op") && operation.timedOutTasks() >= 1L));
+            assertTrue(output.getAll().contains("[PJB-EXECUTION] execution timed out for operation timeout-op after 50ms"),
+                    "quem descarta o futuro precisa achar o timeout no log");
         } finally {
             scheduler.shutdownNow();
             io.close();

@@ -121,8 +121,10 @@ public class PjbExecutionOrchestrator {
                                                AtomicReference<Thread> runningThread) {
         long timeoutMillis = Math.max(1L, descriptor.timeout().toMillis());
         return timeoutScheduler.schedule(() -> {
-            if (future.completeExceptionally(new PjbExecutionTimedOutException("execution timed out for operation " + descriptor.operationName()))) {
+            String message = "execution timed out for operation " + descriptor.operationName();
+            if (future.completeExceptionally(new PjbExecutionTimedOutException(message))) {
                 tracker.markTimedOut();
+                log.warn("[PJB-EXECUTION] {} after {}ms", message, timeoutMillis);
                 interrupt(runningThread);
             }
         }, timeoutMillis, TimeUnit.MILLISECONDS);
