@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -37,6 +38,11 @@ class PjbArchitectureTest {
     @BeforeAll
     static void load() {
         classes = new ClassFileImporter().withImportOption(new ImportOption.DoNotIncludeTests()).importPackages("com.tcc.pjb.backend");
+    }
+
+    @AfterAll
+    static void liberarGrafoDeClasses() {
+        classes = null;
     }
 
     /**
