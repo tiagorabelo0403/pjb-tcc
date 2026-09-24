@@ -88,7 +88,8 @@ class CidadaoInstanciasControllerCpfMismatchIT extends PjbIntegrationTestBase {
                 .getResponse();
 
         assertThat(response.getStatus())
-                .as("CPF do cidadao autenticado nao bate com nenhuma parte do processo")
+                .as("CPF do cidadao autenticado nao bate com nenhuma parte do processo (corpo: %s)",
+                        response.getContentAsString())
                 .isEqualTo(403);
 
         String resourceIdEsperado = processo.getNumeroUnificado();
@@ -131,7 +132,8 @@ class CidadaoInstanciasControllerCpfMismatchIT extends PjbIntegrationTestBase {
                 .getResponse();
 
         assertThat(response.getStatus())
-                .as("CPF do cidadao autenticado bate com a parte autora do processo")
+                .as("CPF do cidadao autenticado bate com a parte autora do processo (corpo: %s)",
+                        response.getContentAsString())
                 .isEqualTo(200);
     }
 }

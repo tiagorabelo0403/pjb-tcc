@@ -65,10 +65,12 @@ class InstitutionalSecretariaGateIT extends PjbIntegrationTestBase {
                 .getResponse();
 
         assertThat(response.getStatus())
-                .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou servidor legitimo)")
+                .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou servidor legitimo) (corpo: %s)",
+                        response.getContentAsString())
                 .isNotIn(401, 403);
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation"))
-                .as("Gate rodou depois da auth e classificou a operacao de secretaria (status HTTP recebido: %s)", response.getStatus())
+                .as("Gate rodou depois da auth e classificou a operacao de secretaria (HTTP %s, corpo: %s)",
+                        response.getStatus(), response.getContentAsString())
                 .isEqualTo("SECRETARIA_REDISCRITICA");
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Allowed"))
                 .as("Gate resolveu o servidor JWT via banco e liberou")
