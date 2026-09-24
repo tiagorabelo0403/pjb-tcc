@@ -12,11 +12,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(OutputCaptureExtension.class)
 class PjbExecutionOrchestratorTest {
 
     @Test
@@ -50,7 +54,80 @@ class PjbExecutionOrchestratorTest {
     }
 
     @Test
-    void deveMarcarTimeoutQuandoOperacaoExcederBudget() throws Exception {
+    void agendadorDeTimeoutEncerradoDevolveFuturoFalhoEmVezDeEstourarNoChamador(CapturedOutput output) {
+        PjbBoundedExecutorService io = new PjbBoundedExecutorService("test-io-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        PjbBoundedExecutorService burst = new PjbBoundedExecutorService("test-burst-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        PjbBoundedExecutorService externalIo = new PjbBoundedExecutorService("test-ext-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        PjbBoundedExecutorService live = new PjbBoundedExecutorService("test-live-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        PjbBoundedExecutorService job = new PjbBoundedExecutorService("test-job-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.shutdownNow();
+        try {
+            PjbExecutionOrchestrator orchestrator = new PjbExecutionOrchestrator(
+                    new PjbBoundedExecutorProvider(io, burst, externalIo, live, job), scheduler, new PjbProcessoSigiloRlsContext());
+
+            CompletableFuture<String> future =
+                    orchestrator.supply(PjbExecutionDescriptor.io("pos-commit-op", Duration.ofSeconds(1)), () -> "OK");
+
+            assertTrue(future.isCompletedExceptionally(),
+                    "com o agendador encerrado o futuro precisa vir falho em vez de lancar na chamada");
+            ExecutionException erro = assertThrows(ExecutionException.class, () -> future.get(2, TimeUnit.SECONDS));
+            assertTrue(erro.getCause() instanceof PjbExecutionRejectedException,
+                    "a rejeicao precisa chegar como PjbExecutionRejectedException, igual a do executor: " + erro.getCause());
+            assertRejeicaoContadaERegistrada(orchestrator, output, "pos-commit-op", "timeout scheduling rejected for operation pos-commit-op");
+        } finally {
+            io.close();
+            burst.close();
+            externalIo.close();
+            live.close();
+            job.close();
+        }
+    }
+
+    @Test
+    void executorEncerradoContaERegistraARejeicao(CapturedOutput output) {
+        PjbBoundedExecutorService io = new PjbBoundedExecutorService("test-io-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        PjbBoundedExecutorService burst = new PjbBoundedExecutorService("test-burst-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        PjbBoundedExecutorService externalIo = new PjbBoundedExecutorService("test-ext-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        PjbBoundedExecutorService live = new PjbBoundedExecutorService("test-live-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        PjbBoundedExecutorService job = new PjbBoundedExecutorService("test-job-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        io.shutdown();
+        try {
+            PjbExecutionOrchestrator orchestrator = new PjbExecutionOrchestrator(
+                    new PjbBoundedExecutorProvider(io, burst, externalIo, live, job), scheduler, new PjbProcessoSigiloRlsContext());
+
+            CompletableFuture<Void> future =
+                    orchestrator.run(PjbExecutionDescriptor.io("executor-encerrado-op", Duration.ofSeconds(1)), () -> { });
+
+            ExecutionException erro = assertThrows(ExecutionException.class, () -> future.get(2, TimeUnit.SECONDS));
+            assertTrue(erro.getCause() instanceof PjbExecutionRejectedException, "causa inesperada: " + erro.getCause());
+            assertRejeicaoContadaERegistrada(orchestrator, output, "executor-encerrado-op", "execution rejected for operation executor-encerrado-op");
+        } finally {
+            scheduler.shutdownNow();
+            burst.close();
+            externalIo.close();
+            live.close();
+            job.close();
+        }
+    }
+
+    private static void assertRejeicaoContadaERegistrada(PjbExecutionOrchestrator orchestrator,
+                                                         CapturedOutput output,
+                                                         String operacao,
+                                                         String mensagem) {
+        var operation = orchestrator.snapshot().operations().stream()
+                .filter(view -> view.operationName().equals(operacao))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(1L, operation.rejectedTasks());
+        assertEquals(0, operation.activeTasks());
+        assertTrue(output.getAll().contains("[PJB-EXECUTION] " + mensagem),
+                "quem descarta o futuro precisa achar a rejeicao no log; saida capturada nao tem: " + mensagem);
+    }
+
+    @Test
+    void deveMarcarERegistrarTimeoutQuandoOperacaoExcederBudget(CapturedOutput output) throws Exception {
         PjbBoundedExecutorService io = new PjbBoundedExecutorService("test-io-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
         PjbBoundedExecutorService burst = new PjbBoundedExecutorService("test-burst-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
         PjbBoundedExecutorService externalIo = new PjbBoundedExecutorService("test-ext-", 1, true, Duration.ofSeconds(5), Duration.ofMillis(50));
@@ -72,6 +149,8 @@ class PjbExecutionOrchestratorTest {
             drainScheduler(scheduler);
             var snapshot = orchestrator.snapshot();
             assertTrue(snapshot.operations().stream().anyMatch(operation -> operation.operationName().equals("timeout-op") && operation.timedOutTasks() >= 1L));
+            assertTrue(output.getAll().contains("[PJB-EXECUTION] execution timed out for operation timeout-op after 50ms"),
+                    "quem descarta o futuro precisa achar o timeout no log");
         } finally {
             scheduler.shutdownNow();
             io.close();

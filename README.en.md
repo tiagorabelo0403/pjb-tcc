@@ -367,7 +367,7 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 5,465 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 5,474 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 116 classes against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 The naming convention is enforced in CI by the `integration_test_naming_guard.py` guard: a class suffixed `IT` must carry a real integration marker — Testcontainers, a Spring context, or an inherited integration base. Without that marker the class would run in neither phase (Surefire skips it by name, and Failsafe only runs under `verify`), so the build fails instead of leaving the test invisible.
@@ -386,7 +386,7 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api -am
 ```
 
-This is the official project gate. It runs the 5,465 unit tests (Surefire) and then the 117 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 5,474 unit tests (Surefire) and then the 117 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 The `-am` is not cosmetic: without it `pjb-core` is resolved from `~/.m2` instead of the reactor, and a stale artifact there produces `cannot find symbol` pointing at classes that exist in the source tree.
 
@@ -427,17 +427,17 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **5,465** |
+| Total unit tests | Surefire | **5,474** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~14 min** |
 | Integration test classes | Failsafe | **117** ¹ |
 | Polo-composition-engine tests | Failsafe | **+10 green** (role by procedural type: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
-| Integration tests executed | Failsafe | **292** (measured in CI, 2026-09-13) |
-| IT failures | Failsafe | **0** (0E + 0F) ² |
+| Integration tests executed | Failsafe | **294** (measured in CI, 2026-09-23) |
+| IT failures | Failsafe | **3** (0E + 3F) ² |
 | Full verify execution time | Surefire + Failsafe | **~50 min** locally · **~27 min** in CI |
 
-² This number is now verified. Until 2026-09-13 the row read `0 (0E + 0F)`, inherited from an old local run that nothing re-verified; the first `PJB Integration Gate` execution measured **273 tests, 8 failures and 55 errors**. The 55 errors had a single cause (heap too small for 22 Spring contexts in one JVM), and the 3 failures had another (`429 RUNTIME_WARMING_UP` from operational admission control during the first 20s of every context). The remaining 4 errors came from a test cleanup that deleted `tb_usuario` without respecting a foreign key. All three causes are fixed, and the zero above is measured on every gate run rather than inherited.
+² This number is now verified. Until 2026-09-13 the row read `0 (0E + 0F)`, inherited from an old local run that nothing re-verified; the first `PJB Integration Gate` execution measured **273 tests, 8 failures and 55 errors**. The 55 errors had a single cause (heap too small for 22 Spring contexts in one JVM), and the 3 failures had another (`429 RUNTIME_WARMING_UP` from operational admission control during the first 20s of every context). The remaining 4 errors came from a test cleanup that deleted `tb_usuario` without respecting a foreign key. All three causes are fixed, and the number above is measured on every gate run rather than inherited. The 2026-09-23 run measured **294 tests and 3 failures**: three institutional gates get `503 CRITICAL_MEMORY_RUNAWAY` because the operational admission memory guard sees the heap of the whole test JVM, shared by the Spring contexts the test cache keeps alive (up to 32, out of 44 distinct configurations). Cause and remaining work are in `D-seis-falhas-restantes-no-portao-de-integracao`, in the DEBT_LOG.
 
 The integration suite went through a structural stabilization process: failures caused by incorrect environment variables, cross-test data contamination, and hardcoded IDs without seeding were eliminated down to zero. Two of those fixes exposed real production bugs, not just test issues: `AuditLedgerService` recorded audit events only in memory, without persisting to the repository the audit endpoints actually query; and root-proceeding resolution in `CaseContinuityOrchestratorService` used a mutable field during the case lifecycle, causing ambiguity between the root proceeding and its branches (e.g., judgment enforcement) after archiving.
 
@@ -1032,8 +1032,8 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **5,465 · 0 failures · 0 errors · 1 skipped** |
-| Integration tests (Failsafe) | **116 classes · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
+| Unit tests (Surefire) | **5,474 · 0 failures · 0 errors · 1 skipped** |
+| Integration tests (Failsafe) | **116 classes · 3 known failures (see note ² in the Tests section)** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
 | Python Guards | 46 scripts active in CI |
@@ -1244,7 +1244,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,465 unit tests and 117 integration test classes, and 326 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,474 unit tests and 117 integration test classes, and 326 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 
