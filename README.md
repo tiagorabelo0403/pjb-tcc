@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-5.504%20unit%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-5.508%20unit%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -368,8 +368,8 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 5.504 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
-- **Testes de integração (Failsafe):** 117 classes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
+- **Testes unitários (Surefire):** 5.508 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes de integração (Failsafe):** 118 classes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 A convenção de nome é verificada no CI pelo guard `integration_test_naming_guard.py`: uma classe com sufixo `IT` precisa exibir marcador real de integração — Testcontainers, contexto Spring ou base de integração herdada. Sem esse marcador a classe não seria executada por nenhuma das duas fases (o Surefire a ignora pelo nome, e o Failsafe só roda sob `verify`), e o build falha em vez de deixar o teste invisível.
 
@@ -387,7 +387,7 @@ Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api -am
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 5.504 unitários (Surefire) e depois as 117 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 5.508 unitários (Surefire) e depois as 118 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 O `-am` não é cosmético: sem ele o `pjb-core` é resolvido a partir do `~/.m2` em vez do reator, e um artefato desatualizado ali produz `cannot find symbol` apontando para classes que existem no código-fonte.
 
@@ -397,7 +397,7 @@ Tempo esperado: **~50 min** em hardware local (a maior parte é o boot do Spring
 
 ### O portão de integração no CI
 
-O `ci.yml` executa apenas os unitários: as 117 classes de integração não cabem no caminho crítico de uma pull request. Elas rodam em workflow próprio — `PJB Integration Gate` (`.github/workflows/it.yml`) —, disparado em **todo merge para o `master`**, mais uma execução agendada às 05:00 UTC e disparo sob demanda por `workflow_dispatch`.
+O `ci.yml` executa apenas os unitários: as 118 classes de integração não cabem no caminho crítico de uma pull request. Elas rodam em workflow próprio — `PJB Integration Gate` (`.github/workflows/it.yml`) —, disparado em **todo merge para o `master`**, mais uma execução agendada às 05:00 UTC e disparo sob demanda por `workflow_dispatch`.
 
 O gatilho por merge é o que fecha a janela: uma regressão de integração mesclada de manhã apareceria só na madrugada seguinte se o agendamento fosse o único caminho. O agendamento permanece como rede para a quebra que não vem de commit — imagem de container, dependência resolvida em runtime, dado de fixture que expira.
 
@@ -437,19 +437,19 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **5.504** |
+| Total de testes unitários | Surefire | **5.508** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~14 min** |
-| Classes de teste de integração | Failsafe | **117** ¹ |
+| Classes de teste de integração | Failsafe | **118** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
-| Testes de integração executados | Failsafe | **294** (medido no CI, 2026-09-24) |
+| Testes de integração executados | Failsafe | **295** (medido no CI, 2026-09-24) |
 | Falhas IT | Failsafe | **0** (0E + 0F) ² |
 | Tempo verify completo | Surefire + Failsafe | **~50 min** local · **~27 min** no CI |
 
 A suíte de integração passou por uma etapa de estabilização estrutural: falhas por variável de ambiente incorreta, contaminação de dados entre testes e IDs hardcoded sem seed foram eliminadas por completo.
 
-² Este número passou a ser verificado. Até 2026-09-13 a linha dizia `0 (0E + 0F)` por herança de uma execução local antiga que nada reverificava; a primeira execução do `PJB Integration Gate` mediu **273 testes, 8 falhas e 55 erros**. Os 55 erros eram uma causa só (heap insuficiente para 22 contextos Spring numa JVM), e as 3 falhas eram outra (`429 RUNTIME_WARMING_UP` da admissão operacional durante os primeiros 20s de cada contexto). Os 4 erros restantes vinham de uma limpeza de teste que apagava `tb_usuario` sem respeitar chave estrangeira. As três causas estão corrigidas e o número acima é medido a cada execução do portão, não herdado. Depois disso o portão ainda media 294 testes com 5 falhas e 1 erro, de duas causas. A primeira: o spring-test 7 pausa o contexto em cache na troca de contexto, e o `PjbRuntimeDrainCoordinator` tratava a pausa como desligamento definitivo — drenava a instância (`503 RUNTIME_DRAINING`) e encerrava o agendador de timeout. A segunda: sem `-XX:MaxMetaspaceSize`, como nos forks de teste, a proteção de memória dividia o metaspace usado pelo committed, a razão ficava perto de 1 e, depois de 2 minutos no ar, a instância recusava rotas caras (`503 CRITICAL_MEMORY_RUNAWAY`) e reprovava a prontidão; o container não é afetado, porque `pjb-runtime.sh` sempre passa o teto. A execução de 2026-09-24 mediu **294 testes e 0 falhas**. Um grupo de 11 testes, 10 erros e 1 falha, aparecia em 2 de 6 execuções: a ordem das classes muda a cada checkout no CI, e o estado que uma classe deixava derrubava outra. Eram três vazamentos: uma escritura presa ao usuário que `MagistraturaJudicialActsControllerIT` apaga, uma segunda unidade que tornava ambígua a resolução do enfileiramento, e o banco H2 compartilhado pelos contextos do perfil `test`, que o fechamento de um desses contextos esvaziava para os outros. Os três foram reproduzidos na ordem que os expunha e corrigidos; cada contexto H2 passou a ter o próprio banco. Depois disso, as 81 classes de integração que estendiam `PjbIntegrationTestBase` sem rollback passaram a estender `PjbFlowItBase`, que trunca o banco antes e depois de cada teste; as que gravam nos catálogos que o truncamento preserva apagam o que gravaram. O `test_isolation_guard` reprova no CI a classe que estenda `PjbIntegrationTestBase` sem rollback em todo teste e o escritor de catálogo preservado que não apague em `@AfterEach`. A base também espera os executores da plataforma ficarem sem tarefa antes de truncar, para que uma gravação assíncrona disparada pelo teste, como a auditoria pós-commit, não sobreviva à limpeza; a base H2 passou a truncar o banco inteiro antes e depois de cada teste; e o cache de unidades do motor de distribuição é descartado sempre que uma unidade muda, em vez de servir por até 20 segundos uma unidade já alterada ou apagada.
+² Este número passou a ser verificado. Até 2026-09-13 a linha dizia `0 (0E + 0F)` por herança de uma execução local antiga que nada reverificava; a primeira execução do `PJB Integration Gate` mediu **273 testes, 8 falhas e 55 erros**. Os 55 erros eram uma causa só (heap insuficiente para 22 contextos Spring numa JVM), e as 3 falhas eram outra (`429 RUNTIME_WARMING_UP` da admissão operacional durante os primeiros 20s de cada contexto). Os 4 erros restantes vinham de uma limpeza de teste que apagava `tb_usuario` sem respeitar chave estrangeira. As três causas estão corrigidas e o número acima é medido a cada execução do portão, não herdado. Depois disso o portão ainda media 294 testes com 5 falhas e 1 erro, de duas causas. A primeira: o spring-test 7 pausa o contexto em cache na troca de contexto, e o `PjbRuntimeDrainCoordinator` tratava a pausa como desligamento definitivo — drenava a instância (`503 RUNTIME_DRAINING`) e encerrava o agendador de timeout. A segunda: sem `-XX:MaxMetaspaceSize`, como nos forks de teste, a proteção de memória dividia o metaspace usado pelo committed, a razão ficava perto de 1 e, depois de 2 minutos no ar, a instância recusava rotas caras (`503 CRITICAL_MEMORY_RUNAWAY`) e reprovava a prontidão; o container não é afetado, porque `pjb-runtime.sh` sempre passa o teto. A execução de 2026-09-24 mediu **294 testes e 0 falhas**, e a seguinte, já com o teste que prova a espera pelas gravações assíncronas, **295 e 0 falhas**. Um grupo de 11 testes, 10 erros e 1 falha, aparecia em 2 de 6 execuções: a ordem das classes muda a cada checkout no CI, e o estado que uma classe deixava derrubava outra. Eram três vazamentos: uma escritura presa ao usuário que `MagistraturaJudicialActsControllerIT` apaga, uma segunda unidade que tornava ambígua a resolução do enfileiramento, e o banco H2 compartilhado pelos contextos do perfil `test`, que o fechamento de um desses contextos esvaziava para os outros. Os três foram reproduzidos na ordem que os expunha e corrigidos; cada contexto H2 passou a ter o próprio banco. Depois disso, as 81 classes de teste que estendiam `PjbIntegrationTestBase` sem rollback passaram a estender `PjbFlowItBase`, que trunca o banco antes e depois de cada teste; as que gravam nos catálogos que o truncamento preserva apagam o que gravaram. O `test_isolation_guard` reprova no CI a classe que estenda `PjbIntegrationTestBase` sem rollback em todo teste e o escritor de catálogo preservado que não apague em `@AfterEach`. A base também espera os executores da plataforma ficarem sem tarefa antes de truncar, para que uma gravação assíncrona disparada pelo teste, como a auditoria pós-commit, não sobreviva à limpeza; a base H2 passou a truncar o banco inteiro antes e depois de cada teste; e o cache de unidades do motor de distribuição é descartado sempre que uma unidade muda, em vez de servir por até 20 segundos uma unidade já alterada ou apagada.
 
 O `verify` padrão (Failsafe) não alcança 13 métodos de teste distribuídos em 6 classes¹ que combinam a convenção `*Test.java` com `@Tag("integration")` — o Surefire exclui essas classes por tag e o Failsafe não as reconhece pelo padrão de nome de arquivo. Todas as 13 já foram confirmadas verdes individualmente via `-Dit.test=`, mas ficam fora da contagem de rotina do `verify`.
 
@@ -1060,8 +1060,8 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **5.504 · 0 falhas · 0 erros · 1 pulado** |
-| Testes de integração (Failsafe) | **117 classes · 0 falhas na última medição; um grupo intermitente registrado (ver nota ² na seção Testes)** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
+| Testes unitários (Surefire) | **5.508 · 0 falhas · 0 erros · 1 pulado** |
+| Testes de integração (Failsafe) | **118 classes · 0 falhas na última medição (ver nota ² na seção Testes)** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
 | Guards Python | 46 scripts ativos em CI |
@@ -1372,7 +1372,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.504 testes unitários, 117 classes de integração e 326 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.508 testes unitários, 118 classes de integração e 326 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
