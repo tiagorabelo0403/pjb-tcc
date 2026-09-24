@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-class RecentRoadmapMigrationsIT extends PjbIntegrationTestBase {
+class RecentRoadmapMigrationsIT extends PjbFlowItBase {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

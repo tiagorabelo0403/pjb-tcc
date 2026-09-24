@@ -13,7 +13,9 @@ import com.tcc.pjb.backend.model.repository.UnidadeInstitucionalAbrangenciaRepos
 import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
 import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
+import com.tcc.pjb.backend.service.competencia.UnidadesJudiciariasAlteradasEvent;
 import java.util.Objects;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ public class UnidadeInstitucionalAdminService {
     private final SecretariaInstitucionalEnfileiramentoService enfileiramentoService;
     private final AuditLedgerService auditService;
     private final ComarcaResolutionService comarcaResolutionService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public UnidadeInstitucionalAdminService(InstituicaoRepository instituicaoRepository,
                                             UnidadeInstituicaoRepository unidadeRepository,
@@ -34,7 +37,8 @@ public class UnidadeInstitucionalAdminService {
                                             UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository,
                                             SecretariaInstitucionalEnfileiramentoService enfileiramentoService,
                                             AuditLedgerService auditService,
-                                            ComarcaResolutionService comarcaResolutionService) {
+                                            ComarcaResolutionService comarcaResolutionService,
+                                            ApplicationEventPublisher eventPublisher) {
         this.instituicaoRepository = Objects.requireNonNull(instituicaoRepository);
         this.unidadeRepository = Objects.requireNonNull(unidadeRepository);
         this.abrangenciaRepository = Objects.requireNonNull(abrangenciaRepository);
@@ -42,6 +46,7 @@ public class UnidadeInstitucionalAdminService {
         this.enfileiramentoService = Objects.requireNonNull(enfileiramentoService);
         this.auditService = Objects.requireNonNull(auditService);
         this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService);
+        this.eventPublisher = Objects.requireNonNull(eventPublisher);
     }
 
     @Transactional
@@ -89,6 +94,7 @@ public class UnidadeInstitucionalAdminService {
                 .orElseThrow(() -> new IllegalArgumentException("Unidade judiciária de competência não encontrada: " + unidadeJudiciariaCompetenciaId));
         unidadeJudiciaria.setUnidadeInstituicao(unidadeInstituicao);
         UnidadeJudiciariaCompetencia salva = unidadeJudiciariaCompetenciaRepository.save(unidadeJudiciaria);
+        eventPublisher.publishEvent(new UnidadesJudiciariasAlteradasEvent());
         auditService.appendSafely("UNIDADE_JUDICIARIA_VINCULADA_A_UNIDADE_INSTITUICAO",
                 "UNIDADE_JUDICIARIA_COMPETENCIA " + unidadeJudiciariaCompetenciaId + " -> UNIDADE_INSTITUICAO " + unidadeInstituicaoId);
         return salva;

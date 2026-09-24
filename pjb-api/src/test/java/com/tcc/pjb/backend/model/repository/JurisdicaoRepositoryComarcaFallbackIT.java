@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.model.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Jurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.EsferaJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
@@ -13,7 +13,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class JurisdicaoRepositoryComarcaFallbackIT extends PjbIntegrationTestBase {
+class JurisdicaoRepositoryComarcaFallbackIT extends PjbFlowItBase {
 
     @Autowired
     private JurisdicaoRepository jurisdicaoRepository;

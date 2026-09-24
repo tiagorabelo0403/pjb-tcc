@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.service.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.dto.Attachment;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.DocumentoCategoria;
@@ -28,7 +28,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
         "pjb.workflow.enabled=false",
         "pjb.outbox.ingress.enabled=false"
 })
-class MarketplaceDocumentoComplementarServiceIT extends PjbIntegrationTestBase {
+class MarketplaceDocumentoComplementarServiceIT extends PjbFlowItBase {
 
     @Autowired
     private MarketplaceDocumentoComplementarService service;

@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.core.financeiro.trabalhista;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class WorkflowTrabalhistaFlowIT extends PjbIntegrationTestBase {
+class WorkflowTrabalhistaFlowIT extends PjbFlowItBase {
 
     @Autowired
     private ProcessoRepository processoRepository;

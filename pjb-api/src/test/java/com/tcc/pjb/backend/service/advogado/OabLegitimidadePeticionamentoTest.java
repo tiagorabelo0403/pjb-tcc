@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.domain.valueobject.NumeroProcesso;
 import com.tcc.pjb.backend.integration.oab.OabValidationClient;
 import com.tcc.pjb.backend.integration.oab.OabValidationResult;
@@ -51,7 +51,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
         "pjb.integrations.oab.allow-indeterminate-in-non-production=true",
         "pjb.integrations.oab.warn-on-indeterminate-allowed=false"
 })
-class OabLegitimidadePeticionamentoTest extends PjbIntegrationTestBase {
+class OabLegitimidadePeticionamentoTest extends PjbFlowItBase {
 
     @Autowired
     private LaianePeticaoInicialDraftService service;

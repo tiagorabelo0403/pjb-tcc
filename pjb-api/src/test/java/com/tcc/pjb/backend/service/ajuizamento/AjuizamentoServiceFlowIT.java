@@ -26,14 +26,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestPropertySource(properties = {
         "spring.cache.type=none",
         "pjb.workflow.enabled=false",
@@ -55,11 +52,6 @@ class AjuizamentoServiceFlowIT extends PjbFlowItBase {
 
     @MockitoBean
     private TriagemNacionalIAEngine triagemNacionalIAEngine;
-
-    @AfterAll
-    void truncateAfterAll() {
-        truncateAllTrackedTables();
-    }
 
     @Test
     void deveAjuizarEmitirOutboxECriarFilaDeRevisaoDaSecretariaQuandoHouverPendenciaInicial() {

@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.service.secretariat.institucional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Instituicao;
 import com.tcc.pjb.backend.model.entity.SecretariaInstitucionalItem;
 import com.tcc.pjb.backend.model.entity.enums.StatusSecretariaInstitucionalItem;
@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-class SecretariaInstitucionalReprocessamentoEntidadeSujaIT extends PjbIntegrationTestBase {
+class SecretariaInstitucionalReprocessamentoEntidadeSujaIT extends PjbFlowItBase {
 
     @Autowired
     UnidadeInstitucionalAdminService adminService;

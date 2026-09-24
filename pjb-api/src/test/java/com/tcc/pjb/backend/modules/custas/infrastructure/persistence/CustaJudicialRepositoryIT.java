@@ -1,12 +1,12 @@
 package com.tcc.pjb.backend.modules.custas.infrastructure.persistence;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CustaJudicialRepositoryIT extends PjbIntegrationTestBase {
+class CustaJudicialRepositoryIT extends PjbFlowItBase {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

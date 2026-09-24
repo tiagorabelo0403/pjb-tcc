@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.model.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Instituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia;
@@ -21,7 +21,7 @@ import org.springframework.test.context.TestPropertySource;
         "spring.cache.type=none",
         "pjb.workflow.enabled=false"
 })
-class UnidadeJudiciariaCompetenciaPonteUnidadeInstituicaoIT extends PjbIntegrationTestBase {
+class UnidadeJudiciariaCompetenciaPonteUnidadeInstituicaoIT extends PjbFlowItBase {
 
     @Autowired
     private UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository;

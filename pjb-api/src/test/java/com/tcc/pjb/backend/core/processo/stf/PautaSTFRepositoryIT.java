@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.core.processo.stf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.enums.OrgaoJulgadorSTF;
 import com.tcc.pjb.backend.model.entity.enums.ResultadoVotacaoSTF;
 import com.tcc.pjb.backend.model.entity.enums.TipoSessaoSTF;
@@ -24,7 +24,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
-class PautaSTFRepositoryIT extends PjbIntegrationTestBase {
+class PautaSTFRepositoryIT extends PjbFlowItBase {
 
     @Autowired private PautaSTFRepository pautaRepository;
     @Autowired private PedidoVistaSTFRepository vistaRepository;

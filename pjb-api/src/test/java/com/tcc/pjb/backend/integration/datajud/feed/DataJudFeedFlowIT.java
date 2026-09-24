@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.integration.datajud.feed;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
@@ -14,7 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = "pjb.datajud.feed.enabled=true")
-class DataJudFeedFlowIT extends PjbIntegrationTestBase {
+class DataJudFeedFlowIT extends PjbFlowItBase {
 
     @Autowired
     private ProcessoRepository processoRepository;

@@ -8,6 +8,7 @@ import com.tcc.pjb.backend.model.entity.competencia.TipoVaraDistribuicao;
 import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
+import com.tcc.pjb.backend.service.competencia.UnidadesJudiciariasAlteradasEvent;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
@@ -45,11 +47,14 @@ public class NationalForumMeshGovernanceService {
 
     private final UnidadeJudiciariaCompetenciaRepository unidadeRepository;
     private final CnjTpuSyncService cnjTpuSyncService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public NationalForumMeshGovernanceService(UnidadeJudiciariaCompetenciaRepository unidadeRepository,
-                                              CnjTpuSyncService cnjTpuSyncService) {
+                                              CnjTpuSyncService cnjTpuSyncService,
+                                              ApplicationEventPublisher eventPublisher) {
         this.unidadeRepository = Objects.requireNonNull(unidadeRepository);
         this.cnjTpuSyncService = Objects.requireNonNull(cnjTpuSyncService);
+        this.eventPublisher = Objects.requireNonNull(eventPublisher);
     }
 
     @PjbTransactionalBudget(operation = "procedural.national-forum-mesh.reconcile", maxMillis = 15000)
@@ -97,6 +102,7 @@ public class NationalForumMeshGovernanceService {
             }
             if (changed) {
                 unidadeRepository.save(unit);
+                eventPublisher.publishEvent(new UnidadesJudiciariasAlteradasEvent());
                 updatedUnits++;
             }
             classesAdded += Math.max(0, unit.getClassesTpu().size() - classesBefore);

@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.dje.domain.DjeEnvioCommand;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
@@ -17,7 +17,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = "pjb.dje.enabled=true")
-class DjePublicacaoFailureFlowIT extends PjbIntegrationTestBase {
+class DjePublicacaoFailureFlowIT extends PjbFlowItBase {
 
     @Autowired
     private ProcessoRepository processoRepository;

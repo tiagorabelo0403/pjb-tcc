@@ -2,14 +2,14 @@ package com.tcc.pjb.backend.core.prazos.calculo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.prazos.PrazoRegime;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class PrazosEngineIT extends PjbIntegrationTestBase {
+class PrazosEngineIT extends PjbFlowItBase {
 
     @Autowired
     private PrazosEngine engine;

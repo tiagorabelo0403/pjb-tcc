@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.procedural;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -13,12 +14,14 @@ import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
+import com.tcc.pjb.backend.service.competencia.UnidadesJudiciariasAlteradasEvent;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.context.ApplicationEventPublisher;
 
 class NationalForumMeshGovernanceServiceTest {
 
@@ -53,11 +56,13 @@ class NationalForumMeshGovernanceServiceTest {
                 Map.of()
         )));
 
-        NationalForumMeshGovernanceService service = new NationalForumMeshGovernanceService(repository, cnjTpuSyncService);
+        ApplicationEventPublisher eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
+        NationalForumMeshGovernanceService service = new NationalForumMeshGovernanceService(repository, cnjTpuSyncService, eventPublisher);
         var report = service.reconcile();
 
         assertThat(report.totalUnits()).isEqualTo(1);
         assertThat(report.updatedUnits()).isEqualTo(1);
+        verify(eventPublisher).publishEvent(any(UnidadesJudiciariasAlteradasEvent.class));
         assertThat(unit.getClassesTpu()).isNotEmpty();
         assertThat(unit.getAssuntosTpu()).isNotEmpty();
         assertThat(unit.getEnderecoDigital()).contains("tjce.pjb.local");

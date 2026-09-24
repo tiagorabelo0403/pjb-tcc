@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.security.TrustedDevice;
@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * {@code D-institutional-gate-filter-roda-antes-da-auth}.
  */
 @AutoConfigureMockMvc
-class InstitutionalSecretariaGateIT extends PjbIntegrationTestBase {
+class InstitutionalSecretariaGateIT extends PjbFlowItBase {
 
     @Autowired
     MockMvc mockMvc;

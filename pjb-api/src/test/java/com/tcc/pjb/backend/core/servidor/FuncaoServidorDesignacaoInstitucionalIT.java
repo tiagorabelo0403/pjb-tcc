@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.core.servidor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.observability.RequestContext;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
@@ -41,7 +41,7 @@ import org.springframework.test.context.TestPropertySource;
         "spring.cache.type=none",
         "pjb.workflow.enabled=false"
 })
-class FuncaoServidorDesignacaoInstitucionalIT extends PjbIntegrationTestBase {
+class FuncaoServidorDesignacaoInstitucionalIT extends PjbFlowItBase {
 
     @Autowired
     private FuncaoServidorSolicitacaoService solicitacaoService;

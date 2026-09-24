@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -40,7 +40,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
  * negado mesmo para documento público), e só dispensa o ABAC individual quando o documento é
  * categoria PÚBLICO e nem o processo nem o documento exigem credencial de sigilo.</p>
  */
-class PublicDocumentoDownloadServiceIT extends PjbIntegrationTestBase {
+class PublicDocumentoDownloadServiceIT extends PjbFlowItBase {
 
     @Autowired
     private PublicDocumentoDownloadService downloadService;

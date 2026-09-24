@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.document.DocumentoPagina;
@@ -36,7 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
         "spring.cache.type=none",
         "pjb.workflow.enabled=false"
 })
-class ConsultasPublicasControllerIT extends PjbIntegrationTestBase {
+class ConsultasPublicasControllerIT extends PjbFlowItBase {
 
     @Autowired
     private MockMvc mockMvc;

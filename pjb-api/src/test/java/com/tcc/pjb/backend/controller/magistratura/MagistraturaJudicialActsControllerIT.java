@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.core.security.persona.PersonaKey;
 import com.tcc.pjb.backend.core.security.persona.UserPersona;
@@ -65,7 +65,7 @@ import org.springframework.test.web.servlet.MockMvc;
         "spring.cache.type=none",
         "pjb.workflow.enabled=false"
 })
-class MagistraturaJudicialActsControllerIT extends PjbIntegrationTestBase {
+class MagistraturaJudicialActsControllerIT extends PjbFlowItBase {
 
     @Autowired
     private MockMvc mockMvc;

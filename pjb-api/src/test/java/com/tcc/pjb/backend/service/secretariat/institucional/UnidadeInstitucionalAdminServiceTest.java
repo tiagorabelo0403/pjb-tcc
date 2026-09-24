@@ -20,9 +20,11 @@ import com.tcc.pjb.backend.model.repository.UnidadeInstituicaoRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
 import com.tcc.pjb.backend.model.entity.competencia.Comarca;
 import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
+import com.tcc.pjb.backend.service.competencia.UnidadesJudiciariasAlteradasEvent;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 class UnidadeInstitucionalAdminServiceTest {
@@ -34,9 +36,10 @@ class UnidadeInstitucionalAdminServiceTest {
     private final SecretariaInstitucionalEnfileiramentoService enfileiramentoService = mock(SecretariaInstitucionalEnfileiramentoService.class);
     private final AuditLedgerService auditService = mock(AuditLedgerService.class);
     private final ComarcaResolutionService comarcaResolutionService = mock(ComarcaResolutionService.class);
+    private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
     private final UnidadeInstitucionalAdminService service = new UnidadeInstitucionalAdminService(
             instituicaoRepository, unidadeRepository, abrangenciaRepository, unidadeJudiciariaCompetenciaRepository,
-            enfileiramentoService, auditService, comarcaResolutionService);
+            enfileiramentoService, auditService, comarcaResolutionService, eventPublisher);
 
     @Test
     void criarInstituicaoSalvaEAudita() {
@@ -127,7 +130,7 @@ class UnidadeInstitucionalAdminServiceTest {
     }
 
     @Test
-    void vincularUnidadeJudiciariaSalvaEAudita() {
+    void vincularUnidadeJudiciariaSalvaAuditaEAvisaQueAsUnidadesMudaram() {
         UnidadeInstituicao unidadeInstituicao = new UnidadeInstituicao();
         ReflectionTestUtils.setField(unidadeInstituicao, "id", 20L);
         when(unidadeRepository.findById(20L)).thenReturn(Optional.of(unidadeInstituicao));
@@ -141,6 +144,7 @@ class UnidadeInstitucionalAdminServiceTest {
         verify(unidadeJudiciaria).setUnidadeInstituicao(unidadeInstituicao);
         verify(auditService).appendSafely(
                 org.mockito.ArgumentMatchers.eq("UNIDADE_JUDICIARIA_VINCULADA_A_UNIDADE_INSTITUICAO"), any());
+        verify(eventPublisher).publishEvent(any(UnidadesJudiciariasAlteradasEvent.class));
     }
 
     @Test

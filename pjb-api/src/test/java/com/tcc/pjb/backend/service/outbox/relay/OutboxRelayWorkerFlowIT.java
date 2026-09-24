@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.outbox.OutboxEvent;
 import com.tcc.pjb.backend.model.entity.outbox.OutboxEventId;
 import com.tcc.pjb.backend.model.entity.outbox.OutboxStatus;
@@ -31,7 +31,7 @@ import org.springframework.test.util.AopTestUtils;
         "spring.cache.type=none",
         "pjb.workflow.enabled=false"
 })
-class OutboxRelayWorkerFlowIT extends PjbIntegrationTestBase {
+class OutboxRelayWorkerFlowIT extends PjbFlowItBase {
 
     @Autowired
     private OutboxRelayWorker outboxRelayWorker;

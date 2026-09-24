@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.core.processo.ciencia;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.comunicacao.CienciaProcessual;
@@ -24,7 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
-class CienciaProcessualRepositoryIT extends PjbIntegrationTestBase {
+class CienciaProcessualRepositoryIT extends PjbFlowItBase {
 
     @Autowired private CienciaProcessualRepository cienciaRepository;
     @Autowired private ProcessoRepository processoRepository;

@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.modules.laiane.event;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaEventoComportamental;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaRepository;
 import java.time.Duration;
@@ -27,7 +27,7 @@ import org.springframework.data.domain.Pageable;
  * o teste do caminho feliz faz polling curto em vez de consultar uma unica vez logo apos a
  * chamada, porque nao ha garantia de a escrita assincrona ja ter commitado nesse instante.
  */
-class LaianeOficioAuditPostCommitServiceIT extends PjbIntegrationTestBase {
+class LaianeOficioAuditPostCommitServiceIT extends PjbFlowItBase {
 
     @Autowired
     LaianeOficioAuditPostCommitService handler;

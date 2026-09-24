@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.service.publico;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = "spring.cache.type=none")
-class PublicProcessoConsultaFlowIT extends PjbIntegrationTestBase {
+class PublicProcessoConsultaFlowIT extends PjbFlowItBase {
 
     @Autowired
     private ProcessoRepository processoRepository;

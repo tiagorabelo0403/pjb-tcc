@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.service.territorial;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.dto.processual.AncoraTerritorial;
 import com.tcc.pjb.backend.model.dto.processual.EnderecosProcessuaisRequest;
@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-class Trt21RnJurisdicaoCargaIT extends PjbIntegrationTestBase {
+class Trt21RnJurisdicaoCargaIT extends PjbFlowItBase {
 
     @Autowired
     private CompetenciaTerritorialResolver resolver;

@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.service.secretariat.institucional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.SecretariaInstitucionalItem;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
@@ -20,11 +20,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CyclicBarrier;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT extends PjbIntegrationTestBase {
+class SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT extends PjbFlowItBase {
 
     @Autowired
     SecretariaInstitucionalEnfileiramentoService service;
@@ -41,27 +40,12 @@ class SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT extends PjbInte
     @Autowired
     SecretariaInstitucionalItemRepository itemRepository;
 
-    private final List<Long> instituicoesCriadas = new ArrayList<>();
-    private final List<Long> unidadesCriadas = new ArrayList<>();
-    private final List<Long> processosCriados = new ArrayList<>();
-
-    @AfterEach
-    void removerOQueOTesteCriou() {
-        itemRepository.deleteAll(itemRepository.findAll().stream()
-                .filter(item -> processosCriados.contains(item.getProcessoId()))
-                .toList());
-        processoRepository.deleteAllById(processosCriados);
-        unidadeRepository.deleteAllById(unidadesCriadas);
-        instituicaoRepository.deleteAllById(instituicoesCriadas);
-    }
-
     @Test
     void duasChamadasConcorrentesParaOMesmoProcessoETipoNuncaCriamDoisItensAtivos() throws InterruptedException {
         Instituicao instituicao = new Instituicao();
         instituicao.setTipo(TipoInstituicao.DEFENSORIA_PUBLICA);
         instituicao.setNome("Defensoria Publica Concorrencia");
         instituicao = instituicaoRepository.save(instituicao);
-        instituicoesCriadas.add(instituicao.getId());
 
         UnidadeInstituicao unidade = new UnidadeInstituicao();
         unidade.setInstituicao(instituicao);
@@ -70,7 +54,6 @@ class SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT extends PjbInte
         unidade.setComarca("Fortaleza");
         unidade.setUf("CE");
         unidade = unidadeRepository.save(unidade);
-        unidadesCriadas.add(unidade.getId());
 
         Long processoId = processoRepository.save(Processo.builder()
                 .numeroProcesso("CONCORRENCIA-SECRETARIA-1")
@@ -81,7 +64,6 @@ class SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT extends PjbInte
                 .ramoDireito(RamoDireito.PENAL)
                 .statusProcesso(StatusProcesso.EM_ANDAMENTO)
                 .build()).getId();
-        processosCriados.add(processoId);
         Runnable tentativa = () -> service.enfileirar(processoId, "Fortaleza", TipoUnidadeInstitucional.NUCLEO_DEFENSORIA,
                 MotivoEnfileiramentoInstitucional.PARTE_AUTOMATICA, 15);
 
@@ -102,7 +84,6 @@ class SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT extends PjbInte
         instituicao.setTipo(TipoInstituicao.DEFENSORIA_PUBLICA);
         instituicao.setNome("Defensoria Publica Concorrencia Excecao");
         instituicao = instituicaoRepository.save(instituicao);
-        instituicoesCriadas.add(instituicao.getId());
 
         UnidadeInstituicao unidade = new UnidadeInstituicao();
         unidade.setInstituicao(instituicao);
@@ -111,7 +92,6 @@ class SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT extends PjbInte
         unidade.setComarca("Sobral");
         unidade.setUf("CE");
         unidade = unidadeRepository.save(unidade);
-        unidadesCriadas.add(unidade.getId());
 
         Long processoId = processoRepository.save(Processo.builder()
                 .numeroProcesso("CONCORRENCIA-SECRETARIA-2")
@@ -122,7 +102,6 @@ class SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT extends PjbInte
                 .ramoDireito(RamoDireito.PENAL)
                 .statusProcesso(StatusProcesso.EM_ANDAMENTO)
                 .build()).getId();
-        processosCriados.add(processoId);
 
         // A barreira força as duas chamadas a entrar em enfileirar() no mesmo instante, maximizando
         // a chance de as duas passarem pelo existeAtivoOuSemUnidadeResolvida antes de qualquer uma commitar —

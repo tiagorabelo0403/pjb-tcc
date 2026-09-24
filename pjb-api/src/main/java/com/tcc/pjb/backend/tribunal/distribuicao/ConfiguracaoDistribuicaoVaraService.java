@@ -11,9 +11,11 @@ import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
 import com.tcc.pjb.backend.service.ajuizamento.federal.FederalismoJudicialEngine;
+import com.tcc.pjb.backend.service.competencia.UnidadesJudiciariasAlteradasEvent;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import com.tcc.pjb.backend.tribunal.regras.TribunalRuleEngine;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -405,6 +407,7 @@ public class ConfiguracaoDistribuicaoVaraService {
     private final FederalismoJudicialEngine federalismoJudicialEngine;
     private final OutboxPublisher outboxPublisher;
     private final ObjectMapper objectMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final Map<String, RestricaoOperacional> restricoesOperacionais = new ConcurrentHashMap<>();
     private final Map<String, PerfilVara> perfisCache = new ConcurrentHashMap<>();
@@ -414,12 +417,14 @@ public class ConfiguracaoDistribuicaoVaraService {
                                                TribunalRuleEngine tribunalRuleEngine,
                                                FederalismoJudicialEngine federalismoJudicialEngine,
                                                OutboxPublisher outboxPublisher,
-                                               ObjectMapper objectMapper) {
+                                               ObjectMapper objectMapper,
+                                               ApplicationEventPublisher eventPublisher) {
         this.unidadeRepository = Objects.requireNonNull(unidadeRepository);
         this.tribunalRuleEngine = Objects.requireNonNull(tribunalRuleEngine);
         this.federalismoJudicialEngine = Objects.requireNonNull(federalismoJudicialEngine);
         this.outboxPublisher = Objects.requireNonNull(outboxPublisher);
         this.objectMapper = Objects.requireNonNull(objectMapper);
+        this.eventPublisher = Objects.requireNonNull(eventPublisher);
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -587,6 +592,7 @@ public class ConfiguracaoDistribuicaoVaraService {
             restricoesOperacionais.remove(codigo);
         }
         unidadeRepository.save(unidade);
+        eventPublisher.publishEvent(new UnidadesJudiciariasAlteradasEvent());
         PerfilVara perfil = toPerfil(unidade, restricoesOperacionais.get(codigo));
         perfisCache.put(perfil.varaId(), perfil);
 
@@ -650,6 +656,7 @@ public class ConfiguracaoDistribuicaoVaraService {
             unidade.setStatusOperacional(StatusOperacionalUnidadeJudiciaria.BLOQUEADA);
         }
         unidadeRepository.save(unidade);
+        eventPublisher.publishEvent(new UnidadesJudiciariasAlteradasEvent());
         PerfilVara perfil = toPerfil(unidade, restricoesOperacionais.get(codigo));
         perfisCache.put(perfil.varaId(), perfil);
         Map<String, Object> payloadStatus = new LinkedHashMap<>();
@@ -674,6 +681,7 @@ public class ConfiguracaoDistribuicaoVaraService {
                 ? StatusOperacionalUnidadeJudiciaria.ATIVA
                 : StatusOperacionalUnidadeJudiciaria.BLOQUEADA);
         unidadeRepository.save(unidade);
+        eventPublisher.publishEvent(new UnidadesJudiciariasAlteradasEvent());
         PerfilVara perfil = toPerfil(unidade, restricao);
         perfisCache.put(perfil.varaId(), perfil);
         Map<String, Object> payloadRestricao = new LinkedHashMap<>();

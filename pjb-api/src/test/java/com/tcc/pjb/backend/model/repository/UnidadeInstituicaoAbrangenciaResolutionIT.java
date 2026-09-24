@@ -2,19 +2,17 @@ package com.tcc.pjb.backend.model.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Instituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.UnidadeInstitucionalAbrangencia;
 import com.tcc.pjb.backend.model.entity.enums.TipoInstituicao;
 import com.tcc.pjb.backend.model.entity.enums.TipoUnidadeInstitucional;
-import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class UnidadeInstituicaoAbrangenciaResolutionIT extends PjbIntegrationTestBase {
+class UnidadeInstituicaoAbrangenciaResolutionIT extends PjbFlowItBase {
 
     @Autowired
     InstituicaoRepository instituicaoRepository;
@@ -25,24 +23,12 @@ class UnidadeInstituicaoAbrangenciaResolutionIT extends PjbIntegrationTestBase {
     @Autowired
     UnidadeInstitucionalAbrangenciaRepository abrangenciaRepository;
 
-    private final List<Long> instituicoesCriadas = new ArrayList<>();
-    private final List<Long> unidadesCriadas = new ArrayList<>();
-    private final List<Long> abrangenciasCriadas = new ArrayList<>();
-
-    @AfterEach
-    void removerOQueOTesteCriou() {
-        abrangenciaRepository.deleteAllById(abrangenciasCriadas);
-        unidadeRepository.deleteAllById(unidadesCriadas);
-        instituicaoRepository.deleteAllById(instituicoesCriadas);
-    }
-
     @Test
     void unidadeSediadaNaComarcaEEncontradaDiretamentePorTipoEComarca() {
         Instituicao instituicao = new Instituicao();
         instituicao.setTipo(TipoInstituicao.MINISTERIO_PUBLICO);
         instituicao.setNome("Ministerio Publico do Ceara");
         instituicao = instituicaoRepository.save(instituicao);
-        instituicoesCriadas.add(instituicao.getId());
 
         UnidadeInstituicao unidade = new UnidadeInstituicao();
         unidade.setInstituicao(instituicao);
@@ -51,7 +37,6 @@ class UnidadeInstituicaoAbrangenciaResolutionIT extends PjbIntegrationTestBase {
         unidade.setComarca("Fortaleza");
         unidade.setUf("CE");
         unidade = unidadeRepository.save(unidade);
-        unidadesCriadas.add(unidade.getId());
 
         List<UnidadeInstituicao> encontradas = unidadeRepository.findByTipoAndComarca(TipoUnidadeInstitucional.PROMOTORIA, "Fortaleza");
 
@@ -64,7 +49,6 @@ class UnidadeInstituicaoAbrangenciaResolutionIT extends PjbIntegrationTestBase {
         instituicao.setTipo(TipoInstituicao.DEFENSORIA_PUBLICA);
         instituicao.setNome("Defensoria Publica do Ceara");
         instituicao = instituicaoRepository.save(instituicao);
-        instituicoesCriadas.add(instituicao.getId());
 
         UnidadeInstituicao regional = new UnidadeInstituicao();
         regional.setInstituicao(instituicao);
@@ -73,12 +57,11 @@ class UnidadeInstituicaoAbrangenciaResolutionIT extends PjbIntegrationTestBase {
         regional.setComarca("Fortaleza");
         regional.setUf("CE");
         regional = unidadeRepository.save(regional);
-        unidadesCriadas.add(regional.getId());
 
         UnidadeInstitucionalAbrangencia abrangencia = new UnidadeInstitucionalAbrangencia();
         abrangencia.setUnidadeInstitucionalId(regional.getId());
         abrangencia.setComarcaAtendida("Aquiraz");
-        abrangenciasCriadas.add(abrangenciaRepository.save(abrangencia).getId());
+        abrangenciaRepository.save(abrangencia);
 
         List<UnidadeInstitucionalAbrangencia> cobertura = abrangenciaRepository.findByUnidadeInstitucionalId(regional.getId());
 

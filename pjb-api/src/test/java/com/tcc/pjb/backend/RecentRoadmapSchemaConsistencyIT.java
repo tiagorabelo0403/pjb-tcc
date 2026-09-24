@@ -7,7 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class RecentRoadmapSchemaConsistencyIT extends PjbIntegrationTestBase {
+class RecentRoadmapSchemaConsistencyIT extends PjbFlowItBase {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

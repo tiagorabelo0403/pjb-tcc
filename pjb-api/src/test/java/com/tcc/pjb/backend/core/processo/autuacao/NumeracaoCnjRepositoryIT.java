@@ -2,12 +2,12 @@ package com.tcc.pjb.backend.core.processo.autuacao;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.core.processo.autuacao.application.NumeracaoCnjApplicationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class NumeracaoCnjRepositoryIT extends PjbIntegrationTestBase {
+class NumeracaoCnjRepositoryIT extends PjbFlowItBase {
 
     @Autowired private NumeracaoCnjApplicationService service;
 

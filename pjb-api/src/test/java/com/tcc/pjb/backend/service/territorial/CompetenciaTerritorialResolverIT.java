@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.service.territorial;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.dto.processual.AncoraTerritorial;
 import com.tcc.pjb.backend.model.dto.processual.EnderecosProcessuaisRequest;
@@ -16,12 +16,13 @@ import com.tcc.pjb.backend.model.repository.JurisdicaoTerritorialRepository;
 import com.tcc.pjb.backend.model.repository.TribunalRepository;
 import java.time.LocalDate;
 import java.util.Set;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-class CompetenciaTerritorialResolverIT extends PjbIntegrationTestBase {
+class CompetenciaTerritorialResolverIT extends PjbFlowItBase {
 
     private static final String IBGE_TESTE_UNIDADE_UNICA = "0000001";
     private static final String IBGE_TESTE_UNIDADES_CONCORRENTES = "0000002";
@@ -40,6 +41,14 @@ class CompetenciaTerritorialResolverIT extends PjbIntegrationTestBase {
     private JdbcTemplate jdbcTemplate;
 
     private Tribunal tribunalTeste;
+
+    @AfterEach
+    void removerCatalogoDeTeste() {
+        jdbcTemplate.update("DELETE FROM tb_jurisdicao_territorial WHERE municipio_ibge IN (?, ?, ?)",
+                IBGE_TESTE_UNIDADE_UNICA, IBGE_TESTE_UNIDADES_CONCORRENTES, IBGE_TESTE_FORA_DO_CATALOGO);
+        jdbcTemplate.update("DELETE FROM tb_tribunal WHERE sigla = ? AND NOT EXISTS "
+                + "(SELECT 1 FROM tb_jurisdicao_territorial j WHERE j.tribunal_id = tb_tribunal.id)", "TESTE");
+    }
 
     @BeforeEach
     void limparCatalogo() {

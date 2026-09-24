@@ -2,7 +2,7 @@ package com.tcc.pjb.backend.it;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.configs.security.UsuarioPrincipal;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
@@ -28,7 +28,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <p>Antes da correção, {@code PjbProcessoSigiloRlsDataSource} só existia dentro do
  * {@code @Bean} condicional a essa flag — este teste teria visto {@code current_setting} vazio.</p>
  */
-class PjbRlsContextWiringIT extends PjbIntegrationTestBase {
+class PjbRlsContextWiringIT extends PjbFlowItBase {
 
     @Autowired
     UsuarioRepository usuarioRepository;

@@ -3,7 +3,7 @@ package com.tcc.pjb.backend.service.secretariat.institucional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tcc.pjb.backend.PjbIntegrationTestBase;
+import com.tcc.pjb.backend.PjbFlowItBase;
 import com.tcc.pjb.backend.model.entity.Instituicao;
 import com.tcc.pjb.backend.model.entity.LotacaoInstituicao;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -29,7 +29,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class SecretariaInstitucionalConclusaoIT extends PjbIntegrationTestBase {
+class SecretariaInstitucionalConclusaoIT extends PjbFlowItBase {
 
     @Autowired
     TomarCienciaService tomarCienciaService;
