@@ -5,9 +5,12 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 import com.tcc.pjb.backend.configs.datasource.PjbDatasourceBudgetProperties;
 import com.zaxxer.hikari.HikariDataSource;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryType;
 import java.time.Duration;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,6 +18,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 class PjbRuntimePressureServiceTest {
@@ -291,9 +295,54 @@ class PjbRuntimePressureServiceTest {
         dataSource.close();
     }
 
+    @Test
+    void metaspaceSemTetoConfiguradoNaoViraPressaoDeMemoria() throws Exception {
+        Assumptions.assumeTrue(ManagementFactory.getMemoryPoolMXBeans().stream()
+                        .filter(pool -> pool.getType() == MemoryType.NON_HEAP)
+                        .filter(pool -> pool.getName().toLowerCase(Locale.ROOT).contains("metaspace"))
+                        .allMatch(pool -> pool.getUsage().getMax() < 0L),
+                "o caso so existe em JVM sem -XX:MaxMetaspaceSize");
+        PjbRuntimePressureProperties pressureProperties = new PjbRuntimePressureProperties();
+        pressureProperties.setSnapshotCacheTtl(Duration.ZERO);
+        pressureProperties.setMinimumReadyAge(Duration.ZERO);
+        pressureProperties.setMemorySustainedWindow(Duration.ofMillis(1));
+        isolateHostPressure(pressureProperties);
+        PjbBoundedExecutorService executor = new PjbBoundedExecutorService("pjb-test-", 8, true, Duration.ofSeconds(5), Duration.ofMillis(10));
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setMaximumPoolSize(12);
+        dataSource.setMinimumIdle(2);
+        ScheduledExecutorService scheduler = scheduler();
+        try {
+            PjbRuntimePressureService service = new PjbRuntimePressureService(
+                    pressureProperties,
+                    new PjbRuntimeAccelerationProperties(),
+                    new PjbRuntimeSizingPolicy.Footprint(4, 2048),
+                    new PjbDatasourceBudgetProperties(),
+                    Map.of("pjbIoExecutorService", executor),
+                    Map.of("pjbWriteDataSource", dataSource),
+                    scheduler
+            );
+            service.snapshot();
+            Thread.sleep(20L);
+            PjbRuntimePressureService.Snapshot snapshot = service.snapshot();
+
+            assertThat(snapshot.memory().metaspaceUsageRatio())
+                    .as("sem teto o metaspace cresce sob demanda; usado sobre committed fica perto de 1 e nao mede pressao")
+                    .isZero();
+            assertThat(snapshot.memory().degraded()).isFalse();
+            assertThat(snapshot.criticalMemoryRunaway())
+                    .as("instancia sem pressao real de heap nao pode entrar em runaway de memoria so por estar no ar ha mais que a janela sustentada")
+                    .isFalse();
+            assertThat(snapshot.ready()).isTrue();
+        } finally {
+            executor.close();
+            scheduler.shutdownNow();
+            dataSource.close();
+        }
+    }
+
     private void isolateHostPressure(PjbRuntimePressureProperties properties) {
         properties.setHeapUsageThreshold(0.999d);
-        properties.setMetaspaceUsageThreshold(0.999d);
         properties.setDirectBufferUsageThreshold(0.999d);
         properties.setGcPauseRatioThreshold(0.999d);
         properties.setGcAveragePauseMillisThreshold(Double.MAX_VALUE);
