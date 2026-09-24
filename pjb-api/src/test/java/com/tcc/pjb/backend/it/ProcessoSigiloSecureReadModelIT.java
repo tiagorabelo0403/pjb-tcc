@@ -11,15 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @Testcontainers
 class ProcessoSigiloSecureReadModelIT {
 
     @Container
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(PjbIntegrationTestBase.POSTGRES_IMAGE)
+    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(PjbIntegrationTestBase.POSTGRES_IMAGE)
             .withDatabaseName("pjb")
             .withUsername("pjb")
             .withPassword("pjb");
