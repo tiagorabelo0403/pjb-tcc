@@ -367,12 +367,8 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-<<<<<<< HEAD
-- **Unit tests (Surefire):** 5,487 tests with Mockito and in-memory H2. Fast, no Docker required.
-=======
-- **Unit tests (Surefire):** 5,486 tests with Mockito and in-memory H2. Fast, no Docker required.
->>>>>>> 168044f1 (fix(precatorio): teto municipal de RPV passa a ser o do ADCT, e nada e presumido)
-- **Integration tests (Failsafe):** 116 classes against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
+- **Unit tests (Surefire):** 5,476 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Integration tests (Failsafe):** 117 classes against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 The naming convention is enforced in CI by the `integration_test_naming_guard.py` guard: a class suffixed `IT` must carry a real integration marker — Testcontainers, a Spring context, or an inherited integration base. Without that marker the class would run in neither phase (Surefire skips it by name, and Failsafe only runs under `verify`), so the build fails instead of leaving the test invisible.
 
@@ -390,11 +386,7 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api -am
 ```
 
-<<<<<<< HEAD
-This is the official project gate. It runs the 5,487 unit tests (Surefire) and then the 117 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
-=======
-This is the official project gate. It runs the 5,486 unit tests (Surefire) and then the 117 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
->>>>>>> 168044f1 (fix(precatorio): teto municipal de RPV passa a ser o do ADCT, e nada e presumido)
+This is the official project gate. It runs the 5,476 unit tests (Surefire) and then the 117 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 The `-am` is not cosmetic: without it `pjb-core` is resolved from `~/.m2` instead of the reactor, and a stale artifact there produces `cannot find symbol` pointing at classes that exist in the source tree.
 
@@ -435,21 +427,17 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-<<<<<<< HEAD
-| Total unit tests | Surefire | **5,487** |
-=======
-| Total unit tests | Surefire | **5,486** |
->>>>>>> 168044f1 (fix(precatorio): teto municipal de RPV passa a ser o do ADCT, e nada e presumido)
+| Total unit tests | Surefire | **5,476** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Unit test execution time | Surefire | **~14 min** |
 | Integration test classes | Failsafe | **117** ¹ |
 | Polo-composition-engine tests | Failsafe | **+10 green** (role by procedural type: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
-| Integration tests executed | Failsafe | **292** (measured in CI, 2026-09-13) |
+| Integration tests executed | Failsafe | **294** (measured in CI, 2026-09-24) |
 | IT failures | Failsafe | **0** (0E + 0F) ² |
 | Full verify execution time | Surefire + Failsafe | **~50 min** locally · **~27 min** in CI |
 
-² This number is now verified. Until 2026-09-13 the row read `0 (0E + 0F)`, inherited from an old local run that nothing re-verified; the first `PJB Integration Gate` execution measured **273 tests, 8 failures and 55 errors**. The 55 errors had a single cause (heap too small for 22 Spring contexts in one JVM), and the 3 failures had another (`429 RUNTIME_WARMING_UP` from operational admission control during the first 20s of every context). The remaining 4 errors came from a test cleanup that deleted `tb_usuario` without respecting a foreign key. All three causes are fixed, and the zero above is measured on every gate run rather than inherited.
+² This number is now verified. Until 2026-09-13 the row read `0 (0E + 0F)`, inherited from an old local run that nothing re-verified; the first `PJB Integration Gate` execution measured **273 tests, 8 failures and 55 errors**. The 55 errors had a single cause (heap too small for 22 Spring contexts in one JVM), and the 3 failures had another (`429 RUNTIME_WARMING_UP` from operational admission control during the first 20s of every context). The remaining 4 errors came from a test cleanup that deleted `tb_usuario` without respecting a foreign key. All three causes are fixed, and the number above is measured on every gate run rather than inherited. After that the gate still measured 294 tests with 5 failures and 1 error, from two causes. First: spring-test 7 pauses the cached context on a context switch, and `PjbRuntimeDrainCoordinator` treated the pause as a permanent shutdown — it drained the instance (`503 RUNTIME_DRAINING`) and terminated the timeout scheduler. Second: without `-XX:MaxMetaspaceSize`, as in the test forks, the memory guard divided used metaspace by committed, the ratio sat near 1 and, after 2 minutes up, the instance refused expensive routes (`503 CRITICAL_MEMORY_RUNAWAY`) and failed readiness; the container is not affected because `pjb-runtime.sh` always sets the ceiling. The 2026-09-24 run measured **294 tests and 0 failures**. An intermittent group of 11 tests, 10 errors and 1 failure (foreign-key residue in `MagistraturaJudicialActsControllerIT`, empty H2 in `AdminAdvocaciaOpsSummaryControllerIT` and one concurrency assertion) showed up in 2 of 6 recent runs and stays recorded as `D-grupo-intermitente-de-onze-no-portao`, in the DEBT_LOG.
 
 The integration suite went through a structural stabilization process: failures caused by incorrect environment variables, cross-test data contamination, and hardcoded IDs without seeding were eliminated down to zero. Two of those fixes exposed real production bugs, not just test issues: `AuditLedgerService` recorded audit events only in memory, without persisting to the repository the audit endpoints actually query; and root-proceeding resolution in `CaseContinuityOrchestratorService` used a mutable field during the case lifecycle, causing ambiguity between the root proceeding and its branches (e.g., judgment enforcement) after archiving.
 
@@ -1044,12 +1032,8 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 
 | Metric | Status |
 |--------|--------|
-<<<<<<< HEAD
-| Unit tests (Surefire) | **5,487 · 0 failures · 0 errors · 1 skipped** |
-=======
-| Unit tests (Surefire) | **5,486 · 0 failures · 0 errors · 1 skipped** |
->>>>>>> 168044f1 (fix(precatorio): teto municipal de RPV passa a ser o do ADCT, e nada e presumido)
-| Integration tests (Failsafe) | **116 classes · 0 known failures** (see note¹ in the Tests section about tests confirmed outside this count) |
+| Unit tests (Surefire) | **5,476 · 0 failures · 0 errors · 1 skipped** |
+| Integration tests (Failsafe) | **117 classes · 0 failures in the latest measurement; one intermittent group recorded (see note ² in the Tests section)** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 architectural decisions documented |
 | Python Guards | 46 scripts active in CI |
@@ -1260,11 +1244,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-<<<<<<< HEAD
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,487 unit tests and 117 integration test classes, and 326 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
-=======
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,486 unit tests and 117 integration test classes, and 326 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
->>>>>>> 168044f1 (fix(precatorio): teto municipal de RPV passa a ser o do ADCT, e nada e presumido)
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,476 unit tests and 117 integration test classes, and 326 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

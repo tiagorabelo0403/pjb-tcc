@@ -169,51 +169,28 @@ admite ML-DSA-44 para assinante final e ML-DSA-65/87 para Autoridade Certificado
 projeto é ML-DSA-87 para ato de magistrado. O texto oficial do DOC-ICP-01.01 v6.0 não estava
 acessível na revisão; conferir antes de afirmar alinhamento normativo no TCC.
 
-## D-seis-falhas-restantes-no-portao-de-integracao
+## D-grupo-intermitente-de-onze-no-portao
 
-**Status:** aberta — medida no run 35476588817, com os tres residuos de Boot 4 ja corrigidos
+**Status:** aberta — medida, sem causa
 
-Com `spring-boot-starter-flyway`, `resilience4j-spring-boot4` e o release train 2025.1.3 do
-spring-cloud aplicados juntos, a suite de integracao saiu de 292 testes com 277 erros para:
-
-```
-[INFO] Tests run: 5425, Failures: 0, Errors: 0, Skipped: 1
-[ERROR] Tests run: 294, Failures: 5, Errors: 1, Skipped: 0
-```
-
-As seis restantes sao de tres naturezas distintas, e nenhuma e resquicio de versao de biblioteca:
+Onze testes quebram juntos (10 erros e 1 falha) em parte das execucoes do portao e passam nas outras:
+presentes nos runs 35821249418 (master, 2026-09-23, Testcontainers 1.19.8) e 35940986060 (branch da
+#210, Testcontainers 2.0.5); ausentes nos runs 35563577654 e 35689627352 (master, 21 e 22/09),
+35932081080 e 35998133932. A versao do Testcontainers nao decide. Os runs 35563577654, 35689627352 e
+35821249418 rodaram o mesmo commit, 2471b4ea: mesmo codigo, resultado diferente.
 
 ```
-InstitutionalJuizGabineteGateIT.despachoJuiz_comJuizAutenticado_passaPeloGateInstitucional:87 [status HTTP recebido: 503]
-InstitutionalOficialJusticaGateIT.oficioOficialJustica_comOficialAutenticado_passaPeloGateInstitucional:87 [status HTTP recebido: 503]
-InstitutionalSecretariaGateIT.redistribuicaoCriticaSecretaria_comServidorAutenticado_passaPeloGateInstitucional:72 [status HTTP recebido: 503]
-CidadaoInstanciasControllerCpfMismatchIT.cidadaoComCpfDaParteAutoraRecebe200:135
-CidadaoInstanciasControllerCpfMismatchIT.cidadaoComCpfDivergenteDaParteRecebe403EGeraEntradaNoLedger:92
-LaianeOficioAuditPostCommitServiceIT.on_eventoValido_persisteEventoDeAuditoriaComOsDadosDoEvento:48 » RejectedExecution ... rejected from java.util.concurrent.ScheduledThreadPoolExecutor[Terminated, pool size = 0, ...]
+[ERROR]   AdminAdvocaciaOpsSummaryControllerIT>PjbH2ItBase.cleanH2Context:36 » InvalidDataAccessResourceUsage Could not prepare statement [Table "ADV_CLIENTES" not found (this database is empty); SQL statement:
+[ERROR]   MagistraturaJudicialActsControllerIT.setup:138 » DataIntegrityViolation could not execute batch [Batch entry 2 delete from tb_usuario where id=('3'::int8) was aborted: ERROR: update or delete on table "tb_usuario" violates foreign key constraint "fk
+[ERROR]   SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT.duasChamadasConcorrentesParaOMesmoProcessoETipoNuncaCriamDoisItensAtivos:78
 ```
 
-**Grupo 1 — tres gates institucionais com 503.** O teste exige o cabecalho
-`X-PJB-Institutional-Gate-Operation`, e a resposta chega sem ele, em 0,03 s. Rejeicao imediata por
-filtro de borda, antes do gate. As fontes de 503 na borda sao `ApiLoadSheddingFilter`,
-`ApiDatabasePressureShield` e `PjbFunctionalAvailability`. O `ApiLoadSheddingFilter` foi lido e
-libera os permits em `finally`, entao nao ha vazamento de contador; o modo de crise vem de
-configuracao, nao de estado mutavel em runtime. Falta identificar qual das tres barreiras responde e
-por que, o que exige o corpo da resposta — nao esta no log do portao.
+Oito erros no `setup` de `MagistraturaJudicialActsControllerIT` (residuo em
+`tb_escritura_extrajudicial_registro` bloqueando o delete de `tb_usuario`), dois no
+`PjbH2ItBase.cleanH2Context` de `AdminAdvocaciaOpsSummaryControllerIT` e uma falha de concorrencia.
+O padrao aponta para ordem de execucao e estado deixado por outra classe, nao para as tres classes em
+si: falta identificar quem grava a escritura sem limpar e quando o H2 da base chega vazio.
 
-**Grupo 2 — dois testes de CPF do cidadao.** Ambos comparam CPF do autenticado com o da parte. CPF e
-coluna cifrada por `SensitiveDataConverter`, entao a hipotese a verificar primeiro e a chave de
-cifra do contexto, nao a regra de negocio. Ver o historico de
-`D-springcontext-estatico-no-conversor-de-pii`.
-
-**Grupo 3 — auditoria pos-commit rejeitada por executor terminado.** O listener `AFTER_COMMIT`
-agenda no `PjbExecutionOrchestrator` depois que o pool ja foi encerrado. Mesma familia de
-`D-drain-coordinator-fork-exit`: o ciclo de vida do executor termina antes do ultimo trabalho
-pos-commit da classe.
-
-**Por que nao foi fechado junto:** cada grupo precisa do corpo da resposta ou da ordem real de
-execucao, e a regra do projeto impede rodar `verify` em investigacao. O instrumento correto e o
-proprio portao (`it.yml`, despachavel por branch), com um ciclo de 25 minutos por medicao — cada
-grupo vira fatia propria com uma medicao dedicada.
 ## D-alcada-de-juizado-como-literal-em-cinco-pontos
 
 **Status:** aberta — separada de `D-teto-rpv-duplicado`, que fechou

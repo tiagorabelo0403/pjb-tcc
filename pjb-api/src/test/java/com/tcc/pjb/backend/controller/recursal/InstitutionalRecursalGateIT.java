@@ -105,10 +105,12 @@ class InstitutionalRecursalGateIT extends PjbFlowItBase {
                 .getResponse();
 
         assertThat(response.getStatus())
-                .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou MP legitimo)")
+                .as("Nao pode ser 401 (auth falhou antes do gate) nem 403 (gate barrou MP legitimo) (corpo: %s)",
+                        response.getContentAsString())
                 .isNotIn(401, 403);
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation"))
-                .as("Gate rodou depois da auth e classificou a operacao recursal (status HTTP recebido: %s)", response.getStatus())
+                .as("Gate rodou depois da auth e classificou a operacao recursal (HTTP %s, corpo: %s)",
+                        response.getStatus(), response.getContentAsString())
                 .isEqualTo("RECURSAL_UNIFICADO");
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Allowed"))
                 .as("Gate resolveu o MP JWT via banco e liberou")
@@ -129,7 +131,8 @@ class InstitutionalRecursalGateIT extends PjbFlowItBase {
 
         assertThat(response.getHeader("X-PJB-Institutional-Gate-Operation"))
                 .as("Gate rodou mesmo com uid nao materializado (fallback legado) — se rodasse antes da auth, "
-                        + "SecurityContext vazio explodiria antes deste header ser setado")
+                        + "SecurityContext vazio explodiria antes deste header ser setado (HTTP %s, corpo: %s)",
+                        response.getStatus(), response.getContentAsString())
                 .isEqualTo("RECURSAL_UNIFICADO");
     }
 }
