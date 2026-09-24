@@ -123,6 +123,12 @@ public final class PjbBoundedExecutorService extends AbstractExecutorService imp
         acceptingTasks.set(false);
     }
 
+    public void resumeAccepting() {
+        if (!shutdown) {
+            acceptingTasks.set(true);
+        }
+    }
+
     public boolean acceptingTasks() {
         return acceptingTasks.get() && !shutdown;
     }
