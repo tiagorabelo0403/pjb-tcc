@@ -280,6 +280,15 @@ listam nomes de campo sem tipo nem rótulo; um cliente que monte o formulário p
 renderiza nenhum campo da CJF, incluindo `dataTransitoEmJulgado`, que decide a classificação
 RPV/precatório.
 
+Os casos do `switch` de `fields()`, em 2026-09-24:
+
+```
+CalculoJudicialFrontendCatalogService.java:223  case "TRABALHISTA_CLT" -> List.of(
+CalculoJudicialFrontendCatalogService.java:244  case "FAZENDA_TRIBUTARIO" -> List.of(
+CalculoJudicialFrontendCatalogService.java:266  case "CUSTAS_PROCESSUAIS" -> List.of(
+CalculoJudicialFrontendCatalogService.java:292  default -> List.of();
+```
+
 **Correção sugerida:** o caso `FEDERAL_PREVIDENCIARIO_CJF` em `fields()`, com um teste que exija que
 todo nome listado nas seções tenha definição.
 
