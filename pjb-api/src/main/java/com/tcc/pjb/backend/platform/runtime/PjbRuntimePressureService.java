@@ -605,7 +605,7 @@ public class PjbRuntimePressureService {
                 .findFirst()
                 .orElse(null);
         long metaspaceUsedMiB = metaspace == null ? 0L : toMiB(metaspace.getUsage().getUsed());
-        long metaspaceMaxMiB = metaspace == null ? 0L : Math.max(1L, toMiB(metaspace.getUsage().getMax() > 0L ? metaspace.getUsage().getMax() : metaspace.getUsage().getCommitted()));
+        long metaspaceMaxMiB = metaspace == null || metaspace.getUsage().getMax() <= 0L ? 0L : Math.max(1L, toMiB(metaspace.getUsage().getMax()));
         double metaspaceUsageRatio = metaspaceMaxMiB <= 0L ? 0.0d : metaspaceUsedMiB / (double) metaspaceMaxMiB;
         BufferPoolMXBean directBufferPool = ManagementFactory.getPlatformMXBeans(BufferPoolMXBean.class).stream()
                 .filter(pool -> pool.getName() != null && pool.getName().equalsIgnoreCase("direct"))
