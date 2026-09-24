@@ -6,6 +6,8 @@ import com.tcc.pjb.backend.model.dto.processual.calculo.CustasProcessuaisCalculo
 import com.tcc.pjb.backend.model.dto.processual.calculo.FazendaTributarioCalculoAvancadoRequest;
 import com.tcc.pjb.backend.model.dto.processual.calculo.FederalPrevidenciarioCjfCalculoAvancadoRequest;
 import com.tcc.pjb.backend.model.dto.processual.calculo.TrabalhistaCalculoAvancadoRequest;
+import com.tcc.pjb.backend.model.dto.procuradoria.surface.PrecatorioRpvEnteDevedorTipo;
+import com.tcc.pjb.backend.service.financeiro.TetoRpvNacionalService;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -22,11 +24,14 @@ public class CalculoJudicialAssistenciaService {
 
     private final CalculoJudicialProfileResolverService profileResolverService;
     private final CalculoJudicialFrontendContractService frontendContractService;
+    private final TetoRpvNacionalService tetoRpvNacionalService;
 
     public CalculoJudicialAssistenciaService(CalculoJudicialProfileResolverService profileResolverService,
-                                             CalculoJudicialFrontendContractService frontendContractService) {
+                                             CalculoJudicialFrontendContractService frontendContractService,
+                                             TetoRpvNacionalService tetoRpvNacionalService) {
         this.profileResolverService = Objects.requireNonNull(profileResolverService);
         this.frontendContractService = Objects.requireNonNull(frontendContractService);
+        this.tetoRpvNacionalService = Objects.requireNonNull(tetoRpvNacionalService);
     }
 
     public CalculoJudicialAssistenciaResponse orientarTrabalhista(TrabalhistaCalculoAvancadoRequest request, Authentication authentication) {
@@ -256,7 +261,7 @@ public class CalculoJudicialAssistenciaService {
         autopreenchimento.put("aplicarPrescricaoQuinquenalSugerido", request != null && request.dataAjuizamento() != null);
         autopreenchimento.put("incluirAbonoAnualSugerido", Boolean.TRUE);
         autopreenchimento.put("percentualJurosMoraMensalSugerido", request != null && request.percentualJurosMoraMensal() != null ? request.percentualJurosMoraMensal() : new BigDecimal("0.005000"));
-        autopreenchimento.put("tetoRpvEmSalariosMinimosSugerido", request != null && request.tetoRpvEmSalariosMinimos() != null ? request.tetoRpvEmSalariosMinimos() : new BigDecimal("60"));
+        autopreenchimento.put("tetoRpvEmSalariosMinimosSugerido", request != null && request.tetoRpvEmSalariosMinimos() != null ? request.tetoRpvEmSalariosMinimos() : tetoRpvNacionalService.salariosMinimos(PrecatorioRpvEnteDevedorTipo.UNIAO));
         if (request == null || request.dataCitacao() == null) {
             ajustes.add("A IA assistiva pode lembrar a data de citação como marco prudencial de juros, mas o usuário deve confirmar a premissa processual adotada.");
         }

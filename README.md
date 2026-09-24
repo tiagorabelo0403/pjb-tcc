@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-5.476%20unit%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-5.504%20unit%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -368,7 +368,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 5.476 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 5.504 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 117 classes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 A convenção de nome é verificada no CI pelo guard `integration_test_naming_guard.py`: uma classe com sufixo `IT` precisa exibir marcador real de integração — Testcontainers, contexto Spring ou base de integração herdada. Sem esse marcador a classe não seria executada por nenhuma das duas fases (o Surefire a ignora pelo nome, e o Failsafe só roda sob `verify`), e o build falha em vez de deixar o teste invisível.
@@ -387,7 +387,7 @@ Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api -am
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 5.476 unitários (Surefire) e depois as 117 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 5.504 unitários (Surefire) e depois as 117 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 O `-am` não é cosmético: sem ele o `pjb-core` é resolvido a partir do `~/.m2` em vez do reator, e um artefato desatualizado ali produz `cannot find symbol` apontando para classes que existem no código-fonte.
 
@@ -437,7 +437,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **5.476** |
+| Total de testes unitários | Surefire | **5.504** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 5 |
 | Tempo unitários | Surefire | **~14 min** |
@@ -1060,7 +1060,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **5.476 · 0 falhas · 0 erros · 1 pulado** |
+| Testes unitários (Surefire) | **5.504 · 0 falhas · 0 erros · 1 pulado** |
 | Testes de integração (Failsafe) | **117 classes · 0 falhas na última medição; um grupo intermitente registrado (ver nota ² na seção Testes)** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 57 decisões arquiteturais documentadas |
@@ -1132,6 +1132,15 @@ canônica, e recebe sempre uma data de domínio: data do pedido, da distribuiç�
 resposta conforme o dia em que for consultado, e mudar de novo na virada do ano. Sem data de domínio
 disponível, o alerta não é emitido: competência calculada contra o salário errado é pior que
 competência não sinalizada.
+
+O teto de Requisição de Pequeno Valor tem fonte canônica própria, `TetoRpvNacionalService`, porque o
+parâmetro varia por ente devedor: 60 salários mínimos na Fazenda federal (CF art. 100, § 3º, c/c Lei
+10.259/2001, art. 17, § 1º e art. 3º), 40 nos Estados e no Distrito Federal (ADCT art. 87, I) e 30
+nos Municípios (ADCT art. 87, II), enquanto o ente não fixar o seu por lei própria. Ele resolve
+quantidade, fundamento e valor em dinheiro a partir do ente e da data do trânsito em julgado, que é
+a data cujo salário mínimo converte o teto em reais em todos os serviços. Sem ente ou sem trânsito
+não há teto calculado: o crédito fica no regime geral do precatório (CF art. 100), e os cálculos
+previdenciários da CJF deixam de projetar a classificação em vez de usar o salário mínimo de hoje.
 
 `salario_minimo_hardcoded_guard` verifica a regra, e recusa tanto a constante monetária local quanto
 o `LocalDate.now()` inline.
@@ -1363,7 +1372,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.476 testes unitários, 117 classes de integração e 326 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.504 testes unitários, 117 classes de integração e 326 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

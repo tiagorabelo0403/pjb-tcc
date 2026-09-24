@@ -65,7 +65,8 @@ public class ProcuradoriaOperationalSurfaceFacadeService {
                 request.doencaGrave(),
                 request.pessoaComDeficiencia(),
                 request.regimeEspecial(),
-                request.acordoDiretoHabilitado()
+                request.acordoDiretoHabilitado(),
+                request.dataTransitoEmJulgado()
         );
         return projectionSupport.snapshot("procuradoria.financeiro", precatorioRpvService.calcular(mapped));
     }

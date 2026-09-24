@@ -35,6 +35,7 @@ public record FederalPrevidenciarioCjfCalculoAvancadoRequest(
         @DecimalMin("0.00") BigDecimal tetoRpvEmSalariosMinimos,
         @Size(max = 80) String criterioAtualizacaoNome,
         @Size(max = 80) String criterioJurosNome,
-        @Size(max = 500) String observacoesTecnicas
+        @Size(max = 500) String observacoesTecnicas,
+        LocalDate dataTransitoEmJulgado
 ) {
 }

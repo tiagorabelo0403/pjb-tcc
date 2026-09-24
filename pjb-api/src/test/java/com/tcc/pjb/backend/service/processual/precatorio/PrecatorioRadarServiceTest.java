@@ -1,12 +1,14 @@
 package com.tcc.pjb.backend.service.processual.precatorio;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService;
+import com.tcc.pjb.backend.service.financeiro.TetoRpvNacionalService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -26,7 +28,7 @@ class PrecatorioRadarServiceTest {
         salarioMinimoService = mock(SalarioMinimoNacionalService.class);
         when(salarioMinimoService.multiplicar(any(), any()))
                 .thenAnswer(inv -> ((BigDecimal) inv.getArgument(0)).multiply(SALARIO_MINIMO));
-        service = new PrecatorioRadarService(salarioMinimoService);
+        service = new PrecatorioRadarService(new TetoRpvNacionalService(salarioMinimoService));
     }
 
     private PrecatorioRadarService.PrecatorioInput entrada(BigDecimal valor,
@@ -52,6 +54,15 @@ class PrecatorioRadarServiceTest {
 
         org.mockito.Mockito.verify(salarioMinimoService)
                 .multiplicar(eq(new BigDecimal("40")), eq(TRANSITO));
+    }
+
+    @Test
+    void limiteMunicipalUsaTrintaSalariosMinimos() {
+        service.avaliar(entrada(new BigDecimal("1000"),
+                PrecatorioRadarService.TipoObrigacaoFazenda.MUNICIPAL, false));
+
+        org.mockito.Mockito.verify(salarioMinimoService)
+                .multiplicar(eq(new BigDecimal("30")), eq(TRANSITO));
     }
 
     @Test
@@ -115,5 +126,16 @@ class PrecatorioRadarServiceTest {
         assertThat(snapshot.aptaRpv()).isFalse();
         assertThat(snapshot.requerPrecatorio()).isFalse();
         assertThat(snapshot.valorLimiteRpv()).isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    void transitadoSemDataDoTransitoFalhaEmVezDeUsarOSalarioDeHoje() {
+        var input = new PrecatorioRadarService.PrecatorioInput(
+                UUID.randomUUID(), new BigDecimal("1000"),
+                PrecatorioRadarService.TipoObrigacaoFazenda.FEDERAL, true, true, null);
+
+        assertThatThrownBy(() -> service.avaliar(input))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("dataTransitoEmJulgado");
     }
 }

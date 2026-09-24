@@ -5,7 +5,8 @@ import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialFrontendC
 import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialExperienceContext;
 import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialFrontendDomainResponse;
 import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialSolicitantePerfil;
-import com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService;
+import com.tcc.pjb.backend.model.dto.procuradoria.surface.PrecatorioRpvEnteDevedorTipo;
+import com.tcc.pjb.backend.service.financeiro.TetoRpvNacionalService;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,18 +21,18 @@ public class CalculoJudicialFrontendCatalogService {
     private final CalculoJudicialFrontendContractService frontendContractService;
     private final CalculoJudicialTabelaOficialService tabelaOficialService;
     private final CalculoJudicialExperiencePreferenceService experiencePreferenceService;
-    private final SalarioMinimoNacionalService salarioMinimoNacionalService;
+    private final TetoRpvNacionalService tetoRpvNacionalService;
 
     public CalculoJudicialFrontendCatalogService(CalculoJudicialProfileResolverService profileResolverService,
                                                  CalculoJudicialFrontendContractService frontendContractService,
                                                  CalculoJudicialTabelaOficialService tabelaOficialService,
                                                  CalculoJudicialExperiencePreferenceService experiencePreferenceService,
-                                                 SalarioMinimoNacionalService salarioMinimoNacionalService) {
+                                                 TetoRpvNacionalService tetoRpvNacionalService) {
         this.profileResolverService = Objects.requireNonNull(profileResolverService);
         this.frontendContractService = Objects.requireNonNull(frontendContractService);
         this.tabelaOficialService = Objects.requireNonNull(tabelaOficialService);
         this.experiencePreferenceService = Objects.requireNonNull(experiencePreferenceService);
-        this.salarioMinimoNacionalService = Objects.requireNonNull(salarioMinimoNacionalService);
+        this.tetoRpvNacionalService = Objects.requireNonNull(tetoRpvNacionalService);
     }
 
     public CalculoJudicialFrontendCatalogResponse catalog(Authentication authentication,
@@ -207,7 +208,7 @@ public class CalculoJudicialFrontendCatalogService {
             );
             case "FEDERAL_PREVIDENCIARIO_CJF" -> List.of(
                     section("dados_beneficio", "Dados do benefício", List.of("tituloCalculo", "numeroProcesso", "tribunal", "sistemaOrigem", "tipoBeneficio", "rendaMensalAtual")),
-                    section("marco_temporal", "Marco temporal", List.of("dib", "dip", "dcb", "dataAjuizamento", "dataCitacao", "dataCalculo", "aplicarPrescricaoQuinquenal")),
+                    section("marco_temporal", "Marco temporal", List.of("dib", "dip", "dcb", "dataAjuizamento", "dataCitacao", "dataCalculo", "dataTransitoEmJulgado", "aplicarPrescricaoQuinquenal")),
                     section("parcelas_abono", "Parcelas e abono", List.of("incluirAbonoAnual", "parcelasPagasAdministrativamente", "parcelasPagasPorTutela")),
                     section("atualizacao_juros", "Atualização e juros", List.of("taxasCorrecaoMensais", "fatorCorrecaoMonetaria", "percentualJurosMoraMensal", "criterioAtualizacaoNome", "criterioJurosNome")),
                     section("honorarios_pagamento", "Honorários e classificação do pagamento", List.of("percentualHonorarios", "salarioMinimoReferencia", "tetoRpvEmSalariosMinimos")),
@@ -467,8 +468,9 @@ public class CalculoJudicialFrontendCatalogService {
                     "fatorCorrecaoMonetaria", "0.00",
                     "percentualJurosMoraMensal", "0.0050",
                     "percentualHonorarios", "0.10",
-                    "salarioMinimoReferencia", salarioMinimoNacionalService.valorVigente().toPlainString(),
-                    "tetoRpvEmSalariosMinimos", "60",
+                    "salarioMinimoReferencia", null,
+                    "tetoRpvEmSalariosMinimos", tetoFederalRpv(),
+                    "dataTransitoEmJulgado", null,
                     "observacoesTecnicas", null
             );
             default -> Map.of();
@@ -590,8 +592,9 @@ public class CalculoJudicialFrontendCatalogService {
                     "fatorCorrecaoMonetaria", "0.1280",
                     "percentualJurosMoraMensal", "0.0050",
                     "percentualHonorarios", "0.10",
-                    "salarioMinimoReferencia", salarioMinimoNacionalService.valorVigente().toPlainString(),
-                    "tetoRpvEmSalariosMinimos", "60",
+                    "salarioMinimoReferencia", null,
+                    "tetoRpvEmSalariosMinimos", tetoFederalRpv(),
+                    "dataTransitoEmJulgado", "2025-11-18",
                     "criterioAtualizacaoNome", "Manual CJF e tabela institucional",
                     "criterioJurosNome", "Juros de mora parametrizados",
                     "taxasCorrecaoMensais", List.of(
@@ -762,5 +765,9 @@ public class CalculoJudicialFrontendCatalogService {
             map.put(String.valueOf(pairs[i]), pairs[i + 1]);
         }
         return map;
+    }
+
+    private String tetoFederalRpv() {
+        return tetoRpvNacionalService.salariosMinimos(PrecatorioRpvEnteDevedorTipo.UNIAO).toPlainString();
     }
 }

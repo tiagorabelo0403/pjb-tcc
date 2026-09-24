@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 class CalculoJudicialAssistenciaServiceTest {
 
-    private final CalculoJudicialAssistenciaService service = new CalculoJudicialAssistenciaService(new CalculoJudicialProfileResolverService(), new CalculoJudicialFrontendContractService(new CalculoJudicialTabelaOficialService(), TestEconomicReferenceSupport.economicReferenceService()));
+    private final CalculoJudicialAssistenciaService service = new CalculoJudicialAssistenciaService(new CalculoJudicialProfileResolverService(), new CalculoJudicialFrontendContractService(new CalculoJudicialTabelaOficialService(), TestEconomicReferenceSupport.economicReferenceService()), TestEconomicReferenceSupport.tetoRpvNacionalService());
 
     @Test
     void deveExporMetadadosDeContratoApiNoFluxoTrabalhista() {
@@ -20,6 +20,14 @@ class CalculoJudicialAssistenciaServiceTest {
         assertTrue(metadata.containsKey("apiContract"));
         assertTrue(metadata.containsKey("profileCapabilities"));
         assertEquals("/api/v1/processual/calculos/workspace/trabalhista-clt/ajuda", ((java.util.Map<?, ?>) metadata.get("apiContract")).get("ajudaRoute"));
+    }
+
+    @Test
+    void tetoRpvSugeridoNoFluxoFederalPrevidenciarioVemDaFonteCanonicaComOTetoDaUniao() {
+        CalculoJudicialAssistenciaResponse response = service.orientarFederalPrevidenciario(null, null);
+
+        assertEquals(new java.math.BigDecimal("60"), response.autopreenchimentoSeguro().get("tetoRpvEmSalariosMinimosSugerido"),
+                "o teto sugerido e o da Uniao (Lei 10.259/2001), nao o de ente subnacional");
     }
 
     @Test

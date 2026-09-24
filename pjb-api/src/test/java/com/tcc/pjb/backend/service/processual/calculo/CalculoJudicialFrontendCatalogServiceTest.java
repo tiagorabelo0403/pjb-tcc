@@ -4,28 +4,17 @@ import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialFrontendB
 import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialExperienceContext;
 import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialFrontendCatalogResponse;
 import com.tcc.pjb.backend.model.dto.processual.calculo.CalculoJudicialSolicitantePerfil;
-import com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService;
-import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class CalculoJudicialFrontendCatalogServiceTest {
 
-    private static final BigDecimal SALARIO_MOCK = new BigDecimal("1621.00");
-
     private final CalculoJudicialFrontendContractService contractService = new CalculoJudicialFrontendContractService(new CalculoJudicialTabelaOficialService(), TestEconomicReferenceSupport.economicReferenceService());
     private final CalculoJudicialExperiencePreferenceService preferenceService = new CalculoJudicialExperiencePreferenceService(org.mockito.Mockito.mock(com.tcc.pjb.backend.repository.ui.UsuarioCalculoExperiencePreferenceRepository.class), contractService);
-    private final SalarioMinimoNacionalService salarioMinimoNacionalService = salarioServiceComValorMockado(SALARIO_MOCK);
-    private final CalculoJudicialFrontendCatalogService service = new CalculoJudicialFrontendCatalogService(new CalculoJudicialProfileResolverService(), contractService, new CalculoJudicialTabelaOficialService(), preferenceService, salarioMinimoNacionalService);
+    private final CalculoJudicialFrontendCatalogService service = new CalculoJudicialFrontendCatalogService(new CalculoJudicialProfileResolverService(), contractService, new CalculoJudicialTabelaOficialService(), preferenceService, TestEconomicReferenceSupport.tetoRpvNacionalService());
 
-    private static SalarioMinimoNacionalService salarioServiceComValorMockado(BigDecimal valor) {
-        SalarioMinimoNacionalService mocked = mock(SalarioMinimoNacionalService.class);
-        when(mocked.valorVigente()).thenReturn(valor);
-        return mocked;
-    }
 
     @Test
     void deveRetornarCatalogoCompletoParaFrontend() {
@@ -90,15 +79,37 @@ class CalculoJudicialFrontendCatalogServiceTest {
     }
 
     @Test
-    void salarioMinimoReferenciaVemDoServiceCanonicoNaoDeLiteralAntigo() {
+    void formularioPedeOTransitoEmVezDeSugerirOSalarioMinimoDeHoje() {
         CalculoJudicialFrontendBootstrapResponse response = service.bootstrap(null, CalculoJudicialSolicitantePerfil.ADVOGADO, "federal-previdenciario-cjf");
 
         assertThat(response.payloadInicial())
-                .as("payloadInicial deve refletir SalarioMinimoNacionalService.valorVigente() mockado, nunca o literal antigo 1518.00")
-                .containsEntry("salarioMinimoReferencia", SALARIO_MOCK.toPlainString());
+                .as("o teto de RPV se converte pelo salario minimo do transito em julgado; sugerir o de hoje induziria a classificacao errada")
+                .containsEntry("salarioMinimoReferencia", null)
+                .containsEntry("dataTransitoEmJulgado", null)
+                .containsEntry("tetoRpvEmSalariosMinimos", "60");
         assertThat(response.requestExemplo())
-                .as("requestExemplo deve refletir SalarioMinimoNacionalService.valorVigente() mockado")
-                .containsEntry("salarioMinimoReferencia", SALARIO_MOCK.toPlainString());
+                .as("o exemplo informa o transito, e o salario minimo do transito prevalece sobre qualquer valor informado")
+                .containsEntry("salarioMinimoReferencia", null)
+                .containsEntry("dataTransitoEmJulgado", "2025-11-18");
     }
 
+
+    @Test
+    void formularioCjfApresentaODataDoTransitoNoMarcoTemporal() {
+        CalculoJudicialFrontendCatalogResponse response = service.catalog(null, CalculoJudicialSolicitantePerfil.ADVOGADO, null);
+
+        var secoesCjf = response.dominios().stream()
+                .filter(dominio -> dominio.codigo().equals("FEDERAL_PREVIDENCIARIO_CJF"))
+                .findFirst()
+                .orElseThrow()
+                .secoes();
+
+        var marcoTemporal = secoesCjf.stream()
+                .filter(secao -> "marco_temporal".equals(secao.get("codigo")))
+                .findFirst()
+                .orElseThrow();
+        assertThat(((java.util.List<?>) marcoTemporal.get("campos")).contains("dataTransitoEmJulgado"))
+                .as("o transito decide a classificacao RPV/precatorio e precisa estar no formulario")
+                .isTrue();
+    }
 }
