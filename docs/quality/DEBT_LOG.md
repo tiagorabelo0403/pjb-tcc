@@ -195,27 +195,44 @@ admite ML-DSA-44 para assinante final e ML-DSA-65/87 para Autoridade Certificado
 projeto é ML-DSA-87 para ato de magistrado. O texto oficial do DOC-ICP-01.01 v6.0 não estava
 acessível na revisão; conferir antes de afirmar alinhamento normativo no TCC.
 
-## D-grupo-intermitente-de-onze-no-portao
+## D-its-gravam-sem-limpar
 
-**Status:** aberta — medida, sem causa
+**Status:** aberta — medida em 2026-09-24
 
-Onze testes quebram juntos (10 erros e 1 falha) em parte das execucoes do portao e passam nas outras:
-presentes nos runs 35821249418 (master, 2026-09-23, Testcontainers 1.19.8) e 35940986060 (branch da
-#210, Testcontainers 2.0.5); ausentes nos runs 35563577654 e 35689627352 (master, 21 e 22/09),
-35932081080 e 35998133932. A versao do Testcontainers nao decide. Os runs 35563577654, 35689627352 e
-35821249418 rodaram o mesmo commit, 2471b4ea: mesmo codigo, resultado diferente.
+O Failsafe roda as classes na ordem do sistema de arquivos, e no runner do CI essa ordem muda a
+cada checkout: os runs 35563577654 e 35821249418 rodaram o mesmo commit (2471b4ea) com ordens
+diferentes. Estado que uma classe deixa no banco vira, então, falha intermitente de outra.
+
+Das 87 classes `*IT.java` que estendem diretamente `PjbIntegrationTestBase` (que não limpa nada), 46
+chamam `save` ou `saveAndFlush` sem `@AfterEach`, `@AfterAll`, `deleteAll`, `TRUNCATE`,
+`@Transactional` ou `@Sql`. Contagem por grep, em 2026-09-24, depois das correções abaixo:
 
 ```
-[ERROR]   AdminAdvocaciaOpsSummaryControllerIT>PjbH2ItBase.cleanH2Context:36 » InvalidDataAccessResourceUsage Could not prepare statement [Table "ADV_CLIENTES" not found (this database is empty); SQL statement:
-[ERROR]   MagistraturaJudicialActsControllerIT.setup:138 » DataIntegrityViolation could not execute batch [Batch entry 2 delete from tb_usuario where id=('3'::int8) was aborted: ERROR: update or delete on table "tb_usuario" violates foreign key constraint "fk
-[ERROR]   SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT.duasChamadasConcorrentesParaOMesmoProcessoETipoNuncaCriamDoisItensAtivos:78
+$ for f in $(git grep -l -E "extends PjbIntegrationTestBase" -- 'pjb-api/src/test/**/*IT.java'); do
+    if ! grep -q -E "@AfterEach|@AfterAll|deleteAll|TRUNCATE|@Transactional|@Sql" $f \
+       && grep -q -E "\.save\(|saveAndFlush\(" $f; then echo x; fi; done | wc -l
+46
+$ git grep -l -E "extends PjbIntegrationTestBase" -- 'pjb-api/src/test/**/*IT.java' | wc -l
+87
 ```
 
-Oito erros no `setup` de `MagistraturaJudicialActsControllerIT` (residuo em
-`tb_escritura_extrajudicial_registro` bloqueando o delete de `tb_usuario`), dois no
-`PjbH2ItBase.cleanH2Context` de `AdminAdvocaciaOpsSummaryControllerIT` e uma falha de concorrencia.
-O padrao aponta para ordem de execucao e estado deixado por outra classe, nao para as tres classes em
-si: falta identificar quem grava a escritura sem limpar e quando o H2 da base chega vazio.
+Ficam fora da conta as 19 que estendem `PjbFlowItBase`, que faz `TRUNCATE` antes de cada teste, as
+que estendem `PjbTransactionalRepositoryItBase`, que desfazem a transação, e as 6 `*Test.java`
+marcadas como integração.
+
+Duas dessas classes já tinham derrubado outras e foram corrigidas, cada uma com a falha
+reproduzida localmente na ordem que a expunha e verde depois:
+
+| Quem vazava | Quem quebrava | Estado deixado |
+|---|---|---|
+| `InstitutionalExtrajudicialGateIT` | `MagistraturaJudicialActsControllerIT` (8 erros) | escritura presa ao usuário tabelião por `fk_escritura_cartorio` |
+| `UnidadeInstituicaoAbrangenciaResolutionIT` | `SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT` (1 falha) | segunda unidade `NUCLEO_DEFENSORIA` em Fortaleza, que torna a resolução ambígua |
+
+`SecretariaInstitucionalEnfileiramentoServiceConcorrenciaIT` também passou a remover o que cria: sua
+unidade em Fortaleza tinha o mesmo potencial. As 46 da contagem já excluem as três.
+
+**Correção sugerida:** levar as restantes para `PjbFlowItBase` ou dar a cada uma a remoção do que cria,
+com um guard que reprove IT nova que grave sem nenhum dos dois.
 
 ## D-fragmentacao-de-contexto-spring-nos-its
 
