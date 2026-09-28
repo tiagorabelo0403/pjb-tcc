@@ -1,0 +1,16 @@
+DROP TABLE IF EXISTS pjb_conflito_competencia CASCADE;
+DROP TABLE IF EXISTS pjb_precatorio_rpv CASCADE;
+DROP TABLE IF EXISTS pjb_tutela_urgencia CASCADE;
+DROP TABLE IF EXISTS pjb_honorarios_sucumbencia CASCADE;
+DROP TABLE IF EXISTS pjb_ata_audiencia CASCADE;
+DROP TABLE IF EXISTS pjb_celeridade_snapshot CASCADE;
+DROP TABLE IF EXISTS pjb_mining_event_log CASCADE;
+DROP TABLE IF EXISTS pjb_mining_snapshot CASCADE;
+DROP TABLE IF EXISTS pjb_processo_chip CASCADE;
+DROP TABLE IF EXISTS pjb_responsavel_carga CASCADE;
+DROP TABLE IF EXISTS pjb_retificacao_autuacao CASCADE;
+DROP TABLE IF EXISTS pjb_metadata_quality_snapshot CASCADE;
+DROP TABLE IF EXISTS tb_carteira_share_item CASCADE;
+DROP TABLE IF EXISTS tb_carteira_share CASCADE;
+DROP TABLE IF EXISTS tb_cidadao_doc_vault_item CASCADE;
+DROP TABLE IF EXISTS tb_doc_provider_registry CASCADE;
