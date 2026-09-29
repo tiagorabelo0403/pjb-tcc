@@ -40,27 +40,30 @@ class PrecatorioRadarServiceTest {
 
     @Test
     void limiteFederalUsaSessentaSalariosMinimosDaDataDoTransito() {
-        service.avaliar(entrada(new BigDecimal("1000"),
+        var snapshot = service.avaliar(entrada(new BigDecimal("1000"),
                 PrecatorioRadarService.TipoObrigacaoFazenda.FEDERAL, false));
 
+        assertThat(snapshot.valorLimiteRpv()).isEqualByComparingTo(new BigDecimal("91080.00"));
         org.mockito.Mockito.verify(salarioMinimoService)
                 .multiplicar(eq(new BigDecimal("60")), eq(TRANSITO));
     }
 
     @Test
     void limiteEstadualUsaQuarentaSalariosMinimos() {
-        service.avaliar(entrada(new BigDecimal("1000"),
+        var snapshot = service.avaliar(entrada(new BigDecimal("1000"),
                 PrecatorioRadarService.TipoObrigacaoFazenda.ESTADUAL, false));
 
+        assertThat(snapshot.valorLimiteRpv()).isEqualByComparingTo(new BigDecimal("60720.00"));
         org.mockito.Mockito.verify(salarioMinimoService)
                 .multiplicar(eq(new BigDecimal("40")), eq(TRANSITO));
     }
 
     @Test
     void limiteMunicipalUsaTrintaSalariosMinimos() {
-        service.avaliar(entrada(new BigDecimal("1000"),
+        var snapshot = service.avaliar(entrada(new BigDecimal("1000"),
                 PrecatorioRadarService.TipoObrigacaoFazenda.MUNICIPAL, false));
 
+        assertThat(snapshot.valorLimiteRpv()).isEqualByComparingTo(new BigDecimal("45540.00"));
         org.mockito.Mockito.verify(salarioMinimoService)
                 .multiplicar(eq(new BigDecimal("30")), eq(TRANSITO));
     }
