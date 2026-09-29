@@ -196,8 +196,7 @@ public class CitacaoIntimacaoEngine {
     private final PjbHsmProperties hsmProperties;
     private final PjbExecutionOrchestrator executionOrchestrator;
     private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
-    private final CitacaoWebhookNotifierService citacaoWebhookNotifierService;
-    private final CitacaoPortalRelayNotificationService citacaoPortalRelayNotificationService;
+    private final CitacaoExpedicaoNotificacaoService citacaoExpedicaoNotificacaoService;
     private final CitacaoJudiciaryNotificationService citacaoJudiciaryNotificationService;
     private final CitacaoPrazoReveliaGatilhoService citacaoPrazoReveliaGatilhoService;
     private final CitacaoEditalCuradoriaService citacaoEditalCuradoriaService;
@@ -213,8 +212,7 @@ public class CitacaoIntimacaoEngine {
                                   PjbHsmProperties hsmProperties,
                                   PjbExecutionOrchestrator executionOrchestrator,
                                   MovimentacaoProcessualRegistrar movimentacaoRegistrar,
-                                  CitacaoWebhookNotifierService citacaoWebhookNotifierService,
-                                  CitacaoPortalRelayNotificationService citacaoPortalRelayNotificationService,
+                                  CitacaoExpedicaoNotificacaoService citacaoExpedicaoNotificacaoService,
                                   CitacaoJudiciaryNotificationService citacaoJudiciaryNotificationService,
                                   CitacaoPrazoReveliaGatilhoService citacaoPrazoReveliaGatilhoService,
                                   CitacaoEditalCuradoriaService citacaoEditalCuradoriaService,
@@ -229,8 +227,7 @@ public class CitacaoIntimacaoEngine {
         this.hsmProperties = Objects.requireNonNull(hsmProperties, "hsmProperties");
         this.executionOrchestrator = Objects.requireNonNull(executionOrchestrator, "executionOrchestrator");
         this.movimentacaoRegistrar = Objects.requireNonNull(movimentacaoRegistrar, "movimentacaoRegistrar");
-        this.citacaoWebhookNotifierService = Objects.requireNonNull(citacaoWebhookNotifierService, "citacaoWebhookNotifierService");
-        this.citacaoPortalRelayNotificationService = Objects.requireNonNull(citacaoPortalRelayNotificationService, "citacaoPortalRelayNotificationService");
+        this.citacaoExpedicaoNotificacaoService = Objects.requireNonNull(citacaoExpedicaoNotificacaoService, "citacaoExpedicaoNotificacaoService");
         this.citacaoJudiciaryNotificationService = Objects.requireNonNull(citacaoJudiciaryNotificationService, "citacaoJudiciaryNotificationService");
         this.citacaoPrazoReveliaGatilhoService = Objects.requireNonNull(citacaoPrazoReveliaGatilhoService, "citacaoPrazoReveliaGatilhoService");
         this.citacaoEditalCuradoriaService = Objects.requireNonNull(citacaoEditalCuradoriaService, "citacaoEditalCuradoriaService");
@@ -298,9 +295,7 @@ public class CitacaoIntimacaoEngine {
             antiEvasaoAtivado = true;
         }
         ExpedicaoJudicial salva = expedicaoRepository.save(expedicao);
-        citacaoPortalRelayNotificationService.notificarPortalDestinatario(salva, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.EXPEDIDA);
-        citacaoPortalRelayNotificationService.propagarAvisoAtendimento(salva, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.EXPEDIDA);
-        citacaoWebhookNotifierService.publicar(salva, WebhookOutboundService.EventoWebhook.EXPEDICAO_EXPEDIDA, java.util.Map.of("fundamento", salva.getFundamentacaoLegal()));
+        citacaoExpedicaoNotificacaoService.notificarExpedida(salva, processo);
         agendarDespachoAposCommit(salva.getExpedicaoUuid(), request, processo.getId(), modalidade);
         auditLedger.appendSafely(
                 "EXPEDICAO_JUDICIAL_EXPEDIDA",
@@ -347,9 +342,7 @@ public class CitacaoIntimacaoEngine {
         Processo processo = processoRepository.findProcessoCompletoById(expedicao.getProcessoId()).orElse(null);
         citacaoPrazoReveliaGatilhoService.iniciarPrazoEReveliaSeCabivel(expedicao);
         registrarMovimentacaoAcuse(processo, "Ciência da expedição confirmada pelo destinatário (acuse de recebimento).");
-        citacaoPortalRelayNotificationService.notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
-        citacaoPortalRelayNotificationService.propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
-        citacaoWebhookNotifierService.publicar(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_ENTREGUE_CONFIRMADA, java.util.Map.of("canal", String.valueOf(expedicao.getModalidade())));
+        citacaoExpedicaoNotificacaoService.notificarEntregaConfirmada(expedicao, processo, String.valueOf(expedicao.getModalidade()));
         auditLedger.appendSafely(
                 "EXPEDICAO_ENTREGA_CONFIRMADA",
                 RESOURCE_TYPE,
@@ -369,9 +362,7 @@ public class CitacaoIntimacaoEngine {
         Processo processo = processoRepository.findProcessoCompletoById(expedicao.getProcessoId()).orElse(null);
         citacaoPrazoReveliaGatilhoService.iniciarPrazoEReveliaSeCabivel(expedicao);
         registrarMovimentacaoAcuse(processo, "Leitura da expedição confirmada pelo destinatário.");
-        citacaoPortalRelayNotificationService.notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.LIDA_CONFIRMADA);
-        citacaoPortalRelayNotificationService.propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.LIDA_CONFIRMADA);
-        citacaoWebhookNotifierService.publicar(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_LIDA_CONFIRMADA, java.util.Map.of("acuseHash", String.valueOf(acuseHash)));
+        citacaoExpedicaoNotificacaoService.notificarLeituraConfirmada(expedicao, processo, acuseHash);
         auditLedger.appendSafely(
                 "EXPEDICAO_LEITURA_CONFIRMADA",
                 RESOURCE_TYPE,
@@ -419,7 +410,7 @@ public class CitacaoIntimacaoEngine {
             citacaoJudiciaryNotificationService.notificarJuizEvasao(expedicao, processo);
         }
         expedicaoRepository.save(expedicao);
-        citacaoWebhookNotifierService.publicar(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_FRUSTRADA, java.util.Map.of("motivo", String.valueOf(motivoFrustracao), "fallback", fallback != null ? fallback.name() : "NENHUM"));
+        citacaoExpedicaoNotificacaoService.notificarFrustracao(expedicao, String.valueOf(motivoFrustracao), fallback != null ? fallback.name() : "NENHUM");
         auditLedger.appendSafely(
                 "EXPEDICAO_FRUSTRACAO_FALLBACK",
                 RESOURCE_TYPE,
@@ -446,9 +437,7 @@ public class CitacaoIntimacaoEngine {
         expedicaoRepository.save(expedicao);
         Processo processo = processoRepository.findProcessoCompletoById(expedicao.getProcessoId()).orElse(null);
         citacaoPrazoReveliaGatilhoService.iniciarPrazoEReveliaSeCabivel(expedicao);
-        citacaoPortalRelayNotificationService.notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
-        citacaoPortalRelayNotificationService.propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.ENTREGUE_CONFIRMADA);
-        citacaoWebhookNotifierService.publicar(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_ENTREGUE_CONFIRMADA, java.util.Map.of("canal", recibo.canalVencedor()));
+        citacaoExpedicaoNotificacaoService.notificarEntregaConfirmada(expedicao, processo, recibo.canalVencedor());
         auditLedger.appendSafely(
                 "EXPEDICAO_INTERCEPTACAO_CONFIRMADA",
                 RESOURCE_TYPE,
@@ -538,9 +527,7 @@ public class CitacaoIntimacaoEngine {
             expedicaoRepository.save(expedicao);
             Processo processo = processoRepository.findProcessoCompletoById(expedicao.getProcessoId()).orElse(null);
             citacaoPrazoReveliaGatilhoService.iniciarPrazoEReveliaSeCabivel(expedicao);
-            citacaoPortalRelayNotificationService.notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.PRESUMIDA_ENTREGUE);
-            citacaoPortalRelayNotificationService.propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.PRESUMIDA_ENTREGUE);
-            citacaoWebhookNotifierService.publicar(expedicao, WebhookOutboundService.EventoWebhook.EXPEDICAO_PRESUMIDA_ENTREGUE, java.util.Map.of());
+            citacaoExpedicaoNotificacaoService.notificarPresumidaEntregue(expedicao, processo);
             atualizadas++;
         }
         if (atualizadas > 0) {
@@ -918,8 +905,7 @@ public class CitacaoIntimacaoEngine {
         expedicao.setStatus(ExpedicaoJudicial.StatusExpedicao.PUBLICADA_EDITAL);
         expedicaoRepository.save(expedicao);
         citacaoEditalCuradoriaService.registrarNecessidadeSeAusente(expedicao);
-        citacaoPortalRelayNotificationService.notificarPortalDestinatario(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.PUBLICADA_EDITAL);
-        citacaoPortalRelayNotificationService.propagarAvisoAtendimento(expedicao, processo, ComunicacaoJudicialPortalNotificationService.EventoPortal.PUBLICADA_EDITAL);
+        citacaoExpedicaoNotificacaoService.notificarEditalPublicado(expedicao, processo);
         citacaoJudiciaryNotificationService.notificarJuizEdital(expedicao, processo, numeroEdital);
         log.warn("[CitacaoEngine][Edital] Último recurso ativado uuid={} edital={}", expedicao.getExpedicaoUuid(), numeroEdital);
     }
