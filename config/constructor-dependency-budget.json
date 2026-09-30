@@ -17,7 +17,7 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/workflow/application/InstitutionalWorkflowApplicationService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/BnmpIntegracaoService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoHoraCertaEngine.java": 12,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java": 15,
+  "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java": 14,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/ComunicacaoJudicialAtendimentoRelayService.java": 11,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/ComunicacaoJudicialPortalNotificationService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CuradorEspecialAutomaticoService.java": 9,

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HexFormat;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -199,8 +198,7 @@ public class CitacaoIntimacaoEngine {
     private final CitacaoExpedicaoNotificacaoService citacaoExpedicaoNotificacaoService;
     private final CitacaoJudiciaryNotificationService citacaoJudiciaryNotificationService;
     private final CitacaoPrazoReveliaGatilhoService citacaoPrazoReveliaGatilhoService;
-    private final CitacaoEditalCuradoriaService citacaoEditalCuradoriaService;
-    private final CitacaoOficialJusticaQrMandadoService citacaoOficialJusticaQrMandadoService;
+    private final CitacaoDespachoFisicoService citacaoDespachoFisicoService;
     private final CitacaoSefazCadastroEnrichmentService citacaoSefazCadastroEnrichmentService;
     private final CitacaoMatrizDecisionService citacaoMatrizDecisionService;
 
@@ -215,8 +213,7 @@ public class CitacaoIntimacaoEngine {
                                   CitacaoExpedicaoNotificacaoService citacaoExpedicaoNotificacaoService,
                                   CitacaoJudiciaryNotificationService citacaoJudiciaryNotificationService,
                                   CitacaoPrazoReveliaGatilhoService citacaoPrazoReveliaGatilhoService,
-                                  CitacaoEditalCuradoriaService citacaoEditalCuradoriaService,
-                                  CitacaoOficialJusticaQrMandadoService citacaoOficialJusticaQrMandadoService,
+                                  CitacaoDespachoFisicoService citacaoDespachoFisicoService,
                                   CitacaoSefazCadastroEnrichmentService citacaoSefazCadastroEnrichmentService,
                                   CitacaoMatrizDecisionService citacaoMatrizDecisionService) {
         this.expedicaoRepository = Objects.requireNonNull(expedicaoRepository, "expedicaoRepository");
@@ -230,8 +227,7 @@ public class CitacaoIntimacaoEngine {
         this.citacaoExpedicaoNotificacaoService = Objects.requireNonNull(citacaoExpedicaoNotificacaoService, "citacaoExpedicaoNotificacaoService");
         this.citacaoJudiciaryNotificationService = Objects.requireNonNull(citacaoJudiciaryNotificationService, "citacaoJudiciaryNotificationService");
         this.citacaoPrazoReveliaGatilhoService = Objects.requireNonNull(citacaoPrazoReveliaGatilhoService, "citacaoPrazoReveliaGatilhoService");
-        this.citacaoEditalCuradoriaService = Objects.requireNonNull(citacaoEditalCuradoriaService, "citacaoEditalCuradoriaService");
-        this.citacaoOficialJusticaQrMandadoService = Objects.requireNonNull(citacaoOficialJusticaQrMandadoService, "citacaoOficialJusticaQrMandadoService");
+        this.citacaoDespachoFisicoService = Objects.requireNonNull(citacaoDespachoFisicoService, "citacaoDespachoFisicoService");
         this.citacaoSefazCadastroEnrichmentService = Objects.requireNonNull(citacaoSefazCadastroEnrichmentService, "citacaoSefazCadastroEnrichmentService");
         this.citacaoMatrizDecisionService = Objects.requireNonNull(citacaoMatrizDecisionService, "citacaoMatrizDecisionService");
     }
@@ -819,10 +815,10 @@ public class CitacaoIntimacaoEngine {
                 case PORTAL_EMPRESA_CNPJ -> despacharPortalCnpj(expedicao, request, processo);
                 case DIGITAL_WHATSAPP_GOV -> despacharWhatsAppGov(expedicao, request, processo);
                 case DIGITAL_SMS_AUTENTICADO -> despacharSmsAutenticado(expedicao, request, processo);
-                case OFICIAL_JUSTICA_ROTA_OTIMIZADA -> despacharOficialJustica(expedicao, request, processo);
-                case CORREIO_AR_DIGITAL -> despacharCorreioArDigital(expedicao, request, processo);
+                case OFICIAL_JUSTICA_ROTA_OTIMIZADA -> citacaoDespachoFisicoService.despacharOficialJustica(expedicao, processo);
+                case CORREIO_AR_DIGITAL -> citacaoDespachoFisicoService.despacharCorreioArDigital(expedicao);
                 case CARTA_PRECATORIA_DIGITAL -> despacharCartaPrecatoria(expedicao, request, processo);
-                case EDITAL_DOU_DJE -> despacharEdital(expedicao, request, processo);
+                case EDITAL_DOU_DJE -> citacaoDespachoFisicoService.despacharEdital(expedicao, processo);
                 case COOPERACAO_JUDICIAL_NACIONAL -> despacharCooperacaoJudicial(expedicao, request, processo);
                 default -> throw new IllegalStateException("Modalidade de despacho não suportada: " + modalidade);
             }
@@ -874,40 +870,10 @@ public class CitacaoIntimacaoEngine {
         executarInterceptacaoDigital(expedicao, request, processo);
     }
 
-    private void despacharOficialJustica(ExpedicaoJudicial expedicao, ExpedicaoRequest request, Processo processo) {
-        expedicao.setStatus(ExpedicaoJudicial.StatusExpedicao.PENDENTE_OFICIAL);
-        expedicaoRepository.save(expedicao);
-        citacaoOficialJusticaQrMandadoService.gerarSeCabivel(expedicao);
-        if (expedicao.getServidorExpedidorId() != null) {
-            citacaoJudiciaryNotificationService.notificarServidor(expedicao.getServidorExpedidorId(), expedicao, processo, "Mandado físico gerado. Atribuir a Oficial de Justiça.");
-        }
-        log.info("[CitacaoEngine][OficialJustica] Mandado criado uuid={}", expedicao.getExpedicaoUuid());
-    }
-
-    private void despacharCorreioArDigital(ExpedicaoJudicial expedicao, ExpedicaoRequest request, Processo processo) {
-        String codigoRastreio = "PJB" + expedicao.getExpedicaoUuid().replace("-", "").substring(0, 13).toUpperCase(Locale.ROOT);
-        expedicao.setCodigoRastreioCorreio(codigoRastreio);
-        expedicao.setStatus(ExpedicaoJudicial.StatusExpedicao.REMETIDA_CORREIO);
-        expedicaoRepository.save(expedicao);
-        citacaoOficialJusticaQrMandadoService.gerarSeCabivel(expedicao);
-        log.info("[CitacaoEngine][CorreioAR] uuid={} rastreio={}", expedicao.getExpedicaoUuid(), codigoRastreio);
-    }
-
     private void despacharCartaPrecatoria(ExpedicaoJudicial expedicao, ExpedicaoRequest request, Processo processo) {
         expedicao.setCanalDigitalUtilizado("CARTA_PRECATORIA_PJBR_MESH");
         expedicaoRepository.save(expedicao);
         executarInterceptacaoDigital(expedicao, request, processo);
-    }
-
-    private void despacharEdital(ExpedicaoJudicial expedicao, ExpedicaoRequest request, Processo processo) {
-        String numeroEdital = "EDT-" + Instant.now().getEpochSecond() + "-" + expedicao.getProcessoId();
-        expedicao.setNumeroEdital(numeroEdital);
-        expedicao.setStatus(ExpedicaoJudicial.StatusExpedicao.PUBLICADA_EDITAL);
-        expedicaoRepository.save(expedicao);
-        citacaoEditalCuradoriaService.registrarNecessidadeSeAusente(expedicao);
-        citacaoExpedicaoNotificacaoService.notificarEditalPublicado(expedicao, processo);
-        citacaoJudiciaryNotificationService.notificarJuizEdital(expedicao, processo, numeroEdital);
-        log.warn("[CitacaoEngine][Edital] Último recurso ativado uuid={} edital={}", expedicao.getExpedicaoUuid(), numeroEdital);
     }
 
     private void despacharCooperacaoJudicial(ExpedicaoJudicial expedicao, ExpedicaoRequest request, Processo processo) {
