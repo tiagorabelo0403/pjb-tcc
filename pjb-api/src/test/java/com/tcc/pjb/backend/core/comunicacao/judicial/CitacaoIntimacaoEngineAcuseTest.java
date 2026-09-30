@@ -43,8 +43,7 @@ class CitacaoIntimacaoEngineAcuseTest {
                 mock(CitacaoExpedicaoNotificacaoService.class),
                 mock(CitacaoJudiciaryNotificationService.class),
                 mock(CitacaoPrazoReveliaGatilhoService.class),
-                mock(CitacaoEditalCuradoriaService.class),
-                mock(CitacaoOficialJusticaQrMandadoService.class),
+                mock(CitacaoDespachoFisicoService.class),
                 mock(CitacaoSefazCadastroEnrichmentService.class),
                 mock(CitacaoMatrizDecisionService.class));
     }
