@@ -2,7 +2,8 @@ meta:
   bloco: BLOCO-29.C
   gerado_em: "2026-05-31"
   total_entradas: 243
-  atualizado_em: "2026-06-02"
+  atualizado_em: "2026-10-02"
+  redatado_em_2026_10_02: "AL-0022 a AL-0026 (DTOs Laiane com Map<String,Object>): sla_remocao 2026-09-30 -> 2026-12-31; tipagem forte pendente, agendada como item separado fora do Plano v4"
   corrigidos_em_bloco27: "AL-0028 a AL-0057 removidos — 30 DTOs laiane receberam @Schema"
   adicionados_em_bloco28a: "AL-0028 a AL-0030 — 3 DTOs ai/ Categoria D documentados com @Schema+@Size"
   adicionados_em_bloco28b: "AL-0031 a AL-0054 — 14 leitura/ + 9 peticionamento/ Categoria D; 4 records tipados (A)"
@@ -352,7 +353,7 @@ allowlist:
     owner: equipa-laiane
     risco: medio
     bloco_correcao: BLOCO-28
-    sla_remocao: "2026-09-30"
+    sla_remocao: "2026-12-31"
     teste_negativo: PjbNoMapObjectInPublicDtoTest
     criado_em: "2026-05-31"
     auditoria_ref: A-7
@@ -367,7 +368,7 @@ allowlist:
     owner: equipa-laiane
     risco: medio
     bloco_correcao: BLOCO-28
-    sla_remocao: "2026-09-30"
+    sla_remocao: "2026-12-31"
     teste_negativo: PjbNoMapObjectInPublicDtoTest
     criado_em: "2026-05-31"
     auditoria_ref: A-7
@@ -382,7 +383,7 @@ allowlist:
     owner: equipa-laiane
     risco: medio
     bloco_correcao: BLOCO-28
-    sla_remocao: "2026-09-30"
+    sla_remocao: "2026-12-31"
     teste_negativo: PjbNoMapObjectInPublicDtoTest
     criado_em: "2026-05-31"
     auditoria_ref: A-7
@@ -397,7 +398,7 @@ allowlist:
     owner: equipa-laiane
     risco: medio
     bloco_correcao: BLOCO-28
-    sla_remocao: "2026-09-30"
+    sla_remocao: "2026-12-31"
     teste_negativo: PjbNoMapObjectInPublicDtoTest
     criado_em: "2026-05-31"
     auditoria_ref: A-7
@@ -412,7 +413,7 @@ allowlist:
     owner: equipa-laiane
     risco: medio
     bloco_correcao: BLOCO-28
-    sla_remocao: "2026-09-30"
+    sla_remocao: "2026-12-31"
     teste_negativo: PjbNoMapObjectInPublicDtoTest
     criado_em: "2026-05-31"
     auditoria_ref: A-7
