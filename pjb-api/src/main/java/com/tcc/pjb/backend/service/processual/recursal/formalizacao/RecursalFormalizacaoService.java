@@ -30,11 +30,6 @@ import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.service.processual.document.template.RecursalQualifiedDocumentMaterializerService;
 import com.tcc.pjb.backend.service.processual.recursal.workspace.RecursalFilingBlueprintAssembler;
 import com.tcc.pjb.backend.service.processual.recursal.operational.RecursalSecretariatTopologyService;
-import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalPdfArtifactValidationService;
-import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalPdfExportService;
-import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalPdfLongTermValidationService;
-import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalPdfNativeSignatureService;
-import com.tcc.pjb.backend.service.processual.recursal.pdf.RecursalPdfProofEnvelopeService;
 import com.tcc.pjb.backend.service.processual.recursal.protocolo.RecursalProtocolArtifactReadinessService;
 import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
 import java.lang.reflect.Array;
@@ -62,11 +57,7 @@ public class RecursalFormalizacaoService {
     private final JudicialConnectorOperationalProfileService judicialConnectorOperationalProfileService;
     private final ObjectMapper objectMapper;
     private final RepresentacaoProcessualPolicyService representacaoProcessualPolicyService;
-    private final RecursalPdfExportService recursalPdfExportService;
-    private final RecursalPdfNativeSignatureService recursalPdfNativeSignatureService;
-    private final RecursalPdfLongTermValidationService recursalPdfLongTermValidationService;
-    private final RecursalPdfProofEnvelopeService recursalPdfProofEnvelopeService;
-    private final RecursalPdfArtifactValidationService recursalPdfArtifactValidationService;
+    private final RecursalPdfArtifactPipelineService recursalPdfArtifactPipelineService;
     private final RecursalProtocolArtifactReadinessService recursalProtocolArtifactReadinessService;
     private final RecursalQualifiedDocumentMaterializerService recursalQualifiedDocumentMaterializerService;
     private final RecursalSecretariatTopologyService recursalSecretariatTopologyService;
@@ -75,11 +66,7 @@ public class RecursalFormalizacaoService {
                                        JudicialConnectorOperationalProfileService judicialConnectorOperationalProfileService,
                                        ObjectMapper objectMapper,
                                        RepresentacaoProcessualPolicyService representacaoProcessualPolicyService,
-                                       RecursalPdfExportService recursalPdfExportService,
-                                       RecursalPdfNativeSignatureService recursalPdfNativeSignatureService,
-                                       RecursalPdfLongTermValidationService recursalPdfLongTermValidationService,
-                                       RecursalPdfProofEnvelopeService recursalPdfProofEnvelopeService,
-                                       RecursalPdfArtifactValidationService recursalPdfArtifactValidationService,
+                                       RecursalPdfArtifactPipelineService recursalPdfArtifactPipelineService,
                                        RecursalProtocolArtifactReadinessService recursalProtocolArtifactReadinessService,
                                        RecursalQualifiedDocumentMaterializerService recursalQualifiedDocumentMaterializerService,
                                        RecursalSecretariatTopologyService recursalSecretariatTopologyService) {
@@ -87,11 +74,7 @@ public class RecursalFormalizacaoService {
         this.judicialConnectorOperationalProfileService = Objects.requireNonNull(judicialConnectorOperationalProfileService);
         this.objectMapper = Objects.requireNonNull(objectMapper);
         this.representacaoProcessualPolicyService = Objects.requireNonNull(representacaoProcessualPolicyService);
-        this.recursalPdfExportService = Objects.requireNonNull(recursalPdfExportService);
-        this.recursalPdfNativeSignatureService = Objects.requireNonNull(recursalPdfNativeSignatureService);
-        this.recursalPdfLongTermValidationService = Objects.requireNonNull(recursalPdfLongTermValidationService);
-        this.recursalPdfProofEnvelopeService = Objects.requireNonNull(recursalPdfProofEnvelopeService);
-        this.recursalPdfArtifactValidationService = Objects.requireNonNull(recursalPdfArtifactValidationService);
+        this.recursalPdfArtifactPipelineService = Objects.requireNonNull(recursalPdfArtifactPipelineService);
         this.recursalProtocolArtifactReadinessService = Objects.requireNonNull(recursalProtocolArtifactReadinessService);
         this.recursalQualifiedDocumentMaterializerService = Objects.requireNonNull(recursalQualifiedDocumentMaterializerService);
         this.recursalSecretariatTopologyService = Objects.requireNonNull(recursalSecretariatTopologyService);
@@ -174,12 +157,11 @@ public class RecursalFormalizacaoService {
             }
         }
         Map<String, Object> assinaturaVinculada = buildAssinaturaVinculada(processo, usuario, peticaoRecursal, recursoPrincipal, appealType, structured, pecaFormalPrincipal, admissibility, sigiloRecursal);
-        RecursalPdfArtifact pecaFormalPrincipalPdf = recursalPdfExportService.export(processo, usuario, appealType, pecaFormalPrincipal, assinaturaVinculada, sigiloRecursal);
-        pecaFormalPrincipalPdf = recursalPdfNativeSignatureService.applyNativeSignature(processo, usuario, appealType, pecaFormalPrincipalPdf, assinaturaVinculada, sigiloRecursal);
-        pecaFormalPrincipalPdf = recursalPdfLongTermValidationService.prepare(processo, appealType, pecaFormalPrincipalPdf, assinaturaVinculada, sigiloRecursal);
-        pecaFormalPrincipalPdf = recursalPdfProofEnvelopeService.seal(processo, usuario, appealType, pecaFormalPrincipalPdf, assinaturaVinculada, sigiloRecursal);
-        pecaFormalPrincipalPdf = recursalPdfLongTermValidationService.finalizeEvidence(processo, appealType, pecaFormalPrincipalPdf, assinaturaVinculada, sigiloRecursal);
-        RecursalPdfValidationResult pecaFormalPrincipalPdfValidation = recursalPdfArtifactValidationService.validate(pecaFormalPrincipalPdf, admissibility != null && admissibility.certificateRequired());
+        RecursalPdfArtifactPipelineService.RecursalPdfMaterializacao pdfMaterializacao = recursalPdfArtifactPipelineService.materializar(
+                processo, usuario, appealType, pecaFormalPrincipal, assinaturaVinculada, sigiloRecursal,
+                admissibility != null && admissibility.certificateRequired());
+        RecursalPdfArtifact pecaFormalPrincipalPdf = pdfMaterializacao.pdf();
+        RecursalPdfValidationResult pecaFormalPrincipalPdfValidation = pdfMaterializacao.validation();
         Map<String, Object> protocoloConectorJudicial = buildProtocoloConectorJudicial(processo, usuario, peticaoRecursal, recursoPrincipal, appealType, structured, pecaFormalPrincipal, pecaFormalPrincipalPdf, pecaFormalPrincipalPdfValidation, assinaturaVinculada, admissibility, sigiloRecursal);
         return new RecursalFormalizacaoResult(
                 true,

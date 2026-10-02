@@ -122,16 +122,18 @@ class RecursalFormalizacaoServiceTest {
                 judicialConnectorOperationalProfileService,
                 objectMapper,
                 representacaoProcessualPolicyService,
-                new RecursalPdfExportService(),
-                new RecursalPdfNativeSignatureService(
-                        hsm,
-                        auditLedgerService,
-                        keyStoreLoader,
-                        new RecursalNativePdfSignatureProperties(true, null, null, null, null, null, null)
+                new com.tcc.pjb.backend.service.processual.recursal.formalizacao.RecursalPdfArtifactPipelineService(
+                        new RecursalPdfExportService(),
+                        new RecursalPdfNativeSignatureService(
+                                hsm,
+                                auditLedgerService,
+                                keyStoreLoader,
+                                new RecursalNativePdfSignatureProperties(true, null, null, null, null, null, null)
+                        ),
+                        longTermValidationService,
+                        new RecursalPdfProofEnvelopeService(hsm, auditLedgerService, timestampAuthorityService, org.mockito.Mockito.mock(RecursalIcpBrasilIntegrationService.class)),
+                        new RecursalPdfArtifactValidationService(auditLedgerService)
                 ),
-                longTermValidationService,
-                new RecursalPdfProofEnvelopeService(hsm, auditLedgerService, timestampAuthorityService, org.mockito.Mockito.mock(RecursalIcpBrasilIntegrationService.class)),
-                new RecursalPdfArtifactValidationService(auditLedgerService),
                 new RecursalProtocolArtifactReadinessService(),
                 recursalQualifiedDocumentMaterializerService,
                 new RecursalSecretariatTopologyService()
