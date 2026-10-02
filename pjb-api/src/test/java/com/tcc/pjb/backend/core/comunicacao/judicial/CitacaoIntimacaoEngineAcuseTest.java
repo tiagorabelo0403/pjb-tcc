@@ -9,9 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
-import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.MotorInterceptacaoAtiva;
-import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHsmProperties;
-import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.SefazNfeCadastroResolver;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -20,7 +17,6 @@ import com.tcc.pjb.backend.platform.runtime.execution.PjbExecutionOrchestrator;
 import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.ObjectProvider;
 
 class CitacaoIntimacaoEngineAcuseTest {
 
@@ -36,8 +32,7 @@ class CitacaoIntimacaoEngineAcuseTest {
                 processoRepository,
                 mock(AuditLedgerService.class),
                 currentUserService,
-                mock(ObjectProvider.class),
-                mock(PjbHsmProperties.class),
+                mock(CitacaoInterceptacaoDigitalService.class),
                 mock(PjbExecutionOrchestrator.class),
                 movimentacaoRegistrar,
                 mock(CitacaoExpedicaoNotificacaoService.class),
