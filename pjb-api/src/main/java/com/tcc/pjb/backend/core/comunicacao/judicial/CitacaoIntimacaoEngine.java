@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.scheduling.annotation.Scheduled;
 import com.tcc.pjb.backend.platform.cluster.PjbClusterSingletonTask;
 import org.springframework.stereotype.Service;
@@ -21,12 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
-import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.AlvoJuridico;
-import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.MotorInterceptacaoAtiva;
-import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHsmProperties;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.ReciboCitacaoHsm;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.SefazNfeCadastroResolver;
-import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.ViaInterceptacao;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.service.institutional.movimentacao.MovimentacaoProcessualRegistrar;
@@ -191,8 +186,7 @@ public class CitacaoIntimacaoEngine {
     private final ProcessoRepository processoRepository;
     private final AuditLedgerService auditLedger;
     private final CurrentUserService currentUserService;
-    private final ObjectProvider<MotorInterceptacaoAtiva> motorInterceptacaoProvider;
-    private final PjbHsmProperties hsmProperties;
+    private final CitacaoInterceptacaoDigitalService citacaoInterceptacaoDigitalService;
     private final PjbExecutionOrchestrator executionOrchestrator;
     private final MovimentacaoProcessualRegistrar movimentacaoRegistrar;
     private final CitacaoExpedicaoNotificacaoService citacaoExpedicaoNotificacaoService;
@@ -206,8 +200,7 @@ public class CitacaoIntimacaoEngine {
                                   ProcessoRepository processoRepository,
                                   AuditLedgerService auditLedger,
                                   CurrentUserService currentUserService,
-                                  ObjectProvider<MotorInterceptacaoAtiva> motorInterceptacaoProvider,
-                                  PjbHsmProperties hsmProperties,
+                                  CitacaoInterceptacaoDigitalService citacaoInterceptacaoDigitalService,
                                   PjbExecutionOrchestrator executionOrchestrator,
                                   MovimentacaoProcessualRegistrar movimentacaoRegistrar,
                                   CitacaoExpedicaoNotificacaoService citacaoExpedicaoNotificacaoService,
@@ -220,8 +213,7 @@ public class CitacaoIntimacaoEngine {
         this.processoRepository = Objects.requireNonNull(processoRepository, "processoRepository");
         this.auditLedger = Objects.requireNonNull(auditLedger, "auditLedger");
         this.currentUserService = Objects.requireNonNull(currentUserService, "currentUserService");
-        this.motorInterceptacaoProvider = Objects.requireNonNull(motorInterceptacaoProvider, "motorInterceptacaoProvider");
-        this.hsmProperties = Objects.requireNonNull(hsmProperties, "hsmProperties");
+        this.citacaoInterceptacaoDigitalService = Objects.requireNonNull(citacaoInterceptacaoDigitalService, "citacaoInterceptacaoDigitalService");
         this.executionOrchestrator = Objects.requireNonNull(executionOrchestrator, "executionOrchestrator");
         this.movimentacaoRegistrar = Objects.requireNonNull(movimentacaoRegistrar, "movimentacaoRegistrar");
         this.citacaoExpedicaoNotificacaoService = Objects.requireNonNull(citacaoExpedicaoNotificacaoService, "citacaoExpedicaoNotificacaoService");
@@ -883,28 +875,16 @@ public class CitacaoIntimacaoEngine {
     }
 
     private void executarInterceptacaoDigital(ExpedicaoJudicial expedicao, ExpedicaoRequest request, Processo processo) {
-        MotorInterceptacaoAtiva motor = motorInterceptacaoProvider.getIfAvailable();
-        if (motor == null) {
-            log.warn("[CitacaoEngine] MotorInterceptacaoAtiva indisponível para uuid={}", expedicao.getExpedicaoUuid());
-            return;
-        }
-        citacaoSefazCadastroEnrichmentService.enriquecerExpedicaoComCadastroSefaz(expedicao, processo);
-        List<ViaInterceptacao> vias = CitacaoIntimacaoExpedicaoSupport.montarVias(request.destinatario(), processo, expedicao);
-        if (vias.isEmpty()) {
-            registrarFrustracaoEAcionarFallback(expedicao.getExpedicaoUuid(), "Nenhuma via segura de interceptação foi construída para o destinatário.");
-            return;
-        }
-        AlvoJuridico alvo = CitacaoIntimacaoExpedicaoSupport.construirAlvo(expedicao, processo, hsmProperties);
-        ReciboCitacaoHsm recibo = motor.interceptarComViasSugeridas(
-                alvo,
+        CitacaoInterceptacaoDigitalService.Resultado resultado = citacaoInterceptacaoDigitalService.interceptar(
+                expedicao,
+                request.destinatario(),
                 request.conteudoDoAto().getBytes(StandardCharsets.UTF_8),
-                vias
+                processo
         );
-        if (recibo.foiEntregue()) {
-            registrarEntregaPorInterceptacao(expedicao.getExpedicaoUuid(), recibo);
-            log.info("[CitacaoEngine] Interceptação bem-sucedida uuid={} canal={}", expedicao.getExpedicaoUuid(), recibo.canalVencedor());
-        } else {
-            motor.acionarFallbackFisicoSeNecessario(recibo, expedicao.getExpedicaoUuid());
+        switch (resultado.tipo()) {
+            case ENTREGUE -> registrarEntregaPorInterceptacao(expedicao.getExpedicaoUuid(), resultado.recibo());
+            case FRUSTRADO -> registrarFrustracaoEAcionarFallback(expedicao.getExpedicaoUuid(), resultado.motivo());
+            case SEM_ACAO -> { }
         }
     }
 
