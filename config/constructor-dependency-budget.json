@@ -86,7 +86,7 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarPanelService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/calendar/UserCalendarService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/casefile/CaseContinuityOrchestratorService.java": 9,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/service/cidadao/CidadaoMalhaProcessualNacionalService.java": 15,
+  "pjb-api/src/main/java/com/tcc/pjb/backend/service/cidadao/CidadaoMalhaProcessualNacionalService.java": 12,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/cidadao/CidadaoMeusProcessosService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/cidadao/CidadaoProcessoOverviewService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/cidadao/dashboard/CidadaoDashboardSnapshotWriteService.java": 11,

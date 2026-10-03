@@ -22,14 +22,11 @@ import com.tcc.pjb.backend.model.entity.identity.ProcessoVinculoNacional;
 import com.tcc.pjb.backend.model.entity.identity.ProntuarioNacionalEntrada;
 import com.tcc.pjb.backend.model.entity.julgamento.JulgamentoColegiado;
 import com.tcc.pjb.backend.model.entity.workflow.MovimentacaoProcessual;
-import com.tcc.pjb.backend.model.repository.MovimentacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoVinculoNacionalRepository;
 import com.tcc.pjb.backend.model.repository.ProntuarioNacionalEntradaRepository;
-import com.tcc.pjb.backend.model.repository.julgamento.JulgamentoColegiadoRepository;
 import com.tcc.pjb.backend.repository.cidadao.CidadaoProcessoNacionalProjectionRepository;
 import com.tcc.pjb.backend.repository.cidadao.ProcessoVisibilidadePessoalOverrideRepository;
-import com.tcc.pjb.backend.repository.document.DocumentoProcessualRepository;
 import com.tcc.pjb.backend.service.identity.IdentidadeJuridicaNacionalService;
 import com.tcc.pjb.backend.service.processual.postarchive.visibility.ArchivedProcessVisibilityPolicyReport;
 import com.tcc.pjb.backend.service.processual.postarchive.tombstone.ProcessoTombstonePolicyEngine;
@@ -70,10 +67,7 @@ public class CidadaoMalhaProcessualNacionalService {
     private final CidadaoProcessoNacionalProjectionRepository projectionRepository;
     private final ProcessoVisibilidadePessoalOverrideRepository overrideRepository;
     private final ProcessoRepository processoRepository;
-    private final MovimentacaoProcessualRepository movimentacaoRepository;
-    private final DocumentoProcessualRepository documentoRepository;
-    private final com.tcc.pjb.backend.model.repository.AudienciaRepository audienciaRepository;
-    private final JulgamentoColegiadoRepository julgamentoRepository;
+    private final CidadaoProcessoDetalheLoaderService detalheLoader;
     private final CidadaoProcessoCardMapper cardMapper;
     private final PersonalProcessAccessGuardService personalProcessAccessGuardService;
     private final ProcessoTombstonePolicyEngine processoTombstonePolicyEngine;
@@ -86,10 +80,7 @@ public class CidadaoMalhaProcessualNacionalService {
                                                  CidadaoProcessoNacionalProjectionRepository projectionRepository,
                                                  ProcessoVisibilidadePessoalOverrideRepository overrideRepository,
                                                  ProcessoRepository processoRepository,
-                                                 MovimentacaoProcessualRepository movimentacaoRepository,
-                                                 DocumentoProcessualRepository documentoRepository,
-                                                 com.tcc.pjb.backend.model.repository.AudienciaRepository audienciaRepository,
-                                                 JulgamentoColegiadoRepository julgamentoRepository,
+                                                 CidadaoProcessoDetalheLoaderService detalheLoader,
                                                  CidadaoProcessoCardMapper cardMapper,
                                                  PersonalProcessAccessGuardService personalProcessAccessGuardService,
                                                  ProcessoTombstonePolicyEngine processoTombstonePolicyEngine) {
@@ -101,10 +92,7 @@ public class CidadaoMalhaProcessualNacionalService {
         this.projectionRepository = Objects.requireNonNull(projectionRepository);
         this.overrideRepository = Objects.requireNonNull(overrideRepository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
-        this.movimentacaoRepository = Objects.requireNonNull(movimentacaoRepository);
-        this.documentoRepository = Objects.requireNonNull(documentoRepository);
-        this.audienciaRepository = Objects.requireNonNull(audienciaRepository);
-        this.julgamentoRepository = Objects.requireNonNull(julgamentoRepository);
+        this.detalheLoader = Objects.requireNonNull(detalheLoader);
         this.cardMapper = Objects.requireNonNull(cardMapper);
         this.personalProcessAccessGuardService = Objects.requireNonNull(personalProcessAccessGuardService);
         this.processoTombstonePolicyEngine = Objects.requireNonNull(processoTombstonePolicyEngine);
@@ -249,7 +237,7 @@ public class CidadaoMalhaProcessualNacionalService {
         Map<String, ProcessoVinculoNacional> principalPorNupn = principalByNupn(vinculos);
         Map<String, ProcessoVisibilidadePessoalOverride> overrides = overridesByNupn(principalPorNupn.keySet());
         Map<Long, Processo> locaisById = resolveLocalProcessesById(principalPorNupn.values());
-        Map<Long, MovimentacaoProcessual> lastMov = loadLatestMovements(locaisById.keySet());
+        Map<Long, MovimentacaoProcessual> lastMov = detalheLoader.loadLatestMovements(locaisById.keySet());
         Instant now = Instant.now();
         for (Map.Entry<String, ProcessoVinculoNacional> entry : principalPorNupn.entrySet()) {
             String nupn = entry.getKey();
@@ -318,10 +306,10 @@ public class CidadaoMalhaProcessualNacionalService {
             return List.of();
         }
         Map<Long, Processo> locaisById = resolveLocalProcessesById(rows);
-        Map<Long, MovimentacaoProcessual> lastMov = loadLatestMovements(locaisById.keySet());
-        Map<Long, Long> docCount = loadDocCounts(locaisById.keySet());
-        Map<Long, Audiencia> nextAud = loadNextAudiencias(locaisById.keySet());
-        Map<Long, JulgamentoColegiado> nextJulg = loadNextJulgamentos(locaisById.keySet());
+        Map<Long, MovimentacaoProcessual> lastMov = detalheLoader.loadLatestMovements(locaisById.keySet());
+        Map<Long, Long> docCount = detalheLoader.loadDocCounts(locaisById.keySet());
+        Map<Long, Audiencia> nextAud = detalheLoader.loadNextAudiencias(locaisById.keySet());
+        Map<Long, JulgamentoColegiado> nextJulg = detalheLoader.loadNextJulgamentos(locaisById.keySet());
         List<CidadaoLinkedProcessView> views = new ArrayList<>(rows.size());
         for (CidadaoProcessoNacionalProjection row : rows) {
             Processo processoLocal = row.getProcessoLocalId() == null ? null : locaisById.get(row.getProcessoLocalId());
@@ -516,60 +504,6 @@ public class CidadaoMalhaProcessualNacionalService {
                 processoLocal.getDataCriacao()
         );
         return reference == null ? Instant.now() : reference.toInstant(ZoneOffset.UTC);
-    }
-
-    private Map<Long, MovimentacaoProcessual> loadLatestMovements(Collection<Long> ids) {
-        if (ids == null || ids.isEmpty()) {
-            return Map.of();
-        }
-        Map<Long, MovimentacaoProcessual> out = new HashMap<>();
-        for (MovimentacaoProcessual mov : movimentacaoRepository.findLatestByProcessoIds(new ArrayList<>(ids))) {
-            if (mov != null && mov.getProcesso() != null && mov.getProcesso().getId() != null) {
-                out.putIfAbsent(mov.getProcesso().getId(), mov);
-            }
-        }
-        return out;
-    }
-
-    private Map<Long, Long> loadDocCounts(Collection<Long> ids) {
-        if (ids == null || ids.isEmpty()) {
-            return Map.of();
-        }
-        Map<Long, Long> out = new HashMap<>();
-        for (DocumentoProcessualRepository.ProcessoDocCount row : documentoRepository.countDocsByProcessoIds(new ArrayList<>(ids))) {
-            if (row != null && row.getProcessoId() != null) {
-                out.put(row.getProcessoId(), row.getCnt());
-            }
-        }
-        return out;
-    }
-
-    private Map<Long, Audiencia> loadNextAudiencias(Collection<Long> ids) {
-        if (ids == null || ids.isEmpty()) {
-            return Map.of();
-        }
-        long[] vector = ids.stream().mapToLong(Long::longValue).toArray();
-        Map<Long, Audiencia> out = new HashMap<>();
-        for (Audiencia audiencia : audienciaRepository.findNextUpcomingByProcessoIds(vector, LocalDateTime.now())) {
-            if (audiencia != null && audiencia.getProcesso() != null && audiencia.getProcesso().getId() != null) {
-                out.putIfAbsent(audiencia.getProcesso().getId(), audiencia);
-            }
-        }
-        return out;
-    }
-
-    private Map<Long, JulgamentoColegiado> loadNextJulgamentos(Collection<Long> ids) {
-        if (ids == null || ids.isEmpty()) {
-            return Map.of();
-        }
-        long[] vector = ids.stream().mapToLong(Long::longValue).toArray();
-        Map<Long, JulgamentoColegiado> out = new HashMap<>();
-        for (JulgamentoColegiado julgamento : julgamentoRepository.findNextPautaByProcessoIds(vector, LocalDateTime.now())) {
-            if (julgamento != null && julgamento.getProcesso() != null && julgamento.getProcesso().getId() != null) {
-                out.putIfAbsent(julgamento.getProcesso().getId(), julgamento);
-            }
-        }
-        return out;
     }
 
     private ArchivedRule evaluateArchivedVisibility(Processo processoLocal,
