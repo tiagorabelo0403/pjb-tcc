@@ -54,4 +54,5 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 2. ler os métodos → extrair serviço verbatim (deps ≤8) → delegar no original
 3. **criar teste** do serviço novo + ajustar teste existente
 4. atualizar budget (remover entrada se bean ≤8) + README (contagem de testes, mesmo commit) + **este quadro**
-5. compile + testes verdes + guard verde → branch → PR → CI verde → merge → sync
+5. **se o serviço novo cai em `modules/*/service` (ou outro pacote legado sob `modules.*`):** +1 em `module-package-shape` e `maxWarnings` na baseline do `modular_monolith_guard` (com justificativa datada), senão o job Guards (report) reprova. Extração fora de `modules.*` (ex.: `backend.service.*`) não precisa.
+6. compile + testes verdes + guard verde + `modular_monolith_guard` verde → branch → PR → CI verde → merge → sync
