@@ -60,7 +60,7 @@ class PjbOperationalRouteCanonicalizationTest {
                 Path.of("src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/panel/application/catalog/MinisterioPublicoInstitutionalPanelBlueprintCatalog.java"),
                 Path.of("src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/panel/application/catalog/DefensoriaEProcuradoriaInstitutionalPanelBlueprintCatalog.java"),
                 Path.of("src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/panel/application/catalog/ApoioInstitucionalPanelBlueprintCatalog.java"),
-                Path.of("src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/entry/application/InstitutionalEntryContextApplicationService.java"),
+                Path.of("src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/entry/application/InstitutionalEntryContextResolverService.java"),
                 Path.of("src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/affiliation/application/InstitutionalTrustMatrixApplicationService.java"),
                 Path.of("src/main/java/com/tcc/pjb/backend/service/dashboard/PerfilDashboardRouter.java")
         );

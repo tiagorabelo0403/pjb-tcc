@@ -16,6 +16,7 @@ import com.tcc.pjb.backend.core.comunicacao.institucional.affiliation.domain.Ins
 import com.tcc.pjb.backend.core.comunicacao.institucional.affiliation.infrastructure.InstitutionalAffiliationStateRepository;
 import com.tcc.pjb.backend.core.comunicacao.institucional.affiliation.infrastructure.InstitutionalNominationStateRepository;
 import com.tcc.pjb.backend.core.comunicacao.institucional.entry.application.InstitutionalEntryContextApplicationService;
+import com.tcc.pjb.backend.core.comunicacao.institucional.entry.application.InstitutionalEntryContextResolverService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.entry.application.InstitutionalIdentityBaseProfileResolverApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.entry.domain.InstitutionalEntryLandingPanel;
 import com.tcc.pjb.backend.core.comunicacao.institucional.entry.domain.InstitutionalProcessProfile;
@@ -61,16 +62,19 @@ class InstitutionalEntryContextApplicationServiceTest {
         InstitutionalNominationStateRepository nominationRepository = Mockito.mock(InstitutionalNominationStateRepository.class);
         InstitutionalAffiliationStateRepository affiliationRepository = Mockito.mock(InstitutionalAffiliationStateRepository.class);
 
-        InstitutionalEntryContextApplicationService service = new InstitutionalEntryContextApplicationService(
-                currentUserService,
+        InstitutionalEntryContextResolverService contextResolver = new InstitutionalEntryContextResolverService(
                 vinculoResolver,
                 inboxRepository,
                 delegationRepository,
                 coverageRepository,
                 nominationRepository,
                 affiliationRepository,
-                new InstitutionalIdentityBaseProfileResolverApplicationService(),
                 new InstitutionalOrganizationBlueprintCatalogApplicationService()
+        );
+        InstitutionalEntryContextApplicationService service = new InstitutionalEntryContextApplicationService(
+                currentUserService,
+                contextResolver,
+                new InstitutionalIdentityBaseProfileResolverApplicationService()
         );
 
         Usuario usuario = Usuario.builder()
