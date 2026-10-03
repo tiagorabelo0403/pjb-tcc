@@ -36,8 +36,6 @@ import com.tcc.pjb.backend.model.entity.intelligence.DiligenciaOperadorFormaliza
 import com.tcc.pjb.backend.model.entity.workflow.MovimentacaoProcessual;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.DiligenciaOperadorCertidaoDocumentoRepository;
-import com.tcc.pjb.backend.model.repository.DiligenciaOperadorCertidaoRepository;
-import com.tcc.pjb.backend.model.repository.DiligenciaOperadorEncerramentoRepository;
 import com.tcc.pjb.backend.model.repository.DiligenciaOperadorFormalizacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.MovimentacaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
@@ -54,8 +52,7 @@ public class DiligenceProcessFormalizationService {
     private final CurrentUserService currentUserService;
     private final PjbAuthorizationService authorizationService;
     private final KeyMaterialService keyMaterialService;
-    private final DiligenciaOperadorEncerramentoRepository encerramentoRepository;
-    private final DiligenciaOperadorCertidaoRepository certidaoRepository;
+    private final DiligenceFormalizationRecordResolver recordResolver;
     private final DiligenciaOperadorCertidaoDocumentoRepository certidaoDocumentoRepository;
     private final DiligenciaOperadorFormalizacaoProcessualRepository formalizacaoRepository;
     private final ProcessoRepository processoRepository;
@@ -70,8 +67,7 @@ public class DiligenceProcessFormalizationService {
     public DiligenceProcessFormalizationService(CurrentUserService currentUserService,
                                                 PjbAuthorizationService authorizationService,
                                                 KeyMaterialService keyMaterialService,
-                                                DiligenciaOperadorEncerramentoRepository encerramentoRepository,
-                                                DiligenciaOperadorCertidaoRepository certidaoRepository,
+                                                DiligenceFormalizationRecordResolver recordResolver,
                                                 DiligenciaOperadorCertidaoDocumentoRepository certidaoDocumentoRepository,
                                                 DiligenciaOperadorFormalizacaoProcessualRepository formalizacaoRepository,
                                                 ProcessoRepository processoRepository,
@@ -85,8 +81,7 @@ public class DiligenceProcessFormalizationService {
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.authorizationService = Objects.requireNonNull(authorizationService);
         this.keyMaterialService = Objects.requireNonNull(keyMaterialService);
-        this.encerramentoRepository = Objects.requireNonNull(encerramentoRepository);
-        this.certidaoRepository = Objects.requireNonNull(certidaoRepository);
+        this.recordResolver = Objects.requireNonNull(recordResolver);
         this.certidaoDocumentoRepository = Objects.requireNonNull(certidaoDocumentoRepository);
         this.formalizacaoRepository = Objects.requireNonNull(formalizacaoRepository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
@@ -116,8 +111,8 @@ public class DiligenceProcessFormalizationService {
         }
         Usuario actor = currentUserService.getRequired();
         String normalizedReference = diligenceReference.trim();
-        DiligenciaOperadorEncerramento encerramento = resolveEncerramento(actor, canal, normalizedReference, request);
-        DiligenciaOperadorCertidao certidao = resolveCertidao(actor, canal, normalizedReference, request, encerramento);
+        DiligenciaOperadorEncerramento encerramento = recordResolver.resolveEncerramento(actor, canal, normalizedReference, request);
+        DiligenciaOperadorCertidao certidao = recordResolver.resolveCertidao(actor, canal, normalizedReference, request, encerramento);
         validateCrossReference(canal, normalizedReference, encerramento, certidao);
         Processo processo = processoRepository.findById(certidao.getProcessoId())
                 .orElseThrow(() -> new IllegalArgumentException("processo_da_certidao_nao_encontrado"));
@@ -220,32 +215,6 @@ public class DiligenceProcessFormalizationService {
                 .limit(Math.max(1, Math.min(limit, 20)))
                 .map(item -> toResponse(actor, item))
                 .toList();
-    }
-
-    private DiligenciaOperadorEncerramento resolveEncerramento(Usuario actor,
-                                                               TelemetriaOperacionalCanal canal,
-                                                               String diligenceReference,
-                                                               DiligenceProcessFormalizationRequest request) {
-        if (request != null && request.encerramentoId() != null) {
-            return encerramentoRepository.findById(request.encerramentoId())
-                    .orElseThrow(() -> new IllegalArgumentException("encerramento_operacional_nao_encontrado"));
-        }
-        return encerramentoRepository.findTopByOperatorUserIdAndCanalAndDiligenceReferenceOrderByCreatedAtDesc(actor.getId(), canal, diligenceReference)
-                .orElseThrow(() -> new IllegalArgumentException("encerramento_operacional_obrigatorio"));
-    }
-
-    private DiligenciaOperadorCertidao resolveCertidao(Usuario actor,
-                                                       TelemetriaOperacionalCanal canal,
-                                                       String diligenceReference,
-                                                       DiligenceProcessFormalizationRequest request,
-                                                       DiligenciaOperadorEncerramento encerramento) {
-        Long certidaoId = request != null && request.certidaoId() != null ? request.certidaoId() : encerramento.getCertidaoId();
-        if (certidaoId != null) {
-            return certidaoRepository.findById(certidaoId)
-                    .orElseThrow(() -> new IllegalArgumentException("certidao_nao_encontrada"));
-        }
-        return certidaoRepository.findTopByOperatorUserIdAndCanalAndDiligenceReferenceOrderByCreatedAtDesc(actor.getId(), canal, diligenceReference)
-                .orElseThrow(() -> new IllegalArgumentException("certidao_operacional_obrigatoria"));
     }
 
     private void validateCrossReference(TelemetriaOperacionalCanal canal,
