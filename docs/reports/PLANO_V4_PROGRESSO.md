@@ -41,6 +41,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | CidadaoDashboardSnapshotWriteService | 13→11 | #230 | cluster "widgets" (movRepo/docRepo) — avaliar |
 | AgreementChatContextService | 17→14 | parecer de acordo → AgreementSettlementAdvisoryService | resto é cluster único de `analyze` |
 | DiligenceProcessFormalizationService | 15→14 | resolvers de encerramento/certidão → DiligenceFormalizationRecordResolver | resto toca HSM/custódia/assinatura |
+| CidadaoMalhaProcessualNacionalService | 15→12 | loaders de detalhe (mov/doc/audiência/julgamento) → CidadaoProcessoDetalheLoaderService | resto é projeção/vínculo/identidade acoplados |
 | RecusaRecebimentoService | 11→10 | (usuarioRepository morto removido) | resto é HSM/audit/evento — alto risco |
 | OficialJusticaCumprimentoSoberanoService | 12→11 | (notificationCenterService morto removido) | resto é diligência/closure/painel acoplado |
 
