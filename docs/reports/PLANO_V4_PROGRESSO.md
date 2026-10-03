@@ -13,18 +13,19 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | F3 · remover andaimes de teste | 🟡 | scaffolds já removidos; **pendente**: migrar ~34 arch-tests que varrem FS p/ `@AnalyzeClasses` compartilhado (inclui o teste de 232s) |
 | F4 · achatar fachadas rasas | ⛔/⬜ | as `*SurfaceFacadeService` são exigidas por arch-tests; achatar exige remover junto os arch-tests (decisão de arquitetura) — não iniciado |
 | F5 · corrigir testes de mock | 🟡 | maioria é interação apropriada; corrigido RPV (#221); **pendente**: resíduo caso a caso |
-| F6 · aprofundar god services | 🔁 | **177** beans acima do teto 8; ver tabela abaixo |
+| F6 · aprofundar god services | 🔁 | **176** beans acima do teto 8; ver tabela abaixo |
 | F7 · RLS tabelas sensíveis | ✅ | já pronto no master (verificado) |
 | F8 · fechar MockGuard | ✅ | pje + pje-submission cobertos (verificado) |
 | F9 · sanitizar IA | ✅ | AiPromptEgressGuard ponto único (verificado) |
 | F10 · travar ICP/HSM prod | ✅ | ProductionCriticalControlValidator (verificado) |
 
-## F6 — god services (contador: 177 acima de 8)
+## F6 — god services (contador: 176 acima de 8)
 
 ### ✅ Resolvidos (cruzaram ≤8, saíram da lista)
 | Bean | De→Para | PR |
 |---|---|---|
 | RecursalFormalizacaoService | 12→8 | #229 (pipeline PDF) |
+| AtendimentoModerationService | 10→8 | (anexos → AtendimentoAttachmentQueryService) |
 
 ### 🟡 Reduzidos (ainda acima de 8 — voltar depois)
 | Bean | De→Para | PRs | Próximo corte possível |

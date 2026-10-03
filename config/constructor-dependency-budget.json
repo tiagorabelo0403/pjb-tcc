@@ -60,7 +60,6 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoChatThreadViewSupport.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoChecklistService.java": 12,
   "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoInboxLiveHub.java": 9,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoModerationService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoQuarantineResolutionScheduler.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoReminderService.java": 12,
   "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoReportService.java": 11,

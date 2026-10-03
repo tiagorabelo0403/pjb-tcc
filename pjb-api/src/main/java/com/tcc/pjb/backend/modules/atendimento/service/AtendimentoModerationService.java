@@ -7,7 +7,6 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
-import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.modules.atendimento.dto.AtendimentoAttachmentDto;
 import com.tcc.pjb.backend.modules.atendimento.dto.AtendimentoModerationActionRequest;
 import com.tcc.pjb.backend.modules.atendimento.dto.AtendimentoModerationMessageDetailDto;
@@ -15,16 +14,12 @@ import com.tcc.pjb.backend.modules.atendimento.dto.AtendimentoModerationQueueIte
 import com.tcc.pjb.backend.modules.atendimento.entity.AtendimentoAttachment;
 import com.tcc.pjb.backend.modules.atendimento.entity.AtendimentoAttachmentStatus;
 import com.tcc.pjb.backend.modules.atendimento.entity.AtendimentoMessage;
-import com.tcc.pjb.backend.modules.atendimento.entity.AtendimentoMessageAttachment;
 import com.tcc.pjb.backend.modules.atendimento.entity.AtendimentoMessageStatus;
 import com.tcc.pjb.backend.modules.atendimento.entity.AtendimentoThread;
-import com.tcc.pjb.backend.modules.atendimento.repository.AtendimentoAttachmentRepository;
-import com.tcc.pjb.backend.modules.atendimento.repository.AtendimentoMessageAttachmentRepository;
 import com.tcc.pjb.backend.modules.atendimento.repository.AtendimentoMessageRepository;
 import com.tcc.pjb.backend.modules.atendimento.repository.AtendimentoThreadRepository;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,10 +39,8 @@ public class AtendimentoModerationService {
   private final CurrentUserService currentUser;
   private final AtendimentoThreadRepository threadRepo;
   private final AtendimentoMessageRepository messageRepo;
-  private final AtendimentoMessageAttachmentRepository msgAttRepo;
-  private final AtendimentoAttachmentRepository attachmentRepo;
+  private final AtendimentoAttachmentQueryService attachmentQueryService;
   private final ProcessoRepository processoRepo;
-  private final UsuarioRepository usuarioRepo;
   private final AtendimentoInboxLiveHub liveHub;
   private final AtendimentoModerationEventService modEvents;
   private final ObjectMapper mapper;
@@ -55,20 +48,16 @@ public class AtendimentoModerationService {
   public AtendimentoModerationService(CurrentUserService currentUser,
                                      AtendimentoThreadRepository threadRepo,
                                      AtendimentoMessageRepository messageRepo,
-                                     AtendimentoMessageAttachmentRepository msgAttRepo,
-                                     AtendimentoAttachmentRepository attachmentRepo,
+                                     AtendimentoAttachmentQueryService attachmentQueryService,
                                      ProcessoRepository processoRepo,
-                                     UsuarioRepository usuarioRepo,
                                      AtendimentoInboxLiveHub liveHub,
                                      AtendimentoModerationEventService modEvents,
                                      ObjectMapper mapper) {
     this.currentUser = Objects.requireNonNull(currentUser);
     this.threadRepo = Objects.requireNonNull(threadRepo);
     this.messageRepo = Objects.requireNonNull(messageRepo);
-    this.msgAttRepo = Objects.requireNonNull(msgAttRepo);
-    this.attachmentRepo = Objects.requireNonNull(attachmentRepo);
+    this.attachmentQueryService = Objects.requireNonNull(attachmentQueryService);
     this.processoRepo = Objects.requireNonNull(processoRepo);
-    this.usuarioRepo = Objects.requireNonNull(usuarioRepo);
     this.liveHub = Objects.requireNonNull(liveHub);
     this.modEvents = Objects.requireNonNull(modEvents);
     this.mapper = Objects.requireNonNull(mapper);
@@ -94,13 +83,9 @@ public class AtendimentoModerationService {
     Map<Long, Processo> processos = processoIds.isEmpty() ? Map.of() : processoRepo.findAllById(processoIds).stream().collect(Collectors.toMap(Processo::getId, x -> x));
 
     List<Long> msgIds = messages.stream().map(AtendimentoMessage::getId).toList();
-    Map<Long, List<Long>> attIdsByMsg = new HashMap<>();
-    for (AtendimentoMessageAttachment ma : msgAttRepo.findByMessageIds(msgIds)) {
-      attIdsByMsg.computeIfAbsent(ma.getId().getMessageId(), k -> new ArrayList<>()).add(ma.getId().getAttachmentId());
-    }
-
-    Set<Long> allAttIds = attIdsByMsg.values().stream().flatMap(List::stream).collect(Collectors.toSet());
-    Map<Long, AtendimentoAttachment> attMap = allAttIds.isEmpty() ? Map.of() : attachmentRepo.findAllById(allAttIds).stream().collect(Collectors.toMap(AtendimentoAttachment::getId, x -> x));
+    AtendimentoAttachmentQueryService.AttachmentBatch attachmentBatch = attachmentQueryService.batchAttachments(msgIds);
+    Map<Long, List<Long>> attIdsByMsg = attachmentBatch.attIdsByMsg();
+    Map<Long, AtendimentoAttachment> attMap = attachmentBatch.attMap();
 
     List<AtendimentoModerationQueueItemDto> out = new ArrayList<>(messages.size());
     for (AtendimentoMessage m : messages) {
@@ -150,7 +135,7 @@ public class AtendimentoModerationService {
     AtendimentoThread t = threadRepo.findById(m.getThreadId()).orElseThrow();
     Processo pr = processoRepo.findById(t.getProcessoId()).orElse(null);
 
-    List<AtendimentoAttachment> atts = attachmentsForMessage(m.getId());
+    List<AtendimentoAttachment> atts = attachmentQueryService.attachmentsForMessage(m.getId());
     List<AtendimentoAttachmentDto> a = atts.stream().map(AtendimentoAttachmentService::toDto).toList();
 
     return new AtendimentoModerationMessageDetailDto(
@@ -205,7 +190,7 @@ public class AtendimentoModerationService {
     AtendimentoMessage m = messageRepo.findById(messageId).orElseThrow();
     AtendimentoThread t = threadRepo.findById(m.getThreadId()).orElseThrow();
 
-    List<AtendimentoAttachment> atts = attachmentsForMessage(m.getId());
+    List<AtendimentoAttachment> atts = attachmentQueryService.attachmentsForMessage(m.getId());
     boolean allReady = atts.stream().allMatch(a -> a.getStatus() == AtendimentoAttachmentStatus.READY);
     if (!atts.isEmpty() && !allReady) {
       throw new IllegalArgumentException("attachments_not_ready");
@@ -231,12 +216,6 @@ public class AtendimentoModerationService {
     publishToUser(t.getCidadaoUsuarioId(), PayloadMaps.ofEntries("type", "ATENDIMENTO_NEW_MESSAGE", "threadId", t.getId(), "processoId", t.getProcessoId(), "messageId", m.getId(), "at", now.toString()));
   }
 
-  private List<AtendimentoAttachment> attachmentsForMessage(Long messageId) {
-    List<AtendimentoMessageAttachment> links = msgAttRepo.findByMessageIds(List.of(messageId));
-    if (links.isEmpty()) return List.of();
-    List<Long> ids = links.stream().map(x -> x.getId().getAttachmentId()).toList();
-    return attachmentRepo.findAllById(ids);
-  }
 
   private void publishToUser(Long userId, Map<String, Object> payload) {
     if (userId == null) return;
