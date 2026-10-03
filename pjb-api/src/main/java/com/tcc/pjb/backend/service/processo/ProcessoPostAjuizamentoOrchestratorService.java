@@ -32,8 +32,6 @@ import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
-import com.tcc.pjb.backend.service.competencia.MapaCompetenciaDinamicoEngine;
-import com.tcc.pjb.backend.service.distribuicao.ProcessoInitialDistributionSnapshotService;
 import com.tcc.pjb.backend.service.teto.TetoProcessualService;
 import com.tcc.pjb.backend.service.territorial.TerritorialProcessualService;
 
@@ -45,9 +43,8 @@ public class ProcessoPostAjuizamentoOrchestratorService {
     private final ProcessoRepository processoRepository;
     private final WorkItemRepository workItemRepository;
     private final ProcessoLifecycleMachine lifecycleMachine;
-    private final MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine;
+    private final ProcessoDistribuicaoInicialReforcoService distribuicaoReforcoService;
     private final TetoProcessualService tetoProcessualService;
-    private final ProcessoInitialDistributionSnapshotService processoInitialDistributionSnapshotService;
     private final TerritorialProcessualService territorialProcessualService;
     private final ProcessoSlaJudicialService processoSlaJudicialService;
     private final AuditLedgerService auditLedgerService;
@@ -55,8 +52,7 @@ public class ProcessoPostAjuizamentoOrchestratorService {
     public ProcessoPostAjuizamentoOrchestratorService(ProcessoRepository processoRepository,
                                                       WorkItemRepository workItemRepository,
                                                       ProcessoLifecycleMachine lifecycleMachine,
-                                                      MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine,
-                                                      ProcessoInitialDistributionSnapshotService processoInitialDistributionSnapshotService,
+                                                      ProcessoDistribuicaoInicialReforcoService distribuicaoReforcoService,
                                                       TetoProcessualService tetoProcessualService,
                                                       TerritorialProcessualService territorialProcessualService,
                                                       ProcessoSlaJudicialService processoSlaJudicialService,
@@ -64,8 +60,7 @@ public class ProcessoPostAjuizamentoOrchestratorService {
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
         this.lifecycleMachine = Objects.requireNonNull(lifecycleMachine);
-        this.mapaCompetenciaDinamicoEngine = Objects.requireNonNull(mapaCompetenciaDinamicoEngine);
-        this.processoInitialDistributionSnapshotService = Objects.requireNonNull(processoInitialDistributionSnapshotService);
+        this.distribuicaoReforcoService = Objects.requireNonNull(distribuicaoReforcoService);
         this.tetoProcessualService = Objects.requireNonNull(tetoProcessualService);
         this.territorialProcessualService = Objects.requireNonNull(territorialProcessualService);
         this.processoSlaJudicialService = Objects.requireNonNull(processoSlaJudicialService);
@@ -84,7 +79,7 @@ public class ProcessoPostAjuizamentoOrchestratorService {
             return;
         }
 
-        DynamicCompetenceDistributionResponse distribuicao = ensureDistributionSnapshot(processo);
+        DynamicCompetenceDistributionResponse distribuicao = distribuicaoReforcoService.ensureSnapshot(processo);
         TetoProcessualService.DiagnosticoTetoProcessual teto = tetoProcessualService.diagnosticar(processo);
         TerritorialProcessualService.DiagnosticoTerritorialProcessual territorial = territorialProcessualService.diagnosticar(processo);
         ProcessoLifecycleDecision distribuicaoDecision = ensureDistributedLifecycle(processo);
@@ -107,31 +102,6 @@ public class ProcessoPostAjuizamentoOrchestratorService {
             );
         } catch (Exception ex) {
             log.warn("Falha nao bloqueante ao auditar pos-ajuizamento. processoId={} erro={}", processo.getId(), ex.getMessage());
-        }
-    }
-
-    private DynamicCompetenceDistributionResponse ensureDistributionSnapshot(Processo processo) {
-        if (processo == null) {
-            return null;
-        }
-        boolean missingSnapshot = isBlank(processo.getUnidadeJudiciariaCodigo()) || isBlank(processo.getTribunalCodigoRoteado());
-        boolean staleSnapshot = missingSnapshot
-                || isBlank(processo.getPreProtocoloStatus())
-                || isBlank(processo.getCompetenciaTerritorialModo())
-                || isBlank(processo.getPreventionMode())
-                || isBlank(processo.getLinkageMode());
-        DynamicCompetenceDistributionResponse distribuicao = null;
-        try {
-            if (missingSnapshot) {
-                distribuicao = mapaCompetenciaDinamicoEngine.registrarDistribuicaoInicial(processo).orElse(null);
-            }
-            if (staleSnapshot) {
-                processoInitialDistributionSnapshotService.consolidar(processo);
-            }
-            return distribuicao;
-        } catch (Exception ex) {
-            log.warn("Falha nao bloqueante ao reforcar distribuicao inicial. processoId={} erro={}", processo.getId(), ex.getMessage());
-            return distribuicao;
         }
     }
 
