@@ -1,11 +1,6 @@
 package com.tcc.pjb.backend.service.intelligence;
 
-import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialDossierReport;
-import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialDossierService;
-import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialStrategyReport;
-import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialStrategyService;
 import com.tcc.pjb.backend.core.kernel.advisory.SettlementAdvisoryReport;
-import com.tcc.pjb.backend.core.kernel.advisory.SettlementAdvisoryService;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.dto.intelligence.AgreementChatContextResponse;
 import com.tcc.pjb.backend.model.entity.Processo;
@@ -18,8 +13,6 @@ import com.tcc.pjb.backend.model.repository.PropostaAcordoRepository;
 import com.tcc.pjb.backend.modules.acordo.api.AcordoProcessualChatContext;
 import com.tcc.pjb.backend.modules.acordo.application.AcordoProcessualChatBridgeService;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
-import com.tcc.pjb.backend.service.rito.ProcessoRitoSnapshotService;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -39,10 +32,7 @@ public class AgreementChatContextService {
     private final ProcessFraudRiskService processFraudRiskService;
     private final ExecutionRecoveryRiskService executionRecoveryRiskService;
     private final JudgeAgreementApprovalService judgeAgreementApprovalService;
-    private final ProcessoRitoSnapshotService processoRitoSnapshotService;
-    private final ProcessMaterialDossierService processMaterialDossierService;
-    private final ProcessMaterialStrategyService processMaterialStrategyService;
-    private final SettlementAdvisoryService settlementAdvisoryService;
+    private final AgreementSettlementAdvisoryService settlementAdvisory;
     private final AgreementChatGovernanceService agreementChatGovernanceService;
     private final AgreementChatLedgerService agreementChatLedgerService;
     private final AcordoProcessualChatBridgeService acordoChatBridgeService;
@@ -57,10 +47,7 @@ public class AgreementChatContextService {
                                        ProcessFraudRiskService processFraudRiskService,
                                        ExecutionRecoveryRiskService executionRecoveryRiskService,
                                        JudgeAgreementApprovalService judgeAgreementApprovalService,
-                                       ProcessoRitoSnapshotService processoRitoSnapshotService,
-                                       ProcessMaterialDossierService processMaterialDossierService,
-                                       ProcessMaterialStrategyService processMaterialStrategyService,
-                                       SettlementAdvisoryService settlementAdvisoryService,
+                                       AgreementSettlementAdvisoryService settlementAdvisory,
                                        AgreementChatGovernanceService agreementChatGovernanceService,
                                        AgreementChatLedgerService agreementChatLedgerService,
                                        AcordoProcessualChatBridgeService acordoChatBridgeService) {
@@ -74,10 +61,7 @@ public class AgreementChatContextService {
         this.processFraudRiskService = Objects.requireNonNull(processFraudRiskService);
         this.executionRecoveryRiskService = Objects.requireNonNull(executionRecoveryRiskService);
         this.judgeAgreementApprovalService = Objects.requireNonNull(judgeAgreementApprovalService);
-        this.processoRitoSnapshotService = Objects.requireNonNull(processoRitoSnapshotService);
-        this.processMaterialDossierService = Objects.requireNonNull(processMaterialDossierService);
-        this.processMaterialStrategyService = Objects.requireNonNull(processMaterialStrategyService);
-        this.settlementAdvisoryService = Objects.requireNonNull(settlementAdvisoryService);
+        this.settlementAdvisory = Objects.requireNonNull(settlementAdvisory);
         this.agreementChatGovernanceService = Objects.requireNonNull(agreementChatGovernanceService);
         this.agreementChatLedgerService = Objects.requireNonNull(agreementChatLedgerService);
         this.acordoChatBridgeService = Objects.requireNonNull(acordoChatBridgeService);
@@ -94,7 +78,7 @@ public class AgreementChatContextService {
         var summary = structuredProcessSummaryService.summarize(processo);
         var fraud = processFraudRiskService.analyze(processo);
         var execution = executionRecoveryRiskService.analyze(processo);
-        SettlementAdvisoryReport advisory = buildSettlementAdvisory(processo, proposta);
+        SettlementAdvisoryReport advisory = settlementAdvisory.build(processo, proposta);
         var approval = judgeAgreementApprovalService.preview(processo, proposta, advisory, outcome);
         var channelPolicy = agreementChatGovernanceService.analyze(processo, proposta);
         AcordoProcessualChatContext salaContext = acordoChatBridgeService.obterContexto(processoId);
@@ -159,40 +143,7 @@ public class AgreementChatContextService {
         );
     }
 
-    private SettlementAdvisoryReport buildSettlementAdvisory(Processo processo, PropostaAcordo proposta) {
-        List<String> baseSignals = buildNegotiationSignals(processo);
-        ProcessMaterialDossierReport dossier = processMaterialDossierService.analyzeProcess(processo, baseSignals);
-        ProcessMaterialStrategyReport strategy = processMaterialStrategyService.analyzeProcess(processo, dossier, baseSignals);
-        ArrayList<String> mergedSignals = new ArrayList<>(baseSignals);
-        mergedSignals.addAll(safeList(dossier.settlementLevers()));
-        mergedSignals.addAll(safeList(strategy.negotiationGuardrails()));
-        return settlementAdvisoryService.analyze(
-                processo,
-                processoRitoSnapshotService.resolve(processo, null).ritoCode(),
-                proposta != null ? proposta.getValorAcordo() : null,
-                List.copyOf(mergedSignals.stream().filter(Objects::nonNull).filter(v -> !v.isBlank()).distinct().toList()),
-                null
-        );
-    }
-
     private List<String> safeList(List<String> values) {
         return values == null ? List.of() : values;
-    }
-
-    private List<String> buildNegotiationSignals(Processo processo) {
-        ArrayList<String> signals = new ArrayList<>();
-        if (processo.getFaseAtual() != null) {
-            signals.add("Fase atual: " + processo.getFaseAtual().name());
-        }
-        if (processo.getStatusProcesso() != null) {
-            signals.add("Status do processo: " + processo.getStatusProcesso().name());
-        }
-        if (processo.getResultadoFinal() != null && !processo.getResultadoFinal().isBlank()) {
-            signals.add("Resultado atual: " + processo.getResultadoFinal().trim());
-        }
-        if (processo.getAssunto() != null && !processo.getAssunto().isBlank()) {
-            signals.add("Assunto: " + processo.getAssunto().trim());
-        }
-        return List.copyOf(signals);
     }
 }
