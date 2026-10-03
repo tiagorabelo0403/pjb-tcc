@@ -20,7 +20,6 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoIntimacaoEngine.java": 13,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/ComunicacaoJudicialAtendimentoRelayService.java": 11,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/ComunicacaoJudicialPortalNotificationService.java": 9,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CuradorEspecialAutomaticoService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/RecusaRecebimentoService.java": 11,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/jobs/runtime/JobDispatcherLoop.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/kernel/governance/NegotiationMessagePreflightService.java": 13,
