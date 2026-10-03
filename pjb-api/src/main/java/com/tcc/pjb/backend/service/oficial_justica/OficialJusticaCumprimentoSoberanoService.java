@@ -51,7 +51,6 @@ public class OficialJusticaCumprimentoSoberanoService {
     private final DiligenceOperationalClosureService closureService;
     private final DiligenceProcessFormalizationService formalizationService;
     private final DiligenceAutomaticFilingService filingService;
-    private final OficialJusticaNotificationCenterService notificationCenterService;
     private final OficialJusticaPainelService painelService;
     private final OficialJusticaContextEnvelopeService contextEnvelopeService;
     private final SecretariaOficialCumprimentoRoutingService secretariatRoutingService;
@@ -64,7 +63,6 @@ public class OficialJusticaCumprimentoSoberanoService {
                                                     DiligenceOperationalClosureService closureService,
                                                     DiligenceProcessFormalizationService formalizationService,
                                                     DiligenceAutomaticFilingService filingService,
-                                                    OficialJusticaNotificationCenterService notificationCenterService,
                                                     OficialJusticaPainelService painelService,
                                                     OficialJusticaContextEnvelopeService contextEnvelopeService,
                                                     SecretariaOficialCumprimentoRoutingService secretariatRoutingService,
@@ -76,7 +74,6 @@ public class OficialJusticaCumprimentoSoberanoService {
         this.closureService = Objects.requireNonNull(closureService);
         this.formalizationService = Objects.requireNonNull(formalizationService);
         this.filingService = Objects.requireNonNull(filingService);
-        this.notificationCenterService = Objects.requireNonNull(notificationCenterService);
         this.painelService = Objects.requireNonNull(painelService);
         this.contextEnvelopeService = Objects.requireNonNull(contextEnvelopeService);
         this.secretariatRoutingService = Objects.requireNonNull(secretariatRoutingService);
