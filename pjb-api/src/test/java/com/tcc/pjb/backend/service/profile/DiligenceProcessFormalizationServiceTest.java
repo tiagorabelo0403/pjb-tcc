@@ -71,12 +71,13 @@ class DiligenceProcessFormalizationServiceTest {
         SovereignValidationResult sovereignResult = new SovereignValidationResult("VALIDO", null, null, false, false, false, false, false, null, null, null, null, null, null, null, List.of());
         QualifiedSignatureMetadata qsm = new QualifiedSignatureMetadata("ENV-FORM", null, null, null, true, "PJB-RUB-FORM", LocalDate.of(2026, 3, 11), LocalTime.of(15, 0), "QUIXADÁ", "Oficial Operacional", "OFICIAL_JUSTICA", null, null, null, null, null, null, null, null, true, null, null, null, sovereignResult);
         when(qualifiedDocumentSignatureEnvelopeService.signFreeContent(any(), any(), any(), any(), any(), any(), Mockito.anyBoolean(), any())).thenReturn(new SignedDocumentEnvelope("FORMALIZACAO_TITULO", "FORMALIZACAO_ASSINADA", "aa".repeat(32), true, qsm, sovereignResult));
+        DiligenceFormalizationRecordResolver recordResolver = new DiligenceFormalizationRecordResolver(
+                encerramentoRepository, certidaoRepository);
         DiligenceProcessFormalizationService service = new DiligenceProcessFormalizationService(
                 currentUserService,
                 authorizationService,
                 keyMaterialService,
-                encerramentoRepository,
-                certidaoRepository,
+                recordResolver,
                 certidaoDocumentoRepository,
                 formalizacaoRepository,
                 processoRepository,

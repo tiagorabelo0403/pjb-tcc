@@ -147,7 +147,7 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceOperationalAnalyticsService.java": 14,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceOperationalClosureService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceOperationalTimelineService.java": 13,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceProcessFormalizationService.java": 15,
+  "pjb-api/src/main/java/com/tcc/pjb/backend/service/profile/DiligenceProcessFormalizationService.java": 14,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/publico/ProcessoPesquisaIdentidadePublicaService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/recursal/mesh/NationalRecursalMeshTransactionalService.java": 13,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/rito/RitoWorkflowService.java": 11,
