@@ -19,7 +19,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | F9 · sanitizar IA | ✅ | AiPromptEgressGuard ponto único (verificado) |
 | F10 · travar ICP/HSM prod | ✅ | ProductionCriticalControlValidator (verificado) |
 
-## F6 — god services (contador: 172 acima de 8)
+## F6 — god services (contador: 171 acima de 8)
 
 > Estado 2026-10-02: a fase de cortes baratos acabou. Varredura precisa confirmou que não há mais dep morta injetada em bean budget 9 (cruzaria 9→8), nem bean budget 10 com 2 deps mortas (cruzaria 10→8). Os beans 9–10 restantes são agregadores entrelaçados (deps cross-cutting em quase todo método), transversais de segurança (o classificador bloqueia remover dep de authz/HSM do construtor) ou coleções de widgets cujo único corte coeso toca segurança. Daqui pra frente, cruzar ≤8 exige extração real com efeito cascata; as deps mortas restantes (budget 11–12) só baixam o teto do bean.
 
@@ -32,6 +32,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | OfficeWorkspaceModeService | 9→5 | cluster de vínculos → OfficeWorkspaceMembershipService (extração real) |
 | InstitutionalInboxApplicationService | 9→8 | validação de caixa destino → InstitutionalCaixaDestinoValidator |
 | ProcessoPostAjuizamentoOrchestratorService | 9→8 | reforço de distribuição → ProcessoDistribuicaoInicialReforcoService |
+| InstitutionalEntryContextApplicationService | 9→3 | resolução de contextos → InstitutionalEntryContextResolverService |
 
 ### 🟡 Reduzidos (ainda acima de 8 — voltar depois)
 | Bean | De→Para | PRs | Próximo corte possível |
