@@ -13,7 +13,6 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/controller/processual/lifecycle/CaseContinuityController.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/controller/processual/substituicao/arquitetura/PjbArquiteturaSubstituicaoNacionalController.java": 12,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/entry/application/InstitutionalEntryContextApplicationService.java": 9,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/inbox/application/InstitutionalInboxApplicationService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/workflow/application/InstitutionalWorkflowApplicationService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/BnmpIntegracaoService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/comunicacao/judicial/CitacaoHoraCertaEngine.java": 12,
