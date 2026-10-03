@@ -6,7 +6,6 @@ import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.comunicacao.judicial.hsm.PjbHardwareSecurityModule;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
-import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.platform.jusos.v2.notificacao.NotificacaoInteligentePJB;
 import com.tcc.pjb.backend.platform.jusos.v2.prazo.NationalPrazoEngine;
 import java.nio.charset.StandardCharsets;
@@ -84,7 +83,6 @@ public class RecusaRecebimentoService {
     }
 
     private final ProcessoRepository processoRepository;
-    private final UsuarioRepository usuarioRepository;
     private final ExpedicaoJudicialRepository expedicaoRepository;
     private final AuditLedgerService auditLedger;
     private final NotificacaoInteligentePJB notificacaoEngine;
@@ -100,7 +98,6 @@ public class RecusaRecebimentoService {
             .build();
 
     public RecusaRecebimentoService(ProcessoRepository processoRepository,
-                                    UsuarioRepository usuarioRepository,
                                     ExpedicaoJudicialRepository expedicaoRepository,
                                     AuditLedgerService auditLedger,
                                     NotificacaoInteligentePJB notificacaoEngine,
@@ -111,7 +108,6 @@ public class RecusaRecebimentoService {
                                     ObjectProvider<ReveliaAutomaticaEngine> reveliaProvider,
                                     ComunicacaoJudicialStateStore stateStore) {
         this.processoRepository = Objects.requireNonNull(processoRepository, "processoRepository");
-        this.usuarioRepository = Objects.requireNonNull(usuarioRepository, "usuarioRepository");
         this.expedicaoRepository = Objects.requireNonNull(expedicaoRepository, "expedicaoRepository");
         this.auditLedger = Objects.requireNonNull(auditLedger, "auditLedger");
         this.notificacaoEngine = Objects.requireNonNull(notificacaoEngine, "notificacaoEngine");
