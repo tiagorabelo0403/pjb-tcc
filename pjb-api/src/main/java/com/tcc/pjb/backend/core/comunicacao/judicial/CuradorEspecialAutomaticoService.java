@@ -5,7 +5,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.lgpd.PjbProcessoSigiloRlsEntryPointSupport;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
-import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.platform.jusos.v2.notificacao.NotificacaoInteligentePJB;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -87,8 +86,6 @@ public class CuradorEspecialAutomaticoService {
     }
 
     private final ProcessoRepository processoRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final ExpedicaoJudicialRepository expedicaoRepository;
     private final AuditLedgerService auditLedger;
     private final NotificacaoInteligentePJB notificacaoEngine;
     private final ObjectProvider<WebhookOutboundService> webhookProvider;
@@ -108,8 +105,6 @@ public class CuradorEspecialAutomaticoService {
             .build();
 
     public CuradorEspecialAutomaticoService(ProcessoRepository processoRepository,
-                                            UsuarioRepository usuarioRepository,
-                                            ExpedicaoJudicialRepository expedicaoRepository,
                                             AuditLedgerService auditLedger,
                                             NotificacaoInteligentePJB notificacaoEngine,
                                             ObjectProvider<WebhookOutboundService> webhookProvider,
@@ -117,8 +112,6 @@ public class CuradorEspecialAutomaticoService {
                                             PjbTransactionalExecutionSupport transactionalExecutionSupport,
                                             PjbProcessoSigiloRlsEntryPointSupport processoSigiloRlsEntryPointSupport) {
         this.processoRepository = Objects.requireNonNull(processoRepository, "processoRepository");
-        this.usuarioRepository = Objects.requireNonNull(usuarioRepository, "usuarioRepository");
-        this.expedicaoRepository = Objects.requireNonNull(expedicaoRepository, "expedicaoRepository");
         this.auditLedger = Objects.requireNonNull(auditLedger, "auditLedger");
         this.notificacaoEngine = Objects.requireNonNull(notificacaoEngine, "notificacaoEngine");
         this.webhookProvider = Objects.requireNonNull(webhookProvider, "webhookProvider");
