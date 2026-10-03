@@ -18,7 +18,7 @@ class CriticalEnumComparisonGovernanceTest {
             Path.of("src/main/java/com/tcc/pjb/backend/service/judge/JudgeDocketService.java"),
             Path.of("src/main/java/com/tcc/pjb/backend/service/processo/ProcessoPostAjuizamentoOrchestratorService.java"),
             Path.of("src/main/java/com/tcc/pjb/backend/service/ajuizamento/federal/FederalismoRedistribuicaoService.java"),
-            Path.of("src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/entry/application/InstitutionalEntryContextApplicationService.java"),
+            Path.of("src/main/java/com/tcc/pjb/backend/core/comunicacao/institucional/entry/application/InstitutionalEntryContextResolverService.java"),
             Path.of("src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeLawyerService.java"),
             Path.of("src/test/java/com/tcc/pjb/backend/core/comunicacao/institucional/access/VinculoUsuarioCaixaInstitucionalResolverTest.java")
     );
