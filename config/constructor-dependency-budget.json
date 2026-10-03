@@ -102,7 +102,7 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/document/reading/ProcessReadingWorkspaceService.java": 18,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/forum/ForumOfficialReturnOperationalService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/infra/ScaleArchitectureService.java": 14,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/AgreementChatContextService.java": 17,
+  "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/AgreementChatContextService.java": 14,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/PessoaLocalizacaoService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/surface/AjuizamentoIntentSurfaceFacadeService.java": 12,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/intelligence/surface/LegalAiSurfaceFacadeService.java": 11,
