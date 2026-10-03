@@ -19,7 +19,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | F9 · sanitizar IA | ✅ | AiPromptEgressGuard ponto único (verificado) |
 | F10 · travar ICP/HSM prod | ✅ | ProductionCriticalControlValidator (verificado) |
 
-## F6 — god services (contador: 175 acima de 8)
+## F6 — god services (contador: 174 acima de 8)
 
 > Estado 2026-10-02: a fase de cortes baratos acabou. Varredura precisa confirmou que não há mais dep morta injetada em bean budget 9 (cruzaria 9→8), nem bean budget 10 com 2 deps mortas (cruzaria 10→8). Os beans 9–10 restantes são agregadores entrelaçados (deps cross-cutting em quase todo método), transversais de segurança (o classificador bloqueia remover dep de authz/HSM do construtor) ou coleções de widgets cujo único corte coeso toca segurança. Daqui pra frente, cruzar ≤8 exige extração real com efeito cascata; as deps mortas restantes (budget 11–12) só baixam o teto do bean.
 
@@ -29,6 +29,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | RecursalFormalizacaoService | 12→8 | #229 (pipeline PDF) |
 | AtendimentoModerationService | 10→8 | #232 (anexos → AtendimentoAttachmentQueryService) |
 | CuradorEspecialAutomaticoService | 9→7 | duas deps mortas removidas (usuarioRepository, expedicaoRepository) |
+| OfficeWorkspaceModeService | 9→5 | cluster de vínculos → OfficeWorkspaceMembershipService (extração real) |
 
 ### 🟡 Reduzidos (ainda acima de 8 — voltar depois)
 | Bean | De→Para | PRs | Próximo corte possível |
@@ -53,4 +54,5 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 2. ler os métodos → extrair serviço verbatim (deps ≤8) → delegar no original
 3. **criar teste** do serviço novo + ajustar teste existente
 4. atualizar budget (remover entrada se bean ≤8) + README (contagem de testes, mesmo commit) + **este quadro**
-5. compile + testes verdes + guard verde → branch → PR → CI verde → merge → sync
+5. **se o serviço novo cai em `modules/*/service` (ou outro pacote legado sob `modules.*`):** +1 em `module-package-shape` e `maxWarnings` na baseline do `modular_monolith_guard` (com justificativa datada), senão o job Guards (report) reprova. Extração fora de `modules.*` (ex.: `backend.service.*`) não precisa.
+6. compile + testes verdes + guard verde + `modular_monolith_guard` verde → branch → PR → CI verde → merge → sync

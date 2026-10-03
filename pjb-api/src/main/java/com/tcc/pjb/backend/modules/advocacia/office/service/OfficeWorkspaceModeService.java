@@ -8,18 +8,10 @@ import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.dto.ui.frontend.FrontendOfficeModeUpdateRequest;
 import com.tcc.pjb.backend.model.entity.MembroEquipe;
 import com.tcc.pjb.backend.model.entity.Usuario;
-import com.tcc.pjb.backend.model.entity.enums.PapelEquipe;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
-import com.tcc.pjb.backend.model.repository.MembroEquipeRepository;
-import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.modules.advocacia.office.entity.AdvOfficeWorkspacePreference;
-import com.tcc.pjb.backend.modules.advocacia.office.entity.EquipeOfficeDelegacaoRegra;
-import com.tcc.pjb.backend.modules.advocacia.office.entity.EquipeOfficePolicy;
-import com.tcc.pjb.backend.modules.advocacia.office.enums.OfficeTrustLevel;
 import com.tcc.pjb.backend.modules.advocacia.office.enums.OfficeWorkspaceMode;
 import com.tcc.pjb.backend.modules.advocacia.office.repository.AdvOfficeWorkspacePreferenceRepository;
-import com.tcc.pjb.backend.modules.advocacia.office.repository.EquipeOfficeDelegacaoRegraRepository;
-import com.tcc.pjb.backend.modules.advocacia.office.repository.EquipeOfficePolicyRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
@@ -28,7 +20,6 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,32 +31,20 @@ public class OfficeWorkspaceModeService {
     public static final String COOKIE_EQUIPE = "PJB_EQUIPE_ID";
 
     private final CurrentUserService currentUserService;
-    private final MembroEquipeRepository membroEquipeRepository;
-    private final EquipeOfficePolicyRepository policyRepository;
-    private final EquipeOfficeDelegacaoRegraRepository regraRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final OfficeWorkspaceMembershipService membershipService;
     private final AdvOfficeWorkspacePreferenceRepository preferenceRepository;
     private final OfficePersonalScopeService personalScopeService;
-    private final OfficeTrustScoreService trustScoreService;
     private final AuditLedgerService auditLedgerService;
 
     public OfficeWorkspaceModeService(CurrentUserService currentUserService,
-                                      MembroEquipeRepository membroEquipeRepository,
-                                      EquipeOfficePolicyRepository policyRepository,
-                                      EquipeOfficeDelegacaoRegraRepository regraRepository,
-                                      UsuarioRepository usuarioRepository,
+                                      OfficeWorkspaceMembershipService membershipService,
                                       AdvOfficeWorkspacePreferenceRepository preferenceRepository,
                                       OfficePersonalScopeService personalScopeService,
-                                      OfficeTrustScoreService trustScoreService,
                                       AuditLedgerService auditLedgerService) {
         this.currentUserService = Objects.requireNonNull(currentUserService);
-        this.membroEquipeRepository = Objects.requireNonNull(membroEquipeRepository);
-        this.policyRepository = Objects.requireNonNull(policyRepository);
-        this.regraRepository = Objects.requireNonNull(regraRepository);
-        this.usuarioRepository = Objects.requireNonNull(usuarioRepository);
+        this.membershipService = Objects.requireNonNull(membershipService);
         this.preferenceRepository = Objects.requireNonNull(preferenceRepository);
         this.personalScopeService = Objects.requireNonNull(personalScopeService);
-        this.trustScoreService = Objects.requireNonNull(trustScoreService);
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
     }
 
@@ -81,7 +60,7 @@ public class OfficeWorkspaceModeService {
         if (mode == null) {
             throw new IllegalArgumentException("Modo de escritorio invalido.");
         }
-        List<PjbFrontendOfficeMembershipView> memberships = memberships(usuario.getId());
+        List<PjbFrontendOfficeMembershipView> memberships = membershipService.memberships(usuario.getId());
         if (mode != OfficeWorkspaceMode.PERSONAL) {
             if (request.equipeId() == null) {
                 throw new IllegalArgumentException("Equipe obrigatoria para modo escritorio/hibrido.");
@@ -146,7 +125,7 @@ public class OfficeWorkspaceModeService {
                     usuario.getId(),
                     usuario.getNome());
         }
-        List<PjbFrontendOfficeMembershipView> memberships = memberships(usuario.getId());
+        List<PjbFrontendOfficeMembershipView> memberships = membershipService.memberships(usuario.getId());
         AdvOfficeWorkspacePreference preference = preferenceOverride != null ? preferenceOverride : preferenceRepository.findByUsuarioId(usuario.getId()).orElse(null);
         MembroEquipe membroAtivo = EquipeContexto.getMembroDaEquipeAtiva();
         Long activeEquipeId = forcedEquipeId;
@@ -206,7 +185,7 @@ public class OfficeWorkspaceModeService {
         if (usuario == null || usuario.getId() == null || !usuario.isAdvogado()) {
             return null;
         }
-        List<PjbFrontendOfficeMembershipView> memberships = memberships(usuarioId);
+        List<PjbFrontendOfficeMembershipView> memberships = membershipService.memberships(usuarioId);
         AdvOfficeWorkspacePreference preference = preferenceRepository.findByUsuarioId(usuarioId).orElse(null);
         Long preferredEquipeId = preferredEquipeFromRequestOrPreference(request, preference, memberships);
         PjbFrontendOfficeMembershipView activeMembership = findActiveMembership(memberships, preferredEquipeId);
@@ -290,63 +269,6 @@ public class OfficeWorkspaceModeService {
             return memberships.get(0).equipeId();
         }
         return null;
-    }
-
-    private List<PjbFrontendOfficeMembershipView> memberships(Long usuarioId) {
-        List<PjbFrontendOfficeMembershipView> out = new ArrayList<>();
-        for (MembroEquipe membro : membroEquipeRepository.carregarComEquipe(usuarioId)) {
-            if (!membro.isAtivo()) {
-                continue;
-            }
-            if (membro.getEquipe() == null || !membro.getEquipe().isAtivo()) {
-                continue;
-            }
-            out.add(toMembership(membro));
-        }
-        out.sort(Comparator.comparing(PjbFrontendOfficeMembershipView::workspacePriority)
-                .thenComparing(PjbFrontendOfficeMembershipView::equipeNome, String.CASE_INSENSITIVE_ORDER));
-        return List.copyOf(out);
-    }
-
-    private PjbFrontendOfficeMembershipView toMembership(MembroEquipe membro) {
-        Long equipeId = membro.getEquipe() == null ? null : membro.getEquipe().getId();
-        EquipeOfficePolicy policy = equipeId == null ? null : policyRepository.findByEquipeId(equipeId).orElse(null);
-        EquipeOfficeDelegacaoRegra regra = equipeId == null || membro.getUsuario() == null || membro.getUsuario().getId() == null
-                ? null
-                : regraRepository.findByEquipeAndUser(equipeId, membro.getUsuario().getId()).orElse(null);
-        Long seniorUserId = policy == null ? null : policy.getSignerUserId();
-        Usuario senior = seniorUserId == null ? null : usuarioRepository.findById(seniorUserId).orElse(null);
-        boolean blocked = policy != null && policy.isEnabled() && policy.isBloqueiaCausasProprias() && !isAdminRole(membro.getPapel());
-        Set<RamoDireito> ramos = effectiveAllowedRamos(policy, regra);
-        boolean canViewAllRamos = ramos == null || ramos.isEmpty();
-        OfficeTrustScoreService.TrustScore trust = trustScoreService.avaliar(membro.getUsuario().getId(), equipeId);
-        int minTrustRequired = regra != null && regra.getMinTrustAutoOverride() != null ? regra.getMinTrustAutoOverride() : policy == null ? 0 : policy.getMinTrustAuto();
-        boolean patronCertificateRequired = policy != null
-                && policy.isEnabled()
-                && policy.isForcePatronoCertificate()
-                && seniorUserId != null
-                && !Objects.equals(seniorUserId, membro.getUsuario().getId());
-        int workspacePriority = regra == null ? 100 : regra.getWorkspacePriority();
-        boolean autoActivateWorkspace = regra != null && regra.isAutoActivateWorkspace();
-        return new PjbFrontendOfficeMembershipView(
-                equipeId,
-                membro.getEquipe() == null ? null : membro.getEquipe().getNome(),
-                membro.getPapel() == null ? null : membro.getPapel().name(),
-                membro.getCargo(),
-                seniorUserId,
-                senior == null ? null : senior.getNome(),
-                policy != null && policy.isEnabled(),
-                blocked,
-                membro.isAtivo(),
-                autoActivateWorkspace,
-                false,
-                canViewAllRamos ? enumNames(RamoDireito.values()) : sortedRamos(ramos),
-                canViewAllRamos,
-                trust.score(),
-                OfficeTrustLevel.fromScore(trust.score()).name(),
-                minTrustRequired,
-                patronCertificateRequired,
-                workspacePriority);
     }
 
     private List<PjbFrontendOfficeMembershipView> markActiveMemberships(List<PjbFrontendOfficeMembershipView> memberships, Long activeEquipeId) {
@@ -438,32 +360,6 @@ public class OfficeWorkspaceModeService {
             hints.add("Sem vinculos ativos de escritorio no momento.");
         }
         return List.copyOf(hints);
-    }
-
-    private Set<RamoDireito> effectiveAllowedRamos(EquipeOfficePolicy policy, EquipeOfficeDelegacaoRegra regra) {
-        if (regra != null && regra.getAllowedRamosOverride() != null && !regra.getAllowedRamosOverride().isEmpty()) {
-            return regra.getAllowedRamosOverride();
-        }
-        if (policy != null && policy.getAllowedRamos() != null && !policy.getAllowedRamos().isEmpty()) {
-            return policy.getAllowedRamos();
-        }
-        return java.util.EnumSet.noneOf(RamoDireito.class);
-    }
-
-    private List<String> sortedRamos(Set<RamoDireito> ramos) {
-        if (ramos == null) {
-            return List.of();
-        }
-        List<String> out = new ArrayList<>(ramos.size());
-        for (RamoDireito ramo : ramos) {
-            out.add(ramo.name());
-        }
-        out.sort(String.CASE_INSENSITIVE_ORDER);
-        return List.copyOf(out);
-    }
-
-    private boolean isAdminRole(PapelEquipe papel) {
-        return papel == PapelEquipe.ADMINISTRADOR || papel == PapelEquipe.COORDENADOR;
     }
 
     private String headerValue(HttpServletRequest request, String name) {

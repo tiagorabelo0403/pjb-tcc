@@ -93,15 +93,17 @@ class OfficeWorkspaceModeServiceTest {
         when(preferenceRepository.save(org.mockito.ArgumentMatchers.any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(trustScoreService.avaliar(10L, 44L)).thenReturn(new OfficeTrustScoreService.TrustScore(6, false, true, true, true, false));
 
-        OfficeWorkspaceModeService service = new OfficeWorkspaceModeService(
-                currentUserService,
+        OfficeWorkspaceMembershipService membershipService = new OfficeWorkspaceMembershipService(
                 membroEquipeRepository,
                 policyRepository,
                 regraRepository,
                 usuarioRepository,
+                trustScoreService);
+        OfficeWorkspaceModeService service = new OfficeWorkspaceModeService(
+                currentUserService,
+                membershipService,
                 preferenceRepository,
                 personalScopeService,
-                trustScoreService,
                 auditLedgerService);
 
         var current = service.current(new MockHttpServletRequest());
