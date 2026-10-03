@@ -21,6 +21,8 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 
 ## F6 — god services (contador: 175 acima de 8)
 
+> Estado 2026-10-02: a fase de cortes baratos acabou. Varredura precisa confirmou que não há mais dep morta injetada em bean budget 9 (cruzaria 9→8), nem bean budget 10 com 2 deps mortas (cruzaria 10→8). Os beans 9–10 restantes são agregadores entrelaçados (deps cross-cutting em quase todo método), transversais de segurança (o classificador bloqueia remover dep de authz/HSM do construtor) ou coleções de widgets cujo único corte coeso toca segurança. Daqui pra frente, cruzar ≤8 exige extração real com efeito cascata; as deps mortas restantes (budget 11–12) só baixam o teto do bean.
+
 ### ✅ Resolvidos (cruzaram ≤8, saíram da lista)
 | Bean | De→Para | PR |
 |---|---|---|
@@ -34,6 +36,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | CitacaoIntimacaoEngine | 16→13 | #222,#226,#228 | resto é core essencial/acoplado — perto do piso |
 | CidadaoDashboardSnapshotWriteService | 13→11 | #230 | cluster "widgets" (movRepo/docRepo) — avaliar |
 | RecusaRecebimentoService | 11→10 | (usuarioRepository morto removido) | resto é HSM/audit/evento — alto risco |
+| OficialJusticaCumprimentoSoberanoService | 12→11 | (notificationCenterService morto removido) | resto é diligência/closure/painel acoplado |
 
 ### ⛔ Não reduzir (cada redução = dívida/risco; pular)
 - **Audit/HSM/authz:** ProcessDigitalTwinService, JuizGabineteDecisionalService, CitacaoHoraCertaEngine, AcordoService, DiligenceOperationalClosureService (cluster de certificado)

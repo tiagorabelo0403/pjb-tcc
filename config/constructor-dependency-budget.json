@@ -117,7 +117,7 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/MinistroPlenarioAvancadoService.java": 14,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/MinistroPlenarioService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/mp/MinisterioPublicoPainelService.java": 13,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaCumprimentoSoberanoService.java": 12,
+  "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaCumprimentoSoberanoService.java": 11,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaEnderecoTriageService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaNotificationCenterService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/oficial_justica/OficialJusticaOficioDispatchService.java": 12,
