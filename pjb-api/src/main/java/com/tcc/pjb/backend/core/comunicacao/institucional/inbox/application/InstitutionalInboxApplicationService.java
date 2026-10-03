@@ -17,8 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.comunicacao.institucional.access.AutorizacaoCaixaInstitucionalService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.access.VinculoUsuarioCaixaInstitucional;
 import com.tcc.pjb.backend.core.comunicacao.institucional.access.VinculoUsuarioCaixaInstitucionalResolver;
-import com.tcc.pjb.backend.core.comunicacao.institucional.access.EstruturaCaixaInstitucionalService;
-import com.tcc.pjb.backend.core.comunicacao.institucional.CatalogoInstitucionalUnificadoService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.audit.application.InstitutionalCommunicationAuditApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.gate.application.InstitutionalCommunicationGateApplicationService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.gate.domain.InstitutionalGateStatus;
@@ -46,8 +44,7 @@ public class InstitutionalInboxApplicationService {
     private final InstitutionalCommunicationAuditApplicationService auditService;
     private final InstitutionalCommunicationGateApplicationService gateService;
     private final OutboxPublisher outboxPublisher;
-    private final CatalogoInstitucionalUnificadoService catalogoInstitucionalUnificadoService;
-    private final EstruturaCaixaInstitucionalService estruturaCaixaInstitucionalService;
+    private final InstitutionalCaixaDestinoValidator caixaDestinoValidator;
 
     public InstitutionalInboxApplicationService(InstitutionalInboxStateRepository repository,
                                                 VinculoUsuarioCaixaInstitucionalResolver vinculoResolver,
@@ -56,8 +53,7 @@ public class InstitutionalInboxApplicationService {
                                                 InstitutionalCommunicationAuditApplicationService auditService,
                                                 InstitutionalCommunicationGateApplicationService gateService,
                                                 OutboxPublisher outboxPublisher,
-                                                CatalogoInstitucionalUnificadoService catalogoInstitucionalUnificadoService,
-                                                EstruturaCaixaInstitucionalService estruturaCaixaInstitucionalService) {
+                                                InstitutionalCaixaDestinoValidator caixaDestinoValidator) {
         this.repository = Objects.requireNonNull(repository);
         this.vinculoResolver = Objects.requireNonNull(vinculoResolver);
         this.autorizacaoService = Objects.requireNonNull(autorizacaoService);
@@ -65,8 +61,7 @@ public class InstitutionalInboxApplicationService {
         this.auditService = Objects.requireNonNull(auditService);
         this.gateService = Objects.requireNonNull(gateService);
         this.outboxPublisher = Objects.requireNonNull(outboxPublisher);
-        this.catalogoInstitucionalUnificadoService = Objects.requireNonNull(catalogoInstitucionalUnificadoService);
-        this.estruturaCaixaInstitucionalService = Objects.requireNonNull(estruturaCaixaInstitucionalService);
+        this.caixaDestinoValidator = Objects.requireNonNull(caixaDestinoValidator);
     }
 
     @Transactional
@@ -143,7 +138,7 @@ public class InstitutionalInboxApplicationService {
     public InstitutionalInboxActionResult redistribuir(String expedicaoUuid, String caixaDestinoCodigo, String detalhe) {
         InstitutionalInboxItem atual = loadVisible(expedicaoUuid);
         autorizacaoService.require(atual.expedicaoUuid(), atual.unidadeCodigo(), atual.caixaCodigoAtual(), CapacidadeCaixaInstitucional.REDISTRIBUIR_INTERNAMENTE);
-        validarCaixaDestino(atual.unidadeCodigo(), caixaDestinoCodigo);
+        caixaDestinoValidator.validar(atual.unidadeCodigo(), caixaDestinoCodigo);
         Usuario actor = currentUserService.getRequired();
         String origem = atual.caixaCodigoAtual();
         Instant now = Instant.now();
@@ -259,18 +254,6 @@ public class InstitutionalInboxApplicationService {
                 "EXPEDICAO_JUDICIAL",
                 item.expedicaoUuid()
         );
-    }
-
-    private void validarCaixaDestino(String unidadeCodigo, String caixaDestinoCodigo) {
-        var unidade = catalogoInstitucionalUnificadoService.listarPorTipo(null).stream()
-                .filter(candidate -> candidate.codigo().equalsIgnoreCase(unidadeCodigo))
-                .findFirst()
-                .orElseThrow(() -> new RecursoNaoEncontradoException("UnidadeInstitucional", unidadeCodigo));
-        boolean exists = estruturaCaixaInstitucionalService.expandir(unidade).stream()
-                .anyMatch(caixa -> caixa.codigo().equalsIgnoreCase(caixaDestinoCodigo));
-        if (!exists) {
-            throw new RecursoNaoEncontradoException("CaixaInstitucional", caixaDestinoCodigo);
-        }
     }
 
     private List<String> append(List<String> original, String detalhe, String marker) {
