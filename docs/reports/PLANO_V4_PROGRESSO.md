@@ -48,12 +48,15 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 - **Não-conectado (bean sem chamador):** SecretariatDocumentBulkProcessor
 - **Entrelaçado com helpers/records privados:** ConsultaPublicaWorkspaceService (personalSlice)
 
-### ⬜ Fila de candidatos limpos (família de serviços-irmãos / cluster disjunto) — a confirmar por matriz antes
-- (buscar próximos; critério: 2+ deps-irmãs usadas juntas, sem helper privado entrelaçado, sem audit/HSM)
+### ⬜ Fila de candidatos limpos (família de serviços-irmãos / cluster disjunto) — a confirmar LENDO os métodos antes
+- Maioria dos budget-9 restantes é `[1,8]` no grafo dep–método (um componente gigante entrelaçado + 1 dep isolada que não extrai sozinha). Cruzar exige componente de 2+ deps que seja concern coeso real.
+- `InstitutionalEntryContextApplicationService`: `resolverContextos` é um componente de ~6 deps (extração grande, ~metade da classe) → 9→3/4, mas é a maior cirurgia; o componente-2 dele é `{currentUser, identity}` (foundational, não extrair).
+- Budget-10 só cruza com componente de 3 deps; os achados (`RecusaRecebimento`, `OficialJusticaEnderecoTriage`) são HSM/entrelaçados.
 
 ## Método por fatia (não esquecer)
-1. matriz método→dependência (scratchpad) → achar cluster disjunto limpo
+1. matriz método→dependência (scratchpad `dm.py`) → achar cluster disjunto limpo. **ATENÇÃO: a regex de assinatura do `dm.py` perde alguns formatos de método** (ex.: `AtendimentoChatThreadViewSupport` mostrou 3 deps como "(nenhum)" que na verdade são usadas). O scan de componentes herda esse erro e inventa componentes falsos — **sempre reconferir greppando o nome do campo no arquivo inteiro e lendo os métodos** antes de extrair.
 2. ler os métodos → extrair serviço verbatim (deps ≤8) → delegar no original
+2b. **guard-grep upfront:** greppar ArchitectureTest/GuardTest/HardeningTest/RegressionGuard pelo nome do serviço; se um guard exigir o conteúdo no arquivo (ex.: `ComunicacaoJudicialPortalNotificationService` exige `LaianeProcuracaoRepository`+`clienteRepository.existsByCpfHashAndAdvogado_Id`), NÃO extrair
 3. **criar teste** do serviço novo + ajustar teste existente
 4. atualizar budget (remover entrada se bean ≤8) + README (contagem de testes, mesmo commit) + **este quadro**
 5. **se o serviço novo cai em `modules/*/service` (ou outro pacote legado sob `modules.*`):** +1 em `module-package-shape` e `maxWarnings` na baseline do `modular_monolith_guard` (com justificativa datada), senão o job Guards (report) reprova. Extração fora de `modules.*` (ex.: `backend.service.*`) não precisa.
