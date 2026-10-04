@@ -14,10 +14,6 @@ import com.tcc.pjb.backend.core.plataforma.sustentacao.domain.PjbPlataformaSuste
 import com.tcc.pjb.backend.core.plataforma.sustentacao.domain.PjbPlataformaSustentacaoCenario;
 import com.tcc.pjb.backend.core.plataforma.sustentacao.domain.PjbPlataformaSustentacaoEixo;
 import com.tcc.pjb.backend.core.plataforma.sustentacao.domain.PjbPlataformaSustentacaoModulo;
-import com.tcc.pjb.backend.core.processo.migracao.application.ProcessoMigracaoApplicationService;
-import com.tcc.pjb.backend.core.processo.migracao.application.ProcessoMigracaoFactoryApplicationService;
-import com.tcc.pjb.backend.core.processo.migracao.domain.ProcessoMigracaoAggregate;
-import com.tcc.pjb.backend.core.processo.migracao.domain.ProcessoMigracaoFabricaAggregate;
 import com.tcc.pjb.backend.core.procedural.NationalProceduralRoutingService;
 import com.tcc.pjb.backend.core.procedural.ProceduralCanonicalResolver;
 import com.tcc.pjb.backend.core.procedural.ProceduralRoutingReport;
@@ -28,9 +24,7 @@ import com.tcc.pjb.backend.integration.judicial.JudicialConnectorCommandCenterSe
 import com.tcc.pjb.backend.integration.judicial.JudicialSystem;
 import com.tcc.pjb.backend.model.dto.processual.rollout.NationalFeatureRolloutRequest;
 import com.tcc.pjb.backend.model.dto.processual.rollout.NationalFeatureRolloutResponse;
-import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.outbox.OutboxStatus;
-import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.institucional.InstitutionalInboxItemSnapshotRepository;
 import com.tcc.pjb.backend.repository.outbox.OutboxEventRepository;
 import com.tcc.pjb.backend.service.SigiloService;
@@ -50,7 +44,6 @@ import java.util.Optional;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -64,9 +57,7 @@ public class PjbPlataformaSustentacaoApplicationService {
     private final SigiloService sigiloService;
     private final ProceduralCanonicalResolver proceduralCanonicalResolver;
     private final NationalProceduralRoutingService nationalProceduralRoutingService;
-    private final ProcessoMigracaoFactoryApplicationService processoMigracaoFactoryApplicationService;
-    private final ProcessoMigracaoApplicationService processoMigracaoApplicationService;
-    private final ProcessoRepository processoRepository;
+    private final PjbPlataformaMigracaoShadowDiagnosticoService migracaoShadowDiagnostico;
     private final OutboxEventRepository outboxEventRepository;
     private final InstitutionalInboxItemSnapshotRepository institutionalInboxItemSnapshotRepository;
     private final SigiloAccessRequestRepository sigiloAccessRequestRepository;
@@ -80,9 +71,7 @@ public class PjbPlataformaSustentacaoApplicationService {
                                                       SigiloService sigiloService,
                                                       ProceduralCanonicalResolver proceduralCanonicalResolver,
                                                       NationalProceduralRoutingService nationalProceduralRoutingService,
-                                                      ProcessoMigracaoFactoryApplicationService processoMigracaoFactoryApplicationService,
-                                                      ProcessoMigracaoApplicationService processoMigracaoApplicationService,
-                                                      ProcessoRepository processoRepository,
+                                                      PjbPlataformaMigracaoShadowDiagnosticoService migracaoShadowDiagnostico,
                                                       ObjectProvider<OutboxEventRepository> outboxEventRepositoryProvider,
                                                       ObjectProvider<InstitutionalInboxItemSnapshotRepository> institutionalInboxItemSnapshotRepositoryProvider,
                                                       ObjectProvider<SigiloAccessRequestRepository> sigiloAccessRequestRepositoryProvider,
@@ -95,9 +84,7 @@ public class PjbPlataformaSustentacaoApplicationService {
         this.sigiloService = Objects.requireNonNull(sigiloService);
         this.proceduralCanonicalResolver = Objects.requireNonNull(proceduralCanonicalResolver);
         this.nationalProceduralRoutingService = Objects.requireNonNull(nationalProceduralRoutingService);
-        this.processoMigracaoFactoryApplicationService = Objects.requireNonNull(processoMigracaoFactoryApplicationService);
-        this.processoMigracaoApplicationService = Objects.requireNonNull(processoMigracaoApplicationService);
-        this.processoRepository = Objects.requireNonNull(processoRepository);
+        this.migracaoShadowDiagnostico = Objects.requireNonNull(migracaoShadowDiagnostico);
         this.outboxEventRepository = outboxEventRepositoryProvider.getIfAvailable();
         this.institutionalInboxItemSnapshotRepository = institutionalInboxItemSnapshotRepositoryProvider.getIfAvailable();
         this.sigiloAccessRequestRepository = sigiloAccessRequestRepositoryProvider.getIfAvailable();
@@ -111,7 +98,7 @@ public class PjbPlataformaSustentacaoApplicationService {
         PjbPlataformaSustentacaoEixo confiabilidade = avaliarConfiabilidadeInstitucional();
         PjbPlataformaSustentacaoEixo sigiloCentral = avaliarMotorSigiloCentral();
         PjbPlataformaSustentacaoEixo normalizador = avaliarNormalizadorNacional();
-        PjbPlataformaSustentacaoEixo shadowCompare = avaliarShadowCompareMigracao();
+        PjbPlataformaSustentacaoEixo shadowCompare = migracaoShadowDiagnostico.avaliar();
         GoldenBundle goldenBundle = avaliarCenariosDourados();
 
         List<PjbPlataformaSustentacaoEixo> eixos = List.of(
@@ -406,59 +393,6 @@ public class PjbPlataformaSustentacaoApplicationService {
                 "Normalizador nacional de competência, classe e rito",
                 score,
                 score >= 75 && bloqueadores.isEmpty(),
-                sinais,
-                bloqueadores,
-                proximasAcoes,
-                evidencias
-        );
-    }
-
-    private PjbPlataformaSustentacaoEixo avaliarShadowCompareMigracao() {
-        List<Processo> processos = processoRepository.findAll(PageRequest.of(0, 6)).getContent();
-        ArrayList<Map<String, Object>> amostras = new ArrayList<>();
-        LinkedHashSet<String> bloqueadores = new LinkedHashSet<>();
-        int scoreTotal = 0;
-        if (processos.isEmpty()) {
-            bloqueadores.add("sem_amostra_de_processo_para_shadow_compare");
-        }
-        for (Processo processo : processos) {
-            try {
-                ProcessoMigracaoFabricaAggregate fabrica = processoMigracaoFactoryApplicationService.planejar(processo.getId());
-                ProcessoMigracaoAggregate migracao = processoMigracaoApplicationService.detalhar(processo.getId());
-                int score = average(fabrica.scoreGeral(), "READY_FOR_CUTOVER".equalsIgnoreCase(migracao.readiness()) ? 94 : "READY_FOR_SHADOW".equalsIgnoreCase(migracao.readiness()) ? 76 : 52, migracao.canCutOver() ? 92 : 60);
-                scoreTotal += score;
-                LinkedHashMap<String, Object> linha = new LinkedHashMap<>();
-                linha.put("processoId", processo.getId());
-                linha.put("scoreFactory", fabrica.scoreGeral());
-                linha.put("factoryStatus", fabrica.statusGeral().name());
-                linha.put("migrationReadiness", migracao.readiness());
-                linha.put("canCutOver", migracao.canCutOver());
-                linha.put("comparacoes", migracao.comparacoes().size());
-                linha.put("bloqueiosFactory", fabrica.bloqueios());
-                amostras.add(cleanMap(linha));
-                if (!migracao.canCutOver()) {
-                    bloqueadores.add("shadow_compare_bloqueado:processo=" + processo.getId());
-                }
-            } catch (RuntimeException ex) {
-                bloqueadores.add("shadow_compare_falhou:processo=" + processo.getId());
-            }
-        }
-        int score = processos.isEmpty() ? 35 : Math.max(0, Math.min(100, scoreTotal / Math.max(1, amostras.size())));
-        LinkedHashSet<String> sinais = new LinkedHashSet<>();
-        sinais.add("processosAmostrados=" + processos.size());
-        sinais.add("processosComShadowCompare=" + amostras.size());
-        sinais.add("bloqueadoresShadow=" + bloqueadores.size());
-        LinkedHashSet<String> proximasAcoes = new LinkedHashSet<>();
-        proximasAcoes.add("EXECUTAR_RECONCILIACAO_AUTOMATICA_DE_METADADOS_ANTES_DO_CUTOVER");
-        proximasAcoes.add("FORMALIZAR_RELATORIO_DE_DIVERGENCIA_LEGADO_VS_PJB_POR_LOTE_DE_MIGRACAO");
-        LinkedHashMap<String, Object> evidencias = new LinkedHashMap<>();
-        evidencias.put("amostras", amostras);
-        evidencias.put("totalProcessosPersistidos", processoRepository.count());
-        return eixo(
-                "migracao.shadow-compare",
-                "Shadow compare, reconciliação e migração",
-                score,
-                !processos.isEmpty() && bloqueadores.isEmpty(),
                 sinais,
                 bloqueadores,
                 proximasAcoes,
