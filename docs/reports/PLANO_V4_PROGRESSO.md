@@ -46,6 +46,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | CitacaoIntimacaoEngine | 16→13 | #222,#226,#228 | resto é core essencial/acoplado — perto do piso |
 | CidadaoDashboardSnapshotWriteService | 13→11 | #230 | cluster "widgets" (movRepo/docRepo) — avaliar |
 | AgreementChatContextService | 17→14 | parecer de acordo → AgreementSettlementAdvisoryService | resto é cluster único de `analyze` |
+| TransitoJulgadoNarrativeSupport | 13→9 | grupo de narrativas de expropriação → TransitoExpropriacaoNarrativeSupport | resto: narrativas execução/constrição (agrupáveis) |
 | DiligenceProcessFormalizationService | 15→14 | resolvers de encerramento/certidão → DiligenceFormalizationRecordResolver | resto toca HSM/custódia/assinatura |
 | CidadaoMalhaProcessualNacionalService | 15→12 | loaders de detalhe (mov/doc/audiência/julgamento) → CidadaoProcessoDetalheLoaderService | resto é projeção/vínculo/identidade acoplados |
 | PjbPlataformaSustentacaoApplicationService | 15→13 | 2-passos: toolkit puro → DiagnosticoSupport (#246) + eixo shadow-compare migração → PjbPlataformaMigracaoShadowDiagnosticoService | resto dos eixos compartilha applicationContext (beanScore) — precisa de prep próprio |
@@ -54,7 +55,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 
 ### ⛔ Não reduzir (cada redução = dívida/risco; pular)
 - **Audit/HSM/authz:** ProcessDigitalTwinService, JuizGabineteDecisionalService, CitacaoHoraCertaEngine, AcordoService, DiligenceOperationalClosureService (cluster de certificado)
-- **Orquestrador/pipeline (1 método usa N deps):** NationalProcessRoutingService, ProcessoFechamentoTotalApplicationService, UnifiedProcessoIntentRouter, NegotiationMessagePreflightService, ScaleArchitectureService, TransitoJulgadoNarrativeSupport, ProcessoEncaixeFinalApplicationService, RecursalFluxoMinimoPersistenciaService
+- **Orquestrador/pipeline (1 método usa N deps):** NationalProcessRoutingService, ProcessoFechamentoTotalApplicationService, UnifiedProcessoIntentRouter, NegotiationMessagePreflightService, ScaleArchitectureService, ProcessoEncaixeFinalApplicationService, RecursalFluxoMinimoPersistenciaService
 - **Fachada (*SurfaceFacadeService/*Painel):** deixar p/ F4
 - **Não-conectado (bean sem chamador):** SecretariatDocumentBulkProcessor
 - **Entrelaçado com helpers/records privados:** ConsultaPublicaWorkspaceService (personalSlice)

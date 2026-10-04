@@ -38,7 +38,7 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/security/webauthn/WebAuthnService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/transito/TransitoJulgadoArquivamentoEngine.java": 15,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/transito/TransitoJulgadoExpropriationWorkflowSupport.java": 9,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/core/transito/TransitoJulgadoNarrativeSupport.java": 13,
+  "pjb-api/src/main/java/com/tcc/pjb/backend/core/transito/TransitoJulgadoNarrativeSupport.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/inovacao/batna/FacilitadorBatnaService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/inovacao/radar/RadarPadroesService.java": 11,
   "pjb-api/src/main/java/com/tcc/pjb/backend/integration/judicial/financeiro/IntegracaoJudicialFinanceiraLifecycleService.java": 9,

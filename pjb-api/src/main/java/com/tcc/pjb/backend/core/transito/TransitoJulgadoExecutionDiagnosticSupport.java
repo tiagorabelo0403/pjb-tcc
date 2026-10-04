@@ -13,17 +13,20 @@ public class TransitoJulgadoExecutionDiagnosticSupport {
     private final PostJudgmentOperationalResolver operationalResolver;
     private final WorkItemRepository workItemRepository;
     private final TransitoJulgadoNarrativeSupport narrativeSupport;
+    private final TransitoExpropriacaoNarrativeSupport expropriacaoNarrative;
     private final ExecutionMeshStateService executionMeshStateService;
 
     public TransitoJulgadoExecutionDiagnosticSupport(
             PostJudgmentOperationalResolver operationalResolver,
             WorkItemRepository workItemRepository,
             TransitoJulgadoNarrativeSupport narrativeSupport,
+            TransitoExpropriacaoNarrativeSupport expropriacaoNarrative,
             ExecutionMeshStateService executionMeshStateService
     ) {
         this.operationalResolver = operationalResolver;
         this.workItemRepository = workItemRepository;
         this.narrativeSupport = narrativeSupport;
+        this.expropriacaoNarrative = expropriacaoNarrative;
         this.executionMeshStateService = executionMeshStateService;
     }
 
@@ -40,12 +43,12 @@ public class TransitoJulgadoExecutionDiagnosticSupport {
         LinkedHashMap<String, Object> actMatrix = narrativeSupport.buildActMatrix(processo);
         LinkedHashMap<String, Object> patrimonialMatrix = narrativeSupport.buildPatrimonialMatrix(processo);
         LinkedHashMap<String, Object> externalConstrictionMatrix = narrativeSupport.buildExternalConstrictionMatrix(processo);
-        LinkedHashMap<String, Object> expropriationMatrix = narrativeSupport.buildExpropriationMatrix(processo);
-        LinkedHashMap<String, Object> auctionCycleMatrix = narrativeSupport.buildAuctionCycleMatrix(processo);
+        LinkedHashMap<String, Object> expropriationMatrix = expropriacaoNarrative.buildExpropriationMatrix(processo);
+        LinkedHashMap<String, Object> auctionCycleMatrix = expropriacaoNarrative.buildAuctionCycleMatrix(processo);
         LinkedHashMap<String, Object> contingencyMatrix = narrativeSupport.buildContingencyMatrix(processo);
         LinkedHashMap<String, Object> reconciliationMatrix = narrativeSupport.buildReconciliationMatrix(processo);
-        LinkedHashMap<String, Object> homologationMatrix = narrativeSupport.buildHomologationMatrix(processo);
-        LinkedHashMap<String, Object> settlementMatrix = narrativeSupport.buildSettlementMatrix(processo);
+        LinkedHashMap<String, Object> homologationMatrix = expropriacaoNarrative.buildHomologationMatrix(processo);
+        LinkedHashMap<String, Object> settlementMatrix = expropriacaoNarrative.buildSettlementMatrix(processo);
         LinkedHashMap<String, Object> closureGovernanceMatrix = narrativeSupport.buildClosureGovernanceMatrix(processo);
         LinkedHashMap<String, Object> terminalMatrix = narrativeSupport.buildTerminalMatrix(processo);
         LinkedHashMap<String, Object> archiveLinkMatrix = narrativeSupport.buildArchiveLinkMatrix(processo);
@@ -106,12 +109,12 @@ public class TransitoJulgadoExecutionDiagnosticSupport {
                 narrativeSupport.buildActMatrix(processo),
                 narrativeSupport.buildPatrimonialMatrix(processo),
                 narrativeSupport.buildExternalConstrictionMatrix(processo),
-                narrativeSupport.buildExpropriationMatrix(processo),
-                narrativeSupport.buildAuctionCycleMatrix(processo),
+                expropriacaoNarrative.buildExpropriationMatrix(processo),
+                expropriacaoNarrative.buildAuctionCycleMatrix(processo),
                 narrativeSupport.buildContingencyMatrix(processo),
                 narrativeSupport.buildReconciliationMatrix(processo),
-                narrativeSupport.buildHomologationMatrix(processo),
-                narrativeSupport.buildSettlementMatrix(processo),
+                expropriacaoNarrative.buildHomologationMatrix(processo),
+                expropriacaoNarrative.buildSettlementMatrix(processo),
                 narrativeSupport.buildClosureGovernanceMatrix(processo),
                 narrativeSupport.buildTerminalMatrix(processo),
                 narrativeSupport.buildArchiveLinkMatrix(processo));
