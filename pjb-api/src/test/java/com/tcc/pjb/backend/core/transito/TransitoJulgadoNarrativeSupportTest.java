@@ -20,12 +20,8 @@ class TransitoJulgadoNarrativeSupportTest {
                 mock(ExecutionEnforcementResolver.class),
                 mock(PatrimonialConstrictionResolver.class),
                 mock(ExternalConstrictionResolver.class),
-                mock(ExpropriationGovernanceResolver.class),
-                mock(ExpropriationAuctionCycleResolver.class),
                 mock(ExternalConstrictionContingencyResolver.class),
                 mock(ExternalConstrictionReconciliationResolver.class),
-                mock(ExpropriationHomologationResolver.class),
-                mock(ExpropriationSettlementResolver.class),
                 mock(ExecutionClosureGovernanceResolver.class),
                 mock(ExecutionSatisfactionResolver.class),
                 mock(TerminalArchiveLinkResolver.class)
