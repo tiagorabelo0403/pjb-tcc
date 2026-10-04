@@ -53,6 +53,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | RecusaRecebimentoService | 11→10 | (usuarioRepository morto removido) | resto é HSM/audit/evento — alto risco |
 | OficialJusticaCumprimentoSoberanoService | 12→11 | (notificationCenterService morto removido) | resto é diligência/closure/painel acoplado |
 | AtendimentoChatService | 18→16 | config-grouping: 3 @Value de anexo → AtendimentoAttachmentProperties | resto é repos/supports/guards coesos do chat |
+| AtendimentoThreadDigestService | 12→10 | config-grouping: 3 @Value de anexo (reusa AtendimentoAttachmentProperties + campo maxBytes) | resto é repos/policy/settings coesos do digest |
 
 ### ⛔ Não reduzir (cada redução = dívida/risco; pular)
 - **Audit/HSM/authz:** ProcessDigitalTwinService, JuizGabineteDecisionalService, CitacaoHoraCertaEngine, AcordoService, DiligenceOperationalClosureService (cluster de certificado)

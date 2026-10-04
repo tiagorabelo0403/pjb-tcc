@@ -58,7 +58,7 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoQuarantineResolutionScheduler.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoReminderService.java": 12,
   "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoReportService.java": 11,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoThreadDigestService.java": 12,
+  "pjb-api/src/main/java/com/tcc/pjb/backend/modules/atendimento/service/AtendimentoThreadDigestService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/jobs/LaianeProtocolSubmitPjeJobHandler.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeAdvisoryPipelineOrchestrator.java": 11,
   "pjb-api/src/main/java/com/tcc/pjb/backend/modules/laiane/service/LaianeLawyerService.java": 13,

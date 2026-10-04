@@ -5,7 +5,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
@@ -50,9 +49,7 @@ public class AtendimentoThreadDigestService {
                                        AtendimentoThreadPolicyService policy,
                                        AtendimentoThreadSettingsService settings,
                                        AtendimentoThreadMemberSettingsRepository settingsRepo,
-                                       @Value("${pjb.atendimento.attachments.enabled:false}") boolean attachmentsEnabled,
-                                       @Value("${pjb.atendimento.attachments.maxBytes:10485760}") long attachmentMaxBytes,
-                                       @Value("${pjb.atendimento.attachments.maxPerMessage:3}") int attachmentMaxPerMessage) {
+                                       AtendimentoAttachmentProperties attachmentProperties) {
     this.currentUser = Objects.requireNonNull(currentUser);
     this.clock = Objects.requireNonNull(clock);
     this.chat = Objects.requireNonNull(chat);
@@ -62,9 +59,10 @@ public class AtendimentoThreadDigestService {
     this.policy = Objects.requireNonNull(policy);
     this.settings = Objects.requireNonNull(settings);
     this.settingsRepo = Objects.requireNonNull(settingsRepo);
-    this.attachmentsEnabled = attachmentsEnabled;
-    this.attachmentMaxBytes = attachmentMaxBytes;
-    this.attachmentMaxPerMessage = Math.max(0, attachmentMaxPerMessage);
+    Objects.requireNonNull(attachmentProperties);
+    this.attachmentsEnabled = attachmentProperties.isEnabled();
+    this.attachmentMaxBytes = attachmentProperties.getMaxBytes();
+    this.attachmentMaxPerMessage = Math.max(0, attachmentProperties.getMaxPerMessage());
   }
 
   @Transactional(readOnly = true)
