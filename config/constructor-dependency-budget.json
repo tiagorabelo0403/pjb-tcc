@@ -152,7 +152,6 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/recursal/mesh/NationalRecursalMeshTransactionalService.java": 13,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/rito/RitoWorkflowService.java": 11,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/ingest/SecretariatDocumentBulkProcessor.java": 17,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/live/SecretariatLiveHub.java": 14,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/operational/OperationalNotificationProofService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/orchestration/SecretariatAudienceOrchestrationService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/secretariat/orchestration/SecretariatOperationalOrchestrationService.java": 18,
