@@ -59,27 +59,19 @@ public class UiHistoryLiveHub {
       @Qualifier("pjbLiveExecutorService") ExecutorService io,
       LiveClusterBus clusterBus,
       LiveClusterStateStore clusterStateStore,
-      @Value("${pjb.ui.history.sse.replayBuffer:300}") int replayBufferSize,
-      @Value("${pjb.ui.history.sse.maxBatchEvents:200}") int maxBatchEvents,
-      @Value("${pjb.ui.history.sse.maxPendingBacklog:2000}") int maxPendingBacklog,
-      @Value("${pjb.ui.history.sse.emitterTimeoutMs:1800000}") long emitterTimeoutMs,
-      @Value("${pjb.ui.history.sse.maxChannels:4096}") int maxChannels,
-      @Value("${pjb.ui.history.sse.maxSubscribersPerTopic:8}") int maxSubscribersPerTopic,
-      @Value("${pjb.ui.history.sse.maxChannelsPerFlushCycle:256}") int maxChannelsPerFlushCycle,
-      @Value("${pjb.ui.history.sse.maxChannelsPerRefreshCycle:512}") int maxChannelsPerRefreshCycle,
-      @Value("${pjb.ui.history.sse.idleChannelTtl:5m}") Duration idleChannelTtl,
+      UiHistorySseProperties sseProps,
       @Value("${pjb.live.cluster.replay-ttl-seconds:900}") long replayTtlSeconds,
       @Value("${pjb.live.cluster.subscriber-ttl-seconds:120}") long subscriberTtlSeconds
   ) {
-    this.replayBufferSize = Math.max(50, replayBufferSize);
-    this.maxBatchEvents = Math.max(50, maxBatchEvents);
-    this.maxPendingBacklog = Math.max(this.maxBatchEvents, maxPendingBacklog);
-    this.emitterTimeoutMs = Math.max(60_000L, emitterTimeoutMs);
-    this.maxChannels = Math.max(64, maxChannels);
-    this.maxSubscribersPerTopic = Math.max(1, maxSubscribersPerTopic);
-    this.maxChannelsPerFlushCycle = Math.max(1, maxChannelsPerFlushCycle);
-    this.maxChannelsPerRefreshCycle = Math.max(1, maxChannelsPerRefreshCycle);
-    this.idleChannelTtlNanos = Objects.requireNonNull(idleChannelTtl, "idleChannelTtl").toNanos();
+    this.replayBufferSize = Math.max(50, sseProps.getReplayBuffer());
+    this.maxBatchEvents = Math.max(50, sseProps.getMaxBatchEvents());
+    this.maxPendingBacklog = Math.max(this.maxBatchEvents, sseProps.getMaxPendingBacklog());
+    this.emitterTimeoutMs = Math.max(60_000L, sseProps.getEmitterTimeoutMs());
+    this.maxChannels = Math.max(64, sseProps.getMaxChannels());
+    this.maxSubscribersPerTopic = Math.max(1, sseProps.getMaxSubscribersPerTopic());
+    this.maxChannelsPerFlushCycle = Math.max(1, sseProps.getMaxChannelsPerFlushCycle());
+    this.maxChannelsPerRefreshCycle = Math.max(1, sseProps.getMaxChannelsPerRefreshCycle());
+    this.idleChannelTtlNanos = Objects.requireNonNull(sseProps.getIdleChannelTtl(), "idleChannelTtl").toNanos();
     this.replayTtl = Duration.ofSeconds(Math.max(120L, replayTtlSeconds));
     this.subscriberTtl = Duration.ofSeconds(Math.max(30L, subscriberTtlSeconds));
     this.io = Objects.requireNonNull(io, "io");
