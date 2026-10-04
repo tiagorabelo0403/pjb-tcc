@@ -52,6 +52,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | PjbPlataformaSustentacaoApplicationService | 15→13 | 2-passos: toolkit puro → DiagnosticoSupport (#246) + eixo shadow-compare migração → PjbPlataformaMigracaoShadowDiagnosticoService | resto dos eixos compartilha applicationContext (beanScore) — precisa de prep próprio |
 | RecusaRecebimentoService | 11→10 | (usuarioRepository morto removido) | resto é HSM/audit/evento — alto risco |
 | OficialJusticaCumprimentoSoberanoService | 12→11 | (notificationCenterService morto removido) | resto é diligência/closure/painel acoplado |
+| AtendimentoChatService | 18→16 | config-grouping: 3 @Value de anexo → AtendimentoAttachmentProperties | resto é repos/supports/guards coesos do chat |
 
 ### ⛔ Não reduzir (cada redução = dívida/risco; pular)
 - **Audit/HSM/authz:** ProcessDigitalTwinService, JuizGabineteDecisionalService, CitacaoHoraCertaEngine, AcordoService, DiligenceOperationalClosureService (cluster de certificado)
