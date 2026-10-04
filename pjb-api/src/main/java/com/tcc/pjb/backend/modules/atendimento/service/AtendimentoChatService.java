@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -80,9 +79,7 @@ public class AtendimentoChatService {
                                   AtendimentoThreadCreationEligibilityService threadCreationEligibilityService,
                                   AtendimentoOutboundMessageGuardService outboundMessageGuardService,
                                   AtendimentoCidadaoSendWindowGuardService cidadaoSendWindowGuardService,
-                                  @Value("${pjb.atendimento.attachments.enabled:false}") boolean attachmentsEnabled,
-                                  @Value("${pjb.atendimento.attachments.maxPerMessage:3}") int attachmentMaxPerMessage,
-                                  @Value("${pjb.atendimento.attachments.maxTotalBytesPerMessage:20971520}") long attachmentMaxTotalBytesPerMessage) {
+                                  AtendimentoAttachmentProperties attachmentProperties) {
         this.currentUser = Objects.requireNonNull(currentUser);
         this.clock = Objects.requireNonNull(clock);
         this.processoRepository = Objects.requireNonNull(processoRepository);
@@ -98,9 +95,10 @@ public class AtendimentoChatService {
         this.threadCreationEligibilityService = Objects.requireNonNull(threadCreationEligibilityService);
         this.outboundMessageGuardService = Objects.requireNonNull(outboundMessageGuardService);
         this.cidadaoSendWindowGuardService = Objects.requireNonNull(cidadaoSendWindowGuardService);
-        this.attachmentsEnabled = attachmentsEnabled;
-        this.attachmentMaxPerMessage = Math.max(0, attachmentMaxPerMessage);
-        this.attachmentMaxTotalBytesPerMessage = Math.max(0L, attachmentMaxTotalBytesPerMessage);
+        Objects.requireNonNull(attachmentProperties);
+        this.attachmentsEnabled = attachmentProperties.isEnabled();
+        this.attachmentMaxPerMessage = Math.max(0, attachmentProperties.getMaxPerMessage());
+        this.attachmentMaxTotalBytesPerMessage = Math.max(0L, attachmentProperties.getMaxTotalBytesPerMessage());
     }
 
     @Transactional(readOnly = true)
