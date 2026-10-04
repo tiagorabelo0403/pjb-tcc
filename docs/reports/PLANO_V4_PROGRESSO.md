@@ -13,13 +13,13 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | F3 · remover andaimes de teste | 🟡 | scaffolds já removidos; **pendente**: migrar ~34 arch-tests que varrem FS p/ `@AnalyzeClasses` compartilhado (inclui o teste de 232s) |
 | F4 · achatar fachadas rasas | ⛔/⬜ | as `*SurfaceFacadeService` são exigidas por arch-tests; achatar exige remover junto os arch-tests (decisão de arquitetura) — não iniciado |
 | F5 · corrigir testes de mock | 🟡 | maioria é interação apropriada; corrigido RPV (#221); **pendente**: resíduo caso a caso |
-| F6 · aprofundar god services | 🔁 | **170** beans acima do teto 8; ver tabela abaixo |
+| F6 · aprofundar god services | 🔁 | **169** beans acima do teto 8; ver tabela abaixo |
 | F7 · RLS tabelas sensíveis | ✅ | já pronto no master (verificado) |
 | F8 · fechar MockGuard | ✅ | pje + pje-submission cobertos (verificado) |
 | F9 · sanitizar IA | ✅ | AiPromptEgressGuard ponto único (verificado) |
 | F10 · travar ICP/HSM prod | ✅ | ProductionCriticalControlValidator (verificado) |
 
-## F6 — god services (contador: 170 acima de 8)
+## F6 — god services (contador: 169 acima de 8)
 
 > Estado 2026-10-02: a fase de cortes baratos acabou. Varredura precisa confirmou que não há mais dep morta injetada em bean budget 9 (cruzaria 9→8), nem bean budget 10 com 2 deps mortas (cruzaria 10→8). Os beans 9–10 restantes são agregadores entrelaçados (deps cross-cutting em quase todo método), transversais de segurança (o classificador bloqueia remover dep de authz/HSM do construtor) ou coleções de widgets cujo único corte coeso toca segurança. Daqui pra frente, cruzar ≤8 exige extração real com efeito cascata; as deps mortas restantes (budget 11–12) só baixam o teto do bean.
 
@@ -29,6 +29,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | RecursalFormalizacaoService | 12→8 | #229 (pipeline PDF) |
 | AtendimentoModerationService | 10→8 | #232 (anexos → AtendimentoAttachmentQueryService) |
 | UiPresentationLiveHub | 14→6 | 9 @Value sse → UiPresentationSseProperties (@ConfigurationProperties) |
+| UiHistoryLiveHub | 14→6 | 9 @Value sse → UiHistorySseProperties (@ConfigurationProperties) |
 | CuradorEspecialAutomaticoService | 9→7 | duas deps mortas removidas (usuarioRepository, expedicaoRepository) |
 | OfficeWorkspaceModeService | 9→5 | cluster de vínculos → OfficeWorkspaceMembershipService (extração real) |
 | InstitutionalInboxApplicationService | 9→8 | validação de caixa destino → InstitutionalCaixaDestinoValidator |
