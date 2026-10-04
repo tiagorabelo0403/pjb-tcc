@@ -109,7 +109,6 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/decision/JuizGabineteDecisionalService.java": 19,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/decision/JuizOficialCumprimentoOrderService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/juiz/surface/JuizGabineteSurfaceFacadeService.java": 10,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/service/julgamento/live/JulgamentoVotosLiveHub.java": 14,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/julgamento/safety/DecisionSafetyService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/MinistroPlenarioAvancadoService.java": 14,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/ministro/MinistroPlenarioService.java": 9,
