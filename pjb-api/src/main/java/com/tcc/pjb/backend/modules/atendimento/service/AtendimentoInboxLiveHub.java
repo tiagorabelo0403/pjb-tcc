@@ -49,23 +49,16 @@ public class AtendimentoInboxLiveHub {
 
   public AtendimentoInboxLiveHub(
       @Qualifier("pjbLiveExecutorService") ExecutorService io,
-      @Value("${pjb.atendimento.sse.replayBuffer:200}") int replayBufferSize,
-      @Value("${pjb.atendimento.sse.maxBatchEvents:200}") int maxBatchEvents,
-      @Value("${pjb.atendimento.sse.maxPendingBacklog:2000}") int maxPendingBacklog,
-      @Value("${pjb.atendimento.sse.emitterTimeoutMs:1800000}") long emitterTimeoutMs,
-      @Value("${pjb.atendimento.sse.maxChannels:2048}") int maxChannels,
-      @Value("${pjb.atendimento.sse.maxSubscribersPerTopic:5}") int maxSubscribersPerTopic,
-      @Value("${pjb.atendimento.sse.maxChannelsPerFlushCycle:256}") int maxChannelsPerFlushCycle,
-      @Value("${pjb.atendimento.sse.idleChannelTtl:5m}") Duration idleChannelTtl
+      AtendimentoSseProperties sseProps
   ) {
-    this.replayBufferSize = Math.max(50, replayBufferSize);
-    this.maxBatchEvents = Math.max(50, maxBatchEvents);
-    this.maxPendingBacklog = Math.max(this.maxBatchEvents, maxPendingBacklog);
-    this.emitterTimeoutMs = Math.max(60_000L, emitterTimeoutMs);
-    this.maxChannels = Math.max(64, maxChannels);
-    this.maxSubscribersPerTopic = Math.max(1, maxSubscribersPerTopic);
-    this.maxChannelsPerFlushCycle = Math.max(1, maxChannelsPerFlushCycle);
-    this.idleChannelTtlNanos = Objects.requireNonNull(idleChannelTtl, "idleChannelTtl").toNanos();
+    this.replayBufferSize = Math.max(50, sseProps.getReplayBuffer());
+    this.maxBatchEvents = Math.max(50, sseProps.getMaxBatchEvents());
+    this.maxPendingBacklog = Math.max(this.maxBatchEvents, sseProps.getMaxPendingBacklog());
+    this.emitterTimeoutMs = Math.max(60_000L, sseProps.getEmitterTimeoutMs());
+    this.maxChannels = Math.max(64, sseProps.getMaxChannels());
+    this.maxSubscribersPerTopic = Math.max(1, sseProps.getMaxSubscribersPerTopic());
+    this.maxChannelsPerFlushCycle = Math.max(1, sseProps.getMaxChannelsPerFlushCycle());
+    this.idleChannelTtlNanos = Objects.requireNonNull(sseProps.getIdleChannelTtl(), "idleChannelTtl").toNanos();
     this.io = Objects.requireNonNull(io, "io");
   }
 
