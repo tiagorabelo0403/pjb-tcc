@@ -25,7 +25,7 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbArquiteturaConfiabilidadePilarEvaluator.java": 11,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbArquiteturaMotorProcessualPilarEvaluator.java": 17,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/substituicao/application/PjbSubstituicaoNacionalOperationalCockpitApplicationService.java": 9,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/sustentacao/application/PjbPlataformaSustentacaoApplicationService.java": 15,
+  "pjb-api/src/main/java/com/tcc/pjb/backend/core/plataforma/sustentacao/application/PjbPlataformaSustentacaoApplicationService.java": 13,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/procedural/NationalProceduralRoutingFoundationAnalyzer.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/anomalia/application/ProcessoAntifraudeOperacionalApplicationService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/core/processo/completude/application/ProcessoFechamentoTotalApplicationService.java": 13,

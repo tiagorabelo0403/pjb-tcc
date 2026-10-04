@@ -42,6 +42,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | AgreementChatContextService | 17→14 | parecer de acordo → AgreementSettlementAdvisoryService | resto é cluster único de `analyze` |
 | DiligenceProcessFormalizationService | 15→14 | resolvers de encerramento/certidão → DiligenceFormalizationRecordResolver | resto toca HSM/custódia/assinatura |
 | CidadaoMalhaProcessualNacionalService | 15→12 | loaders de detalhe (mov/doc/audiência/julgamento) → CidadaoProcessoDetalheLoaderService | resto é projeção/vínculo/identidade acoplados |
+| PjbPlataformaSustentacaoApplicationService | 15→13 | 2-passos: toolkit puro → DiagnosticoSupport (#246) + eixo shadow-compare migração → PjbPlataformaMigracaoShadowDiagnosticoService | resto dos eixos compartilha applicationContext (beanScore) — precisa de prep próprio |
 | RecusaRecebimentoService | 11→10 | (usuarioRepository morto removido) | resto é HSM/audit/evento — alto risco |
 | OficialJusticaCumprimentoSoberanoService | 12→11 | (notificationCenterService morto removido) | resto é diligência/closure/painel acoplado |
 
