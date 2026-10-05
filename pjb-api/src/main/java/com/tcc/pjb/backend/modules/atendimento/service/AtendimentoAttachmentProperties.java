@@ -8,6 +8,7 @@ public class AtendimentoAttachmentProperties {
     private boolean enabled = false;
     private int maxPerMessage = 3;
     private long maxTotalBytesPerMessage = 20_971_520L;
+    private long maxBytes = 10_485_760L;
 
     public boolean isEnabled() {
         return enabled;
@@ -31,5 +32,13 @@ public class AtendimentoAttachmentProperties {
 
     public void setMaxTotalBytesPerMessage(long maxTotalBytesPerMessage) {
         this.maxTotalBytesPerMessage = maxTotalBytesPerMessage;
+    }
+
+    public long getMaxBytes() {
+        return maxBytes;
+    }
+
+    public void setMaxBytes(long maxBytes) {
+        this.maxBytes = maxBytes;
     }
 }

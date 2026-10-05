@@ -18,6 +18,7 @@ class AtendimentoAttachmentPropertiesTest {
         assertThat(props.isEnabled()).isFalse();
         assertThat(props.getMaxPerMessage()).isEqualTo(3);
         assertThat(props.getMaxTotalBytesPerMessage()).isEqualTo(20_971_520L);
+        assertThat(props.getMaxBytes()).isEqualTo(10_485_760L);
     }
 
     @Test
@@ -26,6 +27,7 @@ class AtendimentoAttachmentPropertiesTest {
         source.put("pjb.atendimento.attachments.enabled", "true");
         source.put("pjb.atendimento.attachments.maxPerMessage", "5");
         source.put("pjb.atendimento.attachments.maxTotalBytesPerMessage", "1048576");
+        source.put("pjb.atendimento.attachments.maxBytes", "2097152");
 
         AtendimentoAttachmentProperties props = new Binder(new MapConfigurationPropertySource(source))
                 .bindOrCreate("pjb.atendimento.attachments", AtendimentoAttachmentProperties.class);
@@ -33,5 +35,6 @@ class AtendimentoAttachmentPropertiesTest {
         assertThat(props.isEnabled()).isTrue();
         assertThat(props.getMaxPerMessage()).isEqualTo(5);
         assertThat(props.getMaxTotalBytesPerMessage()).isEqualTo(1_048_576L);
+        assertThat(props.getMaxBytes()).isEqualTo(2_097_152L);
     }
 }
