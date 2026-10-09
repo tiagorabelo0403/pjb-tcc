@@ -19,6 +19,15 @@ public class SalarioMinimoNacionalService {
 
     static final Map<Integer, BigDecimal> FALLBACK_OFICIAL = fallbackOficial();
 
+    private static final Map<Integer, FonteOficial> FONTES_DO_FALLBACK = Map.of(
+            2023, new FonteOficial("Lei 14.663/2023", "Planalto"),
+            2024, new FonteOficial("Decreto 11.864/2023", "Planalto"),
+            2025, new FonteOficial("Decreto 12.342/2024", "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2024/decreto/d12342.htm"),
+            2026, new FonteOficial("Decreto 12.797/2025", "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/decreto/d12797.htm"));
+
+    private record FonteOficial(String norma, String url) {
+    }
+
     private final SalarioMinimoNacionalRepository repository;
 
     public SalarioMinimoNacionalService(SalarioMinimoNacionalRepository repository) {
@@ -32,30 +41,40 @@ public class SalarioMinimoNacionalService {
 
     @Transactional(readOnly = true)
     public BigDecimal valorEm(LocalDate data) {
+        return referenciaEm(data).valor();
+    }
+
+    @Transactional(readOnly = true)
+    public SalarioMinimoReferenciaAnual referenciaEm(LocalDate data) {
         LocalDate base = data != null ? data : LocalDate.now();
-        Optional<SalarioMinimoNacional> porData = repository.findTopByVigenteDesdeLessThanEqualAndAtivoTrueOrderByVigenteDesdeDesc(base)
-                .filter(s -> s.vigenteEm(base));
-        if (porData.isPresent()) {
-            return normalizar(porData.get().getValorMensal());
-        }
-        return valorPorAno(base.getYear());
+        return repository.findTopByVigenteDesdeLessThanEqualAndAtivoTrueOrderByVigenteDesdeDesc(base)
+                .filter(s -> s.vigenteEm(base))
+                .map(SalarioMinimoNacionalService::referenciaDoRegistro)
+                .orElseGet(() -> referenciaAte(base.getYear()));
     }
 
     @Transactional(readOnly = true)
     public BigDecimal valorPorAno(int ano) {
+        return referenciaAte(ano).valor();
+    }
+
+    @Transactional(readOnly = true)
+    public SalarioMinimoReferenciaAnual referenciaAte(int ano) {
         Optional<SalarioMinimoNacional> registro = repository.findTopByAnoReferenciaLessThanEqualAndAtivoTrueOrderByAnoReferenciaDesc(ano);
         if (registro.isPresent()) {
-            return normalizar(registro.get().getValorMensal());
+            return referenciaDoRegistro(registro.get());
         }
-        BigDecimal fallback = FALLBACK_OFICIAL.get(ano);
-        if (fallback != null) {
-            return normalizar(fallback);
-        }
-        return normalizar(FALLBACK_OFICIAL.entrySet().stream()
-                .filter(e -> e.getKey() <= ano)
-                .max(Map.Entry.comparingByKey())
-                .map(Map.Entry::getValue)
-                .orElse(new BigDecimal("1621.00")));
+        int anoDoFallback = FALLBACK_OFICIAL.keySet().stream()
+                .filter(conhecido -> conhecido <= ano)
+                .max(Integer::compareTo)
+                .orElseGet(() -> FALLBACK_OFICIAL.keySet().stream().max(Integer::compareTo).orElseThrow());
+        FonteOficial fonte = FONTES_DO_FALLBACK.get(anoDoFallback);
+        return new SalarioMinimoReferenciaAnual(
+                anoDoFallback,
+                normalizar(FALLBACK_OFICIAL.get(anoDoFallback)),
+                LocalDate.of(anoDoFallback, 1, 1),
+                fonte == null ? null : fonte.norma(),
+                fonte == null ? null : fonte.url());
     }
 
     @Transactional(readOnly = true)
@@ -88,18 +107,7 @@ public class SalarioMinimoNacionalService {
 
     @Transactional(readOnly = true)
     public int anoMaisRecenteConhecido() {
-        int anoAtual = LocalDate.now().getYear();
-        Optional<SalarioMinimoNacional> registro = repository.findTopByAnoReferenciaLessThanEqualAndAtivoTrueOrderByAnoReferenciaDesc(anoAtual);
-        if (registro.isPresent()) {
-            return registro.get().getAnoReferencia();
-        }
-        if (FALLBACK_OFICIAL.containsKey(anoAtual)) {
-            return anoAtual;
-        }
-        return FALLBACK_OFICIAL.keySet().stream()
-                .filter(ano -> ano <= anoAtual)
-                .max(Integer::compareTo)
-                .orElseGet(() -> FALLBACK_OFICIAL.keySet().stream().max(Integer::compareTo).orElse(anoAtual));
+        return referenciaAte(LocalDate.now().getYear()).ano();
     }
 
     private static Map<Integer, BigDecimal> fallbackOficial() {
@@ -109,6 +117,15 @@ public class SalarioMinimoNacionalService {
         valores.put(2025, new BigDecimal("1518.00"));
         valores.put(2026, new BigDecimal("1621.00"));
         return Map.copyOf(valores);
+    }
+
+    private static SalarioMinimoReferenciaAnual referenciaDoRegistro(SalarioMinimoNacional registro) {
+        return new SalarioMinimoReferenciaAnual(
+                registro.getAnoReferencia(),
+                normalizar(registro.getValorMensal()),
+                registro.getVigenteDesde(),
+                registro.getNormaReferencia(),
+                registro.getFonteOficial());
     }
 
     private static BigDecimal normalizar(BigDecimal valor) {

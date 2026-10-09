@@ -986,19 +986,23 @@ competência do JEC (40 SM) e JEF (60 SM).
   `salarioMinimoReferenciaVemDoServiceCanonicoNaoDeLiteralAntigo` mocka o service com valor
   distinto do antigo hardcode e prova que payloadInicial + requestExemplo do bootstrap
   `FEDERAL_PREVIDENCIARIO_CJF` refletem o valor mockado.
-- **CalculoJudicialEconomicReferenceService** — `valorPorAno(2025)` e `valorPorAno(2026)`
-  substituídos por `valorPorAno(hoje.getYear() - 1)` e `valorPorAno(hoje.getYear())`, com `hoje`
-  já disponível no método. Decisão de janela documentada: (ano anterior + ano corrente) evita
-  cair no fallback do próximo ano sem decreto publicado, o que exporia dois valores idênticos
-  rotulados como anos diferentes. Constantes de metadata (`FONTE_SALARIO_2026`, `FONTE_INSS_2026`,
-  `TETO_INSS_2026`) mantidas — são referências a normas específicas, não valor monetário do SM.
-  Teste `janelaComparativaChamaAnoAnteriorEAnoCorrenteDerivadosDeLocalDateNaoLiterais` verifica
-  as chamadas por `ArgumentMatchers` derivados de `LocalDate.now().getYear()`, sem fixar anos
-  literais que ficariam errados no futuro.
-- **DTO `CalculoJudicialSalarioMinimoDto`** — campos ainda nomeados `referencia2025`/`referencia2026`,
-  o que ficará semanticamente incorreto no ano seguinte. Não renomeado nesta etapa porque é
-  breaking change de contrato consumido pelo frontend; registrado como observação para etapa
-  futura de generalização de contrato (`referenciaAnoAnterior`/`referenciaAnoCorrente`).
+- **CalculoJudicialEconomicReferenceService** — os literais `valorPorAno(2025)`/`valorPorAno(2026)`
+  saíram. O painel pede ao serviço canônico o valor vigente na data de hoje, no fuso jurídico
+  (`SalarioMinimoNacionalService.referenciaEm`), e a referência anterior a ele (`referenciaAte`). As
+  duas devolvem o registro de origem — ano, valor, início da vigência, norma e fonte, do banco ou da
+  tabela oficial embarcada —, e `valorEm`, `valorPorAno` e `anoMaisRecenteConhecido` derivam delas.
+  Sem decreto do ano novo cadastrado, o valor sai rotulado com o ano de onde veio (em janeiro de 2027
+  sem registro, `anoVigente` = 2026), com norma, fonte e vigência do mesmo registro; o teste
+  `anoSemDecretoCadastradoNaoRotulaOValorDoAnoAnteriorComoSeFosseDoAnoNovo` fixa o relógio em
+  2027-01-15 com o serviço real. O catálogo `fontesOficiais` usa as fontes desses registros em vez de
+  repetir URLs. `FONTE_INSS_2026` e `TETO_INSS_2026` seguem como referência à norma do INSS.
+- **DTO `CalculoJudicialSalarioMinimoDto`** — os campos `referencia2025`/`referencia2026` viraram
+  `anoVigente`, `anoReferenciaAnterior` e `referenciaAnterior`. Nenhum cliente do repositório lia os
+  nomes antigos; a impressão digital do contrato do frontend de cálculo (`X-PJB-Contract-Fingerprint`)
+  avançou para `pjb-calculo-front-v1-r57`.
+- **Fonte oficial** — a seed das migrations V115/V357 gravou `fonte_oficial = 'Planalto'`; a V366 grava
+  a URL do decreto de 2025 e de 2026 quando o valor ainda é o semeado. Para 2023 e 2024 não há URL
+  conferida no repositório, e a fonte segue "Planalto".
 
 **Guard de regressão:** `salario_minimo_hardcoded_guard.py` (bridge em `scripts/`, corpo em
 `tooling/python/scripts/`) detecta 5 padrões: literal `1XXX.00` próximo a identificador de SM,

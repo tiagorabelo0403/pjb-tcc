@@ -12,7 +12,7 @@ public record CalculoJudicialEconomicReferenceResponse(
         String referenciaTemporal,
         CalculoJudicialSalarioMinimoDto salarioMinimoNacional,
         CalculoJudicialInssReferenceDto inss,
-        @Schema(description = "URLs das fontes oficiais de referência econômica — Planalto, INSS, CNJ e manuais")
+        @Schema(description = "Fontes oficiais de referência econômica (salário mínimo, INSS, CNJ e manuais): URL da publicação quando registrada, senão o órgão que a publicou")
         @Size(max = 10)
         Map<String, String> fontesOficiais,
         @Schema(description = "Metadados técnicos do serviço de referência econômica — modo de refresh, versão e estado do painel",

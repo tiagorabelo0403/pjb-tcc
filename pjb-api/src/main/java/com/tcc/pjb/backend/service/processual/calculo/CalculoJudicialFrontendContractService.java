@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 public class CalculoJudicialFrontendContractService {
 
     private static final String VERSION = "v1";
-    private static final String FINGERPRINT = "pjb-calculo-front-v1-r56";
+    private static final String FINGERPRINT = "pjb-calculo-front-v1-r57";
     private static final Instant RELEASED_AT = Instant.parse("2026-03-29T12:00:00Z");
     private static final String CACHE_CONTROL = "private, max-age=300, stale-while-revalidate=60";
     private static final String TRANSPORT = "application/problem+json";
