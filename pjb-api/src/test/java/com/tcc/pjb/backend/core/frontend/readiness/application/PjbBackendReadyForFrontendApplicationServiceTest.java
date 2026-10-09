@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.mock.env.MockEnvironment;
 
 class PjbBackendReadyForFrontendApplicationServiceTest {
 
@@ -91,6 +92,7 @@ public class ProcessualProtocoloController {
                 buildGate(),
                 matrix(),
                 mock(AuditLedgerService.class),
+                new MockEnvironment().withProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri", "https://emissor.exemplo.gov.br"),
                 tempDir);
 
         var summary = service.summary();
@@ -175,6 +177,7 @@ eleitoral:
                 buildGate(),
                 matrix(),
                 mock(AuditLedgerService.class),
+                new MockEnvironment(),
                 tempDir);
 
         var summary = service.integrationPackSummary();
@@ -229,5 +232,27 @@ eleitoral:
         TestQualityMatrixService service = mock(TestQualityMatrixService.class);
         when(service.verify()).thenReturn(new TestQualityMatrixResponse(10, 5, 10, 5, 1, List.of("PrazoProcessualNacionalService"), List.of(), List.of("manter contratos")));
         return service;
+    }
+
+    @Test
+    void contratoDeAutenticacaoNaoAfirmaJwtSemEmissorConfiguradoMesmoComOResourceServerNoCodigo() throws Exception {
+        Files.createDirectories(tempDir.resolve("src/main/java/com/tcc/pjb/backend/configs"));
+        Files.writeString(tempDir.resolve("src/main/java/com/tcc/pjb/backend/configs/SecurityConfig.java"), "oauth2ResourceServer SessionCreationPolicy.STATELESS CorsConfigurationSource");
+
+        PjbBackendReadyForFrontendApplicationService service = new PjbBackendReadyForFrontendApplicationService(
+                frontendDelivery(),
+                finalClosure(),
+                apiSurface(),
+                buildGate(),
+                matrix(),
+                mock(AuditLedgerService.class),
+                new MockEnvironment(),
+                tempDir);
+
+        var auth = service.authContract();
+
+        assertThat(auth.jwtEnabled()).isFalse();
+        assertThat(auth.ready()).isFalse();
+        assertThat(auth.notes()).contains("jwt=false");
     }
 }
