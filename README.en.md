@@ -429,7 +429,7 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 |--------|-------|-------|
 | Total unit tests | Surefire | **5,571** |
 | Unit test failures | Surefire | **0** |
-| Skipped | Surefire | 5 |
+| Skipped | Surefire | 1 |
 | Unit test execution time | Surefire | **~14 min** |
 | Integration test classes | Failsafe | **118** ¹ |
 | Polo-composition-engine tests | Failsafe | **+10 green** (role by procedural type: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
@@ -636,7 +636,7 @@ graph TD
 | Legal AI | Anthropic Claude API — Memory Stores, Dreams, reflective synthesis |
 | Observability | Micrometer, Spring Actuator, materialized Process Mining |
 | Static Analysis | Qodana (JetBrains), JaCoCo, Checkstyle, SpotBugs, ArchUnit |
-| Structural Guards | 7 Python scripts + ArchUnit integrated into CI |
+| Structural Guards | 48 Python scripts + ArchUnit integrated into CI |
 | Containerization | Docker Compose (dev/test), Kubernetes (production) |
 
 [⬆ Back to top](#quick-navigation)
@@ -1035,8 +1035,8 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 | Unit tests (Surefire) | **5,571 · 0 failures · 0 errors · 1 skipped** |
 | Integration tests (Failsafe) | **118 classes · 0 failures in the latest measurement (see note ² in the Tests section)** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
-| ADRs | 57 architectural decisions documented |
-| Python Guards | 46 scripts active in CI |
+| ADRs | 58 architectural decisions documented |
+| Python Guards | 48 scripts active in CI |
 | SBOM | CycloneDX generated on every build |
 | CVE audit | Trivy scans the SBOM on every PR; blocks merge on CRITICAL CVEs |
 | Correlation ID | Mandatory on every request |
