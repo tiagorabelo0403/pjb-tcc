@@ -1,8 +1,10 @@
 package com.tcc.pjb.backend.core.quality;
 
+import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaMethod;
-import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
+import com.tngtech.archunit.junit.AnalyzeClasses;
+import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
@@ -12,9 +14,6 @@ import com.tcc.pjb.backend.model.dto.workitem.WorkItemDto;
 import com.tcc.pjb.backend.model.repository.BoletimOcorrenciaDigitalRepository;
 import com.tcc.pjb.backend.model.repository.InqueritoPolicialDigitalRepository;
 import com.tcc.pjb.backend.service.workitem.WorkItemService;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
@@ -43,24 +42,11 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
  * transitiva. O guard está no service layer (não no controller), o que é
  * a camada correta para este tipo de verificação.
  */
+@AnalyzeClasses(packages = "com.tcc.pjb.backend", importOptions = ImportOption.DoNotIncludeTests.class)
 class PjbBolaRegressionGuardTest {
 
-    static com.tngtech.archunit.core.domain.JavaClasses classes;
-
-    @BeforeAll
-    static void carregarClasses() {
-        classes = new ClassFileImporter()
-                .withImportOption(new ImportOption.DoNotIncludeTests())
-                .importPackages("com.tcc.pjb.backend");
-    }
-
-    @AfterAll
-    static void liberarGrafoDeClasses() {
-        classes = null;
-    }
-
-    @Test
-    void workItemService_metodos_que_retornam_WorkItemDto_devem_chamar_guard_requireAccess() {
+    @ArchTest
+    static void workItemService_metodos_que_retornam_WorkItemDto_devem_chamar_guard_requireAccess(JavaClasses classes) {
         ArchCondition<JavaMethod> chamaPjbObjectScopeGuardRequireAccess =
                 new ArchCondition<JavaMethod>("chamar PjbObjectScopeGuard.requireAccess()") {
                     @Override
@@ -90,8 +76,8 @@ class PjbBolaRegressionGuardTest {
         rule.check(classes);
     }
 
-    @Test
-    void boletimOcorrenciaDigitalRepository_nao_deve_ser_acessado_fora_do_fluxo_policial_guardado() {
+    @ArchTest
+    static void boletimOcorrenciaDigitalRepository_nao_deve_ser_acessado_fora_do_fluxo_policial_guardado(JavaClasses classes) {
         ArchRule rule = noClasses()
                 .that().resideOutsideOfPackages(
                         "com.tcc.pjb.backend.service.criminal..",
@@ -103,8 +89,8 @@ class PjbBolaRegressionGuardTest {
         rule.check(classes);
     }
 
-    @Test
-    void inqueritoPolicialDigitalRepository_nao_deve_ser_acessado_fora_do_fluxo_policial_guardado() {
+    @ArchTest
+    static void inqueritoPolicialDigitalRepository_nao_deve_ser_acessado_fora_do_fluxo_policial_guardado(JavaClasses classes) {
         ArchRule rule = noClasses()
                 .that().resideOutsideOfPackages(
                         "com.tcc.pjb.backend.service.criminal..",
@@ -116,8 +102,8 @@ class PjbBolaRegressionGuardTest {
         rule.check(classes);
     }
 
-    @Test
-    void coreSecurityIdentity_nao_deve_depender_de_afiliacao_institucional() {
+    @ArchTest
+    static void coreSecurityIdentity_nao_deve_depender_de_afiliacao_institucional(JavaClasses classes) {
         ArchRule rule = noClasses()
                 .that().resideInAPackage("com.tcc.pjb.backend.core.security.identity..")
                 .should().dependOnClassesThat().resideInAPackage(
