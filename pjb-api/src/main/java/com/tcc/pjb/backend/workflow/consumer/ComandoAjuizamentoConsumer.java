@@ -7,17 +7,22 @@ import org.springframework.stereotype.Component;
 import com.tcc.pjb.backend.workflow.adapter.AjuizamentoWorkflowAdapter;
 import com.tcc.pjb.backend.workflow.zeebe.ZeebeCompat;
 import io.camunda.zeebe.client.ZeebeClient;
-import lombok.RequiredArgsConstructor;
 
 @Component
-@ConditionalOnBean(ZeebeClient.class)
-@RequiredArgsConstructor
-@SuppressWarnings("deprecation")
+@ConditionalOnBean(type = "io.camunda.zeebe.client.ZeebeClient")
 public class ComandoAjuizamentoConsumer {
 
+    @SuppressWarnings("deprecation")
     private final ZeebeClient zeebeClient;
     private final AjuizamentoWorkflowAdapter adapter;
 
+    @SuppressWarnings("deprecation")
+    public ComandoAjuizamentoConsumer(ZeebeClient zeebeClient, AjuizamentoWorkflowAdapter adapter) {
+        this.zeebeClient = zeebeClient;
+        this.adapter = adapter;
+    }
+
+    @SuppressWarnings("deprecation")
     public void startAjuizamento(Map<String, Object> vars) {
         Map<String, Object> commandVars = vars == null ? Map.of() : new LinkedHashMap<>(vars);
 

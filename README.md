@@ -425,7 +425,7 @@ python scripts/docker_zombie_container_guard.py         # lista containers zumbi
 python scripts/docker_zombie_container_guard.py --kill  # para e remove os zumbis
 ```
 
-Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configurável via `--unhealthy-threshold-minutes`) ou com 5+ restarts (via `--restart-count-threshold`). Sai silenciosamente com código 0 se o daemon Docker estiver indisponível — não é um guard de "Docker precisa estar rodando".
+Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configurável via `--unhealthy-threshold-minutes`) ou com 5+ restarts (via `--restart-count-threshold`). Sai com código 0 (SKIP) se o daemon Docker estiver indisponível — não é um guard de "Docker precisa estar rodando".
 
 ### Rodar um teste específico com stack trace completo
 
@@ -886,11 +886,11 @@ O `AiModelClientFactory` escolhe o provedor por `pjb.ai.{v1,v2,v3}.provider` (co
 |----------|-------------|----------------------|
 | `openai` (default) | Produção, com `OPENAI_API_KEY` configurada | API OpenAI, cobrada por token |
 | `ollama` | Ambiente sem chave de API ou sem acesso à internet — desenvolvimento local, demonstração offline | Servidor Ollama local (`http://localhost:11434` por padrão), sem custo por token |
-| `local` (fallback) | Nenhum provider configurado | Nenhuma — heurística determinística, sem LLM real |
+| `local` (fallback) | `openai` sem `OPENAI_API_KEY`, ou provider não reconhecido | Nenhuma — heurística determinística, sem LLM real |
 
 Ativar exige só variável de ambiente, sem mudança de código: `PJB_AI_PROVIDER=ollama` (chat) e `PJB_AI_EMBEDDING_MODE=ollama` (embedding, troca o `DeterministicHashEmbeddingService` por `OllamaEmbeddingService`). `PJB_AI_OLLAMA_MODEL`/`PJB_AI_OLLAMA_EMBEDDING_MODEL` escolhem o modelo (default `qwen2.5:7b` e `nomic-embed-text`, os mesmos usados na verificação manual desta integração). `OllamaChatClient` e `OllamaEmbeddingService` implementam os mesmos contratos (`AiModelClient`, `EmbeddingService`) usados pelo provider OpenAI — nenhum consumidor (`JudexOnDemandController`, `SemanticPrecedentSearchService` etc.) precisa saber qual provider está ativo.
 
-Cobertura: `OllamaChatClientTest` e `OllamaEmbeddingServiceTest` (4 testes, `HttpServer` em processo — não dependem do Ollama estar rodando em CI).
+Cobertura: `OllamaChatClientTest` e `OllamaEmbeddingServiceTest` (6 testes, `HttpServer` em processo — não dependem do Ollama estar rodando em CI).
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
@@ -1124,11 +1124,13 @@ python scripts/runtime_concurrency_guard.py
 ### Limiar legal em salários mínimos
 
 Limiar expresso em salários mínimos — 40 SM do Juizado Especial, 60 SM do JEF, 150 SM do crédito
-trabalhista do art. 83 I, 40 SM da impontualidade do art. 94 I — se calcula contra o salário mínimo
+trabalhista do art. 83, I, e 40 SM da impontualidade do art. 94, I, da Lei 11.101/2005 — se calcula contra o salário mínimo
 que rege o marco do processo, e nunca contra o de hoje. `SalarioMinimoNacionalService` é a fonte
-canônica, e recebe sempre uma data de domínio: data do pedido, da distribuição, do fato.
+canônica: `valorEm(data)` recebe a data de domínio — data do pedido, da distribuição, do fato. O
+`valorVigente()` é usado só no que se avalia no presente, como a presunção de hipossuficiência da
+gratuidade e a referência econômica atual dos cálculos.
 
-`LocalDate.now()` dentro dessa chamada equivale a hardcode, porque faz o mesmo processo mudar de
+`LocalDate.now()` passado a `valorEm`, `multiplicar` ou `limite` equivale a hardcode, porque faz o mesmo processo mudar de
 resposta conforme o dia em que for consultado, e mudar de novo na virada do ano. Sem data de domínio
 disponível, o alerta não é emitido: competência calculada contra o salário errado é pior que
 competência não sinalizada.
@@ -1140,7 +1142,7 @@ nos Municípios (ADCT art. 87, II), enquanto o ente não fixar o seu por lei pr�
 quantidade, fundamento e valor em dinheiro a partir do ente e da data do trânsito em julgado, que é
 a data cujo salário mínimo converte o teto em reais em todos os serviços. Sem ente ou sem trânsito
 não há teto calculado: o crédito fica no regime geral do precatório (CF art. 100), e os cálculos
-previdenciários da CJF deixam de projetar a classificação em vez de usar o salário mínimo de hoje.
+previdenciários do CJF deixam de projetar a classificação em vez de usar o salário mínimo de hoje.
 
 `salario_minimo_hardcoded_guard` verifica a regra, e recusa tanto a constante monetária local quanto
 o `LocalDate.now()` inline.
@@ -1153,8 +1155,8 @@ o controller alcance o domínio interno — as duas regras que o projeto já tin
 satisfeitas ao mesmo tempo, em vez de uma ceder para a outra.
 
 Existe exatamente um arquivo com esse nome no código de produção, e nenhuma classe interna repete o
-nome simples. A duplicata anterior era justamente assim: uma classe aninhada homônima fazia o
-`@RequestMapping` de doze controllers ler como canônico apontando para outro catálogo.
+nome simples: uma classe aninhada homônima faria o `@RequestMapping` dos controllers parecer canônico
+apontando para outro catálogo.
 
 ### Contrato de resposta
 
@@ -1167,11 +1169,12 @@ a transação já fechou.
 parâmetro genérico de `ResponseEntity<Instituicao>` é apagado no bytecode e o modelo de classes só
 enxerga `ResponseEntity`.
 
-### Controller não alcança repository
+### Controller não acessa dados diretamente
 
-Nenhuma classe terminada em `Controller` depende de classe terminada em `Repository`. A regra é por
-**nome**, não por pacote: o projeto tem oito pacotes de repository, controller nem sempre mora sob
-`controller`, e a versão por pacote dava verde escondendo seis violações reais.
+Nenhuma classe terminada em `Controller` depende de repositório, DAO, Spring JDBC, Hibernate, `EntityManager`,
+`DataSource` ou conexão JDBC. A regra é por **nome** e por tipo, não por pacote: o projeto tem nove
+pacotes de repository e controller nem sempre mora sob `controller`, então uma regra por pacote deixaria
+passar justamente os casos que importam.
 
 A camada HTTP traduz — resolve o usuário autenticado, aplica limite de capacidade, converte exceção
 de domínio em status. Buscar, autorizar e decidir vivem em serviço de aplicação, que é onde o teste

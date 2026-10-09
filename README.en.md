@@ -417,6 +417,15 @@ python scripts/reap_orphan_test_jvms.py --kill  # terminate the orphans and free
 
 Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits non-zero if orphans are found — useful as a CI signal); `--kill` reaps them. It is not wired into the build automatically — run it when you notice instability, before a long run.
 
+If Docker (not the JVM) becomes slow or `verify` hangs while starting the Testcontainers containers, the most common cause is a **zombie container**: a container stuck in `unhealthy` for hours or days (typically from a partial `docker-compose up` with a dependency that never came up) holds CPU and memory of the Docker Desktop VM indefinitely while serving nothing. Dedicated guard:
+
+```bash
+python scripts/docker_zombie_container_guard.py         # list zombie containers (report-only)
+python scripts/docker_zombie_container_guard.py --kill  # stop and remove the zombies
+```
+
+Any container `unhealthy` for more than 30 minutes (configurable via `--unhealthy-threshold-minutes`) or with 5+ restarts (via `--restart-count-threshold`) is flagged as a zombie. It exits with code 0 (SKIP) when the Docker daemon is unavailable — it is not a "Docker must be running" guard.
+
 ### Run a Specific Test with Full Stack Trace
 
 ```bash
@@ -635,7 +644,7 @@ graph TD
 | Contracts | Pact — Consumer-Driven Contract Testing |
 | Legal AI | Anthropic Claude API — Memory Stores, Dreams, reflective synthesis |
 | Observability | Micrometer, Spring Actuator, materialized Process Mining |
-| Static Analysis | Qodana (JetBrains), JaCoCo, Checkstyle, SpotBugs, ArchUnit |
+| Static Analysis | Qodana (JetBrains), JaCoCo, Checkstyle, SpotBugs, ArchUnit, deprecation ratchet in the compiler |
 | Structural Guards | 48 Python scripts + ArchUnit integrated into CI |
 | Containerization | Docker Compose (dev/test), Kubernetes (production) |
 
@@ -866,6 +875,20 @@ Coverage: `VectorSearchServicePgVectorTest` (8 tests with mocked `JdbcTemplate` 
 
 **Real ingest (not just search):** the same `pgvector` mode also swaps the `InMemoryCosineVectorIndex` (in-memory, LRU 20k, lost on every restart) for `PgVectorPersistentIndex` — a `VectorIndex` implementation that persists into the same `pjb_ai_vector_document` store. Wiring is `@ConditionalOnMissingBean(VectorIndex.class)` on the in-memory implementation and `@ConditionalOnProperty(mode=pgvector)` on the persistent one: without the flag, historical behavior stays untouched; with the flag, `SemanticPrecedentSearchService` gains real persistence, data shared across instances, and `bootstrapIfNeeded` (which already lazily populates the index from `PrecedenteRepository`) automatically becomes the ingest pipeline. Coverage: `PgVectorPersistentIndexTest` (8 unit, mocked `JdbcTemplate` — idempotent upsert with case-insensitive metadata normalization, `size()`, JSONB filter, dimension truncation) plus `PgVectorPersistentIndexIT` (4 IT, real Postgres via Testcontainers on the `pgvector/pgvector:pg17` image, migration V307 applied — proving `@ConditionalOnMissingBean` swaps the backend, that indexing 3 documents with orthogonal vectors produces the correct query ranking, that `metadata @> jsonb` really does filter, and that upsert with the same `doc_id` replaces the content instead of duplicating).
 
+### Local AI provider (Ollama, no token)
+
+`AiModelClientFactory` picks the provider from `pjb.ai.{v1,v2,v3}.provider` (falling back to `pjb.ai.provider`, default `openai`):
+
+| Provider | When to use | External dependency |
+|----------|-------------|---------------------|
+| `openai` (default) | Production, with `OPENAI_API_KEY` set | OpenAI API, billed per token |
+| `ollama` | Environments without an API key or internet access — local development, offline demos | Local Ollama server (`http://localhost:11434` by default), no per-token cost |
+| `local` (fallback) | `openai` without `OPENAI_API_KEY`, or an unrecognized provider | None — deterministic heuristic, no real LLM |
+
+Switching takes only environment variables, no code change: `PJB_AI_PROVIDER=ollama` (chat) and `PJB_AI_EMBEDDING_MODE=ollama` (embeddings; replaces `DeterministicHashEmbeddingService` with `OllamaEmbeddingService`). `PJB_AI_OLLAMA_MODEL`/`PJB_AI_OLLAMA_EMBEDDING_MODEL` select the models (defaults `qwen2.5:7b` and `nomic-embed-text`, the same ones used to verify this integration by hand). `OllamaChatClient` and `OllamaEmbeddingService` implement the same contracts (`AiModelClient`, `EmbeddingService`) as the OpenAI provider, so no consumer (`JudexOnDemandController`, `SemanticPrecedentSearchService`, and so on) needs to know which provider is active.
+
+Coverage: `OllamaChatClientTest` and `OllamaEmbeddingServiceTest` (6 tests against an in-process `HttpServer` — they do not need Ollama running in CI).
+
 [⬆ Back to top](#quick-navigation)
 
 ---
@@ -1084,8 +1107,60 @@ python scripts\config_taxonomy_guard.py
 | `transactional_hotspot_guard` | Zero unreviewed heavy-I/O finding inside `@Transactional` — a reviewed hotspot requires `@PjbTransactionalBudget` |
 | `python_syntax_warning_guard` | Zero `SyntaxWarning` or `SyntaxError` across automation scripts — an invalid string escape becomes an error in a future Python release |
 | `config_taxonomy_guard` | Configuration properties within the defined taxonomy |
+| `hibernate_filter_definition_guard` | Every `@Filter(name=X)` has a matching `@FilterDef(name=X)`; the SQL `condition` has balanced parentheses; `@ConditionalOnBean`/`@ConditionalOnMissingBean` does not reference `EntityManager`/`*Repository` on a plain `@Component` class (premature evaluation during component scan — the bean is never created, with no error at all) |
 | `anti_mock_prod_guard` | Blocks if critical integration mocks are active in production: Gov.br, ICP-Brasil, Kafka, Elasticsearch, AI |
 | `openapi_weakness_detector` | Detects `Map<String,Object>` without typed schema, fields without `format: date-time`, routes without registered OpenAPI contract |
+| `java_regression_signature_guard` | API signatures that have already caused regressions in the project and must not come back |
+| `guard_cwd_independence_guard` | A guard that resolves repository paths against the working directory — CI runs from `scripts/`, where that path does not exist, so the scan comes back empty and reports success |
+| `internal_type_hygiene_guard` | Nested types in files longer than 900 lines |
+
+### Legal thresholds in minimum wages
+
+Thresholds expressed in minimum wages — 40 for the Civil Small Claims Court (JEC), 60 for the Federal Small Claims Court (JEF), 150 for labor claims ranked first in bankruptcy (Lei 11.101/2005, art. 83, I), 40 as the floor for a bankruptcy petition based on nonpayment (art. 94, I) — are computed against the minimum wage in force at the case's reference date, never against today's. `SalarioMinimoNacionalService` is the canonical source: `valorEm(date)` takes the domain date — the filing date, the distribution date, the date of the event. `valorVigente()` is used only for what is assessed in the present, such as the presumption of financial need for free legal aid and the current economic reference used in calculations.
+
+Passing `LocalDate.now()` to `valorEm`, `multiplicar` or `limite` is as bad as a hardcoded value, because the same case would get a different answer depending on the day it is queried, and change again at the turn of the year. When no domain date is available, the alert is not raised: jurisdiction computed against the wrong wage is worse than jurisdiction left unflagged.
+
+The ceiling for Small-Value Payment Orders (RPV) has its own canonical source, `TetoRpvNacionalService`, because the parameter depends on the debtor entity: 60 minimum wages for the federal treasury (Federal Constitution art. 100, § 3, read together with Lei 10.259/2001, art. 17, § 1 and art. 3), 40 for the States and the Federal District (ADCT — the Transitional Constitutional Provisions Act — art. 87, I) and 30 for municipalities (ADCT art. 87, II), until the entity sets its own by law. It resolves the amount in wages, the legal basis and the value in reais from the debtor entity and the date the judgment became final, which is the date whose minimum wage converts the ceiling into reais across every service. Without an entity or a final-judgment date there is no computed ceiling: the claim stays under the general *precatório* regime (court-ordered payment of public debts, Federal Constitution art. 100), and the social security calculations that follow the methodology of the CJF (Council of Federal Justice) stop projecting the classification instead of falling back to today's minimum wage.
+
+`salario_minimo_hardcoded_guard` enforces the rule, rejecting both a local monetary constant and an inline `LocalDate.now()`.
+
+### Institutional route catalog
+
+Routes for the institutional surface live in `platform.api.institucional.InstitutionalApiRoutes`, outside `core` and outside the surface package. Controllers and the domain depend on the same catalog without the controller reaching into the domain's internals — the two rules the project already had on this point hold at the same time, instead of one giving way to the other.
+
+There is exactly one file with that name in production code, and no nested class reuses its simple name: a nested class with the same name would make the controllers' `@RequestMapping` look canonical while pointing at a different catalog.
+
+### Response contract
+
+No controller returns a JPA entity in the response body. The response is always a record under `model.dto`, with the entity's associations flattened to identifiers instead of nested objects — with `LAZY` and `open-in-view: false`, serializing the entity makes the serializer touch proxies after the transaction has already closed.
+
+`PjbControllerNaoDevolveEntidadeJpaTest` checks the rule by reading source, not through ArchUnit: the generic parameter of `ResponseEntity<Instituicao>` is erased in bytecode, and the class model only sees `ResponseEntity`.
+
+### Controllers do not access data directly
+
+No class whose name ends in `Controller` depends on a repository, a DAO, Spring JDBC, Hibernate, `EntityManager`, `DataSource` or a JDBC connection. The rule works by **name** and by type, not by package: the project has nine repository packages and controllers do not always live under `controller`, so a package-based rule would let through exactly the cases that matter.
+
+The HTTP layer translates — it resolves the authenticated user, applies capacity limits and maps domain exceptions to status codes. Fetching, authorizing and deciding live in application services, which is where tests can reach them without starting a web context.
+
+### Legacy baseline asserted by name
+
+An architecture rule with legacy violations is not switched off. It runs and asserts the baseline by name (`containsExactlyInAnyOrder`), so the existing violations form a closed list and any new name fails. In `PjbArchitectureTest` this format currently covers the entities without a data-ownership classification; once the list reaches zero, the rule goes back to a direct check with no list.
+
+The practical difference from `@Disabled` is that the rule keeps checking, the size of the debt stays visible in the test itself, and the assertion cannot pass vacuously — a broken extractor returns an empty set and fails.
+
+Checks that depend on a file generated outside the build are not part of the suite. A test under `Assumptions.assumeTrue(Files.exists(...))` on an artifact that nothing produces never runs, yet still shows up as coverage in the report.
+
+### Path resolution in guards
+
+`ci.yml` runs the guards with `working-directory: scripts`, so none of them may resolve repository paths against the working directory: the path does not exist there, the scan comes back empty and the guard reports success without having looked at anything. The canonical root is `project_roots.ROOT`, which walks up from `__file__` until it finds `pom.xml` next to `pjb-api`.
+
+Paths written to reports are relative to the root, so the versioned file does not depend on where the guard ran. `guard_cwd_independence_guard` enforces the rule by parsing the scripts.
+
+### Deprecation ratchet
+
+Both `default-compile` and `default-testCompile` run with `-Xlint:deprecation,removal` and `failOnWarning`. `src/main` and `src/test` compile with no warnings at all, so any deprecated API introduced in production or test code breaks the build at compile time, before any test runs. The suppressions that remain are narrow and have a known cause: four tied to the Jackson 2 stack, marked for removal with the deadline declared by Spring Boot 4.3.0 (`StrictJacksonConfig` and `PjbCacheConfig` in production, `ProcessoControllerTest` and `FrontendPrimaryFlowsSmokeTest` in tests, all tracked as `D-jackson2-marcado-para-remocao` in the `DEBT_LOG`); those in the two classes that use the Zeebe client (`PJeSubmissionWorker` and `ComandoAjuizamentoConsumer`); and the two mandatory `X509Certificate` overrides in `IcpBrasilChainValidatorTest`.
+
+The gate applies to a clean build. Incremental compilation reports `Nothing to compile` and does not re-evaluate warnings, so measuring deprecations requires `clean` as well.
 
 ### Shared ArchUnit graph
 

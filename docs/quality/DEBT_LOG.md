@@ -341,12 +341,26 @@ não cruza contra injeção Spring por tipo de interface.
 
 Essas duas não quebram o boot hoje porque os únicos consumidores estão desligados por padrão:
 `CrcIntegrationService` exige `pjb.gov.vital-monitor.enabled=true` (não setado em nenhum profile);
-`ComandoAjuizamentoConsumer` exige `@ConditionalOnBean(ZeebeClient.class)`, e nenhum `@Bean` de
-`ZeebeClient` existe no projeto. Confirmado por leitura de código + suíte de arquitetura completa
-verde após restaurar as 4 classes que quebravam o boot de verdade.
+`ComandoAjuizamentoConsumer` exige `@ConditionalOnBean` do tipo `ZeebeClient`. O starter do Camunda
+registra esse bean quando o cliente está habilitado:
 
-**Quando revisitar:** se `pjb.gov.vital-monitor.enabled` ou a integração Zeebe forem ativados algum
-dia, essas duas features vão falhar no boot com `NoSuchBeanDefinitionException` até as
+```
+camunda-spring-boot-starter-8.9.19.jar
+  io/camunda/zeebe/spring/client/configuration/ZeebeClientProdAutoConfiguration.class
+    public io.camunda.zeebe.client.ZeebeClient zeebeClient(io.camunda.zeebe.client.ZeebeClientConfiguration);
+    io.camunda.client.spring.configuration.condition.ConditionalOnCamundaClientEnabled
+    org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+```
+
+O consumidor não é criado mesmo assim: é um `@Component` encontrado pelo component scan, e o
+`@ConditionalOnBean` é avaliado na fase da configuração do usuário, antes de as auto-configurações
+registrarem o `ZeebeClient`. A condição dá falso sem erro, `ProcessoAjuizadoWorkflowBridge` recebe
+`null` de `ObjectProvider.getIfAvailable()` e o workflow de ajuizamento nunca é iniciado. É essa
+condição que nunca casa que mantém o boot de pé sem implementação de `AjuizamentoWorkflowAdapter`.
+
+**Quando revisitar:** se `pjb.gov.vital-monitor.enabled` for ativado, ou se o consumidor do Zeebe
+passar a ser criado (condição movida para uma auto-configuração ou trocada por `ObjectProvider` do
+`ZeebeClient`), essas duas features vão falhar no boot com `NoSuchBeanDefinitionException` até as
 implementações serem restauradas (`git show b0ac4bd9:<caminho>`) ou reescritas.
 
 ## D-territorio-string-solta-entidades-legadas
