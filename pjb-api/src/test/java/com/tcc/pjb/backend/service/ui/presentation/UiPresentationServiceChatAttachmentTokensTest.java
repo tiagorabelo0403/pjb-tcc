@@ -63,6 +63,28 @@ class UiPresentationServiceChatAttachmentTokensTest {
         assertThat(tokensDeAnexo(bundle.dark())).isEqualTo(esperado("1", "0", "0"));
     }
 
+    @Test
+    void hashDaApresentacaoAcompanhaALimitacaoDeAnexoPublicada() {
+        UiPresentationBundleDto padrao = servico(new AtendimentoAttachmentProperties()).bundleForUserId(USUARIO_ID);
+        UiPresentationBundleDto padraoDeNovo = servico(new AtendimentoAttachmentProperties()).bundleForUserId(USUARIO_ID);
+
+        assertThat(padraoDeNovo.light().presentationHash()).isEqualTo(padrao.light().presentationHash());
+        assertThat(padraoDeNovo.dark().presentationHash()).isEqualTo(padrao.dark().presentationHash());
+
+        AtendimentoAttachmentProperties habilitada = new AtendimentoAttachmentProperties();
+        habilitada.setEnabled(true);
+        AtendimentoAttachmentProperties outroLimiteDeBytes = new AtendimentoAttachmentProperties();
+        outroLimiteDeBytes.setMaxBytes(2_097_152L);
+        AtendimentoAttachmentProperties outroLimitePorMensagem = new AtendimentoAttachmentProperties();
+        outroLimitePorMensagem.setMaxPerMessage(5);
+
+        for (AtendimentoAttachmentProperties alterada : List.of(habilitada, outroLimiteDeBytes, outroLimitePorMensagem)) {
+            UiPresentationBundleDto bundle = servico(alterada).bundleForUserId(USUARIO_ID);
+            assertThat(bundle.light().presentationHash()).isNotEqualTo(padrao.light().presentationHash());
+            assertThat(bundle.dark().presentationHash()).isNotEqualTo(padrao.dark().presentationHash());
+        }
+    }
+
     private static UiPresentationService servico(AtendimentoAttachmentProperties props) {
         UiUserPreferenceService prefs = mock(UiUserPreferenceService.class);
         when(prefs.loadOrCreate(anyLong())).thenAnswer(inv -> new UsuarioAccessibilityPreference(inv.getArgument(0)));

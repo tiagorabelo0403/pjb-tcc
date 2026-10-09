@@ -164,23 +164,19 @@ public class UiPresentationService {
 
     UiPresentationCompiler.Result r = compiler.compile(theme, preset, flagsMask, readingEnabled, intensity);
 
-    
     String wm = buildWatermarkText(usuarioId);
-    java.util.Map<String, String> tokenMap = new java.util.LinkedHashMap<>(r.tokenMap());
-    if (wm != null && !wm.isBlank()) {
-      tokenMap.put(UiCssTokenKey.WATERMARK_TEXT.css(), wm);
-    }
-
-    
     java.util.List<com.tcc.pjb.backend.model.dto.ui.presentation.UiCssTokenDto> tokens = new java.util.ArrayList<>(r.tokens());
     if (wm != null && !wm.isBlank()) {
       tokens = overrideToken(tokens, UiCssTokenKey.WATERMARK_TEXT.css(), wm);
     }
-
-    
     tokens = overrideToken(tokens, UiCssTokenKey.CHAT_ATTACH_ENABLED.css(), atendimentoAttachmentsEnabled ? "1" : "0");
     tokens = overrideToken(tokens, UiCssTokenKey.CHAT_ATTACH_MAX_BYTES.css(), Long.toString(atendimentoAttachmentMaxBytes));
     tokens = overrideToken(tokens, UiCssTokenKey.CHAT_ATTACH_MAX_PER_MESSAGE.css(), Integer.toString(atendimentoAttachmentMaxPerMessage));
+
+    java.util.Map<String, String> tokenMap = new java.util.LinkedHashMap<>();
+    for (com.tcc.pjb.backend.model.dto.ui.presentation.UiCssTokenDto token : tokens) {
+      tokenMap.put(token.key(), token.value());
+    }
 
     String hash = hasher.fingerprint(Map.of(
         "theme", theme.name(),
