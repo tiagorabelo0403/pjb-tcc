@@ -10,7 +10,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 |---|---|---|
 | F1 · podar código morto | ✅ | "439" ilusório no master; removido o morto real (#217); resto é feature não-conectada/vitrine-de-guard |
 | F2 · sepultar tabelas fantasmas | ✅ | drop de 16 órfãs V365 (#218) + guard preventivo (#219) |
-| F3 · remover andaimes de teste | 🟡 | scaffolds já removidos; **pendente**: migrar ~34 arch-tests que varrem FS p/ `@AnalyzeClasses` compartilhado (inclui o teste de 232s) |
+| F3 · remover andaimes de teste | 🟡 | scaffolds já removidos; as 4 classes com nome `*Refinement*`/`*Structure*` que restam testam comportamento (máquina recursal, schema da IA). Import ArchUnit unificado: 7 testes de produção inteira numa chave só de `@AnalyzeClasses` (136 s → 34 s) + `GrafoArchUnitCompartilhadoGuardTest`; **pendente**: ~31 testes que varrem FS por `Files.walk`, migrar os que verificam tipo/dependência para ArchUnit |
 | F4 · achatar fachadas rasas | ⛔/⬜ | as `*SurfaceFacadeService` são exigidas por arch-tests; achatar exige remover junto os arch-tests (decisão de arquitetura) — não iniciado |
 | F5 · corrigir testes de mock | 🟡 | maioria é interação apropriada; corrigido RPV (#221); **pendente**: resíduo caso a caso |
 | F6 · aprofundar god services | 🔁 | **165** beans acima do teto 8; ver tabela abaixo |

@@ -14,7 +14,7 @@ import com.tngtech.archunit.lang.SimpleConditionEvent;
 import jakarta.persistence.Entity;
 import java.util.Set;
 
-@AnalyzeClasses(packages = "com.tcc.pjb.backend", importOptions = {ImportOption.DoNotIncludeTests.class, ImportOption.DoNotIncludeJars.class})
+@AnalyzeClasses(packages = "com.tcc.pjb.backend", importOptions = ImportOption.DoNotIncludeTests.class)
 class OrganizacaoJudiciariaArchitectureTest {
 
     private static final Set<String> CAMPOS_TERRITORIO_STRING = Set.of("uf", "comarca");

@@ -5,8 +5,9 @@ import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaCodeUnit;
 import com.tngtech.archunit.core.domain.TryCatchBlock;
-import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
+import com.tngtech.archunit.junit.AnalyzeClasses;
+import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,15 +15,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+@AnalyzeClasses(packages = "com.tcc.pjb.backend", importOptions = ImportOption.DoNotIncludeTests.class)
 class PjbArchitectureTest {
 
     /**
@@ -33,24 +32,12 @@ class PjbArchitectureTest {
     private static final Pattern CLASSE_VIOLADORA =
             Pattern.compile("<(com\\.tcc\\.pjb\\.backend(?:\\.[a-z][A-Za-z0-9_]*)*\\.[A-Z][A-Za-z0-9_]*)");
 
-    static JavaClasses classes;
-
-    @BeforeAll
-    static void load() {
-        classes = new ClassFileImporter().withImportOption(new ImportOption.DoNotIncludeTests()).importPackages("com.tcc.pjb.backend");
-    }
-
-    @AfterAll
-    static void liberarGrafoDeClasses() {
-        classes = null;
-    }
-
     /**
      * Avalia a regra sem lancar, para que o baseline conhecido possa ser afirmado por nome em vez de
      * a regra ficar desligada. Uma regra desligada nao verifica nada; um baseline afirmado por nome
      * ainda reprova qualquer violacao nova.
      */
-    private static List<String> violacoesDe(ArchRule rule) {
+    private static List<String> violacoesDe(ArchRule rule, JavaClasses classes) {
         return rule.evaluate(classes).getFailureReport().getDetails();
     }
 
@@ -66,8 +53,8 @@ class PjbArchitectureTest {
         return nomes;
     }
 
-    @Test
-    void controllers_nao_devem_alcancar_dados_por_conta_propria() {
+    @ArchTest
+    static void controllers_nao_devem_alcancar_dados_por_conta_propria(JavaClasses classes) {
         // A regra e por nome de classe, e nao por pacote. Enquanto olhava apenas `..controller..`
         // dependendo de `..model.repository..` ela dava zero violacao e escondia seis: o projeto tem
         // pelo menos oito pacotes de repository, e controller nem sempre mora sob `controller`. Regra
@@ -92,8 +79,8 @@ class PjbArchitectureTest {
         rule.check(classes);
     }
 
-    @Test
-    void controllers_nao_devem_capturar_excecao_de_persistencia() {
+    @ArchTest
+    static void controllers_nao_devem_capturar_excecao_de_persistencia(JavaClasses classes) {
         // Separado da regra de cima de proposito: aquela cobre alcance a dado, esta cobre traduzir
         // excecao de persistencia dentro do controller. FuncaoServidorAdminController capturava
         // jakarta.persistence.EntityNotFoundException para devolver 404 — tapava a mao, num controller
@@ -130,8 +117,8 @@ class PjbArchitectureTest {
         assertThat(capturas).isEmpty();
     }
 
-    @Test
-    void services_nao_devem_importar_controllers() {
+    @ArchTest
+    static void services_nao_devem_importar_controllers(JavaClasses classes) {
         ArchRule rule = noClasses()
                 .that().resideInAPackage("..service..").or().resideInAPackage("..core..")
                 .should().dependOnClassesThat().resideInAPackage("..controller..");
@@ -139,37 +126,37 @@ class PjbArchitectureTest {
     }
 
 
-    @Test
-    void integrations_nao_devem_importar_controllers() {
+    @ArchTest
+    static void integrations_nao_devem_importar_controllers(JavaClasses classes) {
         ArchRule rule = noClasses()
                 .that().resideInAPackage("..integration..")
                 .should().dependOnClassesThat().resideInAnyPackage("..controller..", "..controllers..");
         rule.check(classes);
     }
 
-    @Test
-    void core_e_integration_nao_devem_depender_de_adapters_http_de_controller() {
+    @ArchTest
+    static void core_e_integration_nao_devem_depender_de_adapters_http_de_controller(JavaClasses classes) {
         ArchRule rule = noClasses()
                 .that().resideInAnyPackage("..core..", "..integration..")
                 .should().dependOnClassesThat().resideInAnyPackage("..controller..api..", "..controller.web..", "..controllers.web..");
         rule.check(classes);
     }
 
-    @Test
-    void repositories_nao_devem_depender_de_services_ou_controllers() {
+    @ArchTest
+    static void repositories_nao_devem_depender_de_services_ou_controllers(JavaClasses classes) {
         ArchRule rule = noClasses()
                 .that().resideInAPackage("..model.repository..")
                 .should().dependOnClassesThat().resideInAnyPackage("..service..", "..controller..", "..controllers..");
         rule.check(classes);
     }
 
-    @Test
-    void entities_devem_ter_anotacao_ownership() {
+    @ArchTest
+    static void entities_devem_ter_anotacao_ownership(JavaClasses classes) {
         ArchRule rule = classes()
                 .that().resideInAPackage("..model.entity..").and().areAnnotatedWith(jakarta.persistence.Entity.class)
                 .should().beAnnotatedWith(PjbDataOwnership.class);
 
-        List<String> violacoes = violacoesDe(rule);
+        List<String> violacoes = violacoesDe(rule, classes);
 
         assertThat(nomesDeClasseEm(violacoes))
                 .as("baseline conhecido: 16 entidades sem classificacao de titularidade de dado. Cada uma "
@@ -195,24 +182,24 @@ class PjbArchitectureTest {
                         "com.tcc.pjb.backend.model.entity.servidor.FuncaoServidorSolicitacao");
     }
 
-    @Test
-    void virtual_threads_apenas_no_spine() {
+    @ArchTest
+    static void virtual_threads_apenas_no_spine(JavaClasses classes) {
         ArchRule rule = noClasses()
                 .that().haveSimpleNameNotContaining("VirtualThreadSpine")
                 .should().callMethod(Thread.class, "ofVirtual");
         rule.check(classes);
     }
 
-    @Test
-    void configs_e_configurations_nao_devem_usar_field_injection() {
+    @ArchTest
+    static void configs_e_configurations_nao_devem_usar_field_injection(JavaClasses classes) {
         ArchRule rule = fields()
                 .that().areDeclaredInClassesThat().resideInAnyPackage("..config..", "..configs..", "..configuration..")
                 .should().notBeAnnotatedWith(org.springframework.beans.factory.annotation.Autowired.class);
         rule.check(classes);
     }
 
-    @Test
-    void classes_de_producao_nao_devem_usar_field_injection() {
+    @ArchTest
+    static void classes_de_producao_nao_devem_usar_field_injection(JavaClasses classes) {
         ArchRule rule = fields()
                 .that().areDeclaredInClassesThat().resideOutsideOfPackage("..test..")
                 .and().areDeclaredInClassesThat().haveSimpleNameNotEndingWith("Test")
@@ -222,8 +209,8 @@ class PjbArchitectureTest {
         rule.check(classes);
     }
 
-    @Test
-    void classes_de_producao_nao_devem_usar_field_injection_por_inject_ou_resource() {
+    @ArchTest
+    static void classes_de_producao_nao_devem_usar_field_injection_por_inject_ou_resource(JavaClasses classes) {
         ArchRule rule = fields()
                 .that().areDeclaredInClassesThat().resideOutsideOfPackage("..test..")
                 .and().areDeclaredInClassesThat().haveSimpleNameNotEndingWith("Test")
@@ -234,8 +221,8 @@ class PjbArchitectureTest {
         rule.check(classes);
     }
 
-    @Test
-    void producao_nao_deve_depender_da_anotacao_autowired() {
+    @ArchTest
+    static void producao_nao_deve_depender_da_anotacao_autowired(JavaClasses classes) {
         ArchRule rule = noClasses()
                 .that().resideOutsideOfPackage("..test..")
                 .and().haveSimpleNameNotEndingWith("Test")
