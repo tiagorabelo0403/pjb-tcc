@@ -233,6 +233,7 @@ class FrontendPrimaryFlowsSmokeTest {
                 .andExpect(jsonPath("$.data.apiSurfaceClean").value(true));
     }
 
+    @SuppressWarnings("removal")
     private MockMvc standalone(Object controller) {
         return MockMvcBuilders.standaloneSetup(controller)
                 .setMessageConverters(new MappingJackson2HttpMessageConverter(objectMapper))

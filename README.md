@@ -1205,10 +1205,14 @@ scripts.
 
 ### Catraca de depreciação
 
-O `default-compile` roda com `-Xlint:deprecation,removal` e `failOnWarning`. `src/main` está em zero
-avisos, então qualquer API depreciada introduzida em código de produção quebra o build na compilação,
-antes de qualquer teste. A catraca não vale para `src/test`, onde 13 avisos seguem registrados no
-`DEBT_LOG` — a maioria presa à superfície do cliente Zeebe.
+O `default-compile` e o `default-testCompile` rodam com `-Xlint:deprecation,removal` e
+`failOnWarning`. `src/main` e `src/test` compilam sem nenhum aviso, então qualquer API depreciada
+introduzida em código de produção ou de teste quebra o build na compilação, antes de qualquer teste.
+As supressões que restam são pontuais e têm causa conhecida: quatro presas à pilha Jackson 2, marcada
+para remoção com prazo declarado no Boot 4.3.0 (`StrictJacksonConfig` e `PjbCacheConfig` em produção, `ProcessoControllerTest`
+e `FrontendPrimaryFlowsSmokeTest` em teste, todas em `D-jackson2-marcado-para-remocao` no `DEBT_LOG`);
+as das duas classes que usam o cliente Zeebe (`PJeSubmissionWorker` e `ComandoAjuizamentoConsumer`); e
+as duas sobrescritas obrigatórias de `X509Certificate` em `IcpBrasilChainValidatorTest`.
 
 O portão vale para o build limpo. Compilação incremental responde `Nothing to compile` e não reavalia
 avisos, então medir depreciação exige `clean` junto.
