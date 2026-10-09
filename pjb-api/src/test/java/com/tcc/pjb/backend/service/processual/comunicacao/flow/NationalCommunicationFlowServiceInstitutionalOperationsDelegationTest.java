@@ -1,7 +1,8 @@
 package com.tcc.pjb.backend.service.processual.comunicacao.flow;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.CatalogoInstitucionalUnificadoService;
@@ -18,16 +19,30 @@ import com.tcc.pjb.backend.core.processo.lifecycle.ProcessoLifecycleMachine;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.access.NationalCommunicationInstitutionalAccessCheckRequest;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.access.NationalCommunicationInstitutionalAccessCheckResponse;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.access.NationalCommunicationInstitutionalMembershipResponse;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.governance.NationalCommunicationInstitutionalActionResponse;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalDeadLetterResponse;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalDeliveryProofResponse;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalExternalDispatchResponse;
 import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalFulfillRequest;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalGateStateResponse;
 import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalReceiveRequest;
 import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalRedistributeRequest;
 import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalReprocessDeliveryRequest;
 import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalScienceRequest;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.panel.NationalCommunicationInstitutionalDeliveryQueueItemResponse;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.panel.NationalCommunicationInstitutionalInboxItemResponse;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.panel.NationalCommunicationInstitutionalObservabilityDashboardResponse;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.panel.NationalCommunicationInstitutionalTimelineEventResponse;
+import com.tcc.pjb.backend.model.dto.processual.comunicacao.institutional.security.NationalCommunicationInstitutionalHardeningReportResponse;
 import com.tcc.pjb.backend.model.entity.enums.DestinatarioInstitucionalKind;
 import com.tcc.pjb.backend.model.entity.enums.StatusComunicacaoInstitucional;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.processual.comunicacao.institutional.operations.NationalCommunicationInstitutionalOperationsFacade;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class NationalCommunicationFlowServiceInstitutionalOperationsDelegationTest {
@@ -56,103 +71,135 @@ class NationalCommunicationFlowServiceInstitutionalOperationsDelegationTest {
 
     @Test
     void minhasCaixasInstitucionaisDelegaComOsMesmosArgumentos() {
-        service.minhasCaixasInstitucionais(DestinatarioInstitucionalKind.MINISTERIO_PUBLICO, "CE", "Fortaleza");
-        verify(institutionalOperationsFacade).minhasCaixasInstitucionais(DestinatarioInstitucionalKind.MINISTERIO_PUBLICO, "CE", "Fortaleza");
+        List<NationalCommunicationInstitutionalMembershipResponse> esperado = new ArrayList<>(List.of(mock(NationalCommunicationInstitutionalMembershipResponse.class)));
+        when(institutionalOperationsFacade.minhasCaixasInstitucionais(DestinatarioInstitucionalKind.MINISTERIO_PUBLICO, "CE", "Fortaleza")).thenReturn(esperado);
+
+        assertThat(service.minhasCaixasInstitucionais(DestinatarioInstitucionalKind.MINISTERIO_PUBLICO, "CE", "Fortaleza")).isSameAs(esperado);
     }
 
     @Test
     void autorizarCaixaInstitucionalDelega() {
         var request = mock(NationalCommunicationInstitutionalAccessCheckRequest.class);
-        service.autorizarCaixaInstitucional(request);
-        verify(institutionalOperationsFacade).autorizarCaixaInstitucional(request);
+        NationalCommunicationInstitutionalAccessCheckResponse esperado = mock(NationalCommunicationInstitutionalAccessCheckResponse.class);
+        when(institutionalOperationsFacade.autorizarCaixaInstitucional(request)).thenReturn(esperado);
+
+        assertThat(service.autorizarCaixaInstitucional(request)).isSameAs(esperado);
     }
 
     @Test
     void listarInboxInstitucionalDelegaComOsMesmosArgumentos() {
-        service.listarInboxInstitucional(StatusComunicacaoInstitucional.RECEBIDA, 10L);
-        verify(institutionalOperationsFacade).listarInboxInstitucional(StatusComunicacaoInstitucional.RECEBIDA, 10L);
+        List<NationalCommunicationInstitutionalInboxItemResponse> esperado = new ArrayList<>(List.of(mock(NationalCommunicationInstitutionalInboxItemResponse.class)));
+        when(institutionalOperationsFacade.listarInboxInstitucional(StatusComunicacaoInstitucional.RECEBIDA, 10L)).thenReturn(esperado);
+
+        assertThat(service.listarInboxInstitucional(StatusComunicacaoInstitucional.RECEBIDA, 10L)).isSameAs(esperado);
     }
 
     @Test
     void receberInboxInstitucionalDelega() {
         var request = mock(NationalCommunicationInstitutionalReceiveRequest.class);
-        service.receberInboxInstitucional(request);
-        verify(institutionalOperationsFacade).receberInboxInstitucional(request);
+        NationalCommunicationInstitutionalActionResponse esperado = mock(NationalCommunicationInstitutionalActionResponse.class);
+        when(institutionalOperationsFacade.receberInboxInstitucional(request)).thenReturn(esperado);
+
+        assertThat(service.receberInboxInstitucional(request)).isSameAs(esperado);
     }
 
     @Test
     void redistribuirInboxInstitucionalDelega() {
         var request = mock(NationalCommunicationInstitutionalRedistributeRequest.class);
-        service.redistribuirInboxInstitucional(request);
-        verify(institutionalOperationsFacade).redistribuirInboxInstitucional(request);
+        NationalCommunicationInstitutionalActionResponse esperado = mock(NationalCommunicationInstitutionalActionResponse.class);
+        when(institutionalOperationsFacade.redistribuirInboxInstitucional(request)).thenReturn(esperado);
+
+        assertThat(service.redistribuirInboxInstitucional(request)).isSameAs(esperado);
     }
 
     @Test
     void certificarCienciaInstitucionalDelega() {
         var request = mock(NationalCommunicationInstitutionalScienceRequest.class);
-        service.certificarCienciaInstitucional(request);
-        verify(institutionalOperationsFacade).certificarCienciaInstitucional(request);
+        NationalCommunicationInstitutionalActionResponse esperado = mock(NationalCommunicationInstitutionalActionResponse.class);
+        when(institutionalOperationsFacade.certificarCienciaInstitucional(request)).thenReturn(esperado);
+
+        assertThat(service.certificarCienciaInstitucional(request)).isSameAs(esperado);
     }
 
     @Test
     void cumprirInboxInstitucionalDelega() {
         var request = mock(NationalCommunicationInstitutionalFulfillRequest.class);
-        service.cumprirInboxInstitucional(request);
-        verify(institutionalOperationsFacade).cumprirInboxInstitucional(request);
+        NationalCommunicationInstitutionalActionResponse esperado = mock(NationalCommunicationInstitutionalActionResponse.class);
+        when(institutionalOperationsFacade.cumprirInboxInstitucional(request)).thenReturn(esperado);
+
+        assertThat(service.cumprirInboxInstitucional(request)).isSameAs(esperado);
     }
 
     @Test
     void timelineInstitucionalDelegaComOMesmoExpedicaoUuid() {
-        service.timelineInstitucional("uuid-1");
-        verify(institutionalOperationsFacade).timelineInstitucional("uuid-1");
+        List<NationalCommunicationInstitutionalTimelineEventResponse> esperado = new ArrayList<>(List.of(mock(NationalCommunicationInstitutionalTimelineEventResponse.class)));
+        when(institutionalOperationsFacade.timelineInstitucional("uuid-1")).thenReturn(esperado);
+
+        assertThat(service.timelineInstitucional("uuid-1")).isSameAs(esperado);
     }
 
     @Test
     void provasInstitucionaisDelegaComOMesmoExpedicaoUuid() {
-        service.provasInstitucionais("uuid-2");
-        verify(institutionalOperationsFacade).provasInstitucionais("uuid-2");
+        List<NationalCommunicationInstitutionalDeliveryProofResponse> esperado = new ArrayList<>(List.of(mock(NationalCommunicationInstitutionalDeliveryProofResponse.class)));
+        when(institutionalOperationsFacade.provasInstitucionais("uuid-2")).thenReturn(esperado);
+
+        assertThat(service.provasInstitucionais("uuid-2")).isSameAs(esperado);
     }
 
     @Test
     void gatesInstitucionaisDelegaComOsMesmosArgumentos() {
-        service.gatesInstitucionais(20L, "uuid-3");
-        verify(institutionalOperationsFacade).gatesInstitucionais(20L, "uuid-3");
+        List<NationalCommunicationInstitutionalGateStateResponse> esperado = new ArrayList<>(List.of(mock(NationalCommunicationInstitutionalGateStateResponse.class)));
+        when(institutionalOperationsFacade.gatesInstitucionais(20L, "uuid-3")).thenReturn(esperado);
+
+        assertThat(service.gatesInstitucionais(20L, "uuid-3")).isSameAs(esperado);
     }
 
     @Test
     void listarEntregasInstitucionaisDelegaComOsMesmosArgumentos() {
-        service.listarEntregasInstitucionais(21L, "uuid-4");
-        verify(institutionalOperationsFacade).listarEntregasInstitucionais(21L, "uuid-4");
+        List<NationalCommunicationInstitutionalDeliveryQueueItemResponse> esperado = new ArrayList<>(List.of(mock(NationalCommunicationInstitutionalDeliveryQueueItemResponse.class)));
+        when(institutionalOperationsFacade.listarEntregasInstitucionais(21L, "uuid-4")).thenReturn(esperado);
+
+        assertThat(service.listarEntregasInstitucionais(21L, "uuid-4")).isSameAs(esperado);
     }
 
     @Test
     void listarDlqInstitucionalDelegaComOsMesmosArgumentos() {
-        service.listarDlqInstitucional(22L, "uuid-5");
-        verify(institutionalOperationsFacade).listarDlqInstitucional(22L, "uuid-5");
+        List<NationalCommunicationInstitutionalDeadLetterResponse> esperado = new ArrayList<>(List.of(mock(NationalCommunicationInstitutionalDeadLetterResponse.class)));
+        when(institutionalOperationsFacade.listarDlqInstitucional(22L, "uuid-5")).thenReturn(esperado);
+
+        assertThat(service.listarDlqInstitucional(22L, "uuid-5")).isSameAs(esperado);
     }
 
     @Test
     void reprocessarEntregaInstitucionalDelega() {
         var request = mock(NationalCommunicationInstitutionalReprocessDeliveryRequest.class);
-        service.reprocessarEntregaInstitucional(request);
-        verify(institutionalOperationsFacade).reprocessarEntregaInstitucional(request);
+        NationalCommunicationInstitutionalDeliveryQueueItemResponse esperado = mock(NationalCommunicationInstitutionalDeliveryQueueItemResponse.class);
+        when(institutionalOperationsFacade.reprocessarEntregaInstitucional(request)).thenReturn(esperado);
+
+        assertThat(service.reprocessarEntregaInstitucional(request)).isSameAs(esperado);
     }
 
     @Test
     void listarIntegracoesExternasDelegaComOsMesmosArgumentos() {
-        service.listarIntegracoesExternas(23L, "uuid-6");
-        verify(institutionalOperationsFacade).listarIntegracoesExternas(23L, "uuid-6");
+        List<NationalCommunicationInstitutionalExternalDispatchResponse> esperado = new ArrayList<>(List.of(mock(NationalCommunicationInstitutionalExternalDispatchResponse.class)));
+        when(institutionalOperationsFacade.listarIntegracoesExternas(23L, "uuid-6")).thenReturn(esperado);
+
+        assertThat(service.listarIntegracoesExternas(23L, "uuid-6")).isSameAs(esperado);
     }
 
     @Test
     void observabilidadeInstitucionalDelegaComOsMesmosArgumentos() {
-        service.observabilidadeInstitucional(24L, "CE", DestinatarioInstitucionalKind.MINISTERIO_PUBLICO);
-        verify(institutionalOperationsFacade).observabilidadeInstitucional(24L, "CE", DestinatarioInstitucionalKind.MINISTERIO_PUBLICO);
+        NationalCommunicationInstitutionalObservabilityDashboardResponse esperado = mock(NationalCommunicationInstitutionalObservabilityDashboardResponse.class);
+        when(institutionalOperationsFacade.observabilidadeInstitucional(24L, "CE", DestinatarioInstitucionalKind.MINISTERIO_PUBLICO)).thenReturn(esperado);
+
+        assertThat(service.observabilidadeInstitucional(24L, "CE", DestinatarioInstitucionalKind.MINISTERIO_PUBLICO)).isSameAs(esperado);
     }
 
     @Test
-    void hardeningInstitucionalDelega() {
-        service.hardeningInstitucional();
-        verify(institutionalOperationsFacade).hardeningInstitucional();
+    void hardeningInstitucionalDevolveORelatorioDaFachada() {
+        NationalCommunicationInstitutionalHardeningReportResponse relatorio = mock(NationalCommunicationInstitutionalHardeningReportResponse.class);
+        when(institutionalOperationsFacade.hardeningInstitucional()).thenReturn(relatorio);
+
+        assertThat(service.hardeningInstitucional()).isSameAs(relatorio);
     }
 }

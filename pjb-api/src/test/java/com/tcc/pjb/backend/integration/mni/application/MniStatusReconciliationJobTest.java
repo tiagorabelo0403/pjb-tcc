@@ -2,8 +2,8 @@ package com.tcc.pjb.backend.integration.mni.application;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.tcc.pjb.backend.integration.mni.infra.MniRemessaProperties;
 import org.junit.jupiter.api.Test;
@@ -27,6 +27,7 @@ class MniStatusReconciliationJobTest {
 
         job.run();
 
-        verify(service, times(1)).reprocessarPendentes();
+        verify(service).reprocessarPendentes();
+        verifyNoMoreInteractions(service);
     }
 }

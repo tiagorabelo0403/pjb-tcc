@@ -1,7 +1,7 @@
 package com.tcc.pjb.backend.query.config;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -55,13 +55,14 @@ class PjbSearchIndexInitializerTest {
         when(operations.indexOps(ProcessoQueryModel.class)).thenReturn(processoIndex);
         when(operations.indexOps(RecursalMeshQueryModel.class)).thenReturn(recursalIndex);
         when(processoIndex.exists()).thenReturn(false);
-        when(recursalIndex.exists()).thenReturn(true);
+        when(recursalIndex.exists()).thenReturn(false);
         when(processoIndex.createWithMapping()).thenThrow(new RuntimeException(
                 "[es/indices.create] failed: [resource_already_exists_exception] index [pjb-processos] already exists"));
 
-        new PjbSearchIndexInitializer(operations).run(null);
+        assertThatCode(() -> new PjbSearchIndexInitializer(operations).run(null)).doesNotThrowAnyException();
 
         verify(processoIndex).createWithMapping();
+        verify(recursalIndex).createWithMapping();
     }
 
     @Test

@@ -45,14 +45,19 @@ class InstitutionalPanelApplicationServiceTest {
     @Test
     void mustReuseShortCacheForRepeatedUnitPanelReads() {
         InstitutionalInboxStateRepository repository = mock(InstitutionalInboxStateRepository.class);
-        when(repository.findByUnidadeCodigo("UNI-1")).thenReturn(List.of(
-                item("exp-1", "UNI-1", "MPCE", DestinatarioInstitucionalKind.MINISTERIO_PUBLICO, "CX-TRIAGEM", StatusComunicacaoInstitucional.DISPONIBILIZADA, Instant.parse("2026-04-03T10:00:00Z"))
-        ));
+        when(repository.findByUnidadeCodigo("UNI-1")).thenReturn(
+                List.of(item("exp-1", "UNI-1", "MPCE", DestinatarioInstitucionalKind.MINISTERIO_PUBLICO, "CX-TRIAGEM", StatusComunicacaoInstitucional.DISPONIBILIZADA, Instant.parse("2026-04-03T10:00:00Z"))),
+                List.of(
+                        item("exp-1", "UNI-1", "MPCE", DestinatarioInstitucionalKind.MINISTERIO_PUBLICO, "CX-TRIAGEM", StatusComunicacaoInstitucional.DISPONIBILIZADA, Instant.parse("2026-04-03T10:00:00Z")),
+                        item("exp-2", "UNI-1", "MPCE", DestinatarioInstitucionalKind.MINISTERIO_PUBLICO, "CX-ANALISE", StatusComunicacaoInstitucional.RECEBIDA, Instant.parse("2026-04-03T11:00:00Z"))));
         InstitutionalPanelApplicationService service = new InstitutionalPanelApplicationService(repository);
 
-        service.painelOrgao("UNI-1");
-        service.filasUnidade("uni-1");
+        var painel = service.painelOrgao("UNI-1");
+        var filas = service.filasUnidade("uni-1");
 
+        assertEquals(1L, painel.get(0).totalExpedientes());
+        assertEquals(1, filas.size());
+        assertEquals("CX-TRIAGEM", filas.get(0).caixaCodigo());
         verify(repository, times(1)).findByUnidadeCodigo("UNI-1");
     }
 

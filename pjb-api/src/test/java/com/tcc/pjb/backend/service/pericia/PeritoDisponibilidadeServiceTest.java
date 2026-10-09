@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -66,6 +67,9 @@ class PeritoDisponibilidadeServiceTest {
 
         service.registrar(request);
 
+        ArgumentCaptor<PeritoDisponibilidade> salva = ArgumentCaptor.forClass(PeritoDisponibilidade.class);
+        verify(disponibilidadeRepository).save(salva.capture());
+        assertThat(salva.getValue().getComarcaEntidade()).isSameAs(fortaleza);
         verify(comarcaResolutionService).resolver(eq("FORTALEZA"), isNull());
     }
 

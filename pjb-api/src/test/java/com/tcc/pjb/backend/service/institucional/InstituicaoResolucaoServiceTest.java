@@ -50,11 +50,14 @@ class InstituicaoResolucaoServiceTest {
     @Test
     void perito_judicial_traduz_para_orgao_pericial() {
         var repo = mock(InstituicaoRepository.class);
-        when(repo.findByTipo(TipoInstituicao.ORGAO_PERICIAL)).thenReturn(List.of());
+        Instituicao orgaoPericial = new Instituicao();
+        orgaoPericial.setNome("Orgao Pericial — FICTÍCIO");
+        orgaoPericial.setTipo(TipoInstituicao.ORGAO_PERICIAL);
+        when(repo.findByTipo(TipoInstituicao.ORGAO_PERICIAL)).thenReturn(List.of(orgaoPericial));
 
-        service(repo).resolverPorKind(DestinatarioInstitucionalKind.PERITO_JUDICIAL);
+        List<Instituicao> resultado = service(repo).resolverPorKind(DestinatarioInstitucionalKind.PERITO_JUDICIAL);
 
-        verify(repo).findByTipo(TipoInstituicao.ORGAO_PERICIAL);
+        assertEquals(List.of(orgaoPericial), resultado);
     }
 
     @Test

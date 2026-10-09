@@ -5,8 +5,8 @@ import com.tcc.pjb.backend.integration.datajud.feed.domain.DataJudTribunalRunCom
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,8 @@ class DataJudFeedSchedulerTest {
 
         scheduler.run();
 
-        verify(service, times(1)).runIncremental(any(DataJudTribunalRunCommand.class));
+        verify(service).runIncremental(new DataJudTribunalRunCommand("CNJ", 3));
+        verifyNoMoreInteractions(service);
     }
 
     @Test
@@ -40,6 +41,8 @@ class DataJudFeedSchedulerTest {
 
         scheduler.run();
 
-        verify(service, times(2)).runIncremental(any(DataJudTribunalRunCommand.class));
+        verify(service).runIncremental(new DataJudTribunalRunCommand("TJCE", 3));
+        verify(service).runIncremental(new DataJudTribunalRunCommand("TRF5", 3));
+        verifyNoMoreInteractions(service);
     }
 }
