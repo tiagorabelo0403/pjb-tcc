@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
@@ -22,6 +21,7 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.ui.UsuarioAccessibilityPreference;
 import com.tcc.pjb.backend.platform.hash.CanonicalJsonHasher;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
+import com.tcc.pjb.backend.modules.atendimento.service.AtendimentoAttachmentProperties;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import com.tcc.pjb.backend.service.ui.preferences.UiUserPreferenceService;
 import com.tcc.pjb.backend.service.ui.presentation.compiler.UiPresentationCompiler;
@@ -54,9 +54,7 @@ public class UiPresentationService {
       AuditLedgerService audit,
       OutboxPublisher outbox,
       UsuarioRepository usuarioRepo,
-      @Value("${pjb.atendimento.attachments.enabled:false}") boolean atendimentoAttachmentsEnabled,
-      @Value("${pjb.atendimento.attachments.maxBytes:10485760}") long atendimentoAttachmentMaxBytes,
-      @Value("${pjb.atendimento.attachments.maxPerMessage:3}") int atendimentoAttachmentMaxPerMessage
+      AtendimentoAttachmentProperties attachmentProperties
   ) {
     this.currentUser = Objects.requireNonNull(currentUser, "currentUser");
     this.prefs = Objects.requireNonNull(prefs, "prefs");
@@ -66,9 +64,10 @@ public class UiPresentationService {
     this.audit = Objects.requireNonNull(audit, "audit");
     this.outbox = Objects.requireNonNull(outbox, "outbox");
     this.usuarioRepo = Objects.requireNonNull(usuarioRepo, "usuarioRepo");
-    this.atendimentoAttachmentsEnabled = atendimentoAttachmentsEnabled;
-    this.atendimentoAttachmentMaxBytes = Math.max(0L, atendimentoAttachmentMaxBytes);
-    this.atendimentoAttachmentMaxPerMessage = Math.max(0, atendimentoAttachmentMaxPerMessage);
+    Objects.requireNonNull(attachmentProperties, "attachmentProperties");
+    this.atendimentoAttachmentsEnabled = attachmentProperties.isEnabled();
+    this.atendimentoAttachmentMaxBytes = Math.max(0L, attachmentProperties.getMaxBytes());
+    this.atendimentoAttachmentMaxPerMessage = Math.max(0, attachmentProperties.getMaxPerMessage());
     this.compiler = new UiPresentationCompiler(reading);
   }
 

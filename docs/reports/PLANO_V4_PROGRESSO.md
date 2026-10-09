@@ -54,6 +54,7 @@ Legenda: ✅ feito · 🟡 em andamento · ⬜ pendente · ⛔ não fazer (colid
 | OficialJusticaCumprimentoSoberanoService | 12→11 | (notificationCenterService morto removido) | resto é diligência/closure/painel acoplado |
 | AtendimentoChatService | 18→16 | config-grouping: 3 @Value de anexo → AtendimentoAttachmentProperties | resto é repos/supports/guards coesos do chat |
 | AtendimentoThreadDigestService | 12→10 | config-grouping: 3 @Value de anexo (reusa AtendimentoAttachmentProperties + campo maxBytes) | resto é repos/policy/settings coesos do digest |
+| UiPresentationService | 11→9 | config-grouping: 3 @Value de anexo (reusa AtendimentoAttachmentProperties) | resto é prefs/leitura/audit/outbox coesos da apresentação |
 
 ### ⛔ Não reduzir (cada redução = dívida/risco; pular)
 - **Audit/HSM/authz:** ProcessDigitalTwinService, JuizGabineteDecisionalService, CitacaoHoraCertaEngine, AcordoService, DiligenceOperationalClosureService (cluster de certificado)

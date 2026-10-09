@@ -161,7 +161,7 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/servidor/ServidorSecretariaAtosService.java": 10,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/servidor/ServidorSecretariaOperacionalService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/ui/accessibility/UiAccessibilityService.java": 17,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/service/ui/presentation/UiPresentationService.java": 11,
+  "pjb-api/src/main/java/com/tcc/pjb/backend/service/ui/presentation/UiPresentationService.java": 9,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/upload/BulkUploadService.java": 12,
   "pjb-api/src/main/java/com/tcc/pjb/backend/tribunal/regras/PluginResolucaoTribunalService.java": 9
 }
