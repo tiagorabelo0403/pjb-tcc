@@ -5,6 +5,8 @@ import com.tcc.pjb.backend.modules.suporte.event.SupportTicketResolvedEvent;
 import java.time.Instant;
 import java.util.Objects;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -18,6 +20,7 @@ public class SupportTicketTravelExceptionListener {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void aoResolverChamado(SupportTicketResolvedEvent evento) {
         if (evento.categoria() != SupportTicketCategoria.EXCECAO_VIAGEM_CARREIRA_JURIDICA || !evento.aprovado()) {
             return;
