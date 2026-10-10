@@ -32,7 +32,8 @@ public abstract class PjbIntegrationTestBase {
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(POSTGRES_IMAGE)
             .withDatabaseName("pjb_it")
             .withUsername("pjb")
-            .withPassword("pjb_test");
+            .withPassword("pjb_test")
+            .withCommand("postgres", "-c", "fsync=off", "-c", "max_connections=400");
 
     static final ConfluentKafkaContainer KAFKA = new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.0"));
 
