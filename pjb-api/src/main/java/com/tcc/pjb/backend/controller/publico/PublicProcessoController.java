@@ -29,11 +29,13 @@ public class PublicProcessoController {
     private final PublicProcessoTimelineService timelineService;
 
     @GetMapping("/{numero}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<PublicProcessoConsultaResponse> consultar(@PathVariable @NotBlank String numero) {
         return ResponseEntity.ok(consultaService.consultarPorNumero(numero));
     }
 
     @GetMapping("/{numero}/timeline")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<TimelinePublicaDto> timeline(@PathVariable @NotBlank String numero) {
         return ResponseEntity.ok(timelineService.timeline(numero));
     }

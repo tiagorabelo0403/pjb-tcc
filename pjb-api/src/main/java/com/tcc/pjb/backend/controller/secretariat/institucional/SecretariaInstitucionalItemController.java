@@ -57,6 +57,7 @@ public class SecretariaInstitucionalItemController {
     }
 
     @GetMapping("/api/v1/secretaria-institucional/{unidadeId}/fila")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<SecretariaInstitucionalFilaResponse> consultarFila(@PathVariable Long unidadeId) {
         Usuario usuario = currentUserService.getRequired();
         return ResponseEntity.ok(filaService.consultarFila(usuario, unidadeId));

@@ -42,6 +42,7 @@ public class PublicProcessoPessoaController {
     }
 
     @GetMapping("/candidatos")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<PublicPessoaProcessualSearchResponse> candidatos(@RequestParam("nome") @NotBlank String nome,
                                                                            @RequestParam(value = "uf", required = false) String uf,
                                                                            @RequestParam(value = "comarca", required = false) String comarca,
@@ -56,6 +57,7 @@ public class PublicProcessoPessoaController {
     }
 
     @GetMapping("/candidatos/{identityKey}/processos")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<PublicProcessoResumoSearchResponse> processosPorCandidato(@PathVariable String identityKey,
                                                                                      @RequestParam(value = "page", defaultValue = "0") int page,
                                                                                      @RequestParam(value = "size", defaultValue = "20") int size,
@@ -67,6 +69,7 @@ public class PublicProcessoPessoaController {
     }
 
     @GetMapping("/cpf/{cpf}/processos")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<PublicProcessoResumoSearchResponse> processosPorCpf(@PathVariable String cpf,
                                                                               @RequestParam(value = "page", defaultValue = "0") int page,
                                                                               @RequestParam(value = "size", defaultValue = "20") int size,
@@ -78,6 +81,7 @@ public class PublicProcessoPessoaController {
     }
 
     @GetMapping("/oab/{oabNumero}/processos")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<PublicProcessoResumoSearchResponse> processosPorOab(@PathVariable @NotBlank String oabNumero,
                                                                                 @RequestParam("uf") @NotBlank String uf,
                                                                                 @RequestParam(value = "page", defaultValue = "0") int page,
@@ -90,6 +94,7 @@ public class PublicProcessoPessoaController {
     }
 
     @GetMapping("/processos/{numero}/resumo")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<PublicProcessoResumoCardDto> resumo(@PathVariable @NotBlank String numero, HttpServletRequest request) {
         rateLimiter.enforce(CapabilityRateLimitDomain.CITIZEN, SecurityContextHolder.getContext().getAuthentication(), "PUBLIC_PROCESSO_RESUMO", ApiVersion.latest(), clientIpResolver.resolve(request));
         return ResponseEntity.ok(service.resumirProcessoPublico(numero));

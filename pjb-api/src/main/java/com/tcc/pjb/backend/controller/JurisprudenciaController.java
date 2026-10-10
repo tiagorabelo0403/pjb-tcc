@@ -46,6 +46,7 @@ public class JurisprudenciaController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("isAuthenticated()")
     public Page<Precedente> search(
             @RequestParam(required = false) TribunalFonte fonte,
             @RequestParam(required = false) TipoPrecedente tipo,
@@ -60,6 +61,7 @@ public class JurisprudenciaController {
     }
 
     @GetMapping("/search-scored")
+    @PreAuthorize("isAuthenticated()")
     public List<JurisprudenceSearchHit> searchScored(
             @RequestParam(name = "q") String q,
             @RequestParam(required = false) RamoDireito ramo,
@@ -72,6 +74,7 @@ public class JurisprudenciaController {
 
 
     @GetMapping("/search-contextual")
+    @PreAuthorize("isAuthenticated()")
     public JurisprudenceContextualSearchResponse searchContextual(
             @RequestParam(name = "q") String q,
             @RequestParam(required = false) RamoDireito ramo,
