@@ -4,11 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
-import com.tngtech.archunit.core.domain.JavaMethod;
+import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Set;
+import org.springframework.core.MethodIntrospector;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,26 +22,34 @@ class PjbControllerPreAuthorizeCoverageTest {
 
     @ArchTest
     static void todoEndpointDeclaraAutorizacaoNoMetodoOuNaClasse(JavaClasses classes) {
-        List<JavaMethod> endpoints = classes.stream()
+        List<Class<?>> controllers = classes.stream()
                 .filter(classe -> classe.isMetaAnnotatedWith(Controller.class))
-                .flatMap(classe -> classe.getMethods().stream())
-                .filter(metodo -> metodo.isMetaAnnotatedWith(RequestMapping.class) || metodo.isAnnotatedWith(RequestMapping.class))
+                .filter(classe -> !classe.isInterface() && !classe.getModifiers().contains(JavaModifier.ABSTRACT))
+                .<Class<?>>map(JavaClass::reflect)
                 .toList();
 
-        assertThat(endpoints)
+        assertThat(controllers.stream().mapToLong(controller -> endpoints(controller).size()).sum())
                 .as("nenhum endpoint encontrado: a regra abaixo passaria sem verificar nada")
-                .isNotEmpty();
+                .isPositive();
 
-        List<String> semAutorizacao = endpoints.stream()
-                .filter(metodo -> !metodo.isAnnotatedWith(PreAuthorize.class) && !autorizaNaClasse(metodo.getOwner()))
-                .map(metodo -> metodo.getOwner().getSimpleName() + "#" + metodo.getName())
+        List<String> semAutorizacao = controllers.stream()
+                .flatMap(controller -> endpointsSemAutorizacao(controller).stream())
                 .sorted()
                 .toList();
 
         assertThat(semAutorizacao).isEmpty();
     }
 
-    private static boolean autorizaNaClasse(JavaClass classe) {
-        return classe.isAnnotatedWith(PreAuthorize.class);
+    static List<String> endpointsSemAutorizacao(Class<?> controller) {
+        boolean autorizaNaClasse = AnnotatedElementUtils.findMergedAnnotation(controller, PreAuthorize.class) != null;
+        return endpoints(controller).stream()
+                .filter(metodo -> !autorizaNaClasse && AnnotatedElementUtils.findMergedAnnotation(metodo, PreAuthorize.class) == null)
+                .map(metodo -> controller.getSimpleName() + "#" + metodo.getName())
+                .toList();
+    }
+
+    static Set<Method> endpoints(Class<?> controller) {
+        return MethodIntrospector.selectMethods(controller, (MethodIntrospector.MetadataLookup<RequestMapping>) metodo ->
+                AnnotatedElementUtils.findMergedAnnotation(metodo, RequestMapping.class)).keySet();
     }
 }
