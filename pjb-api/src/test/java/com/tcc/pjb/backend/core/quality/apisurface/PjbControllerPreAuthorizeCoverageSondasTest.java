@@ -74,7 +74,7 @@ class PjbControllerPreAuthorizeCoverageSondasTest {
     }
 
     @Test
-    void implementacaoDeInterfaceAnotadaComoControllerEhCobrada() {
+    void implementacaoDeInterfaceAnotadaComoControllerEhReconhecidaComoController() {
         JavaClasses sondas = new ClassFileImporter().importClasses(ImplementaInterfaceController.class, InterfaceController.class);
 
         assertThat(PjbControllerPreAuthorizeCoverageTest.podeSerController(sondas.get(ImplementaInterfaceController.class))).isTrue();
