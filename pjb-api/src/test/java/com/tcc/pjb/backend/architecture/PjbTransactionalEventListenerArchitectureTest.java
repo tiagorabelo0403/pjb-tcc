@@ -1,62 +1,64 @@
 package com.tcc.pjb.backend.architecture;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
+import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.domain.JavaMethod;
+import com.tngtech.archunit.core.importer.ImportOption;
+import com.tngtech.archunit.junit.AnalyzeClasses;
+import com.tngtech.archunit.junit.ArchTest;
+import java.lang.reflect.Method;
 import java.util.List;
-import java.util.regex.Pattern;
-import org.junit.jupiter.api.Test;
+import java.util.Set;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.interceptor.TransactionAttribute;
 
+@AnalyzeClasses(packages = "com.tcc.pjb.backend", importOptions = ImportOption.DoNotIncludeTests.class)
 class PjbTransactionalEventListenerArchitectureTest {
 
-    private static final Pattern TRANSACTIONAL_EVENT_LISTENER = Pattern.compile("@TransactionalEventListener");
-    private static final Pattern UNSAFE_TRANSACTIONAL = Pattern.compile("@Transactional(\\s*(?:\\r?\\n|$))");
-    private static final Pattern SAFE_TRANSACTIONAL = Pattern.compile("@Transactional\\s*\\([^)]*propagation\\s*=\\s*Propagation\\.(REQUIRES_NEW|NOT_SUPPORTED)[^)]*\\)", Pattern.DOTALL);
+    private static final AnnotationTransactionAttributeSource ATRIBUTOS_DO_PROXY = new AnnotationTransactionAttributeSource(false);
+    private static final Set<Integer> PROPAGACOES_SEGURAS = Set.of(
+            TransactionDefinition.PROPAGATION_REQUIRES_NEW, TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
 
-    @Test
-    void transactionalEventListenerNaoPodeUsarTransacaoAmbigua() throws IOException {
-        Path root = Path.of("src/main/java");
-        List<String> violations = new ArrayList<>();
-        if (!Files.exists(root)) {
-            return;
-        }
-        try (var stream = Files.walk(root)) {
-            stream.filter(path -> path.toString().endsWith(".java"))
-                    .forEach(path -> inspect(path, violations));
-        }
-        assertTrue(violations.isEmpty(), () -> String.join(System.lineSeparator(), violations));
+    @ArchTest
+    static void listenerDepoisDoCommitNaoPodeEntrarNaTransacaoEncerrada(JavaClasses classes) {
+        List<Method> listeners = classes.stream()
+                .flatMap(classe -> classe.getMethods().stream())
+                .filter(PjbTransactionalEventListenerArchitectureTest::ehListener)
+                .map(JavaMethod::reflect)
+                .toList();
+
+        assertThat(listeners)
+                .as("nenhum @TransactionalEventListener encontrado: a regra abaixo passaria sem verificar nada")
+                .isNotEmpty();
+
+        List<String> violacoes = listeners.stream()
+                .filter(PjbTransactionalEventListenerArchitectureTest::listenerDepoisDoCommit)
+                .filter(PjbTransactionalEventListenerArchitectureTest::entraNaTransacaoEncerrada)
+                .map(metodo -> metodo.getDeclaringClass().getName() + "#" + metodo.getName())
+                .toList();
+
+        assertThat(violacoes)
+                .as("listener que roda depois do commit com @Transactional (Spring ou jakarta) de propagacao que entra na "
+                        + "transacao ja encerrada perde as gravacoes; use REQUIRES_NEW ou NOT_SUPPORTED, no metodo ou na classe")
+                .isEmpty();
     }
 
-    private static void inspect(Path path, List<String> violations) {
-        String source;
-        try {
-            source = Files.readString(path);
-        } catch (IOException ex) {
-            throw new IllegalStateException(ex);
-        }
-        if (!TRANSACTIONAL_EVENT_LISTENER.matcher(source).find()) {
-            return;
-        }
-        String[] lines = source.split("\\R");
-        for (int i = 0; i < lines.length; i++) {
-            if (!lines[i].contains("@TransactionalEventListener")) {
-                continue;
-            }
-            String window = window(lines, i, Math.min(lines.length, i + 8));
-            if (UNSAFE_TRANSACTIONAL.matcher(window).find() && !SAFE_TRANSACTIONAL.matcher(window).find()) {
-                violations.add(path + ":" + (i + 1));
-            }
-        }
+    static boolean ehListener(JavaMethod metodo) {
+        return metodo.isAnnotatedWith(TransactionalEventListener.class) || metodo.isMetaAnnotatedWith(TransactionalEventListener.class);
     }
 
-    private static String window(String[] lines, int startInclusive, int endExclusive) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = startInclusive; i < endExclusive; i++) {
-            builder.append(lines[i]).append('\n');
-        }
-        return builder.toString();
+    static boolean listenerDepoisDoCommit(Method metodo) {
+        TransactionalEventListener listener = AnnotatedElementUtils.findMergedAnnotation(metodo, TransactionalEventListener.class);
+        return listener != null && listener.phase() != TransactionPhase.BEFORE_COMMIT;
+    }
+
+    static boolean entraNaTransacaoEncerrada(Method metodo) {
+        TransactionAttribute atributo = ATRIBUTOS_DO_PROXY.getTransactionAttribute(metodo, metodo.getDeclaringClass());
+        return atributo != null && !PROPAGACOES_SEGURAS.contains(atributo.getPropagationBehavior());
     }
 }
