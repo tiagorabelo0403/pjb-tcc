@@ -23,6 +23,7 @@ Três decisões de desenho vêm de erros já cometidos neste repositório:
 
 from __future__ import annotations
 
+import functools
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -36,12 +37,15 @@ README_PT = ROOT / "README.md"
 README_EN = ROOT / "README.en.md"
 MIGRACOES = APP_MODULE / "src" / "main" / "resources" / "db" / "migration"
 ADRS = ROOT / "docs" / "adr"
+WORKFLOW_CI = ROOT / ".github" / "workflows" / "ci.yml"
+GUARD_NO_CI = re.compile(r"\bpython3?\s+([A-Za-z0-9_]+_guard\.py)\b")
 
 # "Elasticsearch 8.15. Flyway migrations" casava como se 8.15 fosse a contagem. Número de contagem
 # tem separador de milhar (três dígitos depois do ponto/vírgula) ou nenhum separador; número de
 # versão como 8.15 não é nem um nem outro. Falso positivo do meu próprio padrão, pego rodando.
 CONTAGEM_PT = r"(\d{1,3}(?:\.\d{3})+|\d+)"
 CONTAGEM_EN = r"(\d{1,3}(?:,\d{3})+|\d+)"
+CONTAGEM_BADGE_EN = r"(\d{1,3}(?:%2C\d{3})+|\d+)"
 
 # `warmingUp`-style: o Surefire não limpa relatório de execução anterior. Numa máquina de
 # desenvolvimento o diretório acumula classes já apagadas (sondas temporárias), classes `*IT` rodadas
@@ -53,8 +57,7 @@ _motivo_sem_medicao = ""
 
 
 def _numero(bruto: str) -> int:
-    """`5.344` (pt) e `5,344` (en) são o mesmo número; o separador é de idioma, não de valor."""
-    return int(bruto.replace(".", "").replace(",", ""))
+    return int(bruto.replace("%2C", "").replace(".", "").replace(",", ""))
 
 
 def _arquivos_de_migracao() -> list[Path]:
@@ -90,6 +93,10 @@ def total_de_classes_it() -> int:
 
 def total_de_adrs() -> int:
     return sum(1 for _ in ADRS.glob("*.md"))
+
+
+def total_de_guards_python_no_ci() -> int:
+    return len(set(GUARD_NO_CI.findall(WORKFLOW_CI.read_text(encoding="utf-8"))))
 
 
 class AlvoSujo(Exception):
@@ -128,15 +135,8 @@ def _relatorios_coerentes() -> list[Path]:
     return arquivos
 
 
-def total_de_testes_unitarios() -> int | None:
-    """Soma os DOIS módulos. `None` quando o `target` não permite medir.
-
-    A primeira execução em CI achou o motivo de este guard existir: o README dizia 5.344, que é o
-    total do `pjb-api` sozinho — o número que o Maven imprime no fim do módulo. Num reator
-    multi-módulo não existe linha agregada; cada módulo imprime a sua, e ler a última como se fosse
-    o total do projeto omite os 26 testes do `pjb-core`. O número tinha sido propagado assim por
-    várias PRs sem que nada o conferisse.
-    """
+@functools.cache
+def _soma_dos_relatorios(atributo: str) -> int | None:
     global _motivo_sem_medicao
     try:
         arquivos = _relatorios_coerentes()
@@ -147,11 +147,27 @@ def total_de_testes_unitarios() -> int | None:
     total = 0
     for arquivo in arquivos:
         try:
-            total += int(ET.parse(arquivo).getroot().attrib.get("tests", 0))
+            total += int(ET.parse(arquivo).getroot().attrib.get(atributo, 0))
         except ET.ParseError:
             _motivo_sem_medicao = f"relatorio ilegivel: {arquivo.name}"
             return None
     return total
+
+
+def total_de_testes_unitarios() -> int | None:
+    """Soma os DOIS módulos. `None` quando o `target` não permite medir.
+
+    A primeira execução em CI achou o motivo de este guard existir: o README dizia 5.344, que é o
+    total do `pjb-api` sozinho — o número que o Maven imprime no fim do módulo. Num reator
+    multi-módulo não existe linha agregada; cada módulo imprime a sua, e ler a última como se fosse
+    o total do projeto omite os 26 testes do `pjb-core`. O número tinha sido propagado assim por
+    várias PRs sem que nada o conferisse.
+    """
+    return _soma_dos_relatorios("tests")
+
+
+def total_de_testes_pulados() -> int | None:
+    return _soma_dos_relatorios("skipped")
 
 
 @dataclass(frozen=True)
@@ -193,12 +209,64 @@ ALEGACOES: tuple[Alegacao, ...] = (
              re.compile(CONTAGEM_PT + r"\s+ADRs\b"), total_de_adrs),
     Alegacao("ADRs (en)", README_EN,
              re.compile(CONTAGEM_EN + r"\s+ADRs\b"), total_de_adrs),
+    Alegacao("ADRs — badge (pt)", README_PT,
+             re.compile(r"badge/ADRs-(\d+)-"), total_de_adrs),
+    Alegacao("ADRs — badge (en)", README_EN,
+             re.compile(r"badge/ADRs-(\d+)-"), total_de_adrs),
+    Alegacao("ADRs — tabela de estado (pt)", README_PT,
+             re.compile(r"\|\s*ADRs\s*\|\s*(\d+)\s+decisões"), total_de_adrs),
+    Alegacao("ADRs — tabela de estado (en)", README_EN,
+             re.compile(r"\|\s*ADRs\s*\|\s*(\d+)\s+architectural decisions"), total_de_adrs),
+    Alegacao("guards Python no CI — stack (pt)", README_PT,
+             re.compile(r"(\d+)\s+scripts Python \+ ArchUnit"), total_de_guards_python_no_ci),
+    Alegacao("guards Python no CI — stack (en)", README_EN,
+             re.compile(r"(\d+)\s+Python scripts \+ ArchUnit"), total_de_guards_python_no_ci),
+    Alegacao("guards Python no CI — estado (pt)", README_PT,
+             re.compile(r"(\d+)\s+scripts ativos em CI"), total_de_guards_python_no_ci),
+    Alegacao("guards Python no CI — estado (en)", README_EN,
+             re.compile(r"(\d+)\s+scripts active in CI"), total_de_guards_python_no_ci),
     Alegacao("testes unitarios (pt)", README_PT,
              re.compile(CONTAGEM_PT + r"\s+(?:testes unitários|unitários \(Surefire\))"),
              total_de_testes_unitarios, opcional_sem_medicao=True),
     Alegacao("testes unitarios (en)", README_EN,
              re.compile(CONTAGEM_EN + r"\s+unit tests\b"),
              total_de_testes_unitarios, opcional_sem_medicao=True),
+    Alegacao("testes unitarios — tabela de metricas (pt)", README_PT,
+             re.compile(r"\|\s*Total de testes unitários\s*\|\s*Surefire\s*\|\s*\*\*" + CONTAGEM_PT),
+             total_de_testes_unitarios, opcional_sem_medicao=True),
+    Alegacao("testes unitarios — tabela de metricas (en)", README_EN,
+             re.compile(r"\|\s*Total unit tests\s*\|\s*Surefire\s*\|\s*\*\*" + CONTAGEM_EN),
+             total_de_testes_unitarios, opcional_sem_medicao=True),
+    Alegacao("testes unitarios — tabela de estado (pt)", README_PT,
+             re.compile(r"Testes unitários \(Surefire\)\s*\|\s*\*\*" + CONTAGEM_PT),
+             total_de_testes_unitarios, opcional_sem_medicao=True),
+    Alegacao("testes unitarios — tabela de estado (en)", README_EN,
+             re.compile(r"Unit tests \(Surefire\)\s*\|\s*\*\*" + CONTAGEM_EN),
+             total_de_testes_unitarios, opcional_sem_medicao=True),
+    Alegacao("testes unitarios — niveis de teste (pt)", README_PT,
+             re.compile(CONTAGEM_PT + r"\s+testes com Mockito"),
+             total_de_testes_unitarios, opcional_sem_medicao=True),
+    Alegacao("testes unitarios — niveis de teste (en)", README_EN,
+             re.compile(CONTAGEM_EN + r"\s+tests with Mockito"),
+             total_de_testes_unitarios, opcional_sem_medicao=True),
+    Alegacao("testes unitarios — badge (pt)", README_PT,
+             re.compile(r"badge/Testes-" + CONTAGEM_PT + r"%20unit"),
+             total_de_testes_unitarios, opcional_sem_medicao=True),
+    Alegacao("testes unitarios — badge (en)", README_EN,
+             re.compile(r"badge/Tests-" + CONTAGEM_BADGE_EN + r"%20unit"),
+             total_de_testes_unitarios, opcional_sem_medicao=True),
+    Alegacao("testes pulados — tabela (pt)", README_PT,
+             re.compile(r"\|\s*Skipped\s*\|\s*Surefire\s*\|\s*(\d+)\s*\|"),
+             total_de_testes_pulados, opcional_sem_medicao=True),
+    Alegacao("testes pulados — tabela (en)", README_EN,
+             re.compile(r"\|\s*Skipped\s*\|\s*Surefire\s*\|\s*(\d+)\s*\|"),
+             total_de_testes_pulados, opcional_sem_medicao=True),
+    Alegacao("testes pulados — estado (pt)", README_PT,
+             re.compile(r"(\d+)\s+pulados?\b"),
+             total_de_testes_pulados, opcional_sem_medicao=True),
+    Alegacao("testes pulados — estado (en)", README_EN,
+             re.compile(r"(\d+)\s+skipped\b"),
+             total_de_testes_pulados, opcional_sem_medicao=True),
 )
 
 

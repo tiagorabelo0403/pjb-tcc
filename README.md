@@ -439,7 +439,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 |---------|------|-------|
 | Total de testes unitários | Surefire | **5.571** |
 | Falhas unitários | Surefire | **0** |
-| Skipped | Surefire | 5 |
+| Skipped | Surefire | 1 |
 | Tempo unitários | Surefire | **~14 min** |
 | Classes de teste de integração | Failsafe | **118** ¹ |
 | Testes do motor de composição de polos | Failsafe | **+10 verdes** (papel por rito: ACUSACAO, RECLAMANTE, IMPETRANTE, SEGURADO…) |
@@ -646,7 +646,7 @@ graph TD
 | IA Jurídica | Anthropic Claude API — Memory Stores, Dreams, síntese reflexiva |
 | Observabilidade | Micrometer, Spring Actuator, Process Mining materializado |
 | Análise estática | Qodana (JetBrains), JaCoCo, Checkstyle, SpotBugs, ArchUnit, catraca de depreciação no compilador |
-| Guards estruturais | 26 scripts Python + ArchUnit integrados ao CI |
+| Guards estruturais | 48 scripts Python + ArchUnit integrados ao CI |
 | Containerização | Docker Compose (dev/test), Kubernetes (produção) |
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
@@ -1063,8 +1063,8 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 | Testes unitários (Surefire) | **5.571 · 0 falhas · 0 erros · 1 pulado** |
 | Testes de integração (Failsafe) | **118 classes · 0 falhas na última medição (ver nota ² na seção Testes)** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
-| ADRs | 57 decisões arquiteturais documentadas |
-| Guards Python | 46 scripts ativos em CI |
+| ADRs | 58 decisões arquiteturais documentadas |
+| Guards Python | 48 scripts ativos em CI |
 | SBOM | CycloneDX gerado a cada build |
 | Auditoria de CVE | Trivy escaneia o SBOM a cada PR; bloqueia merge em CVE CRITICAL |
 | Correlation ID | Obrigatório em toda requisição |
