@@ -1,6 +1,9 @@
 package com.tcc.pjb.backend;
 
 import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
+import com.tcc.pjb.backend.platform.concurrent.PjbVirtualThreadSpine;
+import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaAccess;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaCodeUnit;
@@ -11,6 +14,7 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -31,6 +35,22 @@ class PjbArchitectureTest {
      */
     private static final Pattern CLASSE_VIOLADORA =
             Pattern.compile("<(com\\.tcc\\.pjb\\.backend(?:\\.[a-z][A-Za-z0-9_]*)*\\.[A-Z][A-Za-z0-9_]*)");
+
+    private static final Map<String, Set<String>> APIS_QUE_CRIAM_VIRTUAL_THREAD = Map.of(
+            "java.lang.Thread", Set.of("ofVirtual", "startVirtualThread"),
+            "java.util.concurrent.Executors", Set.of("newThreadPerTaskExecutor", "newVirtualThreadPerTaskExecutor"),
+            "org.springframework.boot.task.SimpleAsyncTaskExecutorBuilder", Set.of("virtualThreads"),
+            "org.springframework.boot.task.SimpleAsyncTaskSchedulerBuilder", Set.of("virtualThreads"),
+            "org.springframework.core.task.SimpleAsyncTaskExecutor", Set.of("setVirtualThreads"),
+            "org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler", Set.of("setVirtualThreads"),
+            "org.springframework.core.task.VirtualThreadTaskExecutor", Set.of("<init>"),
+            "org.apache.tomcat.util.threads.VirtualThreadExecutor", Set.of("<init>"));
+
+    private static final DescribedPredicate<JavaAccess<?>> CRIA_VIRTUAL_THREAD = DescribedPredicate.describe(
+            "API que cria virtual thread",
+            acesso -> APIS_QUE_CRIAM_VIRTUAL_THREAD.entrySet().stream()
+                    .anyMatch(api -> acesso.getTargetOwner().isAssignableTo(api.getKey())
+                            && api.getValue().contains(acesso.getName())));
 
     /**
      * Avalia a regra sem lancar, para que o baseline conhecido possa ser afirmado por nome em vez de
@@ -185,9 +205,23 @@ class PjbArchitectureTest {
     @ArchTest
     static void virtual_threads_apenas_no_spine(JavaClasses classes) {
         ArchRule rule = noClasses()
-                .that().haveSimpleNameNotContaining("VirtualThreadSpine")
-                .should().callMethod(Thread.class, "ofVirtual");
+                .that().doNotBelongToAnyOf(PjbVirtualThreadSpine.class)
+                .should().accessTargetWhere(CRIA_VIRTUAL_THREAD);
         rule.check(classes);
+    }
+
+    @ArchTest
+    static void o_spine_e_quem_cria_virtual_threads(JavaClasses classes) {
+        Set<String> criacoes = new TreeSet<>();
+        for (JavaAccess<?> acesso : classes.get(PjbVirtualThreadSpine.class).getAccessesFromSelf()) {
+            if (CRIA_VIRTUAL_THREAD.test(acesso)) {
+                criacoes.add(acesso.getTargetOwner().getSimpleName() + "." + acesso.getName());
+            }
+        }
+
+        assertThat(criacoes)
+                .as("o predicado precisa reconhecer as criacoes do proprio spine; vazio significa regra acima cega")
+                .contains("Thread.ofVirtual", "Executors.newThreadPerTaskExecutor", "SimpleAsyncTaskExecutorBuilder.virtualThreads");
     }
 
     @ArchTest
