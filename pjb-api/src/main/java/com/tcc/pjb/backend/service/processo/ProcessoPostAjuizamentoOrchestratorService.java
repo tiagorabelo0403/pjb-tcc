@@ -11,6 +11,7 @@ import java.util.Locale;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,6 +68,7 @@ public class ProcessoPostAjuizamentoOrchestratorService {
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
     }
 
+    @Order(2)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @PjbTransactionalBudget(operation = "ajuizamento.post-commit.persist", maxMillis = 2500, critical = true)

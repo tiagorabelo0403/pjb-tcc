@@ -1234,3 +1234,44 @@ módulos, as anotações, `StrictJacksonConfig`, o serializer do cache (`Generic
 que recebe o mapper do Jackson 3), as propriedades `spring.jackson.*` e os pontos que dependem do
 comportamento de serialização do Jackson 2. Quando isso acontecer, os quatro `@SuppressWarnings` (dois
 em `src/main`, dois em `src/test`) saem.
+
+## D-distribuicao-roteada-antes-do-commit-sem-registro-de-carga
+
+**Status:** aberta — processo que chega ao commit já roteado não entra na contagem de carga das unidades
+
+O balanceamento da distribuição dinâmica escolhe a unidade pela carga recente, contada em
+`ProcessoDistribuicaoCompetencia` (`ProcessoDistribuicaoCompetenciaRepository.contarRecentesPorUnidade`,
+lido em `MapaCompetenciaDinamicoEngine:851`). Essa linha só nasce em `persistirDistribuicao`, quando o
+motor escolhe a unidade. Quando o ajuizamento REST ou Marketplace já preenche unidade e tribunal antes
+do commit, ninguém registra a distribuição:
+
+```
+AjuizarProcessoCommand.java:147-163
+    processo.setTribunalCodigoRoteado(firstNonBlank(processo.getTribunalCodigoRoteado(), routing.tribunalCodigo()));
+    processo.setUnidadeJudiciariaCodigo(firstNonBlank(processo.getUnidadeJudiciariaCodigo(), routing.varaSugerida()));
+AjuizamentoCanonicalContextService.java:96-101
+    processo.setTribunalCodigoRoteado(firstNonBlank(processo.getTribunalCodigoRoteado(), routing.tribunalCodigo()));
+    processo.setUnidadeJudiciariaCodigo(firstNonBlank(processo.getUnidadeJudiciariaCodigo(), forumAllocation.unidadeJudiciariaCodigo()));
+ProcessoDistribuicaoInicialReforcoService.java:30,38-39
+    boolean missingSnapshot = isBlank(processo.getUnidadeJudiciariaCodigo()) || isBlank(processo.getTribunalCodigoRoteado());
+    if (missingSnapshot) { distribuicao = mapaCompetenciaDinamicoEngine.registrarDistribuicaoInicial(processo)... }
+```
+
+A chamada que `AjuizamentoPostCommitOperationalEffectsService` fazia ao motor não cobria o caso: depois
+do commit ela falhava em `distribuicaoRepository.saveAndFlush` com "No active transaction" e não gravava
+nada. Refazer a escolha depois do commit também não serve: mudaria o juízo de processo já numerado
+(perpetuatio jurisdictionis, CPC art. 43). A correção é uma operação nova que registra a distribuição
+aplicada à unidade já escolhida, sem reescolher, e entra na contagem de carga.
+
+A unidade desses processos sai da pré-visualização do próprio motor, que não grava nada
+(`NationalProceduralDistributionResolver` chama `MapaCompetenciaDinamicoEngine.distribuir`, que é
+`distribuirInterno(request, false)`). A pré-visualização seguinte lê a mesma carga e, para o mesmo
+perfil, tende a escolher a mesma unidade. Antes de registrar a carga, há três pontos que só o dono
+decide:
+
+- dois mecanismos escolhem a vara: o motor e o perfil de `ConfiguracaoDistribuicaoVaraService`, que
+  prevalece (`NationalProceduralForumAllocationSeedResolver:42-43`);
+- `unidadeJudiciariaCodigo` pode receber o código da unidade ou a descrição da vara
+  (`perfil.varaDescricao()` tem precedência), então não há chave confiável para registrar a carga;
+- `distribuirInterno` ordena os candidatos de forma determinística, sem componente aleatório, e o
+  CPC art. 285 pede distribuição alternada e aleatória.

@@ -24,6 +24,7 @@ import com.tcc.pjb.backend.service.teto.TetoProcessualService;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,6 +74,7 @@ public class AjuizarProcessoCommandPostCommitEffectsService {
         this.territorialProcessualService = Objects.requireNonNull(territorialProcessualService);
     }
 
+    @Order(1)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @PjbTransactionalBudget(operation = "ajuizamento.command.post-commit.persist", maxMillis = 2600, critical = true)
