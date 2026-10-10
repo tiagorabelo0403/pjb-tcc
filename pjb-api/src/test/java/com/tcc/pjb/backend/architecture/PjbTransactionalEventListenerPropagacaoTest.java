@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 class PjbTransactionalEventListenerPropagacaoTest {
@@ -39,9 +40,33 @@ class PjbTransactionalEventListenerPropagacaoTest {
     }
 
     @Test
-    void anotacaoCompostaComNotSupportedSuspendeATransacaoEncerrada() throws NoSuchMethodException {
+    void anotacaoCompostaComTransactionalPadraoEntraNaTransacaoEncerrada() throws NoSuchMethodException {
         assertThat(PjbTransactionalEventListenerArchitectureTest.entraNaTransacaoEncerrada(listener(CompostaNoMetodo.class)))
+                .isTrue();
+    }
+
+    @Test
+    void listenerAntesDoCommitFicaForaDaRegra() throws NoSuchMethodException {
+        assertThat(PjbTransactionalEventListenerArchitectureTest.listenerDepoisDoCommit(listener(AntesDoCommit.class)))
                 .isFalse();
+    }
+
+    @Test
+    void listenerSemFaseDeclaradaRodaDepoisDoCommit() throws NoSuchMethodException {
+        assertThat(PjbTransactionalEventListenerArchitectureTest.listenerDepoisDoCommit(listener(SemTransactional.class)))
+                .isTrue();
+    }
+
+    @Test
+    void listenerDepoisDoRollbackTambemRodaComATransacaoEncerrada() throws NoSuchMethodException {
+        assertThat(PjbTransactionalEventListenerArchitectureTest.listenerDepoisDoCommit(listener(DepoisDoRollback.class)))
+                .isTrue();
+    }
+
+    @Test
+    void listenerDeclaradoPorMetaAnotacaoEhReconhecido() throws NoSuchMethodException {
+        assertThat(PjbTransactionalEventListenerArchitectureTest.listenerDepoisDoCommit(listener(ListenerPorMetaAnotacao.class)))
+                .isTrue();
     }
 
     @Test
@@ -56,8 +81,14 @@ class PjbTransactionalEventListenerPropagacaoTest {
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    @interface ForaDaTransacao {
+    @Transactional
+    @interface NaTransacaoPadrao {
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @interface AoConfirmar {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -92,13 +123,32 @@ class PjbTransactionalEventListenerPropagacaoTest {
 
     static class CompostaNoMetodo {
         @TransactionalEventListener
-        @ForaDaTransacao
+        @NaTransacaoPadrao
         public void on(Object evento) {
         }
     }
 
     static class SemTransactional {
         @TransactionalEventListener
+        public void on(Object evento) {
+        }
+    }
+
+    static class AntesDoCommit {
+        @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+        @Transactional
+        public void on(Object evento) {
+        }
+    }
+
+    static class DepoisDoRollback {
+        @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
+        public void on(Object evento) {
+        }
+    }
+
+    static class ListenerPorMetaAnotacao {
+        @AoConfirmar
         public void on(Object evento) {
         }
     }

@@ -38,8 +38,7 @@ class PjbTransactionalEventListenerArchitectureTest {
                 .isNotEmpty();
 
         List<String> violacoes = listeners.stream()
-                .filter(metodo -> AnnotatedElementUtils.findMergedAnnotation(metodo, TransactionalEventListener.class).phase()
-                        != TransactionPhase.BEFORE_COMMIT)
+                .filter(PjbTransactionalEventListenerArchitectureTest::listenerDepoisDoCommit)
                 .filter(PjbTransactionalEventListenerArchitectureTest::entraNaTransacaoEncerrada)
                 .map(metodo -> metodo.getDeclaringClass().getName() + "#" + metodo.getName())
                 .toList();
@@ -48,6 +47,11 @@ class PjbTransactionalEventListenerArchitectureTest {
                 .as("listener que roda depois do commit com @Transactional (Spring ou jakarta) de propagacao que entra na "
                         + "transacao ja encerrada perde as gravacoes; use REQUIRES_NEW ou NOT_SUPPORTED, no metodo ou na classe")
                 .isEmpty();
+    }
+
+    static boolean listenerDepoisDoCommit(Method metodo) {
+        TransactionalEventListener listener = AnnotatedElementUtils.findMergedAnnotation(metodo, TransactionalEventListener.class);
+        return listener != null && listener.phase() != TransactionPhase.BEFORE_COMMIT;
     }
 
     static boolean entraNaTransacaoEncerrada(Method metodo) {
