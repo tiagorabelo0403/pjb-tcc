@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.*;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.*;
-import com.tcc.pjb.backend.model.entity.jurisprudencia.Precedente;
 import com.tcc.pjb.backend.modules.auditoria.AuditoriaInteligenteService;
 import com.tcc.pjb.backend.service.jurisprudencia.JurisprudenciaService;
 import com.tcc.pjb.backend.service.jurisprudencia.search.JurisprudenceContextualSearchService;
 import com.tcc.pjb.backend.service.jurisprudencia.search.JurisprudenceSearchEngine;
 import com.tcc.pjb.backend.service.jurisprudencia.search.JurisprudenceSearchHit;
 import com.tcc.pjb.backend.model.dto.jurisprudencia.JurisprudenceContextualSearchResponse;
+import com.tcc.pjb.backend.model.dto.jurisprudencia.PrecedenteResponse;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 
 @RestController
@@ -47,7 +47,7 @@ public class JurisprudenciaController {
 
     @GetMapping("/search")
     @PreAuthorize("isAuthenticated()")
-    public Page<Precedente> search(
+    public Page<PrecedenteResponse> search(
             @RequestParam(required = false) TribunalFonte fonte,
             @RequestParam(required = false) TipoPrecedente tipo,
             @RequestParam(required = false) RamoDireito ramo,
@@ -57,7 +57,7 @@ public class JurisprudenciaController {
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
         auditIfLawyer("search", fonte, tipo, ramo, rito, q, size);
-        return service.search(fonte, tipo, ramo, rito, q, page, size);
+        return service.search(fonte, tipo, ramo, rito, q, page, size).map(PrecedenteResponse::de);
     }
 
     @GetMapping("/search-scored")
