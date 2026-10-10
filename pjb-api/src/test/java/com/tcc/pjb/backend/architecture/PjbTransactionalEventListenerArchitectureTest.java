@@ -7,22 +7,22 @@ import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.interceptor.TransactionAttribute;
 
 @AnalyzeClasses(packages = "com.tcc.pjb.backend", importOptions = ImportOption.DoNotIncludeTests.class)
 class PjbTransactionalEventListenerArchitectureTest {
 
-    private static final Set<Propagation> PROPAGACOES_SEGURAS = Set.of(Propagation.REQUIRES_NEW, Propagation.NOT_SUPPORTED);
-    private static final Set<jakarta.transaction.Transactional.TxType> TIPOS_JTA_SEGUROS = Set.of(
-            jakarta.transaction.Transactional.TxType.REQUIRES_NEW, jakarta.transaction.Transactional.TxType.NOT_SUPPORTED);
+    private static final AnnotationTransactionAttributeSource ATRIBUTOS_DO_PROXY = new AnnotationTransactionAttributeSource(false);
+    private static final Set<Integer> PROPAGACOES_SEGURAS = Set.of(
+            TransactionDefinition.PROPAGATION_REQUIRES_NEW, TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
 
     @ArchTest
     static void listenerDepoisDoCommitNaoPodeEntrarNaTransacaoEncerrada(JavaClasses classes) {
@@ -50,17 +50,8 @@ class PjbTransactionalEventListenerArchitectureTest {
                 .isEmpty();
     }
 
-    private static boolean entraNaTransacaoEncerrada(Method metodo) {
-        Transactional spring = mesclada(metodo, Transactional.class);
-        if (spring != null) {
-            return !PROPAGACOES_SEGURAS.contains(spring.propagation());
-        }
-        jakarta.transaction.Transactional jta = mesclada(metodo, jakarta.transaction.Transactional.class);
-        return jta != null && !TIPOS_JTA_SEGUROS.contains(jta.value());
-    }
-
-    private static <A extends Annotation> A mesclada(Method metodo, Class<A> tipo) {
-        A doMetodo = AnnotatedElementUtils.findMergedAnnotation(metodo, tipo);
-        return doMetodo != null ? doMetodo : AnnotatedElementUtils.findMergedAnnotation(metodo.getDeclaringClass(), tipo);
+    static boolean entraNaTransacaoEncerrada(Method metodo) {
+        TransactionAttribute atributo = ATRIBUTOS_DO_PROXY.getTransactionAttribute(metodo, metodo.getDeclaringClass());
+        return atributo != null && !PROPAGACOES_SEGURAS.contains(atributo.getPropagationBehavior());
     }
 }
