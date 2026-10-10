@@ -51,7 +51,7 @@ class PjbControllerPreAuthorizeCoverageSondasTest {
 
     @Test
     void mapeamentoSoNaClasseNaoTransformaMetodoAuxiliarEmEndpoint() {
-        assertThat(PjbControllerPreAuthorizeCoverageTest.endpoints(MapeamentoSoNaClasse.class))
+        assertThat(ControllersDaAplicacao.endpoints(MapeamentoSoNaClasse.class))
                 .extracting(Method::getName)
                 .containsExactly("rota");
     }
@@ -66,9 +66,9 @@ class PjbControllerPreAuthorizeCoverageSondasTest {
     void subclasseDeControllerAnotadoEhControllerParaOSpringEParaAVarredura() {
         JavaClasses sondas = new ClassFileImporter().importClasses(HerdaControllerAnotado.class, ControllerBaseAnotado.class);
 
-        assertThat(PjbControllerPreAuthorizeCoverageTest.podeSerController(sondas.get(HerdaControllerAnotado.class))).isTrue();
-        assertThat(PjbControllerPreAuthorizeCoverageTest.ehController(HerdaControllerAnotado.class)).isTrue();
-        assertThat(PjbControllerPreAuthorizeCoverageTest.ehController(ControllerBaseAnotado.class)).isFalse();
+        assertThat(ControllersDaAplicacao.podeSerController(sondas.get(HerdaControllerAnotado.class))).isTrue();
+        assertThat(ControllersDaAplicacao.ehController(HerdaControllerAnotado.class)).isTrue();
+        assertThat(ControllersDaAplicacao.ehController(ControllerBaseAnotado.class)).isFalse();
         assertThat(PjbControllerPreAuthorizeCoverageTest.endpointsSemAutorizacao(HerdaControllerAnotado.class))
                 .containsExactly("HerdaControllerAnotado#daBase");
     }
@@ -77,16 +77,16 @@ class PjbControllerPreAuthorizeCoverageSondasTest {
     void implementacaoDeInterfaceAnotadaComoControllerEhReconhecidaComoController() {
         JavaClasses sondas = new ClassFileImporter().importClasses(ImplementaInterfaceController.class, InterfaceController.class);
 
-        assertThat(PjbControllerPreAuthorizeCoverageTest.podeSerController(sondas.get(ImplementaInterfaceController.class))).isTrue();
-        assertThat(PjbControllerPreAuthorizeCoverageTest.ehController(ImplementaInterfaceController.class)).isTrue();
+        assertThat(ControllersDaAplicacao.podeSerController(sondas.get(ImplementaInterfaceController.class))).isTrue();
+        assertThat(ControllersDaAplicacao.ehController(ImplementaInterfaceController.class)).isTrue();
     }
 
     @Test
     void classeSemControllerNaHierarquiaFicaForaDaVarredura() {
         JavaClasses sondas = new ClassFileImporter().importClasses(BaseSemController.class);
 
-        assertThat(PjbControllerPreAuthorizeCoverageTest.podeSerController(sondas.get(BaseSemController.class))).isFalse();
-        assertThat(PjbControllerPreAuthorizeCoverageTest.ehController(BaseSemController.class)).isFalse();
+        assertThat(ControllersDaAplicacao.podeSerController(sondas.get(BaseSemController.class))).isFalse();
+        assertThat(ControllersDaAplicacao.ehController(BaseSemController.class)).isFalse();
     }
 
     @Test
