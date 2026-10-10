@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.service.secretariat.routing;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -75,8 +76,11 @@ class SecretariaEspecializadaRoutingServiceMalhaTest {
         Usuario magistrado = usuario(TipoUsuario.JUIZ);
         when(currentUserService.getRequired()).thenReturn(magistrado);
         doNothing().when(authorizationService).requireVinculoInstitucionalComProcesso(7L);
+        JudicialTopologySegregationMeshService.JudicialTopologySegregationMeshSnapshot malha =
+                mock(JudicialTopologySegregationMeshService.JudicialTopologySegregationMeshSnapshot.class);
+        when(judicialTopologySegregationMeshService.snapshot(7L)).thenReturn(malha);
 
-        service.malhaProcesso(7L);
+        assertThat(service.malhaProcesso(7L)).isSameAs(malha);
 
         verify(visibilityService).requireProcessAccess(7L);
         verify(authorizationService).requireVinculoInstitucionalComProcesso(7L);

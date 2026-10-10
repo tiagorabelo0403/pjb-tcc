@@ -8,12 +8,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.tcc.pjb.backend.core.comunicacao.institucional.delivery.domain.InstitutionalDeadLetterEntry;
 import com.tcc.pjb.backend.core.comunicacao.institucional.delivery.infrastructure.InstitutionalDeliveryDeadLetterStateRepository;
 import com.tcc.pjb.backend.core.comunicacao.institucional.delivery.infrastructure.InstitutionalDeliveryJobStateRepository;
 import com.tcc.pjb.backend.core.comunicacao.institucional.gate.infrastructure.InstitutionalGateStateRepository;
 import com.tcc.pjb.backend.core.comunicacao.institucional.inbox.infrastructure.InstitutionalInboxStateRepository;
 import com.tcc.pjb.backend.core.comunicacao.institucional.integration.infrastructure.InstitutionalExternalDispatchStateRepository;
 import com.tcc.pjb.backend.core.comunicacao.institucional.observability.application.InstitutionalCommunicationObservabilityApplicationService;
+import com.tcc.pjb.backend.core.comunicacao.institucional.observability.domain.InstitutionalObservabilityDashboard;
 import com.tcc.pjb.backend.model.entity.enums.DestinatarioInstitucionalKind;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.lang.reflect.Field;
@@ -31,7 +33,9 @@ class InstitutionalCommunicationObservabilityApplicationServiceTest {
         InstitutionalGateStateRepository gateRepository = mock(InstitutionalGateStateRepository.class);
         InstitutionalInboxStateRepository inboxRepository = mock(InstitutionalInboxStateRepository.class);
         when(jobRepository.findByProcessoId(42L)).thenReturn(List.of());
-        when(deadLetterRepository.findByProcessoId(42L)).thenReturn(List.of());
+        when(deadLetterRepository.findByProcessoId(42L)).thenReturn(
+                List.of(),
+                List.of(mock(InstitutionalDeadLetterEntry.class)));
         when(externalDispatchRepository.findByProcessoId(42L)).thenReturn(List.of());
         when(gateRepository.findByProcessoId(42L)).thenReturn(List.of());
         when(inboxRepository.findByProcessoId(42L)).thenReturn(List.of());
@@ -45,9 +49,11 @@ class InstitutionalCommunicationObservabilityApplicationServiceTest {
                 new SimpleMeterRegistry()
         );
 
-        service.dashboard(42L, null, null);
-        service.dashboard(42L, null, null);
+        InstitutionalObservabilityDashboard primeiro = service.dashboard(42L, null, null);
+        InstitutionalObservabilityDashboard segundo = service.dashboard(42L, null, null);
 
+        assertThat(segundo).isSameAs(primeiro);
+        assertThat(segundo.totalDlq()).isZero();
         verify(jobRepository, times(1)).findByProcessoId(42L);
         verify(deadLetterRepository, times(1)).findByProcessoId(42L);
         verify(externalDispatchRepository, times(1)).findByProcessoId(42L);
