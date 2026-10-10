@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-5.571%20unit%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-5.589%20unit%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -368,7 +368,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 5.571 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 5.589 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 118 classes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 A convenção de nome é verificada no CI pelo guard `integration_test_naming_guard.py`: uma classe com sufixo `IT` precisa exibir marcador real de integração — Testcontainers, contexto Spring ou base de integração herdada. Sem esse marcador a classe não seria executada por nenhuma das duas fases (o Surefire a ignora pelo nome, e o Failsafe só roda sob `verify`), e o build falha em vez de deixar o teste invisível.
@@ -387,7 +387,7 @@ Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api -am
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 5.571 unitários (Surefire) e depois as 118 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 5.589 unitários (Surefire) e depois as 118 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 O `-am` não é cosmético: sem ele o `pjb-core` é resolvido a partir do `~/.m2` em vez do reator, e um artefato desatualizado ali produz `cannot find symbol` apontando para classes que existem no código-fonte.
 
@@ -437,7 +437,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **5.571** |
+| Total de testes unitários | Surefire | **5.589** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 1 |
 | Tempo unitários | Surefire | **~14 min** |
@@ -977,6 +977,20 @@ O script imprime as 4 envs que o backend precisa pra puxar credenciais do Vault.
 
 Nenhum dos mais de 30 pontos do código que chamam `usuarioRepository.findByCpf(cpf)`/`findByEmail(email)` mudou — a assinatura e o comportamento visível são os mesmos; por baixo, `UsuarioRepositoryImpl` busca pelo hash. O mesmo vale para o cruzamento de parte processual: `ProcessoRepository.findAllByPartesCpf` casa o CPF informado com `Usuario.cpfHash`, mantendo `Processo.parteAutoraCpf`/`parteReuCpf` em texto puro (dado da parte no processo, escopo diferente do dado de conta do usuário). `nome` fica fora desta cifragem: `MembroEquipeRepository` faz busca parcial (`LIKE`) direto nele, que hash não suporta.
 
+### Credenciais no cabeçalho `Authorization`
+
+Três credenciais chegam como `Authorization: Bearer`, e cada uma tem um único dono na cadeia de segurança:
+
+| Credencial | Quem valida |
+|------------|-------------|
+| Sessão opaca emitida pelos logins por passkey, certificado ICP-Brasil e gov.br | `PasskeyAuthenticationFilter`, pelo hash da sessão |
+| Token de cliente do Marketplace (JWT HS256 próprio) | `MarketplaceOAuth2Service`, no próprio controller do Marketplace |
+| JWT de emissor externo | resource server OAuth2, ligado só quando `spring.security.oauth2.resourceserver.jwt.issuer-uri`, `jwk-set-uri` ou `public-key-location` está configurado |
+
+A presença de um `JwtDecoder` no contexto não liga o resource server: o starter do servidor de autorização usado pelo IdP de demonstração do gov.br cria um com chave aleatória em qualquer perfil, e ligá-lo por isso fazia o filtro JWT recusar a sessão do login e o token do Marketplace. Com emissor configurado, `BearerDoEmissorExternoResolver` entrega ao validador JWT só o token com formato de JWT e fora das rotas do Marketplace. Requisição sem autenticação recebe `401` com `WWW-Authenticate: Bearer`.
+
+`CredenciaisBearerNaCadeiaDeSegurancaTest` emite cada credencial pelo serviço real e a envia pela cadeia completa, e `SecurityFilterChainPerfilTesteTest` afirma a ordem dos filtros da cadeia.
+
 [⬆ Voltar à navegação rápida](#navegação-rápida)
 
 ---
@@ -1060,7 +1074,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **5.571 · 0 falhas · 0 erros · 1 pulado** |
+| Testes unitários (Surefire) | **5.589 · 0 falhas · 0 erros · 1 pulado** |
 | Testes de integração (Failsafe) | **118 classes · 0 falhas na última medição (ver nota ² na seção Testes)** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 58 decisões arquiteturais documentadas |
@@ -1391,7 +1405,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.571 testes unitários, 118 classes de integração e 327 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.589 testes unitários, 118 classes de integração e 327 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

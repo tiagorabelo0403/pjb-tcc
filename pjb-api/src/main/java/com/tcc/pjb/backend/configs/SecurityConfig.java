@@ -11,6 +11,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -72,6 +74,8 @@ import com.tcc.pjb.backend.model.repository.security.PasskeySessionRepository;
 import com.tcc.pjb.backend.model.repository.security.UserSecurityProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.configs.security.DbUserDetailsService;
+import com.tcc.pjb.backend.configs.security.EmissorJwtConfigurado;
+import com.tcc.pjb.backend.configs.security.BearerDoEmissorExternoResolver;
 import com.tcc.pjb.backend.configs.security.InstitutionalCriticalActionHttpGuardFilter;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.service.security.ratelimit.RateLimiterStore;
@@ -332,8 +336,15 @@ public class SecurityConfig {
         }
 
         JwtDecoder jwtDecoder = jwtDecoderProvider.getIfAvailable();
-        if (jwtDecoder != null) {
-            http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)));
+        if (jwtDecoder != null && EmissorJwtConfigurado.presente(env)) {
+            http.oauth2ResourceServer(oauth2 -> oauth2
+                    .bearerTokenResolver(new BearerDoEmissorExternoResolver())
+                    .jwt(jwt -> jwt.decoder(jwtDecoder)));
+        } else {
+            http.exceptionHandling(exceptions -> exceptions.authenticationEntryPoint((request, response, exception) -> {
+                response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            }));
         }
 
         boolean publicDocs = Boolean.parseBoolean(env.getProperty("pjb.api.docs.public", "false"));

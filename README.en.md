@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-5%2C571%20unit%20%7C%200%20failures-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-5%2C589%20unit%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -367,7 +367,7 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 5,571 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 5,589 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 118 classes against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 The naming convention is enforced in CI by the `integration_test_naming_guard.py` guard: a class suffixed `IT` must carry a real integration marker — Testcontainers, a Spring context, or an inherited integration base. Without that marker the class would run in neither phase (Surefire skips it by name, and Failsafe only runs under `verify`), so the build fails instead of leaving the test invisible.
@@ -386,7 +386,7 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api -am
 ```
 
-This is the official project gate. It runs the 5,571 unit tests (Surefire) and then the 118 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 5,589 unit tests (Surefire) and then the 118 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 The `-am` is not cosmetic: without it `pjb-core` is resolved from `~/.m2` instead of the reactor, and a stale artifact there produces `cannot find symbol` pointing at classes that exist in the source tree.
 
@@ -427,7 +427,7 @@ Cross-platform (Windows/Linux/macOS), stdlib only. Report-only by default (exits
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **5,571** |
+| Total unit tests | Surefire | **5,589** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 1 |
 | Unit test execution time | Surefire | **~14 min** |
@@ -951,6 +951,20 @@ The script prints the 4 env vars the backend needs to pull credentials from Vaul
 
 None of the 30+ call sites calling `usuarioRepository.findByCpf(cpf)`/`findByEmail(email)` changed — the signature and visible behavior are the same; underneath, `UsuarioRepositoryImpl` looks up by hash. The same holds for case-party cross-referencing: `ProcessoRepository.findAllByPartesCpf` matches the given CPF against `Usuario.cpfHash`, while `Processo.parteAutoraCpf`/`parteReuCpf` stay plain text (case-party data, a different scope from the user's own account data). `nome` is deliberately left out of this encryption: `MembroEquipeRepository` does a partial (`LIKE`) search directly on it, which a hash cannot support.
 
+### Credentials in the `Authorization` header
+
+Three credentials arrive as `Authorization: Bearer`, and each has a single owner in the security chain:
+
+| Credential | Validated by |
+|------------|--------------|
+| Opaque session issued by the passkey, ICP-Brasil certificate and gov.br logins | `PasskeyAuthenticationFilter`, by the session hash |
+| Marketplace client token (the platform's own HS256 JWT) | `MarketplaceOAuth2Service`, inside the Marketplace controller |
+| JWT from an external issuer | the OAuth2 resource server, enabled only when `spring.security.oauth2.resourceserver.jwt.issuer-uri`, `jwk-set-uri` or `public-key-location` is configured |
+
+A `JwtDecoder` in the context does not turn the resource server on by itself: the authorization-server starter used by the gov.br demo IdP creates one with a random key in every profile, and enabling the resource server on that basis made the JWT filter reject both the login session and the Marketplace token. With an issuer configured, `BearerDoEmissorExternoResolver` hands the JWT validator only tokens shaped like a JWT and outside the Marketplace routes. Unauthenticated requests get `401` with `WWW-Authenticate: Bearer`.
+
+`CredenciaisBearerNaCadeiaDeSegurancaTest` issues each credential through the real service and sends it through the full chain, and `SecurityFilterChainPerfilTesteTest` asserts the order of the chain's filters.
+
 [⬆ Back to top](#quick-navigation)
 
 ---
@@ -1032,7 +1046,7 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **5,571 · 0 failures · 0 errors · 1 skipped** |
+| Unit tests (Surefire) | **5,589 · 0 failures · 0 errors · 1 skipped** |
 | Integration tests (Failsafe) | **118 classes · 0 failures in the latest measurement (see note ² in the Tests section)** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 58 architectural decisions documented |
@@ -1259,7 +1273,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,571 unit tests and 118 integration test classes, and 327 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,589 unit tests and 118 integration test classes, and 327 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

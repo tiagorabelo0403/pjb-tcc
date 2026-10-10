@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.frontend.readiness.application;
 
+import com.tcc.pjb.backend.configs.security.EmissorJwtConfigurado;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.frontend.delivery.application.PjbFrontendDeliveryApplicationService;
 import com.tcc.pjb.backend.core.frontend.delivery.domain.PjbFrontendDeliveryBlockerView;
@@ -47,6 +48,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import com.tcc.pjb.backend.core.quality.codebase.application.PjbProjectPathResolver;
 import jakarta.inject.Inject;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,6 +68,7 @@ public class PjbBackendReadyForFrontendApplicationService {
     private final BuildGateGovernanceService buildGateGovernanceService;
     private final TestQualityMatrixService testQualityMatrixService;
     private final AuditLedgerService auditLedgerService;
+    private final Environment environment;
     private final Path projectRoot;
 
     @Inject
@@ -74,8 +77,9 @@ public class PjbBackendReadyForFrontendApplicationService {
                                                         PjbApiSurfaceSanityApplicationService apiSurfaceSanityApplicationService,
                                                         BuildGateGovernanceService buildGateGovernanceService,
                                                         TestQualityMatrixService testQualityMatrixService,
-                                                        AuditLedgerService auditLedgerService) {
-        this(frontendDeliveryApplicationService, finalClosureApplicationService, apiSurfaceSanityApplicationService, buildGateGovernanceService, testQualityMatrixService, auditLedgerService, Path.of(""));
+                                                        AuditLedgerService auditLedgerService,
+                                                        Environment environment) {
+        this(frontendDeliveryApplicationService, finalClosureApplicationService, apiSurfaceSanityApplicationService, buildGateGovernanceService, testQualityMatrixService, auditLedgerService, environment, Path.of(""));
     }
 
     PjbBackendReadyForFrontendApplicationService(PjbFrontendDeliveryApplicationService frontendDeliveryApplicationService,
@@ -84,6 +88,7 @@ public class PjbBackendReadyForFrontendApplicationService {
                                                  BuildGateGovernanceService buildGateGovernanceService,
                                                  TestQualityMatrixService testQualityMatrixService,
                                                  AuditLedgerService auditLedgerService,
+                                                 Environment environment,
                                                  Path projectRoot) {
         this.frontendDeliveryApplicationService = Objects.requireNonNull(frontendDeliveryApplicationService);
         this.finalClosureApplicationService = Objects.requireNonNull(finalClosureApplicationService);
@@ -91,6 +96,7 @@ public class PjbBackendReadyForFrontendApplicationService {
         this.buildGateGovernanceService = Objects.requireNonNull(buildGateGovernanceService);
         this.testQualityMatrixService = Objects.requireNonNull(testQualityMatrixService);
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
+        this.environment = Objects.requireNonNull(environment);
         this.projectRoot = PjbProjectPathResolver.apiModuleRoot(projectRoot);
     }
 
@@ -162,7 +168,7 @@ public class PjbBackendReadyForFrontendApplicationService {
         Path apiExceptionHandler = projectRoot.resolve("src/main/java/com/tcc/pjb/backend/configs/api/ApiExceptionHandler.java");
         String securitySource = read(securityConfig);
         String govBrSource = read(govBrController);
-        boolean jwtEnabled = securitySource.contains("oauth2ResourceServer");
+        boolean jwtEnabled = EmissorJwtConfigurado.presente(environment);
         boolean statelessSession = securitySource.contains("SessionCreationPolicy.STATELESS");
         boolean corsConfigured = securitySource.contains(".cors(") || securitySource.contains("CorsConfigurationSource");
         boolean govBrAssuranceSurface = govBrSource.contains("/assurance-level") || govBrSource.contains("assurance-level");
