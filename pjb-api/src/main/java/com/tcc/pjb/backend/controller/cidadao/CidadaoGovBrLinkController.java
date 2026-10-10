@@ -53,6 +53,7 @@ public class CidadaoGovBrLinkController {
   }
 
   @GetMapping("/link/callback")
+  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<Void> callback(@RequestParam(name = "code", required = false) @Size(max = 4096) String code,
       @RequestParam(name = "state", required = false) @Size(max = 128) String state) throws IOException, InterruptedException {
     String redirect = service.handleCallback(code, state);

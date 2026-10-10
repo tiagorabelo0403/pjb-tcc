@@ -43,12 +43,14 @@ public class ApiMarketplaceOAuthController {
     }
 
     @PostMapping("/token")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<SurfaceSnapshotResponse> token(@Valid @RequestBody MarketplaceOauthTokenRequest request,
                                                          HttpServletRequest servletRequest) {
         return ResponseEntity.ok(facadeService.emitirTokenOauth(request, resolveIp(servletRequest)));
     }
 
     @PostMapping("/introspect")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SERVIDOR','SERVIDOR_FORUM')")
     public ResponseEntity<SurfaceSnapshotResponse> introspect(@RequestBody MarketplaceOauthIntrospectionRequest request,
                                                               HttpServletRequest servletRequest) {
         return ResponseEntity.ok(facadeService.introspectOauth(request, resolveIp(servletRequest)));
