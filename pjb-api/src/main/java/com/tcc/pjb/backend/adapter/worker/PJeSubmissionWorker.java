@@ -13,7 +13,6 @@ import io.camunda.zeebe.spring.client.annotation.JobWorker;
 
 @Profile({"dev", "test"})
 @Component
-@SuppressWarnings({"removal","deprecation"})
 @ConditionalOnProperty(prefix = "pjb.integrations.pje.submission", name = "mock-enabled", havingValue = "true", matchIfMissing = false)
 public class PJeSubmissionWorker {
 
