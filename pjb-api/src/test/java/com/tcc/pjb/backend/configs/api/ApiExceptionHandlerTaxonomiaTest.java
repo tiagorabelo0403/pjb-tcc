@@ -101,35 +101,35 @@ class ApiExceptionHandlerTaxonomiaTest {
     @Test
     void acordoConflictResponde422() throws Exception {
         mockMvc.perform(get("/sonda-de-erro/acordo-conflict"))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.type").value("https://pjb.local/problems/acordo_conflict"));
     }
 
     @Test
     void acordoDomainResponde422() throws Exception {
         mockMvc.perform(get("/sonda-de-erro/acordo-domain"))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.type").value("https://pjb.local/problems/acordo_domain_conflict"));
     }
 
     @Test
     void transicaoInvalidaResponde422() throws Exception {
         mockMvc.perform(get("/sonda-de-erro/transicao-invalida"))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.type").value("https://pjb.local/problems/transicao_invalida"));
     }
 
     @Test
     void prazoProcessualDomainResponde422() throws Exception {
         mockMvc.perform(get("/sonda-de-erro/prazo-processual-domain"))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.type").value("https://pjb.local/problems/prazo_processual_invalido"));
     }
 
     @Test
     void notificacaoPrazoDomainResponde422() throws Exception {
         mockMvc.perform(get("/sonda-de-erro/notificacao-prazo-domain"))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.type").value("https://pjb.local/problems/notificacao_prazo_invalida"));
     }
 }

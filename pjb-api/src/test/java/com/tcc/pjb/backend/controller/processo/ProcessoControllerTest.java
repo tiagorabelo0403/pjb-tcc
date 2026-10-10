@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class ProcessoControllerTest {
 
     private final ProcessoService service = mock(ProcessoService.class);
+    @SuppressWarnings("removal")
     private final MockMvc mvc = MockMvcBuilders.standaloneSetup(new ProcessoController(service))
             .setMessageConverters(new MappingJackson2HttpMessageConverter(new ObjectMapper()))
             .build();

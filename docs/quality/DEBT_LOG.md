@@ -1170,3 +1170,49 @@ roteamento recursal e catálogo de câmaras/turmas seguem desconectados.
 o papel desses três continua sendo só rotulagem informativa, com uma camada de distribuição recursal
 real construída à parte, análoga ao `MapaCompetenciaDinamicoEngine`. Qualquer uma das duas rotas é maior
 que uma correção pontual.
+
+## D-jackson2-marcado-para-remocao
+
+**Status:** aberta — a pilha JSON do projeto está marcada para remoção, com prazo declarado no Boot 4.3.0
+
+O projeto usa Jackson 2 (`com.fasterxml.jackson`) em 354 arquivos de produção e exclui de propósito o
+`JacksonAutoConfiguration` do Jackson 3 em `BackendApplication`. Três pontos da produção dependem de
+classes marcadas para remoção:
+
+- o conversor HTTP JSON, montado pela `Jackson2HttpMessageConvertersConfiguration`
+  (`spring-boot-http-converter`) com `MappingJackson2HttpMessageConverter` (`spring-web`);
+- `StrictJacksonConfig:20-21`, que devolve um `Jackson2ObjectMapperBuilderCustomizer`
+  (`spring-boot-jackson2`) sob `@SuppressWarnings("removal")`;
+- `PjbCacheConfig:41-46`, que serializa o cache Redis com `GenericJackson2JsonRedisSerializer`
+  (`spring-data-redis`) sob `@SuppressWarnings("removal")`.
+
+```
+spring-boot-http-converter-4.1.1-sources.jar
+  org/springframework/boot/http/converter/autoconfigure/Jackson2HttpMessageConvertersConfiguration.java
+     * @deprecated since 4.0.0 for removal in 4.3.0 in favor of Jackson 3.
+    44:@Deprecated(since = "4.0.0", forRemoval = true)
+    90:					new org.springframework.http.converter.json.MappingJackson2HttpMessageConverter(this.objectMapper));
+
+spring-web-7.0.9-sources.jar
+  org/springframework/http/converter/json/MappingJackson2HttpMessageConverter.java
+    49:@Deprecated(since = "7.0", forRemoval = true)
+
+spring-boot-jackson2-4.1.1-sources.jar
+  org/springframework/boot/jackson2/autoconfigure/Jackson2ObjectMapperBuilderCustomizer.java
+    32:@Deprecated(since = "4.0.0", forRemoval = true)
+
+spring-data-redis-4.1.1-sources.jar
+  org/springframework/data/redis/serializer/GenericJackson2JsonRedisSerializer.java
+    78:@Deprecated(since = "4.0", forRemoval = true)
+```
+
+Em `src/test`, `ProcessoControllerTest` e `FrontendPrimaryFlowsSmokeTest` montam o MockMvc standalone com
+a mesma classe de conversor da produção e carregam `@SuppressWarnings("removal")` no ponto da
+construção. Trocar só os testes para o conversor do Jackson 3 os faria usar uma classe de conversor que a
+produção não usa.
+
+Fechar exige migrar o projeto para Jackson 3 (`tools.jackson`) antes do Boot 4.3.0: `ObjectMapper` e
+módulos, as anotações, `StrictJacksonConfig`, o serializer do cache (`GenericJacksonJsonRedisSerializer`,
+que recebe o mapper do Jackson 3), as propriedades `spring.jackson.*` e os pontos que dependem do
+comportamento de serialização do Jackson 2. Quando isso acontecer, os quatro `@SuppressWarnings` (dois
+em `src/main`, dois em `src/test`) saem.

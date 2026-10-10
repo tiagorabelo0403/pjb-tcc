@@ -648,7 +648,10 @@
                         <id>default-testCompile</id>
                         <configuration>
                             <proc>none</proc>
-                            <compilerArgs combine.self="override"></compilerArgs>
+                            <compilerArgs combine.self="override">
+                                <arg>-Xlint:deprecation,removal</arg>
+                            </compilerArgs>
+                            <failOnWarning>true</failOnWarning>
                         </configuration>
                     </execution>
                 </executions>

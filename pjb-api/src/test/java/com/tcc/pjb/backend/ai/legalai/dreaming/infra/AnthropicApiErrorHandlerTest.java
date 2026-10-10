@@ -77,7 +77,7 @@ class AnthropicApiErrorHandlerTest {
                 .isInstanceOf(AnthropicNonRetryableApiException.class);
         assertThatThrownBy(() -> handler.handle(request(), response(HttpStatus.NOT_FOUND, "not_found_error", "nao encontrado")))
                 .isInstanceOf(AnthropicNonRetryableApiException.class);
-        assertThatThrownBy(() -> handler.handle(request(), response(HttpStatus.PAYLOAD_TOO_LARGE, "request_too_large", "muito grande")))
+        assertThatThrownBy(() -> handler.handle(request(), response(HttpStatus.CONTENT_TOO_LARGE, "request_too_large", "muito grande")))
                 .isInstanceOf(AnthropicNonRetryableApiException.class);
     }
 
