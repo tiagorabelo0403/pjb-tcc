@@ -2,6 +2,8 @@ package com.tcc.pjb.backend.architecture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.importer.ClassFileImporter;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -64,9 +66,22 @@ class PjbTransactionalEventListenerPropagacaoTest {
     }
 
     @Test
-    void listenerDeclaradoPorMetaAnotacaoEhReconhecido() throws NoSuchMethodException {
+    void faseDeListenerDeclaradoPorMetaAnotacaoEhLidaNaComposicao() throws NoSuchMethodException {
         assertThat(PjbTransactionalEventListenerArchitectureTest.listenerDepoisDoCommit(listener(ListenerPorMetaAnotacao.class)))
                 .isTrue();
+    }
+
+    @Test
+    void varreduraDoGrafoReconheceListenerDiretoEPorMetaAnotacaoEIgnoraMetodoComum() {
+        JavaClasses sondas = new ClassFileImporter().importClasses(
+                ListenerPorMetaAnotacao.class, AoConfirmar.class, SemTransactional.class, SemListener.class);
+
+        assertThat(PjbTransactionalEventListenerArchitectureTest.ehListener(
+                sondas.get(ListenerPorMetaAnotacao.class).getMethod("on", Object.class))).isTrue();
+        assertThat(PjbTransactionalEventListenerArchitectureTest.ehListener(
+                sondas.get(SemTransactional.class).getMethod("on", Object.class))).isTrue();
+        assertThat(PjbTransactionalEventListenerArchitectureTest.ehListener(
+                sondas.get(SemListener.class).getMethod("on", Object.class))).isFalse();
     }
 
     @Test
@@ -149,6 +164,11 @@ class PjbTransactionalEventListenerPropagacaoTest {
 
     static class ListenerPorMetaAnotacao {
         @AoConfirmar
+        public void on(Object evento) {
+        }
+    }
+
+    static class SemListener {
         public void on(Object evento) {
         }
     }

@@ -28,8 +28,7 @@ class PjbTransactionalEventListenerArchitectureTest {
     static void listenerDepoisDoCommitNaoPodeEntrarNaTransacaoEncerrada(JavaClasses classes) {
         List<Method> listeners = classes.stream()
                 .flatMap(classe -> classe.getMethods().stream())
-                .filter(metodo -> metodo.isAnnotatedWith(TransactionalEventListener.class)
-                        || metodo.isMetaAnnotatedWith(TransactionalEventListener.class))
+                .filter(PjbTransactionalEventListenerArchitectureTest::ehListener)
                 .map(JavaMethod::reflect)
                 .toList();
 
@@ -47,6 +46,10 @@ class PjbTransactionalEventListenerArchitectureTest {
                 .as("listener que roda depois do commit com @Transactional (Spring ou jakarta) de propagacao que entra na "
                         + "transacao ja encerrada perde as gravacoes; use REQUIRES_NEW ou NOT_SUPPORTED, no metodo ou na classe")
                 .isEmpty();
+    }
+
+    static boolean ehListener(JavaMethod metodo) {
+        return metodo.isAnnotatedWith(TransactionalEventListener.class) || metodo.isMetaAnnotatedWith(TransactionalEventListener.class);
     }
 
     static boolean listenerDepoisDoCommit(Method metodo) {
