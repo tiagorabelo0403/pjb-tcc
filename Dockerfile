@@ -9,7 +9,7 @@ RUN mvn -q -pl pjb-api -am -DskipTests package
 
 FROM eclipse-temurin:21-jre-jammy AS runtime
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/* \
+RUN apt-get update && apt-get install -y --no-install-recommends --only-upgrade libssl3 && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/* \
     && groupadd --system pjb && useradd --system --gid pjb --create-home --home-dir /home/pjb pjb \
     && mkdir -p /app/cds && chown -R pjb:pjb /app /home/pjb
 ENV PJB_JVM_PROFILE=balanced
