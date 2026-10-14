@@ -69,6 +69,7 @@ jobs:
     needs: image
     permissions:
       contents: read
+      packages: read
       security-events: write
 
     steps:
