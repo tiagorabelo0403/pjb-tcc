@@ -73,6 +73,20 @@ class ConfiguracaoDistribuicaoVaraServicePublicaAlteracaoTest {
     }
 
     @Test
+    void congestionamentoAltoNaoSuspendeDistribuicaoDaVaraCompetente() {
+        unidade.setAceitaDistribuicao(true);
+
+        service.atualizarOcupacao("VARA-01", 95, "operador");
+
+        assertThat(unidade.isAceitaDistribuicao()).isTrue();
+        assertThat(unidade.getStatusOperacional()).isEqualTo(StatusOperacionalUnidadeJudiciaria.ATIVA);
+        ConfiguracaoDistribuicaoVaraService.ResultadoConsulta consulta = service.consultar("VARA-01",
+                new ConfiguracaoDistribuicaoVaraService.FiltroDistribuicao(
+                        null, null, null, null, null, false, true, "CE", null, false, false, false));
+        assertThat(consulta.aceita()).isTrue();
+    }
+
+    @Test
     void atualizarRestricaoOperacionalAvisaQueAsUnidadesMudaram() {
         service.atualizarRestricaoOperacional(new ConfiguracaoDistribuicaoVaraService.RestricaoOperacional(
                 "VARA-01", false, ConfiguracaoDistribuicaoVaraService.MotivoRestricao.VARA_VAGA, "Vara vaga", null,
