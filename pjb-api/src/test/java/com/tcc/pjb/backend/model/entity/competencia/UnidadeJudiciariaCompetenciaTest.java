@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.GrauJurisdicao;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 
 class UnidadeJudiciariaCompetenciaTest {
@@ -55,5 +56,35 @@ class UnidadeJudiciariaCompetenciaTest {
 
         assertThat(unidade.getGrau()).isEqualTo(GrauJurisdicao.PRIMEIRO_GRAU);
         assertThat(unidade.getTipoTurmaRecursal()).isNull();
+    }
+
+    @Test
+    void varaLotadaMasAtivaContinuaAptaParaDistribuicaoMasSemFolgaParaReceber() {
+        UnidadeJudiciariaCompetencia unidade = unidade();
+        unidade.setAceitaDistribuicao(true);
+        unidade.setIndiceCongestionamento(BigDecimal.ONE);
+
+        assertThat(unidade.estaAptaParaDistribuicao()).isTrue();
+        assertThat(unidade.temDisponibilidadeParaReceber()).isFalse();
+    }
+
+    @Test
+    void varaComFolgaEstaAptaETemDisponibilidade() {
+        UnidadeJudiciariaCompetencia unidade = unidade();
+        unidade.setAceitaDistribuicao(true);
+        unidade.setIndiceCongestionamento(new BigDecimal("0.10"));
+
+        assertThat(unidade.estaAptaParaDistribuicao()).isTrue();
+        assertThat(unidade.temDisponibilidadeParaReceber()).isTrue();
+    }
+
+    @Test
+    void varaQueNaoAceitaDistribuicaoNaoEhAptaNemTemFolga() {
+        UnidadeJudiciariaCompetencia unidade = unidade();
+        unidade.setAceitaDistribuicao(false);
+        unidade.setIndiceCongestionamento(new BigDecimal("0.10"));
+
+        assertThat(unidade.estaAptaParaDistribuicao()).isFalse();
+        assertThat(unidade.temDisponibilidadeParaReceber()).isFalse();
     }
 }

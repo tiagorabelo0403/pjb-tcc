@@ -179,7 +179,7 @@ public class MapaCompetenciaDinamicoEngine {
             }
             List<UnidadeJudiciariaCompetencia> destinos = unidades.stream()
                     .filter(item -> !Objects.equals(item.getId(), origem.getId()))
-                    .filter(UnidadeJudiciariaCompetencia::estaAptaParaDistribuicao)
+                    .filter(UnidadeJudiciariaCompetencia::temDisponibilidadeParaReceber)
                     .filter(item -> Objects.equals(tribunalSigla(item), tribunalSigla(origem)))
                     .filter(item -> mesmaComarcaResolvida(item, origem))
                     .filter(item -> ufCompativelOuDesconhecida(comarcaUf(item), comarcaUf(origem)))

@@ -199,6 +199,13 @@ public class ConfiguracaoDistribuicaoVaraService {
         }
 
         public boolean podeReceberProcesso(FiltroDistribuicao filtro) {
+            if (!admissivelParaDistribuicao(filtro)) {
+                return false;
+            }
+            return filtro == null || ocupacaoEfetiva() < limiarCongestionamento.doubleValue();
+        }
+
+        public boolean admissivelParaDistribuicao(FiltroDistribuicao filtro) {
             if (filtro == null) {
                 return aceitaNovasDistribuicoes && statusOperacional == StatusOperacionalUnidadeJudiciaria.ATIVA;
             }
@@ -206,9 +213,6 @@ public class ConfiguracaoDistribuicaoVaraService {
                 return false;
             }
             if (statusOperacional != StatusOperacionalUnidadeJudiciaria.ATIVA) {
-                return false;
-            }
-            if (ocupacaoEfetiva() >= limiarCongestionamento.doubleValue()) {
                 return false;
             }
             if (emMutirao && filtro.bloquearMutirao()) {
@@ -275,9 +279,6 @@ public class ConfiguracaoDistribuicaoVaraService {
             }
             if (statusOperacional != StatusOperacionalUnidadeJudiciaria.ATIVA) {
                 return "Status operacional impeditivo: " + statusOperacional.name();
-            }
-            if (ocupacaoEfetiva() >= limiarCongestionamento.doubleValue()) {
-                return "Congestionamento acima do limiar: " + percentual(ocupacaoEfetiva()) + " / limiar=" + percentual(limiarCongestionamento.doubleValue());
             }
             if (filtro != null && emMutirao && filtro.bloquearMutirao()) {
                 return descricaoMutirao == null ? "Vara em mutirao" : "Vara em mutirao: " + descricaoMutirao;
@@ -469,7 +470,7 @@ public class ConfiguracaoDistribuicaoVaraService {
             return new ResultadoConsulta(normalizeUpper(varaId), false, "Vara nao cadastrada", null, List.of(), Instant.now());
         }
         PerfilVara p = perfil.get();
-        boolean aceita = p.podeReceberProcesso(filtro);
+        boolean aceita = p.admissivelParaDistribuicao(filtro);
         String motivo = aceita ? null : p.motivoRecusa(filtro);
         List<String> alternativas = aceita ? List.of() : encontrarAlternativas(filtro, p.tribunalCodigo(), p.comarcaId(), p.uf(), p.varaId(), 5);
         return new ResultadoConsulta(p.varaId(), aceita, motivo, p, alternativas, Instant.now());
@@ -567,26 +568,7 @@ public class ConfiguracaoDistribuicaoVaraService {
 
         RestricaoOperacional restricaoAtual = restricoesOperacionais.get(codigo);
         boolean autoAtual = restricaoAtual != null && restricaoAtual.motivoRestricao() == MotivoRestricao.SOBRECARGA_CRITICA_AUTO;
-        if (bloquear) {
-            unidade.setAceitaDistribuicao(false);
-            unidade.setStatusOperacional(StatusOperacionalUnidadeJudiciaria.SATURADA);
-            restricoesOperacionais.put(codigo, new RestricaoOperacional(
-                    codigo,
-                    false,
-                    MotivoRestricao.SOBRECARGA_CRITICA_AUTO,
-                    "Distribuicao suspensa automaticamente por congestionamento acima do limiar configurado.",
-                    null,
-                    restricaoAtual != null && restricaoAtual.prioritaria(),
-                    restricaoAtual != null && restricaoAtual.emMutirao(),
-                    restricaoAtual != null ? restricaoAtual.mutiraoInicio() : null,
-                    restricaoAtual != null ? restricaoAtual.mutiraoFim() : null,
-                    restricaoAtual != null ? restricaoAtual.descricaoMutirao() : null,
-                    restricaoAtual != null && restricaoAtual.vagaOuSubstituicao(),
-                    restricaoAtual != null ? restricaoAtual.magistradoId() : null,
-                    Instant.now(),
-                    blankToDefault(operador, "SISTEMA-WORKER-OCUPACAO")
-            ));
-        } else if (autoAtual) {
+        if (autoAtual) {
             unidade.setAceitaDistribuicao(true);
             unidade.setStatusOperacional(StatusOperacionalUnidadeJudiciaria.ATIVA);
             restricoesOperacionais.remove(codigo);
@@ -599,10 +581,10 @@ public class ConfiguracaoDistribuicaoVaraService {
         AtualizacaoOcupacao resultado = new AtualizacaoOcupacao(
                 codigo,
                 true,
-                bloquear ? "Distribuicao bloqueada por congestionamento" : autoAtual ? "Vara normalizada" : "Ocupacao atualizada",
+                bloquear ? "Congestionamento acima do limiar (distribuicao mantida)" : autoAtual ? "Vara normalizada" : "Ocupacao atualizada",
                 novosAtivos,
                 perfil.ocupacaoEfetiva(),
-                bloquear,
+                false,
                 Instant.now()
         );
         registrarHistorico(resultado);

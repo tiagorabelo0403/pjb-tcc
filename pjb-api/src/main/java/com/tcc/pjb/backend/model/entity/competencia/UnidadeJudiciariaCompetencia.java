@@ -273,8 +273,11 @@ public class UnidadeJudiciariaCompetencia {
 
     public boolean estaAptaParaDistribuicao() {
         return aceitaDistribuicao
-                && statusOperacional == StatusOperacionalUnidadeJudiciaria.ATIVA
-                && disponibilidadeOperacional() > 0.0d;
+                && statusOperacional == StatusOperacionalUnidadeJudiciaria.ATIVA;
+    }
+
+    public boolean temDisponibilidadeParaReceber() {
+        return estaAptaParaDistribuicao() && disponibilidadeOperacional() > 0.0d;
     }
 
     public boolean suportaMateria(String materia) {
