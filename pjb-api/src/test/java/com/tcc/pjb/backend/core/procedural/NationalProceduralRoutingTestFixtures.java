@@ -111,7 +111,8 @@ public final class NationalProceduralRoutingTestFixtures {
                                 93.1d,
                                 "score territorial e material",
                                 List.of(),
-                                List.of("confirmar prevencao")
+                                List.of("confirmar prevencao"),
+                                com.tcc.pjb.backend.model.entity.enums.processual.RegimeDistribuicao.ALEATORIO_ALTERNADO
                         ),
                         new ProceduralForumAllocationReport(
                                 Instant.parse("2026-01-01T10:02:00Z"),

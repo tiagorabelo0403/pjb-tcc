@@ -27,7 +27,7 @@ class NationalProceduralConfidenceResolverTest {
                 new CompetenceResolveResponse("req", Instant.now(), "ESTADUAL", "COMUM_ORDINARIO", 0.91d, List.of(), List.of(), Map.of()),
                 new NationalProceduralJuizadoDecision(false, null, List.of(), List.of(), List.of(), List.of(), 0.89d, false),
                 forumAllocation(true, true, true, List.of(), List.of()),
-                new NationalProceduralDistributionSuggestion("V1", "TJCE", "FORTALEZA", "CE", "CIVEL", 0.88d, "ok", List.of(), List.of()),
+                new NationalProceduralDistributionSuggestion("V1", "TJCE", "FORTALEZA", "CE", "CIVEL", 0.88d, "ok", List.of(), List.of(), com.tcc.pjb.backend.model.entity.enums.processual.RegimeDistribuicao.ALEATORIO_ALTERNADO),
                 List.of(),
                 List.of(),
                 TetoProcessualService.DiagnosticoTetoProcessual.semRestricao(new BigDecimal("1000.00"), LocalDate.now())

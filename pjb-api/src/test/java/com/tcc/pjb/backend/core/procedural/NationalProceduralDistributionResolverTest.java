@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.dto.competencia.CompetenceResolveResponse;
 import com.tcc.pjb.backend.model.dto.competencia.DynamicCompetenceDistributionResponse;
+import com.tcc.pjb.backend.model.entity.enums.processual.RegimeDistribuicao;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.service.competencia.MapaCompetenciaDinamicoEngine;
 import java.time.Instant;
@@ -22,7 +23,7 @@ class NationalProceduralDistributionResolverTest {
 
     @Test
     void mustReturnEmptyWhenTerritorialBaseIsMissing() {
-        NationalProceduralDistributionResolver resolver = new NationalProceduralDistributionResolver(mock(MapaCompetenciaDinamicoEngine.class));
+        NationalProceduralDistributionResolver resolver = new NationalProceduralDistributionResolver(mock(MapaCompetenciaDinamicoEngine.class), new RegimeDistribuicaoResolver());
 
         Optional<NationalProceduralDistributionSuggestion> suggestion = resolver.resolve(context(Map.of(), null, "CE"));
 
@@ -51,7 +52,7 @@ class NationalProceduralDistributionResolverTest {
                         null
                 )
         ));
-        NationalProceduralDistributionResolver resolver = new NationalProceduralDistributionResolver(engine);
+        NationalProceduralDistributionResolver resolver = new NationalProceduralDistributionResolver(engine, new RegimeDistribuicaoResolver());
 
         NationalProceduralDistributionSuggestion suggestion = resolver.resolve(context(Map.of("assunto", "Obrigacao de fazer"), "Fortaleza", "CE")).orElseThrow();
 
@@ -59,6 +60,7 @@ class NationalProceduralDistributionResolverTest {
         assertEquals("TJCE", suggestion.tribunalCodigo());
         assertEquals("Fortaleza", suggestion.comarca());
         assertEquals("CE", suggestion.uf());
+        assertEquals(RegimeDistribuicao.ALEATORIO_ALTERNADO, suggestion.regimeDistribuicao());
     }
 
     private static NationalProceduralDistributionContext context(Map<String, Object> payload, String cidade, String uf) {
