@@ -19,8 +19,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.procedural.ProceduralCanonicalResolver;
@@ -59,6 +62,7 @@ public class MapaCompetenciaDinamicoEngine {
     public static final String EVT_COMPETENCIA_REVISAO = "pjb.competencia.revisao_humana";
     public static final String EVT_COMPETENCIA_REDISTRIBUICAO = "pjb.competencia.redistribuicao.sugerida";
     private static final Duration UNIT_CACHE_TTL = Duration.ofSeconds(20);
+    private static final Logger log = LoggerFactory.getLogger(MapaCompetenciaDinamicoEngine.class);
 
     private final UnidadeJudiciariaCompetenciaRepository unidadeRepository;
     private final ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository;
@@ -115,6 +119,52 @@ public class MapaCompetenciaDinamicoEngine {
             return distribuirInterno(fallbackRequest, true);
         }
         return registrarDistribuicaoMinima(processo);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void registrarCargaDaDistribuicaoAplicada(Processo processo) {
+        if (processo == null || processo.getId() == null) {
+            return;
+        }
+        String codigoUnidade = processo.getUnidadeJudiciariaCodigo();
+        if (codigoUnidade == null || codigoUnidade.trim().isEmpty()) {
+            return;
+        }
+        String nupn = processo.getNumeroUnificado();
+        if (nupn == null || nupn.trim().isEmpty()) {
+            log.warn("Carga de distribuicao nao registrada: processo sem numero unificado. processoId={}", processo.getId());
+            return;
+        }
+        if (distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(processo.getId()).isPresent()) {
+            return;
+        }
+        Optional<UnidadeJudiciariaCompetencia> unidadeResolvida = unidadeRepository.findByCodigo(codigoUnidade.trim());
+        if (unidadeResolvida.isEmpty()) {
+            log.warn("Carga de distribuicao nao registrada: unidade nao resolvida por codigo. processoId={} codigo={}",
+                    processo.getId(), codigoUnidade);
+            return;
+        }
+        UnidadeJudiciariaCompetencia unidade = unidadeResolvida.get();
+        String requestHash = Hashes.sha256Hex("distribuicao-aplicada:" + nupn + ":" + unidade.getCodigo());
+        ProcessoDistribuicaoCompetencia distribuicao = new ProcessoDistribuicaoCompetencia(
+                processo,
+                unidade,
+                nupn,
+                0d, 0d, 0d, 0d, 0d, 0d,
+                false,
+                StatusDistribuicaoCompetencia.APLICADA,
+                "Distribuicao aplicada antes do commit; carga registrada na unidade ja roteada, sem reescolher o juizo.",
+                "",
+                "",
+                requestHash);
+        try {
+            distribuicaoRepository.saveAndFlush(distribuicao);
+        } catch (DataIntegrityViolationException ex) {
+            if (distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(processo.getId()).isPresent()) {
+                return;
+            }
+            throw ex;
+        }
     }
 
     @PjbTransactionalBudget(operation = "competencia.mapa-dinamico.analisar-redistribuicao", maxMillis = 8000)

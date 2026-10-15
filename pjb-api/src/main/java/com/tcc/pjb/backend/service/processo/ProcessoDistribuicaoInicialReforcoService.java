@@ -37,6 +37,8 @@ public class ProcessoDistribuicaoInicialReforcoService {
         try {
             if (missingSnapshot) {
                 distribuicao = mapaCompetenciaDinamicoEngine.registrarDistribuicaoInicial(processo).orElse(null);
+            } else {
+                mapaCompetenciaDinamicoEngine.registrarCargaDaDistribuicaoAplicada(processo);
             }
             if (staleSnapshot) {
                 processoInitialDistributionSnapshotService.consolidar(processo);
