@@ -289,10 +289,12 @@ public class MapaCompetenciaDinamicoEngine {
         double mediaDistribuicoes = distribuicoesRecentes.isEmpty()
                 ? 0.0d
                 : distribuicoesRecentes.values().stream().mapToLong(Long::longValue).average().orElse(0.0d);
+        Map<Long, Double> mediaDePares = mediaDeParesPorUnidade(unidades, distribuicoesRecentes, mediaDistribuicoes);
 
         List<Candidate> candidatos = new ArrayList<>();
         for (UnidadeJudiciariaCompetencia unidade : unidades) {
-            Candidate candidate = avaliar(unidade, request, distribuicoesRecentes.getOrDefault(unidade.getId(), 0L), mediaDistribuicoes);
+            Candidate candidate = avaliar(unidade, request, distribuicoesRecentes.getOrDefault(unidade.getId(), 0L),
+                    mediaDePares.getOrDefault(unidade.getId(), mediaDistribuicoes));
             if (candidate != null && candidate.scoreFinal() > 0.0d) {
                 candidatos.add(candidate);
             }
@@ -908,6 +910,41 @@ public class MapaCompetenciaDinamicoEngine {
             mapa.putIfAbsent(unidadeId, 0L);
         }
         return mapa;
+    }
+
+    private Map<Long, Double> mediaDeParesPorUnidade(List<UnidadeJudiciariaCompetencia> unidades,
+                                                     Map<Long, Long> distribuicoesRecentes,
+                                                     double mediaGlobal) {
+        Map<String, List<UnidadeJudiciariaCompetencia>> porGrupo = new HashMap<>();
+        for (UnidadeJudiciariaCompetencia unidade : unidades) {
+            porGrupo.computeIfAbsent(chaveGrupoDePares(unidade), chave -> new ArrayList<>()).add(unidade);
+        }
+        Map<Long, Double> medias = new HashMap<>();
+        for (List<UnidadeJudiciariaCompetencia> grupo : porGrupo.values()) {
+            double media = grupo.stream()
+                    .map(UnidadeJudiciariaCompetencia::getId)
+                    .filter(Objects::nonNull)
+                    .mapToLong(id -> distribuicoesRecentes.getOrDefault(id, 0L))
+                    .average()
+                    .orElse(mediaGlobal);
+            for (UnidadeJudiciariaCompetencia unidade : grupo) {
+                if (unidade.getId() != null) {
+                    medias.put(unidade.getId(), media);
+                }
+            }
+        }
+        return medias;
+    }
+
+    private static String chaveGrupoDePares(UnidadeJudiciariaCompetencia unidade) {
+        String tipoVara = unidade.getTipoVara() == null ? "" : unidade.getTipoVara().name();
+        String grau = unidade.getGrau() == null ? "" : unidade.getGrau().name();
+        return normalizarChaveDePares(comarcaUf(unidade)) + "|"
+                + normalizarChaveDePares(comarcaNome(unidade)) + "|" + tipoVara + "|" + grau;
+    }
+
+    private static String normalizarChaveDePares(String valor) {
+        return valor == null ? "" : valor.trim().toUpperCase(java.util.Locale.ROOT);
     }
 
     private double scoreTerritorial(UnidadeJudiciariaCompetencia unidade, DynamicRequest request, List<String> fatoresRevisao) {

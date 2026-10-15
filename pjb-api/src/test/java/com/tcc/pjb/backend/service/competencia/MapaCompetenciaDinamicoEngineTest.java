@@ -30,6 +30,7 @@ import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import com.tcc.pjb.backend.tribunal.distribuicao.ConfiguracaoDistribuicaoVaraService;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -199,6 +200,34 @@ class MapaCompetenciaDinamicoEngineTest {
                 List.class);
         metodo.setAccessible(true);
         return (double) metodo.invoke(engine, unidade, request, new java.util.ArrayList<String>());
+    }
+
+    @Test
+    void mediaDeParesUsaOGrupoDaComarcaDoCadastroNaoAMediaGlobal() throws Exception {
+        UnidadeJudiciariaCompetencia fortaleza1 = unidadeSemFkComComarcaTextual("VARA-FOR-1", "CE", "Fortaleza");
+        UnidadeJudiciariaCompetencia fortaleza2 = unidadeSemFkComComarcaTextual("VARA-FOR-2", "CE", "Fortaleza");
+        UnidadeJudiciariaCompetencia sobral = unidadeSemFkComComarcaTextual("VARA-SOB-1", "CE", "Sobral");
+        ReflectionTestUtils.setField(fortaleza1, "id", 1L);
+        ReflectionTestUtils.setField(fortaleza2, "id", 2L);
+        ReflectionTestUtils.setField(sobral, "id", 3L);
+        Map<Long, Long> recentes = Map.of(1L, 10L, 2L, 4L, 3L, 1L);
+
+        Map<Long, Double> medias = invokeMediaDePares(criarEngine(), List.of(fortaleza1, fortaleza2, sobral), recentes, 5.0d);
+
+        assertThat(medias.get(1L)).isEqualTo(7.0d);
+        assertThat(medias.get(2L)).isEqualTo(7.0d);
+        assertThat(medias.get(3L)).isEqualTo(1.0d);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<Long, Double> invokeMediaDePares(MapaCompetenciaDinamicoEngine engine,
+                                                        List<UnidadeJudiciariaCompetencia> unidades,
+                                                        Map<Long, Long> recentes,
+                                                        double mediaGlobal) throws Exception {
+        java.lang.reflect.Method metodo = MapaCompetenciaDinamicoEngine.class.getDeclaredMethod(
+                "mediaDeParesPorUnidade", List.class, Map.class, double.class);
+        metodo.setAccessible(true);
+        return (Map<Long, Double>) metodo.invoke(engine, unidades, recentes, mediaGlobal);
     }
 
     private static UnidadeJudiciariaCompetencia unidadeSemFkComComarcaTextual(String codigo, String uf, String comarca) {
