@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.procedural;
 
+import com.tcc.pjb.backend.model.entity.enums.processual.RegimeDistribuicao;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,7 +15,8 @@ record NationalProceduralDistributionSuggestion(
         double scoreFinal,
         String motivacao,
         List<String> alertas,
-        List<String> fatoresRevisao
+        List<String> fatoresRevisao,
+        RegimeDistribuicao regimeDistribuicao
 ) {
     NationalProceduralDistributionSuggestion(
             java.time.Instant resolvedAt,
@@ -31,7 +33,7 @@ record NationalProceduralDistributionSuggestion(
             List<String> fundamentos,
             Map<String, ?> metadata
     ) {
-        this(unidadeCodigo, tribunalCodigo, comarca, uf, tipoVara, scoreFinal, motivacao, alertas, fatoresRevisao);
+        this(unidadeCodigo, tribunalCodigo, comarca, uf, tipoVara, scoreFinal, motivacao, alertas, fatoresRevisao, null);
     }
 
     Map<String, Object> toMap() {
@@ -45,6 +47,8 @@ record NationalProceduralDistributionSuggestion(
         out.put("motivacao", motivacao);
         out.put("alertas", alertas == null ? List.of() : List.copyOf(alertas));
         out.put("fatoresRevisao", fatoresRevisao == null ? List.of() : List.copyOf(fatoresRevisao));
+        out.put("regimeDistribuicao", regimeDistribuicao == null ? null : regimeDistribuicao.name());
+        out.put("regimeFundamento", regimeDistribuicao == null ? null : regimeDistribuicao.fundamentoLegal());
         out.entrySet().removeIf(entry -> entry.getKey() == null || entry.getValue() == null);
         return Collections.unmodifiableMap(out);
     }

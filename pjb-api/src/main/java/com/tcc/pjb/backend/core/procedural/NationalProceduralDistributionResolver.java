@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.core.procedural;
 
 import com.tcc.pjb.backend.model.dto.competencia.DynamicCompetenceDistributionRequest;
 import com.tcc.pjb.backend.model.dto.competencia.DynamicCompetenceDistributionResponse;
+import com.tcc.pjb.backend.model.entity.enums.processual.RegimeDistribuicao;
 import com.tcc.pjb.backend.service.competencia.MapaCompetenciaDinamicoEngine;
 import java.math.BigDecimal;
 import java.util.Map;
@@ -13,9 +14,12 @@ import org.springframework.stereotype.Component;
 public class NationalProceduralDistributionResolver {
 
     private final MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine;
+    private final RegimeDistribuicaoResolver regimeDistribuicaoResolver;
 
-    public NationalProceduralDistributionResolver(MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine) {
+    public NationalProceduralDistributionResolver(MapaCompetenciaDinamicoEngine mapaCompetenciaDinamicoEngine,
+                                                  RegimeDistribuicaoResolver regimeDistribuicaoResolver) {
         this.mapaCompetenciaDinamicoEngine = Objects.requireNonNull(mapaCompetenciaDinamicoEngine);
+        this.regimeDistribuicaoResolver = Objects.requireNonNull(regimeDistribuicaoResolver);
     }
 
     Optional<NationalProceduralDistributionSuggestion> resolve(NationalProceduralDistributionContext context) {
@@ -24,6 +28,7 @@ public class NationalProceduralDistributionResolver {
         if (isBlank(context.cidade()) || isBlank(context.uf())) {
             return Optional.empty();
         }
+        RegimeDistribuicao regimeDistribuicao = regimeDistribuicaoSeguro(context);
         try {
             Optional<DynamicCompetenceDistributionResponse> distribution = mapaCompetenciaDinamicoEngine.distribuir(
                     new DynamicCompetenceDistributionRequest(
@@ -58,10 +63,22 @@ public class NationalProceduralDistributionResolver {
                     value.scoreFinal(),
                     value.motivacao(),
                     value.alertas(),
-                    value.fatoresRevisaoHumana()
+                    value.fatoresRevisaoHumana(),
+                    regimeDistribuicao
             ));
         } catch (Exception ignored) {
             return Optional.empty();
+        }
+    }
+
+    private RegimeDistribuicao regimeDistribuicaoSeguro(NationalProceduralDistributionContext context) {
+        try {
+            return regimeDistribuicaoResolver.resolverPorCodigos(
+                    context.rito(),
+                    context.canonical().classeTpuCodigo(),
+                    null).regime();
+        } catch (RuntimeException falhaClassificacao) {
+            return null;
         }
     }
 
