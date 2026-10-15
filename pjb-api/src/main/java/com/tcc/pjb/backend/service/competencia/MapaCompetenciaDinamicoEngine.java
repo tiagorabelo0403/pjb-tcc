@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.procedural.ProceduralCanonicalResolver;
@@ -120,12 +121,21 @@ public class MapaCompetenciaDinamicoEngine {
         return registrarDistribuicaoMinima(processo);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registrarCargaDaDistribuicaoAplicada(Processo processo) {
-        if (processo == null) {
+        if (processo == null || processo.getId() == null) {
             return;
         }
         String codigoUnidade = processo.getUnidadeJudiciariaCodigo();
         if (codigoUnidade == null || codigoUnidade.trim().isEmpty()) {
+            return;
+        }
+        String nupn = processo.getNumeroUnificado();
+        if (nupn == null || nupn.trim().isEmpty()) {
+            log.warn("Carga de distribuicao nao registrada: processo sem numero unificado. processoId={}", processo.getId());
+            return;
+        }
+        if (distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(processo.getId()).isPresent()) {
             return;
         }
         Optional<UnidadeJudiciariaCompetencia> unidadeResolvida = unidadeRepository.findByCodigo(codigoUnidade.trim());
@@ -135,11 +145,7 @@ public class MapaCompetenciaDinamicoEngine {
             return;
         }
         UnidadeJudiciariaCompetencia unidade = unidadeResolvida.get();
-        String nupn = processo.getNumeroUnificado();
         String requestHash = Hashes.sha256Hex("distribuicao-aplicada:" + nupn + ":" + unidade.getCodigo());
-        if (distribuicaoRepository.findTopByRequestHashOrderByIdDesc(requestHash).isPresent()) {
-            return;
-        }
         ProcessoDistribuicaoCompetencia distribuicao = new ProcessoDistribuicaoCompetencia(
                 processo,
                 unidade,
@@ -154,7 +160,7 @@ public class MapaCompetenciaDinamicoEngine {
         try {
             distribuicaoRepository.saveAndFlush(distribuicao);
         } catch (DataIntegrityViolationException ex) {
-            if (distribuicaoRepository.findTopByRequestHashOrderByIdDesc(requestHash).isPresent()) {
+            if (distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(processo.getId()).isPresent()) {
                 return;
             }
             throw ex;

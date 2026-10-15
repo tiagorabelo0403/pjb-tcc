@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.service.competencia;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -74,10 +75,10 @@ class MapaCompetenciaDinamicoEngineTest {
         ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
         UnidadeJudiciariaCompetencia unidade = unidade("VARA-10");
         when(unidadeRepository.findByCodigo("VARA-10")).thenReturn(Optional.of(unidade));
-        when(distribuicaoRepository.findTopByRequestHashOrderByIdDesc(anyString())).thenReturn(Optional.empty());
+        when(distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(anyLong())).thenReturn(Optional.empty());
         MapaCompetenciaDinamicoEngine engine = engineCom(unidadeRepository, distribuicaoRepository);
 
-        engine.registrarCargaDaDistribuicaoAplicada(processoRoteado("0009876-54.2026.8.06.0001", "VARA-10"));
+        engine.registrarCargaDaDistribuicaoAplicada(processoRoteado(77L, "0009876-54.2026.8.06.0001", "VARA-10"));
 
         ArgumentCaptor<ProcessoDistribuicaoCompetencia> captor = ArgumentCaptor.forClass(ProcessoDistribuicaoCompetencia.class);
         verify(distribuicaoRepository).saveAndFlush(captor.capture());
@@ -87,15 +88,14 @@ class MapaCompetenciaDinamicoEngineTest {
     }
 
     @Test
-    void registrarCargaDaDistribuicaoAplicada_jaRegistrada_naoDuplica() {
+    void registrarCargaDaDistribuicaoAplicada_processoJaTemDistribuicao_naoDuplica() {
         UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
         ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
-        when(unidadeRepository.findByCodigo("VARA-10")).thenReturn(Optional.of(unidade("VARA-10")));
-        when(distribuicaoRepository.findTopByRequestHashOrderByIdDesc(anyString()))
+        when(distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(anyLong()))
                 .thenReturn(Optional.of(mock(ProcessoDistribuicaoCompetencia.class)));
         MapaCompetenciaDinamicoEngine engine = engineCom(unidadeRepository, distribuicaoRepository);
 
-        engine.registrarCargaDaDistribuicaoAplicada(processoRoteado("0009876-54.2026.8.06.0001", "VARA-10"));
+        engine.registrarCargaDaDistribuicaoAplicada(processoRoteado(77L, "0009876-54.2026.8.06.0001", "VARA-10"));
 
         verify(distribuicaoRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
     }
@@ -104,16 +104,29 @@ class MapaCompetenciaDinamicoEngineTest {
     void registrarCargaDaDistribuicaoAplicada_unidadeNaoResolvidaPorCodigo_naoGrava() {
         UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
         ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
+        when(distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(anyLong())).thenReturn(Optional.empty());
         when(unidadeRepository.findByCodigo(anyString())).thenReturn(Optional.empty());
         MapaCompetenciaDinamicoEngine engine = engineCom(unidadeRepository, distribuicaoRepository);
 
-        engine.registrarCargaDaDistribuicaoAplicada(processoRoteado("0009876-54.2026.8.06.0001", "VARA-INEXISTENTE"));
+        engine.registrarCargaDaDistribuicaoAplicada(processoRoteado(77L, "0009876-54.2026.8.06.0001", "VARA-INEXISTENTE"));
 
         verify(distribuicaoRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
     }
 
-    private static Processo processoRoteado(String nupn, String codigoUnidade) {
+    @Test
+    void registrarCargaDaDistribuicaoAplicada_processoSemNumeroUnificado_naoGrava() {
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
+        MapaCompetenciaDinamicoEngine engine = engineCom(unidadeRepository, distribuicaoRepository);
+
+        engine.registrarCargaDaDistribuicaoAplicada(processoRoteado(77L, null, "VARA-10"));
+
+        verify(distribuicaoRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
+    }
+
+    private static Processo processoRoteado(Long id, String nupn, String codigoUnidade) {
         Processo processo = new Processo();
+        ReflectionTestUtils.setField(processo, "id", id);
         processo.setNumeroUnificado(nupn);
         processo.setUnidadeJudiciariaCodigo(codigoUnidade);
         return processo;
