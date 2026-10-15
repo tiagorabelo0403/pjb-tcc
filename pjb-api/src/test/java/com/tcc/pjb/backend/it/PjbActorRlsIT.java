@@ -7,7 +7,14 @@ import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import jakarta.persistence.EntityManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.util.UUID;
+import org.hibernate.Session;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,6 +97,64 @@ class PjbActorRlsIT extends PjbIntegrationTestBase {
         assertThat(contarAudit(sufixo)).isEqualTo(2L);
 
         exec("RESET ROLE");
+    }
+
+    @Test
+    @Transactional
+    void excecaoDeViagemComRetornoDoIdSoEhGravadaEmContextoDeSistema() {
+        String sufixo = UUID.randomUUID().toString().substring(0, 8);
+        String role = "pjb_rls_travel_probe_" + sufixo;
+        Usuario magistrado = usuarioRepository.save(novoUsuario("J", sufixo, "11122233303"));
+        entityManager.flush();
+
+        exec("CREATE ROLE " + role + " NOSUPERUSER NOBYPASSRLS NOLOGIN");
+        exec("GRANT USAGE ON SCHEMA public TO " + role);
+        exec("GRANT SELECT, INSERT ON judge_travel_exception TO " + role);
+        exec("GRANT USAGE ON SEQUENCE judge_travel_exception_id_seq TO " + role);
+        exec("GRANT EXECUTE ON FUNCTION pjb_rls_actor_id() TO " + role);
+        exec("GRANT EXECUTE ON FUNCTION pjb_rls_has_role(text) TO " + role);
+        exec("GRANT EXECUTE ON FUNCTION pjb_rls_system_context() TO " + role);
+        exec("SET LOCAL ROLE " + role);
+
+        setActor("999000001", "|ROLE_SUPORTE_TECNICO|");
+        InsercaoComRetorno comoSuporte = inserirExcecaoDeViagemRetornandoId(magistrado.getId());
+
+        setActor("", "");
+        InsercaoComRetorno comoSistema = inserirExcecaoDeViagemRetornandoId(magistrado.getId());
+
+        exec("RESET ROLE");
+
+        assertThat(comoSuporte.sqlState())
+                .as("INSERT ... RETURNING aplica o USING da policy a linha nova; o tecnico de suporte nao e dono nem admin")
+                .isEqualTo("42501");
+        assertThat(comoSuporte.rotinaDoServidor())
+                .as("a recusa vem da checagem de policy de RLS, e nao de permissao de tabela")
+                .isEqualTo("ExecWithCheckOptions");
+        assertThat(comoSistema.id())
+                .as("com as mesmas permissoes, o contexto de sistema grava a linha")
+                .isNotNull();
+    }
+
+    private InsercaoComRetorno inserirExcecaoDeViagemRetornandoId(long usuarioId) {
+        return entityManager.unwrap(Session.class).doReturningWork(conexao -> {
+            Savepoint antes = conexao.setSavepoint();
+            try (PreparedStatement insert = conexao.prepareStatement(
+                    "INSERT INTO judge_travel_exception (usuario_id, uf_ou_pais_destino, data_inicio, data_fim) "
+                            + "VALUES (?, 'DF', CURRENT_DATE, CURRENT_DATE + 3) RETURNING id")) {
+                insert.setLong(1, usuarioId);
+                try (ResultSet gerado = insert.executeQuery()) {
+                    gerado.next();
+                    return new InsercaoComRetorno(gerado.getLong(1), null, null);
+                }
+            } catch (SQLException recusa) {
+                conexao.rollback(antes);
+                ServerErrorMessage erro = recusa instanceof PSQLException psql ? psql.getServerErrorMessage() : null;
+                return new InsercaoComRetorno(null, recusa.getSQLState(), erro == null ? null : erro.getRoutine());
+            }
+        });
+    }
+
+    private record InsercaoComRetorno(Long id, String sqlState, String rotinaDoServidor) {
     }
 
     private void setActor(String actorId, String roles) {
