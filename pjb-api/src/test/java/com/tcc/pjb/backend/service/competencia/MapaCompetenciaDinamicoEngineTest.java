@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.service.competencia;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -29,6 +30,7 @@ import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaReposito
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import com.tcc.pjb.backend.tribunal.distribuicao.ConfiguracaoDistribuicaoVaraService;
 import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -228,6 +230,38 @@ class MapaCompetenciaDinamicoEngineTest {
                 "mediaDeParesPorUnidade", List.class, Map.class, double.class);
         metodo.setAccessible(true);
         return (Map<Long, Double>) metodo.invoke(engine, unidades, recentes, mediaGlobal);
+    }
+
+    @Test
+    void carregarDistribuicoesRecentesSomaTresJanelasComPesoDecrescente() throws Exception {
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
+        when(distribuicaoRepository.contarRecentesPorUnidade(any(), any(java.time.Instant.class)))
+                .thenReturn(List.<Object[]>of(new Object[]{1L, 2L}));
+        MapaCompetenciaDinamicoEngine engine = engineCom(unidadeRepository, distribuicaoRepository);
+        UnidadeJudiciariaCompetencia unidade = unidade("VARA-1");
+        ReflectionTestUtils.setField(unidade, "id", 1L);
+
+        Map<Long, Long> pesos = invokeCarregarRecentes(engine, List.of(unidade));
+
+        assertThat(pesos.get(1L)).isEqualTo(6L);
+        ArgumentCaptor<java.time.Instant> captor = ArgumentCaptor.forClass(java.time.Instant.class);
+        verify(distribuicaoRepository, times(3)).contarRecentesPorUnidade(any(), captor.capture());
+        java.time.Instant agora = java.time.Instant.now();
+        List<Long> idadesEmDias = captor.getAllValues().stream()
+                .map(limite -> ChronoUnit.DAYS.between(limite, agora))
+                .sorted()
+                .toList();
+        assertThat(idadesEmDias).containsExactly(1L, 3L, 7L);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<Long, Long> invokeCarregarRecentes(MapaCompetenciaDinamicoEngine engine,
+                                                          List<UnidadeJudiciariaCompetencia> unidades) throws Exception {
+        java.lang.reflect.Method metodo = MapaCompetenciaDinamicoEngine.class.getDeclaredMethod(
+                "carregarDistribuicoesRecentes", List.class);
+        metodo.setAccessible(true);
+        return (Map<Long, Long>) metodo.invoke(engine, unidades);
     }
 
     private static UnidadeJudiciariaCompetencia unidadeSemFkComComarcaTextual(String codigo, String uf, String comarca) {
