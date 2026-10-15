@@ -2,7 +2,10 @@ package com.tcc.pjb.backend.service.competencia;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,7 +14,10 @@ import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.procedural.ProceduralCanonicalResolver;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.dto.competencia.DynamicCompetenceRedistributionResponse;
+import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.competencia.Comarca;
+import com.tcc.pjb.backend.model.entity.competencia.ProcessoDistribuicaoCompetencia;
+import com.tcc.pjb.backend.model.entity.competencia.StatusDistribuicaoCompetencia;
 import com.tcc.pjb.backend.model.entity.competencia.TipoVaraDistribuicao;
 import com.tcc.pjb.backend.model.entity.competencia.Tribunal;
 import com.tcc.pjb.backend.model.entity.competencia.UnidadeJudiciariaCompetencia;
@@ -24,7 +30,9 @@ import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import com.tcc.pjb.backend.tribunal.distribuicao.ConfiguracaoDistribuicaoVaraService;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 
 class MapaCompetenciaDinamicoEngineTest {
@@ -59,6 +67,69 @@ class MapaCompetenciaDinamicoEngineTest {
                         DynamicCompetenceRedistributionResponse.Proposal::destinoCodigo)
                 .containsExactly(tuple("VARA-01", "VARA-02"));
         verify(unidadeRepository, times(2)).findAll();
+    }
+
+    @Test
+    void registrarCargaDaDistribuicaoAplicada_processoJaRoteado_gravaCargaNaUnidadeSemReescolher() {
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
+        UnidadeJudiciariaCompetencia unidade = unidade("VARA-10");
+        when(unidadeRepository.findByCodigo("VARA-10")).thenReturn(Optional.of(unidade));
+        when(distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(anyLong())).thenReturn(Optional.empty());
+        MapaCompetenciaDinamicoEngine engine = engineCom(unidadeRepository, distribuicaoRepository);
+
+        engine.registrarCargaDaDistribuicaoAplicada(processoRoteado(77L, "0009876-54.2026.8.06.0001", "VARA-10"));
+
+        ArgumentCaptor<ProcessoDistribuicaoCompetencia> captor = ArgumentCaptor.forClass(ProcessoDistribuicaoCompetencia.class);
+        verify(distribuicaoRepository).saveAndFlush(captor.capture());
+        assertThat(captor.getValue().getUnidade()).isSameAs(unidade);
+        assertThat(captor.getValue().isDistribuicaoAutomatica()).isFalse();
+        assertThat(captor.getValue().getStatus()).isEqualTo(StatusDistribuicaoCompetencia.APLICADA);
+    }
+
+    @Test
+    void registrarCargaDaDistribuicaoAplicada_processoJaTemDistribuicao_naoDuplica() {
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
+        when(distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(anyLong()))
+                .thenReturn(Optional.of(mock(ProcessoDistribuicaoCompetencia.class)));
+        MapaCompetenciaDinamicoEngine engine = engineCom(unidadeRepository, distribuicaoRepository);
+
+        engine.registrarCargaDaDistribuicaoAplicada(processoRoteado(77L, "0009876-54.2026.8.06.0001", "VARA-10"));
+
+        verify(distribuicaoRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void registrarCargaDaDistribuicaoAplicada_unidadeNaoResolvidaPorCodigo_naoGrava() {
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
+        when(distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(anyLong())).thenReturn(Optional.empty());
+        when(unidadeRepository.findByCodigo(anyString())).thenReturn(Optional.empty());
+        MapaCompetenciaDinamicoEngine engine = engineCom(unidadeRepository, distribuicaoRepository);
+
+        engine.registrarCargaDaDistribuicaoAplicada(processoRoteado(77L, "0009876-54.2026.8.06.0001", "VARA-INEXISTENTE"));
+
+        verify(distribuicaoRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void registrarCargaDaDistribuicaoAplicada_processoSemNumeroUnificado_naoGrava() {
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
+        MapaCompetenciaDinamicoEngine engine = engineCom(unidadeRepository, distribuicaoRepository);
+
+        engine.registrarCargaDaDistribuicaoAplicada(processoRoteado(77L, null, "VARA-10"));
+
+        verify(distribuicaoRepository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
+    }
+
+    private static Processo processoRoteado(Long id, String nupn, String codigoUnidade) {
+        Processo processo = new Processo();
+        ReflectionTestUtils.setField(processo, "id", id);
+        processo.setNumeroUnificado(nupn);
+        processo.setUnidadeJudiciariaCodigo(codigoUnidade);
+        return processo;
     }
 
     @Test
@@ -184,9 +255,14 @@ class MapaCompetenciaDinamicoEngineTest {
     }
 
     private static MapaCompetenciaDinamicoEngine engineCom(UnidadeJudiciariaCompetenciaRepository unidadeRepository) {
+        return engineCom(unidadeRepository, mock(ProcessoDistribuicaoCompetenciaRepository.class));
+    }
+
+    private static MapaCompetenciaDinamicoEngine engineCom(UnidadeJudiciariaCompetenciaRepository unidadeRepository,
+                                                           ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository) {
         return new MapaCompetenciaDinamicoEngine(
                 unidadeRepository,
-                mock(ProcessoDistribuicaoCompetenciaRepository.class),
+                distribuicaoRepository,
                 mock(ProcessoRepository.class),
                 mock(AuditLedgerService.class),
                 mock(OutboxPublisher.class),

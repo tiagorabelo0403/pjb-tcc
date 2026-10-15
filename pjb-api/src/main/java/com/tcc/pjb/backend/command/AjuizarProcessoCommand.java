@@ -145,10 +145,9 @@ public class AjuizarProcessoCommand {
             processo.setTipoJustica(routing.tipoJusticaSugerida());
             processo.setRito(RitoProcessual.tryParse(routing.ritoSugerido()).orElse(processo.getRito() == null ? RitoProcessual.COMUM_ORDINARIO : processo.getRito()));
             processo.setTribunalCodigoRoteado(firstNonBlank(processo.getTribunalCodigoRoteado(), routing.tribunalCodigo()));
-            processo.setUnidadeJudiciariaCodigo(firstNonBlank(processo.getUnidadeJudiciariaCodigo(), routing.varaSugerida()));
             if (routing.forumAllocation() != null) {
                 processo.setTribunalCodigoRoteado(firstNonBlank(processo.getTribunalCodigoRoteado(), routing.forumAllocation().tribunalCodigo()));
-                processo.setUnidadeJudiciariaCodigo(firstNonBlank(processo.getUnidadeJudiciariaCodigo(), routing.forumAllocation().varaSugerida()));
+                processo.setUnidadeJudiciariaCodigo(firstNonBlank(processo.getUnidadeJudiciariaCodigo(), routing.forumAllocation().unidadeJudiciariaCodigo()));
                 processo.setClasseProcessual(firstNonBlank(processo.getClasseProcessual(), routing.forumAllocation().classeTpuCodigo()));
                 processo.setCompetenciaTerritorialModo(firstNonBlank(processo.getCompetenciaTerritorialModo(), routing.forumAllocation().competenciaTerritorialModo()));
                 processo.setPreventionMode(firstNonBlank(processo.getPreventionMode(), routing.forumAllocation().preventionMode()));
