@@ -41,13 +41,17 @@ public class GovBrLoginState {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
+  @Column(name = "vinculo_hash", length = 64)
+  private String vinculoHash;
+
   protected GovBrLoginState() {
   }
 
-  public GovBrLoginState(UUID stateId, String codeVerifier, String nonce, Instant expiresAt, Instant createdAt) {
+  public GovBrLoginState(UUID stateId, String codeVerifier, String nonce, String vinculoHash, Instant expiresAt, Instant createdAt) {
     this.stateId = stateId;
     this.codeVerifier = codeVerifier;
     this.nonce = nonce;
+    this.vinculoHash = vinculoHash;
     this.expiresAt = expiresAt;
     this.createdAt = createdAt;
   }
@@ -82,6 +86,10 @@ public class GovBrLoginState {
 
   public Instant getCreatedAt() {
     return createdAt;
+  }
+
+  public String getVinculoHash() {
+    return vinculoHash;
   }
 
   public boolean isExpired(Instant now) {

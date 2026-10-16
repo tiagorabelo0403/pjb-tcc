@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/security/baptism")
-@PreAuthorize("permitAll()")
+@PreAuthorize("isAuthenticated()")
 public class AdvogadoBaptismController {
 
     private final SecuritySurfaceFacadeService facadeService;

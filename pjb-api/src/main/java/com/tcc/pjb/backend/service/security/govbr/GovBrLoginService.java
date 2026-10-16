@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.security.govbr;
 
 import com.tcc.pjb.backend.core.security.webauthn.PasskeySessionService;
+import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.integration.govbr.oidc.GovBrOidcClient;
 import com.tcc.pjb.backend.integration.govbr.oidc.GovBrOidcProperties;
 import com.tcc.pjb.backend.integration.govbr.oidc.GovBrOidcUrls;
@@ -16,7 +17,11 @@ import com.tcc.pjb.backend.model.repository.GovBrLoginStateRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -28,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GovBrLoginService {
 
   private static final Logger log = LoggerFactory.getLogger(GovBrLoginService.class);
+  private static final SecureRandom ALEATORIO = new SecureRandom();
 
   private final GovBrOidcProperties props;
   private final GovBrOidcClient client;
@@ -60,7 +66,11 @@ public class GovBrLoginService {
     Instant now = Instant.now();
     Instant expires = now.plus(props.stateTtl());
 
-    GovBrLoginState st = new GovBrLoginState(stateId, pkce.codeVerifier(), pkce.nonce(), expires, now);
+    byte[] segredo = new byte[32];
+    ALEATORIO.nextBytes(segredo);
+    String vinculo = Base64.getUrlEncoder().withoutPadding().encodeToString(segredo);
+
+    GovBrLoginState st = new GovBrLoginState(stateId, pkce.codeVerifier(), pkce.nonce(), Hashes.sha256Hex(vinculo), expires, now);
     stateRepo.save(st);
 
     String url = GovBrOidcUrls.authorizeUrl(
@@ -72,7 +82,7 @@ public class GovBrLoginService {
         pkce.nonce()
     );
 
-    return new GovBrLoginStartResponse(url, stateId.toString());
+    return new GovBrLoginStartResponse(url, stateId.toString(), vinculo);
   }
 
   @Transactional
@@ -147,7 +157,7 @@ public class GovBrLoginService {
 
   @Transactional
   @PjbTransactionalBudget(operation = "govbr.login.session.persist", maxMillis = 1500, critical = true)
-  public GovBrLoginSessionResponse retrieveSession(String state, String ip) {
+  public GovBrLoginSessionResponse retrieveSession(String state, String vinculo, String ip) {
     UUID stateId;
     try {
       stateId = UUID.fromString(Objects.requireNonNull(state).trim());
@@ -157,6 +167,10 @@ public class GovBrLoginService {
 
     GovBrLoginState st = stateRepo.findById(stateId)
         .orElseThrow(() -> new IllegalArgumentException("state_nao_encontrado"));
+
+    if (!vinculoConfere(st, vinculo)) {
+      throw new IllegalArgumentException("vinculo_invalido");
+    }
 
     Instant now = Instant.now();
     if (!st.isUsed() || st.getUsuarioId() == null) {
@@ -177,6 +191,15 @@ public class GovBrLoginService {
 
     var issued = passkeySessionService.issue(usuario, null, ip, OrigemAutenticacaoSessao.GOVBR);
     return new GovBrLoginSessionResponse(issued.token(), issued.expiresAt(), issued.termosPendentes());
+  }
+
+  private static boolean vinculoConfere(GovBrLoginState st, String vinculo) {
+    if (st.getVinculoHash() == null || vinculo == null || vinculo.isBlank()) {
+      return false;
+    }
+    return MessageDigest.isEqual(
+        st.getVinculoHash().getBytes(StandardCharsets.US_ASCII),
+        Hashes.sha256Hex(vinculo.trim()).getBytes(StandardCharsets.US_ASCII));
   }
 
   private String successRedirect(UUID stateId) {

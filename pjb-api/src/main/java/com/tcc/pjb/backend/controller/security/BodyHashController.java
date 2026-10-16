@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/security/body-hash")
-@PreAuthorize("permitAll()")
+@PreAuthorize("isAuthenticated()")
 public class BodyHashController {
 
     private final SecuritySurfaceFacadeService facadeService;

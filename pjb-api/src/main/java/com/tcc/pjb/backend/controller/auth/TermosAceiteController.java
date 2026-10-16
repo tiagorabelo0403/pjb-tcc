@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth/termos")
-@PreAuthorize("permitAll()")
+@PreAuthorize("isAuthenticated()")
 public class TermosAceiteController {
 
     private final TermosAceiteService termosAceiteService;

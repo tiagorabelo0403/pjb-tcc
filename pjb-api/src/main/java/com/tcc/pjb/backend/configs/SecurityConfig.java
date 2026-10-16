@@ -380,6 +380,24 @@ public class SecurityConfig {
                             "/api/marketplace/oauth/v1/token",
                             "/api/marketplace/v1/processos",
                             "/api/marketplace/v1/processos/*/documentos").permitAll();
+                    authz.requestMatchers(
+                            "/api/v1/auth/govbr/login/iniciar",
+                            "/api/v1/auth/govbr/login/callback",
+                            "/api/v1/auth/govbr/login/session").permitAll();
+                    authz.requestMatchers(HttpMethod.GET,
+                            "/api/v1/catalog/*",
+                            "/api/v1/orgaos-judiciarios",
+                            "/api/v1/orgaos-judiciarios/*",
+                            "/api/v1/tribunal/perfil",
+                            "/api/v1/tribunal/perfil/*",
+                            "/api/v1/tribunal/perfil/*/resumo",
+                            "/api/v1/tribunal/perfil/*/bindings",
+                            "/api/v1/ui/assuntos/catalog",
+                            "/api/v1/ui/legend",
+                            "/api/v1/notificacoes/track/*.gif",
+                            "/api/v1/cidadao/govbr/link/callback",
+                            "/api/v1/auth/govbr/stepup/callback").permitAll();
+                    authz.requestMatchers(HttpMethod.POST, "/api/v1/integrations/n8n/workitems/generate").permitAll();
                     authz.requestMatchers("/actuator/info", "/actuator/metrics/**", "/actuator/prometheus")
                             .hasAnyAuthority("ROLE_ADMIN", "ROLE_ADMINISTRADOR");
                     authz.requestMatchers("/api/admin/**", "/api/v1/admin/**")

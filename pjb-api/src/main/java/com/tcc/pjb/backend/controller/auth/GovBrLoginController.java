@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,7 +47,8 @@ public class GovBrLoginController {
   @GetMapping(value = "/session", produces = MediaType.APPLICATION_JSON_VALUE)
   public GovBrLoginSessionResponse session(
       @RequestParam(name = "state") @Size(max = 128) String state,
+      @RequestHeader(name = "X-PJB-GovBr-Vinculo", required = false) @Size(max = 128) String vinculo,
       HttpServletRequest servletRequest) {
-    return service.retrieveSession(state, servletRequest.getRemoteAddr());
+    return service.retrieveSession(state, vinculo, servletRequest.getRemoteAddr());
   }
 }
