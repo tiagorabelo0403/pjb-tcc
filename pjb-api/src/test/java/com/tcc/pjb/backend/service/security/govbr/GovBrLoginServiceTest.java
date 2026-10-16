@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.tcc.pjb.backend.core.security.webauthn.PasskeySessionService;
+import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.integration.govbr.oidc.GovBrOidcClient;
 import com.tcc.pjb.backend.integration.govbr.oidc.GovBrOidcProperties;
 import com.tcc.pjb.backend.integration.govbr.oidc.GovBrTokenResponse;
@@ -34,6 +35,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class GovBrLoginServiceTest {
+
+    private static final String VINCULO = "segredo-do-navegador-que-iniciou";
+    private static final String VINCULO_HASH = Hashes.sha256Hex(VINCULO);
 
     private GovBrOidcProperties props;
     private GovBrOidcClient client;
@@ -92,6 +96,43 @@ class GovBrLoginServiceTest {
         assertThat(saved.getStateId().toString()).isEqualTo(response.state());
         assertThat(saved.getExpiresAt()).isAfter(Instant.now());
         assertThat(saved.isUsed()).isFalse();
+        assertThat(response.vinculo()).hasSizeGreaterThanOrEqualTo(43);
+        assertThat(saved.getVinculoHash()).isEqualTo(Hashes.sha256Hex(response.vinculo()));
+        assertThat(response.authorizeUrl()).doesNotContain(response.vinculo());
+    }
+
+    @Test
+    void startGeraVinculoDistintoACadaLogin() {
+        assertThat(service.start().vinculo()).isNotEqualTo(service.start().vinculo());
+    }
+
+    @Test
+    void retrieveSessionSemOVinculoDoNavegadorQueIniciouRecusaSemEmitirSessao() {
+        UUID stateId = UUID.randomUUID();
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
+        st.markUsed(Instant.now(), 99L);
+        when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
+
+        for (String vinculoDeOutroNavegador : new String[] {null, "", "segredo-de-quem-so-conhece-o-state"}) {
+            assertThatThrownBy(() -> service.retrieveSession(stateId.toString(), vinculoDeOutroNavegador, "203.0.113.9"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("vinculo_invalido");
+        }
+        assertThat(st.isSessionRetrieved()).isFalse();
+        verify(passkeySessionService, never()).issue(any(), any(), any(), any());
+    }
+
+    @Test
+    void retrieveSessionDeStateCriadoSemVinculoRecusa() {
+        UUID stateId = UUID.randomUUID();
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", null, Instant.now().plusSeconds(300), Instant.now());
+        st.markUsed(Instant.now(), 99L);
+        when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
+
+        assertThatThrownBy(() -> service.retrieveSession(stateId.toString(), VINCULO, "203.0.113.9"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("vinculo_invalido");
+        verify(passkeySessionService, never()).issue(any(), any(), any(), any());
     }
 
     @Test
@@ -136,7 +177,7 @@ class GovBrLoginServiceTest {
         GovBrLoginService semRedirectLoginService = new GovBrLoginService(semRedirectLogin, client, stateRepo, usuarioRepository, passkeySessionService);
 
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
         when(client.exchangeCode(eq("code-real"), eq("verifier"), eq("https://pjb.local/redirect")))
                 .thenReturn(new GovBrTokenResponse("access-token", null, "Bearer", 3600, "openid"));
@@ -174,7 +215,7 @@ class GovBrLoginServiceTest {
     @Test
     void handleCallbackComStateJaUsadoRedirecionaComErro() throws Exception {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-1", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-1", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         st.markUsed(Instant.now(), 1L);
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
 
@@ -186,7 +227,7 @@ class GovBrLoginServiceTest {
     @Test
     void handleCallbackComStateExpiradoRedirecionaComErro() throws Exception {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-1", Instant.now().minusSeconds(1), Instant.now().minusSeconds(400));
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-1", VINCULO_HASH, Instant.now().minusSeconds(1), Instant.now().minusSeconds(400));
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
 
         String redirect = service.handleCallback("code-real", stateId.toString());
@@ -197,7 +238,7 @@ class GovBrLoginServiceTest {
     @Test
     void handleCallbackComFalhaNaTrocaDoCodeRedirecionaComErro() throws Exception {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-1", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-1", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
         when(client.exchangeCode(eq("code-real"), eq("verifier"), anyString())).thenReturn(null);
 
@@ -209,7 +250,7 @@ class GovBrLoginServiceTest {
     @Test
     void handleCallbackComIdTokenAusenteRedirecionaComErro() throws Exception {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-1", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-1", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
         when(client.exchangeCode(eq("code-real"), eq("verifier"), anyString()))
                 .thenReturn(new GovBrTokenResponse("access-token", null, "Bearer", 3600, "openid"));
@@ -222,7 +263,7 @@ class GovBrLoginServiceTest {
     @Test
     void handleCallbackComIdTokenInvalidoRedirecionaComErro() throws Exception {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-1", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-1", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
         when(client.exchangeCode(eq("code-real"), eq("verifier"), anyString()))
                 .thenReturn(new GovBrTokenResponse("access-token", "id-token-raw", "Bearer", 3600, "openid"));
@@ -236,7 +277,7 @@ class GovBrLoginServiceTest {
     @Test
     void handleCallbackComNonceDivergenteRedirecionaComErro() throws Exception {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-esperado", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-esperado", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
         when(client.exchangeCode(eq("code-real"), eq("verifier"), anyString()))
                 .thenReturn(new GovBrTokenResponse("access-token", "id-token-raw", "Bearer", 3600, "openid"));
@@ -252,7 +293,7 @@ class GovBrLoginServiceTest {
     @Test
     void handleCallbackComCpfNaoCadastradoRedirecionaComErro() throws Exception {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-esperado", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-esperado", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
         when(client.exchangeCode(eq("code-real"), eq("verifier"), anyString()))
                 .thenReturn(new GovBrTokenResponse("access-token", "id-token-raw", "Bearer", 3600, "openid"));
@@ -270,7 +311,7 @@ class GovBrLoginServiceTest {
     @Test
     void handleCallbackComSucessoMarcaEstadoUsadoERedirecionaParaSucesso() throws Exception {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-esperado", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-esperado", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
         when(client.exchangeCode(eq("code-real"), eq("verifier"), anyString()))
                 .thenReturn(new GovBrTokenResponse("access-token", "id-token-raw", "Bearer", 3600, "openid"));
@@ -293,7 +334,7 @@ class GovBrLoginServiceTest {
     @Test
     void handleCallbackUsaCpfDoUserInfoQuandoSubjectDoIdTokenNaoEhCpfValido() throws Exception {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-esperado", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce-esperado", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
         when(client.exchangeCode(eq("code-real"), eq("verifier"), anyString()))
                 .thenReturn(new GovBrTokenResponse("access-token", "id-token-raw", "Bearer", 3600, "openid"));
@@ -314,7 +355,7 @@ class GovBrLoginServiceTest {
 
     @Test
     void retrieveSessionComStateInvalidoLancaIllegalArgument() {
-        assertThatThrownBy(() -> service.retrieveSession("nao-e-um-uuid", "127.0.0.1"))
+        assertThatThrownBy(() -> service.retrieveSession("nao-e-um-uuid", VINCULO, "127.0.0.1"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -323,17 +364,17 @@ class GovBrLoginServiceTest {
         UUID stateId = UUID.randomUUID();
         when(stateRepo.findById(stateId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.retrieveSession(stateId.toString(), "127.0.0.1"))
+        assertThatThrownBy(() -> service.retrieveSession(stateId.toString(), VINCULO, "127.0.0.1"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void retrieveSessionComLoginNaoConcluidoLancaIllegalState() {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
 
-        assertThatThrownBy(() -> service.retrieveSession(stateId.toString(), "127.0.0.1"))
+        assertThatThrownBy(() -> service.retrieveSession(stateId.toString(), VINCULO, "127.0.0.1"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("login_nao_concluido");
     }
@@ -341,12 +382,12 @@ class GovBrLoginServiceTest {
     @Test
     void retrieveSessionComSessaoJaRecuperadaLancaIllegalState() {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         st.markUsed(Instant.now(), 1L);
         st.markSessionRetrieved(Instant.now());
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
 
-        assertThatThrownBy(() -> service.retrieveSession(stateId.toString(), "127.0.0.1"))
+        assertThatThrownBy(() -> service.retrieveSession(stateId.toString(), VINCULO, "127.0.0.1"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("sessao_ja_recuperada");
     }
@@ -354,11 +395,11 @@ class GovBrLoginServiceTest {
     @Test
     void retrieveSessionComStateExpiradoLancaIllegalState() {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", Instant.now().minusSeconds(1), Instant.now().minusSeconds(400));
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", VINCULO_HASH, Instant.now().minusSeconds(1), Instant.now().minusSeconds(400));
         st.markUsed(Instant.now().minusSeconds(300), 1L);
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
 
-        assertThatThrownBy(() -> service.retrieveSession(stateId.toString(), "127.0.0.1"))
+        assertThatThrownBy(() -> service.retrieveSession(stateId.toString(), VINCULO, "127.0.0.1"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("state_expirado");
     }
@@ -366,12 +407,12 @@ class GovBrLoginServiceTest {
     @Test
     void retrieveSessionComUsuarioNaoEncontradoLancaIllegalState() {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         st.markUsed(Instant.now(), 99L);
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
         when(usuarioRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.retrieveSession(stateId.toString(), "127.0.0.1"))
+        assertThatThrownBy(() -> service.retrieveSession(stateId.toString(), VINCULO, "127.0.0.1"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("usuario_nao_encontrado");
     }
@@ -379,7 +420,7 @@ class GovBrLoginServiceTest {
     @Test
     void retrieveSessionComSucessoMarcaRecuperadaEEmiteSessaoReal() {
         UUID stateId = UUID.randomUUID();
-        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", Instant.now().plusSeconds(300), Instant.now());
+        GovBrLoginState st = new GovBrLoginState(stateId, "verifier", "nonce", VINCULO_HASH, Instant.now().plusSeconds(300), Instant.now());
         st.markUsed(Instant.now(), 99L);
         when(stateRepo.findById(stateId)).thenReturn(Optional.of(st));
         Usuario usuario = new Usuario();
@@ -389,7 +430,7 @@ class GovBrLoginServiceTest {
                 new PasskeySessionService.IssuedPasskeySession("bearer-real-token", LocalDateTime.now().plusHours(8), 123L, false);
         when(passkeySessionService.issue(usuario, null, "203.0.113.5", OrigemAutenticacaoSessao.GOVBR)).thenReturn(issued);
 
-        GovBrLoginSessionResponse response = service.retrieveSession(stateId.toString(), "203.0.113.5");
+        GovBrLoginSessionResponse response = service.retrieveSession(stateId.toString(), VINCULO, "203.0.113.5");
 
         assertThat(response.token()).isEqualTo("bearer-real-token");
         assertThat(response.expiresAt()).isEqualTo(issued.expiresAt());
