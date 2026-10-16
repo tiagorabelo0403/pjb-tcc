@@ -109,7 +109,7 @@ public class DeviceSecurityProperties {
     private int restrictedDownloadMaxPerHourPerDocument = 12;
     private long restrictedDownloadMaxBytesPerHourPerDocument = 26214400L;
     private boolean requireBodyHashForOneTimeStepUpWrites = true;
-    private int bodyHashMaxBytes = 65536;
+    private int bodyHashMaxBytes = 1048576;
     private boolean watermarkEnabled = true;
     private long watermarkMaxBytes = 26214400L;
     private boolean policyDocumentEnabled = true;

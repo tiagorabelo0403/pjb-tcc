@@ -43,6 +43,9 @@ final class ApiRequestOriginSelectiveRequirementService {
             if (!matches(rule, path)) {
                 continue;
             }
+            if (!rule.getCapabilityValues().isEmpty() && corpoPresenteMasIlegivel(request)) {
+                return Requirement.signedRequired(rule.getName(), null);
+            }
             String capability = resolveCapability(request, rule, path);
             if (rule.getCapabilityValues().isEmpty()) {
                 return Requirement.signedRequired(rule.getName(), capability);
@@ -117,9 +120,17 @@ final class ApiRequestOriginSelectiveRequirementService {
         }
     }
 
+    private boolean corpoPresenteMasIlegivel(HttpServletRequest request) {
+        return request.getContentLengthLong() != 0L && !corpoLegivel(request);
+    }
+
+    private boolean corpoLegivel(HttpServletRequest request) {
+        return request instanceof CachedBodyHttpServletRequest || request.getAttribute("PJB_BODY_HASH") != null;
+    }
+
     private byte[] readBody(HttpServletRequest request) {
         try {
-            if (!(request instanceof CachedBodyHttpServletRequest) && request.getAttribute("PJB_BODY_HASH") == null) {
+            if (!corpoLegivel(request)) {
                 return new byte[0];
             }
             return request.getInputStream().readAllBytes();

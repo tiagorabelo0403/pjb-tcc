@@ -78,6 +78,19 @@ class LegalAiSelectiveSignedOriginGovernanceTest {
     }
 
     @Test
+    void legalAiConversationMustRequireSignedAttestationWhenBodyIsTooLargeToReadTheCapability() throws Exception {
+        String body = LegalAiSignedOriginTestSupport.legalConversationRequestBody(objectMapper, "LEGAL_DRAFT_V2");
+        String inflado = body.substring(0, body.length() - 1) + " ".repeat(300_000) + "}";
+
+        mockMvc.perform(post("/api/ai/legal/conversation")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(inflado)
+                        .header("Origin", "https://app.pjb.justica.br"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.type").value("https://pjb.local/problems/signed_attestation_required_for_capability"));
+    }
+
+    @Test
     void legalAiConversationMustAcceptSensitiveCapabilityWhenSignedAttestationIsValid() throws Exception {
         String body = LegalAiSignedOriginTestSupport.legalConversationRequestBody(objectMapper, "LEGAL_DRAFT_V2");
         var signed = LegalAiSignedOriginTestSupport.signedRequest("/api/ai/legal/conversation", body);

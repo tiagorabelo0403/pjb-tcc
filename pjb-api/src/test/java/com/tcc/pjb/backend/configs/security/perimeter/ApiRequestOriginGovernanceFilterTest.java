@@ -150,6 +150,47 @@ class ApiRequestOriginGovernanceFilterTest {
         assertThat(response.getContentAsString()).contains("signed_origin_body_hash_mismatch");
     }
 
+    @Test
+    void shouldRejectSignedOriginWhenEdgeDidNotComputeTheBodyHash() throws Exception {
+        SecurityPerimeterProperties perimeter = new SecurityPerimeterProperties();
+        ApiRequestOriginGovernanceProperties properties = new ApiRequestOriginGovernanceProperties();
+        properties.setEnabled(true);
+        ApiRequestOriginGovernanceProperties.TrustedOrigin trustedOrigin = new ApiRequestOriginGovernanceProperties.TrustedOrigin();
+        trustedOrigin.setActive(true);
+        trustedOrigin.setId("edge-app");
+        trustedOrigin.setSecret("super-secret");
+        trustedOrigin.setAllowedCidrs(java.util.List.of("10.0.0.0/8"));
+        trustedOrigin.setAllowedPathPrefixes(java.util.List.of("/api/ai/"));
+        trustedOrigin.setAllowedMethods(java.util.List.of("POST"));
+        properties.getTrustedOrigins().add(trustedOrigin);
+
+        ApiRequestOriginGovernanceFilter filter = new ApiRequestOriginGovernanceFilter(
+                properties,
+                perimeter,
+                new ClientIpResolver(perimeter),
+                new ObjectMapper()
+        );
+
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/ai/legal/minuta");
+        request.setRemoteAddr("10.10.10.10");
+        request.setContentType("application/json");
+        request.setContent("{\"pedido\":\"corpo-trocado\"}".getBytes(StandardCharsets.UTF_8));
+        String hashDoCorpoOriginal = sha256Hex("{\"pedido\":\"teste\"}".getBytes(StandardCharsets.UTF_8));
+        String timestamp = Instant.now().toString();
+        request.addHeader("X-PJB-Origin-Id", "edge-app");
+        request.addHeader("X-PJB-Timestamp", timestamp);
+        request.addHeader("X-PJB-Body-Hash", hashDoCorpoOriginal);
+        request.addHeader("X-PJB-Signature", sign("super-secret", canonicalMaterial("edge-app", timestamp, "POST", "/api/ai/legal/minuta", hashDoCorpoOriginal)));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, (req, res) -> {
+            throw new AssertionError("chain should not be invoked");
+        });
+
+        assertThat(response.getStatus()).isEqualTo(400);
+        assertThat(response.getContentAsString()).contains("signed_origin_body_hash_unverified");
+    }
+
     private static String canonicalMaterial(String originId, String timestamp, String method, String path, String bodyHash) {
         return originId + '\n' + timestamp + '\n' + method + '\n' + path + '\n' + bodyHash;
     }
