@@ -35,8 +35,7 @@ public class SecurityDualApprovalController {
 
     @GetMapping("/{id}")
     public DualApprovalResponse get(@PathVariable Long id) {
-        currentUserService.getRequired();
-        SecurityDualApprovalRequest r = service.getRequired(id);
+        SecurityDualApprovalRequest r = service.getRequiredFor(id, currentUserService.getRequired());
         return map(r);
     }
 
@@ -57,19 +56,7 @@ public class SecurityDualApprovalController {
     }
 
     private void enforceStrongAuthAndDevice(Usuario u, HttpServletRequest request) {
-        Object strong = request.getAttribute("PJB_STRONG_AUTH_AT");
-        if (strong == null) {
-            throw new IllegalStateException("autenticação forte obrigatória");
-        }
-        Long deviceId = parseLong(request.getHeader("X-Device-ID"));
-        if (deviceId == null) {
-            Object fromSession = request.getAttribute("PJB_DEVICE_ID");
-            deviceId = fromSession instanceof Long l ? l : parseLong(fromSession != null ? String.valueOf(fromSession) : null);
-        }
-        if (deviceId == null) {
-            throw new IllegalArgumentException("device obrigatório");
-        }
-        deviceVerificationService.requireTrustedVerifiedDevice(u, deviceId);
+        deviceVerificationService.requireStrongAuthOnTrustedDevice(u, request);
     }
 
     private DualApprovalResponse map(SecurityDualApprovalRequest r) {
@@ -92,14 +79,4 @@ public class SecurityDualApprovalController {
                 .build();
     }
 
-    private Long parseLong(String v) {
-        try {
-            if (v == null) return null;
-            String s = v.trim();
-            if (s.isEmpty()) return null;
-            return Long.parseLong(s);
-        } catch (Exception e) {
-            return null;
-        }
-    }
 }

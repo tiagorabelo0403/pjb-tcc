@@ -55,6 +55,7 @@ class SecurityFilterChainPerfilTesteTest {
                 "ApiLoadSheddingFilter",
                 "MagistraturaGeofenceFilter",
                 "DecisionStepUpFilter",
+                "AccountFreezeFilter",
                 "ApiDatabasePressureShieldFilter",
                 "DecisionClientBindingFilter",
                 "PjbFunctionalAvailabilityFilter",

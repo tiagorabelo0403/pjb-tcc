@@ -28,6 +28,7 @@ import com.tcc.pjb.backend.core.security.webauthn.TermosAceiteService;
 import com.tcc.pjb.backend.core.security.webauthn.WebAuthnProperties;
 import com.tcc.pjb.backend.model.entity.security.TermosAceite;
 import com.tcc.pjb.backend.model.repository.security.TermosAceiteRepository;
+import com.tcc.pjb.backend.model.repository.security.UserSecurityProfileRepository;
 import com.tcc.pjb.backend.core.security.webauthn.web.PasskeyAuthenticationFilter;
 import com.tcc.pjb.backend.model.dto.security.CertificadoAuthDtos;
 import com.tcc.pjb.backend.model.entity.Instituicao;
@@ -168,7 +169,8 @@ class CertificadoAuthSessaoE2ETest {
         PasskeySessionService passkeySessionService = new PasskeySessionService(
                 passkeySessionRepository,
                 new WebAuthnProperties(),
-                new TermosAceiteService(termosAceiteRepository, passkeySessionRepository, "v1"));
+                new TermosAceiteService(termosAceiteRepository, passkeySessionRepository, "v1"),
+                mock(UserSecurityProfileRepository.class));
         CertificadoAuthFacadeService facadeService = new CertificadoAuthFacadeService(
                 chainValidator,
                 nonceStore,

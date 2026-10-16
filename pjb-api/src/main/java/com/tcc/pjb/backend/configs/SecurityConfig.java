@@ -481,6 +481,13 @@ public class SecurityConfig {
     }
 
     @Bean
+    public AccountFreezeFilter accountFreezeFilter(CurrentUserService currentUserService,
+                                                   UserSecurityProfileRepository profileRepo,
+                                                   ObjectMapper objectMapper) {
+        return new AccountFreezeFilter(currentUserService, profileRepo, objectMapper);
+    }
+
+    @Bean
     public MagistraturaIdleLockFilter magistraturaIdleLockFilter(PasskeySessionRepository sessionRepo,
                                                                    PasskeySessionActivityService activityService,
                                                                    CurrentUserService currentUserService) {

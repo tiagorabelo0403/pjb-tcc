@@ -4,6 +4,7 @@ import com.tcc.pjb.backend.core.icp.IcpBrasilChainValidator;
 import com.tcc.pjb.backend.core.icp.domain.IcpBrasilChainValidationDetails;
 import com.tcc.pjb.backend.core.icp.domain.IcpBrasilSignaturePolicySnapshot;
 import com.tcc.pjb.backend.core.icp.domain.IcpBrasilValidationResult;
+import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.security.identity.AssinaturaInvalida;
 import com.tcc.pjb.backend.core.security.identity.AssinaturaValida;
 import com.tcc.pjb.backend.core.security.identity.CertificadoAuthAuditService;
@@ -162,11 +163,16 @@ public class CertificadoAuthFacadeService {
         }
         ContextoResolucao contexto = contextoResolver.resolver(resolvida.usuario());
         if (contexto instanceof ContextoResolvido resolvido) {
-            PasskeySessionService.IssuedPasskeySession sessao = passkeySessionService.issue(
-                    resolvida.usuario(),
-                    null,
-                    clientIpResolver.resolve(servletRequest),
-                    OrigemAutenticacaoSessao.CERTIFICADO_ICP);
+            PasskeySessionService.IssuedPasskeySession sessao;
+            try {
+                sessao = passkeySessionService.issue(
+                        resolvida.usuario(),
+                        null,
+                        clientIpResolver.resolve(servletRequest),
+                        OrigemAutenticacaoSessao.CERTIFICADO_ICP);
+            } catch (AccessDeniedPjbException contaCongelada) {
+                return respostaNegada("CONTA_CONGELADA");
+            }
             auditService.registrar(ETAPA_RESPOSTA, true, "AUTENTICADO");
             return new CertificadoAuthDtos.AutenticadoResponse(
                     CertificadoAuthDtos.Status.AUTENTICADO,

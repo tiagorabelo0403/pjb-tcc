@@ -19,6 +19,12 @@ public interface SecurityDualApprovalRequestRepository extends JpaRepository<Sec
                                                                     @Param("status") SecurityDualApprovalStatus status);
 
     @Modifying
+    @Query("update SecurityDualApprovalRequest r set r.status = :toStatus where r.id = :id and r.status = :fromStatus")
+    int transitionStatus(@Param("id") Long id,
+                         @Param("fromStatus") SecurityDualApprovalStatus fromStatus,
+                         @Param("toStatus") SecurityDualApprovalStatus toStatus);
+
+    @Modifying
     @Query("update SecurityDualApprovalRequest r set r.status = :toStatus, r.expiresAt = :now where r.requester.id = :userId and r.status = :fromStatus")
     int expireAllByRequester(@Param("userId") Long userId,
                              @Param("fromStatus") SecurityDualApprovalStatus fromStatus,

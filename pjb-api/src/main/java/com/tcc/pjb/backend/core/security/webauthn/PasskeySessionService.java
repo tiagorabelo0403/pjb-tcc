@@ -7,10 +7,13 @@ import java.util.HexFormat;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.OrigemAutenticacaoSessao;
 import com.tcc.pjb.backend.model.entity.security.PasskeySession;
+import com.tcc.pjb.backend.model.entity.security.UserSecurityProfile;
 import com.tcc.pjb.backend.model.repository.security.PasskeySessionRepository;
+import com.tcc.pjb.backend.model.repository.security.UserSecurityProfileRepository;
 
 @Service
 public class PasskeySessionService {
@@ -18,12 +21,17 @@ public class PasskeySessionService {
     private final PasskeySessionRepository repo;
     private final WebAuthnProperties props;
     private final TermosAceiteService termosAceiteService;
+    private final UserSecurityProfileRepository profileRepo;
     private final SecureRandom random = new SecureRandom();
 
-    public PasskeySessionService(PasskeySessionRepository repo, WebAuthnProperties props, TermosAceiteService termosAceiteService) {
+    public PasskeySessionService(PasskeySessionRepository repo,
+                                 WebAuthnProperties props,
+                                 TermosAceiteService termosAceiteService,
+                                 UserSecurityProfileRepository profileRepo) {
         this.repo = Objects.requireNonNull(repo);
         this.props = Objects.requireNonNull(props);
         this.termosAceiteService = Objects.requireNonNull(termosAceiteService);
+        this.profileRepo = Objects.requireNonNull(profileRepo);
     }
 
     @Transactional
@@ -48,6 +56,9 @@ public class PasskeySessionService {
                                             boolean termosPendentes,
                                             OrigemAutenticacaoSessao origem) {
         Objects.requireNonNull(usuario, "usuario");
+        if (usuario.getId() != null && profileRepo.findByUsuarioId(usuario.getId()).filter(UserSecurityProfile::isFrozenNow).isPresent()) {
+            throw new AccessDeniedPjbException("conta_congelada");
+        }
 
         String token = generateToken();
         String hash = sha256Hex(token);
