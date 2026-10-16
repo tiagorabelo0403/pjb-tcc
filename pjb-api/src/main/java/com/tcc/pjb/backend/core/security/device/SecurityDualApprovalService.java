@@ -8,6 +8,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.observability.RequestContext;
+import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.model.entity.MembroEquipe;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.security.SecurityDualApprovalRequest;
@@ -42,17 +43,15 @@ public class SecurityDualApprovalService {
 
         String key = requestKey(requester.getId(), requesterDeviceId, equipeId, actionHash);
         SecurityDualApprovalRequest existing = repo.findByRequestKey(key).orElse(null);
-        if (existing != null) {
-            if (existing.getStatus() == SecurityDualApprovalStatus.PENDING && !existing.isExpired()) {
-                return existing;
-            }
-            if (existing.getStatus() == SecurityDualApprovalStatus.PENDING && existing.isExpired()) {
-                existing.setStatus(SecurityDualApprovalStatus.EXPIRED);
-                repo.save(existing);
-            }
+        if (existing != null && existing.getStatus() == SecurityDualApprovalStatus.PENDING && !existing.isExpired()) {
+            return existing;
         }
 
-        SecurityDualApprovalRequest r = new SecurityDualApprovalRequest();
+        SecurityDualApprovalRequest r = existing != null ? existing : new SecurityDualApprovalRequest();
+        r.setApprovedBy(null);
+        r.setApprovedAt(null);
+        r.setRejectedBy(null);
+        r.setRejectedAt(null);
         r.setRequester(requester);
         r.setRequesterDeviceId(requesterDeviceId);
         r.setEquipeId(equipeId);
@@ -73,10 +72,25 @@ public class SecurityDualApprovalService {
         return repo.findById(id).orElseThrow(() -> new IllegalArgumentException("approval não encontrado"));
     }
 
+    @Transactional(readOnly = true)
+    public SecurityDualApprovalRequest getRequiredFor(Long id, Usuario leitor) {
+        SecurityDualApprovalRequest r = getRequired(id);
+        exigirPapelParaAcao(r, leitor);
+        return r;
+    }
+
+    private static void exigirPapelParaAcao(SecurityDualApprovalRequest r, Usuario usuario) {
+        if (DescongelamentoContaService.ACAO.equals(r.getAction())
+                && (usuario.getTipoUsuario() == null || !usuario.getTipoUsuario().isAdmin())) {
+            throw new AccessDeniedPjbException("papel_administrador_obrigatorio");
+        }
+    }
+
     @Transactional
     public SecurityDualApprovalRequest approve(Long id, Usuario approver) {
         if (approver == null || approver.getId() == null) throw new IllegalArgumentException("approver obrigatório");
         SecurityDualApprovalRequest r = getRequired(id);
+        exigirPapelParaAcao(r, approver);
 
         if (r.getStatus() != SecurityDualApprovalStatus.PENDING) throw new IllegalStateException("approval não está pendente");
         if (r.isExpired()) {
@@ -113,6 +127,7 @@ public class SecurityDualApprovalService {
     public SecurityDualApprovalRequest reject(Long id, Usuario approver) {
         if (approver == null || approver.getId() == null) throw new IllegalArgumentException("approver obrigatório");
         SecurityDualApprovalRequest r = getRequired(id);
+        exigirPapelParaAcao(r, approver);
 
         if (r.getStatus() != SecurityDualApprovalStatus.PENDING) throw new IllegalStateException("approval não está pendente");
         if (r.isExpired()) {
@@ -143,6 +158,11 @@ public class SecurityDualApprovalService {
         if (!actionHash.trim().equalsIgnoreCase(r.getActionHash())) return false;
         if (!Objects.equals(r.getEquipeId(), equipeId)) return false;
         return true;
+    }
+
+    @Transactional
+    public boolean consumirAprovacao(Long approvalId) {
+        return repo.transitionStatus(approvalId, SecurityDualApprovalStatus.APPROVED, SecurityDualApprovalStatus.EXPIRED) == 1;
     }
 
     private static String requestKey(Long userId, Long deviceId, Long equipeId, String actionHash) {

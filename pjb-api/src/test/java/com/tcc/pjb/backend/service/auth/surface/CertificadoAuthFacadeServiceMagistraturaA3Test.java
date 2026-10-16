@@ -3,26 +3,33 @@ package com.tcc.pjb.backend.service.auth.surface;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.configs.security.perimeter.ClientIpResolver;
 import com.tcc.pjb.backend.core.icp.IcpBrasilCertProfile;
 import com.tcc.pjb.backend.core.icp.IcpBrasilChainValidator;
 import com.tcc.pjb.backend.core.icp.domain.IcpBrasilValidationResult;
+import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.security.identity.AssinaturaValida;
 import com.tcc.pjb.backend.core.security.identity.CertificadoAuthAuditService;
 import com.tcc.pjb.backend.core.security.identity.CertificadoAuthPolicy;
 import com.tcc.pjb.backend.core.security.identity.CertificadoIdentidadeResolver;
 import com.tcc.pjb.backend.core.security.identity.CertificadoX509Support;
+import com.tcc.pjb.backend.core.security.identity.ContextoInstitucional;
 import com.tcc.pjb.backend.core.security.identity.ContextoInstitucionalResolver;
 import com.tcc.pjb.backend.core.security.identity.ContextoNegado;
+import com.tcc.pjb.backend.core.security.identity.ContextoResolucao;
+import com.tcc.pjb.backend.core.security.identity.ContextoResolvido;
 import com.tcc.pjb.backend.core.security.identity.DesafioCertificadoNonceStore;
 import com.tcc.pjb.backend.core.security.identity.IdentidadeResolvida;
 import com.tcc.pjb.backend.core.security.identity.MotivoContexto;
 import com.tcc.pjb.backend.core.security.identity.VerificadorAssinaturaCertificado;
 import com.tcc.pjb.backend.core.security.webauthn.PasskeySessionService;
 import com.tcc.pjb.backend.model.dto.security.CertificadoAuthDtos;
+import com.tcc.pjb.backend.model.entity.UnidadeInstituicao;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import jakarta.servlet.http.HttpServletRequest;
@@ -101,7 +108,24 @@ class CertificadoAuthFacadeServiceMagistraturaA3Test {
         assertThat(bloqueadoPorTipo).isFalse();
     }
 
+    @Test
+    void certificadoValidoDeContaCongeladaEhNegadoComMotivoAuditado() throws Exception {
+        when(passkeySessionService.issue(any(), any(), any(), any())).thenThrow(new AccessDeniedPjbException("conta_congelada"));
+
+        var resposta = executarFluxoAteResolucaoDeIdentidade("A3", TipoUsuario.JUIZ,
+                new ContextoResolvido(new ContextoInstitucional(mock(UnidadeInstituicao.class), "JUIZ")));
+
+        assertThat(resposta).isInstanceOf(CertificadoAuthDtos.NegadoResponse.class);
+        assertThat(((CertificadoAuthDtos.NegadoResponse) resposta).motivo()).isEqualTo("CONTA_CONGELADA");
+        verify(auditService).registrar(anyString(), eq(false), eq("CONTA_CONGELADA"));
+    }
+
     private CertificadoAuthDtos.Resposta executarFluxoAteResolucaoDeIdentidade(String certType, TipoUsuario tipoUsuario) throws Exception {
+        return executarFluxoAteResolucaoDeIdentidade(certType, tipoUsuario, new ContextoNegado(MotivoContexto.SEM_LOTACAO_ATIVA));
+    }
+
+    private CertificadoAuthDtos.Resposta executarFluxoAteResolucaoDeIdentidade(String certType, TipoUsuario tipoUsuario,
+                                                                              ContextoResolucao contexto) throws Exception {
         X509Certificate certificado = mock(X509Certificate.class);
         when(x509Support.parse(anyString())).thenReturn(certificado);
         when(x509Support.fingerprintSha256(certificado)).thenReturn("fingerprint");
@@ -119,7 +143,7 @@ class CertificadoAuthFacadeServiceMagistraturaA3Test {
         usuario.setTipoUsuario(tipoUsuario);
         when(identidadeResolver.resolver(profile)).thenReturn(new IdentidadeResolvida(usuario));
 
-        when(contextoResolver.resolver(usuario)).thenReturn(new ContextoNegado(MotivoContexto.SEM_LOTACAO_ATIVA));
+        when(contextoResolver.resolver(usuario)).thenReturn(contexto);
 
         CertificadoAuthDtos.RespostaRequest request = new CertificadoAuthDtos.RespostaRequest();
         request.setCertificado("cert-pem");
