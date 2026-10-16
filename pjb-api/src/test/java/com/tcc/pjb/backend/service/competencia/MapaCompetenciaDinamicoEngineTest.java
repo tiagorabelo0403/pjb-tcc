@@ -205,7 +205,7 @@ class MapaCompetenciaDinamicoEngineTest {
     }
 
     @Test
-    void mediaDeParesUsaOGrupoDaComarcaDoCadastroNaoAMediaGlobal() throws Exception {
+    void pontuacaoDeCargaComparaSoComParesDaComarcaEVaraUnicaFicaNeutra() throws Exception {
         UnidadeJudiciariaCompetencia fortaleza1 = unidadeSemFkComComarcaTextual("VARA-FOR-1", "CE", "Fortaleza");
         UnidadeJudiciariaCompetencia fortaleza2 = unidadeSemFkComComarcaTextual("VARA-FOR-2", "CE", "Fortaleza");
         UnidadeJudiciariaCompetencia sobral = unidadeSemFkComComarcaTextual("VARA-SOB-1", "CE", "Sobral");
@@ -214,22 +214,136 @@ class MapaCompetenciaDinamicoEngineTest {
         ReflectionTestUtils.setField(sobral, "id", 3L);
         Map<Long, Long> recentes = Map.of(1L, 10L, 2L, 4L, 3L, 1L);
 
-        Map<Long, Double> medias = invokeMediaDePares(criarEngine(), List.of(fortaleza1, fortaleza2, sobral), recentes, 5.0d);
+        Map<Long, MapaCompetenciaDinamicoEngine.ReferenciaDePares> naComarca =
+                invokeReferenciaDePares(criarEngine(), List.of(fortaleza1, fortaleza2, sobral), recentes, false);
 
-        assertThat(medias.get(1L)).isEqualTo(7.0d);
-        assertThat(medias.get(2L)).isEqualTo(7.0d);
-        assertThat(medias.get(3L)).isEqualTo(1.0d);
+        assertThat(naComarca.get(1L)).isEqualTo(referencia(7.0d, MapaCompetenciaDinamicoEngine.NivelDePares.COMARCA, 2));
+        assertThat(naComarca.get(2L)).isEqualTo(referencia(7.0d, MapaCompetenciaDinamicoEngine.NivelDePares.COMARCA, 2));
+        assertThat(naComarca.get(3L)).isEqualTo(referencia(1.0d, MapaCompetenciaDinamicoEngine.NivelDePares.COMARCA, 1));
+    }
+
+    @Test
+    void leituraDeGestaoEscalaVaraUnicaParaAUfEDepoisParaOPais() throws Exception {
+        UnidadeJudiciariaCompetencia fortaleza1 = unidadeSemFkComComarcaTextual("VARA-FOR-1", "CE", "Fortaleza");
+        UnidadeJudiciariaCompetencia fortaleza2 = unidadeSemFkComComarcaTextual("VARA-FOR-2", "CE", "Fortaleza");
+        UnidadeJudiciariaCompetencia sobral = unidadeSemFkComComarcaTextual("VARA-SOB-1", "CE", "Sobral");
+        UnidadeJudiciariaCompetencia rioBranco = unidadeSemFkComComarcaTextual("VARA-RBR-1", "AC", "Rio Branco");
+        ReflectionTestUtils.setField(fortaleza1, "id", 1L);
+        ReflectionTestUtils.setField(fortaleza2, "id", 2L);
+        ReflectionTestUtils.setField(sobral, "id", 3L);
+        ReflectionTestUtils.setField(rioBranco, "id", 4L);
+        Map<Long, Long> recentes = Map.of(1L, 10L, 2L, 4L, 3L, 1L, 4L, 9L);
+
+        Map<Long, MapaCompetenciaDinamicoEngine.ReferenciaDePares> gestao =
+                invokeReferenciaDePares(criarEngine(), List.of(fortaleza1, fortaleza2, sobral, rioBranco), recentes, true);
+
+        assertThat(gestao.get(3L)).isEqualTo(referencia(5.0d, MapaCompetenciaDinamicoEngine.NivelDePares.UF, 3));
+        assertThat(gestao.get(4L)).isEqualTo(referencia(6.0d, MapaCompetenciaDinamicoEngine.NivelDePares.NACIONAL, 4));
+    }
+
+    @Test
+    void varaInaptaEVaraDeOutraJusticaNaoContamComoPares() throws Exception {
+        UnidadeJudiciariaCompetencia ativa = unidadeSemFkComComarcaTextual("VARA-FOR-1", "CE", "Fortaleza");
+        UnidadeJudiciariaCompetencia suspensa = unidadeSemFkComComarcaTextual("VARA-FOR-2", "CE", "Fortaleza");
+        suspensa.setAceitaDistribuicao(false);
+        UnidadeJudiciariaCompetencia federal = unidadeSemFkComComarcaTextual("VARA-FED-1", "CE", "Fortaleza");
+        ReflectionTestUtils.setField(federal, "tipoJustica", TipoJustica.FEDERAL);
+        ReflectionTestUtils.setField(ativa, "id", 1L);
+        ReflectionTestUtils.setField(suspensa, "id", 2L);
+        ReflectionTestUtils.setField(federal, "id", 3L);
+
+        Map<Long, MapaCompetenciaDinamicoEngine.ReferenciaDePares> gestao =
+                invokeReferenciaDePares(criarEngine(), List.of(ativa, suspensa, federal), Map.of(1L, 8L, 2L, 0L, 3L, 2L), true);
+
+        assertThat(gestao.get(1L)).isEqualTo(referencia(8.0d, MapaCompetenciaDinamicoEngine.NivelDePares.COMARCA, 1));
+        assertThat(gestao).doesNotContainKey(2L);
+    }
+
+    @Test
+    void relatorioDeGestaoApontaVaraComCargaMuitoAcimaDosParesSemPropostaDeRedistribuicao() {
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
+        UnidadeJudiciariaCompetencia sobrecarregada = livre("VARA-01", 1L);
+        UnidadeJudiciariaCompetencia par = livre("VARA-02", 2L);
+        UnidadeJudiciariaCompetencia outroPar = livre("VARA-03", 3L);
+        when(unidadeRepository.findAll()).thenReturn(List.of(sobrecarregada, par, outroPar));
+        when(distribuicaoRepository.contarRecentesPorUnidade(any(), any(java.time.Instant.class)))
+                .thenReturn(List.<Object[]>of(new Object[]{1L, 12L}, new Object[]{2L, 2L}, new Object[]{3L, 1L}));
+        MapaCompetenciaDinamicoEngine engine = engineCom(unidadeRepository, distribuicaoRepository);
+
+        DynamicCompetenceRedistributionResponse resposta = engine.analisarRedistribuicao(0.95d);
+
+        assertThat(resposta.propostas()).isEmpty();
+        assertThat(resposta.saturacoes())
+                .extracting(DynamicCompetenceRedistributionResponse.Saturacao::unidadeCodigo,
+                        DynamicCompetenceRedistributionResponse.Saturacao::nivelDosPares,
+                        DynamicCompetenceRedistributionResponse.Saturacao::quantidadeDePares)
+                .containsExactly(tuple("VARA-01", "COMARCA", 3));
+        assertThat(resposta.saturacoes().getFirst().razaoSobreOsPares()).isEqualTo(2.4d);
+    }
+
+    @Test
+    void varaUnicaCompetenteDaComarcaSobrecarregadaNaoPerdeOProcessoParaVaraDeOutraComarca() {
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
+        ConfiguracaoDistribuicaoVaraService configuracao = mock(ConfiguracaoDistribuicaoVaraService.class);
+        ProceduralCanonicalResolver canonico = mock(ProceduralCanonicalResolver.class);
+        when(configuracao.consultar(anyString(), any())).thenAnswer(inv -> new ConfiguracaoDistribuicaoVaraService.ResultadoConsulta(
+                inv.getArgument(0), true, null, null, List.of(), java.time.Instant.now()));
+        when(canonico.resolve(any())).thenReturn(new ProceduralCanonicalResolver.CanonicalContext());
+        UnidadeJudiciariaCompetencia sobral = unidadeSemFkComComarcaTextual("VARA-SOB-1", "CE", "Sobral");
+        UnidadeJudiciariaCompetencia fortaleza1 = unidadeSemFkComComarcaTextual("VARA-FOR-1", "CE", "Fortaleza");
+        UnidadeJudiciariaCompetencia fortaleza2 = unidadeSemFkComComarcaTextual("VARA-FOR-2", "CE", "Fortaleza");
+        ReflectionTestUtils.setField(sobral, "id", 3L);
+        ReflectionTestUtils.setField(fortaleza1, "id", 1L);
+        ReflectionTestUtils.setField(fortaleza2, "id", 2L);
+        when(unidadeRepository.findAll()).thenReturn(List.of(sobral, fortaleza1, fortaleza2));
+        when(distribuicaoRepository.contarRecentesPorUnidade(any(), any(java.time.Instant.class)))
+                .thenReturn(List.<Object[]>of(new Object[]{3L, 30L}, new Object[]{1L, 1L}, new Object[]{2L, 1L}));
+        MapaCompetenciaDinamicoEngine engine = new MapaCompetenciaDinamicoEngine(
+                unidadeRepository, distribuicaoRepository, mock(ProcessoRepository.class), mock(AuditLedgerService.class),
+                mock(OutboxPublisher.class), mock(CompetenceResolverService.class), configuracao, canonico);
+
+        var resposta = engine.distribuir(new com.tcc.pjb.backend.model.dto.competencia.DynamicCompetenceDistributionRequest(
+                null, null, null, "CIVIL", null, "CE", "Sobral", "CE", "Sobral",
+                false, false, null, "ESTADUAL", false, false, null)).orElseThrow();
+
+        assertThat(resposta.unidadeCodigo()).isEqualTo("VARA-SOB-1");
+        assertThat(resposta.scoreBreakdown().equilibrio()).isEqualTo(7.0d);
+    }
+
+    @Test
+    void leituraDeGestaoIgnoraComoParVaraSemNenhumaDistribuicaoNoPjbEm90Dias() throws Exception {
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
+        UnidadeJudiciariaCompetencia emOperacao = livre("VARA-01", 1L);
+        UnidadeJudiciariaCompetencia outraEmOperacao = livre("VARA-02", 2L);
+        UnidadeJudiciariaCompetencia foraDoPjb = livre("VARA-03", 3L);
+        when(unidadeRepository.findAll()).thenReturn(List.of(emOperacao, outraEmOperacao, foraDoPjb));
+        when(distribuicaoRepository.contarRecentesPorUnidade(any(), any(java.time.Instant.class)))
+                .thenReturn(List.<Object[]>of(new Object[]{1L, 4L}, new Object[]{2L, 2L}));
+        MapaCompetenciaDinamicoEngine engine = engineCom(unidadeRepository, distribuicaoRepository);
+
+        DynamicCompetenceRedistributionResponse resposta = engine.analisarRedistribuicao(0.95d);
+
+        assertThat(resposta.saturacoes()).isEmpty();
+    }
+
+    private static MapaCompetenciaDinamicoEngine.ReferenciaDePares referencia(double media,
+                                                                              MapaCompetenciaDinamicoEngine.NivelDePares nivel,
+                                                                              int pares) {
+        return new MapaCompetenciaDinamicoEngine.ReferenciaDePares(media, nivel, pares);
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<Long, Double> invokeMediaDePares(MapaCompetenciaDinamicoEngine engine,
-                                                        List<UnidadeJudiciariaCompetencia> unidades,
-                                                        Map<Long, Long> recentes,
-                                                        double mediaGlobal) throws Exception {
+    private static Map<Long, MapaCompetenciaDinamicoEngine.ReferenciaDePares> invokeReferenciaDePares(MapaCompetenciaDinamicoEngine engine,
+                                                                                                       List<UnidadeJudiciariaCompetencia> unidades,
+                                                                                                       Map<Long, Long> recentes,
+                                                                                                       boolean escalonar) throws Exception {
         java.lang.reflect.Method metodo = MapaCompetenciaDinamicoEngine.class.getDeclaredMethod(
-                "mediaDeParesPorUnidade", List.class, Map.class, double.class);
+                "referenciaDePares", List.class, Map.class, boolean.class);
         metodo.setAccessible(true);
-        return (Map<Long, Double>) metodo.invoke(engine, unidades, recentes, mediaGlobal);
+        return (Map<Long, MapaCompetenciaDinamicoEngine.ReferenciaDePares>) metodo.invoke(engine, unidades, recentes, escalonar);
     }
 
     @Test
