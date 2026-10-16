@@ -891,25 +891,31 @@ public class MapaCompetenciaDinamicoEngine {
     }
 
     private Map<Long, Long> carregarDistribuicoesRecentes(List<UnidadeJudiciariaCompetencia> unidades) {
-        Map<Long, Long> mapa = new HashMap<>();
         Collection<Long> unidadeIds = unidades.stream()
                 .map(UnidadeJudiciariaCompetencia::getId)
                 .filter(Objects::nonNull)
                 .toList();
-        if (unidadeIds.isEmpty()) {
-            return mapa;
+        Map<Long, Long> ponderado = new HashMap<>();
+        for (Long unidadeId : unidadeIds) {
+            ponderado.put(unidadeId, 0L);
         }
-        Instant limite = Instant.now().minus(24, ChronoUnit.HOURS);
-        for (Object[] linha : distribuicaoRepository.contarRecentesPorUnidade(unidadeIds, limite)) {
+        if (unidadeIds.isEmpty()) {
+            return ponderado;
+        }
+        Instant agora = Instant.now();
+        acumularContagemDesde(ponderado, unidadeIds, agora.minus(1, ChronoUnit.DAYS));
+        acumularContagemDesde(ponderado, unidadeIds, agora.minus(3, ChronoUnit.DAYS));
+        acumularContagemDesde(ponderado, unidadeIds, agora.minus(7, ChronoUnit.DAYS));
+        return ponderado;
+    }
+
+    private void acumularContagemDesde(Map<Long, Long> acumulador, Collection<Long> unidadeIds, Instant desde) {
+        for (Object[] linha : distribuicaoRepository.contarRecentesPorUnidade(unidadeIds, desde)) {
             if (linha == null || linha.length < 2 || linha[0] == null || linha[1] == null) {
                 continue;
             }
-            mapa.put(((Number) linha[0]).longValue(), ((Number) linha[1]).longValue());
+            acumulador.merge(((Number) linha[0]).longValue(), ((Number) linha[1]).longValue(), Long::sum);
         }
-        for (Long unidadeId : unidadeIds) {
-            mapa.putIfAbsent(unidadeId, 0L);
-        }
-        return mapa;
     }
 
     private Map<Long, Double> mediaDeParesPorUnidade(List<UnidadeJudiciariaCompetencia> unidades,
