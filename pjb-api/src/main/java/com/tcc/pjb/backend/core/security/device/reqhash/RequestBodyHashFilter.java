@@ -1,14 +1,22 @@
 package com.tcc.pjb.backend.core.security.device.reqhash;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.SequenceInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -52,7 +60,7 @@ public class RequestBodyHashFilter extends OncePerRequestFilter {
         int max = Math.max(1024, props.getBodyHashMaxBytes());
         byte[] body = request.getInputStream().readNBytes(max + 1);
         if (body.length > max) {
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(new CorpoComInicioJaLido(request, body), response);
             return;
         }
 
@@ -85,6 +93,61 @@ public class RequestBodyHashFilter extends OncePerRequestFilter {
         var wrapped = new CachedBodyHttpServletRequest(request, body);
         wrapped.setAttribute("PJB_BODY_HASH", computed);
         filterChain.doFilter(wrapped, response);
+    }
+
+    private static final class CorpoComInicioJaLido extends HttpServletRequestWrapper {
+
+        private final byte[] inicio;
+        private ServletInputStream corpoUnico;
+
+        private CorpoComInicioJaLido(HttpServletRequest request, byte[] inicio) {
+            super(request);
+            this.inicio = inicio;
+        }
+
+        @Override
+        public ServletInputStream getInputStream() throws IOException {
+            if (corpoUnico == null) {
+                corpoUnico = encadear(super.getInputStream());
+            }
+            return corpoUnico;
+        }
+
+        private ServletInputStream encadear(ServletInputStream restante) {
+            ByteArrayInputStream prefixo = new ByteArrayInputStream(inicio);
+            InputStream corpo = new SequenceInputStream(prefixo, restante);
+            return new ServletInputStream() {
+                @Override
+                public int read() throws IOException {
+                    return corpo.read();
+                }
+
+                @Override
+                public int read(byte[] destino, int deslocamento, int tamanho) throws IOException {
+                    return corpo.read(destino, deslocamento, tamanho);
+                }
+
+                @Override
+                public boolean isFinished() {
+                    return prefixo.available() == 0 && restante.isFinished();
+                }
+
+                @Override
+                public boolean isReady() {
+                    return true;
+                }
+
+                @Override
+                public void setReadListener(ReadListener readListener) {
+                    throw new IllegalStateException("leitura assincrona nao suportada");
+                }
+            };
+        }
+
+        @Override
+        public BufferedReader getReader() throws IOException {
+            return new BufferedReader(new InputStreamReader(getInputStream(), StandardCharsets.UTF_8));
+        }
     }
 
     private static String normalizeHex64(String v) {

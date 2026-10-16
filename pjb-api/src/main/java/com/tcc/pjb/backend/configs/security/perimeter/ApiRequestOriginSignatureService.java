@@ -69,7 +69,10 @@ final class ApiRequestOriginSignatureService {
             return VerificationResult.rejected(400, ApiRequestOriginGovernanceMessages.CODE_SIGNED_BODY_HASH, ApiRequestOriginGovernanceMessages.DETAIL_SIGNED_BODY_HASH);
         }
         String computedBodyHash = normalizeHex64(request.getAttribute("PJB_BODY_HASH") instanceof String value ? value : null);
-        if (bodyHash != null && computedBodyHash != null && !MessageDigest.isEqual(bodyHash.getBytes(StandardCharsets.UTF_8), computedBodyHash.getBytes(StandardCharsets.UTF_8))) {
+        if (bodyHash != null && computedBodyHash == null) {
+            return VerificationResult.rejected(400, ApiRequestOriginGovernanceMessages.CODE_SIGNED_BODY_HASH_UNVERIFIED, ApiRequestOriginGovernanceMessages.DETAIL_SIGNED_BODY_HASH_UNVERIFIED);
+        }
+        if (bodyHash != null && !MessageDigest.isEqual(bodyHash.getBytes(StandardCharsets.UTF_8), computedBodyHash.getBytes(StandardCharsets.UTF_8))) {
             return VerificationResult.rejected(409, ApiRequestOriginGovernanceMessages.CODE_SIGNED_BODY_HASH_MISMATCH, ApiRequestOriginGovernanceMessages.DETAIL_SIGNED_BODY_HASH_MISMATCH);
         }
         String signature = normalize(request.getHeader(HEADER_SIGNATURE));

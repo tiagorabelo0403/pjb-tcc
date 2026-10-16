@@ -1,6 +1,9 @@
 package com.tcc.pjb.backend.configs.security.perimeter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tcc.pjb.backend.core.security.device.DeviceSecurityProperties;
+import com.tcc.pjb.backend.core.security.device.reqhash.BodyHashService;
+import com.tcc.pjb.backend.core.security.device.reqhash.RequestBodyHashFilter;
 import com.tcc.pjb.backend.service.security.SecurityBlocklistService;
 import com.tcc.pjb.backend.service.security.blocklist.BlocklistStore;
 import com.tcc.pjb.backend.service.security.blocklist.InMemoryBlocklistStore;
@@ -61,5 +64,13 @@ public class PerimeterConfig {
                                                                            ClientIpResolver clientIpResolver,
                                                                            ObjectMapper objectMapper) {
     return new ApiRequestOriginGovernanceFilter(properties, perimeterProperties, clientIpResolver, objectMapper);
+  }
+
+  @Bean
+  @ConditionalOnProperty(name = "pjb.security.perimeter.origin-governance.enabled", havingValue = "true")
+  public RequestBodyHashFilter requestBodyHashFilter(DeviceSecurityProperties deviceSecurityProperties,
+                                                     BodyHashService bodyHashService,
+                                                     ObjectMapper objectMapper) {
+    return new RequestBodyHashFilter(deviceSecurityProperties, bodyHashService, objectMapper);
   }
 }

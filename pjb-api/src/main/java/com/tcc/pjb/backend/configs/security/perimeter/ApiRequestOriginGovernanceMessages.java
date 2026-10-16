@@ -20,6 +20,8 @@ final class ApiRequestOriginGovernanceMessages {
     static final String DETAIL_SIGNED_BODY_HASH = "Body hash governado eh obrigatorio para payload JSON assinado.";
     static final String CODE_SIGNED_BODY_HASH_MISMATCH = "signed_origin_body_hash_mismatch";
     static final String DETAIL_SIGNED_BODY_HASH_MISMATCH = "Body hash informado nao confere com o hash canonico validado na borda.";
+    static final String CODE_SIGNED_BODY_HASH_UNVERIFIED = "signed_origin_body_hash_unverified";
+    static final String DETAIL_SIGNED_BODY_HASH_UNVERIFIED = "Body hash informado nao pode ser conferido na borda: payload JSON canonico ausente, invalido ou acima do limite governado.";
     static final String CODE_SIGNED_ORIGIN_UNKNOWN = "signed_origin_unknown";
     static final String DETAIL_SIGNED_ORIGIN_UNKNOWN = "Origem assinada nao pertence ao registry de origens confiaveis.";
     static final String CODE_SIGNED_IP = "signed_origin_ip_forbidden";
