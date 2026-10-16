@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/security/request-hash")
-@PreAuthorize("permitAll()")
+@PreAuthorize("isAuthenticated()")
 public class RequestHashController {
 
     private final SecuritySurfaceFacadeService facadeService;

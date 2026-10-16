@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth/stepup")
-@PreAuthorize("permitAll()")
+@PreAuthorize("isAuthenticated()")
 public class PasskeyStepUpController {
 
     private final WebAuthnSurfaceFacadeService facadeService;

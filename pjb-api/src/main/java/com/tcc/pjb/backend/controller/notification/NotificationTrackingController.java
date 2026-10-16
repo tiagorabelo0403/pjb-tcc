@@ -36,6 +36,7 @@ public class NotificationTrackingController {
                 .body(trackingService.pixelBytes());
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/{token}/ciencia")
     public ResponseEntity<NotificationTrackingCienciaResponse> ciencia(@PathVariable String token) {
         return ResponseEntity.ok(facadeService.ciencia(token));

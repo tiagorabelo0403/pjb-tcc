@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/consultas-rapidas")
 @RequiredArgsConstructor
 @Validated
-@PreAuthorize("permitAll()")
+@PreAuthorize("isAuthenticated()")
 public class ConsultasRapidasController {
 
     private final ConsultasRapidasService consultasRapidasService;
