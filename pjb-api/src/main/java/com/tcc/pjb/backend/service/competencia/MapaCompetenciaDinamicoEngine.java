@@ -8,6 +8,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -62,6 +64,9 @@ public class MapaCompetenciaDinamicoEngine {
     public static final String EVT_COMPETENCIA_REVISAO = "pjb.competencia.revisao_humana";
     public static final String EVT_COMPETENCIA_REDISTRIBUICAO = "pjb.competencia.redistribuicao.sugerida";
     private static final Duration UNIT_CACHE_TTL = Duration.ofSeconds(20);
+    private static final int MINIMO_DE_PARES = 2;
+    private static final double LIMIAR_SATURACAO_RELATIVA = 1.5d;
+    private static final long JANELA_DE_ATIVIDADE_NO_PJB_DIAS = 90L;
     private static final Logger log = LoggerFactory.getLogger(MapaCompetenciaDinamicoEngine.class);
 
     private final UnidadeJudiciariaCompetenciaRepository unidadeRepository;
@@ -222,7 +227,41 @@ public class MapaCompetenciaDinamicoEngine {
                     String.valueOf(propostas.size())
             );
         }
-        return new DynamicCompetenceRedistributionResponse(List.copyOf(propostas));
+        return new DynamicCompetenceRedistributionResponse(List.copyOf(propostas), saturacoesFrenteAosPares(unidades));
+    }
+
+    private List<DynamicCompetenceRedistributionResponse.Saturacao> saturacoesFrenteAosPares(List<UnidadeJudiciariaCompetencia> unidades) {
+        Map<Long, Long> recentes = carregarDistribuicoesRecentes(unidades);
+        Map<Long, Long> atividade = new HashMap<>();
+        List<Long> ids = unidades.stream().map(UnidadeJudiciariaCompetencia::getId).filter(Objects::nonNull).toList();
+        if (!ids.isEmpty()) {
+            acumularContagemDesde(atividade, ids, Instant.now().minus(JANELA_DE_ATIVIDADE_NO_PJB_DIAS, ChronoUnit.DAYS));
+        }
+        Map<Long, ReferenciaDePares> pares = referenciaDePares(unidades, recentes, true,
+                unidade -> atividade.getOrDefault(unidade.getId(), 0L) > 0L);
+        List<DynamicCompetenceRedistributionResponse.Saturacao> saturacoes = new ArrayList<>();
+        for (UnidadeJudiciariaCompetencia unidade : unidades) {
+            ReferenciaDePares referencia = pares.get(unidade.getId());
+            long carga = recentes.getOrDefault(unidade.getId(), 0L);
+            if (referencia == null || referencia.quantidadeDePares() < MINIMO_DE_PARES || referencia.media() <= 0.0d
+                    || carga <= referencia.media() * LIMIAR_SATURACAO_RELATIVA) {
+                continue;
+            }
+            saturacoes.add(new DynamicCompetenceRedistributionResponse.Saturacao(
+                    unidade.getCodigo(),
+                    tribunalSigla(unidade),
+                    comarcaNome(unidade),
+                    comarcaUf(unidade),
+                    unidade.getTipoVara() == null ? null : unidade.getTipoVara().name(),
+                    carga,
+                    round2(referencia.media()),
+                    referencia.nivel().name(),
+                    referencia.quantidadeDePares(),
+                    round2(carga / referencia.media())));
+        }
+        saturacoes.sort(Comparator.comparingDouble(DynamicCompetenceRedistributionResponse.Saturacao::razaoSobreOsPares).reversed()
+                .thenComparing(DynamicCompetenceRedistributionResponse.Saturacao::unidadeCodigo));
+        return List.copyOf(saturacoes);
     }
 
     @TransactionalEventListener(fallbackExecution = true)
@@ -289,12 +328,13 @@ public class MapaCompetenciaDinamicoEngine {
         double mediaDistribuicoes = distribuicoesRecentes.isEmpty()
                 ? 0.0d
                 : distribuicoesRecentes.values().stream().mapToLong(Long::longValue).average().orElse(0.0d);
-        Map<Long, Double> mediaDePares = mediaDeParesPorUnidade(unidades, distribuicoesRecentes, mediaDistribuicoes);
+        Map<Long, ReferenciaDePares> paresNaComarca = referenciaDePares(unidades, distribuicoesRecentes, false);
 
         List<Candidate> candidatos = new ArrayList<>();
         for (UnidadeJudiciariaCompetencia unidade : unidades) {
+            ReferenciaDePares pares = paresNaComarca.get(unidade.getId());
             Candidate candidate = avaliar(unidade, request, distribuicoesRecentes.getOrDefault(unidade.getId(), 0L),
-                    mediaDePares.getOrDefault(unidade.getId(), mediaDistribuicoes));
+                    pares != null ? pares.media() : mediaDistribuicoes);
             if (candidate != null && candidate.scoreFinal() > 0.0d) {
                 candidatos.add(candidate);
             }
@@ -918,35 +958,73 @@ public class MapaCompetenciaDinamicoEngine {
         }
     }
 
-    private Map<Long, Double> mediaDeParesPorUnidade(List<UnidadeJudiciariaCompetencia> unidades,
-                                                     Map<Long, Long> distribuicoesRecentes,
-                                                     double mediaGlobal) {
-        Map<String, List<UnidadeJudiciariaCompetencia>> porGrupo = new HashMap<>();
-        for (UnidadeJudiciariaCompetencia unidade : unidades) {
-            porGrupo.computeIfAbsent(chaveGrupoDePares(unidade), chave -> new ArrayList<>()).add(unidade);
-        }
-        Map<Long, Double> medias = new HashMap<>();
-        for (List<UnidadeJudiciariaCompetencia> grupo : porGrupo.values()) {
-            double media = grupo.stream()
-                    .map(UnidadeJudiciariaCompetencia::getId)
-                    .filter(Objects::nonNull)
-                    .mapToLong(id -> distribuicoesRecentes.getOrDefault(id, 0L))
-                    .average()
-                    .orElse(mediaGlobal);
-            for (UnidadeJudiciariaCompetencia unidade : grupo) {
-                if (unidade.getId() != null) {
-                    medias.put(unidade.getId(), media);
-                }
-            }
-        }
-        return medias;
+    record ReferenciaDePares(double media, NivelDePares nivel, int quantidadeDePares) {
     }
 
-    private static String chaveGrupoDePares(UnidadeJudiciariaCompetencia unidade) {
-        String tipoVara = unidade.getTipoVara() == null ? "" : unidade.getTipoVara().name();
-        String grau = unidade.getGrau() == null ? "" : unidade.getGrau().name();
-        return normalizarChaveDePares(comarcaUf(unidade)) + "|"
-                + normalizarChaveDePares(comarcaNome(unidade)) + "|" + tipoVara + "|" + grau;
+    enum NivelDePares {
+        COMARCA,
+        UF,
+        NACIONAL
+    }
+
+    private Map<Long, ReferenciaDePares> referenciaDePares(List<UnidadeJudiciariaCompetencia> unidades,
+                                                           Map<Long, Long> distribuicoesRecentes,
+                                                           boolean escalonarAlemDaComarca) {
+        return referenciaDePares(unidades, distribuicoesRecentes, escalonarAlemDaComarca, unidade -> true);
+    }
+
+    private Map<Long, ReferenciaDePares> referenciaDePares(List<UnidadeJudiciariaCompetencia> unidades,
+                                                           Map<Long, Long> distribuicoesRecentes,
+                                                           boolean escalonarAlemDaComarca,
+                                                           Predicate<UnidadeJudiciariaCompetencia> parElegivel) {
+        List<UnidadeJudiciariaCompetencia> aptas = unidades.stream()
+                .filter(unidade -> unidade.getId() != null && unidade.estaAptaParaDistribuicao())
+                .filter(parElegivel)
+                .toList();
+        Map<NivelDePares, Map<String, List<Long>>> grupos = new EnumMap<>(NivelDePares.class);
+        List<NivelDePares> niveis = escalonarAlemDaComarca ? List.of(NivelDePares.values()) : List.of(NivelDePares.COMARCA);
+        for (NivelDePares nivel : niveis) {
+            Map<String, List<Long>> porChave = new HashMap<>();
+            for (UnidadeJudiciariaCompetencia unidade : aptas) {
+                porChave.computeIfAbsent(chaveGrupoDePares(unidade, nivel), chave -> new ArrayList<>()).add(unidade.getId());
+            }
+            grupos.put(nivel, porChave);
+        }
+        Map<Long, ReferenciaDePares> referencias = new HashMap<>();
+        for (UnidadeJudiciariaCompetencia unidade : aptas) {
+            NivelDePares nivelEscolhido = NivelDePares.COMARCA;
+            List<Long> pares = grupos.get(NivelDePares.COMARCA).get(chaveGrupoDePares(unidade, NivelDePares.COMARCA));
+            if (escalonarAlemDaComarca) {
+                for (NivelDePares nivel : NivelDePares.values()) {
+                    List<Long> candidatos = grupos.get(nivel).get(chaveGrupoDePares(unidade, nivel));
+                    if (candidatos.size() >= MINIMO_DE_PARES) {
+                        nivelEscolhido = nivel;
+                        pares = candidatos;
+                        break;
+                    }
+                }
+            }
+            double media = pares.stream()
+                    .mapToLong(id -> distribuicoesRecentes.getOrDefault(id, 0L))
+                    .average()
+                    .orElse(0.0d);
+            referencias.put(unidade.getId(), new ReferenciaDePares(media, nivelEscolhido, pares.size()));
+        }
+        return referencias;
+    }
+
+    private static String chaveGrupoDePares(UnidadeJudiciariaCompetencia unidade, NivelDePares nivel) {
+        String perfil = String.join("|",
+                unidade.getTipoJustica() == null ? "" : unidade.getTipoJustica().name(),
+                unidade.isPermiteJuizadoEspecial() ? "JUIZADO" : "COMUM",
+                unidade.getTipoVara() == null ? "" : unidade.getTipoVara().name(),
+                unidade.getGrau() == null ? "" : unidade.getGrau().name());
+        String tribunal = normalizarChaveDePares(tribunalSigla(unidade));
+        return switch (nivel) {
+            case COMARCA -> String.join("|", tribunal, normalizarChaveDePares(comarcaUf(unidade)), normalizarChaveDePares(comarcaNome(unidade)), perfil);
+            case UF -> String.join("|", tribunal, normalizarChaveDePares(comarcaUf(unidade)), perfil);
+            case NACIONAL -> perfil;
+        };
     }
 
     private static String normalizarChaveDePares(String valor) {

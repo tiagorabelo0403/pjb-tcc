@@ -37,6 +37,7 @@ public class CompetenceController {
     }
 
     @GetMapping("/redistribuicao/analise")
+    @PreAuthorize("hasAnyRole('SERVIDOR','SERVIDOR_FORUM','MAGISTRADO','JUIZ','JUIZ_ESTADUAL','JUIZ_FEDERAL','JUIZ_ESPECIAL','JUIZ_ELEITORAL','JUIZ_TRABALHISTA','JUIZ_MILITAR','DESEMBARGADOR','DESEMBARGADOR_FEDERAL','ADMINISTRADOR','ADMIN')")
     public ResponseEntity<DynamicCompetenceRedistributionResponse> analyzeRedistribution(@RequestParam(name = "limiar", defaultValue = "0.85") double limiar) {
         return ResponseEntity.ok(mapaCompetenciaDinamicoEngine.analisarRedistribuicao(limiar));
     }
