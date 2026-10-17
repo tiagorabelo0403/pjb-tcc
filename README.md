@@ -266,7 +266,7 @@ O projeto usa profiles Spring Boot separados por ambiente. O arquivo base é `ap
 | Profile | Arquivo | Quando usar |
 |---------|---------|------------|
 | `dev` | `application-dev.yml` | Desenvolvimento local com infraestrutura no Docker |
-| `local` | `pjb-api/config/application-local.yml` (fora do Git; copiar de `application-local.yml.example`) | Ajustes pessoais por cima do `dev`, como PostgreSQL instalado no host: `-Dspring-boot.run.profiles=dev,local` |
+| `local` | `pjb-api/config/application-local.yml.example`, copiado sem o sufixo `.example` (a cópia fica fora do Git) | Ajustes pessoais por cima do `dev`, como PostgreSQL instalado no host: `-Dspring-boot.run.profiles=dev,local` |
 | `docker` | `application-docker.yml` | Backend dentro de container Docker |
 | `frontend-dev` | `application-frontend-dev.yml` | Backend para desenvolvimento do frontend, com H2 em memória e integrações externas desligadas |
 | `prod` | `application-prod.yml` | Produção — exige todas as variáveis de ambiente |
