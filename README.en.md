@@ -267,6 +267,7 @@ The project uses separate Spring Boot profiles per environment. The base file is
 | `dev` | `application-dev.yml` | Local development with infrastructure in Docker |
 | `local` | `application-local.yml` | Database and services running directly on the host |
 | `docker` | `application-docker.yml` | Backend inside a Docker container |
+| `frontend-dev` | `application-frontend-dev.yml` | Backend for frontend development, with in-memory H2 and external integrations off |
 | `prod` | `application-prod.yml` | Production — requires all environment variables |
 | `k8s` | `application-k8s.yml` | Kubernetes |
 
@@ -351,6 +352,8 @@ The decision table is locked by a dedicated Python guard (`scripts/pjb_runtime_m
 | `http://localhost:8080/v3/api-docs` | OpenAPI 3.1 specification (JSON) |
 | `http://localhost:8080/actuator/health` | Full health check |
 | `http://localhost:8080/actuator/metrics` | Micrometer metrics |
+
+Swagger UI and `/v3/api-docs` only answer without authentication when `pjb.api.docs.public=true`, which holds in the `frontend-dev` and `docker` profiles; in `dev` the property stays at the `false` default (see [API Documentation](#api-documentation)). `/demo/**` and `/actuator/metrics` require an administrator profile.
 
 With the `docker` profile, the system automatically seeds demo users and cases so data appears immediately.
 
@@ -481,6 +484,8 @@ The OpenAPI 3.1 specification is available at:
 ```
 http://localhost:8080/v3/api-docs
 ```
+
+Both routes only answer without authentication when `pjb.api.docs.public=true` (variable `PJB_API_DOCS_PUBLIC`). The default is `false`; the `frontend-dev` and `docker` profiles turn the property on, and the `prod` and `k8s` profiles do not declare it, so the default applies.
 
 Versioned contracts are also documented statically in:
 
