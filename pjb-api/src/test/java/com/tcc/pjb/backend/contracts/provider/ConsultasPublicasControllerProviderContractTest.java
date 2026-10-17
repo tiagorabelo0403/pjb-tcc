@@ -190,7 +190,7 @@ class ConsultasPublicasControllerProviderContractTest {
                                 new SigiloUiDTO(false, 0, "Público", "lock-open", "green", "Processo público"),
                                 false,
                                 "Resumo público institucional do processo.",
-                                List.of(new PublicMovimentacaoDTO(null, LocalDateTime.of(2026, 4, 16, 10, 0), "CONHECIMENTO", "INSTRUTORIA", "Despacho de impulso")),
+                                List.of(new PublicMovimentacaoDTO(1L, LocalDateTime.of(2026, 4, 16, 10, 0), "CONHECIMENTO", "INSTRUTORIA", "Despacho de impulso")),
                                 null
                         ),
                         new ConsultaPublicaWorkspaceAccessibilityDto(

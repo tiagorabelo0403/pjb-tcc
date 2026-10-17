@@ -549,7 +549,7 @@ public class ProcessoPesquisaIdentidadePublicaService {
                 ? null
                 : LocalDateTime.ofInstant(movimentacao.getDataMovimentacao(), ZoneId.systemDefault());
         return new PublicMovimentacaoDTO(
-                null,
+                movimentacao.getId(),
                 data,
                 movimentacao.getFaseDe() != null ? movimentacao.getFaseDe().name() : null,
                 movimentacao.getFasePara() != null ? movimentacao.getFasePara().name() : null,

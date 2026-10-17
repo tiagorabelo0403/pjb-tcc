@@ -28,7 +28,7 @@ class PublicProcessoConsultaServiceTest {
             movimentacaoRepository, mock(DocumentoProcessualRepository.class), mock(DocumentoPaginaRepository.class));
 
     @Test
-    void consultaPublicaPorNumeroNaoExpoeIdDeBancoDoProcessoNemDasMovimentacoes() throws Exception {
+    void consultaPublicaPorNumeroNaoExpoeOIdDeBancoDoProcesso() throws Exception {
         Processo processo = new Processo();
         processo.setId(9001L);
         processo.setNumeroUnificado(NUMERO);
@@ -46,7 +46,7 @@ class PublicProcessoConsultaServiceTest {
         assertThat(json.get("numero").asText()).isEqualTo(NUMERO);
         assertThat(json.has("processoId")).isFalse();
         assertThat(json.get("movimentacoes").get(0).get("descricao").asText()).isEqualTo("Processo distribuído");
-        assertThat(json.get("movimentacoes").get(0).get("id").isNull()).isTrue();
-        assertThat(json.toString()).doesNotContain("9001").doesNotContain("7777");
+        assertThat(json.get("movimentacoes").get(0).get("id").asLong()).isEqualTo(7777L);
+        assertThat(json.toString()).doesNotContain("9001");
     }
 }
