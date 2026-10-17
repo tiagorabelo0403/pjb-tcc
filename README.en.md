@@ -320,6 +320,8 @@ demo.cmd
 java -jar pjb-api/target/pjb-api.jar
 ```
 
+`spring-boot:run` starts the JVM with `-Xmx2g`. Arguments passed in `-Dspring-boot.run.jvmArguments` are added to that default, and an `-Xmx` given there takes precedence.
+
 ### Full Stack via Docker (Build + Infrastructure Together)
 
 ```bash

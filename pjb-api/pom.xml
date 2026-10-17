@@ -71,6 +71,12 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>default-cli</id>
+                        <configuration>
+                            <jvmArguments>-Xmx2g ${spring-boot.run.jvmArguments}</jvmArguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>repackage-backend</id>
                         <goals>
                             <goal>repackage</goal>
