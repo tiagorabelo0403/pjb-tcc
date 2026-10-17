@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.core.procedural;
 import com.tcc.pjb.backend.model.dto.competencia.DynamicCompetenceDistributionRequest;
 import com.tcc.pjb.backend.model.dto.competencia.DynamicCompetenceDistributionResponse;
 import com.tcc.pjb.backend.model.entity.enums.processual.RegimeDistribuicao;
+import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.service.competencia.MapaCompetenciaDinamicoEngine;
 import java.math.BigDecimal;
 import java.util.Map;
@@ -48,7 +49,8 @@ public class NationalProceduralDistributionResolver {
                             bool(payload.get("casoUrgente")),
                             bool(payload.get("preferenciaDigital")),
                             toLong(payload.get("processoId"))
-                    )
+                    ),
+                    ritoDaDistribuicao(context)
             );
             if (distribution.isEmpty()) {
                 return Optional.empty();
@@ -69,6 +71,18 @@ public class NationalProceduralDistributionResolver {
         } catch (Exception ignored) {
             return Optional.empty();
         }
+    }
+
+    private static RitoProcessual ritoDaDistribuicao(NationalProceduralDistributionContext context) {
+        if (context.rito() != null) {
+            String nome = context.rito().trim();
+            for (RitoProcessual rito : RitoProcessual.values()) {
+                if (rito.name().equalsIgnoreCase(nome)) {
+                    return rito;
+                }
+            }
+        }
+        return context.canonical() == null ? null : context.canonical().rito();
     }
 
     private RegimeDistribuicao regimeDistribuicaoSeguro(NationalProceduralDistributionContext context) {

@@ -134,6 +134,7 @@ public class ConfiguracaoDistribuicaoVaraService {
             String magistradoId,
             boolean vagaOuSubstituicao,
             boolean permiteJuizadoEspecial,
+            boolean exclusivoJuizadoEspecial,
             boolean permiteUrgencia,
             boolean permiteDistribuicaoAutomatica,
             boolean somenteDigital,
@@ -230,6 +231,9 @@ public class ConfiguracaoDistribuicaoVaraService {
             if (filtro.requerJuizadoEspecializado() && !permiteJuizadoEspecial) {
                 return false;
             }
+            if (!filtro.requerJuizadoEspecializado() && exclusivoJuizadoEspecial) {
+                return false;
+            }
             if (filtro.casoUrgente() && !permiteUrgencia) {
                 return false;
             }
@@ -247,7 +251,9 @@ public class ConfiguracaoDistribuicaoVaraService {
                 if (materiasRecusadas.contains(materia)) {
                     return false;
                 }
-                if (ramoDireito != null && !ramoCompativelComMateria(ramoDireito, materia)) {
+                boolean causaCivelDeJuizadoNoJuizado = filtro.requerJuizadoEspecializado() && permiteJuizadoEspecial
+                        && ramoDireito != RamoDireito.PENAL && !materia.contains("PENAL") && !materia.contains("CRIM");
+                if (ramoDireito != null && !causaCivelDeJuizadoNoJuizado && !ramoCompativelComMateria(ramoDireito, materia)) {
                     return false;
                 }
             }
@@ -306,6 +312,12 @@ public class ConfiguracaoDistribuicaoVaraService {
             }
             if (filtro != null && filtro.valorCausa() != null && valorMaximoAceito != null && sanitizeMoney(filtro.valorCausa()).compareTo(valorMaximoAceito) > 0) {
                 return "Valor da causa acima do teto aceito";
+            }
+            if (filtro != null && filtro.requerJuizadoEspecializado() && !permiteJuizadoEspecial) {
+                return "Vara nao processa causas de juizado especial";
+            }
+            if (filtro != null && !filtro.requerJuizadoEspecializado() && exclusivoJuizadoEspecial) {
+                return "Juizado especial exclusivo nao recebe causa de rito comum";
             }
             return "Processo fora dos criterios operacionais da vara";
         }
@@ -518,7 +530,8 @@ public class ConfiguracaoDistribuicaoVaraService {
             }
             List<PerfilVara> destinos = perfis.stream()
                     .filter(item -> !Objects.equals(item.varaId(), origem.varaId()))
-                    .filter(item -> item.podeReceberProcesso(new FiltroDistribuicao(null, null, null, null, null, false, true, origem.uf(), origem.comarcaId(), false, false, false)))
+                    .filter(item -> item.exclusivoJuizadoEspecial() == origem.exclusivoJuizadoEspecial())
+                    .filter(item -> item.podeReceberProcesso(new FiltroDistribuicao(null, null, null, null, null, origem.permiteJuizadoEspecial(), true, origem.uf(), origem.comarcaId(), false, false, false)))
                     .filter(item -> item.ocupacaoEfetiva() < 0.60d)
                     .filter(item -> tipoCompativel(origem.tipoVara(), item.tipoVara()))
                     .sorted(Comparator.comparingDouble(PerfilVara::ocupacaoEfetiva).thenComparing(PerfilVara::varaDescricao))
@@ -771,6 +784,7 @@ public class ConfiguracaoDistribuicaoVaraService {
                 restricao == null ? null : restricao.magistradoId(),
                 restricao != null && restricao.vagaOuSubstituicao(),
                 unidade.isPermiteJuizadoEspecial(),
+                unidade.isExclusivoJuizadoEspecial(),
                 unidade.isPermiteUrgencia(),
                 unidade.isPermiteDistribuicaoAutomatica(),
                 unidade.isSomenteDigital(),

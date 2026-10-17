@@ -25,6 +25,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.util.ReflectionTestUtils;
 
 class ConfiguracaoDistribuicaoVaraServicePublicaAlteracaoTest {
 
@@ -84,6 +85,90 @@ class ConfiguracaoDistribuicaoVaraServicePublicaAlteracaoTest {
                 new ConfiguracaoDistribuicaoVaraService.FiltroDistribuicao(
                         null, null, null, null, null, false, true, "CE", null, false, false, false));
         assertThat(consulta.aceita()).isTrue();
+    }
+
+    private static ConfiguracaoDistribuicaoVaraService.FiltroDistribuicao filtro(boolean requerJuizado) {
+        return new ConfiguracaoDistribuicaoVaraService.FiltroDistribuicao(
+                null, null, null, null, null, requerJuizado, true, "CE", null, false, false, false);
+    }
+
+    @Test
+    void varaComJuizadoAdjuntoRecebeRitoComumEJuizado() {
+        unidade.setPermiteJuizadoEspecial(true);
+
+        assertThat(service.consultar("VARA-01", filtro(false)).aceita()).isTrue();
+        assertThat(service.consultar("VARA-01", filtro(true)).aceita()).isTrue();
+    }
+
+    @Test
+    void juizadoEspecialExclusivoNaoRecebeProcessoEmQueOAutorEscolheuORitoComum() {
+        unidade.setExclusivoJuizadoEspecial(true);
+
+        assertThat(service.consultar("VARA-01", filtro(false)).aceita()).isFalse();
+        assertThat(service.consultar("VARA-01", filtro(false)).motivoRecusa()).isEqualTo("Juizado especial exclusivo nao recebe causa de rito comum");
+        assertThat(service.consultar("VARA-01", filtro(true)).aceita()).isTrue();
+    }
+
+    @Test
+    void juizadoDeRamoConsumidorAceitaCausaCivelDeJuizadoMasNaoCausaCivelComum() {
+        ReflectionTestUtils.setField(unidade, "ramoDireito", RamoDireito.CONSUMIDOR);
+        unidade.setPermiteJuizadoEspecial(true);
+
+        assertThat(service.consultar("VARA-01", filtroComMateria("CIVIL", true)).aceita()).isTrue();
+        assertThat(service.consultar("VARA-01", filtroComMateria("CIVIL", false)).aceita()).isFalse();
+    }
+
+    @Test
+    void juizadoCriminalNaoRecebeCausaCivelDeJuizado() {
+        unidade.setPermiteJuizadoEspecial(true);
+        ReflectionTestUtils.setField(unidade, "ramoDireito", RamoDireito.PENAL);
+
+        assertThat(service.consultar("VARA-01", filtroComMateria("CIVIL", true)).aceita()).isFalse();
+    }
+
+    @Test
+    void juizadoCivelNaoRecebeCausaCriminalDeJuizado() {
+        unidade.setPermiteJuizadoEspecial(true);
+        ReflectionTestUtils.setField(unidade, "ramoDireito", RamoDireito.CONSUMIDOR);
+
+        assertThat(service.consultar("VARA-01", filtroComMateria("PENAL", true)).aceita()).isFalse();
+    }
+
+    private static ConfiguracaoDistribuicaoVaraService.FiltroDistribuicao filtroComMateria(String materia, boolean requerJuizado) {
+        return new ConfiguracaoDistribuicaoVaraService.FiltroDistribuicao(
+                materia, null, null, null, null, requerJuizado, true, "CE", null, false, false, false);
+    }
+
+    @Test
+    void varaSemJuizadoRecusaCausaDeJuizadoComMotivoProprio() {
+        assertThat(service.consultar("VARA-01", filtro(true)).motivoRecusa()).isEqualTo("Vara nao processa causas de juizado especial");
+    }
+
+    @Test
+    void sugestaoDeRedistribuicaoDeVaraAdjuntaSoApontaVaraQueTambemProcessaJuizado() {
+        Tribunal tribunal = new Tribunal("TJCE", "Tribunal de Justica do Ceara", TipoJustica.ESTADUAL, GrauJurisdicao.SEGUNDO_GRAU, "CE");
+        unidade.setPermiteJuizadoEspecial(true);
+        unidade.setProcessosAtivos(95);
+        UnidadeJudiciariaCompetencia semJuizado = new UnidadeJudiciariaCompetencia(
+                "VARA-02", tribunal, null, "CE", TipoJustica.ESTADUAL, RamoDireito.CIVIL, TipoVaraDistribuicao.CIVEL_GERAL);
+        semJuizado.setCapacidadeMaxima(100);
+        semJuizado.setProcessosAtivos(10);
+        UnidadeJudiciariaCompetencia outraAdjunta = new UnidadeJudiciariaCompetencia(
+                "VARA-03", tribunal, null, "CE", TipoJustica.ESTADUAL, RamoDireito.CIVIL, TipoVaraDistribuicao.CIVEL_GERAL);
+        outraAdjunta.setCapacidadeMaxima(100);
+        outraAdjunta.setProcessosAtivos(20);
+        outraAdjunta.setPermiteJuizadoEspecial(true);
+        for (UnidadeJudiciariaCompetencia item : java.util.List.of(unidade, semJuizado, outraAdjunta)) {
+            item.setComarca("Fortaleza");
+        }
+        when(unidadeRepository.findAll()).thenReturn(java.util.List.of(unidade, semJuizado, outraAdjunta));
+        service.recarregarDoRepositorio();
+        String comarcaId = service.buscarPerfil("VARA-01").orElseThrow().comarcaId();
+
+        assertThat(service.sugerirRedistribuicao(comarcaId, "TJCE"))
+                .extracting(ConfiguracaoDistribuicaoVaraService.SugestaoRedistribuicao::varaOrigem,
+                        ConfiguracaoDistribuicaoVaraService.SugestaoRedistribuicao::varaDestino)
+                .containsExactly(org.assertj.core.groups.Tuple.tuple("VARA-01", "VARA-03"));
     }
 
     @Test

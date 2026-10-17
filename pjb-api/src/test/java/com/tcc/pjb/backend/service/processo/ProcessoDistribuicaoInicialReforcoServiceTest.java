@@ -58,6 +58,15 @@ class ProcessoDistribuicaoInicialReforcoServiceTest {
     }
 
     @Test
+    void cargaAplicadaQueExigeConferenciaDevolveADistribuicaoParaOOrquestrador() {
+        Processo p = processoCompleto();
+        DynamicCompetenceDistributionResponse resp = mock(DynamicCompetenceDistributionResponse.class);
+        when(engine.registrarCargaDaDistribuicaoAplicada(p)).thenReturn(Optional.of(resp));
+
+        assertThat(service.ensureSnapshot(p)).isSameAs(resp);
+    }
+
+    @Test
     void falhaNoEngineNaoPropaga() {
         Processo p = new Processo();
         p.setId(1L);
