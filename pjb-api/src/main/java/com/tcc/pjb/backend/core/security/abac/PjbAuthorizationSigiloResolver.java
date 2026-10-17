@@ -61,6 +61,11 @@ final class PjbAuthorizationSigiloResolver {
         shadow.setParteAutoraCpf(base.getParteAutoraCpf());
         shadow.setParteReuCpf(base.getParteReuCpf());
         shadow.setUsuario(base.getUsuario());
+        shadow.setUnidadeJudiciariaCodigo(base.getUnidadeJudiciariaCodigo());
+        shadow.setUf(base.getUf());
+        shadow.setComarca(base.getComarca());
+        shadow.setTribunal(base.getTribunal());
+        shadow.setStatusProcesso(base.getStatusProcesso());
         shadow.setNivelSigilo(sigilo);
         return shadow;
     }

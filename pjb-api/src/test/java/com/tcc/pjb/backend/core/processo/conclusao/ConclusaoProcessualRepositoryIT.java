@@ -99,4 +99,25 @@ class ConclusaoProcessualRepositoryIT extends PjbFlowItBase {
         List<ConclusaoProcessual> expiradas = repository.findExpiradas(Instant.now(), PageRequest.of(0, 50));
         assertThat(expiradas).noneMatch(e -> e.getId().equals(c.getId()));
     }
+
+    @Test
+    void it05_conclusaoPendenteDoMagistradoNoProcessoExiste() {
+        criarPendente(Instant.now().plus(10, ChronoUnit.DAYS));
+
+        assertThat(repository.existsByProcessoIdAndMagistradoIdAndStatus(processoId, magistradoId, "PENDENTE")).isTrue();
+        assertThat(repository.existsByProcessoIdAndMagistradoIdAndStatus(processoId, servidorId, "PENDENTE")).isFalse();
+    }
+
+    @Test
+    void it06_soAUltimaConclusaoExpiradaDoProcessoContaParaOMagistrado() {
+        ConclusaoProcessual antiga = criarPendente(Instant.now().minus(20, ChronoUnit.DAYS));
+        jdbcTemplate.update("UPDATE tb_conclusao_processual SET status = 'EXPIRADA', data_conclusao = ? WHERE id = ?",
+                java.sql.Timestamp.from(Instant.now().minus(30, ChronoUnit.DAYS)), antiga.getId());
+        assertThat(repository.existsUltimaConclusaoExpiradaDoMagistrado(processoId, magistradoId)).isTrue();
+
+        transactionTemplate.execute(st -> repository.save(
+                new ConclusaoProcessual(processoId, servidorId, servidorId, "PARA_DECISAO", null, Instant.now().plus(10, ChronoUnit.DAYS))));
+
+        assertThat(repository.existsUltimaConclusaoExpiradaDoMagistrado(processoId, magistradoId)).isFalse();
+    }
 }

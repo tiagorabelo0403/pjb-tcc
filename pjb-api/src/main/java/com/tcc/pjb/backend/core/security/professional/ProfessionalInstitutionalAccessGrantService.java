@@ -28,7 +28,11 @@ public class ProfessionalInstitutionalAccessGrantService {
             return GrantResolution.empty();
         }
         LocalDateTime reference = LocalDateTime.now();
-        List<ProfessionalInstitutionalAccessGrant> grants = repository.findTop200ByUsuario_IdAndAtivoTrueOrderByIdDesc(usuario.getId()).stream()
+        List<ProfessionalInstitutionalAccessGrant> candidatos = new ArrayList<>(repository.findByUsuario_IdAndAtivoTrueAndProcessoIsNullOrderByIdDesc(usuario.getId()));
+        if (processo != null && processo.getId() != null) {
+            candidatos.addAll(repository.findByUsuario_IdAndAtivoTrueAndProcesso_IdOrderByIdDesc(usuario.getId(), processo.getId()));
+        }
+        List<ProfessionalInstitutionalAccessGrant> grants = candidatos.stream()
                 .filter(item -> item != null && item.isAtivoNaJanela(reference))
                 .filter(item -> item.getActorClass() == actorClass)
                 .filter(item -> matches(item, processo))

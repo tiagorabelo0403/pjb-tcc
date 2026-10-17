@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.security.abac;
 
+import java.util.EnumSet;
 import java.util.Locale;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.comunicacao.institucional.access.AutorizacaoCaixaInstitucionalService;
@@ -7,8 +8,9 @@ import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.GovBrAssuranceExtractor;
 import com.tcc.pjb.backend.core.security.GovBrAssurancePolicy;
 import com.tcc.pjb.backend.core.security.access.PartyMatchResult;
-import com.tcc.pjb.backend.core.security.access.PartyRole;
+import com.tcc.pjb.backend.core.security.access.VinculoProcessualDoUsuario;
 import com.tcc.pjb.backend.core.security.access.ProcessoPartyCpfMatcher;
+import com.tcc.pjb.backend.core.security.access.ProcessoVinculoResolver;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalDocumentScopePolicyService;
 import com.tcc.pjb.backend.core.security.abac.policy.PolicyRegistry;
 import com.tcc.pjb.backend.core.security.sigilo.service.SigiloAccessService;
@@ -21,11 +23,8 @@ import com.tcc.pjb.backend.model.entity.enums.CapacidadeCaixaInstitucional;
 import com.tcc.pjb.backend.model.entity.enums.NivelSigilo;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.FuncaoServidorJudiciarioRepository;
-import com.tcc.pjb.backend.model.repository.PoloProcessualRepository;
 import com.tcc.pjb.backend.model.repository.UnidadeJudiciariaCompetenciaRepository;
-import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.platform.security.rbac.RbacGrantedRoleResolver;
-import com.tcc.pjb.backend.service.oficial_justica.OficialJusticaProcessoVinculoService;
 import com.tcc.pjb.backend.service.processo.ProcessoObservabilidadeAcessoService;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +45,7 @@ public class PjbAuthorizationService {
     private final PjbAuthorizationInstitutionalMalhaAccessFacade institutionalMalhaAccessFacade;
     private final UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository;
     private final RbacGrantedRoleResolver rbacGrantedRoleResolver;
+    private final ProcessoVinculoResolver vinculoResolver;
 
     public PjbAuthorizationService(CurrentUserService currentUserService,
                                    PolicyRegistry policyRegistry,
@@ -63,9 +63,7 @@ public class PjbAuthorizationService {
                                    FuncaoServidorJudiciarioRepository funcaoServidorJudiciarioRepository,
                                    UnidadeJudiciariaCompetenciaRepository unidadeJudiciariaCompetenciaRepository,
                                    ProcessoPartyCpfMatcher partyCpfMatcher,
-                                   PoloProcessualRepository poloProcessualRepository,
-                                   WorkItemRepository workItemRepository,
-                                   OficialJusticaProcessoVinculoService oficialJusticaProcessoVinculoService) {
+                                   ProcessoVinculoResolver vinculoResolver) {
         this.currentUserService = currentUserService;
         this.contextResolver = new PjbAuthorizationDecisionContextResolver(currentUserService, govBrAssuranceExtractor);
         this.trailAssembler = new PjbAuthorizationTrailAssembler();
@@ -106,11 +104,10 @@ public class PjbAuthorizationService {
         );
         this.institutionalMalhaAccessFacade = new PjbAuthorizationInstitutionalMalhaAccessFacade(
                 policyRegistry,
-                poloProcessualRepository,
-                workItemRepository,
-                oficialJusticaProcessoVinculoService
+                vinculoResolver
         );
         this.rbacGrantedRoleResolver = rbacGrantedRoleResolver;
+        this.vinculoResolver = vinculoResolver;
     }
 
     public AuthzDecision canReadProcesso(Processo processo) {
@@ -208,13 +205,15 @@ public class PjbAuthorizationService {
             throw new AccessDeniedPjbException("CPF não encontrado no perfil");
         }
         PartyMatchResult match = partyCpfMatcher.match(cpf, processo);
-        if (match instanceof PartyMatchResult.NotMatched) {
+        String papel = match instanceof PartyMatchResult.Matched matched
+                ? matched.role().name().toLowerCase(Locale.ROOT)
+                : vinculoResolver.vinculo(usuario, processo, EnumSet.of(VinculoProcessualDoUsuario.PARTE)).map(vinculo -> "polo_processual").orElse(null);
+        if (papel == null) {
             registerCidadaoParteDecision(processo, usuario, AuthzDecision.deny("cidadao_nao_e_parte_do_processo", "cidadao-parte-v1"));
             throw new AccessDeniedPjbException("Cidadão não é parte do processo.");
         }
-        PartyRole role = ((PartyMatchResult.Matched) match).role();
         registerCidadaoParteDecision(processo, usuario,
-                AuthzDecision.allow("cidadao_e_parte_do_processo:" + role.name().toLowerCase(Locale.ROOT), "cidadao-parte-v1"));
+                AuthzDecision.allow("cidadao_e_parte_do_processo:" + papel, "cidadao-parte-v1"));
     }
 
     private void registerCidadaoParteDecision(Processo processo, Usuario usuario, AuthzDecision decision) {

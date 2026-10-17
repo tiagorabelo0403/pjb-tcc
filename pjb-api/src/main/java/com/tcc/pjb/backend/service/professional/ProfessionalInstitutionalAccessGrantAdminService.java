@@ -185,6 +185,11 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         if (!grant.isPending()) {
             throw new IllegalStateException("Somente grants pendentes podem ser aprovados.");
         }
+        boolean aprovaOProprioAcesso = grant.getUsuario() != null && Objects.equals(actor.getId(), grant.getUsuario().getId());
+        boolean aprovaOProprioPedidoSemSerAdmin = !isAdmin(actor) && Objects.equals(actor.getId(), grant.getRequestedByUserId());
+        if (aprovaOProprioAcesso || aprovaOProprioPedidoSemSerAdmin) {
+            throw new AccessDeniedPjbException("A aprovação do grant exige operador diferente de quem recebe o acesso e, fora da administração do sistema, de quem o pediu.");
+        }
         ProfessionalGrantApprovalStatus previous = grant.getApprovalStatus();
         grant.setApprovalStatus(ProfessionalGrantApprovalStatus.APPROVED);
         grant.setAtivo(Boolean.TRUE);
@@ -411,6 +416,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         }
         int requestedCount = request.items().size();
         int safeLimit = Math.min(requestedCount, 50);
+        boolean aprovaNaHora = request.autoApprove() && isAdmin(actor);
         List<ProfessionalGrantQueueItemDto> processed = new ArrayList<>();
         List<String> errors = new ArrayList<>();
         int index = 0;
@@ -418,7 +424,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
             index++;
             try {
                 ProfessionalGrantDetailResponse detail = issue(toIssueRequest(item));
-                if (request.autoApprove()) {
+                if (aprovaNaHora) {
                     detail = approve(detail.grant().grantId(), new ProfessionalGrantDecisionRequest(firstNonBlank("Lote homologado", request.batchLabel(), item.reason())));
                 }
                 processed.add(detail.grant());
@@ -429,10 +435,10 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         if (requestedCount > safeLimit) {
             errors.add("Lote truncado no limite operacional de 50 grants por emissão massiva.");
         }
-        auditLedgerService.appendSafely("PROFESSIONAL_GRANT_BATCH_REQUESTED", "PROFESSIONAL_ACCESS_GRANT", safe(request.batchLabel()), "{\"requestedCount\":" + requestedCount + ",\"succeededCount\":" + processed.size() + ",\"autoApprove\":" + request.autoApprove() + "}");
+        auditLedgerService.appendSafely("PROFESSIONAL_GRANT_BATCH_REQUESTED", "PROFESSIONAL_ACCESS_GRANT", safe(request.batchLabel()), "{\"requestedCount\":" + requestedCount + ",\"succeededCount\":" + processed.size() + ",\"autoApprove\":" + aprovaNaHora + "}");
         return new ProfessionalGrantBatchOperationResponse(
                 LocalDateTime.now(),
-                request.autoApprove() ? "BATCH_REQUEST_AND_APPROVE" : "BATCH_REQUEST",
+                aprovaNaHora ? "BATCH_REQUEST_AND_APPROVE" : "BATCH_REQUEST",
                 normalizeText(request.batchLabel()),
                 requestedCount,
                 processed.size(),
@@ -588,6 +594,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         }
         int requestedCount = request.items().size();
         int safeLimit = Math.min(requestedCount, 50);
+        boolean aprovaNaHora = request.autoApprove() && Boolean.TRUE.equals(template.getAutoApproveAllowed()) && isAdmin(actor);
         List<ProfessionalGrantQueueItemDto> processed = new ArrayList<>();
         List<String> errors = new ArrayList<>();
         int index = 0;
@@ -595,7 +602,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
             index++;
             try {
                 ProfessionalGrantDetailResponse detail = issue(toIssueRequest(template, item));
-                if (request.autoApprove() && Boolean.TRUE.equals(template.getAutoApproveAllowed())) {
+                if (aprovaNaHora) {
                     detail = approve(detail.grant().grantId(), new ProfessionalGrantDecisionRequest(firstNonBlank("Template homologado", request.batchLabel(), item.reason(), template.getLabel())));
                 }
                 processed.add(detail.grant());
@@ -606,10 +613,10 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         if (requestedCount > safeLimit) {
             errors.add("Lote por template truncado no limite operacional de 50 grants por emissão assistida.");
         }
-        auditLedgerService.appendSafely("PROFESSIONAL_GRANT_TEMPLATE_BATCH_REQUESTED", "PROFESSIONAL_ACCESS_GRANT_TEMPLATE", safe(template.getTemplateCode()), "{\"requestedCount\":" + requestedCount + ",\"succeededCount\":" + processed.size() + ",\"templateCode\":\"" + template.getTemplateCode() + "\",\"autoApprove\":" + request.autoApprove() + "}");
+        auditLedgerService.appendSafely("PROFESSIONAL_GRANT_TEMPLATE_BATCH_REQUESTED", "PROFESSIONAL_ACCESS_GRANT_TEMPLATE", safe(template.getTemplateCode()), "{\"requestedCount\":" + requestedCount + ",\"succeededCount\":" + processed.size() + ",\"templateCode\":\"" + template.getTemplateCode() + "\",\"autoApprove\":" + aprovaNaHora + "}");
         return new ProfessionalGrantBatchOperationResponse(
                 LocalDateTime.now(),
-                request.autoApprove() && Boolean.TRUE.equals(template.getAutoApproveAllowed()) ? "TEMPLATE_BATCH_REQUEST_AND_APPROVE" : "TEMPLATE_BATCH_REQUEST",
+                aprovaNaHora ? "TEMPLATE_BATCH_REQUEST_AND_APPROVE" : "TEMPLATE_BATCH_REQUEST",
                 firstNonBlank(normalizeText(request.batchLabel()), template.getLabel()),
                 requestedCount,
                 processed.size(),

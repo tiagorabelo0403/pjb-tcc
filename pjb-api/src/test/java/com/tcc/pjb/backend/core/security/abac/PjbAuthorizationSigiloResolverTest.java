@@ -87,6 +87,35 @@ class PjbAuthorizationSigiloResolverTest {
     }
 
     @Test
+    void shadowProcesso_mantemOsDadosQueOVinculoUsa() {
+        com.tcc.pjb.backend.model.entity.Usuario autor = new com.tcc.pjb.backend.model.entity.Usuario();
+        autor.setId(5L);
+        Processo base = Processo.builder()
+                .id(42L)
+                .parteAutoraCpf("11122233344")
+                .parteReuCpf("55566677788")
+                .usuario(autor)
+                .unidadeJudiciariaCodigo("TJCE-FORTALEZA-1VC")
+                .uf("CE")
+                .comarca("Fortaleza")
+                .tribunal("TJCE")
+                .statusProcesso(com.tcc.pjb.backend.model.entity.enums.StatusProcesso.CONCLUSO_JUIZ)
+                .nivelSigilo(NivelSigilo.PUBLICO)
+                .build();
+
+        Processo shadow = resolver.shadowProcesso(base, NivelSigilo.SIGILO_N2);
+
+        assertThat(shadow.getParteAutoraCpf()).isEqualTo("11122233344");
+        assertThat(shadow.getParteReuCpf()).isEqualTo("55566677788");
+        assertThat(shadow.getUsuario()).isSameAs(autor);
+        assertThat(shadow.getUnidadeJudiciariaCodigo()).isEqualTo("TJCE-FORTALEZA-1VC");
+        assertThat(shadow.getUf()).isEqualTo("CE");
+        assertThat(shadow.getComarca()).isEqualTo("Fortaleza");
+        assertThat(shadow.getTribunal()).isEqualTo("TJCE");
+        assertThat(shadow.getStatusProcesso()).isEqualTo(com.tcc.pjb.backend.model.entity.enums.StatusProcesso.CONCLUSO_JUIZ);
+    }
+
+    @Test
     void computeDocumentoSigiloEfetivo_documentoNullRetornaPublico() {
         assertThat(resolver.computeDocumentoSigiloEfetivo(null, null)).isEqualTo(NivelSigilo.PUBLICO);
     }

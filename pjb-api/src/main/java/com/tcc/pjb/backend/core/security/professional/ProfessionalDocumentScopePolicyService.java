@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.security.professional;
 
+import com.tcc.pjb.backend.core.security.abac.policy.AbacV1Policy;
 import com.tcc.pjb.backend.core.security.abac.AuthzDecision;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -24,7 +25,7 @@ public class ProfessionalDocumentScopePolicyService {
                                                     DocumentoProcessual documento,
                                                     AuthzDecision baseDecision) {
         if (baseDecision == null || !baseDecision.allowed()) {
-            return baseDecision == null ? AuthzDecision.deny("documento_base_negado", "abac-v1.0") : baseDecision;
+            return baseDecision == null ? AuthzDecision.deny("documento_base_negado", AbacV1Policy.VERSION) : baseDecision;
         }
         ProfessionalDocumentAccessDecision decision = decide(usuario, processo, documento);
         if (decision.allowed()) {

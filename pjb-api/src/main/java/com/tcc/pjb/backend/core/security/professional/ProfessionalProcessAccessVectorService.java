@@ -541,26 +541,7 @@ public class ProfessionalProcessAccessVectorService {
     }
 
     public ProfessionalActorClass actorClass(Usuario usuario) {
-        if (usuario == null || usuario.getTipoUsuario() == null) {
-            return usuario != null && usuario.isAdvogado() ? ProfessionalActorClass.ADVOCACIA : ProfessionalActorClass.OUTRO;
-        }
-        TipoUsuario tipo = usuario.getTipoUsuario();
-        if (tipo.isMagistratura()) {
-            return ProfessionalActorClass.MAGISTRATURA;
-        }
-        if (tipo.isDefensoriaPublica()) {
-            return ProfessionalActorClass.DEFENSORIA;
-        }
-        if (tipo.isProcuradoria()) {
-            return ProfessionalActorClass.PROCURADORIA;
-        }
-        if (tipo.isServidorJudiciario() || tipo.isAssessor()) {
-            return ProfessionalActorClass.APOIO_JUDICIAL;
-        }
-        if (tipo.isAdvocacia() || usuario.isAdvogado()) {
-            return ProfessionalActorClass.ADVOCACIA;
-        }
-        return ProfessionalActorClass.OUTRO;
+        return ProfessionalActorClass.of(usuario);
     }
 
     private ProfessionalAccessBasis ownerBasis(Usuario usuario, Processo processo) {

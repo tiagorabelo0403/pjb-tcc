@@ -1,5 +1,5 @@
 {
-  "version": "abac-v1.0",
+  "version": "abac-v1.1",
   "name": "PJB ABAC Policy v1",
-  "description": "Política ABAC inicial do PJB: justificativa obrigatória para sigilo, need-to-know por perfil e territorialidade (UF) quando conhecida."
+  "description": "Política ABAC do PJB: processo sigiloso só abre para quem tem vínculo com ele (parte, advogado com procuração ou que ajuizou, órgão no polo, função na unidade, designação ancorada, conclusão, tarefa, nomeação ou mandado), com justificativa e step-up conforme o sigilo efetivo."
 }
