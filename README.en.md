@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-5%2C704%20unit%20%7C%200%20failures-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-5%2C761%20unit%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -256,7 +256,7 @@ Open `.env` and fill in the required variables:
 docker compose up -d
 ```
 
-This starts PostgreSQL 17, Apache Kafka 3.8, Redis 7.4, and Elasticsearch 8.15. Flyway migrations (numbered up to V367) are applied automatically on the first backend connection.
+This starts PostgreSQL 17, Apache Kafka 3.8, Redis 7.4, and Elasticsearch 8.15. Flyway migrations (numbered up to V368) are applied automatically on the first backend connection.
 
 ### 4. Check Spring Profiles
 
@@ -265,12 +265,13 @@ The project uses separate Spring Boot profiles per environment. The base file is
 | Profile | File | When to Use |
 |---------|------|------------|
 | `dev` | `application-dev.yml` | Local development with infrastructure in Docker |
-| `local` | `application-local.yml` | Database and services running directly on the host |
+| `local` | `pjb-api/config/application-local.yml.example`, copied without the `.example` suffix (the copy stays outside Git) | Personal overrides on top of `dev`, such as PostgreSQL installed on the host: `-Dspring-boot.run.profiles=dev,local`. With `java -jar` from the repository root, add `--spring.config.additional-location=optional:file:pjb-api/config/` |
 | `docker` | `application-docker.yml` | Backend inside a Docker container |
+| `frontend-dev` | `application-frontend-dev.yml` | Backend for frontend development, with in-memory H2 and external integrations off |
 | `prod` | `application-prod.yml` | Production — requires all environment variables |
 | `k8s` | `application-k8s.yml` | Kubernetes |
 
-For local development, the `dev` profile is recommended. It is activated automatically by `demo.sh` / `demo.cmd`. To activate manually:
+For local development with Maven, the `dev` profile is recommended. `demo.sh` / `demo.cmd` does not use `dev`: it builds and starts `docker compose --profile app`, which runs the backend in a container with the `docker` profile. To activate `dev` manually:
 
 ```bash
 # Via Maven
@@ -320,6 +321,8 @@ demo.cmd
 java -jar pjb-api/target/pjb-api.jar
 ```
 
+`spring-boot:run` starts the JVM with `-Xmx2g`. Arguments passed in `-Dspring-boot.run.jvmArguments` are added to that default, and an `-Xmx` given there takes precedence.
+
 ### Full Stack via Docker (Build + Infrastructure Together)
 
 ```bash
@@ -352,6 +355,8 @@ The decision table is locked by a dedicated Python guard (`scripts/pjb_runtime_m
 | `http://localhost:8080/actuator/health` | Full health check |
 | `http://localhost:8080/actuator/metrics` | Micrometer metrics |
 
+Swagger UI and `/v3/api-docs` only answer without authentication when `pjb.api.docs.public=true`, which holds in the `frontend-dev` and `docker` profiles; in `dev` the property stays at the `false` default (see [API Documentation](#api-documentation)). `/demo/**` and `/actuator/metrics` require an administrator profile.
+
 With the `docker` profile, the system automatically seeds demo users and cases so data appears immediately.
 
 **To stop:**
@@ -367,7 +372,7 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 5,704 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 5,761 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 118 classes against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 The naming convention is enforced in CI by the `integration_test_naming_guard.py` guard: a class suffixed `IT` must carry a real integration marker — Testcontainers, a Spring context, or an inherited integration base. Without that marker the class would run in neither phase (Surefire skips it by name, and Failsafe only runs under `verify`), so the build fails instead of leaving the test invisible.
@@ -386,7 +391,7 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api -am
 ```
 
-This is the official project gate. It runs the 5,704 unit tests (Surefire) and then the 118 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 5,761 unit tests (Surefire) and then the 118 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 The `-am` is not cosmetic: without it `pjb-core` is resolved from `~/.m2` instead of the reactor, and a stale artifact there produces `cannot find symbol` pointing at classes that exist in the source tree.
 
@@ -436,7 +441,7 @@ Any container `unhealthy` for more than 30 minutes (configurable via `--unhealth
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **5,704** |
+| Total unit tests | Surefire | **5,761** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 1 |
 | Unit test execution time | Surefire | **~14 min** |
@@ -481,6 +486,8 @@ The OpenAPI 3.1 specification is available at:
 ```
 http://localhost:8080/v3/api-docs
 ```
+
+Both routes only answer without authentication when `pjb.api.docs.public=true` (variable `PJB_API_DOCS_PUBLIC`). The default is `false`; the `frontend-dev` and `docker` profiles turn the property on, and the `prod` and `k8s` profiles do not declare it, so the default applies.
 
 Versioned contracts are also documented statically in:
 
@@ -633,7 +640,7 @@ graph TD
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Database | PostgreSQL 17 with Row Level Security per operation |
 | Test Database | In-memory H2 + Testcontainers |
-| Migrations | Flyway — numbered up to V367, with monthly partitioning on event tables |
+| Migrations | Flyway — numbered up to V368, with monthly partitioning on event tables |
 | Persistence | JPA / Hibernate with `ddl-auto: validate` in production |
 | Messaging | Apache Kafka 4.2 — judicial events and outbox |
 | Workflow orchestration | Camunda 8 / Zeebe — BPMN applied to the filing workflow |
@@ -1030,7 +1037,7 @@ PostgreSQL's default `autovacuum_analyze_scale_factor` (10% of the table) is fin
 
 ## Database
 
-329 Flyway migrations (non-contiguous numbering from V0 to V367 — 39 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
+330 Flyway migrations (non-contiguous numbering from V0 to V368 — 39 sequence numbers have no corresponding file in the repository), applied in sequence, with `validateOnMigrate=true` and `outOfOrder=false`. The schema is always validated by Hibernate on startup — any drift between entity and database is detected before the first request.
 
 Row Level Security active per operation, across two dimensions: case confidentiality (reading confidential cases is refused by the database before the ORM sees it) and actor — dedicated connection GUCs (`app.pjb_actor_id`, `app.pjb_actor_roles`) scope operational tables (support tickets, magistrate travel exceptions, the AI audit trail, hearing summons) faithful to each one's read `@PreAuthorize`, as defense in depth. Never decorative RLS: a table without a tenancy column gets no policy, and a migration-discipline test blocks `ENABLE ROW LEVEL SECURITY` without `FORCE` and without a policy — the orphan RLS a table owner ignores at runtime. `tb_usuario` and the `tb_identidade_juridica_*` cluster (national CPF/CNPJ registry) are deliberate exclusions from that sweep, not gaps: both are legitimately queried for third-party data by institutional roles (a lawyer seen by a court clerk, a defendant's document looked up by a bailiff) just as much as for self-service — there is no per-row ownership boundary to enforce without breaking those legitimate cross-actor reads; `tb_usuario` is protected by gating its entire controller behind admin `@PreAuthorize` (no self-service by-id endpoint exists), and PII in both is protected by encryption at rest with a blind index, not by RLS. Materialized tables with asynchronous refresh for analytics (ADR-0053). Outbox pattern for post-commit effects with no risk of event loss on transaction failure. The outbox table is partitioned monthly — entire partition purge via `DROP TABLE`, no row scanning.
 
@@ -1069,7 +1076,7 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **5,704 · 0 failures · 0 errors · 1 skipped** |
+| Unit tests (Surefire) | **5,761 · 0 failures · 0 errors · 1 skipped** |
 | Integration tests (Failsafe) | **118 classes · 0 failures in the latest measurement (see note ² in the Tests section)** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 58 architectural decisions documented |
@@ -1348,7 +1355,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,704 unit tests and 118 integration test classes, and 329 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,761 unit tests and 118 integration test classes, and 330 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

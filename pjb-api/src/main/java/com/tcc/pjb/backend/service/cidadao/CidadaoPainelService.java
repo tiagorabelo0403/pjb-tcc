@@ -108,8 +108,7 @@ public class CidadaoPainelService {
 
     @Cacheable(cacheNames = "cidadaoPainelBootstrap", key = "#cidadaoUserId")
     public CidadaoPainelBootstrapResponse painelBootstrapCached(Long cidadaoUserId) {
-        Usuario u = currentUser.getRequired();
-        return toBootstrap(painelCompletoCached(cidadaoUserId), u);
+        return toBootstrap(painelCompletoCached(cidadaoUserId));
     }
 
     @Cacheable(cacheNames = "cidadaoPainelWidgets", key = "#cidadaoUserId")
@@ -164,6 +163,9 @@ public class CidadaoPainelService {
         List<CidadaoProcessoCardDto> recentes = readList(snap.getRecentesJson(), TR_REC);
         List<CidadaoWidgetDto> widgets = readList(snap.getWidgetsJson(), TR_WID);
         CidadaoGovHubDto govHub = read(snap.getGovHubJson(), CidadaoGovHubDto.class, new CidadaoGovHubDto("BR", List.of()));
+        if (govHub.uf() == null || govHub.uf().isBlank()) {
+            govHub = new CidadaoGovHubDto("BR", govHub.categories());
+        }
         UsuarioAvatar avatar = avatarRepo.findByUsuarioId(u.getId()).orElse(null);
         String avatarUrl = avatar != null ? "/api/v1/cidadao/perfil/avatar" : null;
         String avatarEtag = avatar != null ? avatar.getSha256() : null;
@@ -193,8 +195,8 @@ public class CidadaoPainelService {
         );
     }
 
-    private CidadaoPainelBootstrapResponse toBootstrap(CidadaoPainelResponse painel, Usuario u) {
-        String etag = "W/\"cidp-" + u.getId() + "-" + Integer.toHexString(Objects.hash(painel.generatedAt(), painel.perfil(), painel.badges(), painel.pendencias(), painel.proximosEventos(), painel.recentes(), painel.govHub())) + "\"";
+    private CidadaoPainelBootstrapResponse toBootstrap(CidadaoPainelResponse painel) {
+        String etag = "W/\"cidp-" + Integer.toHexString(Objects.hash(painel.generatedAt(), painel.perfil(), painel.badges(), painel.pendencias(), painel.proximosEventos(), painel.recentes(), painel.govHub())) + "\"";
         return new CidadaoPainelBootstrapResponse(
                 etag,
                 painel.generatedAt(),

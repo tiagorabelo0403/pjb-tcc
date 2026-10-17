@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.service.calendar;
 
+import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.dto.calendar.CalendarProcessEventMirrorResponse;
 import com.tcc.pjb.backend.model.dto.calendar.CalendarWorkspaceEventDto;
 import com.tcc.pjb.backend.model.dto.calendar.CalendarWorkspaceResponse;
@@ -28,21 +29,25 @@ public class UserCalendarProcessMirrorService {
     private final TimelineSurfaceFacadeService timelineSurfaceFacadeService;
     private final ProcessoRepository processoRepository;
     private final CalendarEventAttentionPolicyService attentionPolicyService;
+    private final PjbAuthorizationService authorizationService;
 
     public UserCalendarProcessMirrorService(UserCalendarWorkspaceService workspaceService,
                                             TimelineSurfaceFacadeService timelineSurfaceFacadeService,
                                             ProcessoRepository processoRepository,
-                                            CalendarEventAttentionPolicyService attentionPolicyService) {
+                                            CalendarEventAttentionPolicyService attentionPolicyService,
+                                            PjbAuthorizationService authorizationService) {
         this.workspaceService = Objects.requireNonNull(workspaceService);
         this.timelineSurfaceFacadeService = Objects.requireNonNull(timelineSurfaceFacadeService);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.attentionPolicyService = Objects.requireNonNull(attentionPolicyService);
+        this.authorizationService = Objects.requireNonNull(authorizationService);
     }
 
     @Transactional(readOnly = true)
     public CalendarProcessEventMirrorResponse mirror(Long processoId, LocalDate from, LocalDate to) {
         Processo processo = processoRepository.findById(processoId)
                 .orElseThrow(() -> new IllegalArgumentException("Processo não encontrado: " + processoId));
+        authorizationService.requireReadProcessoAsCidadaoParte(processo);
         CalendarWorkspaceResponse workspace = workspaceService.workspace(from, to, processoId);
         List<CalendarWorkspaceEventDto> calendarEvents = workspace.lanes().stream()
                 .flatMap(lane -> lane.days().stream())

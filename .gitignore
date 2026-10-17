@@ -84,6 +84,7 @@ docs/reports/claude_continuation_of_codex_audit.md
 *.local
 *.local.*
 application-local.*
+!pjb-api/config/application-local.yml.example
 application-*.local.*
 
 # Keys, certificates and secret material

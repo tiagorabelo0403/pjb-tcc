@@ -33,7 +33,7 @@ class NationalProceduralDistributionResolverTest {
     @Test
     void mustTranslateDynamicDistributionResponse() {
         MapaCompetenciaDinamicoEngine engine = mock(MapaCompetenciaDinamicoEngine.class);
-        when(engine.distribuir(org.mockito.ArgumentMatchers.any())).thenReturn(Optional.of(
+        when(engine.distribuir(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(RitoProcessual.COMUM_ORDINARIO))).thenReturn(Optional.of(
                 new DynamicCompetenceDistributionResponse(
                         "req",
                         Instant.now(),
