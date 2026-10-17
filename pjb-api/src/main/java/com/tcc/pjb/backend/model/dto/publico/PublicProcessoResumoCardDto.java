@@ -1,10 +1,11 @@
 package com.tcc.pjb.backend.model.dto.publico;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public record PublicProcessoResumoCardDto(
-        Long processoId,
+        @JsonIgnore Long processoId,
         String numero,
         String tribunal,
         String uf,
