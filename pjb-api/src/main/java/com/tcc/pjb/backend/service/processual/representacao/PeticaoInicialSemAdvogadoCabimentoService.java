@@ -27,7 +27,7 @@ public class PeticaoInicialSemAdvogadoCabimentoService {
         this.timeService = Objects.requireNonNull(timeService);
     }
 
-    public boolean admiteRito(RitoProcessual rito) {
+    public static boolean admiteRito(RitoProcessual rito) {
         return rito != null && RITOS_LIBERADOS.contains(rito);
     }
 

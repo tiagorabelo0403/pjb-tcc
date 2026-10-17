@@ -154,6 +154,11 @@ public class LaianePeticaoInicialDraftService {
     }
 
     public ProtocolarResult protocolar(Long draftId, ProtocolarRequest request) {
+        Usuario usuario = currentUserService.getRequired();
+        if (!isProfissional(usuario) && isPeticionantePessoal(usuario)) {
+            repository.findByIdAndSolicitante_Id(draftId, usuario.getId()).ifPresent(draft -> cabimentoSemAdvogadoService.exigirCabimento(
+                    RitoProcessual.tryParse(draft.getRitoSugerido()).orElse(null), draft.getValorCausa()));
+        }
         return protocolarService.protocolar(draftId, request);
     }
 

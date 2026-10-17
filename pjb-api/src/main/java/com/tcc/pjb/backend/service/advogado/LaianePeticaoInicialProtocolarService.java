@@ -66,7 +66,6 @@ public class LaianePeticaoInicialProtocolarService {
     private final ProtocoloPendenciaApplicationService completudeService;
     private final ProtocoloCompletudeMetrics completudeMetrics;
     private final LaianePeticaoInicialPecaMaterializationService pecaMaterializationService;
-    private final PeticaoInicialSemAdvogadoCabimentoService cabimentoSemAdvogadoService;
 
     public LaianePeticaoInicialProtocolarService(LaianePeticaoInicialDraftSessionRepository repository,
                                                   ProcessoRepository processoRepository,
@@ -82,8 +81,7 @@ public class LaianePeticaoInicialProtocolarService {
                                                   ProtocoloCompletudeValidator completudeValidator,
                                                   ProtocoloPendenciaApplicationService completudeService,
                                                   ProtocoloCompletudeMetrics completudeMetrics,
-                                                  LaianePeticaoInicialPecaMaterializationService pecaMaterializationService,
-                                                  PeticaoInicialSemAdvogadoCabimentoService cabimentoSemAdvogadoService) {
+                                                  LaianePeticaoInicialPecaMaterializationService pecaMaterializationService) {
         this.repository = Objects.requireNonNull(repository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.currentUserService = Objects.requireNonNull(currentUserService);
@@ -99,7 +97,6 @@ public class LaianePeticaoInicialProtocolarService {
         this.completudeService = Objects.requireNonNull(completudeService);
         this.completudeMetrics = Objects.requireNonNull(completudeMetrics);
         this.pecaMaterializationService = Objects.requireNonNull(pecaMaterializationService);
-        this.cabimentoSemAdvogadoService = Objects.requireNonNull(cabimentoSemAdvogadoService);
     }
 
     @Transactional
@@ -108,7 +105,7 @@ public class LaianePeticaoInicialProtocolarService {
         LaianePeticaoInicialDraftSession entity = repository.findByIdAndSolicitante_Id(draftId, solicitante.getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("LaianePeticaoInicialDraftSession", draftId));
         RitoProcessual ritoDraft = RitoProcessual.tryParse(entity.getRitoSugerido()).orElse(null);
-        Usuario usuario = requirePeticionante(ritoDraft, entity.getValorCausa());
+        Usuario usuario = requirePeticionante(ritoDraft);
 
         if (entity.getProcesso() != null && "PROTOCOLO_REALIZADO".equalsIgnoreCase(entity.getStatus())) {
             Processo existing = entity.getProcesso();
@@ -288,15 +285,14 @@ public class LaianePeticaoInicialProtocolarService {
         return a == null ? trimToNull(second) : a;
     }
 
-    private Usuario requirePeticionante(RitoProcessual rito, java.math.BigDecimal valorCausa) {
+    private Usuario requirePeticionante(RitoProcessual rito) {
         Usuario usuario = currentUserService.getRequired();
         TipoUsuario tipo = usuario.getTipoUsuario();
         boolean profissional = tipo != null && (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isProcuradoria() || tipo.isMinisterioPublico());
         if (profissional) {
             return usuario;
         }
-        if (isPeticionantePessoal(usuario)) {
-            cabimentoSemAdvogadoService.exigirCabimento(rito, valorCausa);
+        if (isPeticionantePessoal(usuario) && PeticaoInicialSemAdvogadoCabimentoService.admiteRito(rito)) {
             return usuario;
         }
         throw new com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException("A funcionalidade e exclusiva para advocacia, procuradoria, defensoria e Ministerio Publico");

@@ -80,7 +80,7 @@ class PeticaoInicialSemAdvogadoCabimentoServiceTest {
     void foraDoJuizadoEspecialCivelOCidadaoAindaNaoPeticionaSemAdvogado(RitoProcessual rito) {
         PeticaoInicialSemAdvogadoCabimentoService servico = servicoEm("2026-10-17T15:00:00Z");
 
-        assertThat(servico.admiteRito(rito)).isFalse();
+        assertThat(PeticaoInicialSemAdvogadoCabimentoService.admiteRito(rito)).isFalse();
         assertThatThrownBy(() -> servico.exigirCabimento(rito, new BigDecimal("1000.00")))
                 .isInstanceOf(AccessDeniedPjbException.class);
     }
