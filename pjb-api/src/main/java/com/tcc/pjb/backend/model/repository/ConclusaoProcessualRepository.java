@@ -2,6 +2,7 @@ package com.tcc.pjb.backend.model.repository;
 
 import com.tcc.pjb.backend.model.entity.processo.ConclusaoProcessual;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Repository;
 public interface ConclusaoProcessualRepository extends JpaRepository<ConclusaoProcessual, Long> {
 
     List<ConclusaoProcessual> findByMagistradoIdAndStatus(Long magistradoId, String status);
+
+    boolean existsByProcessoIdAndMagistradoIdAndStatusIn(Long processoId, Long magistradoId, Collection<String> status);
 
     @Query("""
             SELECT c FROM ConclusaoProcessual c

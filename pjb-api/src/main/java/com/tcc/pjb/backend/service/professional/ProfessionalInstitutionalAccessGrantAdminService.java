@@ -185,6 +185,10 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         if (!grant.isPending()) {
             throw new IllegalStateException("Somente grants pendentes podem ser aprovados.");
         }
+        if (Objects.equals(actor.getId(), grant.getRequestedByUserId())
+                || (grant.getUsuario() != null && Objects.equals(actor.getId(), grant.getUsuario().getId()))) {
+            throw new AccessDeniedPjbException("A aprovação do grant exige operador diferente de quem pediu e de quem recebe o acesso.");
+        }
         ProfessionalGrantApprovalStatus previous = grant.getApprovalStatus();
         grant.setApprovalStatus(ProfessionalGrantApprovalStatus.APPROVED);
         grant.setAtivo(Boolean.TRUE);

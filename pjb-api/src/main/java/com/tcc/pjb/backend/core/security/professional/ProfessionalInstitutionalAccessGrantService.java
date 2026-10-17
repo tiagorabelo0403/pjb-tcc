@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.core.security.professional;
 
+import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.professional.ProfessionalInstitutionalAccessGrant;
@@ -16,9 +17,11 @@ import org.springframework.stereotype.Service;
 public class ProfessionalInstitutionalAccessGrantService {
 
     private final ProfessionalInstitutionalAccessGrantRepository repository;
+    private final PjbTimeService timeService;
 
-    public ProfessionalInstitutionalAccessGrantService(ProfessionalInstitutionalAccessGrantRepository repository) {
+    public ProfessionalInstitutionalAccessGrantService(ProfessionalInstitutionalAccessGrantRepository repository, PjbTimeService timeService) {
         this.repository = Objects.requireNonNull(repository);
+        this.timeService = Objects.requireNonNull(timeService);
     }
 
     public GrantResolution resolveApplicable(Usuario usuario,
@@ -27,8 +30,12 @@ public class ProfessionalInstitutionalAccessGrantService {
         if (usuario == null || usuario.getId() == null || actorClass == null) {
             return GrantResolution.empty();
         }
-        LocalDateTime reference = LocalDateTime.now();
-        List<ProfessionalInstitutionalAccessGrant> grants = repository.findTop200ByUsuario_IdAndAtivoTrueOrderByIdDesc(usuario.getId()).stream()
+        LocalDateTime reference = LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone());
+        List<ProfessionalInstitutionalAccessGrant> candidatos = new ArrayList<>(repository.findByUsuario_IdAndAtivoTrueAndProcessoIsNull(usuario.getId()));
+        if (processo != null && processo.getId() != null) {
+            candidatos.addAll(repository.findByUsuario_IdAndAtivoTrueAndProcesso_Id(usuario.getId(), processo.getId()));
+        }
+        List<ProfessionalInstitutionalAccessGrant> grants = candidatos.stream()
                 .filter(item -> item != null && item.isAtivoNaJanela(reference))
                 .filter(item -> item.getActorClass() == actorClass)
                 .filter(item -> matches(item, processo))
