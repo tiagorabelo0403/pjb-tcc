@@ -265,7 +265,7 @@ The project uses separate Spring Boot profiles per environment. The base file is
 | Profile | File | When to Use |
 |---------|------|------------|
 | `dev` | `application-dev.yml` | Local development with infrastructure in Docker |
-| `local` | `pjb-api/config/application-local.yml.example`, copied without the `.example` suffix (the copy stays outside Git) | Personal overrides on top of `dev`, such as PostgreSQL installed on the host: `-Dspring-boot.run.profiles=dev,local` |
+| `local` | `pjb-api/config/application-local.yml.example`, copied without the `.example` suffix (the copy stays outside Git) | Personal overrides on top of `dev`, such as PostgreSQL installed on the host: `-Dspring-boot.run.profiles=dev,local`. With `java -jar` from the repository root, add `--spring.config.additional-location=optional:file:pjb-api/config/` |
 | `docker` | `application-docker.yml` | Backend inside a Docker container |
 | `frontend-dev` | `application-frontend-dev.yml` | Backend for frontend development, with in-memory H2 and external integrations off |
 | `prod` | `application-prod.yml` | Production — requires all environment variables |
