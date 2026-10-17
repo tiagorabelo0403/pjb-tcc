@@ -232,4 +232,19 @@ class CidadaoDashboardEnhancedServiceTest {
         assertThat(service.timelineVisualProcesso(42L).get("faseAtual"))
                 .isEqualTo(FaseProcessual.AUDIENCIA_CUSTODIA.getDescricao());
     }
+
+    @Test
+    void representacaoDesconhecidaMantemAProcuracaoSeHouver() {
+        assertThat(service.orientacaoAudiencia(42L).get("documentosNecessarios")).asString()
+                .contains("Procuração do advogado, se houver");
+    }
+
+    @Test
+    void descricaoApresentaAFaseAtualDoProcesso() {
+        processo.setFaseAtual(FaseProcessual.CITACAO);
+        posicao(TipoPolo.PASSIVO, null);
+
+        assertThat(service.timelineVisualProcesso(42L).get("descricaoSimples")).asString()
+                .startsWith("Fase atual do seu processo: Sua citação.");
+    }
 }

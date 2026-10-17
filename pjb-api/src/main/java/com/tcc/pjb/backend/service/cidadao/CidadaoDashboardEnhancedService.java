@@ -112,7 +112,7 @@ public class CidadaoDashboardEnhancedService {
         out.put("numero", processo.getNumeroProcesso());
         out.put("tribunal", processo.getTribunal());
         out.put("faseAtual", fase);
-        out.put("descricaoSimples", "Seu processo está em " + fase + ". " + gerarOrientacao(processo.getFaseAtual(), posicao.representacao()));
+        out.put("descricaoSimples", "Fase atual do seu processo: " + fase + ". " + gerarOrientacao(processo.getFaseAtual(), posicao.representacao()));
         out.put("dataInicio", processo.getDataDistribuicao());
         out.put("proximoPasso", resolverProximoPasso(processo.getFaseAtual(), posicao.representacao()));
         return out;
@@ -252,6 +252,8 @@ public class CidadaoDashboardEnhancedService {
         ));
         if (representacao == TipoRepresentanteProcessual.ADVOGADO_PRIVADO) {
             documentos.add("Procuração do advogado");
+        } else if (representacao == null) {
+            documentos.add("Procuração do advogado, se houver");
         }
         return List.copyOf(documentos);
     }
