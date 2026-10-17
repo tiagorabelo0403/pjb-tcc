@@ -18,7 +18,7 @@ import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 @Component
 public class AbacV1Policy implements AccessPolicy {
 
-    public static final String VERSION = "abac-v1.0";
+    public static final String VERSION = "abac-v1.1";
 
     private static final Set<VinculoProcessualDoUsuario> TODOS_OS_VINCULOS = EnumSet.allOf(VinculoProcessualDoUsuario.class);
     private static final Set<VinculoProcessualDoUsuario> VOTOS_PELAS_PARTES_E_ORGAOS = EnumSet.of(

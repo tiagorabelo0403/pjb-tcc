@@ -161,18 +161,24 @@ class ProcessoVinculoResolverTest {
     }
 
     @Test
-    void promotorEstadualDeOutraUfOuSemUfNaoAproveitaOPoloDoMinisterioPublico() {
+    void promotorEstadualDeOutraUfNaoAproveitaOPoloDoMinisterioPublico() {
         Usuario deOutraUf = usuario(3L, TipoUsuario.MEMBRO_MINISTERIO_PUBLICO);
         deOutraUf.setUf("SP");
+
+        assertThat(resolver.vinculo(deOutraUf, processo(), TODOS)).isEmpty();
+        verifyNoInteractions(poloRepository);
+    }
+
+    @Test
+    void ufNaoCadastradaNoUsuarioOuNoProcessoNaoBloqueiaOOrgaoNoPolo() {
         Usuario semUf = usuario(4L, TipoUsuario.MEMBRO_MINISTERIO_PUBLICO);
         semUf.setUf(null);
         Processo semUfNoProcesso = processo();
-        semUfNoProcesso.setUf(null);
+        semUfNoProcesso.setUf(" ");
+        when(poloRepository.findByProcessoIdAndTipoPolo(PROCESSO_ID, TipoPolo.MINISTERIO_PUBLICO)).thenReturn(List.of(polo(TipoPolo.MINISTERIO_PUBLICO, true)));
 
-        assertThat(resolver.vinculo(deOutraUf, processo(), TODOS)).isEmpty();
-        assertThat(resolver.vinculo(semUf, processo(), TODOS)).isEmpty();
-        assertThat(resolver.vinculo(usuario(5L, TipoUsuario.MEMBRO_MINISTERIO_PUBLICO), semUfNoProcesso, TODOS)).isEmpty();
-        verifyNoInteractions(poloRepository);
+        assertThat(resolver.vinculo(semUf, processo(), TODOS)).contains(VinculoProcessualDoUsuario.ORGAO_NO_POLO);
+        assertThat(resolver.vinculo(usuario(5L, TipoUsuario.MEMBRO_MINISTERIO_PUBLICO), semUfNoProcesso, TODOS)).contains(VinculoProcessualDoUsuario.ORGAO_NO_POLO);
     }
 
     @Test
@@ -319,6 +325,17 @@ class ProcessoVinculoResolverTest {
                 .thenReturn(designacoes(grant(ProfessionalAccessGrantType.LOTACAO_UNIDADE, UNIDADE, null)));
 
         assertThat(resolver.vinculo(juiz, processo, TODOS)).contains(VinculoProcessualDoUsuario.DESIGNACAO_FORMAL);
+    }
+
+    @Test
+    void designacaoQueExigeStepUpNaoAbreSigilosoPeloVinculo() {
+        Usuario juiz = usuario(5L, TipoUsuario.JUIZ);
+        Processo processo = processo();
+        ProfessionalInstitutionalAccessGrant lotacao = grant(ProfessionalAccessGrantType.LOTACAO_UNIDADE, UNIDADE, null);
+        lotacao.setRequiresStepUp(Boolean.TRUE);
+        when(grantService.resolveApplicable(juiz, processo, ProfessionalActorClass.MAGISTRATURA)).thenReturn(designacoes(lotacao));
+
+        assertThat(resolver.vinculo(juiz, processo, TODOS)).isEmpty();
     }
 
     @Test

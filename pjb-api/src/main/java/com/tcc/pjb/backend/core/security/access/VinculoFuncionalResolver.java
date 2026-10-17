@@ -69,7 +69,8 @@ public class VinculoFuncionalResolver {
         }
         boolean soNoProcesso = classe == ProfessionalActorClass.DEFENSORIA || classe == ProfessionalActorClass.PROCURADORIA;
         return grantService.resolveApplicable(usuario, processo, classe).grants().stream()
-                .anyMatch(grant -> aceitas.contains(grant.getGrantType()) && (soNoProcesso ? grant.getProcesso() != null : ancorado(grant)));
+                .anyMatch(grant -> aceitas.contains(grant.getGrantType()) && !grant.requiresStepUp()
+                        && (soNoProcesso ? grant.getProcesso() != null : ancorado(grant)));
     }
 
     private static boolean ancorado(ProfessionalInstitutionalAccessGrant grant) {

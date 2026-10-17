@@ -11,9 +11,12 @@ public interface ProfessionalInstitutionalAccessGrantRepository extends JpaRepos
     @EntityGraph(attributePaths = {"processo", "usuario"})
     List<ProfessionalInstitutionalAccessGrant> findTop200ByUsuario_IdAndAtivoTrueOrderByIdDesc(Long usuarioId);
 
-    List<ProfessionalInstitutionalAccessGrant> findByUsuario_IdAndAtivoTrueAndProcessoIsNull(Long usuarioId);
+    @EntityGraph(attributePaths = {"processo", "usuario"})
+    List<ProfessionalInstitutionalAccessGrant> findByUsuario_IdAndAtivoTrueAndProcessoIsNullOrderByIdDesc(Long usuarioId);
 
-    List<ProfessionalInstitutionalAccessGrant> findByUsuario_IdAndAtivoTrueAndProcesso_Id(Long usuarioId, Long processoId);
+    @EntityGraph(attributePaths = {"processo", "usuario"})
+    List<ProfessionalInstitutionalAccessGrant> findByUsuario_IdAndAtivoTrueAndProcesso_IdOrderByIdDesc(Long usuarioId, Long processoId);
+
     @EntityGraph(attributePaths = {"processo", "usuario"})
     List<ProfessionalInstitutionalAccessGrant> findTop50ByApprovalStatusOrderByIdDesc(ProfessionalGrantApprovalStatus approvalStatus);
 

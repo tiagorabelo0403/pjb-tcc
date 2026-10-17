@@ -45,7 +45,7 @@ public class VinculoInstitucionalResolver {
     public boolean orgaoNoPolo(Usuario usuario, Processo processo) {
         TipoUsuario tipo = usuario.getTipoUsuario();
         TipoPolo poloDoOrgao = poloDoOrgao(tipo);
-        if (poloDoOrgao == null || (ORGAOS_DE_UMA_UF.contains(tipo) && !mesmaUf(usuario.getUf(), processo.getUf()))) {
+        if (poloDoOrgao == null || (ORGAOS_DE_UMA_UF.contains(tipo) && ufsDivergem(usuario.getUf(), processo.getUf()))) {
             return false;
         }
         return poloProcessualRepository.findByProcessoIdAndTipoPolo(processo.getId(), poloDoOrgao).stream().anyMatch(PoloProcessual::isAtivo);
@@ -75,9 +75,9 @@ public class VinculoInstitucionalResolver {
                 && oficialJusticaProcessoVinculoService.possuiVinculoDireto(processoId, usuario.getId(), tipo);
     }
 
-    private static boolean mesmaUf(String ufDoUsuario, String ufDoProcesso) {
-        return ufDoUsuario != null && !ufDoUsuario.isBlank() && ufDoProcesso != null
-                && ufDoUsuario.trim().toUpperCase(Locale.ROOT).equals(ufDoProcesso.trim().toUpperCase(Locale.ROOT));
+    private static boolean ufsDivergem(String ufDoUsuario, String ufDoProcesso) {
+        return ufDoUsuario != null && !ufDoUsuario.isBlank() && ufDoProcesso != null && !ufDoProcesso.isBlank()
+                && !ufDoUsuario.trim().toUpperCase(Locale.ROOT).equals(ufDoProcesso.trim().toUpperCase(Locale.ROOT));
     }
 
     private static TipoPolo poloDoOrgao(TipoUsuario tipo) {

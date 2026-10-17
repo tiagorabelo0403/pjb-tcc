@@ -99,6 +99,7 @@ class PjbAuthorizationSigiloResolverTest {
                 .uf("CE")
                 .comarca("Fortaleza")
                 .tribunal("TJCE")
+                .statusProcesso(com.tcc.pjb.backend.model.entity.enums.StatusProcesso.CONCLUSO_JUIZ)
                 .nivelSigilo(NivelSigilo.PUBLICO)
                 .build();
 
@@ -111,6 +112,7 @@ class PjbAuthorizationSigiloResolverTest {
         assertThat(shadow.getUf()).isEqualTo("CE");
         assertThat(shadow.getComarca()).isEqualTo("Fortaleza");
         assertThat(shadow.getTribunal()).isEqualTo("TJCE");
+        assertThat(shadow.getStatusProcesso()).isEqualTo(com.tcc.pjb.backend.model.entity.enums.StatusProcesso.CONCLUSO_JUIZ);
     }
 
     @Test

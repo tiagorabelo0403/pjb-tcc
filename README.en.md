@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-5%2C925%20unit%20%7C%200%20failures-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-5%2C928%20unit%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -372,7 +372,7 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 5,925 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 5,928 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 118 classes against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 The naming convention is enforced in CI by the `integration_test_naming_guard.py` guard: a class suffixed `IT` must carry a real integration marker — Testcontainers, a Spring context, or an inherited integration base. Without that marker the class would run in neither phase (Surefire skips it by name, and Failsafe only runs under `verify`), so the build fails instead of leaving the test invisible.
@@ -391,7 +391,7 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api -am
 ```
 
-This is the official project gate. It runs the 5,925 unit tests (Surefire) and then the 118 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 5,928 unit tests (Surefire) and then the 118 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 The `-am` is not cosmetic: without it `pjb-core` is resolved from `~/.m2` instead of the reactor, and a stale artifact there produces `cannot find symbol` pointing at classes that exist in the source tree.
 
@@ -441,7 +441,7 @@ Any container `unhealthy` for more than 30 minutes (configurable via `--unhealth
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **5,925** |
+| Total unit tests | Surefire | **5,928** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 1 |
 | Unit test execution time | Surefire | **~14 min** |
@@ -948,7 +948,7 @@ The security model is driven by identity, role, assignment, organization, unit, 
 | **Materialized AuthzTrail** | Every authorization decision produces an immutable record in `tb_authz_trail`, deduplicated by semantic key — compact hash of actor, resource, and effect. Identical entries collapse; the ledger is queryable by access pattern, not just time window |
 | **ICP-Brasil Sanitization** | CPF and CNPJ removed from API responses, certificate cache, signature events, and ICP chain audit ledger. Where the identifier is needed for correlation, it is stored as a hashed reference — never in clear text |
 | **BOLA Guard (WorkItemScopeGuard)** | Prevents any actor from accessing a work item from a different unit or assignment. Applied as a P0 control — ArchUnit guarantees at build time that no code path can bypass the guard |
-| **User's link to the case** | `ProcessoVinculoResolver` tells whether a user has a link to the case and which one, checking from cheapest to most expensive and stopping at the first: party (plaintiff or defendant CPF, the filer, or an active party-role row); the lawyer who filed, as long as none of their powers of attorney in the case is revoked, expired, rejected or suspended, or a lawyer with an active power of attorney; an institution with an active party role of its own segment (Public Prosecutor's Office, Public Defender's Office, Attorney General's Office), checking the case's state only for single-state bodies (state and electoral prosecutors, state public defenders, state and municipal attorneys), while the Prosecutor General, labor prosecutors, the Federal Public Defender and federal attorneys count by party role alone; case sent to the judge for decision, with the referral pending, or overdue if it is the case's latest and the case is still awaiting decision; an assigned `WorkItem` (judiciary, police chief); a court clerk with a current function in the case's court unit, dated in the legal time zone; an approved, current designation anchored to the case or the court unit, or to the district for substitution and duty shifts, where the Public Defender's Office and attorneys only count a designation or representation tied to the case itself; an appointed expert; and a bailiff with a writ. Reading a sealed case or sealed document (`AbacV1Policy`) requires that link, including for judges, clerks and institutions, and the system administrator does not read sealed records. Panel votes accept party, lawyer, institution in the party roles, court clerk with a function in the unit and, for the judiciary, case sent for decision, task or designation. The institutional mesh (`PjbAuthorizationInstitutionalMalhaAccessFacade`) uses only the institutional links (party role, case sent for decision, task and writ), and the administrator keeps the mesh view. A designation can only be approved by an operator other than the requester and the recipient, and the issuer records start, request and approval in the same legal time zone in which the validity window is read. The reason stored in the authorization trail names the link that granted access. The professional forensic panel (`ProfessionalForensicPanelService`) still decides by territory and does not go through this link |
+| **User's link to the case** | `ProcessoVinculoResolver` tells whether a user has a link to the case and which one, checking in a fixed order and stopping at the first: party (plaintiff or defendant CPF, the filer, or an active party-role row); the lawyer who filed, as long as none of their powers of attorney in the case is revoked, expired, rejected or suspended, or a lawyer with an active power of attorney; an institution with an active party role of its own segment (Public Prosecutor's Office, Public Defender's Office, Attorney General's Office), where single-state bodies (state and electoral prosecutors, state public defenders, state and municipal attorneys) lose the link when the user's registered state differs from the case's, and the others count by party role; case sent to the judge for decision, with the referral pending, or overdue if it is the case's latest and the case is still awaiting decision; an assigned `WorkItem` (judiciary, police chief); a court clerk with a current function in the case's court unit, dated in the legal time zone; an approved, current designation that does not require step-up, anchored to the case or the court unit, or to the district for substitution and duty shifts, where the Public Defender's Office and attorneys only count a designation or representation tied to the case itself; an appointed expert; and a bailiff with a writ. Under policy `abac-v1.1` (`AbacV1Policy`), reading a sealed case or sealed document requires that link, including for judges, clerks and institutions; without a link only a lawyer with a valid temporary sealing credential reads, and the system administrator does not read sealed records. Panel votes accept party, lawyer, institution in the party roles, court clerk with a function in the unit and, for the judiciary, case sent for decision, task or designation; in a public case, institutional profiles still read votes without a link. The institutional mesh (`PjbAuthorizationInstitutionalMalhaAccessFacade`) uses only the institutional links (party role, case sent for decision, task and writ), and the administrator keeps the mesh view. The recipient of a designation never approves it and, outside system administration, neither does the requester; so batch auto-approval only applies when the issuer is an administrator, and otherwise grants stay pending for another operator. The reason stored in the authorization trail names the link that granted access. The professional forensic panel (`ProfessionalForensicPanelService`) still decides by territory and does not go through this link |
 | **Rate Limiting** | Critical routes protected against abuse with per-period request limits. RFC 7807 standardized response. `createOficio` and communication endpoints have their own budget, separate from general traffic |
 | **Security Event Logger** | Every relevant security event — authentication, denied authorization, step-up, attempted bypass — produces a structured log entry separate from the application log, independently auditable and free of operational noise |
 | **Auditable Circuit Breaker** | Open/closed state of each circuit breaker is recorded with timestamp, cause, and failure count — the degradation history of an integration is traceable, not just the current state |
@@ -1078,7 +1078,7 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **5,925 · 0 failures · 0 errors · 1 skipped** |
+| Unit tests (Surefire) | **5,928 · 0 failures · 0 errors · 1 skipped** |
 | Integration tests (Failsafe) | **118 classes · 0 failures in the latest measurement (see note ² in the Tests section)** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 58 architectural decisions documented |
@@ -1357,7 +1357,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,925 unit tests and 118 integration test classes, and 332 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,928 unit tests and 118 integration test classes, and 332 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 
