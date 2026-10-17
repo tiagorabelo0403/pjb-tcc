@@ -1302,3 +1302,84 @@ estadual nesses casos, mas não trata o inverso.
 Fechar exige decidir onde a delegação fica registrada (marca no processo ou no cadastro da comarca
 com a distância até a sede federal) e, a partir dela, fazer o processo seguir o tipo de justiça
 informado.
+
+## D-distribuicao-conferencia-de-competencia-sem-fluxo-de-resolucao
+
+**Status:** aberta — falta o fluxo de conferência da distribuição no módulo de distribuição
+
+O motor de distribuição grava `ProcessoDistribuicaoCompetencia` como `PENDENTE_REVISAO` quando a
+distribuição não é automática, e como `APLICADA` com `fatoresRevisao` preenchido quando a unidade
+escolhida exige conferência de competência (juizado em unidade comum, unidade incompatível com o
+juizado, conferência federal). Nenhum código grava `REVISADA` nem `REDISTRIBUIDA`, e não existe ato
+que confirme a unidade ou redistribua a partir da conferência:
+
+```
+pjb-api/src/main/java/com/tcc/pjb/backend/service/competencia/MapaCompetenciaDinamicoEngine.java:767
+                distribuicaoAutomatica ? StatusDistribuicaoCompetencia.APLICADA : StatusDistribuicaoCompetencia.PENDENTE_REVISAO,
+
+pjb-api/src/main/java/com/tcc/pjb/backend/service/competencia/MapaCompetenciaDinamicoEngine.java:193-203
+        ProcessoDistribuicaoCompetencia distribuicao = new ProcessoDistribuicaoCompetencia(
+                ...
+                StatusDistribuicaoCompetencia.APLICADA,
+                ...
+                fatoresRevisao,
+
+pjb-api/src/main/java/com/tcc/pjb/backend/service/competencia/MapaCompetenciaDinamicoEngine.java:227
+    private Optional<DynamicCompetenceDistributionResponse> conferenciaPendente(ProcessoDistribuicaoCompetencia distribuicao) {
+```
+
+`MagistradoLotacaoAccessService` recusa a homologação de acordo enquanto a última distribuição para a
+unidade do processo está nesse estado. Sem o fluxo de conferência, o processo fica sem homologação até
+uma nova distribuição aplicada ou até a malha de distribuição mover o processo para outra unidade do
+catálogo.
+
+Referências de fluxo: no fluxo unificado cível do PJe do TJMG (páginas "Redistribuição" e
+"Retificação de autuação"), a secretaria confere classe, assunto e partes na tela de retificação e
+redistribui pela tarefa própria, com a classe "Declínio de Competência a Analisar" quando a
+competência muda; no Manual PJe do TJPI, "Redistribuir processo" é executado pela secretaria na
+tarefa "Avaliar determinações do magistrado". A decisão sobre competência é do juiz (CPC, art. 64).
+Páginas: https://www.tjmg.jus.br/portal-tjmg/acoes-e-programas/gestao-de-primeira/processo-judicial-eletronico-fluxo-unificado-civel/redistribuicao-pje.htm
+e https://www.tjpi.jus.br/portaltjpi/wp-content/uploads/2022/10/Manual_PJe.pdf.
+
+Fechar exige a tarefa de conferência, com transição para `REVISADA` (unidade confirmada) ou
+`REDISTRIBUIDA` (nova unidade), auditada e ligada à decisão judicial de competência.
+
+## D-magistrado-impedimento-suspeicao-sem-modelo
+
+**Status:** aberta — falta registrar impedimento e suspeição de magistrado de primeiro grau
+
+Só há modelo de impedimento para ministro (`model/entity/processo/ImpedimentoMinistro.java`). O
+impedimento e a suspeição do juiz (CPC, arts. 144 a 148) não ficam registrados no processo, e
+`DistribuicaoProcessualNacionalEngine.redistribuirPorImpedimento` (linha 70) devolve só um descritivo
+de fila, sem persistir a redistribuição nem o magistrado que declarou o impedimento:
+
+```
+$ grep -rln "class .*Impedimento\|class .*Suspeic" pjb-api/src/main/java
+pjb-api/src/main/java/com/tcc/pjb/backend/model/entity/processo/ImpedimentoMinistro.java
+
+pjb-api/src/main/java/com/tcc/pjb/backend/core/distribuicao/DistribuicaoProcessualNacionalEngine.java:70
+    public Map<String, Object> redistribuirPorImpedimento(Long processoId, String motivoImpedimento) {
+        String reason = firstNonBlank(motivoImpedimento, "IMPEDIMENTO_NAO_INFORMADO");
+        LinkedHashMap<String, Object> payload = new LinkedHashMap<>();
+        ...
+        payload.put("status", "REDISTRIBUIDO_IMPEDIMENTO");
+        ...
+        return Collections.unmodifiableMap(payload);
+```
+
+Efeito: a autorização dos atos privativos de juiz, como a homologação de acordo em
+`MagistradoLotacaoAccessService`, verifica a lotação na unidade do processo, mas não exclui o juiz
+lotado ali que se declarou impedido ou suspeito. O ato praticado por juiz impedido é rescindível
+(CPC, art. 966, II).
+
+Referências de fluxo: no fluxo unificado cível do PJe do TJMG (página "Suspeição e impedimento"), o
+juiz declara o impedimento (CPC, art. 144) ou a suspeição (art. 145), os autos ficam na secretaria de
+origem e atua o substituto; nas portarias dos fóruns do TRT da 7ª Região (Caucaia, Maracanaú e
+Sobral, 2024), o juiz profere a decisão e o processo é redistribuído pela função "Redistribuir" com
+motivo "Suspeição" ou "Impedimento", com compensação automática. Páginas:
+https://www.tjmg.jus.br/portal-tjmg/acoes-e-programas/gestao-de-primeira/processo-judicial-eletronico-fluxo-unificado-civel/suspeicao-e-impedimento-pje.htm
+e https://www.trt7.jus.br/files/atos_normativos/portarias_dforum_sobral/2024/PORTARIADFTSOBRAL01-2024.pdf.
+
+Fechar exige registrar a
+declaração (magistrado, processo, fundamento, data), excluir esse magistrado das checagens de ato
+privativo e encaminhar ao substituto.

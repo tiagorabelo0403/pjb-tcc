@@ -266,18 +266,21 @@ public class AcordoService {
 
     @Transactional
     public AcordoHomologado homologarAcordoJudicial(Long propostaId, String hashAssinaturaJuiz) {
-        validarPermissaoJuiz();
-
+        homologacaoJudicial.exigirMagistrado();
         PropostaAcordo proposta = propostaAcordoRepository.findById(propostaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Proposta", propostaId));
-
+        Processo processo = proposta.getProcesso();
+        if (processo == null) {
+            throw new IllegalStateException("Proposta sem processo vinculado.");
+        }
+        Usuario juiz = homologacaoJudicial.autorizarMagistrado(processo);
         if (proposta.getStatus() != StatusAcordo.AGUARDANDO_HOMOLOGACAO_JUIZ) {
             throw new RegraNegocioException("Fluxo inválido: Proposta não está na mesa do Juiz.");
         }
+        return homologarAutorizado(proposta, processo, juiz, hashAssinaturaJuiz);
+    }
 
-        Usuario juiz = EquipeContexto.getMembroDaEquipeAtiva().getUsuario();
-        Processo processo = proposta.getProcesso();
-
+    private AcordoHomologado homologarAutorizado(PropostaAcordo proposta, Processo processo, Usuario juiz, String hashAssinaturaJuiz) {
         AcordoHomologacaoJudicialService.Homologacao homologacao = homologacaoJudicial.materializar(proposta, processo, juiz, hashAssinaturaJuiz);
 
         proposta.setStatus(StatusAcordo.HOMOLOGADO);
@@ -293,13 +296,14 @@ public class AcordoService {
 
     @Transactional
     public JudgeAgreementDecisionResponse decidirHomologacaoJudicial(Long propostaId, String action, String justification, String hashAssinaturaJuiz, boolean notifyParties) {
-        validarPermissaoJuiz();
+        homologacaoJudicial.exigirMagistrado();
         PropostaAcordo proposta = propostaAcordoRepository.findById(propostaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Proposta", propostaId));
         Processo processo = proposta.getProcesso();
         if (processo == null) {
             throw new IllegalStateException("Proposta sem processo vinculado.");
         }
+        Usuario juiz = homologacaoJudicial.autorizarMagistrado(processo);
         if (proposta.getStatus() != StatusAcordo.AGUARDANDO_HOMOLOGACAO_JUIZ) {
             throw new RegraNegocioException("Fluxo inválido: a proposta não está aguardando decisão judicial.");
         }
@@ -308,7 +312,7 @@ public class AcordoService {
             throw new RegraNegocioException("Ação judicial do acordo é obrigatória.");
         }
         if ("HOMOLOGAR".equals(normalizedAction)) {
-            homologarAcordoJudicial(propostaId, hashAssinaturaJuiz);
+            homologarAutorizado(proposta, processo, juiz, hashAssinaturaJuiz);
             List<String> notified = notifyParties ? notificarPartesDecisao(processo, normalizedAction, justification) : List.of();
             return new JudgeAgreementDecisionResponse(
                     processo.getId(),
@@ -453,13 +457,6 @@ public class AcordoService {
             throw new SecurityException("Sem contexto de equipe.");
         }
         return membro;
-    }
-
-    private void validarPermissaoJuiz() {
-        MembroEquipe membro = EquipeContexto.getMembroDaEquipeAtiva();
-        if (membro == null || membro.getPapel() != PapelEquipe.JUIZ_GABINETE) {
-            throw new SecurityException("Acesso negado: requer privilegios de magistrado.");
-        }
     }
 
     private StatusAcordo definirStatusInicial(MembroEquipe membro) {

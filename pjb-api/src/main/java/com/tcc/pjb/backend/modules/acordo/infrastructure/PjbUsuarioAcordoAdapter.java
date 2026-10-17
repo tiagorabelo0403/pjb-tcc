@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.modules.acordo.infrastructure;
 
+import com.tcc.pjb.backend.core.security.magistratura.lotacao.MagistradoLotacaoAccessService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
@@ -7,6 +8,7 @@ import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.modules.acordo.api.UsuarioContextoAcordo;
 import com.tcc.pjb.backend.modules.acordo.api.UsuarioAcordoPort;
+import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -17,11 +19,15 @@ public class PjbUsuarioAcordoAdapter implements UsuarioAcordoPort {
 
     private final ProcessoRepository processoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final MagistradoLotacaoAccessService magistradoLotacaoAccessService;
 
+    @Inject
     public PjbUsuarioAcordoAdapter(ProcessoRepository processoRepository,
-                                   UsuarioRepository usuarioRepository) {
+                                   UsuarioRepository usuarioRepository,
+                                   MagistradoLotacaoAccessService magistradoLotacaoAccessService) {
         this.processoRepository = processoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.magistradoLotacaoAccessService = Objects.requireNonNull(magistradoLotacaoAccessService);
     }
 
     @Override
@@ -63,6 +69,16 @@ public class PjbUsuarioAcordoAdapter implements UsuarioAcordoPort {
     }
 
     @Override
+    public boolean usuarioPodeHomologarNoProcesso(Long processoId, Long usuarioId) {
+        if (processoId == null || !usuarioPodeHomologar(usuarioId)) {
+            return false;
+        }
+        return processoRepository.findById(processoId)
+                .map(processo -> magistradoLotacaoAccessService.magistradoHabilitadoNoProcesso(usuarioId, processo))
+                .orElse(false);
+    }
+
+    @Override
     public UsuarioContextoAcordo obterContextoUsuario(Long processoId, Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario nao encontrado"));
@@ -72,7 +88,7 @@ public class PjbUsuarioAcordoAdapter implements UsuarioAcordoPort {
                 papeis(usuario),
                 usuario.isAtivo(),
                 usuarioPodeParticipar(processoId, usuarioId),
-                usuarioPodeHomologar(usuarioId)
+                usuarioPodeHomologarNoProcesso(processoId, usuarioId)
         );
     }
 

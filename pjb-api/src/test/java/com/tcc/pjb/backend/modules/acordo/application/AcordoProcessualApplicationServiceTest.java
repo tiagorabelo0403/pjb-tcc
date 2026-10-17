@@ -185,6 +185,23 @@ class AcordoProcessualApplicationServiceTest {
     }
 
     @Test
+    void magistradoSemLotacaoNaUnidadeDoProcessoNaoHomologaNemRejeita() {
+        Fixture fx = Fixture.create();
+        AcordoTermoSnapshot termo = fx.termoEnviadoParaHomologacao();
+
+        assertThatThrownBy(() -> fx.service.homologar(new AcordoProcessualApplicationService.HomologarCommand(
+                termo.sessaoId(), 98L, "Sentenca homologatoria", meta())))
+                .isInstanceOf(AcordoForbiddenException.class)
+                .hasMessageContaining("lotacao vigente");
+        assertThatThrownBy(() -> fx.service.rejeitarHomologacao(new AcordoProcessualApplicationService.RejeitarHomologacaoCommand(
+                termo.sessaoId(), 98L, "Clausula penal incompativel.", meta())))
+                .isInstanceOf(AcordoForbiddenException.class);
+
+        assertThat(fx.store.sessoes.get(termo.sessaoId()).status()).isEqualTo(AcordoSessaoStatus.SENT_TO_HOMOLOGATION);
+        assertThat(fx.movimentos).extracting(Movimento::tipo).doesNotContain("HOMOLOGACAO", "REJEICAO_HOMOLOGACAO");
+    }
+
+    @Test
     void rejeicaoRegistraMotivoNaAuditoria() {
         Fixture fx = Fixture.create();
         AcordoTermoSnapshot termo = fx.termoEnviadoParaHomologacao();
@@ -332,18 +349,20 @@ class AcordoProcessualApplicationServiceTest {
         final Set<Long> users = new HashSet<>();
         final Set<Long> judges = new HashSet<>();
         final Set<String> allowed = new HashSet<>();
+        final Set<String> lotados = new HashSet<>();
         final List<AuditoriaAcordoCommand> audits = new ArrayList<>();
         final List<Movimento> movimentos = new ArrayList<>();
         final AcordoProcessualApplicationService service;
 
         private Fixture() {
             contextos.put(1L, contexto(false, true));
-            users.addAll(List.of(10L, 20L, 99L));
-            judges.add(99L);
+            users.addAll(List.of(10L, 20L, 98L, 99L));
+            judges.addAll(List.of(98L, 99L));
+            lotados.add("1:99");
             allow(1L, 10L);
             allow(1L, 20L);
             ProcessoAcordoPort processoPort = new FakeProcessoPort(contextos, movimentos);
-            UsuarioAcordoPort usuarioPort = new FakeUsuarioPort(users, judges, allowed);
+            UsuarioAcordoPort usuarioPort = new FakeUsuarioPort(users, judges, allowed, lotados);
             AuditoriaAcordoPort auditoriaPort = new FakeAuditoriaPort(audits);
             MovimentacaoAcordoPort movimentacaoPort = new FakeMovimentacaoPort(movimentos);
             service = new AcordoProcessualApplicationService(store, processoPort, usuarioPort, auditoriaPort, movimentacaoPort, clock);
@@ -561,11 +580,18 @@ class AcordoProcessualApplicationServiceTest {
         private final Set<Long> users;
         private final Set<Long> judges;
         private final Set<String> allowed;
+        private final Set<String> lotados;
 
-        private FakeUsuarioPort(Set<Long> users, Set<Long> judges, Set<String> allowed) {
+        private FakeUsuarioPort(Set<Long> users, Set<Long> judges, Set<String> allowed, Set<String> lotados) {
             this.users = users;
             this.judges = judges;
             this.allowed = allowed;
+            this.lotados = lotados;
+        }
+
+        @Override
+        public boolean usuarioPodeHomologarNoProcesso(Long processoId, Long usuarioId) {
+            return judges.contains(usuarioId) && lotados.contains(processoId + ":" + usuarioId);
         }
 
         @Override

@@ -360,8 +360,8 @@ public class AcordoProcessualApplicationService {
         Instant now = Instant.now(clock);
         AcordoSessaoSnapshot sessao = requireSessaoForUpdate(command.sessaoId());
         Long magistradoId = requireId(command.magistradoId(), "magistradoId");
-        if (!usuarioPort.usuarioPodeHomologar(magistradoId)) {
-            throw new AcordoForbiddenException("Homologacao exige perfil autorizado de magistratura.");
+        if (!usuarioPort.usuarioPodeHomologarNoProcesso(sessao.processoId(), magistradoId)) {
+            throw new AcordoForbiddenException("Homologacao exige magistrado com lotacao vigente na unidade do processo.");
         }
         AcordoTermoSnapshot termo = store.findTermoBySessao(sessao.id())
                 .orElseThrow(() -> new AcordoConflictException("Sessao sem termo para homologacao."));
@@ -388,8 +388,8 @@ public class AcordoProcessualApplicationService {
         Objects.requireNonNull(command, "command");
         AcordoSessaoSnapshot sessao = requireSessaoForUpdate(command.sessaoId());
         Long magistradoId = requireId(command.magistradoId(), "magistradoId");
-        if (!usuarioPort.usuarioPodeHomologar(magistradoId)) {
-            throw new AcordoForbiddenException("Rejeicao de homologacao exige perfil autorizado de magistratura.");
+        if (!usuarioPort.usuarioPodeHomologarNoProcesso(sessao.processoId(), magistradoId)) {
+            throw new AcordoForbiddenException("Rejeicao de homologacao exige magistrado com lotacao vigente na unidade do processo.");
         }
         AcordoTermoSnapshot termo = store.findTermoBySessao(sessao.id())
                 .orElseThrow(() -> new AcordoConflictException("Sessao sem termo para rejeicao."));

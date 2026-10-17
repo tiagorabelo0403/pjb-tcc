@@ -8,5 +8,7 @@ public interface UsuarioAcordoPort {
 
     boolean usuarioPodeHomologar(Long usuarioId);
 
+    boolean usuarioPodeHomologarNoProcesso(Long processoId, Long usuarioId);
+
     UsuarioContextoAcordo obterContextoUsuario(Long processoId, Long usuarioId);
 }
