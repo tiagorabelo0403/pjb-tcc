@@ -23,6 +23,7 @@ import com.tcc.pjb.backend.model.entity.intelligence.LaianePeticaoInicialDraftSe
 import com.tcc.pjb.backend.model.entity.protocolo.ProtocoloPendencia;
 import com.tcc.pjb.backend.model.repository.LaianePeticaoInicialDraftSessionRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.service.processual.representacao.PeticaoInicialSemAdvogadoCabimentoService;
 import com.tcc.pjb.backend.service.AjuizamentoService;
 import com.tcc.pjb.backend.service.competencia.MapaCompetenciaDinamicoEngine;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
@@ -65,6 +66,7 @@ public class LaianePeticaoInicialProtocolarService {
     private final ProtocoloPendenciaApplicationService completudeService;
     private final ProtocoloCompletudeMetrics completudeMetrics;
     private final LaianePeticaoInicialPecaMaterializationService pecaMaterializationService;
+    private final PeticaoInicialSemAdvogadoCabimentoService cabimentoSemAdvogadoService;
 
     public LaianePeticaoInicialProtocolarService(LaianePeticaoInicialDraftSessionRepository repository,
                                                   ProcessoRepository processoRepository,
@@ -80,7 +82,8 @@ public class LaianePeticaoInicialProtocolarService {
                                                   ProtocoloCompletudeValidator completudeValidator,
                                                   ProtocoloPendenciaApplicationService completudeService,
                                                   ProtocoloCompletudeMetrics completudeMetrics,
-                                                  LaianePeticaoInicialPecaMaterializationService pecaMaterializationService) {
+                                                  LaianePeticaoInicialPecaMaterializationService pecaMaterializationService,
+                                                  PeticaoInicialSemAdvogadoCabimentoService cabimentoSemAdvogadoService) {
         this.repository = Objects.requireNonNull(repository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.currentUserService = Objects.requireNonNull(currentUserService);
@@ -96,6 +99,7 @@ public class LaianePeticaoInicialProtocolarService {
         this.completudeService = Objects.requireNonNull(completudeService);
         this.completudeMetrics = Objects.requireNonNull(completudeMetrics);
         this.pecaMaterializationService = Objects.requireNonNull(pecaMaterializationService);
+        this.cabimentoSemAdvogadoService = Objects.requireNonNull(cabimentoSemAdvogadoService);
     }
 
     @Transactional
@@ -104,7 +108,7 @@ public class LaianePeticaoInicialProtocolarService {
         LaianePeticaoInicialDraftSession entity = repository.findByIdAndSolicitante_Id(draftId, solicitante.getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("LaianePeticaoInicialDraftSession", draftId));
         RitoProcessual ritoDraft = RitoProcessual.tryParse(entity.getRitoSugerido()).orElse(null);
-        Usuario usuario = requirePeticionante(ritoDraft);
+        Usuario usuario = requirePeticionante(ritoDraft, entity.getValorCausa());
 
         if (entity.getProcesso() != null && "PROTOCOLO_REALIZADO".equalsIgnoreCase(entity.getStatus())) {
             Processo existing = entity.getProcesso();
@@ -139,7 +143,7 @@ public class LaianePeticaoInicialProtocolarService {
         processo.setPedidosConsolidados(joinLines(readList(entity.getPedidosJson())));
         processo.setMaterialProbatorioResumo(joinLines(readList(entity.getProvasJson())));
         processo.setResumoIA(joinLines(readList(entity.getFundamentosJson())));
-        processo.setValorCausa(null);
+        processo.setValorCausa(entity.getValorCausa());
         processo.setUsuario(usuario);
         processo.setUf(defaultText(usuario.getUf(), null));
         processo.setComarca(defaultText(usuario.getComarca(), null));
@@ -284,33 +288,19 @@ public class LaianePeticaoInicialProtocolarService {
         return a == null ? trimToNull(second) : a;
     }
 
-    private Usuario requirePeticionante(RitoProcessual rito) {
+    private Usuario requirePeticionante(RitoProcessual rito, java.math.BigDecimal valorCausa) {
         Usuario usuario = currentUserService.getRequired();
         TipoUsuario tipo = usuario.getTipoUsuario();
         boolean profissional = tipo != null && (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isProcuradoria() || tipo.isMinisterioPublico());
         if (profissional) {
             return usuario;
         }
-        boolean peticionantePessoal = tipo != null && tipo.isPeticionantePessoal()
-                && rito != null && RITOS_PETICIONAMENTO_PESSOAL.contains(rito);
-        if (peticionantePessoal) {
+        if (isPeticionantePessoal(usuario)) {
+            cabimentoSemAdvogadoService.exigirCabimento(rito, valorCausa);
             return usuario;
         }
         throw new com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException("A funcionalidade e exclusiva para advocacia, procuradoria, defensoria e Ministerio Publico");
     }
-
-    private static final java.util.Set<RitoProcessual> RITOS_PETICIONAMENTO_PESSOAL = java.util.Set.of(
-            RitoProcessual.JUIZADO_ESPECIAL_CIVEL,
-            RitoProcessual.TRABALHISTA_ORDINARIO,
-            RitoProcessual.TRABALHISTA_SUMARISSIMO,
-            RitoProcessual.TRABALHISTA_SUMARIO_ALCADA,
-            RitoProcessual.TRABALHISTA_ACAO_CUMPRIMENTO,
-            RitoProcessual.TRABALHISTA_CUMPRIMENTO_SENTENCA,
-            RitoProcessual.TRABALHISTA_EXECUCAO,
-            RitoProcessual.TRABALHISTA_ACIDENTE_TRABALHO,
-            RitoProcessual.JUIZADO_ESPECIAL_FEDERAL,
-            RitoProcessual.PREVIDENCIARIO_JEF
-    );
 
     private boolean isPeticionantePessoal(Usuario usuario) {
         TipoUsuario tipo = usuario == null ? null : usuario.getTipoUsuario();

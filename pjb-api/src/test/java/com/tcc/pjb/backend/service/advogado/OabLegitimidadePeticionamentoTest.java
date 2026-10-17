@@ -419,6 +419,44 @@ class OabLegitimidadePeticionamentoTest extends PjbFlowItBase {
         Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
         assertThat(processo.getParteAutoraNome()).isEqualTo(cidadao.getNome());
         assertThat(processo.getParteAutoraCpf()).isEqualTo(cidadao.getCpf());
+        assertThat(processo.getValorCausa()).isEqualByComparingTo("3000.00");
+    }
+
+    @Test
+    void cidadaoNoJuizadoComValorAcimaDeVinteSalariosMinimosBloqueiaProtocolo() {
+        Usuario cidadao = salvarCidadao();
+        LaianePeticaoInicialDraftSession draft = salvarDraftComRito(cidadao, "JUIZADO_ESPECIAL_CIVEL", "Peticao inicial de juizado especial");
+        draft.setValorCausa(new BigDecimal("1000000.00"));
+        draftRepository.save(draft);
+        when(currentUserService.getRequired()).thenReturn(cidadao);
+
+        assertThatThrownBy(() -> service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE))))
+                .isInstanceOf(com.tcc.pjb.backend.service.exception.ErroDeValidacaoException.class)
+                .hasMessageContaining("20 salários mínimos");
+    }
+
+    @Test
+    void cidadaoNoJuizadoSemValorDaCausaBloqueiaProtocolo() {
+        Usuario cidadao = salvarCidadao();
+        LaianePeticaoInicialDraftSession draft = salvarDraftComRito(cidadao, "JUIZADO_ESPECIAL_CIVEL", "Peticao inicial de juizado especial");
+        draft.setValorCausa(null);
+        draftRepository.save(draft);
+        when(currentUserService.getRequired()).thenReturn(cidadao);
+
+        assertThatThrownBy(() -> service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE))))
+                .isInstanceOf(com.tcc.pjb.backend.service.exception.ErroDeValidacaoException.class)
+                .hasMessageContaining("valor da causa");
+    }
+
+    @Test
+    void cidadaoListaOsPropriosRascunhos() {
+        Usuario cidadao = salvarCidadao();
+        LaianePeticaoInicialDraftSession draft = salvarDraftComRito(cidadao, "JUIZADO_ESPECIAL_CIVEL", "Peticao inicial de juizado especial");
+        when(currentUserService.getRequired()).thenReturn(cidadao);
+
+        assertThat(service.listarMinhas()).extracting(LaianePeticaoInicialDraftService.DraftView::id).contains(draft.getId());
     }
 
     @Test
@@ -548,20 +586,16 @@ class OabLegitimidadePeticionamentoTest extends PjbFlowItBase {
             "TRABALHISTA_EXECUCAO",
             "TRABALHISTA_ACIDENTE_TRABALHO"
     })
-    void cidadaoPeticionaEmRitoTrabalhistaPermitidoSemAdvogado(RitoProcessual rito) {
+    void cidadaoEmRitoTrabalhistaAindaNaoLiberadoBloqueiaProtocolo(RitoProcessual rito) {
         Usuario cidadao = salvarCidadao();
         LaianePeticaoInicialDraftSession draft = salvarDraftComRito(cidadao, rito.name(), "Peticao inicial trabalhista de jus postulandi");
         when(currentUserService.getRequired()).thenReturn(cidadao);
 
-        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
+        assertThatThrownBy(() -> service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("ESTADUAL", null, java.util.Set.of(),
                 java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE,
-                        com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.CTPS)));
-
-        assertThat(result.processoId()).isNotNull();
+                        com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.CTPS))))
+                .isInstanceOf(com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException.class);
         verifyNoInteractions(oabValidationClient);
-        Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
-        assertThat(processo.getParteAutoraNome()).isEqualTo(cidadao.getNome());
-        assertThat(processo.getParteAutoraCpf()).isEqualTo(cidadao.getCpf());
     }
 
     @ParameterizedTest
@@ -569,19 +603,15 @@ class OabLegitimidadePeticionamentoTest extends PjbFlowItBase {
             "JUIZADO_ESPECIAL_FEDERAL",
             "PREVIDENCIARIO_JEF"
     })
-    void cidadaoPeticionaEmJuizadoEspecialFederalSemAdvogado(RitoProcessual rito) {
+    void cidadaoNoJuizadoEspecialFederalAindaNaoLiberadoBloqueiaProtocolo(RitoProcessual rito) {
         Usuario cidadao = salvarCidadao();
         LaianePeticaoInicialDraftSession draft = salvarDraftComRito(cidadao, rito.name(), "Peticao inicial de juizado especial federal");
         when(currentUserService.getRequired()).thenReturn(cidadao);
 
-        LaianePeticaoInicialDraftService.ProtocolarResult result = service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("FEDERAL", null, java.util.Set.of(),
-                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE)));
-
-        assertThat(result.processoId()).isNotNull();
+        assertThatThrownBy(() -> service.protocolar(draft.getId(), new LaianePeticaoInicialDraftService.ProtocolarRequest("FEDERAL", null, java.util.Set.of(),
+                java.util.List.of(com.tcc.pjb.backend.model.entity.enums.processual.TipoDocumento.DOCUMENTO_IDENTIDADE))))
+                .isInstanceOf(com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException.class);
         verifyNoInteractions(oabValidationClient);
-        Processo processo = processoRepository.findById(result.processoId()).orElseThrow();
-        assertThat(processo.getParteAutoraNome()).isEqualTo(cidadao.getNome());
-        assertThat(processo.getParteAutoraCpf()).isEqualTo(cidadao.getCpf());
     }
 
     @ParameterizedTest
@@ -649,6 +679,7 @@ class OabLegitimidadePeticionamentoTest extends PjbFlowItBase {
         draft.setFundamentosJson("[\"Fundamento aplicavel\"]");
         draft.setProvasJson("[\"Prova documental\"]");
         draft.setChecklistJson("[\"Documento de identificacao\"]");
+        draft.setValorCausa(new BigDecimal("3000.00"));
         draft.setMinutaInicial(minuta);
         draft.setHashIntegridade("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
         draft.setStatus("RASCUNHO");

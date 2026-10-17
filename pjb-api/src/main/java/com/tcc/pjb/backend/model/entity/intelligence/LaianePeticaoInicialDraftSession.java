@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.model.entity.intelligence;
 
+import java.math.BigDecimal;
 import com.tcc.pjb.backend.core.modularity.PjbModuleId;
 import com.tcc.pjb.backend.core.ownership.PjbDataOwnership;
 import com.tcc.pjb.backend.core.ownership.PjbOwnershipMode;
@@ -121,6 +122,9 @@ public class LaianePeticaoInicialDraftSession {
 
     @Column(name = "endereco_reu_desconhecido", nullable = false)
     private boolean enderecoReuDesconhecido;
+
+    @Column(name = "valor_causa", precision = 19, scale = 2)
+    private BigDecimal valorCausa;
 
     @Column(name = "minuta_inicial", columnDefinition = "TEXT", nullable = false)
     private String minutaInicial;

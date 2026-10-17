@@ -257,7 +257,7 @@ Abra o `.env` e preencha as variáveis obrigatórias:
 docker compose up -d
 ```
 
-Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V368) são aplicadas automaticamente na primeira conexão do backend.
+Isso sobe PostgreSQL 17, Apache Kafka 3.8, Redis 7.4 e Elasticsearch 8.15. As migrations Flyway (numeração até V370) são aplicadas automaticamente na primeira conexão do backend.
 
 ### 4. Verificar os profiles Spring
 
@@ -636,7 +636,7 @@ graph TD
 | Build | Maven multi-module (`pjb-core` + `pjb-api`) |
 | Banco | PostgreSQL 17 com Row Level Security por operação |
 | Banco de testes | H2 em memória + Testcontainers |
-| Migrations | Flyway — numeração até V368, com particionamento mensal em tabelas de evento |
+| Migrations | Flyway — numeração até V370, com particionamento mensal em tabelas de evento |
 | Persistência | JPA / Hibernate com `ddl-auto: validate` em produção |
 | Mensageria | Apache Kafka 4.2 — eventos judiciais e outbox |
 | Orquestração de workflow | Camunda 8 / Zeebe — BPMN aplicado ao fluxo de ajuizamento |
@@ -920,6 +920,8 @@ O catálogo `RitoProcessual` é selado (sealed). Todos os ritos abaixo são trat
 
 **Juizados Especiais:** cível (JEC), federal (JEF), da Fazenda Pública (JEFP) — com rito próprio e limites de valor. `RepresentacaoProcessualPolicyService` reconhece o jus postulandi da parte no JEC (Lei 9.099/95, art. 9º) como instrumento próprio (`JUS_POSTULANDI_JUIZADO`), distinto do jus postulandi trabalhista (CLT, art. 791) — cidadão que peticiona pessoalmente no Juizado Especial Cível não é mais instruído a juntar procuração de advogado que não possui. O reconhecimento não fica só no checklist informativo: `RecursalValidacaoMinimaService` (gatekeeper real de admissibilidade recursal, via `RecursoAdmissibilidadeService`) passa a aceitar jus postulandi como legitimidade recursal em hipótese restrita por espécie de recurso — embargos de declaração no JEC e recurso ordinário na Justiça do Trabalho seguem autorrepresentáveis, mas recurso inominado à Turma Recursal (Lei 9.099/95, art. 41, § 2º) e qualquer recurso de competência do TST (Súmula 425) continuam exigindo advogado, preservando o mesmo gate que já protegia o restante do sistema. A mesma modelagem foi estendida ao Juizado Especial Federal, com valor de instrumento próprio (`JUS_POSTULANDI_JEF`) em vez de reaproveitar o do juizado estadual: o fundamento é o art. 10 da Lei 10.259/2001, que dispensa advogado sem o teto de alçada aplicável ao JEC, e o regime recursal federal — Turma Recursal Federal e incidente de uniformização dos arts. 14 e 15 — não tem equivalente no microssistema estadual. Manter um único valor obrigaria a distinguir os dois fundamentos dentro de cada consumidor; um valor por fundamento concentra a diferença no catálogo de instrumentos. O predicado que decide o regime cobre `JUIZADO_ESPECIAL_FEDERAL` e `PREVIDENCIARIO_JEF`, os dois ritos que efetivamente tramitam sob a Lei 10.259/2001, e não alcança o previdenciário de Justiça Federal comum. A dispensa de procuração vale nos dois canais de ajuizamento: além do checklist do Laiane, `CompletudeDocumentalPolicyService` passou a receber o instrumento resolvido para o ator, de modo que `PROCURACAO` sai dos documentos obrigatórios do catálogo quando o regime é de jus postulandi — e apenas ela, com CTPS, comprovante de endereço e os demais requisitos do rito seguindo exigíveis. Representação resolvida como irregular não gera dispensa: o instrumento volta nulo e a procuração continua sendo cobrada. A dispensa alcança também o preparo inicial. `CustaIsencaoPorRitoPolicy` reconhece isenção de custas em primeiro grau para JEC (Lei 9.099/95, art. 54), JEF (Lei 10.259/2001) e JEFP (Lei 12.153/2009), e mantém a regra pré-existente do ramo `INFANCIA_JUVENTUDE` agora com fundamento explícito no art. 141, § 2º do ECA. Fase recursal fica de fora por decisão da própria política — o parágrafo único do art. 54 exige preparo do recurso inominado, então a checagem do tipo de custa acontece antes do rito. O motor `CustaJudicialService`, com GRU e PIX, segue desconectado dos canais de ajuizamento — a política vive à frente da integração, correta quando ela vier, sem cobrar ou isentar ninguém enquanto não vier.
 
+Pela API, o cidadão autenticado só protocola petição inicial sem advogado no Juizado Especial Cível, em causa de até 20 salários mínimos vigentes na data do protocolo (Lei 9.099/95, art. 9º). O limite é conferido no backend por `PeticaoInicialSemAdvogadoCabimentoService` ao estruturar, salvar e protocolar o rascunho, e o valor da causa do rascunho segue para o processo. A regra de rota libera `ROLE_CIDADAO` só em `/api/v1/peticionamento/inicial/rascunhos/**`; o restante do peticionamento continua restrito à advocacia, à Defensoria e à Procuradoria. O JEF e a Justiça do Trabalho seguem reconhecidos na política de representação, mas a petição inicial pelo próprio cidadão nesses ritos ainda não está liberada.
+
 **Especializados:** falimentar, recuperação judicial, precatório, militar, extrajudicial, arbitragem com homologação
 
 [⬆ Voltar à navegação rápida](#navegação-rápida)
@@ -1037,7 +1039,7 @@ O limiar padrão de `autovacuum_analyze_scale_factor` do PostgreSQL (10% da tabe
 
 ## Banco de dados
 
-330 migrations Flyway (numeração não contígua de V0 a V368 — 39 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
+331 migrations Flyway (numeração não contígua de V0 a V370 — 40 números da sequência não correspondem a arquivo existente no repositório), aplicadas em sequência, com `validateOnMigrate=true` e `outOfOrder=false`. O schema é sempre validado pelo Hibernate no startup — qualquer drift entre entidade e banco é detectado antes da primeira requisição.
 
 Row Level Security ativo por operação, em duas dimensões: sigilo do processo (leitura de casos sigilosos recusada pelo banco antes do ORM) e ator — GUCs de conexão dedicadas (`app.pjb_actor_id`, `app.pjb_actor_roles`) escopam tabelas operacionais (chamados de suporte, exceções de deslocamento de magistrado, trilha de auditoria da IA, intimações de audiência) fiéis ao `@PreAuthorize` de leitura de cada uma, como defesa em profundidade. Nunca RLS decorativo: tabela sem coluna de tenancy não recebe política, e um teste de disciplina de migration barra `ENABLE ROW LEVEL SECURITY` sem `FORCE` e sem política — o RLS órfão que o dono da tabela ignora em runtime. `tb_usuario` e o cluster `tb_identidade_juridica_*` (registro nacional por CPF/CNPJ) são exclusões deliberadas dessa varredura, não lacunas: ambos são consultados legitimamente por papéis institucionais para dados de terceiros (advogado visto por servidor, documento de réu consultado por oficial de justiça) tanto quanto por autoatendimento — não existe fronteira de posse por linha para restringir sem quebrar essas leituras cruzadas legítimas; a proteção de `tb_usuario` é feita por controller inteiro sob `@PreAuthorize` de admin (não há endpoint de self-service por id) e a de PII em ambas por criptografia em repouso com índice cego, não por RLS. Tabelas materializadas com refresh assíncrono para analytics (ADR-0053). Outbox pattern para efeitos pós-commit sem risco de perda de evento em falha de transação. A tabela de outbox é particionada mensalmente — expurgo de partições inteiras via `DROP TABLE`, sem varredura de linha.
 
@@ -1410,7 +1412,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.754 testes unitários, 118 classes de integração e 330 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.754 testes unitários, 118 classes de integração e 331 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 
