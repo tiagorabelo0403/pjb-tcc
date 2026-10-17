@@ -65,7 +65,7 @@ public class CidadaoPosicaoProcessualService {
         if (tipo == null) {
             return null;
         }
-        if (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isMinisterioPublico() || tipo.isProcuradoria()) {
+        if (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isMinisterioPublico()) {
             return TipoRepresentanteProcessual.doAtor(tipo);
         }
         return cpf.equals(ator.getCpf()) ? TipoRepresentanteProcessual.PARTE_SEM_ADVOGADO : null;

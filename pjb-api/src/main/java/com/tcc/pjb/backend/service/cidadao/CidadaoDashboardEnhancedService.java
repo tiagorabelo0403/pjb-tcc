@@ -185,7 +185,7 @@ public class CidadaoDashboardEnhancedService {
             case "SANEAMENTO" -> "Organização do processo pelo juízo";
             case "JULGAMENTO" -> "Em julgamento";
             case "LIQUIDACAO" -> "Cálculo do valor devido";
-            case "EXECUCAO", "EXECUTORIA" -> "Execução da decisão";
+            case "EXECUCAO", "EXECUTORIA" -> "Fase de execução";
             case "PENHORA" -> "Penhora de bens";
             default -> tecnico instanceof FaseProcessual fase ? fase.getDescricao() : token.replace('_', ' ').toLowerCase();
         };

@@ -127,4 +127,12 @@ class CidadaoPosicaoProcessualServiceTest {
         assertThat(service.resolver(processo, " ")).isEqualTo(new CidadaoPosicaoProcessual(null, null));
         assertThat(service.polo(processo, " ")).isNull();
     }
+
+    @Test
+    void processoAjuizadoPelaProcuradoriaNaoApareceComoMinisterioPublico() {
+        linhaDoPolo(TipoPolo.ATIVO, null, 900L);
+        ajuizadoPor(TipoUsuario.PROCURADOR, "99988877766");
+
+        assertThat(service.resolver(processo, CPF).representacao()).isNull();
+    }
 }
