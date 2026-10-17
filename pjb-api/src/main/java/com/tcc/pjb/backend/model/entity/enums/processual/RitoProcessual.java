@@ -3,6 +3,7 @@ package com.tcc.pjb.backend.model.entity.enums.processual;
 import com.tcc.pjb.backend.core.procedural.ProceduralCatalogSupport;
 import com.tcc.pjb.backend.core.util.EnumText;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -263,6 +264,24 @@ public boolean isFamiliaSucessoes() {
             || this == CIVIL_ADOCAO
             || this == CIVIL_TUTELA_CURATELA
             || this == CIVIL_FAMILIA_GUARDA;
+}
+
+public boolean cabeNoJuizadoEspecialFederal() {
+    return switch (this) {
+        case COMUM_ORDINARIO, SUMARIO, FAZENDA_PUBLICA_CONHECIMENTO,
+             TRIBUTARIO_ANULATORIA_DEBITO, TRIBUTARIO_REPETICAO_INDEBITO, TRIBUTARIO_DECLARATORIA,
+             ADMINISTRATIVO_CONCURSO_PUBLICO, ADMINISTRATIVO_SERVIDORES, CIVIL_CONSIGNACAO_PAGAMENTO,
+             CIVIL_TUTELA_URGENTE, CIVIL_TUTELA_CAUTELAR_ANTECEDENTE, CIVIL_TUTELA_ANTECIPADA_ANTECEDENTE -> true;
+        default -> isPrevidenciario() && this != PREVIDENCIARIO_ACIDENTARIO;
+    };
+}
+
+public BigDecimal salariosMinimosDaAlcada() {
+    return switch (this) {
+        case JUIZADO_ESPECIAL_FEDERAL, PREVIDENCIARIO_JEF, JUIZADO_ESPECIAL_FAZENDA_PUBLICA -> new BigDecimal("60");
+        case JUIZADO_ESPECIAL, JUIZADO_ESPECIAL_CIVEL, TRABALHISTA_SUMARISSIMO -> new BigDecimal("40");
+        default -> null;
+    };
 }
 
 public boolean isExecucaoFiscalEstrita() {

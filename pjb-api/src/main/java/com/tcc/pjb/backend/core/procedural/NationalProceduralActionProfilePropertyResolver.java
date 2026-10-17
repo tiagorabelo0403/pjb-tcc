@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.core.procedural;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,10 @@ class NationalProceduralActionProfilePropertyResolver {
     Optional<NationalProceduralActionProfile> resolve(NationalProceduralActionProfileContext context) {
         Objects.requireNonNull(context);
         String corpus = context.corpus() == null ? "" : context.corpus();
+        if (NationalProceduralActionProfileSupport.containsAny(corpus, "DEMARCACAO", "DEMARCATORIA", "ACAO DE DIVISAO", "DIVISAO DE TERRAS")) {
+            NationalProceduralActionProfile profile = profile("DIVISAO_DEMARCACAO", "CIVIL_IMOBILIARIO", true, "CIVIL_DIVISAO_DEMARCACAO", "IMOBILIARIO");
+            return Optional.of(NationalProceduralActionProfileSupport.rebuilt(profile, List.of(messages.divisaoDemarcacaoJuizadoAlert()), List.of()));
+        }
         if (NationalProceduralActionProfileSupport.containsAny(corpus, "USUCAPIAO")) {
             return Optional.of(profile("USUCAPIAO", "CIVIL_IMOBILIARIO", true, "CIVIL_USUCAPIAO", "IMOBILIARIO"));
         }

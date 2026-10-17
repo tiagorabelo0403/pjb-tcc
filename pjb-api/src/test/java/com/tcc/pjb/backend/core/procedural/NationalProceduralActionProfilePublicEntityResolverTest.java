@@ -45,6 +45,26 @@ class NationalProceduralActionProfilePublicEntityResolverTest {
     }
 
     @Test
+    void mustResolveAcaoPopularAsSpecialProcedureOutsideTheJuizados() {
+        NationalProceduralActionProfilePublicEntityResolver resolver = new NationalProceduralActionProfilePublicEntityResolver(
+                new NationalProceduralActionProfileEconomicRitoResolver(mock(TetoProcessualService.class), mock(SalarioMinimoNacionalService.class)),
+                new NationalProceduralActionProfileMessages()
+        );
+
+        NationalProceduralActionProfile profile = resolver.resolve(new NationalProceduralActionProfileContext(
+                Map.of(),
+                NationalProceduralRoutingTestFixtures.sampleResolution().canonical(),
+                NationalProceduralRoutingSupport.normalize("Pedido de anulação de ato lesivo ao patrimônio público do Município, com base na Lei 4.717/65"),
+                null
+        )).orElseThrow();
+
+        assertEquals("ACAO_POPULAR", profile.actionNature());
+        assertEquals("ESPECIAL_ACAO_POPULAR", profile.defaultRito());
+        assertTrue(profile.specialProcedure());
+        assertTrue(profile.alerts().stream().anyMatch(alerta -> alerta.contains("Lei 10.259")));
+    }
+
+    @Test
     void mustClosePrevidenciarioRppsWithDedicatedSubtype() {
         TetoProcessualService tetoProcessualService = mock(TetoProcessualService.class);
         SalarioMinimoNacionalService salarioMinimoNacionalService = mock(SalarioMinimoNacionalService.class);

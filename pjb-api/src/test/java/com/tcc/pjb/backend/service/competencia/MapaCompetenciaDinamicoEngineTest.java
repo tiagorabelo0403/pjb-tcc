@@ -305,7 +305,7 @@ class MapaCompetenciaDinamicoEngineTest {
                 .thenReturn(List.<Object[]>of(new Object[]{3L, 30L}, new Object[]{1L, 1L}, new Object[]{2L, 1L}));
         MapaCompetenciaDinamicoEngine engine = new MapaCompetenciaDinamicoEngine(
                 unidadeRepository, distribuicaoRepository, mock(ProcessoRepository.class), mock(AuditLedgerService.class),
-                mock(OutboxPublisher.class), mock(CompetenceResolverService.class), configuracao, canonico);
+                mock(OutboxPublisher.class), configuracao, canonico, inferencia(canonico, mock(CompetenceResolverService.class)));
 
         var resposta = engine.distribuir(new DynamicCompetenceDistributionRequest(
                 null, null, null, "CIVIL", null, "CE", "Sobral", "CE", "Sobral",
@@ -339,7 +339,7 @@ class MapaCompetenciaDinamicoEngineTest {
         when(canonico.resolve(any())).thenReturn(new ProceduralCanonicalResolver.CanonicalContext());
         MapaCompetenciaDinamicoEngine engine = new MapaCompetenciaDinamicoEngine(
                 unidadeRepository, mock(ProcessoDistribuicaoCompetenciaRepository.class), mock(ProcessoRepository.class),
-                mock(AuditLedgerService.class), mock(OutboxPublisher.class), mock(CompetenceResolverService.class), configuracao, canonico);
+                mock(AuditLedgerService.class), mock(OutboxPublisher.class), configuracao, canonico, inferencia(canonico, mock(CompetenceResolverService.class)));
         return engine.distribuir(new DynamicCompetenceDistributionRequest(
                 null, null, null, "CIVIL", null, "CE", "Fortaleza", "CE", "Fortaleza",
                 requerJuizado, false, null, "ESTADUAL", false, false, null)).orElseThrow();
@@ -583,7 +583,7 @@ class MapaCompetenciaDinamicoEngineTest {
         when(canonico.resolve(any())).thenReturn(new ProceduralCanonicalResolver.CanonicalContext());
         MapaCompetenciaDinamicoEngine engine = new MapaCompetenciaDinamicoEngine(
                 unidadeRepository, mock(ProcessoDistribuicaoCompetenciaRepository.class), mock(ProcessoRepository.class),
-                mock(AuditLedgerService.class), mock(OutboxPublisher.class), mock(CompetenceResolverService.class), configuracao, canonico);
+                mock(AuditLedgerService.class), mock(OutboxPublisher.class), configuracao, canonico, inferencia(canonico, mock(CompetenceResolverService.class)));
         return engine.distribuir(new DynamicCompetenceDistributionRequest(
                 null, null, null, "CIVIL", null, "CE", comarca, "CE", comarca,
                 false, false, "CIVIL", "ESTADUAL", false, false, null), rito);
@@ -645,7 +645,7 @@ class MapaCompetenciaDinamicoEngineTest {
         when(canonico.resolve(any())).thenThrow(new IllegalStateException("classe TPU invalida"));
         MapaCompetenciaDinamicoEngine engine = new MapaCompetenciaDinamicoEngine(
                 unidadeRepository, distribuicaoRepository, mock(ProcessoRepository.class), mock(AuditLedgerService.class),
-                mock(OutboxPublisher.class), mock(CompetenceResolverService.class), mock(ConfiguracaoDistribuicaoVaraService.class), canonico);
+                mock(OutboxPublisher.class), mock(ConfiguracaoDistribuicaoVaraService.class), canonico, inferencia(canonico, mock(CompetenceResolverService.class)));
         Processo processo = processoRoteado(77L, "0009876-54.2026.8.06.0001", "VARA-CIVEL");
         processo.setRito(RitoProcessual.JUIZADO_ESPECIAL_CIVEL);
 
@@ -669,18 +669,31 @@ class MapaCompetenciaDinamicoEngineTest {
     private static ProcessoDistribuicaoCompetencia registrarCargaAplicada(UnidadeJudiciariaCompetencia unidade,
                                                                          RitoProcessual rito,
                                                                          AuditLedgerService auditoria) {
+        return registrarCargaAplicada(unidade, List.of(unidade), rito, TipoJustica.ESTADUAL, null, auditoria);
+    }
+
+    private static ProcessoDistribuicaoCompetencia registrarCargaAplicada(UnidadeJudiciariaCompetencia unidade,
+                                                                         List<UnidadeJudiciariaCompetencia> malha,
+                                                                         RitoProcessual rito,
+                                                                         TipoJustica tipoJustica,
+                                                                         BigDecimal valorCausa,
+                                                                         AuditLedgerService auditoria) {
         UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
         ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
         when(unidadeRepository.findByCodigo(unidade.getCodigo())).thenReturn(Optional.of(unidade));
+        when(unidadeRepository.findAll()).thenReturn(malha);
         when(distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(anyLong())).thenReturn(Optional.empty());
         ProceduralCanonicalResolver canonico = mock(ProceduralCanonicalResolver.class);
         when(canonico.resolve(any())).thenReturn(new ProceduralCanonicalResolver.CanonicalContext());
         MapaCompetenciaDinamicoEngine engine = new MapaCompetenciaDinamicoEngine(
                 unidadeRepository, distribuicaoRepository, mock(ProcessoRepository.class), auditoria,
-                mock(OutboxPublisher.class), mock(CompetenceResolverService.class), mock(ConfiguracaoDistribuicaoVaraService.class), canonico);
+                mock(OutboxPublisher.class), mock(ConfiguracaoDistribuicaoVaraService.class), canonico, inferencia(canonico, mock(CompetenceResolverService.class)));
         Processo processo = processoRoteado(77L, "0009876-54.2026.8.06.0001", unidade.getCodigo());
         processo.setRito(rito);
-        processo.setTipoJustica(TipoJustica.ESTADUAL);
+        processo.setTipoJustica(tipoJustica);
+        processo.setValorCausa(valorCausa);
+        processo.setUf("CE");
+        processo.setComarca("Fortaleza");
 
         Optional<DynamicCompetenceDistributionResponse> devolvida = engine.registrarCargaDaDistribuicaoAplicada(processo);
 
@@ -696,6 +709,563 @@ class MapaCompetenciaDinamicoEngineTest {
             });
         }
         return captor.getValue();
+    }
+
+    private static com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService salarioMinimo() {
+        com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService salarioMinimo =
+                mock(com.tcc.pjb.backend.service.financeiro.SalarioMinimoNacionalService.class);
+        when(salarioMinimo.multiplicar(any(BigDecimal.class), any(java.time.LocalDate.class)))
+                .thenAnswer(inv -> new BigDecimal(inv.<java.time.LocalDate>getArgument(1).getYear() < 2026 ? "1518.00" : "1621.00")
+                        .multiply(inv.getArgument(0)));
+        return salarioMinimo;
+    }
+
+    @Test
+    void previdenciarioFederalDentroDaAlcadaVaiAoJefPelaCompetenciaAbsoluta() {
+        for (boolean caminhoCompleto : new boolean[]{true, false}) {
+            assertThat(registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.PREVIDENCIARIO_BPC_LOAS, RamoDireito.PREVIDENCIARIO,
+                    TipoJustica.FEDERAL, new BigDecimal("50000.00"), mock(AuditLedgerService.class), caminhoCompleto)
+                    .orElseThrow().unidadeCodigo()).isEqualTo("JFCE-JEF-CE-CAP");
+        }
+    }
+
+    @Test
+    void previdenciarioFederalAcimaDaAlcadaVaiAVaraFederalComumENaoAoJefExclusivo() {
+        for (boolean caminhoCompleto : new boolean[]{true, false}) {
+            assertThat(registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.PREVIDENCIARIO_APOSENTADORIA, RamoDireito.PREVIDENCIARIO,
+                    TipoJustica.FEDERAL, new BigDecimal("150000.00"), mock(AuditLedgerService.class), caminhoCompleto)
+                    .orElseThrow().unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+        }
+    }
+
+    @Test
+    void acidentarioNaJusticaFederalNaoVaiAoJefEPedeConferenciaDaCompetenciaEstadual() {
+        for (boolean caminhoCompleto : new boolean[]{true, false}) {
+            AuditLedgerService auditoria = mock(AuditLedgerService.class);
+            DynamicCompetenceDistributionResponse resposta = registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.PREVIDENCIARIO_ACIDENTARIO,
+                    RamoDireito.PREVIDENCIARIO, TipoJustica.FEDERAL, new BigDecimal("20000.00"), auditoria, caminhoCompleto).orElseThrow();
+
+            assertThat(resposta.unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+            assertThat(resposta.distribuicaoAutomatica()).isFalse();
+            assertThat(resposta.fatoresRevisaoHumana()).anyMatch(fator -> fator.contains("Sumula 15 do STJ"));
+            verify(auditoria).appendSafely(org.mockito.ArgumentMatchers.eq("DISTRIBUICAO_ACIDENTARIO_NA_JUSTICA_FEDERAL"),
+                    org.mockito.ArgumentMatchers.eq("PROCESSO"), org.mockito.ArgumentMatchers.eq("90"),
+                    org.mockito.ArgumentMatchers.isNull(), anyString());
+        }
+    }
+
+    @Test
+    void previdenciarioFederalDeRitoComumDentroDaAlcadaTambemVaiAoJef() {
+        for (boolean caminhoCompleto : new boolean[]{true, false}) {
+            assertThat(registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.COMUM_ORDINARIO, RamoDireito.PREVIDENCIARIO,
+                    TipoJustica.FEDERAL, new BigDecimal("50000.00"), mock(AuditLedgerService.class), caminhoCompleto)
+                    .orElseThrow().unidadeCodigo()).isEqualTo("JFCE-JEF-CE-CAP");
+        }
+    }
+
+    @Test
+    void mandadoDeSegurancaPrevidenciarioNaoVaiAoJefPorExclusaoLegal() {
+        for (boolean caminhoCompleto : new boolean[]{true, false}) {
+            assertThat(registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.ESPECIAL_MANDADO_SEGURANCA, RamoDireito.PREVIDENCIARIO,
+                    TipoJustica.FEDERAL, new BigDecimal("20000.00"), mock(AuditLedgerService.class), caminhoCompleto)
+                    .orElseThrow().unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+        }
+    }
+
+    @Test
+    void causaFederalComumDentroDaAlcadaDoJefFicaNaVaraComumComConferenciaDaCompetenciaAbsoluta() {
+        for (RitoProcessual rito : List.of(RitoProcessual.COMUM_ORDINARIO, RitoProcessual.FAZENDA_PUBLICA_CONHECIMENTO,
+                RitoProcessual.TRIBUTARIO_REPETICAO_INDEBITO, RitoProcessual.ADMINISTRATIVO_SERVIDORES)) {
+            for (boolean caminhoCompleto : new boolean[]{true, false}) {
+                AuditLedgerService auditoria = mock(AuditLedgerService.class);
+                DynamicCompetenceDistributionResponse resposta = registrarDistribuicaoInicial(malhaFederal(), rito,
+                        RamoDireito.TRIBUTARIO, TipoJustica.FEDERAL, new BigDecimal("20000.00"), auditoria, caminhoCompleto).orElseThrow();
+
+                assertThat(resposta.unidadeCodigo()).as(rito.name()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+                assertThat(resposta.distribuicaoAutomatica()).as(rito.name()).isFalse();
+                assertThat(resposta.fatoresRevisaoHumana()).as(rito.name()).containsOnlyOnce(fatorCausaFederalNaAlcada(resposta));
+                verify(auditoria).appendSafely(org.mockito.ArgumentMatchers.eq("DISTRIBUICAO_CAUSA_FEDERAL_NA_ALCADA_FORA_DO_JUIZADO"),
+                        org.mockito.ArgumentMatchers.eq("PROCESSO"), org.mockito.ArgumentMatchers.eq("90"),
+                        org.mockito.ArgumentMatchers.isNull(), anyString());
+            }
+        }
+    }
+
+    @Test
+    void causaFederalNaAlcadaSemJefInstaladoNaComarcaNaoPedeConferencia() {
+        UnidadeJudiciariaCompetencia federal = unidadeFederal("JFCE-FEDERAL-CE-CAP", RamoDireito.TRIBUTARIO, 90);
+        ReflectionTestUtils.setField(federal, "id", 2L);
+        UnidadeJudiciariaCompetencia jefDeOutraComarca = unidadeSemFkComComarcaTextual("JFCE-JEF-CE-JUA", "CE", "Juazeiro do Norte");
+        ReflectionTestUtils.setField(jefDeOutraComarca, "tipoJustica", TipoJustica.FEDERAL);
+        jefDeOutraComarca.setExclusivoJuizadoEspecial(true);
+        ReflectionTestUtils.setField(jefDeOutraComarca, "id", 3L);
+
+        for (boolean caminhoCompleto : new boolean[]{true, false}) {
+            DynamicCompetenceDistributionResponse resposta = registrarDistribuicaoInicial(List.of(federal, jefDeOutraComarca),
+                    RitoProcessual.FAZENDA_PUBLICA_CONHECIMENTO, RamoDireito.TRIBUTARIO, TipoJustica.FEDERAL,
+                    new BigDecimal("20000.00"), mock(AuditLedgerService.class), caminhoCompleto).orElseThrow();
+
+            assertThat(resposta.unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+            assertThat(resposta.fatoresRevisaoHumana()).noneMatch(fator -> fator.contains("alcada do juizado especial federal"));
+        }
+    }
+
+    @Test
+    void jefInativoOuCriminalNaComarcaNaoContaComoJuizadoInstalado() {
+        UnidadeJudiciariaCompetencia federal = unidadeFederal("JFCE-FEDERAL-CE-CAP", RamoDireito.TRIBUTARIO, 90);
+        ReflectionTestUtils.setField(federal, "id", 2L);
+        UnidadeJudiciariaCompetencia jefFechado = unidadeFederal("JFCE-JEF-CE-CAP", RamoDireito.PREVIDENCIARIO, 10);
+        jefFechado.setExclusivoJuizadoEspecial(true);
+        ReflectionTestUtils.setField(jefFechado, "aceitaDistribuicao", false);
+        ReflectionTestUtils.setField(jefFechado, "id", 1L);
+        UnidadeJudiciariaCompetencia jefCriminalPeloRamo = unidadeFederal("JFCE-JEFCRIM-CE-CAP", RamoDireito.PENAL, 10);
+        jefCriminalPeloRamo.setExclusivoJuizadoEspecial(true);
+        ReflectionTestUtils.setField(jefCriminalPeloRamo, "id", 5L);
+        UnidadeJudiciariaCompetencia jefCriminalPelaVara = unidadeFederal("JFCE-JEFCRIM-2-CE-CAP", RamoDireito.PREVIDENCIARIO, 10);
+        jefCriminalPelaVara.setExclusivoJuizadoEspecial(true);
+        ReflectionTestUtils.setField(jefCriminalPelaVara, "tipoVara", TipoVaraDistribuicao.CRIMINAL_JUIZADO);
+        ReflectionTestUtils.setField(jefCriminalPelaVara, "id", 6L);
+        for (UnidadeJudiciariaCompetencia jefNaoCivel : List.of(jefFechado, jefCriminalPeloRamo, jefCriminalPelaVara)) {
+            ProcessoDistribuicaoCompetencia gravada = registrarCargaAplicada(federal, List.of(federal, jefNaoCivel),
+                    RitoProcessual.FAZENDA_PUBLICA_CONHECIMENTO, TipoJustica.FEDERAL, new BigDecimal("20000.00"), mock(AuditLedgerService.class));
+
+            assertThat(ReflectionTestUtils.getField(gravada, "fatoresRevisao")).as(jefNaoCivel.getCodigo()).isEqualTo("");
+        }
+    }
+
+    @Test
+    void jefCivelAptoNaComarcaContaComoJuizadoInstalado() {
+        List<UnidadeJudiciariaCompetencia> malha = malhaFederal();
+
+        ProcessoDistribuicaoCompetencia gravada = registrarCargaAplicada(malha.get(1), malha, RitoProcessual.FAZENDA_PUBLICA_CONHECIMENTO,
+                TipoJustica.FEDERAL, new BigDecimal("20000.00"), mock(AuditLedgerService.class));
+
+        assertThat(ReflectionTestUtils.getField(gravada, "fatoresRevisao")).asString().contains("alcada do juizado especial federal");
+    }
+
+    @Test
+    void jefInstaladoEhProcuradoNaComarcaDoAutorENaoNaSedeDoReu() {
+        MapaCompetenciaDinamicoEngine engine = engineDaMalha(malhaFederal(), mock(AuditLedgerService.class), true,
+                new ProceduralCanonicalResolver.CanonicalContext(), null);
+        DynamicCompetenceDistributionRequest contraAUniaoNaSede = new DynamicCompetenceDistributionRequest(null, null, null,
+                "TRIBUTARIO", new BigDecimal("20000.00"), "CE", "Fortaleza", "DF", "Brasilia",
+                false, false, null, "FEDERAL", false, false, null);
+
+        assertThat(engine.distribuir(contraAUniaoNaSede, RitoProcessual.FAZENDA_PUBLICA_CONHECIMENTO).orElseThrow()
+                .fatoresRevisaoHumana()).anyMatch(fator -> fator.contains("alcada do juizado especial federal"));
+    }
+
+    @Test
+    void ritoNaoInformadoNaDistribuicaoPreviaDeixaAConferenciaParaORitoCanonico() {
+        ProceduralCanonicalResolver.CanonicalContext canonicoDeMandado = new ProceduralCanonicalResolver.CanonicalContext(
+                java.time.Instant.now(), RitoProcessual.TRIBUTARIO_MANDADO_SEGURANCA, null, null, null, null, null, null, null,
+                List.of(), List.of(), List.of(), Map.of());
+        MapaCompetenciaDinamicoEngine engine = engineDaMalha(malhaFederal(), mock(AuditLedgerService.class), true,
+                canonicoDeMandado, null);
+
+        assertThat(engine.distribuir(pedidoFederal("TRIBUTARIO", "FEDERAL"), null).orElseThrow()
+                .fatoresRevisaoHumana()).noneMatch(fator -> fator.contains("alcada do juizado especial federal"));
+    }
+
+    @Test
+    void causaFederalSemValorDaCausaEmVaraComumPedeConferenciaDaCompetenciaDoJef() {
+        for (boolean caminhoCompleto : new boolean[]{true, false}) {
+            AuditLedgerService auditoria = mock(AuditLedgerService.class);
+            DynamicCompetenceDistributionResponse resposta = registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.PREVIDENCIARIO_APOSENTADORIA,
+                    RamoDireito.PREVIDENCIARIO, TipoJustica.FEDERAL, null, auditoria, caminhoCompleto).orElseThrow();
+
+            assertThat(resposta.unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+            assertThat(resposta.distribuicaoAutomatica()).isFalse();
+            assertThat(resposta.fatoresRevisaoHumana()).anyMatch(fator -> fator.startsWith("Causa federal sem valor da causa"));
+            verify(auditoria).appendSafely(org.mockito.ArgumentMatchers.eq("DISTRIBUICAO_CAUSA_FEDERAL_SEM_VALOR_DA_CAUSA"),
+                    org.mockito.ArgumentMatchers.eq("PROCESSO"), org.mockito.ArgumentMatchers.eq("90"),
+                    org.mockito.ArgumentMatchers.isNull(), anyString());
+        }
+    }
+
+    @Test
+    void cargaAplicadaDeAcidentarioEmVaraFederalFicaMarcadaParaConferencia() {
+        AuditLedgerService auditoria = mock(AuditLedgerService.class);
+        List<UnidadeJudiciariaCompetencia> malha = malhaFederal();
+
+        ProcessoDistribuicaoCompetencia gravada = registrarCargaAplicada(malha.get(1), malha, RitoProcessual.PREVIDENCIARIO_ACIDENTARIO,
+                TipoJustica.FEDERAL, new BigDecimal("20000.00"), auditoria);
+
+        assertThat(ReflectionTestUtils.getField(gravada, "fatoresRevisao")).asString().contains("Sumula 15 do STJ");
+        verify(auditoria).appendSafely(org.mockito.ArgumentMatchers.eq("DISTRIBUICAO_ACIDENTARIO_NA_JUSTICA_FEDERAL"),
+                org.mockito.ArgumentMatchers.eq("PROCESSO"), org.mockito.ArgumentMatchers.eq("77"),
+                org.mockito.ArgumentMatchers.isNull(), anyString());
+    }
+
+    @Test
+    void conferenciaFederalSemProcessoEhAuditadaComoDistribuicaoENaoComoProcesso() {
+        AuditLedgerService auditoria = mock(AuditLedgerService.class);
+        MapaCompetenciaDinamicoEngine engine = engineDaMalha(malhaFederal(), auditoria, true,
+                new ProceduralCanonicalResolver.CanonicalContext(), null);
+        DynamicCompetenceDistributionRequest pedido = new DynamicCompetenceDistributionRequest("0001234-55.2026.4.05.8100", null, null,
+                "TRIBUTARIO", new BigDecimal("20000.00"), "CE", "Fortaleza", "CE", "Fortaleza",
+                false, false, null, "FEDERAL", false, false, null);
+
+        engine.distribuirERegistrar(pedido);
+
+        verify(auditoria).appendSafely(org.mockito.ArgumentMatchers.eq("DISTRIBUICAO_CAUSA_FEDERAL_NA_ALCADA_FORA_DO_JUIZADO"),
+                org.mockito.ArgumentMatchers.eq("COMPETENCIA_DISTRIBUICAO"), org.mockito.ArgumentMatchers.eq("0001234-55.2026.4.05.8100"),
+                org.mockito.ArgumentMatchers.isNull(), anyString());
+    }
+
+    @Test
+    void alcadaDoJefIncluiExatamenteSessentaSalariosMinimosEExcluiOCentavoSeguinte() {
+        assertThat(registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.PREVIDENCIARIO_APOSENTADORIA, RamoDireito.PREVIDENCIARIO,
+                TipoJustica.FEDERAL, new BigDecimal("97260.00"), mock(AuditLedgerService.class), false)
+                .orElseThrow().unidadeCodigo()).isEqualTo("JFCE-JEF-CE-CAP");
+        assertThat(registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.PREVIDENCIARIO_APOSENTADORIA, RamoDireito.PREVIDENCIARIO,
+                TipoJustica.FEDERAL, new BigDecimal("97260.01"), mock(AuditLedgerService.class), false)
+                .orElseThrow().unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+    }
+
+    @Test
+    void alcadaDoJefUsaOSalarioMinimoDaDataDoAjuizamento() {
+        assertThat(registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.PREVIDENCIARIO_APOSENTADORIA, RamoDireito.PREVIDENCIARIO,
+                TipoJustica.FEDERAL, new BigDecimal("95000.00"), java.time.LocalDateTime.of(2025, 12, 15, 10, 0),
+                mock(AuditLedgerService.class), false)
+                .orElseThrow().unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+        assertThat(registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.PREVIDENCIARIO_APOSENTADORIA, RamoDireito.PREVIDENCIARIO,
+                TipoJustica.FEDERAL, new BigDecimal("95000.00"), java.time.LocalDateTime.of(2026, 1, 15, 10, 0),
+                mock(AuditLedgerService.class), false)
+                .orElseThrow().unidadeCodigo()).isEqualTo("JFCE-JEF-CE-CAP");
+    }
+
+    private static String fatorCausaFederalNaAlcada(DynamicCompetenceDistributionResponse resposta) {
+        return resposta.fatoresRevisaoHumana().stream()
+                .filter(fator -> fator.contains("alcada do juizado especial federal"))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    @Test
+    void causaFederalComumAcimaDaAlcadaDoJefNaoPedeConferenciaDeCompetenciaAbsoluta() {
+        for (boolean caminhoCompleto : new boolean[]{true, false}) {
+            AuditLedgerService auditoria = mock(AuditLedgerService.class);
+            DynamicCompetenceDistributionResponse resposta = registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.COMUM_ORDINARIO,
+                    RamoDireito.TRIBUTARIO, TipoJustica.FEDERAL, new BigDecimal("150000.00"), auditoria, caminhoCompleto).orElseThrow();
+
+            assertThat(resposta.unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+            assertThat(resposta.fatoresRevisaoHumana()).noneMatch(fator -> fator.contains("alcada do juizado especial federal"));
+            verify(auditoria, org.mockito.Mockito.never()).appendSafely(
+                    org.mockito.ArgumentMatchers.eq("DISTRIBUICAO_CAUSA_FEDERAL_NA_ALCADA_FORA_DO_JUIZADO"), any(), any(), any(), any());
+        }
+    }
+
+    @Test
+    void mandadoDeSegurancaFederalDentroDaAlcadaNaoPedeConferenciaPorqueOJefNaoOProcessa() {
+        for (boolean caminhoCompleto : new boolean[]{true, false}) {
+            DynamicCompetenceDistributionResponse resposta = registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.ESPECIAL_MANDADO_SEGURANCA,
+                    RamoDireito.TRIBUTARIO, TipoJustica.FEDERAL, new BigDecimal("20000.00"), mock(AuditLedgerService.class), caminhoCompleto).orElseThrow();
+
+            assertThat(resposta.unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+            assertThat(resposta.fatoresRevisaoHumana()).noneMatch(fator -> fator.contains("alcada do juizado especial federal"));
+        }
+    }
+
+    @Test
+    void distribuicaoPreviaComRitoInformadoPedeConferenciaDaAlcadaEMandaPrevidenciarioAoJef() {
+        MapaCompetenciaDinamicoEngine engine = engineDaMalha(malhaFederal(), mock(AuditLedgerService.class), true,
+                new ProceduralCanonicalResolver.CanonicalContext(), null);
+
+        DynamicCompetenceDistributionResponse tributaria = engine.distribuir(pedidoFederal("TRIBUTARIO", "FEDERAL"),
+                RitoProcessual.FAZENDA_PUBLICA_CONHECIMENTO).orElseThrow();
+        DynamicCompetenceDistributionResponse previdenciaria = engine.distribuir(pedidoFederal("PREVIDENCIARIO", "FEDERAL"),
+                RitoProcessual.PREVIDENCIARIO_BPC_LOAS).orElseThrow();
+        DynamicCompetenceDistributionResponse mandado = engine.distribuir(pedidoFederal("TRIBUTARIO", "FEDERAL"),
+                RitoProcessual.TRIBUTARIO_MANDADO_SEGURANCA).orElseThrow();
+
+        assertThat(tributaria.unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+        assertThat(tributaria.fatoresRevisaoHumana()).anyMatch(fator -> fator.contains("alcada do juizado especial federal"));
+        assertThat(previdenciaria.unidadeCodigo()).isEqualTo("JFCE-JEF-CE-CAP");
+        assertThat(mandado.fatoresRevisaoHumana()).noneMatch(fator -> fator.contains("alcada do juizado especial federal"));
+    }
+
+    @Test
+    void inferenciaSemRitoAvaliaAAlcadaComOTipoDeJusticaDoPedidoDoCanonicoOuDoResolvedor() {
+        ProceduralCanonicalResolver.CanonicalContext canonicoFederal = new ProceduralCanonicalResolver.CanonicalContext(
+                java.time.Instant.now(), null, null, null, null, "FEDERAL", null, null, null, List.of(), List.of(), List.of(), Map.of());
+
+        DynamicCompetenceDistributionResponse peloPedido = engineDaMalha(malhaFederal(), mock(AuditLedgerService.class), true,
+                new ProceduralCanonicalResolver.CanonicalContext(), null)
+                .distribuir(pedidoFederal("TRIBUTARIO", "FEDERAL")).orElseThrow();
+        DynamicCompetenceDistributionResponse peloCanonico = engineDaMalha(malhaFederal(), mock(AuditLedgerService.class), true,
+                canonicoFederal, null)
+                .distribuir(pedidoFederal(null, null)).orElseThrow();
+        DynamicCompetenceDistributionResponse peloResolvedor = engineDaMalha(malhaFederal(), mock(AuditLedgerService.class), true,
+                new ProceduralCanonicalResolver.CanonicalContext(), "FEDERAL")
+                .distribuir(pedidoFederal(null, null)).orElseThrow();
+
+        for (DynamicCompetenceDistributionResponse resposta : List.of(peloPedido, peloCanonico, peloResolvedor)) {
+            assertThat(resposta.unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+            assertThat(resposta.fatoresRevisaoHumana()).anyMatch(fator -> fator.contains("alcada do juizado especial federal"));
+        }
+    }
+
+    @Test
+    void juizadoEmUnidadeComumNaoSomaAConferenciaDaAlcadaNemDuplicaAuditoria() {
+        UnidadeJudiciariaCompetencia federal = unidadeFederal("JFCE-FEDERAL-CE-CAP", RamoDireito.TRIBUTARIO, 90);
+        ReflectionTestUtils.setField(federal, "id", 2L);
+        UnidadeJudiciariaCompetencia jefDeOutraComarca = unidadeSemFkComComarcaTextual("JFCE-JEF-CE-JUA", "CE", "Juazeiro do Norte");
+        ReflectionTestUtils.setField(jefDeOutraComarca, "tipoJustica", TipoJustica.FEDERAL);
+        jefDeOutraComarca.setExclusivoJuizadoEspecial(true);
+        ReflectionTestUtils.setField(jefDeOutraComarca, "id", 3L);
+        AuditLedgerService auditoria = mock(AuditLedgerService.class);
+
+        DynamicCompetenceDistributionResponse resposta = registrarDistribuicaoInicial(List.of(federal, jefDeOutraComarca),
+                RitoProcessual.PREVIDENCIARIO_BPC_LOAS, RamoDireito.PREVIDENCIARIO, TipoJustica.FEDERAL,
+                new BigDecimal("50000.00"), auditoria, false).orElseThrow();
+
+        assertThat(resposta.unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+        assertThat(resposta.fatoresRevisaoHumana()).anyMatch(fator -> fator.startsWith("Juizado especial nao instalado"));
+        assertThat(resposta.fatoresRevisaoHumana()).noneMatch(fator -> fator.contains("alcada do juizado especial federal"));
+        verify(auditoria, times(1)).appendSafely(org.mockito.ArgumentMatchers.eq("DISTRIBUICAO_JUIZADO_EM_UNIDADE_COMUM"),
+                any(), any(), any(), any());
+        verify(auditoria, org.mockito.Mockito.never()).appendSafely(
+                org.mockito.ArgumentMatchers.eq("DISTRIBUICAO_CAUSA_FEDERAL_NA_ALCADA_FORA_DO_JUIZADO"), any(), any(), any(), any());
+    }
+
+    @Test
+    void varaEstadualComCompetenciaDelegadaNaoRecebeConferenciaDeCausaFederal() {
+        AuditLedgerService auditoria = mock(AuditLedgerService.class);
+        UnidadeJudiciariaCompetencia estadual = unidade("VARA-CIVEL");
+        ReflectionTestUtils.setField(estadual, "tipoJustica", TipoJustica.ESTADUAL);
+        List<UnidadeJudiciariaCompetencia> malha = new java.util.ArrayList<>(malhaFederal());
+        malha.add(estadual);
+
+        ProcessoDistribuicaoCompetencia gravada = registrarCargaAplicada(estadual, malha, RitoProcessual.FAZENDA_PUBLICA_CONHECIMENTO,
+                TipoJustica.FEDERAL, new BigDecimal("20000.00"), auditoria);
+
+        assertThat(ReflectionTestUtils.getField(gravada, "fatoresRevisao")).isEqualTo("");
+        org.mockito.Mockito.verifyNoInteractions(auditoria);
+    }
+
+    @Test
+    void dataDoAjuizamentoEhLidaNoFusoLegalAntesDeEscolherOSalarioMinimo() {
+        java.time.LocalDateTime virada = java.time.LocalDateTime.ofInstant(
+                java.time.Instant.parse("2026-01-01T02:00:00Z"), java.time.ZoneId.systemDefault());
+
+        assertThat(registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.PREVIDENCIARIO_APOSENTADORIA, RamoDireito.PREVIDENCIARIO,
+                TipoJustica.FEDERAL, new BigDecimal("95000.00"), virada, mock(AuditLedgerService.class), false)
+                .orElseThrow().unidadeCodigo()).isEqualTo("JFCE-FEDERAL-CE-CAP");
+    }
+
+    @Test
+    void conferenciaFederalComoUnicoFatorPersisteAEscolhaDoCaminhoCompletoEmVezDeCairNaDistribuicaoMinima() {
+        ConferenciaFederal alcada = ConferenciaFederal.ALCADA_DO_JEF;
+        ConferenciaFederal acidentario = ConferenciaFederal.ACIDENTARIO_DA_JUSTICA_ESTADUAL;
+
+        assertThat(MapaCompetenciaDinamicoEngine.soConferenciaFederal(alcada, List.of(alcada.fator()))).isTrue();
+        assertThat(MapaCompetenciaDinamicoEngine.soConferenciaFederal(acidentario, List.of(acidentario.fator()))).isTrue();
+        assertThat(MapaCompetenciaDinamicoEngine.soConferenciaFederal(alcada,
+                List.of(alcada.fator(), "Confianca operacional inferior ao limiar de automacao"))).isFalse();
+        assertThat(MapaCompetenciaDinamicoEngine.soConferenciaFederal(alcada, List.of(acidentario.fator()))).isFalse();
+        assertThat(MapaCompetenciaDinamicoEngine.soConferenciaFederal(null, List.of(alcada.fator()))).isFalse();
+        assertThat(MapaCompetenciaDinamicoEngine.soConferenciaFederal(ConferenciaFederal.NENHUMA, List.of())).isFalse();
+    }
+
+    @Test
+    void competenciaDelegadaInformadaNoPedidoPrevaleceSobreOTipoCanonicoNaInferenciaDoJuizado() {
+        UnidadeJudiciariaCompetencia estadual = unidade("TJCE-VARA-CIVEL-CE-CAP");
+        ReflectionTestUtils.setField(estadual, "ramoDireito", RamoDireito.PREVIDENCIARIO);
+        ReflectionTestUtils.setField(estadual, "id", 7L);
+        ProceduralCanonicalResolver.CanonicalContext canonicoFederal = new ProceduralCanonicalResolver.CanonicalContext(
+                java.time.Instant.now(), null, null, null, null, "FEDERAL", null, null, null, List.of(), List.of(), List.of(), Map.of());
+        MapaCompetenciaDinamicoEngine engine = engineDaMalha(List.of(estadual), mock(AuditLedgerService.class), true, canonicoFederal, null);
+
+        Optional<DynamicCompetenceDistributionResponse> resposta = engine.distribuir(pedidoFederal("PREVIDENCIARIO", "ESTADUAL"));
+
+        assertThat(resposta).hasValueSatisfying(distribuicao -> {
+            assertThat(distribuicao.unidadeCodigo()).isEqualTo("TJCE-VARA-CIVEL-CE-CAP");
+            assertThat(distribuicao.fatoresRevisaoHumana()).noneMatch(fator -> fator.startsWith("Juizado especial nao instalado"));
+        });
+    }
+
+    @Test
+    void ritoExplicitoExcluidoDoJefNaoGanhaConferenciaMesmoSemTipoDeJusticaNoPedido() {
+        ProceduralCanonicalResolver.CanonicalContext canonicoFederalSemRito = new ProceduralCanonicalResolver.CanonicalContext(
+                java.time.Instant.now(), null, null, null, null, "FEDERAL", null, null, null, List.of(), List.of(), List.of(), Map.of());
+        MapaCompetenciaDinamicoEngine engine = engineDaMalha(malhaFederal(), mock(AuditLedgerService.class), true,
+                canonicoFederalSemRito, null);
+
+        assertThat(engine.distribuir(pedidoFederal("TRIBUTARIO", null), RitoProcessual.ESPECIAL_MANDADO_SEGURANCA).orElseThrow()
+                .fatoresRevisaoHumana()).noneMatch(fator -> fator.contains("alcada do juizado especial federal"));
+    }
+
+    @Test
+    void ritoExplicitoQueCabeNoJefPrevaleceSobreORitoCanonicoQuandoFaltaOTipoDeJustica() {
+        ProceduralCanonicalResolver.CanonicalContext canonicoDeMandadoFederal = new ProceduralCanonicalResolver.CanonicalContext(
+                java.time.Instant.now(), RitoProcessual.TRIBUTARIO_MANDADO_SEGURANCA, null, null, null, "FEDERAL", null, null, null,
+                List.of(), List.of(), List.of(), Map.of());
+        MapaCompetenciaDinamicoEngine engine = engineDaMalha(malhaFederal(), mock(AuditLedgerService.class), true,
+                canonicoDeMandadoFederal, null);
+
+        assertThat(engine.distribuir(pedidoFederal("TRIBUTARIO", null), RitoProcessual.COMUM_ORDINARIO).orElseThrow()
+                .fatoresRevisaoHumana()).anyMatch(fator -> fator.contains("alcada do juizado especial federal"));
+    }
+
+    @Test
+    void ritoEfetivoDoProcessoSegueAteOEnriquecimentoQuandoOTipoDeJusticaSoEhInferidoDepois() {
+        List<UnidadeJudiciariaCompetencia> unidades = malhaFederal();
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        when(unidadeRepository.findAll()).thenReturn(unidades);
+        when(unidadeRepository.findByCodigo(anyString())).thenAnswer(inv -> unidades.stream()
+                .filter(unidade -> unidade.getCodigo().equals(inv.getArgument(0))).findFirst());
+        ConfiguracaoDistribuicaoVaraService configuracao = mock(ConfiguracaoDistribuicaoVaraService.class);
+        when(configuracao.consultar(anyString(), any())).thenAnswer(inv -> new ConfiguracaoDistribuicaoVaraService.ResultadoConsulta(
+                inv.getArgument(0), true, null, null, List.of(), java.time.Instant.now()));
+        ProceduralCanonicalResolver canonico = mock(ProceduralCanonicalResolver.class);
+        when(canonico.resolve(any())).thenAnswer(inv -> {
+            Map<String, Object> payload = inv.getArgument(0);
+            RitoProcessual rito = payload.containsKey("rito") ? RitoProcessual.FAZENDA_PUBLICA_CONHECIMENTO : RitoProcessual.TRIBUTARIO_MANDADO_SEGURANCA;
+            return new ProceduralCanonicalResolver.CanonicalContext(java.time.Instant.now(), rito, null, null, null, null, null, null, null,
+                    List.of(), List.of(), List.of(), Map.of());
+        });
+        CompetenceResolverService resolvedor = mock(CompetenceResolverService.class);
+        com.tcc.pjb.backend.model.dto.competencia.CompetenceResolveResponse resolucao =
+                mock(com.tcc.pjb.backend.model.dto.competencia.CompetenceResolveResponse.class);
+        when(resolucao.tipoJusticaSugerida()).thenReturn("FEDERAL");
+        when(resolvedor.resolve(any())).thenReturn(resolucao);
+        MapaCompetenciaDinamicoEngine engine = new MapaCompetenciaDinamicoEngine(
+                unidadeRepository, mock(ProcessoDistribuicaoCompetenciaRepository.class), mock(ProcessoRepository.class),
+                mock(AuditLedgerService.class), mock(OutboxPublisher.class), configuracao, canonico, inferencia(canonico, resolvedor));
+        Processo processo = processoRoteado(90L, "0001234-55.2026.4.05.8100", null);
+        processo.setUf("CE");
+        processo.setComarca("Fortaleza");
+        processo.setValorCausa(new BigDecimal("20000.00"));
+
+        assertThat(engine.registrarDistribuicaoInicial(processo).orElseThrow().fatoresRevisaoHumana())
+                .anyMatch(fator -> fator.contains("alcada do juizado especial federal"));
+    }
+
+    @Test
+    void tipoDeJusticaDoPedidoSemRamoNaoEhSubstituidoPeloSugeridoPeloResolvedor() {
+        UnidadeJudiciariaCompetencia estadual = unidade("TJCE-VARA-CIVEL-CE-CAP");
+        ReflectionTestUtils.setField(estadual, "id", 7L);
+        List<UnidadeJudiciariaCompetencia> malha = new java.util.ArrayList<>(malhaFederal());
+        malha.add(estadual);
+        MapaCompetenciaDinamicoEngine engine = engineDaMalha(malha, mock(AuditLedgerService.class), true,
+                new ProceduralCanonicalResolver.CanonicalContext(), "FEDERAL");
+
+        assertThat(engine.distribuir(pedidoFederal(null, "ESTADUAL")).orElseThrow().unidadeCodigo())
+                .isEqualTo("TJCE-VARA-CIVEL-CE-CAP");
+    }
+
+    @Test
+    void comarcaComEsemAcentoContaComoAMesmaParaReconhecerOJefInstalado() {
+        for (String[] comarcas : List.of(new String[]{"Maceió", "Maceio"}, new String[]{"Maceio", "Maceió"})) {
+            String comarcaDoProcesso = comarcas[0];
+            UnidadeJudiciariaCompetencia federal = unidadeSemFkComComarcaTextual("JFAL-FEDERAL-AL-CAP", "AL", comarcaDoProcesso);
+            ReflectionTestUtils.setField(federal, "tipoJustica", TipoJustica.FEDERAL);
+            ReflectionTestUtils.setField(federal, "ramoDireito", RamoDireito.TRIBUTARIO);
+            ReflectionTestUtils.setField(federal, "tipoVara", TipoVaraDistribuicao.VARA_UNICA);
+            ReflectionTestUtils.setField(federal, "id", 2L);
+            UnidadeJudiciariaCompetencia jef = unidadeSemFkComComarcaTextual("JFAL-JEF-AL-CAP", "AL", comarcas[1]);
+            ReflectionTestUtils.setField(jef, "tipoJustica", TipoJustica.FEDERAL);
+            ReflectionTestUtils.setField(jef, "ramoDireito", RamoDireito.PREVIDENCIARIO);
+            ReflectionTestUtils.setField(jef, "tipoVara", TipoVaraDistribuicao.VARA_UNICA);
+            jef.setExclusivoJuizadoEspecial(true);
+            ReflectionTestUtils.setField(jef, "id", 1L);
+            MapaCompetenciaDinamicoEngine engine = engineDaMalha(List.of(federal, jef), mock(AuditLedgerService.class), true,
+                    new ProceduralCanonicalResolver.CanonicalContext(), null);
+            DynamicCompetenceDistributionRequest pedido = new DynamicCompetenceDistributionRequest(null, null, null, "TRIBUTARIO",
+                    new BigDecimal("20000.00"), "AL", comarcaDoProcesso, "AL", comarcaDoProcesso, false, false, null, "FEDERAL", false, false, null);
+
+            assertThat(engine.distribuir(pedido, RitoProcessual.FAZENDA_PUBLICA_CONHECIMENTO).orElseThrow().fatoresRevisaoHumana())
+                    .as(comarcaDoProcesso).anyMatch(fator -> fator.contains("alcada do juizado especial federal"));
+        }
+    }
+
+    @Test
+    void distribuicaoDeReservaInfereOJefPeloRamoCanonicoQuandoOProcessoNaoTemRamo() {
+        ProceduralCanonicalResolver.CanonicalContext canonicoPrevidenciario = new ProceduralCanonicalResolver.CanonicalContext(
+                java.time.Instant.now(), RitoProcessual.COMUM_ORDINARIO, "PREVIDENCIARIO", null, null, "FEDERAL", null, null, null,
+                List.of(), List.of(), List.of(), Map.of());
+        MapaCompetenciaDinamicoEngine engine = engineDaMalha(malhaFederal(), mock(AuditLedgerService.class), false,
+                canonicoPrevidenciario, null);
+        Processo processo = processoRoteado(90L, "0001234-55.2026.4.05.8100", null);
+        processo.setRito(RitoProcessual.COMUM_ORDINARIO);
+        processo.setUf("CE");
+        processo.setComarca("Fortaleza");
+        processo.setTipoJustica(TipoJustica.FEDERAL);
+        processo.setValorCausa(new BigDecimal("20000.00"));
+
+        assertThat(engine.registrarDistribuicaoInicial(processo).orElseThrow().unidadeCodigo()).isEqualTo("JFCE-JEF-CE-CAP");
+    }
+
+    @Test
+    void cargaAplicadaDeProcessoEstadualNaoCarregaAMalhaDeUnidades() {
+        UnidadeJudiciariaCompetencia civel = unidade("VARA-CIVEL");
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
+        when(unidadeRepository.findByCodigo("VARA-CIVEL")).thenReturn(Optional.of(civel));
+        when(distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(anyLong())).thenReturn(Optional.empty());
+        ProceduralCanonicalResolver canonico = mock(ProceduralCanonicalResolver.class);
+        when(canonico.resolve(any())).thenReturn(new ProceduralCanonicalResolver.CanonicalContext());
+        MapaCompetenciaDinamicoEngine engine = new MapaCompetenciaDinamicoEngine(
+                unidadeRepository, distribuicaoRepository, mock(ProcessoRepository.class), mock(AuditLedgerService.class),
+                mock(OutboxPublisher.class), mock(ConfiguracaoDistribuicaoVaraService.class), canonico, inferencia(canonico, mock(CompetenceResolverService.class)));
+        Processo processo = processoRoteado(77L, "0009876-54.2026.8.06.0001", "VARA-CIVEL");
+        processo.setRito(RitoProcessual.COMUM_ORDINARIO);
+        processo.setTipoJustica(TipoJustica.ESTADUAL);
+        processo.setValorCausa(new BigDecimal("20000.00"));
+
+        engine.registrarCargaDaDistribuicaoAplicada(processo);
+
+        verify(unidadeRepository, org.mockito.Mockito.never()).findAll();
+    }
+
+    private static DynamicCompetenceDistributionRequest pedidoFederal(String ramo, String tipoJustica) {
+        return new DynamicCompetenceDistributionRequest(null, null, null, ramo, new BigDecimal("20000.00"),
+                "CE", "Fortaleza", "CE", "Fortaleza", false, false, null, tipoJustica, false, false, null);
+    }
+
+    @Test
+    void causaEstadualDentroDoValorDoJefNaoPedeConferenciaDeCompetenciaFederal() {
+        AuditLedgerService auditoria = mock(AuditLedgerService.class);
+        UnidadeJudiciariaCompetencia civel = unidade("VARA-CIVEL");
+
+        ProcessoDistribuicaoCompetencia gravada = registrarCargaAplicada(civel, List.of(civel), RitoProcessual.COMUM_ORDINARIO,
+                TipoJustica.ESTADUAL, new BigDecimal("20000.00"), auditoria);
+
+        assertThat(ReflectionTestUtils.getField(gravada, "fatoresRevisao")).isEqualTo("");
+        org.mockito.Mockito.verifyNoInteractions(auditoria);
+    }
+
+    @Test
+    void processoComRitoDeJuizadoCivelNaJusticaFederalVaiAoJef() {
+        for (boolean caminhoCompleto : new boolean[]{true, false}) {
+            assertThat(registrarDistribuicaoInicial(malhaFederal(), RitoProcessual.JUIZADO_ESPECIAL_CIVEL, RamoDireito.CIVIL,
+                    TipoJustica.FEDERAL, new BigDecimal("20000.00"), mock(AuditLedgerService.class), caminhoCompleto)
+                    .orElseThrow().unidadeCodigo()).isEqualTo("JFCE-JEF-CE-CAP");
+        }
+    }
+
+    @Test
+    void cargaAplicadaDeCausaFederalNaAlcadaEmVaraComumFicaMarcadaParaConferencia() {
+        AuditLedgerService auditoria = mock(AuditLedgerService.class);
+        List<UnidadeJudiciariaCompetencia> malha = malhaFederal();
+
+        ProcessoDistribuicaoCompetencia gravada = registrarCargaAplicada(malha.get(1), malha, RitoProcessual.FAZENDA_PUBLICA_CONHECIMENTO,
+                TipoJustica.FEDERAL, new BigDecimal("20000.00"), auditoria);
+
+        assertThat(ReflectionTestUtils.getField(gravada, "fatoresRevisao")).asString().contains("alcada do juizado especial federal");
+        verify(auditoria).appendSafely(org.mockito.ArgumentMatchers.eq("DISTRIBUICAO_CAUSA_FEDERAL_NA_ALCADA_FORA_DO_JUIZADO"),
+                org.mockito.ArgumentMatchers.eq("PROCESSO"), org.mockito.ArgumentMatchers.eq("77"),
+                org.mockito.ArgumentMatchers.isNull(), anyString());
+    }
+
+    private static List<UnidadeJudiciariaCompetencia> malhaFederal() {
+        UnidadeJudiciariaCompetencia jef = unidadeFederal("JFCE-JEF-CE-CAP", RamoDireito.PREVIDENCIARIO, 10);
+        jef.setExclusivoJuizadoEspecial(true);
+        ReflectionTestUtils.setField(jef, "id", 1L);
+        UnidadeJudiciariaCompetencia federal = unidadeFederal("JFCE-FEDERAL-CE-CAP", RamoDireito.TRIBUTARIO, 90);
+        ReflectionTestUtils.setField(federal, "id", 2L);
+        return List.of(jef, federal);
     }
 
     private static UnidadeJudiciariaCompetencia varaCriminal(String codigo) {
@@ -740,6 +1310,45 @@ class MapaCompetenciaDinamicoEngineTest {
                                                                                                TipoJustica tipoJustica,
                                                                                                AuditLedgerService auditoria,
                                                                                                boolean caminhoCompleto) {
+        return registrarDistribuicaoInicial(unidades, rito, ramo, tipoJustica, null, auditoria, caminhoCompleto);
+    }
+
+    private static Optional<DynamicCompetenceDistributionResponse> registrarDistribuicaoInicial(List<UnidadeJudiciariaCompetencia> unidades,
+                                                                                               RitoProcessual rito,
+                                                                                               RamoDireito ramo,
+                                                                                               TipoJustica tipoJustica,
+                                                                                               BigDecimal valorCausa,
+                                                                                               AuditLedgerService auditoria,
+                                                                                               boolean caminhoCompleto) {
+        return registrarDistribuicaoInicial(unidades, rito, ramo, tipoJustica, valorCausa, null, auditoria, caminhoCompleto);
+    }
+
+    private static Optional<DynamicCompetenceDistributionResponse> registrarDistribuicaoInicial(List<UnidadeJudiciariaCompetencia> unidades,
+                                                                                               RitoProcessual rito,
+                                                                                               RamoDireito ramo,
+                                                                                               TipoJustica tipoJustica,
+                                                                                               BigDecimal valorCausa,
+                                                                                               java.time.LocalDateTime dataCriacao,
+                                                                                               AuditLedgerService auditoria,
+                                                                                               boolean caminhoCompleto) {
+        MapaCompetenciaDinamicoEngine engine = engineDaMalha(unidades, auditoria, caminhoCompleto,
+                new ProceduralCanonicalResolver.CanonicalContext(), null);
+        Processo processo = processoRoteado(90L, "0001234-55.2026.8.06.0001", null);
+        processo.setRito(rito);
+        processo.setUf("CE");
+        processo.setComarca("Fortaleza");
+        processo.setRamoDireito(ramo);
+        processo.setTipoJustica(tipoJustica);
+        processo.setValorCausa(valorCausa);
+        processo.setDataCriacao(dataCriacao);
+        return engine.registrarDistribuicaoInicial(processo);
+    }
+
+    private static MapaCompetenciaDinamicoEngine engineDaMalha(List<UnidadeJudiciariaCompetencia> unidades,
+                                                               AuditLedgerService auditoria,
+                                                               boolean caminhoCompleto,
+                                                               ProceduralCanonicalResolver.CanonicalContext contextoCanonico,
+                                                               String tipoJusticaSugerida) {
         UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
         ConfiguracaoDistribuicaoVaraService configuracao = mock(ConfiguracaoDistribuicaoVaraService.class);
         ProceduralCanonicalResolver canonico = mock(ProceduralCanonicalResolver.class);
@@ -748,19 +1357,15 @@ class MapaCompetenciaDinamicoEngineTest {
                 .filter(unidade -> unidade.getCodigo().equals(inv.getArgument(0))).findFirst());
         when(configuracao.consultar(anyString(), any())).thenAnswer(inv -> new ConfiguracaoDistribuicaoVaraService.ResultadoConsulta(
                 inv.getArgument(0), caminhoCompleto, caminhoCompleto ? null : "fora", null, List.of(), java.time.Instant.now()));
-        when(canonico.resolve(any())).thenReturn(new ProceduralCanonicalResolver.CanonicalContext());
+        when(canonico.resolve(any())).thenReturn(contextoCanonico);
         CompetenceResolverService resolvedorCompetencia = mock(CompetenceResolverService.class);
-        when(resolvedorCompetencia.resolve(any())).thenReturn(mock(com.tcc.pjb.backend.model.dto.competencia.CompetenceResolveResponse.class));
-        MapaCompetenciaDinamicoEngine engine = new MapaCompetenciaDinamicoEngine(
+        com.tcc.pjb.backend.model.dto.competencia.CompetenceResolveResponse resolucao =
+                mock(com.tcc.pjb.backend.model.dto.competencia.CompetenceResolveResponse.class);
+        when(resolucao.tipoJusticaSugerida()).thenReturn(tipoJusticaSugerida);
+        when(resolvedorCompetencia.resolve(any())).thenReturn(resolucao);
+        return new MapaCompetenciaDinamicoEngine(
                 unidadeRepository, mock(ProcessoDistribuicaoCompetenciaRepository.class), mock(ProcessoRepository.class),
-                auditoria, mock(OutboxPublisher.class), resolvedorCompetencia, configuracao, canonico);
-        Processo processo = processoRoteado(90L, "0001234-55.2026.8.06.0001", null);
-        processo.setRito(rito);
-        processo.setUf("CE");
-        processo.setComarca("Fortaleza");
-        processo.setRamoDireito(ramo);
-        processo.setTipoJustica(tipoJustica);
-        return engine.registrarDistribuicaoInicial(processo);
+                auditoria, mock(OutboxPublisher.class), configuracao, canonico, inferencia(canonico, resolvedorCompetencia));
     }
 
     @Test
@@ -888,16 +1493,21 @@ class MapaCompetenciaDinamicoEngineTest {
 
     private static MapaCompetenciaDinamicoEngine engineCom(UnidadeJudiciariaCompetenciaRepository unidadeRepository,
                                                            ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository) {
+        ProceduralCanonicalResolver canonico = mock(ProceduralCanonicalResolver.class);
         return new MapaCompetenciaDinamicoEngine(
                 unidadeRepository,
                 distribuicaoRepository,
                 mock(ProcessoRepository.class),
                 mock(AuditLedgerService.class),
                 mock(OutboxPublisher.class),
-                mock(CompetenceResolverService.class),
                 mock(ConfiguracaoDistribuicaoVaraService.class),
-                mock(ProceduralCanonicalResolver.class)
-        );
+                canonico,
+                inferencia(canonico, mock(CompetenceResolverService.class)));
+    }
+
+    private static InferenciaCompetenciaDistribuicaoService inferencia(ProceduralCanonicalResolver canonico,
+                                                                        CompetenceResolverService resolvedorCompetencia) {
+        return new InferenciaCompetenciaDistribuicaoService(canonico, resolvedorCompetencia, salarioMinimo());
     }
 
     private static UnidadeJudiciariaCompetencia congestionada(String codigo, Long id) {

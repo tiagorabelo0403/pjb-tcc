@@ -295,9 +295,9 @@ public class TetoProcessualService {
             return null;
         }
 
-        BigDecimal quantidade = tipoJuizado == TipoViolacaoTeto.ALCADA_FAZENDA_PUBLICA || tipoJuizado == TipoViolacaoTeto.ALCADA_JUIZADO_ESPECIAL_FEDERAL
-                ? new BigDecimal("60")
-                : new BigDecimal("40");
+        BigDecimal quantidade = tipoJuizado.salariosMinimosDaAlcada() != null
+                ? tipoJuizado.salariosMinimosDaAlcada()
+                : TipoViolacaoTeto.ALCADA_JUIZADO_ESPECIAL.salariosMinimosDaAlcada();
         BigDecimal limite = salarioMinimo.multiply(quantidade);
         boolean bloqueante = true;
         String fundamentoViolacao = switch (tipoJuizado) {

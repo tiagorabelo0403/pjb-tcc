@@ -368,6 +368,22 @@ public class NationalProceduralActionProfileMessages {
         return "Lei 7.347/1985 e CPC/2015";
     }
 
+    public String acaoPopularReason() {
+        return "Vara Cível, Federal ou Fazenda Pública conforme o ente lesado";
+    }
+
+    public String acaoPopularLegalBase() {
+        return "Lei 4.717/1965 e CF, art. 5º, LXXIII";
+    }
+
+    public String acaoPopularJuizadoAlert() {
+        return "Ação popular não tramita em juizado especial (Lei 10.259, art. 3º, § 1º, I; Lei 12.153, art. 2º, § 1º, I).";
+    }
+
+    public String divisaoDemarcacaoJuizadoAlert() {
+        return "Divisão e demarcação não tramitam no juizado especial federal nem no da Fazenda Pública (Lei 10.259, art. 3º, § 1º, I; Lei 12.153, art. 2º, § 1º, I).";
+    }
+
     public String desapropriacaoReason() {
         return "Vara Agrária, Federal ou Fazenda Pública conforme o ente e o imóvel";
     }
