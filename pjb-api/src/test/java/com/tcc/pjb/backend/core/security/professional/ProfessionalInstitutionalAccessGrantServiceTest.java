@@ -58,6 +58,19 @@ class ProfessionalInstitutionalAccessGrantServiceTest {
         assertThat(resolucao.substituicao()).isFalse();
     }
 
+    @Test
+    void lotacaoNumaUnidadeNaoValeParaProcessoDeOutraUnidade() {
+        ProfessionalInstitutionalAccessGrant lotacao = grant(ProfessionalAccessGrantType.LOTACAO_UNIDADE, LocalDateTime.of(2026, 1, 1, 0, 0));
+        lotacao.setUnidadeJudiciariaCodigo("TJCE-FORTALEZA-1VC");
+        when(repository.findByUsuario_IdAndAtivoTrueAndProcessoIsNull(5L)).thenReturn(List.of(lotacao));
+
+        Processo daOutraVara = Processo.builder().id(71L).unidadeJudiciariaCodigo("TJCE-FORTALEZA-2VC").build();
+        Processo daMesmaVara = Processo.builder().id(72L).unidadeJudiciariaCodigo("TJCE-FORTALEZA-1VC").build();
+
+        assertThat(service.resolveApplicable(desembargador, daOutraVara, ProfessionalActorClass.MAGISTRATURA).grants()).isEmpty();
+        assertThat(service.resolveApplicable(desembargador, daMesmaVara, ProfessionalActorClass.MAGISTRATURA).grants()).containsExactly(lotacao);
+    }
+
     private static ProfessionalInstitutionalAccessGrant grant(ProfessionalAccessGrantType tipo, LocalDateTime inicio) {
         ProfessionalInstitutionalAccessGrant grant = new ProfessionalInstitutionalAccessGrant();
         grant.setGrantType(tipo);

@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.service.professional;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
+import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalAccessGrantType;
@@ -63,6 +64,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
     private final ProfessionalAccessGrantTemplateRepository templateRepository;
     private final ProfessionalProcessAccessVectorService accessVectorService;
     private final AuditLedgerService auditLedgerService;
+    private final PjbTimeService timeService;
     private final ComarcaResolutionService comarcaResolutionService;
 
     public ProfessionalInstitutionalAccessGrantAdminService(CurrentUserService currentUserService,
@@ -73,7 +75,8 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
                                                             ProfessionalAccessGrantTemplateRepository templateRepository,
                                                             ProfessionalProcessAccessVectorService accessVectorService,
                                                             AuditLedgerService auditLedgerService,
-                                                            ComarcaResolutionService comarcaResolutionService) {
+                                                            ComarcaResolutionService comarcaResolutionService,
+                                                            PjbTimeService timeService) {
         this.currentUserService = Objects.requireNonNull(currentUserService);
         this.usuarioRepository = Objects.requireNonNull(usuarioRepository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
@@ -83,6 +86,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         this.accessVectorService = Objects.requireNonNull(accessVectorService);
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
         this.comarcaResolutionService = Objects.requireNonNull(comarcaResolutionService);
+        this.timeService = Objects.requireNonNull(timeService);
     }
 
     @Transactional(readOnly = true)
@@ -107,7 +111,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
             warnings.add("O perfil atual pode visualizar a trilha de grants próprios, mas não possui competência para aprovar designações ou delegações institucionais.");
         }
         return new ProfessionalGrantAdminWorkspaceResponse(
-                LocalDateTime.now(),
+                agora(),
                 managerClass.name(),
                 safe(actor.getNome()),
                 manageableGrantTypes(managerClass, actor),
@@ -164,11 +168,11 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         grant.setRequiresStepUp(Boolean.TRUE.equals(request.requiresStepUp()));
         grant.setAtivo(Boolean.TRUE);
         grant.setApprovalStatus(ProfessionalGrantApprovalStatus.PENDING);
-        grant.setInicioVigencia(request.inicioVigencia() == null ? LocalDateTime.now() : request.inicioVigencia());
+        grant.setInicioVigencia(request.inicioVigencia() == null ? agora() : request.inicioVigencia());
         grant.setFimVigencia(request.fimVigencia());
         grant.setRequestedByUserId(actor.getId());
         grant.setRequestedByName(actor.getNome());
-        grant.setRequestedAt(LocalDateTime.now());
+        grant.setRequestedAt(agora());
         assertGrantSemantics(actor, managerClass, grant);
         grant = grantRepository.save(grant);
         appendEvent(grant, ProfessionalGrantEventType.REQUESTED, null, ProfessionalGrantApprovalStatus.PENDING, actor, detailForEvent(grant));
@@ -194,7 +198,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         grant.setAtivo(Boolean.TRUE);
         grant.setApprovedByUserId(actor.getId());
         grant.setApprovedByName(actor.getNome());
-        grant.setApprovedAt(LocalDateTime.now());
+        grant.setApprovedAt(agora());
         grant.setDecisionReason(normalizeText(request == null ? null : request.reason()));
         grantRepository.save(grant);
         appendEvent(grant, ProfessionalGrantEventType.APPROVED, previous, ProfessionalGrantApprovalStatus.APPROVED, actor, normalizeText(request == null ? null : request.reason()));
@@ -235,8 +239,8 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         grant.setAtivo(Boolean.FALSE);
         grant.setRevokedByUserId(actor.getId());
         grant.setRevokedByName(actor.getNome());
-        grant.setRevokedAt(LocalDateTime.now());
-        grant.setFimVigencia(grant.getFimVigencia() == null ? LocalDateTime.now() : grant.getFimVigencia());
+        grant.setRevokedAt(agora());
+        grant.setFimVigencia(grant.getFimVigencia() == null ? agora() : grant.getFimVigencia());
         grant.setDecisionReason(normalizeText(request == null ? null : request.reason()));
         grantRepository.save(grant);
         appendEvent(grant, ProfessionalGrantEventType.REVOKED, previous, ProfessionalGrantApprovalStatus.REVOKED, actor, normalizeText(request == null ? null : request.reason()));
@@ -257,7 +261,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
                 .map(this::toEvent)
                 .toList();
         return new ProfessionalGrantDetailResponse(
-                LocalDateTime.now(),
+                agora(),
                 toQueueItem(grant),
                 timeline,
                 List.of(
@@ -287,7 +291,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
             warnings.add("Nenhum grant formal foi encontrado para o processo informado.");
         }
         return new ProfessionalGrantProcessTimelineResponse(
-                LocalDateTime.now(),
+                agora(),
                 resolveNumero(processo),
                 grants.stream().map(this::toQueueItem).toList(),
                 events,
@@ -314,7 +318,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         Usuario actor = currentUserService.getRequired();
         ProfessionalActorClass managerClass = accessVectorService.actorClass(actor);
         assertManager(actor, managerClass);
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = agora();
         int safeLimit = Math.max(10, Math.min(limit, 120));
         String normalizedStatus = normalizeToken(status);
         String normalizedActorClass = normalizeToken(actorClass);
@@ -435,7 +439,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         }
         auditLedgerService.appendSafely("PROFESSIONAL_GRANT_BATCH_REQUESTED", "PROFESSIONAL_ACCESS_GRANT", safe(request.batchLabel()), "{\"requestedCount\":" + requestedCount + ",\"succeededCount\":" + processed.size() + ",\"autoApprove\":" + request.autoApprove() + "}");
         return new ProfessionalGrantBatchOperationResponse(
-                LocalDateTime.now(),
+                agora(),
                 request.autoApprove() ? "BATCH_REQUEST_AND_APPROVE" : "BATCH_REQUEST",
                 normalizeText(request.batchLabel()),
                 requestedCount,
@@ -471,7 +475,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         Usuario actor = currentUserService.getRequired();
         ProfessionalActorClass managerClass = accessVectorService.actorClass(actor);
         assertManager(actor, managerClass);
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = agora();
         int safeLimit = Math.max(10, Math.min(limit, 80));
         String normalizedGabinete = normalizeToken(gabineteCodigo);
         String normalizedUnidade = normalizeToken(unidadeJudiciariaCodigo);
@@ -563,7 +567,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
             warnings.add("Nenhum template institucional ativo foi encontrado para a classe gestora atual.");
         }
         return new ProfessionalGrantTemplateCatalogResponse(
-                LocalDateTime.now(),
+                agora(),
                 managerClass.name(),
                 safe(actor.getNome()),
                 templates,
@@ -612,7 +616,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         }
         auditLedgerService.appendSafely("PROFESSIONAL_GRANT_TEMPLATE_BATCH_REQUESTED", "PROFESSIONAL_ACCESS_GRANT_TEMPLATE", safe(template.getTemplateCode()), "{\"requestedCount\":" + requestedCount + ",\"succeededCount\":" + processed.size() + ",\"templateCode\":\"" + template.getTemplateCode() + "\",\"autoApprove\":" + request.autoApprove() + "}");
         return new ProfessionalGrantBatchOperationResponse(
-                LocalDateTime.now(),
+                agora(),
                 request.autoApprove() && Boolean.TRUE.equals(template.getAutoApproveAllowed()) ? "TEMPLATE_BATCH_REQUEST_AND_APPROVE" : "TEMPLATE_BATCH_REQUEST",
                 firstNonBlank(normalizeText(request.batchLabel()), template.getLabel()),
                 requestedCount,
@@ -927,7 +931,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
         }
         auditLedgerService.appendSafely(operation, "PROFESSIONAL_ACCESS_GRANT", safe(actor.getId() == null ? null : actor.getId().toString()), "{\"requestedCount\":" + requestedCount + ",\"succeededCount\":" + processed.size() + "}");
         return new ProfessionalGrantBatchOperationResponse(
-                LocalDateTime.now(),
+                agora(),
                 operation,
                 normalizeText(request.reason()),
                 requestedCount,
@@ -968,7 +972,7 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
 
     private ProfessionalGrantIssueRequest toIssueRequest(ProfessionalAccessGrantTemplate template,
                                                         ProfessionalGrantTemplateBatchItemRequest item) {
-        LocalDateTime start = item.inicioVigencia() == null ? LocalDateTime.now() : item.inicioVigencia();
+        LocalDateTime start = item.inicioVigencia() == null ? agora() : item.inicioVigencia();
         Integer defaultDurationDays = template.getDefaultDurationDays();
         LocalDateTime end = item.fimVigencia() != null
                 ? item.fimVigencia()
@@ -1176,5 +1180,9 @@ public class ProfessionalInstitutionalAccessGrantAdminService {
 
     private String safe(String value) {
         return value == null ? "" : value;
+    }
+
+    private LocalDateTime agora() {
+        return LocalDateTime.ofInstant(timeService.nowUtc(), timeService.legalZone());
     }
 }

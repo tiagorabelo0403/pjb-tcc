@@ -13,7 +13,6 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -63,12 +62,7 @@ public class ProcessoVinculoResolver {
         if (!identificado(usuario) || processoId == null) {
             return Optional.empty();
         }
-        for (VinculoProcessualDoUsuario candidato : INSTITUCIONAIS) {
-            if (possuiInstitucional(candidato, usuario, processoId, () -> processoRepository.findUfById(processoId).orElse(null))) {
-                return Optional.of(candidato);
-            }
-        }
-        return Optional.empty();
+        return processoRepository.findById(processoId).flatMap(processo -> vinculo(usuario, processo, INSTITUCIONAIS));
     }
 
     private boolean possui(VinculoProcessualDoUsuario vinculo, Usuario usuario, Processo processo) {
@@ -80,18 +74,10 @@ public class ProcessoVinculoResolver {
             case FUNCAO_NA_UNIDADE -> funcionalResolver.funcaoNaUnidade(usuario, processo);
             case DESIGNACAO_FORMAL -> funcionalResolver.designacaoFormal(usuario, processo);
             case PERITO_NOMEADO -> usuario.getTipoUsuario().isPerito() && peritoNomeado(usuario.getId(), processo.getId());
-            case ORGAO_NO_POLO, PROCESSO_CONCLUSO, TAREFA_ATRIBUIDA, OFICIAL_COM_MANDADO ->
-                    possuiInstitucional(vinculo, usuario, processo.getId(), processo::getUf);
-        };
-    }
-
-    private boolean possuiInstitucional(VinculoProcessualDoUsuario vinculo, Usuario usuario, Long processoId, Supplier<String> ufDoProcesso) {
-        return switch (vinculo) {
-            case ORGAO_NO_POLO -> institucionalResolver.orgaoNoPolo(usuario, processoId, ufDoProcesso);
-            case PROCESSO_CONCLUSO -> institucionalResolver.processoConcluso(usuario, processoId);
-            case TAREFA_ATRIBUIDA -> institucionalResolver.tarefaAtribuida(usuario, processoId);
-            case OFICIAL_COM_MANDADO -> institucionalResolver.oficialComMandado(usuario, processoId);
-            default -> false;
+            case ORGAO_NO_POLO -> institucionalResolver.orgaoNoPolo(usuario, processo);
+            case PROCESSO_CONCLUSO -> institucionalResolver.processoConcluso(usuario, processo);
+            case TAREFA_ATRIBUIDA -> institucionalResolver.tarefaAtribuida(usuario, processo.getId());
+            case OFICIAL_COM_MANDADO -> institucionalResolver.oficialComMandado(usuario, processo.getId());
         };
     }
 

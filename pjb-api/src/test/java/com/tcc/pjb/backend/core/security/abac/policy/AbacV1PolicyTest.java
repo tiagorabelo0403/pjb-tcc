@@ -103,6 +103,16 @@ class AbacV1PolicyTest {
     }
 
     @Test
+    void votos_servidorComFuncaoNaUnidadeLeVotosDoProcessoSigiloso() {
+        Usuario servidor = usuario(7L, TipoUsuario.SERVIDOR, "CE", true);
+        comVinculo(VinculoProcessualDoUsuario.FUNCAO_NA_UNIDADE);
+
+        AuthzDecision d = policy.canReadVotosColegiados(servidor, sigiloso(), null);
+        assertTrue(d.allowed());
+        assertEquals("vinculo_funcao_na_unidade_votos", d.reason());
+    }
+
+    @Test
     void votos_magistradoDesignadoLeVotosDoProcessoSigiloso() {
         Usuario desembargador = usuario(6L, TipoUsuario.DESEMBARGADOR, "CE", true);
         comVinculo(VinculoProcessualDoUsuario.DESIGNACAO_FORMAL);

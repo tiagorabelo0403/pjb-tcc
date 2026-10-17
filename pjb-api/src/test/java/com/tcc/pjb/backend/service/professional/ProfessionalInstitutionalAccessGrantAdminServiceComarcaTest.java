@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalAccessBasis;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalAccessGrantType;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalActorClass;
@@ -23,11 +24,18 @@ import com.tcc.pjb.backend.model.repository.professional.ProfessionalInstitution
 import com.tcc.pjb.backend.model.repository.professional.ProfessionalInstitutionalAccessGrantRepository;
 import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
 import java.util.List;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class ProfessionalInstitutionalAccessGrantAdminServiceComarcaTest {
+
+    private static final Instant AGORA = Instant.parse("2026-10-17T15:00:00Z");
+    private static final ZoneId FORTALEZA = ZoneId.of("America/Fortaleza");
+
 
     @Test
     void resolveEAplicaComarcaDoCatalogoAoEmitirGrant() {
@@ -54,6 +62,8 @@ class ProfessionalInstitutionalAccessGrantAdminServiceComarcaTest {
         ArgumentCaptor<ProfessionalInstitutionalAccessGrant> captor = ArgumentCaptor.forClass(ProfessionalInstitutionalAccessGrant.class);
         org.mockito.Mockito.verify(grantRepository).save(captor.capture());
         assertThat(captor.getValue().getComarcaEntidade()).isSameAs(comarcaEsperada);
+        assertThat(captor.getValue().getInicioVigencia()).isEqualTo(LocalDateTime.of(2026, 10, 17, 12, 0));
+        assertThat(captor.getValue().getRequestedAt()).isEqualTo(LocalDateTime.of(2026, 10, 17, 12, 0));
     }
 
     @Test
@@ -137,7 +147,8 @@ class ProfessionalInstitutionalAccessGrantAdminServiceComarcaTest {
                 mock(ProfessionalAccessGrantTemplateRepository.class),
                 accessVectorService,
                 mock(AuditLedgerService.class),
-                comarcaResolutionService
+                comarcaResolutionService,
+                relogio()
         );
     }
 
@@ -171,5 +182,12 @@ class ProfessionalInstitutionalAccessGrantAdminServiceComarcaTest {
         usuario.setTipoUsuario(tipoUsuario);
         usuario.setEmail(id + "@tribunal.gov.br");
         return usuario;
+    }
+
+    private static PjbTimeService relogio() {
+        PjbTimeService relogio = mock(PjbTimeService.class);
+        when(relogio.nowUtc()).thenReturn(AGORA);
+        when(relogio.legalZone()).thenReturn(FORTALEZA);
+        return relogio;
     }
 }

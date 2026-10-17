@@ -24,10 +24,8 @@ public class VinculoFuncionalResolver {
     private static final Set<ProfessionalAccessGrantType> DESIGNACAO_DO_APOIO_JUDICIAL = EnumSet.of(
             ProfessionalAccessGrantType.DELEGACAO_GABINETE, ProfessionalAccessGrantType.LOTACAO_UNIDADE,
             ProfessionalAccessGrantType.AUXILIO_JURISDICIONAL);
-    private static final Set<ProfessionalAccessGrantType> DESIGNACAO_DE_ORGAO = EnumSet.of(
-            ProfessionalAccessGrantType.DESIGNACAO_PROCESSO, ProfessionalAccessGrantType.DESIGNACAO_TERRITORIAL,
-            ProfessionalAccessGrantType.REPRESENTACAO_PROCESSO, ProfessionalAccessGrantType.REPRESENTACAO_ENTE,
-            ProfessionalAccessGrantType.LOTACAO_UNIDADE, ProfessionalAccessGrantType.AUXILIO_JURISDICIONAL);
+    private static final Set<ProfessionalAccessGrantType> DESIGNACAO_DE_ORGAO_NO_PROCESSO = EnumSet.of(
+            ProfessionalAccessGrantType.DESIGNACAO_PROCESSO, ProfessionalAccessGrantType.REPRESENTACAO_PROCESSO);
     private static final Set<ProfessionalAccessGrantType> ANCORA_NA_COMARCA_BASTA = EnumSet.of(
             ProfessionalAccessGrantType.SUBSTITUICAO, ProfessionalAccessGrantType.PLANTAO);
 
@@ -63,14 +61,15 @@ public class VinculoFuncionalResolver {
         Set<ProfessionalAccessGrantType> aceitas = switch (classe) {
             case MAGISTRATURA -> DESIGNACAO_DA_MAGISTRATURA;
             case APOIO_JUDICIAL -> DESIGNACAO_DO_APOIO_JUDICIAL;
-            case DEFENSORIA, PROCURADORIA -> DESIGNACAO_DE_ORGAO;
+            case DEFENSORIA, PROCURADORIA -> DESIGNACAO_DE_ORGAO_NO_PROCESSO;
             default -> Set.of();
         };
         if (aceitas.isEmpty()) {
             return false;
         }
+        boolean soNoProcesso = classe == ProfessionalActorClass.DEFENSORIA || classe == ProfessionalActorClass.PROCURADORIA;
         return grantService.resolveApplicable(usuario, processo, classe).grants().stream()
-                .anyMatch(grant -> aceitas.contains(grant.getGrantType()) && ancorado(grant));
+                .anyMatch(grant -> aceitas.contains(grant.getGrantType()) && (soNoProcesso ? grant.getProcesso() != null : ancorado(grant)));
     }
 
     private static boolean ancorado(ProfessionalInstitutionalAccessGrant grant) {

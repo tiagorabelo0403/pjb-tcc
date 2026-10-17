@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
+import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalAccessGrantType;
 import com.tcc.pjb.backend.core.security.professional.ProfessionalActorClass;
@@ -23,10 +24,16 @@ import com.tcc.pjb.backend.model.repository.professional.ProfessionalAccessGrant
 import com.tcc.pjb.backend.model.repository.professional.ProfessionalInstitutionalAccessGrantEventRepository;
 import com.tcc.pjb.backend.model.repository.professional.ProfessionalInstitutionalAccessGrantRepository;
 import com.tcc.pjb.backend.service.competencia.ComarcaResolutionService;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class ProfessionalInstitutionalAccessGrantAdminServiceAprovacaoTest {
+
+    private static final Instant AGORA = Instant.parse("2026-10-17T15:00:00Z");
+    private static final ZoneId FORTALEZA = ZoneId.of("America/Fortaleza");
+
 
     private final ProfessionalInstitutionalAccessGrantRepository grantRepository = mock(ProfessionalInstitutionalAccessGrantRepository.class);
     private final ProfessionalProcessAccessVectorService accessVectorService = mock(ProfessionalProcessAccessVectorService.class);
@@ -74,7 +81,8 @@ class ProfessionalInstitutionalAccessGrantAdminServiceAprovacaoTest {
                 mock(ProfessionalAccessGrantTemplateRepository.class),
                 accessVectorService,
                 mock(AuditLedgerService.class),
-                mock(ComarcaResolutionService.class)
+                mock(ComarcaResolutionService.class),
+                relogio()
         );
     }
 
@@ -84,5 +92,12 @@ class ProfessionalInstitutionalAccessGrantAdminServiceAprovacaoTest {
         usuario.setNome("Usuario " + id);
         usuario.setTipoUsuario(tipo);
         return usuario;
+    }
+
+    private static PjbTimeService relogio() {
+        PjbTimeService relogio = mock(PjbTimeService.class);
+        when(relogio.nowUtc()).thenReturn(AGORA);
+        when(relogio.legalZone()).thenReturn(FORTALEZA);
+        return relogio;
     }
 }

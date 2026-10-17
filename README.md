@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-5.881%20unit%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-5.925%20unit%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -373,7 +373,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 5.881 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 5.925 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 118 classes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 A convenção de nome é verificada no CI pelo guard `integration_test_naming_guard.py`: uma classe com sufixo `IT` precisa exibir marcador real de integração — Testcontainers, contexto Spring ou base de integração herdada. Sem esse marcador a classe não seria executada por nenhuma das duas fases (o Surefire a ignora pelo nome, e o Failsafe só roda sob `verify`), e o build falha em vez de deixar o teste invisível.
@@ -392,7 +392,7 @@ Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api -am
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 5.881 unitários (Surefire) e depois as 118 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 5.925 unitários (Surefire) e depois as 118 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 O `-am` não é cosmético: sem ele o `pjb-core` é resolvido a partir do `~/.m2` em vez do reator, e um artefato desatualizado ali produz `cannot find symbol` apontando para classes que existem no código-fonte.
 
@@ -442,7 +442,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **5.881** |
+| Total de testes unitários | Surefire | **5.925** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 1 |
 | Tempo unitários | Surefire | **~14 min** |
@@ -951,7 +951,7 @@ O modelo de segurança é orientado por identidade, papel, lotação, órgão, u
 | **AuthzTrail materializado** | Toda decisão de autorização produz registro imutável em `tb_authz_trail`, deduplicado por chave semântica — hash compacto de ator, recurso e efeito. Entradas idênticas colapsam; o ledger é consultável por padrão de acesso, não apenas por janela de tempo |
 | **Sanitização ICP-Brasil** | CPF e CNPJ removidos de respostas de API, cache de certificados, eventos de assinatura e entradas do audit ledger ICP. Onde a correlação é necessária, o identificador é hasheado — jamais em claro |
 | **BOLA guard (WorkItemScopeGuard)** | Impede que qualquer ator acesse item de trabalho de unidade ou lotação diferente da sua. Aplicado como controle P0 — ArchUnit garante em tempo de build que não existe caminho de código capaz de bypassar o guard |
-| **Vínculo do usuário com o processo** | `ProcessoVinculoResolver` responde se o usuário tem vínculo com o processo e qual é, conferindo do mais barato para o mais caro e parando no primeiro: parte (CPF de autor ou réu, quem ajuizou ou linha ativa do polo); advogado que ajuizou, enquanto não houver procuração dele revogada, expirada, indeferida ou suspensa no processo, ou com procuração ativa; órgão com polo ativo do seu segmento (Ministério Público, Defensoria, Procuradoria) na mesma UF do processo; processo concluso ao magistrado, pendente ou com prazo vencido; `WorkItem` atribuído (magistratura, delegado); servidor com função vigente na unidade do processo, com a data no fuso legal; designação aprovada e vigente ancorada no processo ou na unidade, ou na comarca para substituição e plantão; perito nomeado; e oficial com mandado. A leitura de processo e de documento sigiloso (`AbacV1Policy`) exige esse vínculo, inclusive para magistrado, servidor e órgãos, e o administrador do sistema não lê autos sigilosos. Os votos do colegiado aceitam parte, advogado, órgão no polo e, para a magistratura, conclusão, tarefa ou designação. A malha institucional (`PjbAuthorizationInstitutionalMalhaAccessFacade`) usa só os vínculos institucionais (órgão no polo, conclusão, tarefa e mandado), e o administrador mantém a visão da malha. Uma designação só é aprovada por operador diferente de quem a pediu e de quem a recebe. O motivo gravado na trilha de autorização nomeia o vínculo que liberou o acesso. O painel forense profissional (`ProfessionalForensicPanelService`) ainda decide por território e não passa por esse vínculo |
+| **Vínculo do usuário com o processo** | `ProcessoVinculoResolver` responde se o usuário tem vínculo com o processo e qual é, conferindo do mais barato para o mais caro e parando no primeiro: parte (CPF de autor ou réu, quem ajuizou ou linha ativa do polo); advogado que ajuizou, enquanto não houver procuração dele revogada, expirada, indeferida ou suspensa no processo, ou com procuração ativa; órgão com polo ativo do seu segmento (Ministério Público, Defensoria, Procuradoria), conferindo a UF do processo só para os órgãos de uma UF (MP estadual e eleitoral, Defensoria estadual, procuradorias estadual e municipal), enquanto PGR, MPT, DPU e Procuradoria Federal valem pelo polo; processo concluso ao magistrado, com a conclusão pendente, ou vencida se for a mais recente do processo e ele ainda estiver concluso; `WorkItem` atribuído (magistratura, delegado); servidor com função vigente na unidade do processo, com a data no fuso legal; designação aprovada e vigente ancorada no processo ou na unidade, ou na comarca para substituição e plantão, sendo que Defensoria e Procuradoria só contam a designação ou representação ligada ao próprio processo; perito nomeado; e oficial com mandado. A leitura de processo e de documento sigiloso (`AbacV1Policy`) exige esse vínculo, inclusive para magistrado, servidor e órgãos, e o administrador do sistema não lê autos sigilosos. Os votos do colegiado aceitam parte, advogado, órgão no polo, servidor com função na unidade e, para a magistratura, conclusão, tarefa ou designação. A malha institucional (`PjbAuthorizationInstitutionalMalhaAccessFacade`) usa só os vínculos institucionais (órgão no polo, conclusão, tarefa e mandado), e o administrador mantém a visão da malha. Uma designação só é aprovada por operador diferente de quem a pediu e de quem a recebe, e o emissor grava início, pedido e aprovação no mesmo fuso legal em que a vigência é lida. O motivo gravado na trilha de autorização nomeia o vínculo que liberou o acesso. O painel forense profissional (`ProfessionalForensicPanelService`) ainda decide por território e não passa por esse vínculo |
 | **Rate limiting** | Rotas críticas protegidas contra abuso com limite de requisições por período. Resposta padronizada RFC 7807. `createOficio` e endpoints de comunicação têm orçamento próprio, separado do tráfego geral |
 | **Security event logger** | Todo evento de segurança relevante — autenticação, autorização negada, step-up, bypass tentado — produz entrada em log estruturado separado do log de aplicação, auditável de forma independente e sem mistura com ruído operacional |
 | **Circuit breaker auditável** | Estado de abertura/fechamento de cada circuit breaker é registrado com timestamp, causa e contagem de falhas — a história de degradação de uma integração é rastreável, não apenas o estado atual |
@@ -1083,7 +1083,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **5.881 · 0 falhas · 0 erros · 1 pulado** |
+| Testes unitários (Surefire) | **5.925 · 0 falhas · 0 erros · 1 pulado** |
 | Testes de integração (Failsafe) | **118 classes · 0 falhas na última medição (ver nota ² na seção Testes)** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 58 decisões arquiteturais documentadas |
@@ -1417,7 +1417,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.881 testes unitários, 118 classes de integração e 332 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.925 testes unitários, 118 classes de integração e 332 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

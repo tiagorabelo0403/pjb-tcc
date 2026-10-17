@@ -1,6 +1,8 @@
 package com.tcc.pjb.backend.core.security.access;
 
+import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
 import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
@@ -9,17 +11,21 @@ import com.tcc.pjb.backend.model.repository.ConclusaoProcessualRepository;
 import com.tcc.pjb.backend.model.repository.PoloProcessualRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.oficial_justica.OficialJusticaProcessoVinculoService;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.function.Supplier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 @Component
 public class VinculoInstitucionalResolver {
 
-    private static final Set<String> CONCLUSAO_EM_ABERTO = Set.of("PENDENTE", "EXPIRADA");
+    private static final String CONCLUSAO_PENDENTE = "PENDENTE";
+    private static final Set<StatusProcesso> AINDA_CONCLUSO = EnumSet.of(StatusProcesso.CONCLUSO_JUIZ, StatusProcesso.CONCLUSO_RELATOR);
+    private static final Set<TipoUsuario> ORGAOS_DE_UMA_UF = EnumSet.of(
+            TipoUsuario.MEMBRO_MINISTERIO_PUBLICO, TipoUsuario.PROMOTOR_ELEITORAL, TipoUsuario.DEFENSOR_PUBLICO,
+            TipoUsuario.PROCURADORIA_ESTADUAL, TipoUsuario.PROCURADORIA_MUNICIPAL);
 
     private final PoloProcessualRepository poloProcessualRepository;
     private final ConclusaoProcessualRepository conclusaoRepository;
@@ -36,17 +42,24 @@ public class VinculoInstitucionalResolver {
         this.oficialJusticaProcessoVinculoService = oficialJusticaProcessoVinculoService;
     }
 
-    public boolean orgaoNoPolo(Usuario usuario, Long processoId, Supplier<String> ufDoProcesso) {
-        TipoPolo poloDoOrgao = poloDoOrgao(usuario.getTipoUsuario());
-        if (poloDoOrgao == null || !mesmaUf(usuario.getUf(), ufDoProcesso.get())) {
+    public boolean orgaoNoPolo(Usuario usuario, Processo processo) {
+        TipoUsuario tipo = usuario.getTipoUsuario();
+        TipoPolo poloDoOrgao = poloDoOrgao(tipo);
+        if (poloDoOrgao == null || (ORGAOS_DE_UMA_UF.contains(tipo) && !mesmaUf(usuario.getUf(), processo.getUf()))) {
             return false;
         }
-        return poloProcessualRepository.findByProcessoIdAndTipoPolo(processoId, poloDoOrgao).stream().anyMatch(PoloProcessual::isAtivo);
+        return poloProcessualRepository.findByProcessoIdAndTipoPolo(processo.getId(), poloDoOrgao).stream().anyMatch(PoloProcessual::isAtivo);
     }
 
-    public boolean processoConcluso(Usuario usuario, Long processoId) {
-        return usuario.getTipoUsuario().isMagistratura()
-                && conclusaoRepository.existsByProcessoIdAndMagistradoIdAndStatusIn(processoId, usuario.getId(), CONCLUSAO_EM_ABERTO);
+    public boolean processoConcluso(Usuario usuario, Processo processo) {
+        if (!usuario.getTipoUsuario().isMagistratura()) {
+            return false;
+        }
+        if (conclusaoRepository.existsByProcessoIdAndMagistradoIdAndStatus(processo.getId(), usuario.getId(), CONCLUSAO_PENDENTE)) {
+            return true;
+        }
+        return AINDA_CONCLUSO.contains(processo.getStatusProcesso())
+                && conclusaoRepository.existsUltimaConclusaoExpiradaDoMagistrado(processo.getId(), usuario.getId());
     }
 
     public boolean tarefaAtribuida(Usuario usuario, Long processoId) {

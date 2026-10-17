@@ -54,9 +54,6 @@ public interface ProcessoRepository extends JpaRepository<Processo, Long>, JpaSp
     @Query("SELECT p FROM Processo p WHERE p.id = :id")
     Optional<Processo> findProcessoCompletoById(@Param("id") Long id);
 
-    @Query("SELECT p.uf FROM Processo p WHERE p.id = :id")
-    Optional<String> findUfById(@Param("id") Long id);
-
 
     @EntityGraph(attributePaths = {"usuario", "jurisdicao"})
     @Query("SELECT p FROM Processo p WHERE p.id = :id")

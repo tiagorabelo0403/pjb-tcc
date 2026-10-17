@@ -23,7 +23,8 @@ public class AbacV1Policy implements AccessPolicy {
     private static final Set<VinculoProcessualDoUsuario> TODOS_OS_VINCULOS = EnumSet.allOf(VinculoProcessualDoUsuario.class);
     private static final Set<VinculoProcessualDoUsuario> VOTOS_PELAS_PARTES_E_ORGAOS = EnumSet.of(
             VinculoProcessualDoUsuario.PARTE, VinculoProcessualDoUsuario.ADVOGADO_DO_AJUIZAMENTO,
-            VinculoProcessualDoUsuario.ADVOGADO_COM_PROCURACAO, VinculoProcessualDoUsuario.ORGAO_NO_POLO);
+            VinculoProcessualDoUsuario.ADVOGADO_COM_PROCURACAO, VinculoProcessualDoUsuario.ORGAO_NO_POLO,
+            VinculoProcessualDoUsuario.FUNCAO_NA_UNIDADE);
     private static final Set<VinculoProcessualDoUsuario> VOTOS_PELA_MAGISTRATURA = EnumSet.of(
             VinculoProcessualDoUsuario.PROCESSO_CONCLUSO, VinculoProcessualDoUsuario.TAREFA_ATRIBUIDA,
             VinculoProcessualDoUsuario.DESIGNACAO_FORMAL);
