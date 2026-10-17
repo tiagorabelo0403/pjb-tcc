@@ -127,7 +127,7 @@ class ConsultasPublicasControllerIT extends PjbFlowItBase {
         mockMvc.perform(get("/api/v1/public/consultas-publicas/pages/{pageId}", "CP-HTTP-PAGE-2026-0001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pageId").value("CP-HTTP-PAGE-2026-0001"))
-                .andExpect(jsonPath("$.processoId").value(processo.getId()))
+                .andExpect(jsonPath("$.processoId").doesNotExist())
                 .andExpect(jsonPath("$.texto", containsString("Trecho público consolidado")));
     }
 

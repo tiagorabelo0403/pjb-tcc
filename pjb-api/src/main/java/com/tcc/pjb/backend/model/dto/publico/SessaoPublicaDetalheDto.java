@@ -1,11 +1,12 @@
 package com.tcc.pjb.backend.model.dto.publico;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public record SessaoPublicaDetalheDto(
         Long sessaoId,
-        Long processoId,
+        @JsonIgnore Long processoId,
         String numeroProcesso,
         String classeProcessual,
         String assunto,

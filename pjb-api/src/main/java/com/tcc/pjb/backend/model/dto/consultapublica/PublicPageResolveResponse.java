@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.model.dto.consultapublica;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Value;
@@ -11,6 +12,7 @@ public class PublicPageResolveResponse {
     UUID documentoId;
     String documentoTitulo;
     String publicActKind;
+    @JsonIgnore
     Long processoId;
     String numeroUnificado;
     Integer pageNumber;
