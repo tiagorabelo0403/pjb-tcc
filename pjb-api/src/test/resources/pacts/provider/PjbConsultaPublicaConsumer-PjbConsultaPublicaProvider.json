@@ -221,7 +221,6 @@
             "resumoPublico": "Resumo público institucional do processo.",
             "ultimasMovimentacoes": [
               {
-                "id": 1,
                 "data": "2026-04-16T10:00:00",
                 "faseDe": "CONHECIMENTO",
                 "fasePara": "INSTRUTORIA",
