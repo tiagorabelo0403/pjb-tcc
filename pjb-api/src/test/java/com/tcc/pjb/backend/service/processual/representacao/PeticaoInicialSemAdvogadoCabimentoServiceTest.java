@@ -103,4 +103,27 @@ class PeticaoInicialSemAdvogadoCabimentoServiceTest {
         assertThatCode(() -> servico.exigirCabimento(RitoProcessual.JUIZADO_ESPECIAL_CIVEL, new BigDecimal("1000.00"),
                 com.tcc.pjb.backend.domain.enums.TipoJustica.ESTADUAL)).doesNotThrowAnyException();
     }
+
+    @Test
+    void soQuemNaoTemProfissaoJuridicaPeticionaSemAdvogado() {
+        assertThat(PeticaoInicialSemAdvogadoCabimentoService.peticionaSemAdvogado(usuario(com.tcc.pjb.backend.model.entity.enums.TipoUsuario.CIDADAO))).isTrue();
+        assertThat(PeticaoInicialSemAdvogadoCabimentoService.peticionaSemAdvogado(usuario(com.tcc.pjb.backend.model.entity.enums.TipoUsuario.ADVOGADO))).isFalse();
+        assertThat(PeticaoInicialSemAdvogadoCabimentoService.peticionaSemAdvogado(usuario(com.tcc.pjb.backend.model.entity.enums.TipoUsuario.DEFENSOR_PUBLICO))).isFalse();
+        assertThat(PeticaoInicialSemAdvogadoCabimentoService.peticionaSemAdvogado(null)).isFalse();
+    }
+
+    @Test
+    void ritoOuJusticaTrocadosDepoisDaConsolidacaoSaoBarrados() {
+        assertThatThrownBy(() -> PeticaoInicialSemAdvogadoCabimentoService.exigirRitoEJusticaLiberados(
+                RitoProcessual.JUIZADO_ESPECIAL_FEDERAL, com.tcc.pjb.backend.domain.enums.TipoJustica.FEDERAL))
+                .isInstanceOf(AccessDeniedPjbException.class);
+        assertThatCode(() -> PeticaoInicialSemAdvogadoCabimentoService.exigirRitoEJusticaLiberados(
+                RitoProcessual.JUIZADO_ESPECIAL_CIVEL, null)).doesNotThrowAnyException();
+    }
+
+    private static com.tcc.pjb.backend.model.entity.Usuario usuario(com.tcc.pjb.backend.model.entity.enums.TipoUsuario tipo) {
+        com.tcc.pjb.backend.model.entity.Usuario usuario = new com.tcc.pjb.backend.model.entity.Usuario();
+        usuario.setTipoUsuario(tipo);
+        return usuario;
+    }
 }

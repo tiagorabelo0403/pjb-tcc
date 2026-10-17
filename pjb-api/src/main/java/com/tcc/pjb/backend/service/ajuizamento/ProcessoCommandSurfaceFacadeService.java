@@ -8,7 +8,6 @@ import com.tcc.pjb.backend.model.dto.ProcessoRequest;
 import com.tcc.pjb.backend.model.dto.ProcessoResponse;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
-import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.service.ProcessoResponseAssemblerService;
 import com.tcc.pjb.backend.service.document.SmartFileSplitter;
 import com.tcc.pjb.backend.service.processual.representacao.PeticaoInicialSemAdvogadoCabimentoService;
@@ -54,9 +53,7 @@ public class ProcessoCommandSurfaceFacadeService {
     }
 
     private void exigirCabimentoDoPeticionantePessoal(Usuario usuario, Processo processo) {
-        TipoUsuario tipo = usuario.getTipoUsuario();
-        boolean profissional = tipo != null && (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isProcuradoria() || tipo.isMinisterioPublico());
-        if (!profissional && tipo != null && tipo.isPeticionantePessoal()) {
+        if (PeticaoInicialSemAdvogadoCabimentoService.peticionaSemAdvogado(usuario)) {
             cabimentoSemAdvogadoService.exigirCabimento(processo.getRito(), processo.getValorCausa(), processo.getTipoJustica());
         }
     }

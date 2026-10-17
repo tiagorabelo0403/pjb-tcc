@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.time.PjbTimeService;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
+import com.tcc.pjb.backend.model.entity.Usuario;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
 import com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao;
@@ -32,14 +34,26 @@ public class PeticaoInicialSemAdvogadoCabimentoService {
         return rito != null && RITOS_LIBERADOS.contains(rito);
     }
 
+    public static boolean peticionaSemAdvogado(Usuario usuario) {
+        TipoUsuario tipo = usuario == null ? null : usuario.getTipoUsuario();
+        if (tipo == null || tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isProcuradoria() || tipo.isMinisterioPublico()) {
+            return false;
+        }
+        return tipo.isPeticionantePessoal();
+    }
+
+    public static void exigirRitoEJusticaLiberados(RitoProcessual rito, TipoJustica tipoJustica) {
+        if (!admiteRito(rito) || (tipoJustica != null && tipoJustica != TipoJustica.ESTADUAL)) {
+            throw new AccessDeniedPjbException("Sem advogado, a petição inicial só pode ser apresentada no Juizado Especial Cível, nas causas de até 20 salários mínimos (Lei 9.099/95, art. 9º).");
+        }
+    }
+
     public void exigirCabimento(RitoProcessual rito, BigDecimal valorCausa) {
         exigirCabimento(rito, valorCausa, null);
     }
 
     public void exigirCabimento(RitoProcessual rito, BigDecimal valorCausa, TipoJustica tipoJustica) {
-        if (!admiteRito(rito) || (tipoJustica != null && tipoJustica != TipoJustica.ESTADUAL)) {
-            throw new AccessDeniedPjbException("Sem advogado, a petição inicial só pode ser apresentada no Juizado Especial Cível, nas causas de até 20 salários mínimos (Lei 9.099/95, art. 9º).");
-        }
+        exigirRitoEJusticaLiberados(rito, tipoJustica);
         if (valorCausa == null || valorCausa.signum() <= 0) {
             throw new ErroDeValidacaoException(TipoErroValidacao.REGRA_NEGOCIO,
                     "Informe o valor da causa: no Juizado Especial Cível sem advogado ele não pode passar de 20 salários mínimos (Lei 9.099/95, art. 9º).");

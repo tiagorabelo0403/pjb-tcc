@@ -28,6 +28,7 @@ import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
 import com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao;
 import com.tcc.pjb.backend.service.completude.CompletudeDocumentalPolicyService;
 import com.tcc.pjb.backend.service.policy.SigiloPolicyFactory;
+import com.tcc.pjb.backend.service.processual.representacao.PeticaoInicialSemAdvogadoCabimentoService;
 import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
 import com.tcc.pjb.backend.model.entity.enums.InstrumentoRepresentacaoProcessual;
 import com.tcc.pjb.backend.service.procedural.AjuizamentoCanonicalContextService;
@@ -107,6 +108,9 @@ public class AjuizarProcessoCommand {
         ProceduralConnectorExecutionReport connectorExecution = proceduralConnectorExecutionService.analyzeProcess(processo, routing, submissionBlueprint);
         applyRoutingSnapshot(processo, routing, submissionBlueprint);
         ajuizamentoCanonicalContextService.consolidate(processo, compiled, routing);
+        if (PeticaoInicialSemAdvogadoCabimentoService.peticionaSemAdvogado(advogado)) {
+            PeticaoInicialSemAdvogadoCabimentoService.exigirRitoEJusticaLiberados(processo.getRito(), processo.getTipoJustica());
+        }
         validateNationalRouting(routing);
         validateSubmissionBlueprint(submissionBlueprint);
         validateConnectorExecution(connectorExecution);
