@@ -52,4 +52,24 @@ class ProceduralCatalogInstitutionalConsistencyTest {
             assertTrue(snapshot.stages().stream().allMatch(stage -> stage.getWork() != null && !stage.getWork().isEmpty()), rito.name());
         }
     }
+
+    @Test
+    void classesTpuDosJuizadosFederalEDaFazendaPublicaResolvemParaORitoProprio() {
+        assertEquals(RitoProcessual.JUIZADO_ESPECIAL_FEDERAL, ProceduralCatalogSupport.resolveRito(null, null, "251"));
+        assertEquals(RitoProcessual.JUIZADO_ESPECIAL_FAZENDA_PUBLICA, ProceduralCatalogSupport.resolveRito(null, null, "252"));
+        assertEquals(RitoProcessual.JUIZADO_ESPECIAL_CIVEL, ProceduralCatalogSupport.resolveRito(null, null, "250"));
+    }
+
+    @Test
+    void alcadaDosJuizadosEmSalariosMinimosTemFonteUnicaNoRito() {
+        assertEquals(new java.math.BigDecimal("60"), RitoProcessual.JUIZADO_ESPECIAL_FEDERAL.salariosMinimosDaAlcada());
+        assertEquals(new java.math.BigDecimal("60"), RitoProcessual.JUIZADO_ESPECIAL_FAZENDA_PUBLICA.salariosMinimosDaAlcada());
+        assertEquals(new java.math.BigDecimal("40"), RitoProcessual.JUIZADO_ESPECIAL_CIVEL.salariosMinimosDaAlcada());
+        assertEquals(new java.math.BigDecimal("40"), RitoProcessual.TRABALHISTA_SUMARISSIMO.salariosMinimosDaAlcada());
+        assertEquals(null, RitoProcessual.COMUM_ORDINARIO.salariosMinimosDaAlcada());
+        assertEquals(RitoProcessual.JUIZADO_ESPECIAL_FEDERAL.salariosMinimosDaAlcada(),
+                com.tcc.pjb.backend.service.exception.enums.TipoViolacaoTeto.ALCADA_JUIZADO_ESPECIAL_FEDERAL.salariosMinimosDaAlcada());
+        assertEquals(RitoProcessual.JUIZADO_ESPECIAL_FAZENDA_PUBLICA.salariosMinimosDaAlcada(),
+                com.tcc.pjb.backend.service.exception.enums.TipoViolacaoTeto.ALCADA_FAZENDA_PUBLICA.salariosMinimosDaAlcada());
+    }
 }
