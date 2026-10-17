@@ -86,4 +86,18 @@ class LaianePeticaoInicialDraftServiceCabimentoTest {
         verifyNoInteractions(cabimento);
         verify(protocolarService).protocolar(any(), any());
     }
+
+    @Test
+    void rascunhoJaProtocoladoDevolveOResultadoSemReconferirOLimite() {
+        usuario(TipoUsuario.CIDADAO);
+        LaianePeticaoInicialDraftSession draft = new LaianePeticaoInicialDraftSession();
+        draft.setRitoSugerido(RitoProcessual.JUIZADO_ESPECIAL_CIVEL.name());
+        draft.setStatus("PROTOCOLO_REALIZADO");
+        when(repository.findByIdAndSolicitante_Id(55L, 7L)).thenReturn(Optional.of(draft));
+
+        servico().protocolar(55L, null);
+
+        verifyNoInteractions(cabimento);
+        verify(protocolarService).protocolar(55L, null);
+    }
 }
