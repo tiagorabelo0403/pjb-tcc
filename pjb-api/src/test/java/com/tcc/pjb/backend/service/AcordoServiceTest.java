@@ -68,34 +68,34 @@ class AcordoServiceTest {
     private final ChatService chatService = mock(ChatService.class);
     private final UiHistoryService uiHistoryService = mock(UiHistoryService.class);
     private final AgreementChatLedgerService agreementChatLedgerService = mock(AgreementChatLedgerService.class);
+    private final ProcessoRitoSnapshotService processoRitoSnapshotService = mock(ProcessoRitoSnapshotService.class);
+    private final SettlementAdvisoryService settlementAdvisoryService = mock(SettlementAdvisoryService.class);
+    private final ProcessOutcomePredictionService processOutcomePredictionService = mock(ProcessOutcomePredictionService.class);
+    private final JudgeAgreementApprovalService judgeAgreementApprovalService = mock(JudgeAgreementApprovalService.class);
 
     private final AcordoService service = new AcordoService(
             processoRepository,
             usuarioRepository,
             mock(ModeloContratoRepository.class),
             propostaAcordoRepository,
-            chatMensagemRepository,
-            acordoHomologadoRepository,
             mock(ProfileEngine.class),
-            pdfGeneratorService,
             notificationService,
-            auditService,
-            domainEventPublisher,
             chatService,
             mock(AcordoSuggestionPipelineAsyncService.class),
-            uiHistoryService,
-            mock(ProcessoRitoSnapshotService.class),
+            processoRitoSnapshotService,
             mock(SettlementIntelligenceService.class),
             mock(ProcessMaterialDossierService.class),
             mock(ProcessMaterialStrategyService.class),
-            mock(SettlementAdvisoryService.class),
-            mock(ProcessOutcomePredictionService.class),
-            mock(JudgeAgreementApprovalService.class),
+            settlementAdvisoryService,
             workItemRepository,
             agreementChatLedgerService,
             mock(LegalRhythmEngine.class),
             mock(FinancialValidatorEngine.class),
-            mock(FacilitadorBatnaService.class)
+            mock(FacilitadorBatnaService.class),
+            new AcordoHomologacaoJudicialService(pdfGeneratorService, acordoHomologadoRepository, processoRepository,
+                    uiHistoryService, auditService, domainEventPublisher),
+            new AcordoSubmissaoJudicialService(judgeAgreementApprovalService, processOutcomePredictionService,
+                    chatMensagemRepository, agreementChatLedgerService)
     );
 
     @AfterEach
@@ -135,6 +135,8 @@ class AcordoServiceTest {
         });
         when(processoRepository.save(any(Processo.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(propostaAcordoRepository.save(any(PropostaAcordo.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(agreementChatLedgerService.renderDecisionMessage("HOMOLOGAR", "Homologação judicial concluída com assinatura e conversão do acordo em título executivo judicial."))
+                .thenReturn("Decisão judicial do acordo: HOMOLOGAR.");
 
         final AcordoHomologado[] holder = new AcordoHomologado[1];
         RequestContext.run("req-acordo", () -> {
@@ -162,7 +164,25 @@ class AcordoServiceTest {
                 eq("ACORDO_HOMOLOGADO"),
                 eq("Acordo homologado judicialmente")
         );
-        verify(auditService).recordAgreementHomologation(eq(proposta.getUuid()), any());
+        ArgumentCaptor<com.tcc.pjb.backend.model.dto.SavedAudit> auditoria = ArgumentCaptor.forClass(com.tcc.pjb.backend.model.dto.SavedAudit.class);
+        verify(auditService).recordAgreementHomologation(eq(proposta.getUuid()), auditoria.capture());
+        assertSame(homologado, auditoria.getValue().getAcordo());
+        assertEquals("/pdfs/homologado.pdf", ((PdfGenerationResult) auditoria.getValue().getPdf()).getUrl());
+        org.mockito.InOrder ordem = org.mockito.Mockito.inOrder(pdfGeneratorService, acordoHomologadoRepository, processoRepository,
+                uiHistoryService, propostaAcordoRepository, chatService, auditService, domainEventPublisher, notificationService);
+        ordem.verify(pdfGeneratorService).generatePdfWithSealAndQr(any(), any(), any());
+        ordem.verify(acordoHomologadoRepository).save(any(AcordoHomologado.class));
+        ordem.verify(processoRepository).save(processo);
+        ordem.verify(uiHistoryService).recordProcessoStatusChange(any(), any(), any(), any(), any(), any());
+        ordem.verify(propostaAcordoRepository).save(proposta);
+        ordem.verify(chatService).postarMensagemSistema(processo, "Decisão judicial do acordo: HOMOLOGAR.");
+        ordem.verify(auditService).recordAgreementHomologation(any(), any());
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<java.util.Map<String, String>> camposDoPdf = ArgumentCaptor.forClass(java.util.Map.class);
+        verify(pdfGeneratorService).generatePdfWithSealAndQr(any(), any(), camposDoPdf.capture());
+        assertEquals(homologado.getDataHomologacao().toString(), camposDoPdf.getValue().get("data_homologacao"));
+        ordem.verify(domainEventPublisher).publish(any());
+        ordem.verify(notificationService).notifyJudge(any(), any(), any(), any(), any());
         verify(notificationService).notifyJudge(eq(juiz), eq(processo), eq("Homologação Realizada"), eq("Acordo selado no processo 000200-11.2026.8.06.0001"), eq("/pdfs/homologado.pdf"));
         verify(notificationService).notifyLawyers(eq(processo), eq("Acordo Homologado"), eq("/pdfs/homologado.pdf"));
         verify(chatService).postarMensagemSistema(eq(processo), eq(admin), eq("⚖️ Sentença Homologatória proferida. Processo extinto com resolução de mérito."));
@@ -245,6 +265,71 @@ class AcordoServiceTest {
         verify(chatService).postarMensagemSistema(eq(processo), org.mockito.ArgumentMatchers.contains("DEVOLVER_PARA_REVISAO"));
     }
 
+    @Test
+    void shouldSubmitProposalToTheJudgeWithAdvisoryPredictionAndRoundRecord() {
+        Processo processo = Processo.builder().id(204L).numeroUnificado("000204").statusProcesso(StatusProcesso.EM_ANDAMENTO).build();
+        PropostaAcordo proposta = PropostaAcordo.builder()
+                .id(304L)
+                .uuid(UUID.randomUUID())
+                .processo(processo)
+                .termosHtml("<p>acordo</p>")
+                .status(StatusAcordo.EM_NEGOCIACAO)
+                .valorAcordo(new BigDecimal("1000.00"))
+                .build();
+        Usuario admin = usuario(1L, "Sistema", TipoUsuario.ADMINISTRADOR);
+        ProcessoRitoSnapshotService.ProcessoRitoSnapshot rito = mock(ProcessoRitoSnapshotService.ProcessoRitoSnapshot.class);
+        com.tcc.pjb.backend.core.kernel.advisory.SettlementAdvisoryReport advisory = mock(com.tcc.pjb.backend.core.kernel.advisory.SettlementAdvisoryReport.class);
+        com.tcc.pjb.backend.model.dto.intelligence.ProcessOutcomePredictionResponse previsao =
+                mock(com.tcc.pjb.backend.model.dto.intelligence.ProcessOutcomePredictionResponse.class);
+        com.tcc.pjb.backend.model.dto.intelligence.JudgeAgreementApprovalPromptResponse prompt =
+                mock(com.tcc.pjb.backend.model.dto.intelligence.JudgeAgreementApprovalPromptResponse.class);
+        when(propostaAcordoRepository.findById(304L)).thenReturn(Optional.of(proposta));
+        when(propostaAcordoRepository.save(any(PropostaAcordo.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(usuarioRepository.findByTipoUsuario(TipoUsuario.ADMINISTRADOR)).thenReturn(List.of(admin));
+        when(rito.ritoCode()).thenReturn("COMUM_ORDINARIO");
+        when(processoRitoSnapshotService.resolve(processo, null)).thenReturn(rito);
+        when(settlementAdvisoryService.analyze(eq(processo), eq("COMUM_ORDINARIO"), eq(new BigDecimal("1000.00")), any(), org.mockito.ArgumentMatchers.isNull()))
+                .thenReturn(advisory);
+        when(processOutcomePredictionService.analyze(processo)).thenReturn(previsao);
+        when(judgeAgreementApprovalService.requestApproval(processo, proposta, advisory, previsao, "Resumo executivo")).thenReturn(prompt);
+        when(chatMensagemRepository.findByProcesso_IdOrderByDataEnvioAsc(204L)).thenReturn(List.of());
+        when(agreementChatLedgerService.nextRoundSnapshot(List.of(), "homologação judicial do acordo"))
+                .thenReturn(new AgreementChatLedgerService.RoundSnapshot(3, "v3", "PROPOSTA"));
+        when(agreementChatLedgerService.renderRoundSystemMessage(new AgreementChatLedgerService.RoundSnapshot(3, "v3", "SUBMISSAO_JUDICIAL")))
+                .thenReturn("Rodada 3 submetida ao juízo");
+        EquipeContexto.setMembroAtivo(membroAdvogado(usuario(405L, "Advogada", TipoUsuario.ADVOGADO)));
+
+        var resposta = service.solicitarHomologacaoJudicial(304L, "Resumo executivo");
+
+        assertSame(prompt, resposta);
+        assertEquals(StatusAcordo.AGUARDANDO_HOMOLOGACAO_JUIZ, proposta.getStatus());
+        verify(propostaAcordoRepository).save(proposta);
+        org.mockito.InOrder ordem = org.mockito.Mockito.inOrder(propostaAcordoRepository, judgeAgreementApprovalService, chatService, chatMensagemRepository);
+        ordem.verify(propostaAcordoRepository).save(proposta);
+        ordem.verify(judgeAgreementApprovalService).requestApproval(processo, proposta, advisory, previsao, "Resumo executivo");
+        ordem.verify(chatService).postarMensagemSistema(processo, admin, "A proposta foi encaminhada ao gabinete para apreciação judicial do acordo.");
+        ordem.verify(chatMensagemRepository).findByProcesso_IdOrderByDataEnvioAsc(204L);
+        ordem.verify(chatService).postarMensagemSistema(processo, "Rodada 3 submetida ao juízo");
+    }
+
+    @Test
+    void shouldNotSubmitAlreadyHomologatedOrJudgeRejectedProposalToTheJudge() {
+        Processo processo = Processo.builder().id(205L).numeroUnificado("000205").build();
+        PropostaAcordo homologada = PropostaAcordo.builder().id(305L).processo(processo).status(StatusAcordo.HOMOLOGADO).build();
+        PropostaAcordo rejeitada = PropostaAcordo.builder().id(306L).processo(processo).status(StatusAcordo.REJEITADO_PELO_JUIZ).build();
+        when(propostaAcordoRepository.findById(305L)).thenReturn(Optional.of(homologada));
+        when(propostaAcordoRepository.findById(306L)).thenReturn(Optional.of(rejeitada));
+        EquipeContexto.setMembroAtivo(membroAdvogado(usuario(406L, "Advogado", TipoUsuario.ADVOGADO)));
+
+        RegraNegocioException jaHomologada = assertThrows(RegraNegocioException.class, () -> service.solicitarHomologacaoJudicial(305L, "Resumo"));
+        RegraNegocioException rejeitadaPeloJuiz = assertThrows(RegraNegocioException.class, () -> service.solicitarHomologacaoJudicial(306L, "Resumo"));
+
+        assertEquals("Fluxo inválido: proposta já homologada.", jaHomologada.getMessage());
+        assertEquals("Fluxo inválido: proposta rejeitada exige revisão antes de nova submissão.", rejeitadaPeloJuiz.getMessage());
+        verify(judgeAgreementApprovalService, never()).requestApproval(any(), any(), any(), any(), any());
+        verify(propostaAcordoRepository, never()).save(any(PropostaAcordo.class));
+    }
+
     private static Usuario usuario(Long id, String nome, TipoUsuario tipoUsuario) {
         Usuario usuario = new Usuario();
         usuario.setId(id);
@@ -261,6 +346,13 @@ class AcordoServiceTest {
         } catch (ReflectiveOperationException ex) {
             throw new AssertionError(ex);
         }
+    }
+
+    private static MembroEquipe membroAdvogado(Usuario advogado) {
+        MembroEquipe membroEquipe = new MembroEquipe();
+        membroEquipe.setUsuario(advogado);
+        membroEquipe.setPapel(PapelEquipe.ADVOGADO_SENIOR);
+        return membroEquipe;
     }
 
     private static MembroEquipe membroJuiz(Usuario juiz) {

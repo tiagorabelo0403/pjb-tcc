@@ -72,7 +72,7 @@
   "pjb-api/src/main/java/com/tcc/pjb/backend/platform/jusos/v2/notificacao/NotificacaoInteligentePJB.java": 11,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/AcordoIntelligenceOrchestrator.java": 25,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/AcordoNegotiationAdvisoryPipelineService.java": 12,
-  "pjb-api/src/main/java/com/tcc/pjb/backend/service/AcordoService.java": 26,
+  "pjb-api/src/main/java/com/tcc/pjb/backend/service/AcordoService.java": 20,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/AcordoSuggestionPipelineAsyncService.java": 12,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/AjuizamentoService.java": 11,
   "pjb-api/src/main/java/com/tcc/pjb/backend/service/ChatService.java": 14,
