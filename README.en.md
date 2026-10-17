@@ -265,13 +265,13 @@ The project uses separate Spring Boot profiles per environment. The base file is
 | Profile | File | When to Use |
 |---------|------|------------|
 | `dev` | `application-dev.yml` | Local development with infrastructure in Docker |
-| `local` | `application-local.yml` | Database and services running directly on the host |
+| `local` | `pjb-api/config/application-local.yml` (outside Git; copy from `application-local.yml.example`) | Personal overrides on top of `dev`, such as PostgreSQL installed on the host: `-Dspring-boot.run.profiles=dev,local` |
 | `docker` | `application-docker.yml` | Backend inside a Docker container |
 | `frontend-dev` | `application-frontend-dev.yml` | Backend for frontend development, with in-memory H2 and external integrations off |
 | `prod` | `application-prod.yml` | Production — requires all environment variables |
 | `k8s` | `application-k8s.yml` | Kubernetes |
 
-For local development, the `dev` profile is recommended. It is activated automatically by `demo.sh` / `demo.cmd`. To activate manually:
+For local development with Maven, the `dev` profile is recommended. `demo.sh` / `demo.cmd` does not use `dev`: it builds and starts `docker compose --profile app`, which runs the backend in a container with the `docker` profile. To activate `dev` manually:
 
 ```bash
 # Via Maven
