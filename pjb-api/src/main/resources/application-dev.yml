@@ -26,9 +26,9 @@ spring:
       # faltante: ela so explodia em docker/prod, que usam `validate`. Era a mecanica que deixava
       # drift entidade<->migration sobreviver ate o deploy.
       #
-      # local e frontend-dev seguem em `update` de proposito: la o banco e H2 em memoria e o Flyway
-      # esta desligado, porque as migrations sao Postgres puro (pgvector, CREATE EXTENSION vector).
-      # Naqueles dois o Hibernate e a unica coisa que cria o schema.
+      # frontend-dev segue em `update` de proposito: la o banco e H2 em memoria e o Flyway esta
+      # desligado, porque as migrations sao Postgres puro (pgvector, CREATE EXTENSION vector). Nele o
+      # Hibernate e a unica coisa que cria o schema. O local e so um ajuste por cima do dev.
       ddl-auto: validate
     show-sql: true
     open-in-view: false

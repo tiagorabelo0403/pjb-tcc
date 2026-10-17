@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/Testes-5.754%20unit%20%7C%200%20falhas-brightgreen)
+![Testes](https://img.shields.io/badge/Testes-5.834%20unit%20%7C%200%20falhas-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![Licença](https://img.shields.io/badge/Licença-MIT-blue)
 
@@ -266,12 +266,13 @@ O projeto usa profiles Spring Boot separados por ambiente. O arquivo base é `ap
 | Profile | Arquivo | Quando usar |
 |---------|---------|------------|
 | `dev` | `application-dev.yml` | Desenvolvimento local com infraestrutura no Docker |
-| `local` | `application-local.yml` | Banco e serviços rodando diretamente no host |
+| `local` | `pjb-api/config/application-local.yml.example`, copiado sem o sufixo `.example` (a cópia fica fora do Git) | Ajustes pessoais por cima do `dev`, como PostgreSQL instalado no host: `-Dspring-boot.run.profiles=dev,local`. Com `java -jar` a partir da raiz, acrescentar `--spring.config.additional-location=optional:file:pjb-api/config/` |
 | `docker` | `application-docker.yml` | Backend dentro de container Docker |
+| `frontend-dev` | `application-frontend-dev.yml` | Backend para desenvolvimento do frontend, com H2 em memória e integrações externas desligadas |
 | `prod` | `application-prod.yml` | Produção — exige todas as variáveis de ambiente |
 | `k8s` | `application-k8s.yml` | Kubernetes |
 
-Para rodar localmente, o profile `dev` é o recomendado. Ele é ativado automaticamente pelo `demo.sh` / `demo.cmd`. Para ativar manualmente:
+Para rodar localmente com Maven, o profile `dev` é o recomendado. O `demo.sh` / `demo.cmd` não usa o `dev`: ele compila e sobe `docker compose --profile app`, que roda o backend em container com o profile `docker`. Para ativar o `dev` manualmente:
 
 ```bash
 # Via Maven
@@ -355,6 +356,8 @@ A tabela de decisão está travada por um guard Python dedicado (`scripts/pjb_ru
 | `http://localhost:8080/actuator/health` | Health check completo |
 | `http://localhost:8080/actuator/metrics` | Métricas Micrometer |
 
+O Swagger UI e o `/v3/api-docs` só respondem sem autenticação quando `pjb.api.docs.public=true`, o que vale nos profiles `frontend-dev` e `docker`; no `dev` a propriedade fica no padrão `false` (ver [Documentação da API](#documentação-da-api)). `/demo/**` e `/actuator/metrics` exigem perfil de administrador.
+
 Com o profile `docker`, o sistema semeia automaticamente usuários e processos de demonstração.
 
 **Para encerrar:**
@@ -370,7 +373,7 @@ docker compose down
 
 O projeto tem dois níveis de teste com características bem diferentes:
 
-- **Testes unitários (Surefire):** 5.754 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
+- **Testes unitários (Surefire):** 5.834 testes com Mockito e H2 em memória. Rápidos, sem dependência de Docker.
 - **Testes de integração (Failsafe):** 118 classes contra PostgreSQL e Kafka reais via Testcontainers. Exigem Docker. Demoram mais.
 
 A convenção de nome é verificada no CI pelo guard `integration_test_naming_guard.py`: uma classe com sufixo `IT` precisa exibir marcador real de integração — Testcontainers, contexto Spring ou base de integração herdada. Sem esse marcador a classe não seria executada por nenhuma das duas fases (o Surefire a ignora pelo nome, e o Failsafe só roda sob `verify`), e o build falha em vez de deixar o teste invisível.
@@ -389,7 +392,7 @@ Tempo esperado: **~14 min** em hardware local. Não precisa de Docker rodando.
 ./mvnw verify -pl pjb-api -am
 ```
 
-Esse comando é o portão oficial do projeto. Ele roda os 5.754 unitários (Surefire) e depois as 118 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
+Esse comando é o portão oficial do projeto. Ele roda os 5.834 unitários (Surefire) e depois as 118 classes de integração (Failsafe) contra containers reais de PostgreSQL 17 e Kafka. O Testcontainers sobe e derruba os containers automaticamente — não é preciso configurar nada manualmente.
 
 O `-am` não é cosmético: sem ele o `pjb-core` é resolvido a partir do `~/.m2` em vez do reator, e um artefato desatualizado ali produz `cannot find symbol` apontando para classes que existem no código-fonte.
 
@@ -439,7 +442,7 @@ Marca como zumbi qualquer container `unhealthy` por mais de 30 minutos (configur
 
 | Métrica | Fase | Valor |
 |---------|------|-------|
-| Total de testes unitários | Surefire | **5.754** |
+| Total de testes unitários | Surefire | **5.834** |
 | Falhas unitários | Surefire | **0** |
 | Skipped | Surefire | 1 |
 | Tempo unitários | Surefire | **~14 min** |
@@ -484,6 +487,8 @@ A especificação OpenAPI 3.1 está disponível em:
 ```
 http://localhost:8080/v3/api-docs
 ```
+
+As duas rotas só respondem sem autenticação quando `pjb.api.docs.public=true` (variável `PJB_API_DOCS_PUBLIC`). O padrão é `false`; os perfis `frontend-dev` e `docker` ligam a propriedade, e os perfis `prod` e `k8s` não a declaram, ficando no padrão.
 
 Os contratos versionados também estão documentados estaticamente em:
 
@@ -920,7 +925,7 @@ O catálogo `RitoProcessual` é selado (sealed). Todos os ritos abaixo são trat
 
 **Juizados Especiais:** cível (JEC), federal (JEF), da Fazenda Pública (JEFP) — com rito próprio e limites de valor. `RepresentacaoProcessualPolicyService` reconhece o jus postulandi da parte no JEC (Lei 9.099/95, art. 9º) como instrumento próprio (`JUS_POSTULANDI_JUIZADO`), distinto do jus postulandi trabalhista (CLT, art. 791) — cidadão que peticiona pessoalmente no Juizado Especial Cível não é mais instruído a juntar procuração de advogado que não possui. O reconhecimento não fica só no checklist informativo: `RecursalValidacaoMinimaService` (gatekeeper real de admissibilidade recursal, via `RecursoAdmissibilidadeService`) passa a aceitar jus postulandi como legitimidade recursal em hipótese restrita por espécie de recurso — embargos de declaração no JEC e recurso ordinário na Justiça do Trabalho seguem autorrepresentáveis, mas recurso inominado à Turma Recursal (Lei 9.099/95, art. 41, § 2º) e qualquer recurso de competência do TST (Súmula 425) continuam exigindo advogado, preservando o mesmo gate que já protegia o restante do sistema. A mesma modelagem foi estendida ao Juizado Especial Federal, com valor de instrumento próprio (`JUS_POSTULANDI_JEF`) em vez de reaproveitar o do juizado estadual: o fundamento é o art. 10 da Lei 10.259/2001, que dispensa advogado sem o teto de alçada aplicável ao JEC, e o regime recursal federal — Turma Recursal Federal e incidente de uniformização dos arts. 14 e 15 — não tem equivalente no microssistema estadual. Manter um único valor obrigaria a distinguir os dois fundamentos dentro de cada consumidor; um valor por fundamento concentra a diferença no catálogo de instrumentos. O predicado que decide o regime cobre `JUIZADO_ESPECIAL_FEDERAL` e `PREVIDENCIARIO_JEF`, os dois ritos que efetivamente tramitam sob a Lei 10.259/2001, e não alcança o previdenciário de Justiça Federal comum. A dispensa de procuração vale nos dois canais de ajuizamento: além do checklist do Laiane, `CompletudeDocumentalPolicyService` passou a receber o instrumento resolvido para o ator, de modo que `PROCURACAO` sai dos documentos obrigatórios do catálogo quando o regime é de jus postulandi — e apenas ela, com CTPS, comprovante de endereço e os demais requisitos do rito seguindo exigíveis. Representação resolvida como irregular não gera dispensa: o instrumento volta nulo e a procuração continua sendo cobrada. A dispensa alcança também o preparo inicial. `CustaIsencaoPorRitoPolicy` reconhece isenção de custas em primeiro grau para JEC (Lei 9.099/95, art. 54), JEF (Lei 10.259/2001) e JEFP (Lei 12.153/2009), e mantém a regra pré-existente do ramo `INFANCIA_JUVENTUDE` agora com fundamento explícito no art. 141, § 2º do ECA. Fase recursal fica de fora por decisão da própria política — o parágrafo único do art. 54 exige preparo do recurso inominado, então a checagem do tipo de custa acontece antes do rito. O motor `CustaJudicialService`, com GRU e PIX, segue desconectado dos canais de ajuizamento — a política vive à frente da integração, correta quando ela vier, sem cobrar ou isentar ninguém enquanto não vier.
 
-Pela API, o cidadão autenticado só protocola petição inicial sem advogado no Juizado Especial Cível, em causa de até 20 salários mínimos vigentes na data do protocolo (Lei 9.099/95, art. 9º). O limite é conferido no backend por `PeticaoInicialSemAdvogadoCabimentoService` nos dois canais de ajuizamento, o rascunho da petição inicial (ao estruturar, salvar e protocolar) e `/api/v1/processos/ajuizar`, e exige que o processo seja da Justiça Estadual. O valor da causa do rascunho segue para o processo. A regra de rota libera `ROLE_CIDADAO` só em `/api/v1/peticionamento/inicial/rascunhos/**`; o restante do peticionamento continua restrito à advocacia, à Defensoria e à Procuradoria. O JEF e a Justiça do Trabalho seguem reconhecidos na política de representação, mas a petição inicial pelo próprio cidadão nesses ritos ainda não está liberada.
+Pela API, o cidadão autenticado só protocola petição inicial sem advogado no Juizado Especial Cível, em causa de até 20 salários mínimos vigentes na data do protocolo (Lei 9.099/95, art. 9º). O limite é conferido no backend por `PeticaoInicialSemAdvogadoCabimentoService` nos dois canais de ajuizamento, o rascunho da petição inicial (ao estruturar, salvar e protocolar) e `/api/v1/processos/ajuizar`, e exige que o processo seja da Justiça Estadual; rito e justiça são conferidos de novo depois da consolidação do ajuizamento, antes de o processo ser gravado. O valor da causa do rascunho segue para o processo. A regra de rota libera `ROLE_CIDADAO` só em `/api/v1/peticionamento/inicial/rascunhos/**`; o restante do peticionamento continua restrito à advocacia, à Defensoria e à Procuradoria. O JEF e a Justiça do Trabalho seguem reconhecidos na política de representação, mas a petição inicial pelo próprio cidadão nesses ritos ainda não está liberada.
 
 **Especializados:** falimentar, recuperação judicial, precatório, militar, extrajudicial, arbitragem com homologação
 
@@ -1078,7 +1083,7 @@ Por isso `infra/docker/postgres/init/01-app-role.sh` cria, no boot do container 
 
 | Métrica | Estado |
 |---------|--------|
-| Testes unitários (Surefire) | **5.754 · 0 falhas · 0 erros · 1 pulado** |
+| Testes unitários (Surefire) | **5.834 · 0 falhas · 0 erros · 1 pulado** |
 | Testes de integração (Failsafe) | **118 classes · 0 falhas na última medição (ver nota ² na seção Testes)** (ver nota¹ na seção Testes sobre testes confirmados fora desta contagem) |
 | Manifestos K8s (Kustomize) | Schema-validados: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 58 decisões arquiteturais documentadas |
@@ -1412,7 +1417,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.754 testes unitários, 118 classes de integração e 331 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
+O backend cobre integralmente os bounded contexts descritos neste documento — 15 módulos funcionais, 58 ADRs, 5.834 testes unitários, 118 classes de integração e 331 migrations aplicadas. A API REST está completamente documentada via OpenAPI 3.1 e Swagger UI, pronta para consumo por qualquer cliente.
 
 ### Frontend — em análise e planejamento
 

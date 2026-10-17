@@ -101,6 +101,8 @@ class ConsultaPublicaWorkspaceServiceTest {
 
         assertThat(response.resumo().acessoRestrito()).isTrue();
         assertThat(response.actions()).extracting("code").contains("NOVA_BUSCA", "ACESSO_PESSOAL");
+        assertThat(response.actions()).filteredOn(acao -> "ACESSO_PESSOAL".equals(acao.code()))
+                .extracting("route").containsExactly("/api/v1/processos/pessoais/meus-processos");
         assertThat(response.warnings()).anyMatch(item -> item.contains("restrições adicionais"));
     }
 }

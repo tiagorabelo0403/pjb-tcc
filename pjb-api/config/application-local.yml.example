@@ -1,0 +1,8 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: ${PJB_DB_URL:jdbc:postgresql://localhost:5432/pjb}
+    username: ${PJB_DB_USER:pjb}
+    password: ${PJB_DB_PASS:pjb}
