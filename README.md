@@ -321,6 +321,8 @@ demo.cmd
 java -jar pjb-api/target/pjb-api.jar
 ```
 
+O `spring-boot:run` sobe a JVM com `-Xmx2g`. Argumentos passados em `-Dspring-boot.run.jvmArguments` são somados a esse padrão, e um `-Xmx` informado ali prevalece.
+
 ### Backend completo via Docker (build + infra juntos)
 
 ```bash
