@@ -1,10 +1,9 @@
 package com.tcc.pjb.backend.service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +26,7 @@ import com.tcc.pjb.backend.model.dto.intelligence.JudgeAgreementDecisionResponse
 import com.tcc.pjb.backend.model.dto.PdfGenerationResult;
 import com.tcc.pjb.backend.model.dto.PropostaFinanceiraDTO;
 import com.tcc.pjb.backend.service.ProfileEngine;
-import com.tcc.pjb.backend.model.dto.SavedAudit;
 import com.tcc.pjb.backend.model.entity.AcordoHomologado;
-import com.tcc.pjb.backend.model.dto.AcordoHomologadoEvent;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.Competencia;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.EsferaJurisdicao;
 import com.tcc.pjb.backend.model.entity.Jurisdicao;
@@ -43,8 +40,6 @@ import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.jurisdicao.MateriaJurisdicao;
 import com.tcc.pjb.backend.model.entity.enums.PapelEquipe;
 import com.tcc.pjb.backend.model.entity.enums.StatusAcordo;
-import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
-import com.tcc.pjb.backend.model.repository.AcordoHomologadoRepository;
 import com.tcc.pjb.backend.model.repository.ModeloContratoRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.model.repository.PropostaAcordoRepository;
@@ -56,47 +51,82 @@ import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.exception.RegraNegocioException;
 import com.tcc.pjb.backend.service.notification.NotificationService;
 import com.tcc.pjb.backend.service.rito.ProcessoRitoSnapshotService;
-import com.tcc.pjb.backend.service.ui.UiHistoryService;
 import com.tcc.pjb.backend.service.intelligence.AgreementChatLedgerService;
-import com.tcc.pjb.backend.service.intelligence.JudgeAgreementApprovalService;
-import com.tcc.pjb.backend.service.intelligence.ProcessOutcomePredictionService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class AcordoService {
+
+    private static final Logger log = LoggerFactory.getLogger(AcordoService.class);
 
     private final ProcessoRepository processoRepository;
     private final UsuarioRepository usuarioRepository;
     private final ModeloContratoRepository modeloContratoRepository;
     private final PropostaAcordoRepository propostaAcordoRepository;
-    private final com.tcc.pjb.backend.model.repository.ChatMensagemRepository chatMensagemRepository;
-    private final AcordoHomologadoRepository acordoHomologadoRepository;
 
     private final ProfileEngine profileEngine;
-    private final PdfGeneratorService pdfGeneratorService;
     private final NotificationService notificationService;
-    private final AuditService auditService;
-    private final DomainEventPublisher domainEventPublisher;
     private final ChatService chatService;
     private final AcordoSuggestionPipelineAsyncService suggestionPipeline;
 
-    private final UiHistoryService uiHistoryService;
     private final ProcessoRitoSnapshotService processoRitoSnapshotService;
     private final SettlementIntelligenceService settlementIntelligenceService;
     private final ProcessMaterialDossierService processMaterialDossierService;
     private final ProcessMaterialStrategyService processMaterialStrategyService;
     private final SettlementAdvisoryService settlementAdvisoryService;
-    private final ProcessOutcomePredictionService processOutcomePredictionService;
-    private final JudgeAgreementApprovalService judgeAgreementApprovalService;
     private final WorkItemRepository workItemRepository;
     private final AgreementChatLedgerService agreementChatLedgerService;
 
     private final LegalRhythmEngine rhythmEngine;
     private final FinancialValidatorEngine financialEngine;
     private final FacilitadorBatnaService facilitadorBatnaService;
+    private final AcordoHomologacaoJudicialService homologacaoJudicial;
+    private final AcordoSubmissaoJudicialService submissaoJudicial;
+
+    @Inject
+    AcordoService(ProcessoRepository processoRepository,
+                  UsuarioRepository usuarioRepository,
+                  ModeloContratoRepository modeloContratoRepository,
+                  PropostaAcordoRepository propostaAcordoRepository,
+                  ProfileEngine profileEngine,
+                  NotificationService notificationService,
+                  ChatService chatService,
+                  AcordoSuggestionPipelineAsyncService suggestionPipeline,
+                  ProcessoRitoSnapshotService processoRitoSnapshotService,
+                  SettlementIntelligenceService settlementIntelligenceService,
+                  ProcessMaterialDossierService processMaterialDossierService,
+                  ProcessMaterialStrategyService processMaterialStrategyService,
+                  SettlementAdvisoryService settlementAdvisoryService,
+                  WorkItemRepository workItemRepository,
+                  AgreementChatLedgerService agreementChatLedgerService,
+                  LegalRhythmEngine rhythmEngine,
+                  FinancialValidatorEngine financialEngine,
+                  FacilitadorBatnaService facilitadorBatnaService,
+                  AcordoHomologacaoJudicialService homologacaoJudicial,
+                  AcordoSubmissaoJudicialService submissaoJudicial) {
+        this.processoRepository = Objects.requireNonNull(processoRepository);
+        this.usuarioRepository = Objects.requireNonNull(usuarioRepository);
+        this.modeloContratoRepository = Objects.requireNonNull(modeloContratoRepository);
+        this.propostaAcordoRepository = Objects.requireNonNull(propostaAcordoRepository);
+        this.profileEngine = Objects.requireNonNull(profileEngine);
+        this.notificationService = Objects.requireNonNull(notificationService);
+        this.chatService = Objects.requireNonNull(chatService);
+        this.suggestionPipeline = Objects.requireNonNull(suggestionPipeline);
+        this.processoRitoSnapshotService = Objects.requireNonNull(processoRitoSnapshotService);
+        this.settlementIntelligenceService = Objects.requireNonNull(settlementIntelligenceService);
+        this.processMaterialDossierService = Objects.requireNonNull(processMaterialDossierService);
+        this.processMaterialStrategyService = Objects.requireNonNull(processMaterialStrategyService);
+        this.settlementAdvisoryService = Objects.requireNonNull(settlementAdvisoryService);
+        this.workItemRepository = Objects.requireNonNull(workItemRepository);
+        this.agreementChatLedgerService = Objects.requireNonNull(agreementChatLedgerService);
+        this.rhythmEngine = Objects.requireNonNull(rhythmEngine);
+        this.financialEngine = Objects.requireNonNull(financialEngine);
+        this.facilitadorBatnaService = Objects.requireNonNull(facilitadorBatnaService);
+        this.homologacaoJudicial = Objects.requireNonNull(homologacaoJudicial);
+        this.submissaoJudicial = Objects.requireNonNull(submissaoJudicial);
+    }
 
     @Transactional(readOnly = true)
     public List<ModeloContrato> sugerirModelosInteligentes(Long processoId) {
@@ -228,16 +258,9 @@ public class AcordoService {
         );
         proposta.setStatus(StatusAcordo.AGUARDANDO_HOMOLOGACAO_JUIZ);
         propostaAcordoRepository.save(proposta);
-        JudgeAgreementApprovalPromptResponse prompt = judgeAgreementApprovalService.requestApproval(
-                processo,
-                proposta,
-                settlementAdvisory,
-                processOutcomePredictionService.analyze(processo),
-                resumoExecutivo
-        );
+        JudgeAgreementApprovalPromptResponse prompt = submissaoJudicial.solicitarAprovacao(processo, proposta, settlementAdvisory, resumoExecutivo);
         chatService.postarMensagemSistema(processo, buscarUsuarioSistema(), "A proposta foi encaminhada ao gabinete para apreciação judicial do acordo.");
-        AgreementChatLedgerService.RoundSnapshot snapshot = agreementChatLedgerService.nextRoundSnapshot(chatMensagemRepository.findByProcesso_IdOrderByDataEnvioAsc(processo.getId()), "homologação judicial do acordo");
-        chatService.postarMensagemSistema(processo, agreementChatLedgerService.renderRoundSystemMessage(new AgreementChatLedgerService.RoundSnapshot(snapshot.round(), snapshot.version(), "SUBMISSAO_JUDICIAL")));
+        chatService.postarMensagemSistema(processo, submissaoJudicial.mensagemDaRodadaDeSubmissao(processo));
         return prompt;
     }
 
@@ -255,54 +278,16 @@ public class AcordoService {
         Usuario juiz = EquipeContexto.getMembroDaEquipeAtiva().getUsuario();
         Processo processo = proposta.getProcesso();
 
-        PdfGenerationResult pdf = pdfGeneratorService.generatePdfWithSealAndQr(
-                proposta.getTermosHtml(),
-                proposta.getUuid(),
-                java.util.Map.of(
-                        "processo", java.util.Objects.toString(processo.getNumeroUnificado(), ""),
-                        "juiz", java.util.Objects.toString(juiz.getNome(), ""),
-                        "data_homologacao", LocalDateTime.now().toString()
-                )
-        );
-
-        AcordoHomologado acordo = AcordoHomologado.builder()
-                .proposta(proposta)
-                .processo(processo)
-                .juiz(juiz)
-                .urlPdfHomologado(pdf.getUrl())
-                .hashAssinaturaJuiz(hashAssinaturaJuiz)
-                .hashAssinaturaParte1(proposta.getHashAssinaturaParte1())
-                .hashAssinaturaParte2(proposta.getHashAssinaturaParte2())
-                .dataHomologacao(LocalDateTime.now())
-                .build();
-
-        AcordoHomologado salvo = acordoHomologadoRepository.save(acordo);
-
-        StatusProcesso fromStatus = processo.getStatusProcesso();
-        String fromResultado = processo.getResultadoFinal();
-
-        processo.setStatusProcesso(StatusProcesso.JULGADO);
-        processo.setResultadoFinal("ACORDO_HOMOLOGADO");
-        Processo savedProcesso = processoRepository.save(processo);
-
-        uiHistoryService.recordProcessoStatusChange(
-                savedProcesso,
-                fromStatus,
-                fromResultado,
-                StatusProcesso.JULGADO,
-                "ACORDO_HOMOLOGADO",
-                "Acordo homologado judicialmente"
-        );
+        AcordoHomologacaoJudicialService.Homologacao homologacao = homologacaoJudicial.materializar(proposta, processo, juiz, hashAssinaturaJuiz);
 
         proposta.setStatus(StatusAcordo.HOMOLOGADO);
         propostaAcordoRepository.save(proposta);
         finalizarWorkItemHomologacao(processo, proposta, "HOMOLOGAR", true);
         chatService.postarMensagemSistema(processo, agreementChatLedgerService.renderDecisionMessage("HOMOLOGAR", "Homologação judicial concluída com assinatura e conversão do acordo em título executivo judicial."));
 
-        auditService.recordAgreementHomologation(proposta.getUuid(), new SavedAudit(proposta, salvo, pdf));
-        domainEventPublisher.publish(new AcordoHomologadoEvent(processo.getId(), proposta.getUuid(), juiz.getId()));
-        notificarPartesEnvolvidas(processo, juiz, pdf);
-        return salvo;
+        homologacaoJudicial.registrar(proposta, processo, juiz, homologacao);
+        notificarPartesEnvolvidas(processo, juiz, homologacao.pdf());
+        return homologacao.acordo();
     }
 
 
