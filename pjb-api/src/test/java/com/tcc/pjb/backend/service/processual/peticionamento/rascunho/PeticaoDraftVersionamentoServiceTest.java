@@ -76,8 +76,16 @@ class PeticaoDraftVersionamentoServiceTest {
 
     @Test
     void naoPeticionanteEhBloqueado() {
-        authenticateAs(TipoUsuario.CIDADAO, 7L);
+        authenticateAs(TipoUsuario.SERVIDOR, 7L);
         assertThatThrownBy(() -> service.listarVersoes(5L)).isInstanceOf(AccessDeniedPjbException.class);
+    }
+
+    @Test
+    void cidadaoQuePeticionaSemAdvogadoListaAsVersoesDoProprioRascunho() {
+        authenticateAs(TipoUsuario.CIDADAO, 7L);
+        when(draftRepository.findByIdAndSolicitante_Id(5L, 7L)).thenReturn(Optional.of(existingDraft(5L, "h", "minuta")));
+
+        org.assertj.core.api.Assertions.assertThatCode(() -> service.listarVersoes(5L)).doesNotThrowAnyException();
     }
 
     @Test

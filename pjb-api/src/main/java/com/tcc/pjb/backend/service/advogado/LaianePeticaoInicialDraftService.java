@@ -160,7 +160,7 @@ public class LaianePeticaoInicialDraftService {
                     .filter(draft -> !"PROTOCOLO_REALIZADO".equalsIgnoreCase(draft.getStatus()))
                     .ifPresent(draft -> cabimentoSemAdvogadoService.exigirCabimento(
                     RitoProcessual.tryParse(draft.getRitoSugerido()).orElse(null), draft.getValorCausa(),
-                    request == null ? null : com.tcc.pjb.backend.domain.enums.TipoJustica.fromString(request.tipoJustica())));
+                    request == null ? null : TipoJustica.fromString(request.tipoJustica())));
         }
         return protocolarService.protocolar(draftId, request);
     }

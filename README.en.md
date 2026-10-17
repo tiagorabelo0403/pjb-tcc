@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-5%2C834%20unit%20%7C%200%20failures-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-5%2C835%20unit%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -372,7 +372,7 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 5,834 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 5,835 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 118 classes against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 The naming convention is enforced in CI by the `integration_test_naming_guard.py` guard: a class suffixed `IT` must carry a real integration marker — Testcontainers, a Spring context, or an inherited integration base. Without that marker the class would run in neither phase (Surefire skips it by name, and Failsafe only runs under `verify`), so the build fails instead of leaving the test invisible.
@@ -391,7 +391,7 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api -am
 ```
 
-This is the official project gate. It runs the 5,834 unit tests (Surefire) and then the 118 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 5,835 unit tests (Surefire) and then the 118 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 The `-am` is not cosmetic: without it `pjb-core` is resolved from `~/.m2` instead of the reactor, and a stale artifact there produces `cannot find symbol` pointing at classes that exist in the source tree.
 
@@ -441,7 +441,7 @@ Any container `unhealthy` for more than 30 minutes (configurable via `--unhealth
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **5,834** |
+| Total unit tests | Surefire | **5,835** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 1 |
 | Unit test execution time | Surefire | **~14 min** |
@@ -922,7 +922,7 @@ The `RitoProcessual` catalog is sealed. All procedural types below are first-cla
 
 **Small Claims:** civil (JEC), federal (JEF), public treasury (JEFP) — with their own procedures and value limits. `RepresentacaoProcessualPolicyService` recognizes the party's jus postulandi in small-claims civil court (Lei 9.099/95, art. 9º) as its own instrument (`JUS_POSTULANDI_JUIZADO`), distinct from labor jus postulandi (CLT, art. 791) — a citizen self-filing in small-claims civil court is no longer instructed to attach a power of attorney they do not have. The recognition is not just informational: `RecursalValidacaoMinimaService` (the real appellate-admissibility gatekeeper, via `RecursoAdmissibilidadeService`) now accepts jus postulandi as appellate legitimacy under a narrow, appeal-type-specific allowlist — clarification motions in small-claims court and ordinary labor appeals remain self-representable, while the appeal to the Turma Recursal (Lei 9.099/95, art. 41, § 2º) and any appeal falling under TST jurisdiction (Súmula 425) still require an attorney, preserving the same gate that already protected the rest of the system. The same modeling was extended to the federal small-claims court, with its own instrument value (`JUS_POSTULANDI_JEF`) rather than reusing the state one: the basis is art. 10 of Lei 10.259/2001, which waives counsel without the ceiling that applies to the state court, and the federal appellate regime — Federal Appellate Panel and the uniformization incident of arts. 14 and 15 — has no state-level equivalent. Keeping a single value would force each consumer to redraw the distinction between the two legal bases; one value per basis concentrates the difference in the instrument catalog. The predicate deciding the regime covers `JUIZADO_ESPECIAL_FEDERAL` and `PREVIDENCIARIO_JEF`, the two procedures that actually run under Lei 10.259/2001, and does not reach social-security cases in ordinary federal court. The waiver of the power of attorney holds across both filing channels: beyond the Laiane checklist, `CompletudeDocumentalPolicyService` now receives the instrument resolved for the actor, so `PROCURACAO` drops out of the catalog's mandatory documents whenever the regime is jus postulandi — and only that document, with the employment record, proof of address, and every other requirement of the procedure still enforced. An irregular representation grants no waiver: the instrument comes back null and the power of attorney remains required. Fee exemption extends to the initial payment as well. `CustaIsencaoPorRitoPolicy` recognizes first-instance fee exemption for the state small-claims court (Lei 9.099/95, art. 54), the federal small-claims court (Lei 10.259/2001), and the public-treasury small-claims court (Lei 12.153/2009), and keeps the pre-existing rule for the child and adolescent branch now with its explicit ground in the ECA, art. 141, § 2. The appellate stage is left out by the policy's own design — the sole paragraph of art. 54 requires payment for the small-claims appeal, so the cost-type check runs before the procedure check. The `CustaJudicialService` engine, with barcode and PIX, remains disconnected from the filing channels — the policy sits ahead of the integration, correct when it comes, exempting or charging no one until it does.
 
-Through the API, an authenticated citizen can only file an initial petition without a lawyer in the state small-claims civil court, for claims up to 20 minimum wages in force on the filing date (Lei 9.099/95, art. 9º). The backend enforces the limit through `PeticaoInicialSemAdvogadoCabimentoService` on both filing channels, the initial-petition draft (when structured, saved and filed) and `/api/v1/processos/ajuizar`, and requires the case to belong to the state courts; procedure and court branch are checked again after the filing context is consolidated, before the case is saved. The draft's claim value carries over to the case. The route rule grants `ROLE_CIDADAO` only on `/api/v1/peticionamento/inicial/rascunhos/**`; the rest of the filing surface stays restricted to private counsel, the Public Defender's Office and government attorneys. The federal small-claims court and the labor courts remain recognized in the representation policy, but self-filing of an initial petition by the citizen in those procedures is not yet enabled.
+Through the API, an authenticated citizen can only file an initial petition without a lawyer in the state small-claims civil court, for claims up to 20 minimum wages in force on the filing date (Lei 9.099/95, art. 9º). The backend enforces the limit through `PeticaoInicialSemAdvogadoCabimentoService` on both filing channels, the initial-petition draft (when structured, saved and filed) and `/api/v1/processos/ajuizar`, and requires the case to belong to the state courts; procedure and court branch are checked again after the filing context is consolidated, before the case is saved. The draft's claim value carries over to the case. The route rule grants `ROLE_CIDADAO` only on `/api/v1/peticionamento/inicial/rascunhos/**`; the rest of the filing surface stays restricted to private counsel, the Public Defender's Office and government attorneys. The federal small-claims court and the labor courts remain recognized in the representation policy, but in those procedures an initial petition filed by the citizen is not accepted.
 
 **Specialized:** bankruptcy, judicial reorganization, precatory, military, extrajudicial, arbitration with court confirmation
 
@@ -1078,7 +1078,7 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **5,834 · 0 failures · 0 errors · 1 skipped** |
+| Unit tests (Surefire) | **5,835 · 0 failures · 0 errors · 1 skipped** |
 | Integration tests (Failsafe) | **118 classes · 0 failures in the latest measurement (see note ² in the Tests section)** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 58 architectural decisions documented |
@@ -1357,7 +1357,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,834 unit tests and 118 integration test classes, and 331 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,835 unit tests and 118 integration test classes, and 331 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 
