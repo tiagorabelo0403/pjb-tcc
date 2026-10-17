@@ -253,7 +253,7 @@ public class ConsultaPublicaWorkspaceService {
         if (hasPublicDocumentNavigation) {
             actions.add(new ConsultaPublicaWorkspaceActionDto("PAGINAS_PUBLICAS", "Abrir atos públicos", "/api/v1/public/consultas-publicas/pages/{pageId}", "SECONDARY"));
         }
-        actions.add(new ConsultaPublicaWorkspaceActionDto("ACESSO_PESSOAL", "Abrir visão autenticada do titular", "/api/v1/processos/pessoais/{processoId}/overview", "PRIMARY"));
+        actions.add(new ConsultaPublicaWorkspaceActionDto("ACESSO_PESSOAL", "Abrir visão autenticada do titular", "/api/v1/processos/pessoais/meus-processos", "PRIMARY"));
         List<String> warnings = new ArrayList<>();
         warnings.add("A trilha pública não expõe documentos integrais nem metadados sensíveis; só há resolução textual para despacho, decisão, sentença e acórdão efetivamente públicos.");
         if (resumo.acessoRestrito()) {

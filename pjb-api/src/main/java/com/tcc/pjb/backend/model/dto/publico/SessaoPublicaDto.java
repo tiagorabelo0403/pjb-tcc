@@ -1,10 +1,11 @@
 package com.tcc.pjb.backend.model.dto.publico;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 public record SessaoPublicaDto(
         Long sessaoId,
-        Long processoId,
+        @JsonIgnore Long processoId,
         String numeroProcesso,
         String tribunal,
         String orgaoJulgador,

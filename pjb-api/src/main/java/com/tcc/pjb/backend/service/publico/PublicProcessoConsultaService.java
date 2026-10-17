@@ -86,7 +86,7 @@ public class PublicProcessoConsultaService {
         List<MovimentacaoProcessual> movs = movimentacaoRepository
                 .findTop200ByProcesso_IdOrderByDataMovimentacaoDesc(p.getId());
         List<PublicMovimentacaoDTO> movDtos = movs.stream().map(m -> new PublicMovimentacaoDTO(
-                m.getId(),
+                null,
                 m.getDataMovimentacao() != null ? java.time.LocalDateTime.ofInstant(m.getDataMovimentacao(), java.time.ZoneId.systemDefault()) : null,
                 m.getFaseDe() != null ? m.getFaseDe().name() : null,
                 m.getFasePara() != null ? m.getFasePara().name() : null,
