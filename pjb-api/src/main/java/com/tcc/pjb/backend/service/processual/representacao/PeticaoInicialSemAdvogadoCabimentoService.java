@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.time.PjbTimeService;
+import com.tcc.pjb.backend.domain.enums.TipoJustica;
 import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
 import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
 import com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao;
@@ -32,7 +33,11 @@ public class PeticaoInicialSemAdvogadoCabimentoService {
     }
 
     public void exigirCabimento(RitoProcessual rito, BigDecimal valorCausa) {
-        if (!admiteRito(rito)) {
+        exigirCabimento(rito, valorCausa, null);
+    }
+
+    public void exigirCabimento(RitoProcessual rito, BigDecimal valorCausa, TipoJustica tipoJustica) {
+        if (!admiteRito(rito) || (tipoJustica != null && tipoJustica != TipoJustica.ESTADUAL)) {
             throw new AccessDeniedPjbException("Sem advogado, a petição inicial só pode ser apresentada no Juizado Especial Cível, nas causas de até 20 salários mínimos (Lei 9.099/95, art. 9º).");
         }
         if (valorCausa == null || valorCausa.signum() <= 0) {

@@ -93,4 +93,14 @@ class PeticaoInicialSemAdvogadoCabimentoServiceTest {
 
         verify(salarioMinimo).multiplicar(VINTE, LocalDate.of(2025, 12, 31));
     }
+
+    @Test
+    void juizadoEspecialCivelForaDaJusticaEstadualEBarrado() {
+        PeticaoInicialSemAdvogadoCabimentoService servico = servicoEm("2026-10-17T15:00:00Z");
+
+        assertThatThrownBy(() -> servico.exigirCabimento(RitoProcessual.JUIZADO_ESPECIAL_CIVEL, new BigDecimal("1000.00"),
+                com.tcc.pjb.backend.domain.enums.TipoJustica.FEDERAL)).isInstanceOf(AccessDeniedPjbException.class);
+        assertThatCode(() -> servico.exigirCabimento(RitoProcessual.JUIZADO_ESPECIAL_CIVEL, new BigDecimal("1000.00"),
+                com.tcc.pjb.backend.domain.enums.TipoJustica.ESTADUAL)).doesNotThrowAnyException();
+    }
 }

@@ -60,7 +60,7 @@ class LaianePeticaoInicialDraftServiceCabimentoTest {
         usuario(TipoUsuario.CIDADAO);
         rascunho(new BigDecimal("1000000.00"));
         doThrow(new ErroDeValidacaoException(TipoErroValidacao.REGRA_NEGOCIO, "acima de 20 salários mínimos"))
-                .when(cabimento).exigirCabimento(RitoProcessual.JUIZADO_ESPECIAL_CIVEL, new BigDecimal("1000000.00"));
+                .when(cabimento).exigirCabimento(RitoProcessual.JUIZADO_ESPECIAL_CIVEL, new BigDecimal("1000000.00"), null);
 
         assertThatThrownBy(() -> servico().protocolar(55L, null)).isInstanceOf(ErroDeValidacaoException.class);
         verifyNoInteractions(protocolarService);
@@ -73,7 +73,7 @@ class LaianePeticaoInicialDraftServiceCabimentoTest {
 
         servico().protocolar(55L, null);
 
-        verify(cabimento).exigirCabimento(RitoProcessual.JUIZADO_ESPECIAL_CIVEL, new BigDecimal("3000.00"));
+        verify(cabimento).exigirCabimento(RitoProcessual.JUIZADO_ESPECIAL_CIVEL, new BigDecimal("3000.00"), null);
         verify(protocolarService).protocolar(55L, null);
     }
 

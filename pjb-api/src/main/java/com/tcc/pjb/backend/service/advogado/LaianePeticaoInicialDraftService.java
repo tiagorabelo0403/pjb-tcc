@@ -157,7 +157,8 @@ public class LaianePeticaoInicialDraftService {
         Usuario usuario = currentUserService.getRequired();
         if (!isProfissional(usuario) && isPeticionantePessoal(usuario)) {
             repository.findByIdAndSolicitante_Id(draftId, usuario.getId()).ifPresent(draft -> cabimentoSemAdvogadoService.exigirCabimento(
-                    RitoProcessual.tryParse(draft.getRitoSugerido()).orElse(null), draft.getValorCausa()));
+                    RitoProcessual.tryParse(draft.getRitoSugerido()).orElse(null), draft.getValorCausa(),
+                    request == null ? null : com.tcc.pjb.backend.domain.enums.TipoJustica.fromString(request.tipoJustica())));
         }
         return protocolarService.protocolar(draftId, request);
     }
