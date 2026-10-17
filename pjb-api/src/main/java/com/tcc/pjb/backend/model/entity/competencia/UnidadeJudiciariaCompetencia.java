@@ -129,6 +129,9 @@ public class UnidadeJudiciariaCompetencia {
     @Column(name = "permite_juizado_especial", nullable = false)
     private boolean permiteJuizadoEspecial;
 
+    @Column(name = "exclusivo_juizado_especial", nullable = false)
+    private boolean exclusivoJuizadoEspecial;
+
     @Column(name = "permite_urgencia", nullable = false)
     private boolean permiteUrgencia;
 
@@ -494,6 +497,20 @@ public class UnidadeJudiciariaCompetencia {
 
     public void setPermiteJuizadoEspecial(boolean permiteJuizadoEspecial) {
         this.permiteJuizadoEspecial = permiteJuizadoEspecial;
+        if (!permiteJuizadoEspecial) {
+            this.exclusivoJuizadoEspecial = false;
+        }
+    }
+
+    public boolean isExclusivoJuizadoEspecial() {
+        return exclusivoJuizadoEspecial;
+    }
+
+    public void setExclusivoJuizadoEspecial(boolean exclusivoJuizadoEspecial) {
+        this.exclusivoJuizadoEspecial = exclusivoJuizadoEspecial;
+        if (exclusivoJuizadoEspecial) {
+            this.permiteJuizadoEspecial = true;
+        }
     }
 
     public boolean isPermiteUrgencia() {

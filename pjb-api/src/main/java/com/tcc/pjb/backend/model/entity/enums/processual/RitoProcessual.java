@@ -341,7 +341,7 @@ public NivelUrgenciaProcessual nivelUrgenciaPadrao() {
 }
 
 public RamoDireito suggestedRamo() {
-    if (isPenal()) return RamoDireito.PENAL;
+    if (isPenal() || this == JUIZADO_ESPECIAL_CRIMINAL || this == JUIZADO_ESPECIAL_FEDERAL_CRIMINAL) return RamoDireito.PENAL;
     if (isTrabalhista()) return RamoDireito.TRABALHISTA;
     if (isPrevidenciario()) return RamoDireito.PREVIDENCIARIO;
     if (isTribFazenda()) return RamoDireito.TRIBUTARIO;
