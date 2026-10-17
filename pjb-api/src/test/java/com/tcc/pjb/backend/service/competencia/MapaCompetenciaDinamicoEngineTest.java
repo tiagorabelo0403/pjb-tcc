@@ -635,6 +635,26 @@ class MapaCompetenciaDinamicoEngineTest {
     }
 
     @Test
+    void falhaDoResolverCanonicoNaoImpedeRegistrarACargaNemAConferenciaPeloRitoDoProcesso() {
+        UnidadeJudiciariaCompetencia civel = unidade("VARA-CIVEL");
+        UnidadeJudiciariaCompetenciaRepository unidadeRepository = mock(UnidadeJudiciariaCompetenciaRepository.class);
+        ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository = mock(ProcessoDistribuicaoCompetenciaRepository.class);
+        when(unidadeRepository.findByCodigo("VARA-CIVEL")).thenReturn(Optional.of(civel));
+        when(distribuicaoRepository.findTopByProcesso_IdOrderByIdDesc(anyLong())).thenReturn(Optional.empty());
+        ProceduralCanonicalResolver canonico = mock(ProceduralCanonicalResolver.class);
+        when(canonico.resolve(any())).thenThrow(new IllegalStateException("classe TPU invalida"));
+        MapaCompetenciaDinamicoEngine engine = new MapaCompetenciaDinamicoEngine(
+                unidadeRepository, distribuicaoRepository, mock(ProcessoRepository.class), mock(AuditLedgerService.class),
+                mock(OutboxPublisher.class), mock(CompetenceResolverService.class), mock(ConfiguracaoDistribuicaoVaraService.class), canonico);
+        Processo processo = processoRoteado(77L, "0009876-54.2026.8.06.0001", "VARA-CIVEL");
+        processo.setRito(RitoProcessual.JUIZADO_ESPECIAL_CIVEL);
+
+        assertThat(engine.registrarCargaDaDistribuicaoAplicada(processo)).hasValueSatisfying(resposta ->
+                assertThat(resposta.distribuicaoAutomatica()).isFalse());
+        verify(distribuicaoRepository).saveAndFlush(any(ProcessoDistribuicaoCompetencia.class));
+    }
+
+    @Test
     void cargaAplicadaCompativelNaoGeraConferenciaNemAuditoria() {
         UnidadeJudiciariaCompetencia jec = unidade("VARA-JEC");
         jec.setExclusivoJuizadoEspecial(true);

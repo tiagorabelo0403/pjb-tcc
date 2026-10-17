@@ -926,6 +926,16 @@ public class MapaCompetenciaDinamicoEngine {
         ));
     }
 
+    private CanonicalContext contextoCanonicoDoFallback(Processo processo, String ufBase, String comarcaBase) {
+        try {
+            return resolverContextoCanonico(processo, ufBase, comarcaBase);
+        } catch (RuntimeException falhaResolucao) {
+            log.warn("Contexto canonico indisponivel no fallback de distribuicao; usando o rito do processo. processoId={} erro={}",
+                    processo.getId(), falhaResolucao.getMessage());
+            return null;
+        }
+    }
+
     private static RitoProcessual ritoEfetivo(CanonicalContext canonicalContext, Processo processo) {
         return canonicalContext != null && canonicalContext.rito() != null ? canonicalContext.rito() : processo.getRito();
     }
@@ -934,7 +944,7 @@ public class MapaCompetenciaDinamicoEngine {
         Jurisdicao jurisdicao = processo.getJurisdicao();
         String ufBase = firstNonBlank(processo.getUf(), jurisdicao != null ? jurisdicao.getUf() : null);
         String comarcaBase = firstNonBlank(processo.getComarca(), jurisdicao != null ? jurisdicao.getCidade() : null, processo.getVara());
-        NaturezaJuizado naturezaJuizado = naturezaJuizado(ritoEfetivo(resolverContextoCanonico(processo, ufBase, comarcaBase), processo));
+        NaturezaJuizado naturezaJuizado = naturezaJuizado(ritoEfetivo(contextoCanonicoDoFallback(processo, ufBase, comarcaBase), processo));
         return new DynamicRequest(
                 firstNonBlank(processo.getNumeroUnificado(), processo.getNumeroProcesso()),
                 null,
