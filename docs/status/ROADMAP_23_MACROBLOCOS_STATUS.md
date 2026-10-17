@@ -151,7 +151,7 @@ Justificativa: a policy, a decisão do adaptive data plane e o ciclo de vida bá
 - Runtime/container agora também tem superfície administrativa real em `/api/v1/admin/runtime`, com sizing, budget formal de memória, pressure snapshot, drain, health e política/request-state de read-after-write.
 - A trilha de runtime também ganhou `PjbRuntimeApplicationService`, materializando footprint, orçamento de heap/direct/metaspace/code cache/native reserve e os comandos administrativos de drain/accepting com auditoria explícita.
 
-- Workflow trabalhista agora também tem superfície administrativa real em `/api/v1/admin/trabalhista`, com geração de GRU, registro de depósito recursal, homologação de acordo, timeline, execução, ownership, health e consistência de GRU/depósito.
+- Workflow trabalhista agora também tem superfície administrativa real em `/api/v1/admin/trabalhista`, com geração de GRU, registro de depósito recursal, timeline, execução, ownership, health e consistência de GRU/depósito.
 - A trilha trabalhista também teve saneamento estrutural do próprio `WorkflowTrabalhistaService`, alinhando `DepositoRecursalResult` e `AcordoHomologadoResult` com os contratos reais já existentes na base.
 
 
