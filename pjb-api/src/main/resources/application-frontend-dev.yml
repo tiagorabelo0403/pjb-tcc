@@ -27,6 +27,9 @@ server:
     min-response-size: 2048
 
 pjb:
+  api:
+    docs:
+      public: ${PJB_API_DOCS_PUBLIC:true}
   security:
     perimeter:
       cors-enabled: true
