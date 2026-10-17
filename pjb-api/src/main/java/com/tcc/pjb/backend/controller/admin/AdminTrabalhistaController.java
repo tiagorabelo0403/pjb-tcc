@@ -44,12 +44,6 @@ public class AdminTrabalhistaController {
         return ResponseEntity.ok(apiResponseFactory.commandOk("deposito recursal registrado", applicationService.registrarDeposito(processoId, instancia, valorDepositado, comprovanteHash), List.of()));
     }
 
-    @PostMapping("/processos/{processoId}/acordo/homologar")
-    public ResponseEntity<ApiCommandResponse<?>> homologarAcordo(@PathVariable Long processoId,
-                                                                 @RequestParam String resumo) {
-        return ResponseEntity.ok(apiResponseFactory.commandOk("acordo trabalhista homologado", applicationService.homologarAcordo(processoId, resumo), List.of()));
-    }
-
     @GetMapping("/processos/{processoId}")
     public ResponseEntity<ApiQueryResponse<?>> processo(@PathVariable Long processoId) {
         return ResponseEntity.ok(apiResponseFactory.queryOk(applicationService.processo(processoId), List.of()));

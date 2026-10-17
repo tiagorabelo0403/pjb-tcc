@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tcc.pjb.backend.core.security.magistratura.lotacao.MagistradoLotacaoAccessService;
 import com.tcc.pjb.backend.model.entity.Jurisdicao;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
@@ -59,7 +60,7 @@ class AcordoPortsAdaptersTest {
         when(processoRepository.findContextoCompletoById(1L)).thenReturn(Optional.of(processo));
         when(usuarioRepository.findById(10L)).thenReturn(Optional.of(usuario));
 
-        PjbUsuarioAcordoAdapter adapter = new PjbUsuarioAcordoAdapter(processoRepository, usuarioRepository);
+        PjbUsuarioAcordoAdapter adapter = new PjbUsuarioAcordoAdapter(processoRepository, usuarioRepository, mock(MagistradoLotacaoAccessService.class));
 
         var contexto = adapter.obterContextoUsuario(1L, 10L);
 
@@ -69,6 +70,27 @@ class AcordoPortsAdaptersTest {
         assertThat(contexto.papeis()).contains("ADVOGADO");
         assertThat(contexto.podeParticipar()).isTrue();
         assertThat(contexto).isNotInstanceOf(Usuario.class);
+    }
+
+    @Test
+    void usuarioAdapterSoDeixaHomologarMagistradoHabilitadoNoProcesso() {
+        ProcessoRepository processoRepository = mock(ProcessoRepository.class);
+        UsuarioRepository usuarioRepository = mock(UsuarioRepository.class);
+        MagistradoLotacaoAccessService lotacaoAccess = mock(MagistradoLotacaoAccessService.class);
+        Processo processo = processo(1L);
+        when(processoRepository.findById(1L)).thenReturn(Optional.of(processo));
+        when(usuarioRepository.findById(30L)).thenReturn(Optional.of(usuario(30L, TipoUsuario.JUIZ, true)));
+        when(usuarioRepository.findById(31L)).thenReturn(Optional.of(usuario(31L, TipoUsuario.JUIZ, true)));
+        when(usuarioRepository.findById(32L)).thenReturn(Optional.of(usuario(32L, TipoUsuario.ADVOGADO, true)));
+        when(lotacaoAccess.magistradoHabilitadoNoProcesso(30L, processo)).thenReturn(true);
+        PjbUsuarioAcordoAdapter adapter = new PjbUsuarioAcordoAdapter(processoRepository, usuarioRepository, lotacaoAccess);
+
+        assertThat(adapter.usuarioPodeHomologarNoProcesso(1L, 30L)).isTrue();
+        assertThat(adapter.usuarioPodeHomologarNoProcesso(1L, 31L)).isFalse();
+        assertThat(adapter.usuarioPodeHomologarNoProcesso(1L, 32L)).isFalse();
+        assertThat(adapter.usuarioPodeHomologarNoProcesso(2L, 30L)).isFalse();
+        assertThat(adapter.obterContextoUsuario(1L, 30L).podeHomologar()).isTrue();
+        assertThat(adapter.obterContextoUsuario(1L, 31L).podeHomologar()).isFalse();
     }
 
     @Test

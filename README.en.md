@@ -7,7 +7,7 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-5%2C881%20unit%20%7C%200%20failures-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-5%2C904%20unit%20%7C%200%20failures-brightgreen)
 ![ADRs](https://img.shields.io/badge/ADRs-58-informational)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
@@ -372,7 +372,7 @@ docker compose down
 
 The project has two test levels with very different characteristics:
 
-- **Unit tests (Surefire):** 5,881 tests with Mockito and in-memory H2. Fast, no Docker required.
+- **Unit tests (Surefire):** 5,904 tests with Mockito and in-memory H2. Fast, no Docker required.
 - **Integration tests (Failsafe):** 118 classes against real PostgreSQL and Kafka via Testcontainers. Requires Docker. Slower.
 
 The naming convention is enforced in CI by the `integration_test_naming_guard.py` guard: a class suffixed `IT` must carry a real integration marker — Testcontainers, a Spring context, or an inherited integration base. Without that marker the class would run in neither phase (Surefire skips it by name, and Failsafe only runs under `verify`), so the build fails instead of leaving the test invisible.
@@ -391,7 +391,7 @@ Expected time: **~14 min** on local hardware. Does not require Docker.
 ./mvnw verify -pl pjb-api -am
 ```
 
-This is the official project gate. It runs the 5,881 unit tests (Surefire) and then the 118 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
+This is the official project gate. It runs the 5,904 unit tests (Surefire) and then the 118 integration test classes (Failsafe) against real PostgreSQL 17 and Kafka containers. Testcontainers handles container lifecycle automatically — no manual setup needed.
 
 The `-am` is not cosmetic: without it `pjb-core` is resolved from `~/.m2` instead of the reactor, and a stale artifact there produces `cannot find symbol` pointing at classes that exist in the source tree.
 
@@ -441,7 +441,7 @@ Any container `unhealthy` for more than 30 minutes (configurable via `--unhealth
 
 | Metric | Phase | Value |
 |--------|-------|-------|
-| Total unit tests | Surefire | **5,881** |
+| Total unit tests | Surefire | **5,904** |
 | Unit test failures | Surefire | **0** |
 | Skipped | Surefire | 1 |
 | Unit test execution time | Surefire | **~14 min** |
@@ -669,7 +669,7 @@ The backend is organized into 15 functional modules. Click any module below to e
 
 Manages role, assignment, location, competence, and visibility of each actor in the case. The visibility matrix produces an auditable explanation for every access decision — who can see what, for what reason, with an immutable record.
 
-Includes management of affiliations, institutional credentials, official source attestation, and formal delegations between units.
+Includes management of affiliations, institutional credentials, official source attestation, and formal delegations between units. Homologating a settlement — on the general settlement route and the labor route, and also in the procedural settlement room service, which has no route yet — and deciding on it require a judge holding a current institutional access grant for unit assignment, judicial assistance, or substitution in the case's unit, or the rapporteurship of that case, approved by an administrator other than the beneficiary; on-call duty, chambers delegation, and grants approved by another judge are not enough. The unit is the one recorded on the case, provided it exists in the unit catalog; if the latest distribution to that unit (or any latest distribution, when the unit is not in the catalog) awaits review or a competence check, no one can homologate, not even through a case-bound grant. The homologation request is notified only to the judges this same rule authorizes, and each authorization on the general and labor routes is recorded in the audit trail with the grant, type, approver, and unit that supported it.
 </details>
 
 <details>
@@ -1078,7 +1078,7 @@ That's why `infra/docker/postgres/init/01-app-role.sh` creates, at container boo
 
 | Metric | Status |
 |--------|--------|
-| Unit tests (Surefire) | **5,881 · 0 failures · 0 errors · 1 skipped** |
+| Unit tests (Surefire) | **5,904 · 0 failures · 0 errors · 1 skipped** |
 | Integration tests (Failsafe) | **118 classes · 0 failures in the latest measurement (see note ² in the Tests section)** (see note¹ in the Tests section about tests confirmed outside this count) |
 | K8s manifests (Kustomize) | Schema-validated: `kubernetes-validate 1.36.0` (K8s 1.30, offline) |
 | ADRs | 58 architectural decisions documented |
@@ -1357,7 +1357,7 @@ copies or substantial portions of the Software.
 
 ### Backend
 
-The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,881 unit tests and 118 integration test classes, and 332 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
+The backend fully covers the bounded contexts described in this document — 15 functional modules, 58 ADRs, 5,904 unit tests and 118 integration test classes, and 332 applied migrations. The REST API is fully documented via OpenAPI 3.1 and Swagger UI, ready for consumption by any client.
 
 ### Frontend — Under Analysis and Planning
 

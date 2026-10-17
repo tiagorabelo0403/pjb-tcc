@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.configs.EquipeContexto;
+import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialDossierService;
 import com.tcc.pjb.backend.core.kernel.advisory.ProcessMaterialStrategyService;
 import com.tcc.pjb.backend.core.kernel.advisory.SettlementAdvisoryService;
@@ -72,6 +73,8 @@ class AcordoServiceTest {
     private final SettlementAdvisoryService settlementAdvisoryService = mock(SettlementAdvisoryService.class);
     private final ProcessOutcomePredictionService processOutcomePredictionService = mock(ProcessOutcomePredictionService.class);
     private final JudgeAgreementApprovalService judgeAgreementApprovalService = mock(JudgeAgreementApprovalService.class);
+    private final com.tcc.pjb.backend.core.security.magistratura.lotacao.MagistradoLotacaoAccessService lotacaoAccess =
+            mock(com.tcc.pjb.backend.core.security.magistratura.lotacao.MagistradoLotacaoAccessService.class);
 
     private final AcordoService service = new AcordoService(
             processoRepository,
@@ -93,7 +96,7 @@ class AcordoServiceTest {
             mock(FinancialValidatorEngine.class),
             mock(FacilitadorBatnaService.class),
             new AcordoHomologacaoJudicialService(pdfGeneratorService, acordoHomologadoRepository, processoRepository,
-                    uiHistoryService, auditService, domainEventPublisher),
+                    uiHistoryService, auditService, domainEventPublisher, lotacaoAccess),
             new AcordoSubmissaoJudicialService(judgeAgreementApprovalService, processOutcomePredictionService,
                     chatMensagemRepository, agreementChatLedgerService)
     );
@@ -138,11 +141,10 @@ class AcordoServiceTest {
         when(agreementChatLedgerService.renderDecisionMessage("HOMOLOGAR", "Homologação judicial concluída com assinatura e conversão do acordo em título executivo judicial."))
                 .thenReturn("Decisão judicial do acordo: HOMOLOGAR.");
 
+        when(lotacaoAccess.requireMagistradoLotadoNaUnidadeDoProcesso(processo)).thenReturn(juiz);
+
         final AcordoHomologado[] holder = new AcordoHomologado[1];
-        RequestContext.run("req-acordo", () -> {
-            EquipeContexto.setMembroAtivo(membroJuiz(juiz));
-            holder[0] = service.homologarAcordoJudicial(300L, "hash-juiz");
-        });
+        RequestContext.run("req-acordo", () -> holder[0] = service.homologarAcordoJudicial(300L, "hash-juiz"));
         AcordoHomologado homologado = holder[0];
 
         assertNotNull(homologado);
@@ -207,11 +209,10 @@ class AcordoServiceTest {
                 .build();
         Usuario juiz = usuario(401L, "Juiz", TipoUsuario.JUIZ);
         when(propostaAcordoRepository.findById(301L)).thenReturn(Optional.of(proposta));
+        when(lotacaoAccess.requireMagistradoLotadoNaUnidadeDoProcesso(processo)).thenReturn(juiz);
 
-        RequestContext.run("req-acordo-invalido", () -> {
-            EquipeContexto.setMembroAtivo(membroJuiz(juiz));
-            assertThrows(RegraNegocioException.class, () -> service.homologarAcordoJudicial(301L, "hash-juiz"));
-        });
+        RequestContext.run("req-acordo-invalido", () ->
+                assertThrows(RegraNegocioException.class, () -> service.homologarAcordoJudicial(301L, "hash-juiz")));
 
         verify(pdfGeneratorService, never()).generatePdfWithSealAndQr(any(), any(), any());
         verify(acordoHomologadoRepository, never()).save(any());
@@ -220,20 +221,25 @@ class AcordoServiceTest {
     }
 
     @Test
-    void shouldRejectHomologationWithoutJudgeContext() {
+    void shouldRejectHomologationWhenUserIsNotAMagistrate() {
+        Processo processo = Processo.builder().id(202L).numeroUnificado("000202").build();
         PropostaAcordo proposta = PropostaAcordo.builder()
                 .id(302L)
                 .uuid(UUID.randomUUID())
-                .processo(Processo.builder().id(202L).numeroUnificado("000202").build())
+                .processo(processo)
                 .termosHtml("<p>acordo</p>")
                 .status(StatusAcordo.AGUARDANDO_HOMOLOGACAO_JUIZ)
                 .build();
         when(propostaAcordoRepository.findById(302L)).thenReturn(Optional.of(proposta));
+        when(lotacaoAccess.requireMagistrado())
+                .thenThrow(new AccessDeniedPjbException("Acesso negado: ato exige magistrado"));
 
         RequestContext.run("req-acordo-sem-juiz", () -> {
             assertThrows(SecurityException.class, () -> service.homologarAcordoJudicial(302L, "hash-juiz"));
         });
 
+        assertThrows(SecurityException.class, () -> service.decidirHomologacaoJudicial(999L, "REJEITAR", "sondagem", null, false));
+        verify(propostaAcordoRepository, never()).findById(any());
         verify(propostaAcordoRepository, never()).save(any(PropostaAcordo.class));
         verify(acordoHomologadoRepository, never()).save(any(AcordoHomologado.class));
     }
@@ -253,9 +259,9 @@ class AcordoServiceTest {
         when(propostaAcordoRepository.findById(303L)).thenReturn(Optional.of(proposta));
         when(propostaAcordoRepository.save(any(PropostaAcordo.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(agreementChatLedgerService.renderDecisionMessage(eq("DEVOLVER_PARA_REVISAO"), any())).thenReturn("Decisão judicial do acordo: DEVOLVER_PARA_REVISAO.");
+        when(lotacaoAccess.requireMagistradoLotadoNaUnidadeDoProcesso(processo)).thenReturn(juiz);
 
         RequestContext.run("req-acordo-revisao", () -> {
-            EquipeContexto.setMembroAtivo(membroJuiz(juiz));
             var response = service.decidirHomologacaoJudicial(303L, "DEVOLVER_PARA_REVISAO", "Ajustar cronograma e cláusula penal.", null, false);
             assertEquals("DEVOLVER_PARA_REVISAO", response.action());
             assertEquals(StatusAcordo.AGUARDANDO_REVISAO_HUMANA.name(), response.statusAcordo());
@@ -263,6 +269,35 @@ class AcordoServiceTest {
 
         assertEquals(StatusAcordo.AGUARDANDO_REVISAO_HUMANA, proposta.getStatus());
         verify(chatService).postarMensagemSistema(eq(processo), org.mockito.ArgumentMatchers.contains("DEVOLVER_PARA_REVISAO"));
+    }
+
+    @Test
+    void judgeWithoutLotacaoInTheProcessUnitCannotHomologateOrDecide() {
+        Processo processo = Processo.builder().id(206L).numeroUnificado("000206").statusProcesso(StatusProcesso.EM_ANDAMENTO).build();
+        PropostaAcordo proposta = PropostaAcordo.builder()
+                .id(307L)
+                .uuid(UUID.randomUUID())
+                .processo(processo)
+                .termosHtml("<p>acordo</p>")
+                .status(StatusAcordo.AGUARDANDO_HOMOLOGACAO_JUIZ)
+                .build();
+        PropostaAcordo jaHomologada = PropostaAcordo.builder().id(308L).processo(processo).status(StatusAcordo.HOMOLOGADO).build();
+        when(propostaAcordoRepository.findById(307L)).thenReturn(Optional.of(proposta));
+        when(propostaAcordoRepository.findById(308L)).thenReturn(Optional.of(jaHomologada));
+        when(lotacaoAccess.requireMagistradoLotadoNaUnidadeDoProcesso(processo))
+                .thenThrow(new AccessDeniedPjbException(
+                        "Acesso negado: magistrado sem lotação vigente na unidade do processo"));
+
+        assertThrows(SecurityException.class, () -> service.homologarAcordoJudicial(307L, "hash-juiz"));
+        assertThrows(SecurityException.class, () -> service.decidirHomologacaoJudicial(307L, "REJEITAR", "motivo", null, false));
+        assertThrows(SecurityException.class, () -> service.homologarAcordoJudicial(308L, "hash-juiz"));
+        assertThrows(SecurityException.class, () -> service.decidirHomologacaoJudicial(308L, "HOMOLOGAR", "motivo", null, false));
+
+        assertEquals(StatusAcordo.AGUARDANDO_HOMOLOGACAO_JUIZ, proposta.getStatus());
+        verify(pdfGeneratorService, never()).generatePdfWithSealAndQr(any(), any(), any());
+        verify(acordoHomologadoRepository, never()).save(any(AcordoHomologado.class));
+        verify(propostaAcordoRepository, never()).save(any(PropostaAcordo.class));
+        verify(auditService, never()).recordAgreementHomologation(any(), any());
     }
 
     @Test
@@ -352,13 +387,6 @@ class AcordoServiceTest {
         MembroEquipe membroEquipe = new MembroEquipe();
         membroEquipe.setUsuario(advogado);
         membroEquipe.setPapel(PapelEquipe.ADVOGADO_SENIOR);
-        return membroEquipe;
-    }
-
-    private static MembroEquipe membroJuiz(Usuario juiz) {
-        MembroEquipe membroEquipe = new MembroEquipe();
-        membroEquipe.setUsuario(juiz);
-        membroEquipe.setPapel(PapelEquipe.JUIZ_GABINETE);
         return membroEquipe;
     }
 }

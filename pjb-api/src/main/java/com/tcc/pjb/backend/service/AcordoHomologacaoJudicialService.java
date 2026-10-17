@@ -1,5 +1,6 @@
 package com.tcc.pjb.backend.service;
 
+import com.tcc.pjb.backend.core.security.magistratura.lotacao.MagistradoLotacaoAccessService;
 import com.tcc.pjb.backend.model.dto.AcordoHomologadoEvent;
 import com.tcc.pjb.backend.model.dto.PdfGenerationResult;
 import com.tcc.pjb.backend.model.dto.SavedAudit;
@@ -26,6 +27,7 @@ class AcordoHomologacaoJudicialService {
     private final UiHistoryService uiHistoryService;
     private final AuditService auditService;
     private final DomainEventPublisher domainEventPublisher;
+    private final MagistradoLotacaoAccessService magistradoLotacaoAccessService;
 
     @Inject
     AcordoHomologacaoJudicialService(PdfGeneratorService pdfGeneratorService,
@@ -33,13 +35,23 @@ class AcordoHomologacaoJudicialService {
                                      ProcessoRepository processoRepository,
                                      UiHistoryService uiHistoryService,
                                      AuditService auditService,
-                                     DomainEventPublisher domainEventPublisher) {
+                                     DomainEventPublisher domainEventPublisher,
+                                     MagistradoLotacaoAccessService magistradoLotacaoAccessService) {
         this.pdfGeneratorService = Objects.requireNonNull(pdfGeneratorService);
         this.acordoHomologadoRepository = Objects.requireNonNull(acordoHomologadoRepository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.uiHistoryService = Objects.requireNonNull(uiHistoryService);
         this.auditService = Objects.requireNonNull(auditService);
         this.domainEventPublisher = Objects.requireNonNull(domainEventPublisher);
+        this.magistradoLotacaoAccessService = Objects.requireNonNull(magistradoLotacaoAccessService);
+    }
+
+    void exigirMagistrado() {
+        magistradoLotacaoAccessService.requireMagistrado();
+    }
+
+    Usuario autorizarMagistrado(Processo processo) {
+        return magistradoLotacaoAccessService.requireMagistradoLotadoNaUnidadeDoProcesso(processo);
     }
 
     Homologacao materializar(PropostaAcordo proposta, Processo processo, Usuario juiz, String hashAssinaturaJuiz) {

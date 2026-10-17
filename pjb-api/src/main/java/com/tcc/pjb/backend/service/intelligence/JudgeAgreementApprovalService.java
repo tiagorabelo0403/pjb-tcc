@@ -1,16 +1,15 @@
 package com.tcc.pjb.backend.service.intelligence;
 
 import com.tcc.pjb.backend.core.kernel.advisory.SettlementAdvisoryReport;
+import com.tcc.pjb.backend.core.security.magistratura.lotacao.MagistradoLotacaoAccessService;
 import com.tcc.pjb.backend.model.dto.intelligence.JudgeAgreementApprovalPromptResponse;
 import com.tcc.pjb.backend.model.dto.intelligence.ProcessOutcomePredictionResponse;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.PropostaAcordo;
 import com.tcc.pjb.backend.model.entity.Usuario;
-import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemType;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
-import com.tcc.pjb.backend.model.repository.UsuarioRepository;
 import com.tcc.pjb.backend.model.repository.WorkItemRepository;
 import com.tcc.pjb.backend.service.ChatService;
 import com.tcc.pjb.backend.service.notification.NotificationService;
@@ -21,28 +20,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class JudgeAgreementApprovalService {
 
+    private static final Logger log = LoggerFactory.getLogger(JudgeAgreementApprovalService.class);
+
     private final WorkItemRepository workItemRepository;
     private final InstitutionalActorRoutingService institutionalActorRoutingService;
-    private final UsuarioRepository usuarioRepository;
     private final NotificationService notificationService;
     private final ChatService chatService;
+    private final MagistradoLotacaoAccessService magistradoLotacaoAccessService;
 
+    @Inject
     public JudgeAgreementApprovalService(WorkItemRepository workItemRepository,
                                          InstitutionalActorRoutingService institutionalActorRoutingService,
-                                         UsuarioRepository usuarioRepository,
                                          NotificationService notificationService,
-                                         ChatService chatService) {
+                                         ChatService chatService,
+                                         MagistradoLotacaoAccessService magistradoLotacaoAccessService) {
         this.workItemRepository = Objects.requireNonNull(workItemRepository);
         this.institutionalActorRoutingService = Objects.requireNonNull(institutionalActorRoutingService);
-        this.usuarioRepository = Objects.requireNonNull(usuarioRepository);
         this.notificationService = Objects.requireNonNull(notificationService);
         this.chatService = Objects.requireNonNull(chatService);
+        this.magistradoLotacaoAccessService = Objects.requireNonNull(magistradoLotacaoAccessService);
     }
 
     @Transactional(readOnly = true)
@@ -93,7 +98,7 @@ public class JudgeAgreementApprovalService {
             item.setStatus(WorkItemStatus.PENDENTE);
         }
         item = workItemRepository.save(item);
-        List<Usuario> recipients = resolveRecipients(route.assignedRole(), processo);
+        List<Usuario> recipients = resolveRecipients(processo);
         String title = "Acordo pronto para apreciação judicial";
         String message = buildQuestion(processo, proposta, outcomePrediction);
         String url = "/api/v1/processos/" + processo.getId() + "/acordo/intelligence";
@@ -178,37 +183,12 @@ public class JudgeAgreementApprovalService {
         return "Há minuta de acordo pronta para apreciação no processo " + numero + ", com valor de " + valor + ". Deseja homologar, devolver para revisão ou rejeitar? Contexto: " + prognostico + '.';
     }
 
-    private List<Usuario> resolveRecipients(TipoUsuario assignedRole, Processo processo) {
-        ArrayList<Usuario> out = new ArrayList<>();
-        if (assignedRole != null) {
-            usuarioRepository.findByTipoUsuario(assignedRole).stream()
-                    .filter(Usuario::isAtivo)
-                    .filter(usuario -> sameTerritory(usuario, processo))
-                    .forEach(out::add);
+    private List<Usuario> resolveRecipients(Processo processo) {
+        List<Usuario> lotados = magistradoLotacaoAccessService.magistradosLotadosNaUnidadeDoProcesso(processo);
+        if (lotados.isEmpty()) {
+            log.warn("Pedido de homologacao sem magistrado lotado na unidade do processo; processoId={}", processo.getId());
         }
-        if (out.isEmpty()) {
-            for (TipoUsuario role : TipoUsuario.values()) {
-                if (role.isMagistratura()) {
-                    usuarioRepository.findByTipoUsuario(role).stream()
-                            .filter(Usuario::isAtivo)
-                            .filter(usuario -> sameTerritory(usuario, processo))
-                            .forEach(out::add);
-                }
-            }
-        }
-        return out.stream().distinct().limit(6).toList();
-    }
-
-    private boolean sameTerritory(Usuario usuario, Processo processo) {
-        String processoUf = processo.getJurisdicao() != null ? processo.getJurisdicao().getUf() : processo.getUf();
-        String processoComarca = processo.getJurisdicao() != null ? processo.getJurisdicao().getCidade() : processo.getComarca();
-        boolean ufMatches = processoUf == null || processoUf.isBlank() || equalsIgnoreCase(processoUf, usuario.getUf());
-        boolean comarcaMatches = processoComarca == null || processoComarca.isBlank() || equalsIgnoreCase(processoComarca, usuario.getComarca());
-        return ufMatches && comarcaMatches;
-    }
-
-    private boolean equalsIgnoreCase(String left, String right) {
-        return left != null && right != null && left.trim().equalsIgnoreCase(right.trim());
+        return lotados.stream().limit(6).toList();
     }
 
     private String recipientKey(Usuario usuario) {

@@ -33,6 +33,7 @@ import com.tcc.pjb.backend.core.financeiro.trabalhista.domain.TrabalhistaProcess
 import com.tcc.pjb.backend.core.financeiro.trabalhista.domain.TrabalhistaProcessoView;
 import com.tcc.pjb.backend.core.financeiro.trabalhista.domain.TrabalhistaTimelineAuditSnapshot;
 import com.tcc.pjb.backend.core.financeiro.trabalhista.domain.TrabalhistaTimelineEntry;
+import com.tcc.pjb.backend.core.security.magistratura.lotacao.MagistradoLotacaoAccessService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.enums.RamoDireito;
 import com.tcc.pjb.backend.model.entity.enums.StatusProcesso;
@@ -61,6 +62,7 @@ public class WorkflowTrabalhistaService {
     private final TrabalhistaWorkflowProperties properties;
     private final AuditLedgerService auditLedger;
     private final ReadAfterWriteConsistencyPolicy rawPolicy;
+    private final MagistradoLotacaoAccessService magistradoLotacaoAccessService;
 
     public WorkflowTrabalhistaService(ProcessoRepository processoRepository,
                                       GruJudicialTrabalhistaRepository gruRepository,
@@ -68,7 +70,8 @@ public class WorkflowTrabalhistaService {
                                       @Qualifier("gruTrabalhistaGenerator") GruCodigoBarrasGenerator gruTrabalhistaGenerator,
                                       TrabalhistaWorkflowProperties properties,
                                       AuditLedgerService auditLedger,
-                                      ReadAfterWriteConsistencyPolicy rawPolicy) {
+                                      ReadAfterWriteConsistencyPolicy rawPolicy,
+                                      MagistradoLotacaoAccessService magistradoLotacaoAccessService) {
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.gruRepository = Objects.requireNonNull(gruRepository);
         this.depositoRepository = Objects.requireNonNull(depositoRepository);
@@ -76,6 +79,7 @@ public class WorkflowTrabalhistaService {
         this.properties = Objects.requireNonNull(properties);
         this.auditLedger = Objects.requireNonNull(auditLedger);
         this.rawPolicy = Objects.requireNonNull(rawPolicy);
+        this.magistradoLotacaoAccessService = Objects.requireNonNull(magistradoLotacaoAccessService);
     }
 
     @Transactional
@@ -145,6 +149,7 @@ public class WorkflowTrabalhistaService {
     @Transactional
     public AcordoHomologadoResult homologarAcordo(Long processoId, String resumo) {
         Processo processo = loadTrabalhista(processoId);
+        magistradoLotacaoAccessService.requireMagistradoLotadoNaUnidadeDoProcesso(processo);
         processo.setStatusProcesso(StatusProcesso.ACORDO_HOMOLOGADO);
         processo.setResultadoFinal(resumo);
         processoRepository.save(processo);
