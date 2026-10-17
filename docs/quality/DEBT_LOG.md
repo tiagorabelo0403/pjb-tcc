@@ -1234,3 +1234,45 @@ módulos, as anotações, `StrictJacksonConfig`, o serializer do cache (`Generic
 que recebe o mapper do Jackson 3), as propriedades `spring.jackson.*` e os pontos que dependem do
 comportamento de serialização do Jackson 2. Quando isso acontecer, os quatro `@SuppressWarnings` (dois
 em `src/main`, dois em `src/test`) saem.
+
+## D-competencia-delegada-sem-marca-no-processo
+
+**Status:** aberta — decisão de produto sobre como o processo registra a competência delegada
+
+A competência delegada da Justiça Federal à estadual (CF, art. 109, § 3º, com a redação da EC 103/2019,
+e Lei 5.010/1966, art. 15, com a redação da Lei 13.876/2019) só existe quando a comarca do segurado
+não é sede de vara federal e fica a mais de 70 km de um município que seja. O processo do PJB não
+guarda essa condição: `Processo.tipoJustica` mistura o valor escolhido no ajuizamento com o padrão
+`ESTADUAL` gravado quando o tipo veio vazio.
+
+Por isso o motor de distribuição trata o tipo de justiça de modo diferente conforme a origem:
+
+- no pedido de distribuição prévia, o `tipoJustica` informado prevalece sobre o do catálogo canônico
+  (`InferenciaCompetenciaDistribuicaoService.enriquecer`);
+- no processo já ajuizado, `MapaCompetenciaDinamicoEngine.buildFromProcesso` e
+  `buildFallbackFromProcesso` preferem o tipo canônico, porque o do processo pode ser só o padrão.
+
+Trechos do código atual:
+
+```
+pjb-api/src/main/java/com/tcc/pjb/backend/service/AjuizamentoService.java:89
+        if (processo.getTipoJustica() == null) {
+            processo.setTipoJustica(TipoJustica.ESTADUAL);
+        }
+
+pjb-api/src/main/java/com/tcc/pjb/backend/service/competencia/MapaCompetenciaDinamicoEngine.java:962 e :1031
+        TipoJustica tipoJustica = canonicalTipoJustica != null ? canonicalTipoJustica : processo.getTipoJustica();
+
+pjb-api/src/main/java/com/tcc/pjb/backend/service/competencia/InferenciaCompetenciaDistribuicaoService.java:61
+        if (request.tipoJustica() != null && request.ramoDireito() != null) {
+            return comInferenciaFederal(request, ritoDaInferencia, canonicalRamo != null ? canonicalRamo : request.ramoDireito());
+        }
+```
+
+Efeito: uma causa previdenciária de classe TPU federal ajuizada na Justiça estadual por delegação é
+roteada pelo motor como federal, e pode ir ao JEF da capital. A Lei 10.259, art. 20, veda o JEF
+estadual nesses casos, mas não trata o inverso.
+
+Fechar exige decidir onde a delegação fica registrada (marca no processo ou no cadastro da comarca
+com a distância até a sede federal) e, a partir dela, fazer o processo seguir o tipo de justiça
+informado.
