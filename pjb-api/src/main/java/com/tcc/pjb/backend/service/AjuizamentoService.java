@@ -16,6 +16,7 @@ import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
 import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
 import com.tcc.pjb.backend.platform.runtime.PjbTransactionalBudget;
+import com.tcc.pjb.backend.service.processual.representacao.PeticaoInicialSemAdvogadoCabimentoService;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
 import com.tcc.pjb.backend.service.outbox.OutboxPublisher;
 import com.tcc.pjb.backend.service.procedural.AjuizamentoProceduralContextService;
@@ -83,6 +84,9 @@ public class AjuizamentoService {
 
         var compiled = legalCompilerService.compile(processo);
         ajuizamentoProceduralContextService.consolidateAndValidate(processo, compiled);
+        if (PeticaoInicialSemAdvogadoCabimentoService.peticionaSemAdvogado(processo.getUsuario())) {
+            PeticaoInicialSemAdvogadoCabimentoService.exigirRitoEJusticaLiberados(processo.getRito(), processo.getTipoJustica());
+        }
         tetoProcessualService.validarAjuizamentoOuLancar(processo);
         triagemNacionalIAEngine.preTriarProcesso(processo);
 

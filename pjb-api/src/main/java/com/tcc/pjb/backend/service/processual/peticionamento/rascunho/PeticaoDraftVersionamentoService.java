@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tcc.pjb.backend.core.security.CurrentUserService;
 import com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException;
 import com.tcc.pjb.backend.core.util.Hashes;
+import com.tcc.pjb.backend.service.processual.representacao.PeticaoInicialSemAdvogadoCabimentoService;
 import com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextDocumentSanitizer;
 import com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextHtmlRenderer;
 import com.tcc.pjb.backend.model.dto.processual.peticionamento.rascunho.AutosaveRascunhoRequest;
@@ -226,7 +227,8 @@ public class PeticaoDraftVersionamentoService {
     private Usuario requirePeticionante() {
         Usuario usuario = currentUserService.getRequired();
         TipoUsuario tipo = usuario.getTipoUsuario();
-        boolean permitido = tipo != null && (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isProcuradoria() || tipo.isMinisterioPublico());
+        boolean permitido = tipo != null && (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isProcuradoria() || tipo.isMinisterioPublico()
+                || PeticaoInicialSemAdvogadoCabimentoService.peticionaSemAdvogado(usuario));
         if (!permitido) {
             throw new AccessDeniedPjbException("O rascunho de peticionamento é exclusivo para advocacia, defensoria, procuradoria e Ministério Público.");
         }

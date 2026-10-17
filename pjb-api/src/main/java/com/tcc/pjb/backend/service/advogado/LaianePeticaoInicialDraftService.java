@@ -52,6 +52,7 @@ import com.tcc.pjb.backend.service.processual.peticionamento.editor.PeticaoInici
 import com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextDocumentSanitizer;
 import com.tcc.pjb.backend.service.processual.peticionamento.editor.RichTextPlainTextExtractor;
 import com.tcc.pjb.backend.service.processual.protocolo.ProtocoloReciboService;
+import com.tcc.pjb.backend.service.processual.representacao.PeticaoInicialSemAdvogadoCabimentoService;
 import com.tcc.pjb.backend.service.processual.representacao.RepresentacaoProcessualPolicyService;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -62,19 +63,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Service
 public class LaianePeticaoInicialDraftService {
 
-    private static final java.util.Set<RitoProcessual> RITOS_PETICIONAMENTO_PESSOAL = java.util.Set.of(
-            RitoProcessual.JUIZADO_ESPECIAL_CIVEL,
-            RitoProcessual.TRABALHISTA_ORDINARIO,
-            RitoProcessual.TRABALHISTA_SUMARISSIMO,
-            RitoProcessual.TRABALHISTA_SUMARIO_ALCADA,
-            RitoProcessual.TRABALHISTA_ACAO_CUMPRIMENTO,
-            RitoProcessual.TRABALHISTA_CUMPRIMENTO_SENTENCA,
-            RitoProcessual.TRABALHISTA_EXECUCAO,
-            RitoProcessual.TRABALHISTA_ACIDENTE_TRABALHO,
-            RitoProcessual.JUIZADO_ESPECIAL_FEDERAL,
-            RitoProcessual.PREVIDENCIARIO_JEF
-    );
-
     private final LaianePeticaoInicialDraftSessionRepository repository;
     private final ProcessoRepository processoRepository;
     private final CurrentUserService currentUserService;
@@ -82,6 +70,7 @@ public class LaianePeticaoInicialDraftService {
     private final RepresentacaoProcessualPolicyService representacaoProcessualPolicyService;
     private final OfficeProcessWorkspaceScopeService officeProcessWorkspaceScopeService;
     private final LaianePeticaoInicialProtocolarService protocolarService;
+    private final PeticaoInicialSemAdvogadoCabimentoService cabimentoSemAdvogadoService;
 
     public LaianePeticaoInicialDraftService(LaianePeticaoInicialDraftSessionRepository repository,
                                             ProcessoRepository processoRepository,
@@ -89,7 +78,8 @@ public class LaianePeticaoInicialDraftService {
                                             ObjectMapper objectMapper,
                                             RepresentacaoProcessualPolicyService representacaoProcessualPolicyService,
                                             ObjectProvider<OfficeProcessWorkspaceScopeService> officeProcessWorkspaceScopeServiceProvider,
-                                            LaianePeticaoInicialProtocolarService protocolarService) {
+                                            LaianePeticaoInicialProtocolarService protocolarService,
+                                            PeticaoInicialSemAdvogadoCabimentoService cabimentoSemAdvogadoService) {
         this.repository = Objects.requireNonNull(repository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.currentUserService = Objects.requireNonNull(currentUserService);
@@ -97,6 +87,7 @@ public class LaianePeticaoInicialDraftService {
         this.representacaoProcessualPolicyService = Objects.requireNonNull(representacaoProcessualPolicyService);
         this.officeProcessWorkspaceScopeService = officeProcessWorkspaceScopeServiceProvider.getIfAvailable();
         this.protocolarService = Objects.requireNonNull(protocolarService);
+        this.cabimentoSemAdvogadoService = Objects.requireNonNull(cabimentoSemAdvogadoService);
     }
 
     @Transactional(readOnly = true)
@@ -105,7 +96,7 @@ public class LaianePeticaoInicialDraftService {
         Processo processo = resolveProcesso(request.processoId());
         RamoDireito ramoRitoCheck = resolveRamo(request.ramoDireito(), processo);
         RitoProcessual ritoRitoCheck = resolveRito(request.ritoProcessual(), ramoRitoCheck, processo);
-        Usuario usuario = requirePeticionante(ritoRitoCheck);
+        Usuario usuario = requirePeticionante(ritoRitoCheck, request.valorCausa());
         return computeDraft(request, processo, usuario).view();
     }
 
@@ -115,7 +106,7 @@ public class LaianePeticaoInicialDraftService {
         Processo processo = resolveProcesso(request.processoId());
         RamoDireito ramoRitoCheck = resolveRamo(request.ramoDireito(), processo);
         RitoProcessual ritoRitoCheck = resolveRito(request.ritoProcessual(), ramoRitoCheck, processo);
-        Usuario usuario = requirePeticionante(ritoRitoCheck);
+        Usuario usuario = requirePeticionante(ritoRitoCheck, request.valorCausa());
         DraftComputation draft = computeDraft(request, processo, usuario);
 
         LaianePeticaoInicialDraftSession entity = new LaianePeticaoInicialDraftSession();
@@ -139,6 +130,7 @@ public class LaianePeticaoInicialDraftService {
         entity.setUfReu(domicilioReu == null ? null : domicilioReu.uf());
         entity.setComarcaReu(domicilioReu == null ? null : domicilioReu.municipio());
         entity.setEnderecoReuDesconhecido(request.enderecos().domicilioReuDesconhecido());
+        entity.setValorCausa(request.valorCausa());
         entity.setMinutaInicial(draft.view().minutaInicial());
         entity.setHashIntegridade(draft.view().hashIntegridade());
         entity.setStatus("RASCUNHO");
@@ -147,7 +139,7 @@ public class LaianePeticaoInicialDraftService {
 
     @Transactional(readOnly = true)
     public List<DraftView> listarMinhas() {
-        Usuario usuario = requirePeticionante();
+        Usuario usuario = requireAutorDeRascunho();
         return repository.findTop100BySolicitante_IdOrderByCreatedAtDesc(usuario.getId()).stream()
                 .map(this::toView)
                 .toList();
@@ -155,35 +147,49 @@ public class LaianePeticaoInicialDraftService {
 
     @Transactional(readOnly = true)
     public DraftView detalhar(Long draftId) {
-        Usuario usuario = requirePeticionante();
+        Usuario usuario = requireAutorDeRascunho();
         LaianePeticaoInicialDraftSession entity = repository.findByIdAndSolicitante_Id(draftId, usuario.getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("LaianePeticaoInicialDraftSession", draftId));
         return toView(entity);
     }
 
     public ProtocolarResult protocolar(Long draftId, ProtocolarRequest request) {
+        Usuario usuario = currentUserService.getRequired();
+        if (PeticaoInicialSemAdvogadoCabimentoService.peticionaSemAdvogado(usuario)) {
+            repository.findByIdAndSolicitante_Id(draftId, usuario.getId())
+                    .filter(draft -> !"PROTOCOLO_REALIZADO".equalsIgnoreCase(draft.getStatus()))
+                    .ifPresent(draft -> cabimentoSemAdvogadoService.exigirCabimento(
+                    RitoProcessual.tryParse(draft.getRitoSugerido()).orElse(null), draft.getValorCausa(),
+                    request == null ? null : TipoJustica.fromString(request.tipoJustica())));
+        }
         return protocolarService.protocolar(draftId, request);
     }
 
 
 
-    private Usuario requirePeticionante() {
-        return requirePeticionante(null);
-    }
-
-    private Usuario requirePeticionante(RitoProcessual rito) {
+    private Usuario requireAutorDeRascunho() {
         Usuario usuario = currentUserService.getRequired();
-        TipoUsuario tipo = usuario.getTipoUsuario();
-        boolean profissional = tipo != null && (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isProcuradoria() || tipo.isMinisterioPublico());
-        if (profissional) {
-            return usuario;
-        }
-        boolean peticionantePessoal = tipo != null && tipo.isPeticionantePessoal()
-                && rito != null && RITOS_PETICIONAMENTO_PESSOAL.contains(rito);
-        if (peticionantePessoal) {
+        if (isProfissional(usuario) || isPeticionantePessoal(usuario)) {
             return usuario;
         }
         throw new AccessDeniedPjbException("A funcionalidade e exclusiva para advocacia, procuradoria, defensoria e Ministerio Publico");
+    }
+
+    private Usuario requirePeticionante(RitoProcessual rito, BigDecimal valorCausa) {
+        Usuario usuario = currentUserService.getRequired();
+        if (isProfissional(usuario)) {
+            return usuario;
+        }
+        if (isPeticionantePessoal(usuario)) {
+            cabimentoSemAdvogadoService.exigirCabimento(rito, valorCausa);
+            return usuario;
+        }
+        throw new AccessDeniedPjbException("A funcionalidade e exclusiva para advocacia, procuradoria, defensoria e Ministerio Publico");
+    }
+
+    private static boolean isProfissional(Usuario usuario) {
+        TipoUsuario tipo = usuario == null ? null : usuario.getTipoUsuario();
+        return tipo != null && (tipo.isAdvocacia() || tipo.isDefensoriaPublica() || tipo.isProcuradoria() || tipo.isMinisterioPublico());
     }
 
     private boolean isPeticionantePessoal(Usuario usuario) {

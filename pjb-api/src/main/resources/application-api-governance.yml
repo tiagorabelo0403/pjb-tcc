@@ -492,6 +492,19 @@ pjb:
           rate-window-seconds: 60
           rate-limit-key-strategy: ip_user
           no-store-response: true
+        - name: peticao-inicial-rascunhos
+          paths: ["/api/v1/peticionamento/inicial/rascunhos/**"]
+          methods: ["GET", "POST", "PUT"]
+          authorities: ["ROLE_ADVOGADO", "ROLE_PROCURADOR", "ROLE_DEFENSOR_PUBLICO", "ROLE_DEFENSOR_PUBLICO_FEDERAL", "ROLE_CIDADAO"]
+          max-page-size: ${PJB_API_ROUTE_GOVERNANCE_ADVOGADO_MAX_PAGE_SIZE:120}
+          max-request-bytes: ${PJB_API_ROUTE_GOVERNANCE_ADVOGADO_MAX_REQUEST_BYTES:1048576}
+          max-path-segments: ${PJB_API_ROUTE_GOVERNANCE_ADVOGADO_MAX_PATH_SEGMENTS:22}
+          max-offset: ${PJB_API_ROUTE_GOVERNANCE_ADVOGADO_MAX_OFFSET:1500}
+          allowed-content-types: ["application/json"]
+          max-requests-per-window: ${PJB_API_ROUTE_GOVERNANCE_ADVOGADO_RATE_LIMIT:180}
+          rate-window-seconds: ${PJB_API_ROUTE_GOVERNANCE_ADVOGADO_RATE_WINDOW:60}
+          rate-limit-key-strategy: ip_user
+          no-store-response: true
         - name: advogado-operacional
           paths: ["/api/v1/advogado/**", "/api/v1/oab/**", "/api/v1/peticionamento/**"]
           methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]

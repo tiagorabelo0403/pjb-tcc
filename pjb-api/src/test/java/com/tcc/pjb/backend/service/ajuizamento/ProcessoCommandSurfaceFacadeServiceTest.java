@@ -5,6 +5,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.doThrow;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import com.tcc.pjb.backend.command.AjuizarProcessoCommand;
@@ -17,6 +20,13 @@ import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.service.ProcessoResponseAssemblerService;
 import com.tcc.pjb.backend.service.document.SmartFileSplitter;
+import com.tcc.pjb.backend.service.exception.ErroDeValidacaoException;
+import com.tcc.pjb.backend.service.exception.enums.TipoErroValidacao;
+import com.tcc.pjb.backend.service.processual.representacao.PeticaoInicialSemAdvogadoCabimentoService;
+import com.tcc.pjb.backend.domain.enums.TipoJustica;
+import com.tcc.pjb.backend.model.entity.enums.TipoUsuario;
+import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +42,7 @@ class ProcessoCommandSurfaceFacadeServiceTest {
     private final ProcessoMapper processoMapper = mock(ProcessoMapper.class);
     private final ProcessoResponseAssemblerService processoResponseAssemblerService = mock(ProcessoResponseAssemblerService.class);
     private final CurrentUserService currentUserService = mock(CurrentUserService.class);
+    private final PeticaoInicialSemAdvogadoCabimentoService cabimento = mock(PeticaoInicialSemAdvogadoCabimentoService.class);
 
     private ProcessoCommandSurfaceFacadeService service;
 
@@ -42,7 +53,8 @@ class ProcessoCommandSurfaceFacadeServiceTest {
                 smartFileSplitter,
                 processoMapper,
                 processoResponseAssemblerService,
-                currentUserService
+                currentUserService,
+                cabimento
         );
     }
 
@@ -104,5 +116,40 @@ class ProcessoCommandSurfaceFacadeServiceTest {
         verify(smartFileSplitter).processarArquivos(eq(List.of()), any());
         verify(ajuizarProcessoCommand).execute(mapped, advogado, request, List.of(), false);
         assertThat(actual.getId()).isEqualTo(91L);
+    }
+
+    @Test
+    void cidadaoAcimaDoLimiteDoJuizadoNaoChegaAoComandoDeAjuizamento() {
+        ProcessoRequest request = ProcessoRequest.builder().rito("JUIZADO_ESPECIAL_CIVEL").build();
+        Usuario cidadao = new Usuario();
+        cidadao.setId(9L);
+        cidadao.setTipoUsuario(TipoUsuario.CIDADAO);
+        Processo mapped = new Processo();
+        mapped.setRito(RitoProcessual.JUIZADO_ESPECIAL_CIVEL);
+        mapped.setValorCausa(new BigDecimal("1000000.00"));
+        mapped.setTipoJustica(TipoJustica.ESTADUAL);
+        when(currentUserService.getRequired()).thenReturn(cidadao);
+        when(processoMapper.toEntity(request)).thenReturn(mapped);
+        doThrow(new ErroDeValidacaoException(TipoErroValidacao.REGRA_NEGOCIO, "acima de 20 salários mínimos"))
+                .when(cabimento).exigirCabimento(RitoProcessual.JUIZADO_ESPECIAL_CIVEL, new BigDecimal("1000000.00"), TipoJustica.ESTADUAL);
+
+        assertThatThrownBy(() -> service.ajuizar(request, List.of())).isInstanceOf(ErroDeValidacaoException.class);
+        verifyNoInteractions(ajuizarProcessoCommand);
+    }
+
+    @Test
+    void advogadoAjuizaSemPassarPeloLimiteDoJusPostulandi() {
+        ProcessoRequest request = ProcessoRequest.builder().rito("COMUM_ORDINARIO").build();
+        Usuario advogado = new Usuario();
+        advogado.setId(7L);
+        advogado.setTipoUsuario(TipoUsuario.ADVOGADO);
+        Processo mapped = new Processo();
+        when(currentUserService.getRequired()).thenReturn(advogado);
+        when(processoMapper.toEntity(request)).thenReturn(mapped);
+
+        service.ajuizar(request, List.of());
+
+        verifyNoInteractions(cabimento);
+        verify(ajuizarProcessoCommand).execute(eq(mapped), eq(advogado), eq(request), any(), eq(false));
     }
 }

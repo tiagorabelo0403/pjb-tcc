@@ -1235,6 +1235,32 @@ que recebe o mapper do Jackson 3), as propriedades `spring.jackson.*` e os ponto
 comportamento de serialização do Jackson 2. Quando isso acontecer, os quatro `@SuppressWarnings` (dois
 em `src/main`, dois em `src/test`) saem.
 
+## D-peticao-inicial-cidadao-trabalho-e-jef-fechada
+
+**Status:** aberta — fechada por decisão de produto do dono; a reabertura depende de decisão dele
+
+`PeticaoInicialSemAdvogadoCabimentoService.RITOS_LIBERADOS` contém só `JUIZADO_ESPECIAL_CIVEL`. O cidadão
+não protocola petição inicial sem advogado na Justiça do Trabalho nem no Juizado Especial Federal, embora a
+lei admita nos dois casos: CLT, art. 791 (jus postulandi trabalhista, com os limites da Súmula 425 do TST) e
+Lei 10.259/2001, art. 10 (JEF, sem teto de valor para a dispensa de advogado). `RepresentacaoProcessualPolicyService`
+continua resolvendo `JUS_POSTULANDI_TRABALHISTA` e `JUS_POSTULANDI_JEF` como regulares para o cidadão, então a
+orientação da política e o que a API aceita divergem nesses ritos.
+
+```
+PeticaoInicialSemAdvogadoCabimentoService.java
+21:    private static final Set<RitoProcessual> RITOS_LIBERADOS = Set.of(RitoProcessual.JUIZADO_ESPECIAL_CIVEL);
+
+RepresentacaoProcessualPolicyService.java
+250:            return InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_TRABALHISTA;
+256:            return InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF;
+```
+
+Reabrir exige acrescentar os ritos a `RITOS_LIBERADOS` (os ritos trabalhistas admitidos e
+`JUIZADO_ESPECIAL_FEDERAL`/`PREVIDENCIARIO_JEF`), aceitar `TipoJustica.TRABALHO` e `TipoJustica.FEDERAL` em
+`exigirRitoEJusticaLiberados`, não aplicar o teto de 20 salários mínimos fora do JEC e reverter os casos de
+`OabLegitimidadePeticionamentoTest` que hoje afirmam o bloqueio.
+
+
 ## D-competencia-delegada-sem-marca-no-processo
 
 **Status:** aberta — decisão de produto sobre como o processo registra a competência delegada
