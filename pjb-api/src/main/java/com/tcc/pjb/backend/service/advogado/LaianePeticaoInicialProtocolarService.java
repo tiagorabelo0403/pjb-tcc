@@ -380,12 +380,7 @@ public class LaianePeticaoInicialProtocolarService {
     }
 
     private TipoRepresentanteProcessual resolveRepresentanteCompletude(Usuario usuario) {
-        TipoUsuario tipo = usuario.getTipoUsuario();
-        if (tipo == null) return TipoRepresentanteProcessual.PARTE_SEM_ADVOGADO;
-        if (tipo.isDefensoriaPublica()) return TipoRepresentanteProcessual.DEFENSOR_PUBLICO;
-        if (tipo.isMinisterioPublico() || tipo.isProcuradoria()) return TipoRepresentanteProcessual.MINISTERIO_PUBLICO;
-        if (tipo.isAdvocacia()) return TipoRepresentanteProcessual.ADVOGADO_PRIVADO;
-        return TipoRepresentanteProcessual.PARTE_SEM_ADVOGADO;
+        return TipoRepresentanteProcessual.doAtor(usuario.getTipoUsuario());
     }
 
     private record PartesProtocoladas(String autoraNome, String reuNome) {
