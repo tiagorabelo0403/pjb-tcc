@@ -77,6 +77,6 @@ class PublicDtoSemIdInternoTest {
         PublicProcessoResumoCardDto lido = mapper.readValue(mapper.writeValueAsString(card()), PublicProcessoResumoCardDto.class);
 
         assertThat(lido.numero()).isEqualTo(NUMERO);
-        assertThat(lido.processoId()).isNull();
+        assertThat(lido).extracting("processoId").isNull();
     }
 }
