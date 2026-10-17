@@ -19,6 +19,7 @@ import com.tcc.pjb.backend.service.dashboard.PainelServiceCommons;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContext;
 import com.tcc.pjb.backend.service.dashboard.PerfilDashboardContextFactory;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
+import com.tcc.pjb.backend.service.recursal.RecursalEffectiveSecrecyService;
 
 @Service
 public class CidadaoDashboardEnhancedService {
@@ -26,18 +27,21 @@ public class CidadaoDashboardEnhancedService {
     private final PainelServiceCommons commons;
     private final ProcessoRepository processoRepository;
     private final PjbAuthorizationService authorizationService;
+    private final RecursalEffectiveSecrecyService secrecyService;
 
     public CidadaoDashboardEnhancedService(
             PerfilDashboardContextFactory contextFactory,
             PainelServiceCommons commons,
             ProcessoRepository processoRepository,
             com.tcc.pjb.backend.model.repository.WorkItemRepository workItemRepository,
-            PjbAuthorizationService authorizationService
+            PjbAuthorizationService authorizationService,
+            RecursalEffectiveSecrecyService secrecyService
     ) {
         this.contextFactory = contextFactory;
         this.commons = commons;
         this.processoRepository = processoRepository;
         this.authorizationService = authorizationService;
+        this.secrecyService = secrecyService;
     }
 
     public CidadaoEnhancedSnapshot bootstrapDashboard() {
@@ -92,8 +96,7 @@ public class CidadaoDashboardEnhancedService {
     public Map<String, Object> timelineVisualProcesso(Long processoId) {
         PerfilDashboardContext ctx = contextFactory.build();
         authorizationService.requireRole(ctx.usuario(), "ROLE_CIDADAO");
-        Processo processo = processoRepository.findById(processoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+        Processo processo = processoDaParteAtual(processoId);
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("processoId", processoId);
         out.put("numero", processo.getNumeroProcesso());
@@ -108,8 +111,7 @@ public class CidadaoDashboardEnhancedService {
     public Map<String, Object> orientacaoAudiencia(Long processoId) {
         PerfilDashboardContext ctx = contextFactory.build();
         authorizationService.requireRole(ctx.usuario(), "ROLE_CIDADAO");
-        Processo processo = processoRepository.findById(processoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+        Processo processo = processoDaParteAtual(processoId);
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("processoId", processoId);
         out.put("tribunal", processo.getTribunal());
@@ -129,8 +131,7 @@ public class CidadaoDashboardEnhancedService {
     public Map<String, Object> exportarResumoProcesso(Long processoId) {
         PerfilDashboardContext ctx = contextFactory.build();
         authorizationService.requireRole(ctx.usuario(), "ROLE_CIDADAO");
-        Processo processo = processoRepository.findById(processoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+        Processo processo = processoDaParteAtual(processoId);
         LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         out.put("numero", processo.getNumeroProcesso());
         out.put("tribunal", processo.getTribunal());
@@ -141,6 +142,14 @@ public class CidadaoDashboardEnhancedService {
         out.put("geradoEm", Instant.now());
         out.put("assinaturaDigital", "PJB-HASH-" + Integer.toHexString(processoId.hashCode()));
         return out;
+    }
+
+    private Processo processoDaParteAtual(Long processoId) {
+        Processo processo = processoRepository.findProcessoCompletoById(processoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Processo", processoId));
+        authorizationService.requireReadProcessoAsCidadaoParte(processo);
+        authorizationService.requireReadProcessoAtSecrecy(processo, secrecyService.effectiveSecrecyForProcesso(processoId));
+        return processo;
     }
 
     private String toTextoSimples(Object tecnico) {
