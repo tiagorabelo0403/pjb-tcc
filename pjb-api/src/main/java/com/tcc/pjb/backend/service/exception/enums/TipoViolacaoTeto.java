@@ -1,5 +1,7 @@
 package com.tcc.pjb.backend.service.exception.enums;
 
+import com.tcc.pjb.backend.model.entity.enums.processual.RitoProcessual;
+import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -76,4 +78,14 @@ public enum TipoViolacaoTeto {
     private final String tituloJuridico;
     private final String descricaoPadrao;
     private final String codigo;
+
+    public BigDecimal salariosMinimosDaAlcada() {
+        return switch (this) {
+            case ALCADA_FAZENDA_PUBLICA -> RitoProcessual.JUIZADO_ESPECIAL_FAZENDA_PUBLICA.salariosMinimosDaAlcada();
+            case ALCADA_JUIZADO_ESPECIAL_FEDERAL -> RitoProcessual.JUIZADO_ESPECIAL_FEDERAL.salariosMinimosDaAlcada();
+            case ALCADA_JUIZADO_ESPECIAL -> RitoProcessual.JUIZADO_ESPECIAL_CIVEL.salariosMinimosDaAlcada();
+            case ALCADA_TRABALHISTA_SUMARISSIMO -> RitoProcessual.TRABALHISTA_SUMARISSIMO.salariosMinimosDaAlcada();
+            default -> null;
+        };
+    }
 }

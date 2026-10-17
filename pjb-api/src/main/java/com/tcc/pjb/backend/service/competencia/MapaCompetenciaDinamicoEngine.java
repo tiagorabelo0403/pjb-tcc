@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +23,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -30,9 +34,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tcc.pjb.backend.core.audit.ledger.AuditLedgerService;
 import com.tcc.pjb.backend.core.procedural.ProceduralCanonicalResolver;
 import com.tcc.pjb.backend.core.procedural.ProceduralCanonicalResolver.CanonicalContext;
+import com.tcc.pjb.backend.core.util.EnumText;
 import com.tcc.pjb.backend.core.util.Hashes;
 import com.tcc.pjb.backend.domain.enums.TipoJustica;
-import com.tcc.pjb.backend.model.dto.competencia.CompetenceResolveRequest;
 import com.tcc.pjb.backend.model.dto.competencia.DynamicCompetenceDistributionRequest;
 import com.tcc.pjb.backend.model.dto.competencia.DynamicCompetenceDistributionResponse;
 import com.tcc.pjb.backend.model.dto.competencia.DynamicCompetenceRedistributionResponse;
@@ -82,28 +86,29 @@ public class MapaCompetenciaDinamicoEngine {
     private final ProcessoRepository processoRepository;
     private final AuditLedgerService auditLedgerService;
     private final OutboxPublisher outboxPublisher;
-    private final CompetenceResolverService competenceResolverService;
     private final ConfiguracaoDistribuicaoVaraService configuracaoDistribuicaoVaraService;
     private final ProceduralCanonicalResolver proceduralCanonicalResolver;
+    private final InferenciaCompetenciaDistribuicaoService inferencia;
     private final AtomicReference<CachedUnits> unitsCache = new AtomicReference<>();
     private final AtomicLong geracaoDasUnidades = new AtomicLong();
 
+    @Inject
     public MapaCompetenciaDinamicoEngine(UnidadeJudiciariaCompetenciaRepository unidadeRepository,
                                          ProcessoDistribuicaoCompetenciaRepository distribuicaoRepository,
                                          ProcessoRepository processoRepository,
                                          AuditLedgerService auditLedgerService,
                                          OutboxPublisher outboxPublisher,
-                                         CompetenceResolverService competenceResolverService,
                                          ConfiguracaoDistribuicaoVaraService configuracaoDistribuicaoVaraService,
-                                         ProceduralCanonicalResolver proceduralCanonicalResolver) {
+                                         ProceduralCanonicalResolver proceduralCanonicalResolver,
+                                         InferenciaCompetenciaDistribuicaoService inferencia) {
         this.unidadeRepository = Objects.requireNonNull(unidadeRepository);
         this.distribuicaoRepository = Objects.requireNonNull(distribuicaoRepository);
         this.processoRepository = Objects.requireNonNull(processoRepository);
         this.auditLedgerService = Objects.requireNonNull(auditLedgerService);
         this.outboxPublisher = Objects.requireNonNull(outboxPublisher);
-        this.competenceResolverService = Objects.requireNonNull(competenceResolverService);
         this.configuracaoDistribuicaoVaraService = Objects.requireNonNull(configuracaoDistribuicaoVaraService);
         this.proceduralCanonicalResolver = Objects.requireNonNull(proceduralCanonicalResolver);
+        this.inferencia = Objects.requireNonNull(inferencia);
     }
 
     @Transactional(readOnly = true)
@@ -113,7 +118,14 @@ public class MapaCompetenciaDinamicoEngine {
 
     @Transactional(readOnly = true)
     public Optional<DynamicCompetenceDistributionResponse> distribuir(DynamicCompetenceDistributionRequest request, RitoProcessual rito) {
-        return distribuirInterno(sanitizar(request).comNaturezaJuizado(naturezaJuizado(rito)), false);
+        DynamicRequest sanitizado = sanitizar(request);
+        ConferenciaFederal conferencia = rito == null
+                ? null
+                : inferencia.conferenciaFederal(rito, sanitizado.tipoJustica(), sanitizado.valorCausa(), InferenciaCompetenciaDistribuicaoService.hoje());
+        return avaliarDistribuicao(sanitizado
+                .comNaturezaJuizado(InferenciaCompetenciaDistribuicaoService.naturezaJuizado(rito, sanitizado.ramoDireito(), sanitizado.tipoJustica(), conferencia))
+                .comConferenciaFederal(conferencia)
+                .comRitoInformado(rito), false).map(Avaliacao::resposta);
     }
 
     @Transactional
@@ -127,14 +139,16 @@ public class MapaCompetenciaDinamicoEngine {
             return Optional.empty();
         }
         DynamicRequest completaRequest = buildFromProcesso(processo);
-        Optional<DynamicCompetenceDistributionResponse> completa = distribuirInterno(completaRequest, false);
-        if (completa.isPresent() && completa.get().distribuicaoAutomatica()) {
-            return distribuirInterno(completaRequest, true);
+        Optional<Avaliacao> completa = avaliarDistribuicao(completaRequest, false);
+        if (completa.isPresent() && completa.get().aplicavelSemReescolha()) {
+            persistirAvaliacao(completa.get());
+            return Optional.of(completa.get().resposta());
         }
         DynamicRequest fallbackRequest = buildFallbackFromProcesso(processo);
-        Optional<DynamicCompetenceDistributionResponse> fallback = distribuirInterno(fallbackRequest, false);
-        if (fallback.isPresent() && fallback.get().distribuicaoAutomatica()) {
-            return distribuirInterno(fallbackRequest, true);
+        Optional<Avaliacao> fallback = avaliarDistribuicao(fallbackRequest, false);
+        if (fallback.isPresent() && fallback.get().aplicavelSemReescolha()) {
+            persistirAvaliacao(fallback.get());
+            return Optional.of(fallback.get().resposta());
         }
         return registrarDistribuicaoMinima(processo);
     }
@@ -168,9 +182,13 @@ public class MapaCompetenciaDinamicoEngine {
         boolean juizadoEmUnidadeComum = request.requerJuizadoEspecial() && !unidade.isPermiteJuizadoEspecial();
         boolean incompativelComJuizado = !juizadoEmUnidadeComum
                 && (!juizadoCompativel(unidade, request) || !naturezaCompativel(unidade, request));
+        ConferenciaFederal conferenciaFederal = juizadoEmUnidadeComum || incompativelComJuizado
+                ? null
+                : conferenciaFederalAplicavel(request, unidade, this::carregarSnapshotUnidades);
         String fatoresRevisao = juizadoEmUnidadeComum
                 ? FATOR_JUIZADO_EM_UNIDADE_COMUM
-                : incompativelComJuizado ? FATOR_UNIDADE_APLICADA_INCOMPATIVEL_COM_JUIZADO : "";
+                : incompativelComJuizado ? FATOR_UNIDADE_APLICADA_INCOMPATIVEL_COM_JUIZADO
+                : conferenciaFederal != null ? conferenciaFederal.fator() : "";
         String requestHash = Hashes.sha256Hex("distribuicao-aplicada:" + nupn + ":" + unidade.getCodigo());
         ProcessoDistribuicaoCompetencia distribuicao = new ProcessoDistribuicaoCompetencia(
                 processo,
@@ -192,13 +210,15 @@ public class MapaCompetenciaDinamicoEngine {
             }
             throw ex;
         }
-        if (!juizadoEmUnidadeComum && !incompativelComJuizado) {
+        if (!juizadoEmUnidadeComum && !incompativelComJuizado && conferenciaFederal == null) {
             return Optional.empty();
         }
-        log.warn("Distribuicao aplicada exige conferencia de competencia de juizado; processoId={} unidade={}",
+        log.warn("Distribuicao aplicada exige conferencia de competencia; processoId={} unidade={}",
                 processo.getId(), unidade.getCodigo());
         auditLedgerService.appendSafely(
-                juizadoEmUnidadeComum ? "DISTRIBUICAO_JUIZADO_EM_UNIDADE_COMUM" : "DISTRIBUICAO_APLICADA_INCOMPATIVEL_COM_JUIZADO",
+                juizadoEmUnidadeComum ? "DISTRIBUICAO_JUIZADO_EM_UNIDADE_COMUM"
+                        : incompativelComJuizado ? "DISTRIBUICAO_APLICADA_INCOMPATIVEL_COM_JUIZADO"
+                        : conferenciaFederal.eventoAuditoria(),
                 "PROCESSO", String.valueOf(processo.getId()), null,
                 "rito=" + processo.getRito() + " natureza=" + request.naturezaJuizado() + " unidade=" + unidade.getCodigo());
         return conferenciaPendente(distribuicao);
@@ -221,7 +241,7 @@ public class MapaCompetenciaDinamicoEngine {
                 unidade.getTipoVara() != null ? unidade.getTipoVara().name() : null,
                 0d,
                 false,
-                "Distribuicao aplicada antes do commit exige conferencia de competencia de juizado especial.",
+                "Distribuicao aplicada antes do commit exige conferencia de competencia.",
                 List.of(),
                 List.of(fatores),
                 List.of(),
@@ -377,7 +397,11 @@ public class MapaCompetenciaDinamicoEngine {
     }
 
     private Optional<DynamicCompetenceDistributionResponse> distribuirInterno(DynamicRequest request, boolean persistir) {
-        request = enriquecerInferencia(request);
+        return avaliarDistribuicao(request, persistir).map(Avaliacao::resposta);
+    }
+
+    private Optional<Avaliacao> avaliarDistribuicao(DynamicRequest request, boolean persistir) {
+        request = inferencia.enriquecer(request);
         List<UnidadeJudiciariaCompetencia> unidades = carregarSnapshotUnidades();
         if (unidades.isEmpty()) {
             return Optional.empty();
@@ -425,6 +449,10 @@ public class MapaCompetenciaDinamicoEngine {
         List<String> fatoresRevisao = new ArrayList<>(melhor.fatoresRevisao());
         if (request.requerJuizadoEspecial() && !melhor.unidade().isPermiteJuizadoEspecial()) {
             fatoresRevisao.add(FATOR_JUIZADO_EM_UNIDADE_COMUM);
+        }
+        ConferenciaFederal conferenciaFederal = conferenciaFederalAplicavel(request, melhor.unidade(), () -> unidades);
+        if (conferenciaFederal != null) {
+            fatoresRevisao.add(conferenciaFederal.fator());
         }
         if (!melhor.unidade().isPermiteDistribuicaoAutomatica()) {
             fatoresRevisao.add("Unidade configurada para revisao humana obrigatoria");
@@ -479,11 +507,12 @@ public class MapaCompetenciaDinamicoEngine {
                 )
         );
 
+        Avaliacao avaliacao = new Avaliacao(request, melhor, response, fatoresRevisao, distribuicaoAutomatica, conferenciaFederal);
         if (persistir) {
-            persistirDistribuicao(request, melhor, response, fatoresRevisao, distribuicaoAutomatica);
+            persistirAvaliacao(avaliacao);
         }
 
-        return Optional.of(response);
+        return Optional.of(avaliacao);
     }
 
     private List<Candidate> avaliarCandidatos(List<UnidadeJudiciariaCompetencia> unidades,
@@ -534,10 +563,19 @@ public class MapaCompetenciaDinamicoEngine {
         double aderenciaNormativa = scoreAderenciaNormativa(unidade, request, fatoresNormativos);
         double scoreFinal = round2(territorial + especialidade + disponibilidade + equilibrio + aderenciaNormativa);
         boolean juizadoEmUnidadeComum = request.requerJuizadoEspecial() && !unidade.isPermiteJuizadoEspecial();
-        boolean distribuicaoAutomatica = unidade.isPermiteDistribuicaoAutomatica() && !juizadoEmUnidadeComum;
-        List<String> fatoresRevisao = juizadoEmUnidadeComum
-                ? List.of(FATOR_JUIZADO_EM_UNIDADE_COMUM)
-                : distribuicaoAutomatica ? List.of() : List.of("Unidade configurada para revisao humana obrigatoria");
+        ConferenciaFederal conferenciaFederal = juizadoEmUnidadeComum ? null : conferenciaFederalAplicavel(request, unidade, () -> unidades);
+        List<String> fatoresRevisao = new ArrayList<>();
+        if (juizadoEmUnidadeComum) {
+            fatoresRevisao.add(FATOR_JUIZADO_EM_UNIDADE_COMUM);
+        }
+        if (conferenciaFederal != null) {
+            fatoresRevisao.add(conferenciaFederal.fator());
+        }
+        if (!unidade.isPermiteDistribuicaoAutomatica()) {
+            fatoresRevisao.add("Unidade configurada para revisao humana obrigatoria");
+        }
+        fatoresRevisao = List.copyOf(fatoresRevisao);
+        boolean distribuicaoAutomatica = fatoresRevisao.isEmpty();
         String motivacao = construirMotivacao(unidade, scoreFinal, territorial, especialidade, disponibilidade, equilibrio, aderenciaNormativa);
         Candidate candidate = new Candidate(
                 unidade,
@@ -574,11 +612,14 @@ public class MapaCompetenciaDinamicoEngine {
                         aderenciaNormativa
                 )
         );
-        persistirDistribuicao(request, candidate, response, fatoresRevisao, distribuicaoAutomatica);
-        if (juizadoEmUnidadeComum) {
-            auditLedgerService.appendSafely("DISTRIBUICAO_JUIZADO_EM_UNIDADE_COMUM", "PROCESSO",
-                    String.valueOf(processo.getId()), null,
+        boolean persistida = persistirDistribuicao(request, candidate, response, fatoresRevisao, distribuicaoAutomatica);
+        if (persistida && juizadoEmUnidadeComum) {
+            auditLedgerService.appendSafely("DISTRIBUICAO_JUIZADO_EM_UNIDADE_COMUM",
+                    "PROCESSO", String.valueOf(processo.getId()), null,
                     "rito=" + processo.getRito() + " natureza=" + request.naturezaJuizado() + " unidade=" + unidade.getCodigo());
+        }
+        if (persistida && conferenciaFederal != null) {
+            auditarConferenciaFederal(conferenciaFederal, request, unidade);
         }
         return Optional.of(response);
     }
@@ -701,7 +742,7 @@ public class MapaCompetenciaDinamicoEngine {
                 motivacao);
     }
 
-    private void persistirDistribuicao(DynamicRequest request,
+    private boolean persistirDistribuicao(DynamicRequest request,
                                        Candidate melhor,
                                        DynamicCompetenceDistributionResponse response,
                                        List<String> fatoresRevisao,
@@ -710,7 +751,7 @@ public class MapaCompetenciaDinamicoEngine {
         UnidadeJudiciariaCompetencia unidadePersistente = unidadePersistente(melhor.unidade());
         String requestHash = calcularRequestHash(request);
         if (distribuicaoRepository.findTopByRequestHashOrderByIdDesc(requestHash).isPresent()) {
-            return;
+            return false;
         }
         ProcessoDistribuicaoCompetencia distribuicao = new ProcessoDistribuicaoCompetencia(
                 processo,
@@ -733,7 +774,7 @@ public class MapaCompetenciaDinamicoEngine {
             distribuicaoRepository.saveAndFlush(distribuicao);
         } catch (DataIntegrityViolationException ex) {
             if (distribuicaoRepository.findTopByRequestHashOrderByIdDesc(requestHash).isPresent()) {
-                return;
+                return false;
             }
             throw ex;
         }
@@ -778,6 +819,39 @@ public class MapaCompetenciaDinamicoEngine {
                 requestHash,
                 melhor.unidade().getCodigo() + "|score=" + response.scoreFinal()
         );
+        return true;
+    }
+
+    private void auditarConferenciaFederal(ConferenciaFederal conferencia, DynamicRequest request, UnidadeJudiciariaCompetencia unidade) {
+        boolean comProcesso = request.processoId() != null;
+        auditLedgerService.appendSafely(conferencia.eventoAuditoria(),
+                comProcesso ? "PROCESSO" : "COMPETENCIA_DISTRIBUICAO",
+                comProcesso ? String.valueOf(request.processoId()) : (request.nupn() != null ? request.nupn() : unidade.getCodigo()),
+                null,
+                "conferencia=" + conferencia.name() + " unidade=" + unidade.getCodigo());
+    }
+
+    static boolean soConferenciaFederal(ConferenciaFederal conferencia, List<String> fatoresRevisao) {
+        return conferencia != null && conferencia.fator() != null && List.of(conferencia.fator()).equals(fatoresRevisao);
+    }
+
+    private void persistirAvaliacao(Avaliacao avaliacao) {
+        boolean persistida = persistirDistribuicao(avaliacao.request(), avaliacao.melhor(), avaliacao.resposta(),
+                avaliacao.fatoresRevisao(), avaliacao.distribuicaoAutomatica());
+        if (persistida && avaliacao.conferenciaFederal() != null) {
+            auditarConferenciaFederal(avaliacao.conferenciaFederal(), avaliacao.request(), avaliacao.melhor().unidade());
+        }
+    }
+
+    private record Avaliacao(DynamicRequest request,
+                             Candidate melhor,
+                             DynamicCompetenceDistributionResponse resposta,
+                             List<String> fatoresRevisao,
+                             boolean distribuicaoAutomatica,
+                             ConferenciaFederal conferenciaFederal) {
+        boolean aplicavelSemReescolha() {
+            return distribuicaoAutomatica || soConferenciaFederal(conferenciaFederal, fatoresRevisao);
+        }
     }
 
     private UnidadeJudiciariaCompetencia unidadePersistente(UnidadeJudiciariaCompetencia unidade) {
@@ -877,11 +951,15 @@ public class MapaCompetenciaDinamicoEngine {
         String ufBase = firstNonBlank(processo.getUf(), ufJuridicao);
         String comarcaBase = firstNonBlank(processo.getComarca(), comarcaJurisdicao, processo.getVara());
         CanonicalContext canonicalContext = resolverContextoCanonico(processo, ufBase, comarcaBase);
-        TipoJustica canonicalTipoJustica = parseTipoJustica(canonicalContext.ramoJusticaNacional());
-        RamoDireito canonicalRamo = parseRamo(canonicalContext.ramoDireito());
+        TipoJustica canonicalTipoJustica = InferenciaCompetenciaDistribuicaoService.parseTipoJustica(canonicalContext.ramoJusticaNacional());
+        RamoDireito canonicalRamo = InferenciaCompetenciaDistribuicaoService.parseRamo(canonicalContext.ramoDireito());
         String classeTpu = canonicalContext.classeTpuNome() != null ? canonicalContext.classeTpuNome() : processo.getClasseProcessual();
         String assuntoTpu = firstNonBlank(processo.getAssunto(), processo.getObjetoProcessual());
-        NaturezaJuizado naturezaJuizado = naturezaJuizado(ritoEfetivo(canonicalContext, processo));
+        RitoProcessual rito = ritoEfetivo(canonicalContext, processo);
+        TipoJustica tipoJustica = canonicalTipoJustica != null ? canonicalTipoJustica : processo.getTipoJustica();
+        ConferenciaFederal conferencia = inferencia.conferenciaFederal(rito, tipoJustica, processo.getValorCausa(), dataDeReferencia(processo));
+        NaturezaJuizado naturezaJuizado = InferenciaCompetenciaDistribuicaoService.naturezaJuizado(rito,
+                canonicalRamo != null ? canonicalRamo : processo.getRamoDireito(), tipoJustica, conferencia);
         boolean requerJuizadoEspecial = naturezaJuizado != null;
         boolean requerVaraEspecializada = requiresSpecializedUnit(processo, canonicalContext);
         boolean casoUrgente = requiresUrgentDistribution(processo, canonicalContext);
@@ -908,7 +986,7 @@ public class MapaCompetenciaDinamicoEngine {
                 casoUrgente,
                 preferenciaDigital,
                 processo.getId()
-        )).comNaturezaJuizado(naturezaJuizado);
+        )).comNaturezaJuizado(naturezaJuizado).comConferenciaFederal(conferencia).comRitoInformado(rito);
     }
 
     private CanonicalContext resolverContextoCanonico(Processo processo, String ufBase, String comarcaBase) {
@@ -944,7 +1022,14 @@ public class MapaCompetenciaDinamicoEngine {
         Jurisdicao jurisdicao = processo.getJurisdicao();
         String ufBase = firstNonBlank(processo.getUf(), jurisdicao != null ? jurisdicao.getUf() : null);
         String comarcaBase = firstNonBlank(processo.getComarca(), jurisdicao != null ? jurisdicao.getCidade() : null, processo.getVara());
-        NaturezaJuizado naturezaJuizado = naturezaJuizado(ritoEfetivo(contextoCanonicoDoFallback(processo, ufBase, comarcaBase), processo));
+        CanonicalContext canonicalContext = contextoCanonicoDoFallback(processo, ufBase, comarcaBase);
+        RitoProcessual rito = ritoEfetivo(canonicalContext, processo);
+        TipoJustica canonicalTipoJustica = canonicalContext != null ? InferenciaCompetenciaDistribuicaoService.parseTipoJustica(canonicalContext.ramoJusticaNacional()) : null;
+        TipoJustica tipoJustica = canonicalTipoJustica != null ? canonicalTipoJustica : processo.getTipoJustica();
+        RamoDireito canonicalRamo = canonicalContext != null ? InferenciaCompetenciaDistribuicaoService.parseRamo(canonicalContext.ramoDireito()) : null;
+        ConferenciaFederal conferencia = inferencia.conferenciaFederal(rito, tipoJustica, processo.getValorCausa(), dataDeReferencia(processo));
+        NaturezaJuizado naturezaJuizado = InferenciaCompetenciaDistribuicaoService.naturezaJuizado(rito,
+                canonicalRamo != null ? canonicalRamo : processo.getRamoDireito(), tipoJustica, conferencia);
         return new DynamicRequest(
                 firstNonBlank(processo.getNumeroUnificado(), processo.getNumeroProcesso()),
                 null,
@@ -962,7 +1047,9 @@ public class MapaCompetenciaDinamicoEngine {
                 false,
                 prefersDigitalDistribution(processo),
                 processo.getId(),
-                naturezaJuizado
+                naturezaJuizado,
+                conferencia,
+                rito
         );
     }
 
@@ -1307,87 +1394,6 @@ public class MapaCompetenciaDinamicoEngine {
     }
 
 
-    private DynamicRequest enriquecerInferencia(DynamicRequest request) {
-        if (request == null) {
-            return null;
-        }
-        CanonicalContext canonicalContext = proceduralCanonicalResolver.resolve(Map.ofEntries(
-                Map.entry("classeTpu", Objects.toString(request.classeTpu(), "")),
-                Map.entry("assunto", Objects.toString(request.assuntoTpu(), "")),
-                Map.entry("ramoDireito", request.ramoDireito() != null ? request.ramoDireito().name() : ""),
-                Map.entry("materia", Objects.toString(request.materiaPrincipal(), "")),
-                Map.entry("competencia", request.tipoJustica() != null ? request.tipoJustica().name() : ""),
-                Map.entry("uf", Objects.toString(request.ufReu() != null ? request.ufReu() : request.ufAutor(), "")),
-                Map.entry("comarca", Objects.toString(request.comarcaReu() != null ? request.comarcaReu() : request.comarcaAutor(), ""))
-        ));
-        TipoJustica canonicalTipoJustica = parseTipoJustica(canonicalContext.ramoJusticaNacional());
-        RamoDireito canonicalRamo = parseRamo(canonicalContext.ramoDireito());
-        NaturezaJuizado naturezaJuizado = request.naturezaJuizado() != null
-                ? request.naturezaJuizado()
-                : naturezaJuizado(canonicalContext.rito());
-        if (request.tipoJustica() != null && request.ramoDireito() != null) {
-            return request.comNaturezaJuizado(naturezaJuizado);
-        }
-        if (canonicalTipoJustica != null || canonicalRamo != null) {
-            return new DynamicRequest(
-                    request.nupn(),
-                    request.classeTpu(),
-                    request.assuntoTpu(),
-                    canonicalRamo != null ? canonicalRamo : request.ramoDireito(),
-                    request.valorCausa(),
-                    request.ufAutor(),
-                    request.comarcaAutor(),
-                    request.ufReu(),
-                    request.comarcaReu(),
-                    request.requerJuizadoEspecial() || naturezaJuizado != null,
-                    request.requerVaraEspecializada(),
-                    request.materiaPrincipal(),
-                    canonicalTipoJustica != null ? canonicalTipoJustica : request.tipoJustica(),
-                    request.casoUrgente(),
-                    request.preferenciaDigital(),
-                    request.processoId(),
-                    naturezaJuizado
-            );
-        }
-        var resolucao = competenceResolverService.resolve(new CompetenceResolveRequest(
-                null,
-                request.assuntoTpu(),
-                request.classeTpu(),
-                request.materiaPrincipal(),
-                request.ufReu() != null ? request.ufReu() : request.ufAutor(),
-                request.comarcaReu() != null ? request.comarcaReu() : request.comarcaAutor(),
-                request.valorCausa(),
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
-                false,
-                false
-        ));
-        TipoJustica inferida = parseTipoJustica(resolucao.tipoJusticaSugerida());
-        return new DynamicRequest(
-                request.nupn(),
-                request.classeTpu(),
-                request.assuntoTpu(),
-                request.ramoDireito(),
-                request.valorCausa(),
-                request.ufAutor(),
-                request.comarcaAutor(),
-                request.ufReu(),
-                request.comarcaReu(),
-                request.requerJuizadoEspecial(),
-                request.requerVaraEspecializada(),
-                request.materiaPrincipal(),
-                inferida != null ? inferida : request.tipoJustica(),
-                request.casoUrgente(),
-                request.preferenciaDigital(),
-                request.processoId(),
-                request.naturezaJuizado()
-        );
-    }
-
     private static boolean juizadoCompativel(UnidadeJudiciariaCompetencia unidade, DynamicRequest request) {
         return request.requerJuizadoEspecial()
                 ? unidade.isPermiteJuizadoEspecial()
@@ -1418,16 +1424,41 @@ public class MapaCompetenciaDinamicoEngine {
         };
     }
 
-    private static NaturezaJuizado naturezaJuizado(RitoProcessual rito) {
-        if (rito == null) {
+    private ConferenciaFederal conferenciaFederalAplicavel(DynamicRequest request, UnidadeJudiciariaCompetencia unidade,
+                                                           Supplier<List<UnidadeJudiciariaCompetencia>> unidades) {
+        ConferenciaFederal conferencia = request.conferenciaFederal();
+        if (conferencia == null || conferencia == ConferenciaFederal.NENHUMA || request.naturezaJuizado() != null
+                || unidade.getTipoJustica() != TipoJustica.FEDERAL) {
             return null;
         }
-        return switch (rito) {
-            case JUIZADO_ESPECIAL_CRIMINAL, JUIZADO_ESPECIAL_FEDERAL_CRIMINAL, PROCEDIMENTO_PENAL_SUMARISSIMO -> NaturezaJuizado.CRIMINAL;
-            case JUIZADO_ESPECIAL_FAZENDA_PUBLICA -> NaturezaJuizado.FAZENDA_PUBLICA;
-            case JUIZADO_ESPECIAL_FEDERAL, PREVIDENCIARIO_JEF -> NaturezaJuizado.FEDERAL;
-            default -> rito.isJuizado() ? NaturezaJuizado.CIVEL : null;
-        };
+        if (conferencia == ConferenciaFederal.ACIDENTARIO_DA_JUSTICA_ESTADUAL) {
+            return conferencia;
+        }
+        if (unidade.isPermiteJuizadoEspecial()) {
+            return null;
+        }
+        boolean jefInstaladoNaComarca = unidades.get().stream().anyMatch(candidata -> candidata.getTipoJustica() == TipoJustica.FEDERAL
+                && candidata.isPermiteJuizadoEspecial()
+                && candidata.estaAptaParaDistribuicao()
+                && candidata.getTipoVara() != TipoVaraDistribuicao.CRIMINAL_JUIZADO
+                && candidata.getRamoDireito() != RamoDireito.PENAL
+                && naComarcaDoAutor(candidata, request));
+        return jefInstaladoNaComarca ? conferencia : null;
+    }
+
+    private static boolean naComarcaDoAutor(UnidadeJudiciariaCompetencia unidade, DynamicRequest request) {
+        String comarcaProcesso = EnumText.normalizeToken(firstNonBlank(request.comarcaAutor(), request.comarcaReu()));
+        String ufProcesso = EnumText.normalizeToken(firstNonBlank(request.ufAutor(), request.ufReu()));
+        String comarcaUnidade = EnumText.normalizeToken(comarcaNome(unidade));
+        String ufUnidade = EnumText.normalizeToken(comarcaUf(unidade));
+        return !comarcaProcesso.isEmpty() && comarcaProcesso.equals(comarcaUnidade)
+                && (ufProcesso.isEmpty() || ufUnidade.isEmpty() || ufProcesso.equals(ufUnidade));
+    }
+
+    private static LocalDate dataDeReferencia(Processo processo) {
+        return processo.getDataCriacao() != null
+                ? processo.getDataCriacao().atZone(ZoneId.systemDefault()).withZoneSameInstant(InferenciaCompetenciaDistribuicaoService.ZONA_LEGAL).toLocalDate()
+                : InferenciaCompetenciaDistribuicaoService.hoje();
     }
 
     private static String calcularRequestHash(DynamicRequest request) {
@@ -1459,7 +1490,7 @@ public class MapaCompetenciaDinamicoEngine {
                 normalizeText(request.nupn()),
                 normalizeUpper(request.classeTpu()),
                 normalizeUpper(request.assuntoTpu()),
-                parseRamo(request.ramoDireito()),
+                InferenciaCompetenciaDistribuicaoService.parseRamo(request.ramoDireito()),
                 request.valorCausa() == null ? null : request.valorCausa().max(BigDecimal.ZERO),
                 normalizeUpper(request.ufAutor()),
                 normalizeText(request.comarcaAutor()),
@@ -1468,45 +1499,11 @@ public class MapaCompetenciaDinamicoEngine {
                 request.requerJuizadoEspecial(),
                 request.requerVaraEspecializada(),
                 normalizeText(request.materiaPrincipal()),
-                parseTipoJustica(request.tipoJustica()),
+                InferenciaCompetenciaDistribuicaoService.parseTipoJustica(request.tipoJustica()),
                 request.casoUrgente(),
                 request.preferenciaDigital(),
                 request.processoId()
         );
-    }
-
-    private static TipoJustica parseTipoJustica(String value) {
-        String normalized = normalizeUpper(value);
-        if (normalized == null) {
-            return null;
-        }
-        return switch (normalized) {
-            case "ELEITORAL", "ELEITORAL_SUPERIOR" -> TipoJustica.ELEITORAL;
-            case "TRABALHO", "TRABALHO_SUPERIOR" -> TipoJustica.TRABALHO;
-            case "FEDERAL" -> TipoJustica.FEDERAL;
-            case "MILITAR_ESTADUAL" -> TipoJustica.MILITAR_ESTADUAL;
-            case "MILITAR_FEDERAL", "MILITAR_SUPERIOR" -> TipoJustica.MILITAR_FEDERAL;
-            case "SUPERIOR", "SUPERIOR_STF" -> TipoJustica.SUPERIOR;
-            default -> {
-                try {
-                    yield TipoJustica.valueOf(normalized);
-                } catch (IllegalArgumentException ignored) {
-                    yield null;
-                }
-            }
-        };
-    }
-
-    private static RamoDireito parseRamo(String value) {
-        String normalized = normalizeUpper(value);
-        if (normalized == null) {
-            return null;
-        }
-        try {
-            return RamoDireito.valueOf(normalized);
-        } catch (IllegalArgumentException ignored) {
-            return null;
-        }
     }
 
     private static boolean equalOrBlank(String left, String right) {
@@ -1607,7 +1604,9 @@ public class MapaCompetenciaDinamicoEngine {
             boolean casoUrgente,
             boolean preferenciaDigital,
             Long processoId,
-            NaturezaJuizado naturezaJuizado
+            NaturezaJuizado naturezaJuizado,
+            ConferenciaFederal conferenciaFederal,
+            RitoProcessual ritoInformado
     ) {
         DynamicRequest(String nupn, String classeTpu, String assuntoTpu, RamoDireito ramoDireito, BigDecimal valorCausa,
                        String ufAutor, String comarcaAutor, String ufReu, String comarcaReu,
@@ -1615,27 +1614,43 @@ public class MapaCompetenciaDinamicoEngine {
                        TipoJustica tipoJustica, boolean casoUrgente, boolean preferenciaDigital, Long processoId) {
             this(nupn, classeTpu, assuntoTpu, ramoDireito, valorCausa, ufAutor, comarcaAutor, ufReu, comarcaReu,
                     requerJuizadoEspecial, requerVaraEspecializada, materiaPrincipal, tipoJustica, casoUrgente,
-                    preferenciaDigital, processoId, null);
+                    preferenciaDigital, processoId, null, null, null);
+        }
+
+        DynamicRequest(String nupn, String classeTpu, String assuntoTpu, RamoDireito ramoDireito, BigDecimal valorCausa,
+                       String ufAutor, String comarcaAutor, String ufReu, String comarcaReu,
+                       boolean requerJuizadoEspecial, boolean requerVaraEspecializada, String materiaPrincipal,
+                       TipoJustica tipoJustica, boolean casoUrgente, boolean preferenciaDigital, Long processoId,
+                       NaturezaJuizado naturezaJuizado, ConferenciaFederal conferenciaFederal) {
+            this(nupn, classeTpu, assuntoTpu, ramoDireito, valorCausa, ufAutor, comarcaAutor, ufReu, comarcaReu,
+                    requerJuizadoEspecial, requerVaraEspecializada, materiaPrincipal, tipoJustica, casoUrgente,
+                    preferenciaDigital, processoId, naturezaJuizado, conferenciaFederal, null);
         }
 
         DynamicRequest comNaturezaJuizado(NaturezaJuizado natureza) {
             return new DynamicRequest(nupn, classeTpu, assuntoTpu, ramoDireito, valorCausa, ufAutor, comarcaAutor, ufReu,
                     comarcaReu, requerJuizadoEspecial || natureza != null, requerVaraEspecializada, materiaPrincipal,
-                    tipoJustica, casoUrgente, preferenciaDigital, processoId, natureza != null ? natureza : naturezaJuizado);
+                    tipoJustica, casoUrgente, preferenciaDigital, processoId, natureza != null ? natureza : naturezaJuizado,
+                    conferenciaFederal, ritoInformado);
+        }
+
+        DynamicRequest comConferenciaFederal(ConferenciaFederal conferencia) {
+            return new DynamicRequest(nupn, classeTpu, assuntoTpu, ramoDireito, valorCausa, ufAutor, comarcaAutor, ufReu,
+                    comarcaReu, requerJuizadoEspecial, requerVaraEspecializada, materiaPrincipal, tipoJustica, casoUrgente,
+                    preferenciaDigital, processoId, naturezaJuizado, conferencia, ritoInformado);
+        }
+
+        DynamicRequest comRitoInformado(RitoProcessual rito) {
+            return new DynamicRequest(nupn, classeTpu, assuntoTpu, ramoDireito, valorCausa, ufAutor, comarcaAutor, ufReu,
+                    comarcaReu, requerJuizadoEspecial, requerVaraEspecializada, materiaPrincipal, tipoJustica, casoUrgente,
+                    preferenciaDigital, processoId, naturezaJuizado, conferenciaFederal, rito != null ? rito : ritoInformado);
         }
 
         DynamicRequest semExigenciaDeJuizado() {
             return new DynamicRequest(nupn, classeTpu, assuntoTpu, ramoDireito, valorCausa, ufAutor, comarcaAutor, ufReu,
                     comarcaReu, false, requerVaraEspecializada, materiaPrincipal, tipoJustica, casoUrgente,
-                    preferenciaDigital, processoId, naturezaJuizado);
+                    preferenciaDigital, processoId, naturezaJuizado, conferenciaFederal, ritoInformado);
         }
-    }
-
-    enum NaturezaJuizado {
-        CIVEL,
-        FAZENDA_PUBLICA,
-        FEDERAL,
-        CRIMINAL
     }
 
     private record Candidate(

@@ -23,6 +23,7 @@ import com.tcc.pjb.backend.model.entity.intelligence.LaianePeticaoInicialDraftSe
 import com.tcc.pjb.backend.model.entity.protocolo.ProtocoloPendencia;
 import com.tcc.pjb.backend.model.repository.LaianePeticaoInicialDraftSessionRepository;
 import com.tcc.pjb.backend.model.repository.ProcessoRepository;
+import com.tcc.pjb.backend.service.processual.representacao.PeticaoInicialSemAdvogadoCabimentoService;
 import com.tcc.pjb.backend.service.AjuizamentoService;
 import com.tcc.pjb.backend.service.competencia.MapaCompetenciaDinamicoEngine;
 import com.tcc.pjb.backend.service.exception.RecursoNaoEncontradoException;
@@ -139,7 +140,7 @@ public class LaianePeticaoInicialProtocolarService {
         processo.setPedidosConsolidados(joinLines(readList(entity.getPedidosJson())));
         processo.setMaterialProbatorioResumo(joinLines(readList(entity.getProvasJson())));
         processo.setResumoIA(joinLines(readList(entity.getFundamentosJson())));
-        processo.setValorCausa(null);
+        processo.setValorCausa(entity.getValorCausa());
         processo.setUsuario(usuario);
         processo.setUf(defaultText(usuario.getUf(), null));
         processo.setComarca(defaultText(usuario.getComarca(), null));
@@ -291,26 +292,11 @@ public class LaianePeticaoInicialProtocolarService {
         if (profissional) {
             return usuario;
         }
-        boolean peticionantePessoal = tipo != null && tipo.isPeticionantePessoal()
-                && rito != null && RITOS_PETICIONAMENTO_PESSOAL.contains(rito);
-        if (peticionantePessoal) {
+        if (isPeticionantePessoal(usuario) && PeticaoInicialSemAdvogadoCabimentoService.admiteRito(rito)) {
             return usuario;
         }
         throw new com.tcc.pjb.backend.core.security.abac.AccessDeniedPjbException("A funcionalidade e exclusiva para advocacia, procuradoria, defensoria e Ministerio Publico");
     }
-
-    private static final java.util.Set<RitoProcessual> RITOS_PETICIONAMENTO_PESSOAL = java.util.Set.of(
-            RitoProcessual.JUIZADO_ESPECIAL_CIVEL,
-            RitoProcessual.TRABALHISTA_ORDINARIO,
-            RitoProcessual.TRABALHISTA_SUMARISSIMO,
-            RitoProcessual.TRABALHISTA_SUMARIO_ALCADA,
-            RitoProcessual.TRABALHISTA_ACAO_CUMPRIMENTO,
-            RitoProcessual.TRABALHISTA_CUMPRIMENTO_SENTENCA,
-            RitoProcessual.TRABALHISTA_EXECUCAO,
-            RitoProcessual.TRABALHISTA_ACIDENTE_TRABALHO,
-            RitoProcessual.JUIZADO_ESPECIAL_FEDERAL,
-            RitoProcessual.PREVIDENCIARIO_JEF
-    );
 
     private boolean isPeticionantePessoal(Usuario usuario) {
         TipoUsuario tipo = usuario == null ? null : usuario.getTipoUsuario();

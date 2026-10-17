@@ -52,7 +52,8 @@ class LaianePeticaoInicialDraftServiceTimingTest {
                 new ObjectMapper(),
                 mock(RepresentacaoProcessualPolicyService.class),
                 officeScopeProvider,
-                mock(LaianePeticaoInicialProtocolarService.class));
+                mock(LaianePeticaoInicialProtocolarService.class),
+                mock(com.tcc.pjb.backend.service.processual.representacao.PeticaoInicialSemAdvogadoCabimentoService.class));
 
         Long processoIdDeTerceiro = 999L;
 

@@ -33,6 +33,11 @@ public class NationalProceduralActionProfilePublicEntityResolver {
             alerts.add(messages.improbidadeJuizadoAlert());
             return Optional.of(rebuilt(profile, alerts, reviewChecklist));
         }
+        if (NationalProceduralActionProfileSupport.containsAny(corpus, "ACAO POPULAR", "LEI 4 717", "LEI 4717")) {
+            NationalProceduralActionProfile profile = profile("ACAO_POPULAR", "ADMINISTRATIVO", true, "ESPECIAL_ACAO_POPULAR", "ADMINISTRATIVO", markers, reasons, legalBases, alerts, reviewChecklist, messages.acaoPopularReason(), messages.acaoPopularLegalBase());
+            alerts.add(messages.acaoPopularJuizadoAlert());
+            return Optional.of(rebuilt(profile, alerts, reviewChecklist));
+        }
         if (NationalProceduralActionProfileSupport.containsAny(corpus, "ACAO CIVIL PUBLICA", "ACP", "DANO COLETIVO", "INTERESSE DIFUSO", "INTERESSE COLETIVO")) {
             return Optional.of(profile("ACAO_CIVIL_PUBLICA", "COLETIVO", true, NationalProceduralActionProfileSupport.containsAny(corpus, "AMBIENTAL") ? "AMBIENTAL_ACP" : "CIVIL_ACAO_CIVIL_PUBLICA", "COLETIVO", markers, reasons, legalBases, alerts, reviewChecklist, messages.acaoCivilPublicaReason(), messages.acaoCivilPublicaLegalBase()));
         }

@@ -322,6 +322,12 @@ public final class ProceduralCatalogSupport {
         if (classe == null) {
             return RitoProcessual.COMUM_ORDINARIO;
         }
+        if (classe == TpuClasseCnj.JUIZADO_ESPECIAL_FEDERAL) {
+            return RitoProcessual.JUIZADO_ESPECIAL_FEDERAL;
+        }
+        if (classe == TpuClasseCnj.JUIZADO_ESPECIAL_FAZENDA_PUBLICA) {
+            return RitoProcessual.JUIZADO_ESPECIAL_FAZENDA_PUBLICA;
+        }
         String descricao = normalizeToken(classe.descricao());
         if (descricao.contains("MANDADO SEGURANCA") || descricao.contains("MANDADO INJUNCAO")) {
             return RitoProcessual.ESPECIAL_MANDADO_SEGURANCA;

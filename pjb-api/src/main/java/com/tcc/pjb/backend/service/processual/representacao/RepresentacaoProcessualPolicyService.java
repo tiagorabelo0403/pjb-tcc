@@ -368,6 +368,7 @@ public class RepresentacaoProcessualPolicyService {
         }
         if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JUIZADO) {
             validacoes.add("Confirmar que a causa está dentro da competência dos Juizados Especiais Cíveis e alertar sobre a exigência de advogado em eventual recurso à Turma Recursal (Lei 9.099/95, art. 41, § 2º).");
+            validacoes.add("Sem advogado, a parte só postula em causa de até 20 salários mínimos vigentes na data do protocolo; acima disso a assistência por advogado é obrigatória (Lei 9.099/95, art. 9º).");
         }
         if (resolved == InstrumentoRepresentacaoProcessual.JUS_POSTULANDI_JEF) {
             validacoes.add("Confirmar competência do Juizado Especial Federal e alertar sobre a exigência de advogado na fase recursal perante a Turma Recursal Federal e no incidente de uniformização.");
