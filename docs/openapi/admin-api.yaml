@@ -6908,18 +6908,6 @@ paths:
         -
           bearerAuth:
 
-  /api/v1/admin/trabalhista/processos/{processoId}/acordo/homologar:
-    post:
-      summary: "AdminTrabalhistaController::POST /api/v1/admin/trabalhista/processos/{processoId}/acordo/homologar"
-      tags:
-        - "admin"
-      responses:
-        200:
-          description: "OK"
-      security:
-        -
-          bearerAuth:
-
   /api/v1/admin/trabalhista/processos/{processoId}/deposito:
     post:
       summary: "AdminTrabalhistaController::POST /api/v1/admin/trabalhista/processos/{processoId}/deposito"

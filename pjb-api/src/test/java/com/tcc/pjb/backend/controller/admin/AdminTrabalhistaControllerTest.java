@@ -1,6 +1,7 @@
 package com.tcc.pjb.backend.controller.admin;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -41,6 +42,14 @@ class AdminTrabalhistaControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("gru trabalhista gerada"))
                 .andExpect(jsonPath("$.data.gruId").value(20));
+    }
+
+    @Test
+    void administradorNaoTemRotaParaHomologarAcordoTrabalhista() throws Exception {
+        mockMvc.perform(post("/api/v1/admin/trabalhista/processos/11/acordo/homologar")
+                        .param("resumo", "acordo"))
+                .andExpect(status().isNotFound());
+        verifyNoInteractions(applicationService);
     }
 
     @Test
