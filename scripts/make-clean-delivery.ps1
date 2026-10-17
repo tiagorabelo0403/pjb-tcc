@@ -79,7 +79,7 @@ try {
         ".idea/",
         ".vscode/",
         ".claude/",
-        "application-local.",
+        "application-local\.(?!yml\.example`$)",
         ".env`$",
         "\.key`$",
         "\.pem`$",
