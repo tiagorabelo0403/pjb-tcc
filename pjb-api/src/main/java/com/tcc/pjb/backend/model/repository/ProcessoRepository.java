@@ -370,7 +370,7 @@ Optional<Processo> findMagistraturaActsScopedById(@Param("id") Long id);
             """)
     List<Long> findIdsByEquipeIds(@Param("equipeIds") List<Long> equipeIds, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"jurisdicao"})
+    @EntityGraph(attributePaths = {"jurisdicao", "usuario"})
     @Query("""
             SELECT p FROM Processo p
             LEFT JOIN p.usuario u

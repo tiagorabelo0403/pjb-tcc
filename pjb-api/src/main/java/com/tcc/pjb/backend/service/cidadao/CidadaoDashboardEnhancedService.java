@@ -14,6 +14,7 @@ import com.tcc.pjb.backend.core.security.abac.PjbAuthorizationService;
 import com.tcc.pjb.backend.model.entity.Processo;
 import com.tcc.pjb.backend.model.entity.Usuario;
 import com.tcc.pjb.backend.model.entity.enums.TipoPolo;
+import com.tcc.pjb.backend.model.entity.enums.processual.FaseProcessual;
 import com.tcc.pjb.backend.model.entity.enums.WorkItemStatus;
 import com.tcc.pjb.backend.model.entity.enums.processual.completude.TipoRepresentanteProcessual;
 import com.tcc.pjb.backend.model.entity.workflow.WorkItem;
@@ -61,7 +62,7 @@ public class CidadaoDashboardEnhancedService {
                 .map(p -> new ProcessoResumoCidadao(
                         p.getId(),
                         p.getNumeroProcesso(),
-                        toTextoSimples(p.getFaseAtual(), posicaoProcessualService.resolver(p, usuario.getCpf()).polo()),
+                        toTextoSimples(p.getFaseAtual(), posicaoProcessualService.polo(p, usuario.getCpf())),
                         toTextoSimples(p.getRito()),
                         p.getDataDistribuicao(),
                         p.getTribunal(),
@@ -170,8 +171,7 @@ public class CidadaoDashboardEnhancedService {
             case "CONHECIMENTO", "COGNITIVA" -> "Em análise pelo juízo";
             case "CITACAO", "CITACAO_REALIZADA" -> polo == TipoPolo.ATIVO ? "Citação da outra parte"
                     : polo == TipoPolo.PASSIVO ? "Sua citação" : "Citação";
-            case "CONTESTACAO_APRESENTADA" -> polo == TipoPolo.ATIVO ? "Resposta da outra parte apresentada"
-                    : polo == TipoPolo.PASSIVO ? "Sua resposta apresentada" : "Resposta apresentada";
+            case "CONTESTACAO_APRESENTADA" -> "Resposta da outra parte apresentada";
             case "RESPOSTA" -> polo == TipoPolo.ATIVO ? "Prazo de resposta da outra parte"
                     : polo == TipoPolo.PASSIVO ? "Prazo para a sua resposta" : "Prazo de resposta";
             case "INSTRUTORIA", "PERICIA_TECNICA" -> "Fase de produção de provas";
@@ -179,8 +179,15 @@ public class CidadaoDashboardEnhancedService {
             case "RECURSAL", "RECURSO_INTERPOSTO" -> "Em recurso";
             case "TRANSITO_EM_JULGADO" -> "Decisão definitiva";
             case "CUMPRIMENTO_SENTENCA" -> "Cumprimento da decisão";
-            case "ARQUIVADO", "BAIXADO" -> "Processo encerrado";
-            default -> token.replace('_', ' ').toLowerCase();
+            case "ARQUIVADO", "BAIXADO", "ARQUIVAMENTO" -> "Processo encerrado";
+            case "AUTUACAO" -> "Registro do processo";
+            case "DISTRIBUICAO" -> "Distribuição do processo";
+            case "SANEAMENTO" -> "Organização do processo pelo juízo";
+            case "JULGAMENTO" -> "Em julgamento";
+            case "LIQUIDACAO" -> "Cálculo do valor devido";
+            case "EXECUCAO", "EXECUTORIA" -> "Execução da decisão";
+            case "PENHORA" -> "Penhora de bens";
+            default -> tecnico instanceof FaseProcessual fase ? fase.getDescricao() : token.replace('_', ' ').toLowerCase();
         };
     }
 
@@ -206,7 +213,7 @@ public class CidadaoDashboardEnhancedService {
             case ADVOGADO_PRIVADO -> "Acompanhe as movimentações com seu advogado.";
             case DEFENSOR_PUBLICO -> "Acompanhe as movimentações com a Defensoria Pública.";
             case MINISTERIO_PUBLICO -> "Acompanhe as movimentações com o Ministério Público.";
-            case PARTE_SEM_ADVOGADO -> "Acompanhe as movimentações por aqui. Você atua sem advogado; se precisar de orientação, procure a Defensoria Pública.";
+            case PARTE_SEM_ADVOGADO -> "Acompanhe as movimentações por aqui. Você atua sem advogado; se precisar de orientação, procure a Defensoria Pública ou o setor de atendimento do juizado.";
         };
     }
 

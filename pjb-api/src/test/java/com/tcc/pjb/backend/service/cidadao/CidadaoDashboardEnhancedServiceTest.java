@@ -205,4 +205,31 @@ class CidadaoDashboardEnhancedServiceTest {
                 "Documento de identidade com foto", "CPF", "Comprovante de endereço", "Documentos do processo",
                 "Procuração do advogado"));
     }
+
+    @Test
+    void resumoMostraACitacaoComoDoReu() {
+        processo.setFaseAtual(FaseProcessual.CITACAO);
+        posicao(TipoPolo.PASSIVO, null);
+
+        assertThat(service.exportarResumoProcesso(42L)).containsEntry("faseAtual", "Sua citação");
+    }
+
+    @Test
+    void painelInicialUsaOPoloDoCidadaoEmCadaProcesso() {
+        processo.setFaseAtual(FaseProcessual.CITACAO);
+        when(processoRepository.findByCidadaoCpf(org.mockito.ArgumentMatchers.eq(CPF), any()))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(processo)));
+        when(posicaoService.polo(processo, CPF)).thenReturn(TipoPolo.PASSIVO);
+
+        assertThat(service.bootstrapDashboard().timeline()).singleElement()
+                .extracting(CidadaoDashboardEnhancedService.ProcessoResumoCidadao::faseSimples).isEqualTo("Sua citação");
+    }
+
+    @Test
+    void faseSemTextoProprioUsaADescricaoDaFase() {
+        processo.setFaseAtual(FaseProcessual.AUDIENCIA_CUSTODIA);
+
+        assertThat(service.timelineVisualProcesso(42L).get("faseAtual"))
+                .isEqualTo(FaseProcessual.AUDIENCIA_CUSTODIA.getDescricao());
+    }
 }

@@ -18,6 +18,8 @@ public interface PoloProcessualRepository extends JpaRepository<PoloProcessual, 
 
     Optional<PoloProcessual> findByProcessoIdAndDocumento(Long processoId, String documento);
 
+    Optional<PoloProcessual> findFirstByProcessoIdAndDocumentoAndAtivoTrueOrderByIdAsc(Long processoId, String documento);
+
     @Query("""
             SELECT p FROM PoloProcessual p
             WHERE p.processoId = :processoId
